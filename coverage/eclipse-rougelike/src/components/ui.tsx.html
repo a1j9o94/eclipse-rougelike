@@ -25,14 +25,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>40/40</span>
+                <span class='fraction'>60/60</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">69.23% </span>
+                <span class="strong">68.96% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>18/26</span>
+                <span class='fraction'>20/29</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>40/40</span>
+                <span class='fraction'>60/60</span>
             </div>
         
             
@@ -111,10 +111,54 @@
 <a name='L46'></a><a href='#L46'>46</a>
 <a name='L47'></a><a href='#L47'>47</a>
 <a name='L48'></a><a href='#L48'>48</a>
-<a name='L49'></a><a href='#L49'>49</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-yes">8x</span>
@@ -142,12 +186,18 @@
 <span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
@@ -161,47 +211,72 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// React import not required with modern JSX transform
 &nbsp;
-export function PowerBadge({use, prod}:{use:number, prod:number}){ const ok = use&lt;=prod; return &lt;span className={`text-[10px] px-2 py-0.5 rounded ${ok?<span class="branch-0 cbranch-no" title="branch not covered" >'bg-emerald-600/30 text-emerald-200':'bg-rose-600/30 text-rose-100'}</span>`}&gt;⚡ {use}/{prod}&lt;/span&gt;; }
-export function HullPips({ current, max }:{current:number, max:number}){ const arr = Array.from({length: max}); return (&lt;div className="flex gap-0.5 mt-1"&gt;{arr.map((_,i)=&gt;(&lt;span key={i} className={`w-2 h-2 rounded ${i&lt;current? <span class="branch-0 cbranch-no" title="branch not covered" >'bg-emerald-400':'bg-zinc-700'}</span>`} /&gt;))}&lt;/div&gt;); }
-export function CompactShip({ ship, side, active }:{ship:any, side:'P'|'E', active:boolean}){
+import type { Part } from "../config/parts";
+import type { GhostDelta, Ship } from "../config/types";
+&nbsp;
+export function PowerBadge({use, prod}:{use:number, prod:number}){
+  const ok = use&lt;=prod;
+  return (
+    &lt;span className={`inline-flex items-center gap-1 font-medium font-mono px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs ${ok? <span class="branch-0 cbranch-no" title="branch not covered" >'bg-emerald-600/20 text-emerald-200 ring-1 ring-emerald-600/30' : 'bg-rose-600/20 text-rose-100 ring-1 ring-rose-600/30'}</span>`}&gt;
+      ⚡ &lt;span&gt;{use}&lt;/span&gt;/&lt;span&gt;{prod}&lt;/span&gt;
+    &lt;/span&gt;
+  );
+}
+export function HullPips({ current, max }:{current:number, max:number}){
+  const arr = Array.from({length: max});
+  return (
+    &lt;div className="flex gap-0.5 mt-1"&gt;
+      {arr.map((_,i)=&gt;(
+        &lt;span key={i} className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded ${i&lt;current? <span class="branch-0 cbranch-no" title="branch not covered" >'bg-emerald-400':'bg-zinc-700'}</span>`} /&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}
+export function CompactShip({ ship, side, active }:{ship:Ship, side:'P'|'E', active:boolean}){
   const dead = !ship.alive || ship.hull&lt;=0;
   return (
-    &lt;div className={`relative w-24 p-2 rounded-lg border ${<span class="branch-0 cbranch-no" title="branch not covered" >dead? 'border-zinc-700 bg-zinc-900 opacity-60' : s</span>ide==='P' ? 'border-sky-600 bg-slate-900' : 'border-pink-600 bg-zinc-900'} ${active? 'ring-2 ring-amber-400 animate-pulse':''}`}&gt;
-      &lt;div className="text-[11px] font-semibold truncate"&gt;{ship.frame.name}&lt;/div&gt;
+    &lt;div className={`relative w-28 sm:w-32 p-2 rounded-xl border shadow-sm ${<span class="branch-0 cbranch-no" title="branch not covered" >dead? 'border-zinc-700 bg-zinc-900 opacity-60' : s</span>ide==='P' ? 'border-sky-600/60 bg-slate-900' : 'border-pink-600/60 bg-zinc-900'} ${active? 'ring-2 ring-amber-400 animate-pulse':''}`}&gt;
+      &lt;div className="text-[11px] sm:text-xs font-semibold truncate pr-6"&gt;{ship.frame.name}&lt;/div&gt;
       &lt;div className="text-[10px] opacity-70"&gt;Init {ship.stats.init}&lt;/div&gt;
       &lt;HullPips current={Math.max(0, ship.hull)} max={ship.stats.hullCap} /&gt;
-      &lt;div className="mt-1 text-[10px] opacity-80"&gt;{ship.weapons.map((w:any)=&gt;w.name).join(', '<span class="branch-0 cbranch-no" title="branch not covered" >)||'—'}&lt;</span>/div&gt;
+      &lt;div className="mt-1 text-[10px] opacity-80 line-clamp-2 min-h-[20px]"&gt;{ship.weapons.map((w:Part)=&gt;w.name).join(', '<span class="branch-0 cbranch-no" title="branch not covered" >)||'—'}&lt;</span>/div&gt;
       &lt;div className="absolute top-1 right-1"&gt;&lt;PowerBadge use={ship.stats.powerUse} prod={ship.stats.powerProd} /&gt;&lt;/div&gt;
       {<span class="branch-0 cbranch-no" title="branch not covered" >dead &amp;&amp; &lt;div className="absolute inset-0 grid place-items-center text-2xl text-zinc-300"&gt;✖&lt;/div&gt;}</span>
     &lt;/div&gt;
   );
 }
-export function ItemCard({ item, canAfford, onBuy, ghostDelta }:{item:any, canAfford:boolean, onBuy:()=&gt;void, ghostDelta:any}){
+export function ItemCard({ item, canAfford, onBuy, ghostDelta }:{item:Part, canAfford:boolean, onBuy:()=&gt;void, ghostDelta:GhostDelta}){
   return (
-    &lt;div className="p-3 rounded-xl border border-zinc-700 bg-zinc-900"&gt;
-      &lt;div className="flex items-center justify-between"&gt;
-        &lt;div&gt;&lt;div className="font-medium"&gt;{item.name}&lt;/div&gt;&lt;div className="text-xs opacity-70"&gt;{item.cat} • Tier {item.tier} {"powerProd" in item? `• +⚡${item.powerProd}` : item.powerCost? `• ⚡${item.powerCost}` : ''}&lt;/div&gt;&lt;/div&gt;
-        &lt;div className="text-sm"&gt;{item.cost}¢&lt;/div&gt;
+    &lt;div className={`p-3 rounded-xl border bg-zinc-900 transition ${<span class="branch-0 cbranch-no" title="branch not covered" >canAfford? 'border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800/70' : '</span>border-zinc-800 opacity-90'}`}&gt;
+      &lt;div className="flex items-start justify-between gap-2"&gt;
+        &lt;div&gt;
+          &lt;div className="font-semibold text-sm sm:text-base leading-tight"&gt;{item.name}&lt;/div&gt;
+          &lt;div className="text-[11px] sm:text-xs opacity-70 mt-0.5"&gt;{item.cat} • Tier {item.tier} {"powerProd" in item? `• +⚡${item.powerProd}` : item.powerCost? `• ⚡${item.powerCost}` : ''}&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div className="text-sm sm:text-base font-semibold whitespace-nowrap"&gt;{item.cost}¢&lt;/div&gt;
       &lt;/div&gt;
       {ghostDelta &amp;&amp; (
-        &lt;div className="mt-2 text-xs"&gt;
-          &lt;div className="opacity-70"&gt;After install on {ghostDelta.targetName}:&lt;/div&gt;
-          &lt;div&gt;⚡ {ghostDelta.use}/{ghostDelta.prod} {ghostDelta.valid? '✔️' : '❌'}&lt;/div&gt;
+        &lt;div className="mt-2 text-[11px] sm:text-xs grid grid-cols-2 gap-x-3 gap-y-1"&gt;
+          &lt;div className="col-span-2 opacity-70"&gt;After install on {ghostDelta.targetName}:&lt;/div&gt;
+          &lt;div className={`${ghostDelta.valid? 'text-emerald-300':'text-rose-300'}`}&gt;⚡ {ghostDelta.use}/{ghostDelta.prod} {ghostDelta.valid? '✔️' : '❌'}&lt;/div&gt;
           {ghostDelta.initDelta!==<span class="branch-0 cbranch-no" title="branch not covered" >0 &amp;&amp; &lt;div&gt;Init {ghostDelta.initBefore} → &lt;b&gt;{ghostDelta.initAfter}&lt;/b&gt;&lt;/div&gt;}</span>
           {ghostDelta.hullDelta!==0 &amp;&amp; &lt;div&gt;Hull {ghostDelta.hullBefore} → &lt;b&gt;{ghostDelta.hullAfter}&lt;/b&gt;&lt;/div&gt;}
         &lt;/div&gt;
       )}
-      &lt;button disabled={!canAfford} onClick={onBuy} className={`mt-2 w-full px-3 py-2 rounded-lg ${<span class="branch-0 cbranch-no" title="branch not covered" >canAfford? 'bg-emerald-600 hover:bg-emerald-500':'</span>bg-zinc-700 opacity-60'}`}&gt;Buy &amp; Install&lt;/button&gt;
+      &lt;button disabled={!canAfford} onClick={onBuy} className={`mt-2 w-full px-3 py-2 rounded-lg text-sm sm:text-base ${<span class="branch-0 cbranch-no" title="branch not covered" >canAfford? 'bg-emerald-600 hover:bg-emerald-500 active:scale-[.99]':'</span>bg-zinc-700 opacity-60'}`}&gt;Buy &amp; Install&lt;/button&gt;
     &lt;/div&gt;
   );
 }
 export function ResourceBar({ credits, materials, science, tonnage, sector, onReset }:{credits:number, materials:number, science:number, tonnage:{used:number,cap:number}, sector:number, onReset:()=&gt;void}){
   const used = tonnage.used, cap = tonnage.cap;
+  const over = used&gt;cap;
   return (
-    &lt;div className="sticky top-0 z-10 bg-zinc-950/95 backdrop-blur border-b border-zinc-800 p-3 grid grid-cols-3 gap-2 text-sm"&gt;
-      &lt;div className="px-3 py-2 rounded-lg bg-zinc-900"&gt;💰 &lt;b&gt;{credits}&lt;/b&gt; • 🧱 &lt;b&gt;{materials}&lt;/b&gt; • 🔬 &lt;b&gt;{science}&lt;/b&gt;&lt;/div&gt;
-      &lt;div className={`px-3 py-2 rounded-lg ${used&lt;=cap?<span class="branch-0 cbranch-no" title="branch not covered" >'bg-emerald-950/50 text-emerald-200':'bg-rose-950/50 text-rose-200'}</span>`}&gt;⚓ &lt;b&gt;{used}&lt;/b&gt; / &lt;b&gt;{cap}&lt;/b&gt;&lt;/div&gt;
-      &lt;div className="px-3 py-2 rounded-lg bg-zinc-900 flex items-center justify-between"&gt;🗺️ Sector &lt;b&gt;{sector}&lt;/b&gt; &lt;button onClick={onReset} className="ml-2 px-2 py-1 rounded bg-zinc-800 text-xs"&gt;Reset&lt;/button&gt;&lt;/div&gt;
+    &lt;div className="sticky top-0 z-10 bg-zinc-950/95 backdrop-blur border-b border-zinc-800"&gt;
+      &lt;div className="mx-auto max-w-5xl p-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm sm:text-base"&gt;
+        &lt;div className="px-3 py-2 rounded-lg bg-zinc-900 flex items-center justify-between"&gt;&lt;span&gt;💰 &lt;b&gt;{credits}&lt;/b&gt; • 🧱 &lt;b&gt;{materials}&lt;/b&gt; • 🔬 &lt;b&gt;{science}&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;
+        &lt;div className={`px-3 py-2 rounded-lg ${<span class="branch-0 cbranch-no" title="branch not covered" >over? 'bg-rose-950/50 text-rose-200 ring-1 ring-rose-700/30' : '</span>bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20'}`}&gt;⚓ &lt;b&gt;{used}&lt;/b&gt; / &lt;b&gt;{cap}&lt;/b&gt;&lt;/div&gt;
+        &lt;div className="px-3 py-2 rounded-lg bg-zinc-900 flex items-center justify-between"&gt;🗺️ Sector &lt;b&gt;{sector}&lt;/b&gt; &lt;button onClick={onReset} className="ml-2 px-2 py-1 rounded bg-zinc-800 text-xs"&gt;Reset&lt;/button&gt;&lt;/div&gt;
+      &lt;/div&gt;
     &lt;/div&gt;
   );
 }
@@ -214,7 +289,7 @@ export function ResourceBar({ credits, materials, science, tonnage, sector, onRe
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-24T15:36:09.136Z
+                at 2025-08-24T16:15:15.502Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

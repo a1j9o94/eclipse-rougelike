@@ -4,6 +4,7 @@ import { FRAMES, PARTS, getFrame, successThreshold, rollSuccesses, sizeRank, mak
 import { INITIAL_BLUEPRINTS, INITIAL_RESEARCH, INITIAL_RESOURCES, type Resources, type Research } from './config/defaults'
 import { type FrameId } from './game'
 import { ResourceBar } from './components/ui'
+import { NewRunModal, RulesModal } from './components/modals'
 import OutpostPage from './pages/OutpostPage'
 import CombatPage from './pages/CombatPage'
 import { type Part } from './config/parts'
@@ -264,38 +265,12 @@ export default function EclipseIntegrated(){
     <div className="bg-zinc-950 min-h-screen text-zinc-100">
       {/* New Run Modal */}
       {showNewRun && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 bg-black/70">
-          <div className="w-full max-w-md bg-zinc-900 border border-zinc-700 rounded-2xl p-4">
-            <div className="text-lg font-semibold">Start New Run</div>
-            <div className="text-sm opacity-80 mt-1">Choose difficulty. Easy/Medium grant a grace respawn after a wipe; Hard is a full reset.</div>
-            <div className="grid grid-cols-3 gap-2 mt-3">
-              <button className="px-3 py-2 rounded-xl bg-emerald-700" onClick={()=>newRun('easy')}>Easy (3✈)</button>
-              <button className="px-3 py-2 rounded-xl bg-amber-700" onClick={()=>newRun('medium')}>Medium (2✈)</button>
-              <button className="px-3 py-2 rounded-xl bg-rose-700" onClick={()=>newRun('hard')}>Hard (1✈)</button>
-            </div>
-          </div>
-        </div>
+        <NewRunModal onNewRun={newRun} />
       )}
 
       {/* Rules Modal */}
       {showRules && (
-        <div className="fixed inset-0 z-40 flex items-end sm:items-center justify-center p-3 bg-black/60">
-          <div className="w-full max-w-lg bg-zinc-900 border border-zinc-700 rounded-2xl p-4 shadow-xl">
-            <div className="text-lg font-semibold mb-2">How to Play</div>
-            <div className="text-sm space-y-2 max-h-[60vh] overflow-y-auto pr-1">
-              <div><b>Goal.</b> Clear 10 sectors; bosses at 5 & 10. Lose = entire fleet destroyed.</div>
-              <div><b>Opening.</b> Your first encounter is an immediate skirmish vs a lone Interceptor. After victory, visit the Outpost.</div>
-              <div><b>Loop.</b> Outpost → Combat → Rewards → Return.</div>
-              <div><b>Blueprints.</b> Upgrades apply to the <i>entire class</i>.</div>
-              <div><b>Power & Tiles.</b> Each frame has tile limits; parts consume/produce ⚡. Must have a <i>Source</i> and a <i>Drive</i>.</div>
-              <div><b>Combat.</b> Initiative by Drive; 1s miss / 6s hit; enemies focus <i>lowest hull</i>.</div>
-              <div><b>Economy.</b> Build Interceptor 3🧱+2¢; I→C 3🧱+3¢; C→D 5🧱+4¢; Docks +2 = 4🧱+4¢. Reroll 12¢ +6; Research 40/120¢ + 1/2🔬; Sell 25%.</div>
-              <div><b>Shop.</b> Hull-first guarantees; T1 parts cost ~15–25¢ so you can buy after an early win. Research also bumps reroll cost.</div>
-              <div><b>Difficulty.</b> Easy/Medium grace respawn; Hard resets run.</div>
-            </div>
-            <div className="mt-3"><button onClick={dismissRules} className="w-full px-4 py-2 rounded-xl bg-emerald-600">Let’s go</button></div>
-          </div>
-        </div>
+        <RulesModal onDismiss={dismissRules} />
       )}
 
       <ResourceBar {...resources} tonnage={tonnage} sector={sector} onReset={resetRun} />

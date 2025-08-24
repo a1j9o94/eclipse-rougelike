@@ -306,23 +306,23 @@
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// Core game data and helpers extracted from App
 &nbsp;
 // ------------------------------- Data Models -------------------------------
-import { FRAMES, type FrameId } from '../config/frames'
-import { PARTS, ALL_PARTS } from '../config/parts'
+import { FRAMES, type Frame, type FrameId } from '../config/frames'
+import { PARTS, ALL_PARTS, type Part } from '../config/parts'
 export { FRAMES, type FrameId } from '../config/frames'
-export { PARTS, ALL_PARTS } from '../config/parts'
+export { PARTS, ALL_PARTS, type Part } from '../config/parts'
 export { sectorScaling } from '../config/pacing'
 export { nextTierCost } from '../config/economy'
 &nbsp;
-export const isSource = (p:any)=&gt;"powerProd" in p;
-export const isDrive = (p:any)=&gt;"init" in p;
-export const isWeapon = (p:any)=&gt;"dice" in p;
-export const isComputer = (p:any)=&gt;"aim" in p;
-export const isShield = (p:any)=&gt;"shieldTier" in p;
-export const isHull = (p:any)=&gt;"extraHull" in p;
+export const isSource = (p:Part)=&gt;"powerProd" in p;
+export const isDrive = (p:Part)=&gt;"init" in p;
+export const isWeapon = (p:Part)=&gt;"dice" in p;
+export const isComputer = (p:Part)=&gt;"aim" in p;
+export const isShield = (p:Part)=&gt;"shieldTier" in p;
+export const isHull = (p:Part)=&gt;"extraHull" in p;
 &nbsp;
 // Safe frame lookup to avoid undefined access
 export function getFrame(id: FrameId){
-  const f = (FRAMES as any)[id];
+  const f = (FRAMES)[id];
   if(!f)<span class="branch-0 cbranch-no" title="branch not covered" >{</span>
 <span class="cstat-no" title="statement not covered" >    console.warn("Unknown frame id", id);</span>
 <span class="cstat-no" title="statement not covered" >    return FRAMES.interceptor; // fallback prevents undefined baseHull access</span>
@@ -345,7 +345,7 @@ export <span class="fstat-no" title="function not covered" >function rollSuccess
 <span class="cstat-no" title="statement not covered" >}</span>
 export function sizeRank(frame:{id:string}) { return frame.id === <span class="branch-0 cbranch-no" title="branch not covered" >'dread' ? 3 : f</span>rame.id === <span class="branch-0 cbranch-no" title="branch not covered" >'cruiser' ? 2 : 1</span>; }
 &nbsp;
-export function makeShip(frame:any, parts:any[]){
+export function makeShip(frame:Frame, parts:Part[]){
   // Defensive guard: ensure a valid frame object
   if(!frame || typeof frame.baseHull !== 'number')<span class="branch-0 cbranch-no" title="branch not covered" >{</span>
 <span class="cstat-no" title="statement not covered" >    console.warn('makeShip called with invalid frame', frame);</span>
@@ -357,9 +357,9 @@ export function makeShip(frame:any, parts:any[]){
   const hullParts = parts.filter(isHull);
   const drive = parts.find(isDrive);
   const sources = parts.filter(isSource);
-  const hullCap = frame.baseHull + hullParts.reduce((a:number,h:any)=&gt;a+(h.<span class="branch-0 cbranch-no" title="branch not covered" >extraHull||0),0</span>);
-  const powerProd = sources.reduce((a:number,s:any)=&gt;a+(s.<span class="branch-0 cbranch-no" title="branch not covered" >powerProd||0),0</span>);
-  const powerUse = parts.reduce((a:number,p:any)=&gt;a+(p.powerCost||0),0);
+  const hullCap = frame.baseHull + hullParts.reduce((a:number,h:Part)=&gt;a+(h.<span class="branch-0 cbranch-no" title="branch not covered" >extraHull||0),0</span>);
+  const powerProd = sources.reduce((a:number,s:Part)=&gt;a+(s.<span class="branch-0 cbranch-no" title="branch not covered" >powerProd||0),0</span>);
+  const powerUse = parts.reduce((a:number,p:Part)=&gt;a+(p.powerCost||0),0);
   const valid = !!drive &amp;&amp; sources.length&gt;0 &amp;&amp; powerUse&lt;=powerProd &amp;&amp; parts.length&lt;=frame.tiles;
   return { frame, parts, weapons, computer, shield, hullParts, drive, sources,
     stats:{ hullCap, aim: computer?.aim||0, shieldTier: shield?.shieldTier||0, init: drive?.init||0, powerProd, powerUse, valid },
@@ -369,11 +369,11 @@ export function makeShip(frame:any, parts:any[]){
 export function tierCap(research:{Military:number, Grid:number, Nano:number}){ const avg = ((research.<span class="branch-0 cbranch-no" title="branch not covered" >Military||1) + (r</span>esearch.<span class="branch-0 cbranch-no" title="branch not covered" >Grid||1) + (r</span>esearch.<span class="branch-0 cbranch-no" title="branch not covered" >Nano||1))/3</span>; return Math.max(1, Math.min(3, Math.round(avg))); }
 &nbsp;
 export function rollInventory(research:{Military:number, Grid:number, Nano:number}, count=8){
-  const pool = ALL_PARTS.filter((p:any) =&gt; p.tier &lt;= tierCap(research));
-  const pick = (f:(p:any)=&gt;boolean)=&gt;{ const cand = pool.filter(f); return cand.length? cand[Math.floor(Math.random()*cand.length)<span class="branch-0 cbranch-no" title="branch not covered" >] : null; }</span>;
-  const items:any[] = [];
+  const pool = ALL_PARTS.filter((p:Part) =&gt; p.tier &lt;= tierCap(research));
+  const pick = (f:(p:Part)=&gt;boolean)=&gt;{ const cand = pool.filter(f); return cand.length? cand[Math.floor(Math.random()*cand.length)<span class="branch-0 cbranch-no" title="branch not covered" >] : null; }</span>;
+  const items:Part[] = [];
   // Prioritize Hull → Drive → Source → Weapon → (Shield|Computer)
-  const guarantees = [ ()=&gt;pick(isHull), ()=&gt;pick(isDrive), ()=&gt;pick(isSource), ()=&gt;pick(isWeapon), ()=&gt;pick((p:any)=&gt;isShield(p)||isComputer(p)) ];
+  const guarantees = [ ()=&gt;pick(isHull), ()=&gt;pick(isDrive), ()=&gt;pick(isSource), ()=&gt;pick(isWeapon), ()=&gt;pick((p:Part)=&gt;isShield(p)||isComputer(p)) ];
   for(const g of guarantees){ const it = g(); if(it) items.push(it); }
   while(items.length &lt; count){ items.push(pool[Math.floor(Math.random()*pool.length)]); }
   return items.slice(0,count);
@@ -385,7 +385,7 @@ export function rollInventory(research:{Military:number, Grid:number, Nano:numbe
 // ------------------------------- Enemy Scaling -----------------------------
 // sectorScaling now provided by config/pacing
 &nbsp;
-export <span class="fstat-no" title="function not covered" >function randomEnemyPartsFor(frame:any, playerResearch:{Military:number, Grid:number, Nano:number}, tierBonus:number, boss:boolean){</span>
+export <span class="fstat-no" title="function not covered" >function randomEnemyPartsFor(frame:Frame, playerResearch:{Military:number, Grid:number, Nano:number}, tierBonus:number, boss:boolean){</span>
   // Defensive: ensure a valid frame object
 <span class="cstat-no" title="statement not covered" >  if(!frame){</span>
 <span class="cstat-no" title="statement not covered" >    console.warn('randomEnemyPartsFor called without frame; defaulting to interceptor');</span>
@@ -401,7 +401,7 @@ export <span class="fstat-no" title="function not covered" >function randomEnemy
 <span class="cstat-no" title="statement not covered" >  const hull = cap&gt;=2 ? PARTS.hull[1] : PARTS.hull[0];</span>
 &nbsp;
   // Start with hull-first survivability
-<span class="cstat-no" title="statement not covered" >  let build:any[] = [src, drv, hull, weapon];</span>
+<span class="cstat-no" title="statement not covered" >  let build:Part[] = [src, drv, hull, weapon];</span>
 <span class="cstat-no" title="statement not covered" >  let ship = makeShip(frame, build);</span>
 &nbsp;
   // Boss perks: ensure second weapon and better defense
@@ -430,7 +430,7 @@ export <span class="fstat-no" title="function not covered" >function randomEnemy
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-24T15:36:09.136Z
+                at 2025-08-24T16:15:15.502Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

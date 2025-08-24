@@ -1,5 +1,6 @@
 // React import not required with modern JSX transform
 import { ItemCard, PowerBadge } from '../components/ui'
+import { ECONOMY } from '../config/economy'
 import { type FrameId, isSource } from '../game'
 import { type Resources, type Research } from '../config/defaults'
 import { type Part } from '../config/parts'
@@ -56,16 +57,16 @@ export function OutpostPage({
 }){
   const focusedShip = fleet[focused];
   return (
-    <div>
+    <div className="mx-auto max-w-5xl">
       {/* Shop Header: Reroll + Research */}
       <div className="p-3 border-b border-zinc-800 bg-zinc-950">
-        <div className="flex gap-2 items-center">
-          <button onClick={doReroll} disabled={resources.credits<rerollCost} className={`px-3 py-2 rounded-lg ${resources.credits>=rerollCost?'bg-purple-700':'bg-zinc-700 opacity-60'}`}>Reroll ({rerollCost}¢)</button>
-          <div className="text-xs opacity-70">Reroll +6 after each Reroll/Research</div>
+        <div className="flex gap-2 items-center flex-wrap">
+          <button onClick={doReroll} disabled={resources.credits<rerollCost} className={`px-3 py-2 rounded-lg text-sm sm:text-base ${resources.credits>=rerollCost?'bg-purple-700 hover:bg-purple-600 active:scale-[.99]':'bg-zinc-700 opacity-60'}`}>Reroll ({rerollCost}¢)</button>
+          <div className="text-[11px] sm:text-xs opacity-70">Reroll +{ECONOMY.reroll.increment} after each Reroll/Research</div>
         </div>
         <div className="mt-2 grid grid-cols-3 gap-2 text-sm">
           {(['Military','Grid','Nano'] as const).map(t=> (
-            <button key={t} onClick={()=>researchTrack(t)} disabled={!canResearch(t)} className={`px-3 py-2 rounded-xl ${canResearch(t)?'bg-zinc-900 border border-zinc-700':'bg-zinc-800 opacity-60'}`}>{researchLabel(t)}</button>
+            <button key={t} onClick={()=>researchTrack(t)} disabled={!canResearch(t)} className={`px-3 py-2 rounded-xl leading-tight ${canResearch(t)?'bg-zinc-900 border border-zinc-700 hover:border-zinc-500':'bg-zinc-800 opacity-60'}`}>{researchLabel(t)}</button>
           ))}
         </div>
       </div>
@@ -73,10 +74,10 @@ export function OutpostPage({
       {/* Hangar */}
       <div className="p-3">
         <div className="text-lg font-semibold mb-2">Hangar (Class Blueprints)</div>
-        <div className="grid grid-cols-1 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {fleet.map((s,i)=> (
-            <button key={i} onClick={()=>setFocused(i)} className={`w-full text-left p-3 rounded-xl border mb-1 ${i===focused?'border-sky-400 bg-sky-400/10':'border-zinc-700 bg-zinc-900'}`}>
-              <div className="flex items-center justify-between"><div className="font-semibold">{s.frame.name} <span className="text-xs opacity-70">(t{s.frame.tonnage})</span></div><PowerBadge use={s.stats.powerUse} prod={s.stats.powerProd} /></div>
+            <button key={i} onClick={()=>setFocused(i)} className={`w-full text-left p-3 rounded-xl border transition ${i===focused?'border-sky-400 bg-sky-400/10':'border-zinc-700 bg-zinc-900 hover:border-zinc-600'}`}>
+              <div className="flex items-center justify-between"><div className="font-semibold text-sm sm:text-base">{s.frame.name} <span className="text-xs opacity-70">(t{s.frame.tonnage})</span></div><PowerBadge use={s.stats.powerUse} prod={s.stats.powerProd} /></div>
               <div className="text-xs opacity-80 mt-1">Init {s.stats.init} • Tiles {s.parts.length}/{s.frame.tiles}</div>
               <div className="mt-1">Hull: {s.hull}/{s.stats.hullCap}</div>
               <div className="mt-1 text-xs">Parts: {s.parts.map((p:Part)=>p.name).join(', ')||'—'}</div>
@@ -85,8 +86,8 @@ export function OutpostPage({
           ))}
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <button onClick={buildShip} className="px-3 py-3 rounded-xl bg-sky-600 active:scale-95">Build Interceptor (3🧱 + 2¢)</button>
-          <button onClick={()=>upgradeShip(focused)} className="px-3 py-3 rounded-xl bg-amber-600 active:scale-95">Upgrade Focused</button>
+          <button onClick={buildShip} className="px-3 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 active:scale-95">Build Interceptor ({ECONOMY.buildInterceptor.materials}🧱 + {ECONOMY.buildInterceptor.credits}¢)</button>
+          <button onClick={()=>upgradeShip(focused)} className="px-3 py-3 rounded-xl bg-amber-600 hover:bg-amber-500 active:scale-95">Upgrade Focused</button>
         </div>
         {(() => { const info = upgradeLockInfo(focusedShip); if(!info) return null; const ok = (research.Military||1) >= info.need; return (
           <div className={`mt-2 text-xs px-3 py-2 rounded ${ok? 'bg-emerald-900/30 text-emerald-200':'bg-zinc-900 border border-zinc-700 text-zinc-300'}`}>
@@ -97,7 +98,7 @@ export function OutpostPage({
         {/* Blueprint Manager with Sell */}
         <div className="mt-3">
           <div className="text-sm font-semibold mb-1">Class Blueprint — {focusedShip?.frame.name}</div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {blueprints[focusedShip?.frame.id as FrameId]?.map((p, idx)=> (
               <div key={idx} className="p-2 rounded border border-zinc-700 bg-zinc-900 text-xs">
                 <div className="font-medium text-sm">{p.name}</div>
@@ -115,8 +116,8 @@ export function OutpostPage({
       {/* Outpost Inventory (items) */}
       <div className="p-3">
         <div className="text-lg font-semibold mb-2">Outpost Inventory</div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {shop.items.map((it:Part, i:number)=> { const canAfford = resources.credits >= (it.cost||0); const gd = focusedShip? ghost(focusedShip, it) : null; return (<ItemCard key={i} item={it} canAfford={canAfford} ghostDelta={gd} onBuy={()=>buyAndInstall(it)} />); })}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+          {shop.items.map((it:Part, i:number)=> { const canAfford = resources.credits >= (it.cost||0); const gd = focusedShip? ghost(focusedShip, it) : null; return (<ItemCard key={i} item={it} canAfford={canAfford} ghostDelta={gd as GhostDelta} onBuy={()=>buyAndInstall(it)} />); })}
         </div>
       </div>
 
@@ -124,16 +125,18 @@ export function OutpostPage({
       <div className="px-3 pb-24">
         <div className="font-semibold mb-2">Dock Upgrades</div>
         <div className="grid grid-cols-2 gap-2">
-          <button onClick={upgradeDock} className="px-3 py-3 rounded-xl bg-indigo-600 active:scale-95">Expand Capacity +2 (4🧱 + 4¢)</button>
+          <button onClick={upgradeDock} className="px-3 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95">Expand Capacity +{ECONOMY.dockUpgrade.capacityDelta} ({ECONOMY.dockUpgrade.materials}🧱 + {ECONOMY.dockUpgrade.credits}¢)</button>
           <div className="px-3 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-sm">Capacity: <b>{capacity.cap}</b> • Used: <b>{tonnage.used}</b></div>
         </div>
       </div>
 
       {/* Start Combat */}
-      <div className="sticky bottom-0 z-10 p-3 bg-zinc-950/95 backdrop-blur border-t border-zinc-800 flex items-center gap-2">
-        <button onClick={()=> fleetValid && startCombat()} className={`flex-1 px-4 py-3 rounded-xl ${fleetValid?'bg-emerald-600':'bg-zinc-700 opacity-60'}`}>Start Combat</button>
-        {!fleet.every(s=>s.stats.valid) && <div className="text-xs text-rose-300">Fix fleet (Source + Drive + ⚡ OK)</div>}
-        {tonnage.used > capacity.cap && <div className="text-xs text-rose-300">Over capacity — expand docks</div>}
+      <div className="sticky bottom-0 z-10 p-3 bg-zinc-950/95 backdrop-blur border-t border-zinc-800">
+        <div className="mx-auto max-w-5xl flex items-center gap-2">
+          <button onClick={()=> fleetValid && startCombat()} className={`flex-1 px-4 py-3 rounded-xl ${fleetValid?'bg-emerald-600':'bg-zinc-700 opacity-60'}`}>Start Combat</button>
+          {!fleet.every(s=>s.stats.valid) && <div className="text-xs text-rose-300">Fix fleet (Source + Drive + ⚡ OK)</div>}
+          {tonnage.used > capacity.cap && <div className="text-xs text-rose-300">Over capacity — expand docks</div>}
+        </div>
       </div>
     </div>
   )
