@@ -3,8 +3,8 @@ import { type SectorSpec } from './types'
 export const SECTORS: SectorSpec[] = [
   { sector: 1, enemyTonnage: 1,   enemyTierCap: 1, boss: false },
   { sector: 2, enemyTonnage: 2,   enemyTierCap: 1, boss: false },
-  { sector: 3, enemyTonnage: 3,   enemyTierCap: 1, boss: false },
-  { sector: 4, enemyTonnage: 4,   enemyTierCap: 1, boss: false },
+  { sector: 3, enemyTonnage: 2,   enemyTierCap: 1, boss: false },
+  { sector: 4, enemyTonnage: 3,   enemyTierCap: 1, boss: false },
   { sector: 5, enemyTonnage: 4,   enemyTierCap: 2, boss: true  },
   { sector: 6, enemyTonnage: 5,   enemyTierCap: 1, boss: false },
   { sector: 7, enemyTonnage: 5,   enemyTierCap: 2, boss: false },

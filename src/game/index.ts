@@ -61,7 +61,7 @@ export function makeShip(frame:Frame, parts:Part[]){
     hull: hullCap, alive: true };
 }
 
-export function tierCap(research:{Military:number, Grid:number, Nano:number}){ const avg = ((research.Military||1) + (research.Grid||1) + (research.Nano||1))/3; return Math.max(1, Math.min(3, Math.round(avg))); }
+export function tierCap(research:{Military:number, Grid:number, Nano:number}){ const avg = ((research.Military||1) + (research.Grid||1) + (research.Nano||1))/3; return Math.max(1, Math.min(3, Math.floor(avg))); }
 
 export function rollInventory(research:{Military:number, Grid:number, Nano:number}, count=8){
   const pool = ALL_PARTS.filter((p:Part) => p.tier <= tierCap(research));
