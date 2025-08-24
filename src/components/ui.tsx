@@ -28,6 +28,16 @@ export function CompactShip({ ship, side, active }:{ship:Ship, side:'P'|'E', act
       <div className="text-[11px] sm:text-xs font-semibold truncate pr-6">{ship.frame.name}</div>
       <div className="text-[10px] opacity-70">Init {ship.stats.init}</div>
       <HullPips current={Math.max(0, ship.hull)} max={ship.stats.hullCap} />
+      {/* Dice/Damage summary per weapon */}
+      <div className="mt-1 flex flex-wrap gap-1 min-h-[18px]">
+        {ship.weapons.length>0 ? ship.weapons.map((w:Part, i:number)=> (
+          <span key={i} className="px-1.5 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-[10px] whitespace-nowrap">
+            {w.dice||0}🎲 × {w.dmgPerHit||0}
+          </span>
+        )) : (
+          <span className="text-[10px] opacity-60">No weapons</span>
+        )}
+      </div>
       <div className="mt-1 text-[10px] opacity-80 line-clamp-2 min-h-[20px]">{ship.weapons.map((w:Part)=>w.name).join(', ')||'—'}</div>
       <div className="absolute top-1 right-1"><PowerBadge use={ship.stats.powerUse} prod={ship.stats.powerProd} /></div>
       {dead && <div className="absolute inset-0 grid place-items-center text-2xl text-zinc-300">✖</div>}

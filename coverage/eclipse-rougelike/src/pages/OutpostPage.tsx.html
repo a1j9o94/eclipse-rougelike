@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">98.01% </span>
+                <span class="strong">96.81% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>148/151</span>
+                <span class='fraction'>152/157</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">45.23% </span>
+                <span class="strong">43.47% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>19/42</span>
+                <span class='fraction'>20/46</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">98.01% </span>
+                <span class="strong">96.81% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>148/151</span>
+                <span class='fraction'>152/157</span>
             </div>
         
             
@@ -258,7 +258,13 @@
 <a name='L193'></a><a href='#L193'>193</a>
 <a name='L194'></a><a href='#L194'>194</a>
 <a name='L195'></a><a href='#L195'>195</a>
-<a name='L196'></a><a href='#L196'>196</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L196'></a><a href='#L196'>196</a>
+<a name='L197'></a><a href='#L197'>197</a>
+<a name='L198'></a><a href='#L198'>198</a>
+<a name='L199'></a><a href='#L199'>199</a>
+<a name='L200'></a><a href='#L200'>200</a>
+<a name='L201'></a><a href='#L201'>201</a>
+<a name='L202'></a><a href='#L202'>202</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -319,6 +325,12 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">2x</span>
@@ -515,6 +527,12 @@ export function OutpostPage({
   const focusedShip = fleet[focused];
   const [showPlan, setShowPlan] = useState(false);
   const tracks = ['Military','Grid','Nano'] as const;
+  const nextUpgrade = (()=&gt;{
+    if(!focusedShip) <span class="branch-0 cbranch-no" title="branch not covered" >return null;</span>
+    if(focusedShip.frame.id==='interceptor') return ECONOMY.upgradeCosts.<span class="branch-0 cbranch-no" title="branch not covered" >interceptorToCruiser;</span>
+<span class="cstat-no" title="statement not covered" >    if(focusedShip.frame.id==='cruiser') return ECONOMY.upgradeCosts.cruiserToDread;</span>
+<span class="cstat-no" title="statement not covered" >    return null;</span>
+  })();
   function nextUnlocksFor(track:'Military'|'Grid'|'Nano'){
     const curr = (research as Research)[track<span class="branch-0 cbranch-no" title="branch not covered" >]||1;</span>
     const next = Math.min(3, curr+1);
@@ -590,7 +608,7 @@ export function OutpostPage({
         &lt;/div&gt;
         &lt;div className="mt-3 grid grid-cols-2 gap-2"&gt;
           &lt;button onClick={buildShip} className="px-3 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 active:scale-95"&gt;Build Interceptor ({ECONOMY.buildInterceptor.materials}🧱 + {ECONOMY.buildInterceptor.credits}¢)&lt;/button&gt;
-          &lt;button onClick={<span class="fstat-no" title="function not covered" >()=&gt;upgradeShip(focused)} c</span>lassName="px-3 py-3 rounded-xl bg-amber-600 hover:bg-amber-500 active:scale-95"&gt;Upgrade Focused&lt;/button&gt;
+          &lt;button onClick={<span class="fstat-no" title="function not covered" >()=&gt;upgradeShip(focused)} c</span>lassName="px-3 py-3 rounded-xl bg-amber-600 hover:bg-amber-500 active:scale-95"&gt;Upgrade Focused {nextUpgrade ? `(${nextUpgrade.materials}🧱 + ${nextUpgrade.credits<span class="branch-0 cbranch-no" title="branch not covered" >}¢)` : ''}&lt;</span>/button&gt;
         &lt;/div&gt;
         {(() =&gt; { const info = upgradeLockInfo(focusedShip); if(!info) <span class="branch-0 cbranch-no" title="branch not covered" >return null; c</span>onst ok = (research.<span class="branch-0 cbranch-no" title="branch not covered" >Military||1) &gt;= i</span>nfo.need; return (
           &lt;div className={`mt-2 text-xs px-3 py-2 rounded ${<span class="branch-0 cbranch-no" title="branch not covered" >ok? 'bg-emerald-900/30 text-emerald-200':'</span>bg-zinc-900 border border-zinc-700 text-zinc-300'}`}&gt;
@@ -655,7 +673,7 @@ export default OutpostPage
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-24T17:11:01.048Z
+                at 2025-08-24T22:43:51.943Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

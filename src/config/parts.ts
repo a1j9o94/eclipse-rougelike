@@ -39,9 +39,9 @@ export const PARTS: PartCatalog = {
     { id: "warp_drive", name: "Warp Drive", init: 3, powerCost: 3, tier: 3, cost: 95, cat: "Drive", tech_category: "Grid" },
   ],
   weapons: [
-    { id: "plasma", name: "Plasma Cannon", dice: 2, dmgPerHit: 1, powerCost: 1, tier: 1, cost: 25, cat: "Weapon", tech_category: "Nano" },
-    { id: "antimatter", name: "Antimatter Cannon", dice: 4, dmgPerHit: 2, powerCost: 2, tier: 2, cost: 75, cat: "Weapon", tech_category: "Nano" },
-    { id: "singularity", name: "Singularity Launcher", dice: 5, dmgPerHit: 3, powerCost: 3, tier: 3, cost: 120, cat: "Weapon", tech_category: "Nano" },
+    { id: "plasma", name: "Plasma Cannon", dice: 1, dmgPerHit: 1, powerCost: 1, tier: 1, cost: 25, cat: "Weapon", tech_category: "Nano" },
+    { id: "antimatter", name: "Antimatter Cannon", dice: 1, dmgPerHit: 2, powerCost: 2, tier: 2, cost: 75, cat: "Weapon", tech_category: "Nano" },
+    { id: "singularity", name: "Singularity Launcher", dice: 1, dmgPerHit: 3, powerCost: 3, tier: 3, cost: 120, cat: "Weapon", tech_category: "Nano" },
   ],
   computers: [
     { id: "positron", name: "Positron Computer", aim: 1, powerCost: 1, tier: 1, cost: 25, cat: "Computer", tech_category: "Grid" },
@@ -54,8 +54,8 @@ export const PARTS: PartCatalog = {
     { id: "omega", name: "Omega Shield", shieldTier: 3, powerCost: 3, tier: 3, cost: 100, cat: "Shield", tech_category: "Nano" },
   ],
   hull: [
-    { id: "improved", name: "Improved Hull", extraHull: 1, powerCost: 0, tier: 1, cost: 22, cat: "Hull", tech_category: "Nano" },
-    { id: "reinforced", name: "Reinforced Hull", extraHull: 2, powerCost: 0, tier: 2, cost: 70, cat: "Hull", tech_category: "Nano" },
+    { id: "improved", name: "Improved Hull", extraHull: 1, powerCost: 0, tier: 2, cost: 22, cat: "Hull", tech_category: "Nano" },
+    { id: "reinforced", name: "Reinforced Hull", extraHull: 2, powerCost: 0, tier: 3, cost: 70, cat: "Hull", tech_category: "Nano" },
     { id: "adamantine", name: "Adamantine Hull", extraHull: 3, powerCost: 0, tier: 3, cost: 110, cat: "Hull", tech_category: "Nano" },
   ],
 } as const;

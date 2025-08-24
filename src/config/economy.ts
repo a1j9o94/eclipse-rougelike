@@ -11,8 +11,8 @@ export const ECONOMY = {
 } as const;
 
 export function nextTierCost(curr:number){
-  if(curr===1) return { c:40, s:1 } as const;
-  if(curr===2) return { c:120, s:2 } as const;
+  if(curr===1) return { c:30, s:1 } as const;
+  if(curr===2) return { c:60, s:2 } as const;
   return null;
 }
 
