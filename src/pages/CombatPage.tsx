@@ -1,5 +1,6 @@
 // React import not required with modern JSX transform
 import { CompactShip } from '../components/ui'
+import { type Ship, type InitiativeEntry } from '../config/types'
 
 export function CombatPage({
   combatOver,
@@ -19,10 +20,10 @@ export function CombatPage({
   combatOver:boolean,
   outcome:string,
   roundNum:number,
-  queue:any[],
+  queue:InitiativeEntry[],
   turnPtr:number,
-  fleet:any[],
-  enemyFleet:any[],
+  fleet:Ship[],
+  enemyFleet:Ship[],
   log:string[],
   stepTurn:()=>void,
   initRoundIfNeeded:()=>boolean,
