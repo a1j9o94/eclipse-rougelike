@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>34/34</span>
+                <span class='fraction'>40/40</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>34/34</span>
+                <span class='fraction'>40/40</span>
             </div>
         
             
@@ -117,7 +117,25 @@
 <a name='L52'></a><a href='#L52'>52</a>
 <a name='L53'></a><a href='#L53'>53</a>
 <a name='L54'></a><a href='#L54'>54</a>
-<a name='L55'></a><a href='#L55'>55</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -134,6 +152,24 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -171,7 +207,10 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">export type Part = {
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">export type TechTrack = 'Military' | 'Grid' | 'Nano';
+export type PartCategory = 'Source' | 'Drive' | 'Weapon' | 'Computer' | 'Shield' | 'Hull';
+&nbsp;
+export type Part = {
   id: string;
   name: string;
   powerProd?: number;
@@ -184,38 +223,53 @@
   aim?: number;
   tier: number;
   cost: number;
-  tech_category: 'Military' | 'Grid' | 'Nano';
-  cat: 'Source' | 'Drive' | 'Weapon' | 'Computer' | 'Shield' | 'Hull';
+  tech_category: TechTrack;
+  cat: PartCategory;
 };
 &nbsp;
-export const PARTS: Record&lt;string, Part[]&gt; = {
+export type PartCatalog = {
+  sources: Part[];
+  drives: Part[];
+  weapons: Part[];
+  computers: Part[];
+  shields: Part[];
+  hull: Part[];
+}
+&nbsp;
+export const PARTS: PartCatalog = {
   sources: [
-    { id: "fusion_source", name: "Fusion Source", powerProd: 3, tier: 1, cost: 18, cat: "Source", tech_category: "Military" },
-    { id: "tachyon_source", name: "Tachyon Source", powerProd: 5, tier: 2, cost: 60, cat: "Source", tech_category: "Military" },
+    { id: "fusion_source", name: "Fusion Source", powerProd: 3, tier: 1, cost: 18, cat: "Source", tech_category: "Grid" },
+    { id: "tachyon_source", name: "Tachyon Source", powerProd: 5, tier: 2, cost: 60, cat: "Source", tech_category: "Grid" },
+    { id: "quantum_source", name: "Quantum Source", powerProd: 7, tier: 3, cost: 120, cat: "Source", tech_category: "Grid" },
   ],
   drives: [
-    { id: "fusion_drive", name: "Fusion Drive", init: 1, powerCost: 1, tier: 1, cost: 18, cat: "Drive", tech_category: "Military" },
-    { id: "tachyon_drive", name: "Tachyon Drive", init: 2, powerCost: 2, tier: 2, cost: 55, cat: "Drive", tech_category: "Military" },
+    { id: "fusion_drive", name: "Fusion Drive", init: 1, powerCost: 1, tier: 1, cost: 18, cat: "Drive", tech_category: "Grid" },
+    { id: "tachyon_drive", name: "Tachyon Drive", init: 2, powerCost: 2, tier: 2, cost: 55, cat: "Drive", tech_category: "Grid" },
+    { id: "warp_drive", name: "Warp Drive", init: 3, powerCost: 3, tier: 3, cost: 95, cat: "Drive", tech_category: "Grid" },
   ],
   weapons: [
-    { id: "plasma", name: "Plasma Cannon", dice: 2, dmgPerHit: 1, powerCost: 1, tier: 1, cost: 25, cat: "Weapon", tech_category: "Military" },
-    { id: "antimatter", name: "Antimatter Cannon", dice: 4, dmgPerHit: 2, powerCost: 2, tier: 2, cost: 75, cat: "Weapon", tech_category: "Military" },
+    { id: "plasma", name: "Plasma Cannon", dice: 2, dmgPerHit: 1, powerCost: 1, tier: 1, cost: 25, cat: "Weapon", tech_category: "Nano" },
+    { id: "antimatter", name: "Antimatter Cannon", dice: 4, dmgPerHit: 2, powerCost: 2, tier: 2, cost: 75, cat: "Weapon", tech_category: "Nano" },
+    { id: "singularity", name: "Singularity Launcher", dice: 5, dmgPerHit: 3, powerCost: 3, tier: 3, cost: 120, cat: "Weapon", tech_category: "Nano" },
   ],
   computers: [
-    { id: "positron", name: "Positron Computer", aim: 1, powerCost: 1, tier: 1, cost: 25, cat: "Computer", tech_category: "Military" },
-    { id: "gluon", name: "Gluon Computer", aim: 2, powerCost: 2, tier: 2, cost: 60, cat: "Computer", tech_category: "Military" },
+    { id: "positron", name: "Positron Computer", aim: 1, powerCost: 1, tier: 1, cost: 25, cat: "Computer", tech_category: "Grid" },
+    { id: "gluon", name: "Gluon Computer", aim: 2, powerCost: 2, tier: 2, cost: 60, cat: "Computer", tech_category: "Grid" },
+    { id: "neutrino", name: "Neutrino Computer", aim: 3, powerCost: 3, tier: 3, cost: 100, cat: "Computer", tech_category: "Grid" },
   ],
   shields: [
-    { id: "gauss", name: "Gauss Shield", shieldTier: 1, powerCost: 1, tier: 1, cost: 20, cat: "Shield", tech_category: "Military" },
-    { id: "phase", name: "Phase Shield", shieldTier: 2, powerCost: 2, tier: 2, cost: 60, cat: "Shield", tech_category: "Military" },
+    { id: "gauss", name: "Gauss Shield", shieldTier: 1, powerCost: 1, tier: 1, cost: 20, cat: "Shield", tech_category: "Nano" },
+    { id: "phase", name: "Phase Shield", shieldTier: 2, powerCost: 2, tier: 2, cost: 60, cat: "Shield", tech_category: "Nano" },
+    { id: "omega", name: "Omega Shield", shieldTier: 3, powerCost: 3, tier: 3, cost: 100, cat: "Shield", tech_category: "Nano" },
   ],
   hull: [
-    { id: "improved", name: "Improved Hull", extraHull: 1, powerCost: 0, tier: 1, cost: 22, cat: "Hull", tech_category: "Military" },
-    { id: "reinforced", name: "Reinforced Hull", extraHull: 2, powerCost: 0, tier: 2, cost: 70, cat: "Hull", tech_category: "Military" },
+    { id: "improved", name: "Improved Hull", extraHull: 1, powerCost: 0, tier: 1, cost: 22, cat: "Hull", tech_category: "Nano" },
+    { id: "reinforced", name: "Reinforced Hull", extraHull: 2, powerCost: 0, tier: 2, cost: 70, cat: "Hull", tech_category: "Nano" },
+    { id: "adamantine", name: "Adamantine Hull", extraHull: 3, powerCost: 0, tier: 3, cost: 110, cat: "Hull", tech_category: "Nano" },
   ],
 } as const;
 &nbsp;
-export const ALL_PARTS = [
+export const ALL_PARTS: Part[] = [
   ...PARTS.sources,
   ...PARTS.drives,
   ...PARTS.weapons,
@@ -232,7 +286,7 @@ export const ALL_PARTS = [
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-24T16:15:15.502Z
+                at 2025-08-24T16:43:14.375Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

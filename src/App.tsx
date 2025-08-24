@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import './index.css'
 import { FRAMES, PARTS, getFrame, successThreshold, rollSuccesses, sizeRank, makeShip, rollInventory, sectorScaling, randomEnemyPartsFor, nextTierCost, isSource, isHull, isDrive, isWeapon } from './game'
 import { INITIAL_BLUEPRINTS, INITIAL_RESEARCH, INITIAL_RESOURCES, type Resources, type Research } from './config/defaults'
+import { ECONOMY } from './config/economy'
 import { type FrameId } from './game'
 import { ResourceBar } from './components/ui'
 import { NewRunModal, RulesModal } from './components/modals'
@@ -155,7 +156,11 @@ export default function EclipseIntegrated(){
         resetRun();
       } else {
         setFleet([ makeShip(getFrame('interceptor'), [ ...blueprints.interceptor ]) ]);
-        setResources(r=>({ ...r, credits: 0, materials: 0 }));
+        setResources(r=>({
+          ...r,
+          credits: Math.max(r.credits, ECONOMY.buildInterceptor.credits),
+          materials: Math.max(r.materials, ECONOMY.buildInterceptor.materials)
+        }));
         setMode('OUTPOST');
         setShop({ items: rollInventory(research as Research, 8) });
       }

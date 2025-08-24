@@ -1,7 +1,7 @@
 // React import not required with modern JSX transform
 import { ItemCard, PowerBadge } from '../components/ui'
 import { ECONOMY } from '../config/economy'
-import { type FrameId, isSource } from '../game'
+import { type FrameId, isSource, ALL_PARTS } from '../game'
 import { type Resources, type Research } from '../config/defaults'
 import { type Part } from '../config/parts'
 import { type Ship, type GhostDelta } from '../config/types'
@@ -56,6 +56,21 @@ export function OutpostPage({
   startCombat:()=>void,
 }){
   const focusedShip = fleet[focused];
+  const tracks = ['Military','Grid','Nano'] as const;
+  function nextUnlocksFor(track:'Military'|'Grid'|'Nano'){
+    const curr = (research as Research)[track]||1;
+    const next = Math.min(3, curr+1);
+    const items = ALL_PARTS.filter(p=> p.tech_category===track && p.tier===next);
+    return items;
+  }
+  function militaryNextNote(){
+    const curr = (research as Research).Military||1;
+    if(curr>=3) return 'Maxed — no further ship tiers';
+    const next = curr+1;
+    if(next===2) return 'Unlocks class upgrade: Interceptor → Cruiser';
+    if(next===3) return 'Unlocks class upgrade: Cruiser → Dreadnought';
+    return '';
+  }
   return (
     <div className="mx-auto max-w-5xl">
       {/* Shop Header: Reroll + Research */}
@@ -65,9 +80,36 @@ export function OutpostPage({
           <div className="text-[11px] sm:text-xs opacity-70">Reroll +{ECONOMY.reroll.increment} after each Reroll/Research</div>
         </div>
         <div className="mt-2 grid grid-cols-3 gap-2 text-sm">
-          {(['Military','Grid','Nano'] as const).map(t=> (
+          {tracks.map(t=> (
             <button key={t} onClick={()=>researchTrack(t)} disabled={!canResearch(t)} className={`px-3 py-2 rounded-xl leading-tight ${canResearch(t)?'bg-zinc-900 border border-zinc-700 hover:border-zinc-500':'bg-zinc-800 opacity-60'}`}>{researchLabel(t)}</button>
           ))}
+        </div>
+        <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
+          {tracks.map(t=> {
+            if(t==='Military'){
+              const note = militaryNextNote();
+              return (
+                <div key={t} className="text-[11px] sm:text-xs px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800">
+                  <div className="font-medium mb-1">{t} — Next unlock</div>
+                  <div className="opacity-80">{note}</div>
+                </div>
+              );
+            }
+            const nxt = nextUnlocksFor(t); const preview = nxt.slice(0,3); const more = Math.max(0, nxt.length - preview.length);
+            return (
+              <div key={t} className="text-[11px] sm:text-xs px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800">
+                <div className="font-medium mb-1">{t} — Next unlocks</div>
+                {nxt.length===0 ? (
+                  <div className="opacity-70">Maxed or no new parts at next tier</div>
+                ) : (
+                  <div className="space-y-0.5">
+                    {preview.map((p, i)=> (<div key={i} className="flex items-center justify-between"><span>{p.name}</span><span className="opacity-60">{p.cat} • T{p.tier}</span></div>))}
+                    {more>0 && <div className="opacity-60">+{more} more…</div>}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
