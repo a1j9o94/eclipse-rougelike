@@ -5,7 +5,7 @@ import { FRAMES, type Frame, type FrameId } from '../config/frames'
 import { PARTS, ALL_PARTS, type Part } from '../config/parts'
 export { FRAMES, type FrameId } from '../config/frames'
 export { PARTS, ALL_PARTS, type Part } from '../config/parts'
-export { sectorScaling } from '../config/pacing'
+export { getSectorSpec, SECTORS } from '../config/pacing'
 export { nextTierCost } from '../config/economy'
 
 export const isSource = (p:Part)=>"powerProd" in p;

@@ -1,5 +1,7 @@
 // React import not required with modern JSX transform
+import { useState } from 'react'
 import { ItemCard, PowerBadge } from '../components/ui'
+import { CombatPlanModal } from '../components/modals'
 import { ECONOMY } from '../config/economy'
 import { type FrameId, isSource, ALL_PARTS } from '../game'
 import { type Resources, type Research } from '../config/defaults'
@@ -56,6 +58,7 @@ export function OutpostPage({
   startCombat:()=>void,
 }){
   const focusedShip = fleet[focused];
+  const [showPlan, setShowPlan] = useState(false);
   const tracks = ['Military','Grid','Nano'] as const;
   function nextUnlocksFor(track:'Military'|'Grid'|'Nano'){
     const curr = (research as Research)[track]||1;
@@ -78,6 +81,8 @@ export function OutpostPage({
         <div className="flex gap-2 items-center flex-wrap">
           <button onClick={doReroll} disabled={resources.credits<rerollCost} className={`px-3 py-2 rounded-lg text-sm sm:text-base ${resources.credits>=rerollCost?'bg-purple-700 hover:bg-purple-600 active:scale-[.99]':'bg-zinc-700 opacity-60'}`}>Reroll ({rerollCost}¢)</button>
           <div className="text-[11px] sm:text-xs opacity-70">Reroll +{ECONOMY.reroll.increment} after each Reroll/Research</div>
+          <div className="flex-1" />
+          <button onClick={()=>setShowPlan(true)} className="px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs">📋 Combat Plan</button>
         </div>
         <div className="mt-2 grid grid-cols-3 gap-2 text-sm">
           {tracks.map(t=> (
@@ -112,6 +117,7 @@ export function OutpostPage({
           })}
         </div>
       </div>
+      {showPlan && <CombatPlanModal onClose={()=>setShowPlan(false)} />}
 
       {/* Hangar */}
       <div className="p-3">

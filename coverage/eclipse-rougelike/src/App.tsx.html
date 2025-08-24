@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">65.5% </span>
+                <span class="strong">65% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>169/258</span>
+                <span class='fraction'>169/260</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">65.5% </span>
+                <span class="strong">65% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>169/258</span>
+                <span class='fraction'>169/260</span>
             </div>
         
             
@@ -402,7 +402,9 @@
 <a name='L337'></a><a href='#L337'>337</a>
 <a name='L338'></a><a href='#L338'>338</a>
 <a name='L339'></a><a href='#L339'>339</a>
-<a name='L340'></a><a href='#L340'>340</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L340'></a><a href='#L340'>340</a>
+<a name='L341'></a><a href='#L341'>341</a>
+<a name='L342'></a><a href='#L342'>342</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -574,6 +576,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -743,7 +747,7 @@
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { useEffect, useMemo, useState } from "react";
 import './index.css'
-import { FRAMES, PARTS, getFrame, successThreshold, rollSuccesses, sizeRank, makeShip, rollInventory, sectorScaling, randomEnemyPartsFor, nextTierCost, isSource, isHull, isDrive, isWeapon } from './game'
+import { FRAMES, PARTS, getFrame, successThreshold, rollSuccesses, sizeRank, makeShip, rollInventory, randomEnemyPartsFor, nextTierCost, isSource, isHull, isDrive, isWeapon, getSectorSpec, SECTORS } from './game'
 import { INITIAL_BLUEPRINTS, INITIAL_RESEARCH, INITIAL_RESOURCES, type Resources, type Research } from './config/defaults'
 import { ECONOMY } from './config/economy'
 import { type FrameId } from './game'
@@ -912,10 +916,11 @@ export default function EclipseIntegrated(){
 &nbsp;
 &nbsp;
   // ---------- Enemy Generation ----------
-<span class="fstat-no" title="function not covered" >  function genEnemyFleet(matchTonnage:number){</span>
-<span class="cstat-no" title="statement not covered" >    const { tonBonus, tierBonus, boss } = sectorScaling(sector);</span>
+<span class="fstat-no" title="function not covered" >  function genEnemyFleet(){</span>
+<span class="cstat-no" title="statement not covered" >    const spec = getSectorSpec(sector);</span>
+<span class="cstat-no" title="statement not covered" >    const boss = spec.boss;</span>
 <span class="cstat-no" title="statement not covered" >    const options = [FRAMES.dread, FRAMES.cruiser, FRAMES.interceptor];</span>
-<span class="cstat-no" title="statement not covered" >    let remaining = Math.max(1, matchTonnage + tonBonus);</span>
+<span class="cstat-no" title="statement not covered" >    let remaining = Math.max(1, spec.enemyTonnage);</span>
 <span class="cstat-no" title="statement not covered" >    const ships:Ship[] = [] as unknown as Ship[];</span>
 <span class="cstat-no" title="statement not covered" >    let bossAssigned = false;</span>
 <span class="cstat-no" title="statement not covered" >    const minTonnage = Math.min(...options.map(f=&gt;f.tonnage));</span>
@@ -923,7 +928,8 @@ export default function EclipseIntegrated(){
 <span class="cstat-no" title="statement not covered" >      const viable = options.filter(f =&gt; f.tonnage &lt;= remaining);</span>
 <span class="cstat-no" title="statement not covered" >      if(viable.length === 0) break;</span>
 <span class="cstat-no" title="statement not covered" >      const pick = viable[Math.floor(Math.random()*viable.length)];</span>
-<span class="cstat-no" title="statement not covered" >      const parts = randomEnemyPartsFor(pick, research as Research, tierBonus as number, boss &amp;&amp; !bossAssigned);</span>
+<span class="cstat-no" title="statement not covered" >      const tierBonus = Math.max(0, spec.enemyTierCap - 1);</span>
+<span class="cstat-no" title="statement not covered" >      const parts = randomEnemyPartsFor(pick, research as Research, tierBonus, boss &amp;&amp; !bossAssigned);</span>
 <span class="cstat-no" title="statement not covered" >      ships.push(makeShip(pick, parts));</span>
 <span class="cstat-no" title="statement not covered" >      if(boss &amp;&amp; !bossAssigned &amp;&amp; pick.id!=='interceptor') bossAssigned = true;</span>
 <span class="cstat-no" title="statement not covered" >      remaining -= pick.tonnage;</span>
@@ -944,7 +950,7 @@ export default function EclipseIntegrated(){
 <span class="cstat-no" title="statement not covered" >  }</span>
 <span class="fstat-no" title="function not covered" >  function volley(attacker:Ship, defender:Ship, side:'P'|'E', logArr:string[]){ const thr = successThreshold(attacker.stats.aim, defender.stats.shieldTier); attacker.weapons.forEach((w:Part) =&gt; { const succ = rollSuccesses(w.dice||0, thr); const dmg = succ * (w.dmgPerHit||0); if (succ &gt; 0) { defender.hull -= dmg; logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} → ${defender.frame.name} | ${w.name}: ${succ} hit(s) → ${dmg} hull (thr ≥ ${thr})`); if (defender.hull &lt;= 0) { defender.alive = false; defender.hull = 0; logArr.push(`💥 ${defender.frame.name} destroyed!`); } } else { logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} misses with ${w.name} (thr ≥ ${thr})`); } }); }</span>
 &nbsp;
-<span class="fstat-no" title="function not covered" >  function startCombat(){ const enemy = genEnemyFleet(tonnage.used); setEnemyFleet(enemy); setLog([`Sector ${sector}: Engagement begins — enemy tonnage ~${tonnage.used}`]); setRoundNum(1); setQueue([]); setTurnPtr(-1); setAuto(false); setCombatOver(false); setOutcome(''); setRewardPaid(false); setMode('COMBAT'); }</span>
+<span class="fstat-no" title="function not covered" >  function startCombat(){ const spec = getSectorSpec(sector); const enemy = genEnemyFleet(); setEnemyFleet(enemy); setLog([`Sector ${sector}: Engagement begins — enemy tonnage ${spec.enemyTonnage}`]); setRoundNum(1); setQueue([]); setTurnPtr(-1); setAuto(false); setCombatOver(false); setOutcome(''); setRewardPaid(false); setMode('COMBAT'); }</span>
   function startFirstCombat(){ // tutorial fight vs one interceptor
     const enemy = [ makeShip(getFrame('interceptor'), [PARTS.sources[0], PARTS.drives[0], PARTS.weapons[0]]) ];
     setEnemyFleet(enemy);
@@ -1087,7 +1093,7 @@ export default function EclipseIntegrated(){
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-24T16:43:14.375Z
+                at 2025-08-24T17:11:01.048Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

@@ -12,8 +12,8 @@ describe('App integration', () => {
     fireEvent.click(screen.getByRole('button', { name: /Easy/i }))
 
     // Should be in Combat mode (first tutorial fight)
-    expect(screen.getByText(/Enemy/i)).toBeInTheDocument()
-    expect(screen.getByText(/Player/i)).toBeInTheDocument()
+    expect(screen.getByText(/^Enemy$/i)).toBeInTheDocument()
+    expect(screen.getByText(/^Player$/i)).toBeInTheDocument()
 
     // Step once
     fireEvent.click(screen.getByRole('button', { name: /Step/i }))

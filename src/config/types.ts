@@ -32,4 +32,11 @@ export type InitiativeEntry = {
   size: number;
 }
 
+export type SectorSpec = {
+  sector: number;
+  enemyTonnage: number;
+  enemyTierCap: 1|2|3;
+  boss: boolean;
+}
+
 

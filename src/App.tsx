@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import './index.css'
-import { FRAMES, PARTS, getFrame, successThreshold, rollSuccesses, sizeRank, makeShip, rollInventory, sectorScaling, randomEnemyPartsFor, nextTierCost, isSource, isHull, isDrive, isWeapon } from './game'
+import { FRAMES, PARTS, getFrame, successThreshold, rollSuccesses, sizeRank, makeShip, rollInventory, randomEnemyPartsFor, nextTierCost, isSource, isHull, isDrive, isWeapon, getSectorSpec, SECTORS } from './game'
 import { INITIAL_BLUEPRINTS, INITIAL_RESEARCH, INITIAL_RESOURCES, type Resources, type Research } from './config/defaults'
 import { ECONOMY } from './config/economy'
 import { type FrameId } from './game'
@@ -169,10 +169,11 @@ export default function EclipseIntegrated(){
 
 
   // ---------- Enemy Generation ----------
-  function genEnemyFleet(matchTonnage:number){
-    const { tonBonus, tierBonus, boss } = sectorScaling(sector);
+  function genEnemyFleet(){
+    const spec = getSectorSpec(sector);
+    const boss = spec.boss;
     const options = [FRAMES.dread, FRAMES.cruiser, FRAMES.interceptor];
-    let remaining = Math.max(1, matchTonnage + tonBonus);
+    let remaining = Math.max(1, spec.enemyTonnage);
     const ships:Ship[] = [] as unknown as Ship[];
     let bossAssigned = false;
     const minTonnage = Math.min(...options.map(f=>f.tonnage));
@@ -180,7 +181,8 @@ export default function EclipseIntegrated(){
       const viable = options.filter(f => f.tonnage <= remaining);
       if(viable.length === 0) break;
       const pick = viable[Math.floor(Math.random()*viable.length)];
-      const parts = randomEnemyPartsFor(pick, research as Research, tierBonus as number, boss && !bossAssigned);
+      const tierBonus = Math.max(0, spec.enemyTierCap - 1);
+      const parts = randomEnemyPartsFor(pick, research as Research, tierBonus, boss && !bossAssigned);
       ships.push(makeShip(pick, parts));
       if(boss && !bossAssigned && pick.id!=='interceptor') bossAssigned = true;
       remaining -= pick.tonnage;
@@ -201,7 +203,7 @@ export default function EclipseIntegrated(){
   }
   function volley(attacker:Ship, defender:Ship, side:'P'|'E', logArr:string[]){ const thr = successThreshold(attacker.stats.aim, defender.stats.shieldTier); attacker.weapons.forEach((w:Part) => { const succ = rollSuccesses(w.dice||0, thr); const dmg = succ * (w.dmgPerHit||0); if (succ > 0) { defender.hull -= dmg; logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} → ${defender.frame.name} | ${w.name}: ${succ} hit(s) → ${dmg} hull (thr ≥ ${thr})`); if (defender.hull <= 0) { defender.alive = false; defender.hull = 0; logArr.push(`💥 ${defender.frame.name} destroyed!`); } } else { logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} misses with ${w.name} (thr ≥ ${thr})`); } }); }
 
-  function startCombat(){ const enemy = genEnemyFleet(tonnage.used); setEnemyFleet(enemy); setLog([`Sector ${sector}: Engagement begins — enemy tonnage ~${tonnage.used}`]); setRoundNum(1); setQueue([]); setTurnPtr(-1); setAuto(false); setCombatOver(false); setOutcome(''); setRewardPaid(false); setMode('COMBAT'); }
+  function startCombat(){ const spec = getSectorSpec(sector); const enemy = genEnemyFleet(); setEnemyFleet(enemy); setLog([`Sector ${sector}: Engagement begins — enemy tonnage ${spec.enemyTonnage}`]); setRoundNum(1); setQueue([]); setTurnPtr(-1); setAuto(false); setCombatOver(false); setOutcome(''); setRewardPaid(false); setMode('COMBAT'); }
   function startFirstCombat(){ // tutorial fight vs one interceptor
     const enemy = [ makeShip(getFrame('interceptor'), [PARTS.sources[0], PARTS.drives[0], PARTS.weapons[0]]) ];
     setEnemyFleet(enemy);
