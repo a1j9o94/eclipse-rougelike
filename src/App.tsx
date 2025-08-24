@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import './index.css'
+import { FRAMES, PARTS, getFrame, successThreshold, rollSuccesses, sizeRank, makeShip, rollInventory, sectorScaling, randomEnemyPartsFor, nextTierCost, isSource, isHull, isDrive, isWeapon } from './game'
+import { type FrameId } from './game'
+import { ResourceBar } from './components/ui'
+import OutpostPage from './pages/OutpostPage'
+import CombatPage from './pages/CombatPage'
 
 /**
  * Eclipse Roguelike — Integrated App (v3.24)
@@ -13,214 +18,7 @@ import './index.css'
  * - Added runtime self-tests for makeShip on all frames and safe lookups.
  */
 
-// ------------------------------- Data Models -------------------------------
-const FRAMES = {
-  interceptor: { id: "interceptor", name: "Interceptor", tiles: 6, baseHull: 1, rank: 1, tonnage: 1 },
-  cruiser: { id: "cruiser", name: "Cruiser", tiles: 8, baseHull: 1, rank: 2, tonnage: 2 },
-  dread: { id: "dread", name: "Dreadnought", tiles: 10, baseHull: 1, rank: 3, tonnage: 3 },
-} as const;
 
-type FrameId = keyof typeof FRAMES; // 'interceptor' | 'cruiser' | 'dread'
-
-const PARTS = {
-  sources: [
-    { id: "fusion_source", name: "Fusion Source", powerProd: 3, tier: 1, cost: 18, cat: "Source" },
-    { id: "tachyon_source", name: "Tachyon Source", powerProd: 5, tier: 2, cost: 60, cat: "Source" },
-  ],
-  drives: [
-    { id: "fusion_drive", name: "Fusion Drive", init: 1, powerCost: 1, tier: 1, cost: 18, cat: "Drive" },
-    { id: "tachyon_drive", name: "Tachyon Drive", init: 2, powerCost: 2, tier: 2, cost: 55, cat: "Drive" },
-  ],
-  weapons: [
-    { id: "plasma", name: "Plasma Cannon", dice: 2, dmgPerHit: 1, powerCost: 1, tier: 1, cost: 25, cat: "Weapon" },
-    { id: "antimatter", name: "Antimatter Cannon", dice: 4, dmgPerHit: 2, powerCost: 2, tier: 2, cost: 75, cat: "Weapon" },
-  ],
-  computers: [
-    { id: "positron", name: "Positron Computer", aim: 1, powerCost: 1, tier: 1, cost: 25, cat: "Computer" },
-    { id: "gluon", name: "Gluon Computer", aim: 2, powerCost: 2, tier: 2, cost: 60, cat: "Computer" },
-  ],
-  shields: [
-    { id: "gauss", name: "Gauss Shield", shieldTier: 1, powerCost: 1, tier: 1, cost: 20, cat: "Shield" },
-    { id: "phase", name: "Phase Shield", shieldTier: 2, powerCost: 2, tier: 2, cost: 60, cat: "Shield" },
-  ],
-  hull: [
-    { id: "improved", name: "Improved Hull", extraHull: 1, powerCost: 0, tier: 1, cost: 22, cat: "Hull" },
-    { id: "reinforced", name: "Reinforced Hull", extraHull: 2, powerCost: 0, tier: 2, cost: 70, cat: "Hull" },
-  ],
-};
-
-const ALL_PARTS = [
-  ...PARTS.sources,
-  ...PARTS.drives,
-  ...PARTS.weapons,
-  ...PARTS.computers,
-  ...PARTS.shields,
-  ...PARTS.hull,
-];
-
-const isSource = (p:any)=>"powerProd" in p;
-const isDrive = (p:any)=>"init" in p;
-const isWeapon = (p:any)=>"dice" in p;
-const isComputer = (p:any)=>"aim" in p;
-const isShield = (p:any)=>"shieldTier" in p;
-const isHull = (p:any)=>"extraHull" in p;
-
-// Safe frame lookup to avoid undefined access
-function getFrame(id: FrameId){
-  const f = (FRAMES as any)[id];
-  if(!f){
-    console.warn("Unknown frame id", id);
-    return FRAMES.interceptor; // fallback prevents undefined baseHull access
-  }
-  return f;
-}
-
-// ------------------------------- Core Helpers ------------------------------
-function successThreshold(aim:number, shieldTier:number) {
-  // Clamp to 2..6 so 1s always miss and 6s always hit.
-  return Math.min(6, Math.max(2, 6 - (aim - shieldTier)));
-}
-function rollSuccesses(numDice:number, threshold:number) {
-  let hits = 0;
-  for (let i = 0; i < numDice; i++) {
-    const r = 1 + Math.floor(Math.random() * 6);
-    if (r >= threshold) hits++;
-  }
-  return hits;
-}
-function sizeRank(frame:{id:string}) { return frame.id === 'dread' ? 3 : frame.id === 'cruiser' ? 2 : 1; }
-
-function makeShip(frame:any, parts:any[]){
-  // Defensive guard: ensure a valid frame object
-  if(!frame || typeof frame.baseHull !== 'number'){
-    console.warn('makeShip called with invalid frame', frame);
-    frame = FRAMES.interceptor;
-  }
-  const weapons = parts.filter(isWeapon);
-  const computer = parts.find(isComputer);
-  const shield = parts.find(isShield);
-  const hullParts = parts.filter(isHull);
-  const drive = parts.find(isDrive);
-  const sources = parts.filter(isSource);
-  const hullCap = frame.baseHull + hullParts.reduce((a:number,h:any)=>a+(h.extraHull||0),0);
-  const powerProd = sources.reduce((a:number,s:any)=>a+(s.powerProd||0),0);
-  const powerUse = parts.reduce((a:number,p:any)=>a+(p.powerCost||0),0);
-  const valid = !!drive && sources.length>0 && powerUse<=powerProd && parts.length<=frame.tiles;
-  return { frame, parts, weapons, computer, shield, hullParts, drive, sources,
-    stats:{ hullCap, aim: computer?.aim||0, shieldTier: shield?.shieldTier||0, init: drive?.init||0, powerProd, powerUse, valid },
-    hull: hullCap, alive: true };
-}
-
-function tierCap(research:{Military:number, Grid:number, Nano:number}){ const avg = ((research.Military||1) + (research.Grid||1) + (research.Nano||1))/3; return Math.max(1, Math.min(3, Math.round(avg))); }
-
-function rollInventory(research:{Military:number, Grid:number, Nano:number}, count=8){
-  const pool = ALL_PARTS.filter((p:any) => p.tier <= tierCap(research));
-  const pick = (f:(p:any)=>boolean)=>{ const cand = pool.filter(f); return cand.length? cand[Math.floor(Math.random()*cand.length)] : null; };
-  const items:any[] = [];
-  // Prioritize Hull → Drive → Source → Weapon → (Shield|Computer)
-  const guarantees = [ ()=>pick(isHull), ()=>pick(isDrive), ()=>pick(isSource), ()=>pick(isWeapon), ()=>pick((p:any)=>isShield(p)||isComputer(p)) ];
-  for(const g of guarantees){ const it = g(); if(it) items.push(it); }
-  while(items.length < count){ items.push(pool[Math.floor(Math.random()*pool.length)]); }
-  return items.slice(0,count);
-}
-
-// ------------------------------- Enemy Scaling -----------------------------
-function sectorScaling(sector:number){
-  // tonBonus is extra effective tonnage vs player used; tierBonus adds to player's avg research cap
-  if(sector<=1) return { tonBonus: 0, tierBonus: 0, boss:false };
-  if(sector===2) return { tonBonus: 0.5, tierBonus: 0, boss:false };
-  if(sector===3) return { tonBonus: 1, tierBonus: 0, boss:false };
-  if(sector===4) return { tonBonus: 1, tierBonus: 0, boss:false };
-  if(sector===5) return { tonBonus: 1.5, tierBonus: 0, boss:true };
-  if(sector===6) return { tonBonus: 1, tierBonus: 1, boss:false };
-  if(sector===7) return { tonBonus: 1, tierBonus: 1, boss:false };
-  if(sector===8) return { tonBonus: 1.5, tierBonus: 2, boss:false };
-  if(sector===9) return { tonBonus: 2, tierBonus: 2, boss:false };
-  return { tonBonus: 2, tierBonus: 2, boss:true }; // sector 10
-}
-
-function randomEnemyPartsFor(frame:any, playerResearch:{Military:number, Grid:number, Nano:number}, tierBonus:number, boss:boolean){
-  // Defensive: ensure a valid frame object
-  if(!frame){
-    console.warn('randomEnemyPartsFor called without frame; defaulting to interceptor');
-    frame = FRAMES.interceptor;
-  }
-  const baseCap = tierCap(playerResearch);
-  const cap = Math.min(3, baseCap + (tierBonus||0));
-  const src = cap>=2 ? PARTS.sources[1] : PARTS.sources[0];
-  const drv = cap>=2 ? PARTS.drives[1] : PARTS.drives[0];
-  const weapon = cap>=2 ? PARTS.weapons[1] : PARTS.weapons[0];
-  const comp = cap>=2 ? PARTS.computers[1] : PARTS.computers[0];
-  const shld = cap>=2 ? PARTS.shields[1] : PARTS.shields[0];
-  const hull = cap>=2 ? PARTS.hull[1] : PARTS.hull[0];
-
-  // Start with hull-first survivability
-  let build:any[] = [src, drv, hull, weapon];
-  let ship = makeShip(frame, build);
-
-  // Boss perks: ensure second weapon and better defense
-  if(boss){
-    const testW = makeShip(frame, [...build, weapon]); if(testW.stats.valid) { build = testW.parts; ship = testW; }
-    const testC = makeShip(frame, [...build, comp]);   if(testC.stats.valid) { build = testC.parts; ship = testC; }
-    const testS = makeShip(frame, [...build, shld]);   if(testS.stats.valid) { build = testS.parts; ship = testS; }
-  }
-
-  // Greedy fill respecting tiles and power; cycle defense → weapon
-  const pool = [hull, comp, shld, weapon];
-  for(let i=0;i<12 && build.length<frame.tiles;i++){
-    const p = pool[i % pool.length];
-    const test = makeShip(frame, [...build, p]);
-    if(test.stats.valid && test.stats.powerUse <= test.stats.powerProd){ build = test.parts; ship = test; }
-    else break;
-  }
-  return ship.parts;
-}
-
-// ------------------------------- UI Bits -----------------------------------
-function PowerBadge({use, prod}:{use:number, prod:number}){ const ok = use<=prod; return <span className={`text-[10px] px-2 py-0.5 rounded ${ok?'bg-emerald-600/30 text-emerald-200':'bg-rose-600/30 text-rose-100'}`}>⚡ {use}/{prod}</span>; }
-function HullPips({ current, max }:{current:number, max:number}){ const arr = Array.from({length: max}); return (<div className="flex gap-0.5 mt-1">{arr.map((_,i)=>(<span key={i} className={`w-2 h-2 rounded ${i<current? 'bg-emerald-400':'bg-zinc-700'}`} />))}</div>); }
-function CompactShip({ ship, side, active }:{ship:any, side:'P'|'E', active:boolean}){
-  const dead = !ship.alive || ship.hull<=0;
-  return (
-    <div className={`relative w-24 p-2 rounded-lg border ${dead? 'border-zinc-700 bg-zinc-900 opacity-60' : side==='P' ? 'border-sky-600 bg-slate-900' : 'border-pink-600 bg-zinc-900'} ${active? 'ring-2 ring-amber-400 animate-pulse':''}`}>
-      <div className="text-[11px] font-semibold truncate">{ship.frame.name}</div>
-      <div className="text-[10px] opacity-70">Init {ship.stats.init}</div>
-      <HullPips current={Math.max(0, ship.hull)} max={ship.stats.hullCap} />
-      <div className="mt-1 text-[10px] opacity-80">{ship.weapons.map((w:any)=>w.name).join(', ')||'—'}</div>
-      <div className="absolute top-1 right-1"><PowerBadge use={ship.stats.powerUse} prod={ship.stats.powerProd} /></div>
-      {dead && <div className="absolute inset-0 grid place-items-center text-2xl text-zinc-300">✖</div>}
-    </div>
-  );
-}
-function ItemCard({ item, canAfford, onBuy, ghostDelta }:{item:any, canAfford:boolean, onBuy:()=>void, ghostDelta:any}){
-  return (
-    <div className="p-3 rounded-xl border border-zinc-700 bg-zinc-900">
-      <div className="flex items-center justify-between">
-        <div><div className="font-medium">{item.name}</div><div className="text-xs opacity-70">{item.cat} • Tier {item.tier} {"powerProd" in item? `• +⚡${item.powerProd}` : item.powerCost? `• ⚡${item.powerCost}` : ''}</div></div>
-        <div className="text-sm">{item.cost}¢</div>
-      </div>
-      {ghostDelta && (
-        <div className="mt-2 text-xs">
-          <div className="opacity-70">After install on {ghostDelta.targetName}:</div>
-          <div>⚡ {ghostDelta.use}/{ghostDelta.prod} {ghostDelta.valid? '✔️' : '❌'}</div>
-          {ghostDelta.initDelta!==0 && <div>Init {ghostDelta.initBefore} → <b>{ghostDelta.initAfter}</b></div>}
-          {ghostDelta.hullDelta!==0 && <div>Hull {ghostDelta.hullBefore} → <b>{ghostDelta.hullAfter}</b></div>}
-        </div>
-      )}
-      <button disabled={!canAfford} onClick={onBuy} className={`mt-2 w-full px-3 py-2 rounded-lg ${canAfford? 'bg-emerald-600 hover:bg-emerald-500':'bg-zinc-700 opacity-60'}`}>Buy & Install</button>
-    </div>
-  );
-}
-function ResourceBar({ credits, materials, science, tonnage, sector, onReset }:{credits:number, materials:number, science:number, tonnage:{used:number,cap:number}, sector:number, onReset:()=>void}){
-  const used = tonnage.used, cap = tonnage.cap;
-  return (
-    <div className="sticky top-0 z-10 bg-zinc-950/95 backdrop-blur border-b border-zinc-800 p-3 grid grid-cols-3 gap-2 text-sm">
-      <div className="px-3 py-2 rounded-lg bg-zinc-900">💰 <b>{credits}</b> • 🧱 <b>{materials}</b> • 🔬 <b>{science}</b></div>
-      <div className={`px-3 py-2 rounded-lg ${used<=cap?'bg-emerald-950/50 text-emerald-200':'bg-rose-950/50 text-rose-200'}`}>⚓ <b>{used}</b> / <b>{cap}</b></div>
-      <div className="px-3 py-2 rounded-lg bg-zinc-900 flex items-center justify-between">🗺️ Sector <b>{sector}</b> <button onClick={onReset} className="ml-2 px-2 py-1 rounded bg-zinc-800 text-xs">Reset</button></div>
-    </div>
-  );
-}
 
 // ------------------------------- Initial Config ----------------------------
 const INITIAL_BLUEPRINTS: Record<FrameId, any[]> = {
@@ -339,11 +137,6 @@ export default function EclipseIntegrated(){
     setShop({ items: rollInventory(research, 8) });
     setRerollCost(x=> x + 6);
   }
-  function nextTierCost(curr:number){ // research pacing: unlock ~S3-4, finish by ~S7-8
-    if(curr===1) return { c:40, s:1 };
-    if(curr===2) return { c:120, s:2 };
-    return null as any;
-  }
   function researchTrack(track:'Military'|'Grid'|'Nano'){
     const curr = (research as any)[track]||1; if(curr>=3) return; const cost:any = nextTierCost(curr); if(!cost) return; if(resources.credits < cost.c || resources.science < cost.s) return;
     const nextTier = curr + 1;
@@ -353,6 +146,24 @@ export default function EclipseIntegrated(){
     setShop({ items: rollInventory({ ...research, [track]: nextTier } as any, 8) });
     setRerollCost(x=> x + 6);
   }
+  function handleReturnFromCombat(){
+    if(!combatOver) return;
+    if(outcome==='Victory'){
+      restoreAndCullFleetAfterCombat();
+      setMode('OUTPOST');
+      setShop({ items: rollInventory(research as any, 8) });
+    } else {
+      if(difficulty==='hard'){
+        resetRun();
+      } else {
+        setFleet([ makeShip(getFrame('interceptor'), [ ...blueprints.interceptor ]) ]);
+        setResources(r=>({ ...r, credits: 0, materials: 0 }));
+        setMode('OUTPOST');
+        setShop({ items: rollInventory(research as any, 8) });
+      }
+    }
+  }
+
 
   // ---------- Enemy Generation ----------
   function genEnemyFleet(matchTonnage:number){
@@ -446,7 +257,6 @@ export default function EclipseIntegrated(){
 
   // ---------- View ----------
   const fleetValid = fleet.every(s=>s.stats.valid) && tonnage.used <= capacity.cap;
-  const focusedShip = fleet[focused];
 
   function researchLabel(track:'Military'|'Grid'|'Nano'){ const curr = (research as any)[track]||1; if(curr>=3) return `${track} 3 (max)`; const nxt = curr+1; const cost:any = nextTierCost(curr)!; return `${track} ${curr}→${nxt} (${cost.c}¢ + ${cost.s}🔬)`; }
   function canResearch(track:'Military'|'Grid'|'Nano'){ const curr = (research as any)[track]||1; if(curr>=3) return false; const {c,s}:any = nextTierCost(curr)!; return resources.credits>=c && resources.science>=s; }
@@ -497,143 +307,49 @@ export default function EclipseIntegrated(){
       </div>
 
       {mode==='OUTPOST' && (
-        <div>
-          {/* Shop Header: Reroll + Research */}
-          <div className="p-3 border-b border-zinc-800 bg-zinc-950">
-            <div className="flex gap-2 items-center">
-              <button onClick={doReroll} disabled={resources.credits<rerollCost} className={`px-3 py-2 rounded-lg ${resources.credits>=rerollCost?'bg-purple-700':'bg-zinc-700 opacity-60'}`}>Reroll ({rerollCost}¢)</button>
-              <div className="text-xs opacity-70">Reroll +6 after each Reroll/Research</div>
-            </div>
-            <div className="mt-2 grid grid-cols-3 gap-2 text-sm">
-              {(['Military','Grid','Nano'] as const).map(t=> (
-                <button key={t} onClick={()=>researchTrack(t)} disabled={!canResearch(t)} className={`px-3 py-2 rounded-xl ${canResearch(t)?'bg-zinc-900 border border-zinc-700':'bg-zinc-800 opacity-60'}`}>{researchLabel(t)}</button>
-              ))}
-            </div>
-          </div>
-
-          {/* Hangar */}
-          <div className="p-3">
-            <div className="text-lg font-semibold mb-2">Hangar (Class Blueprints)</div>
-            <div className="grid grid-cols-1 gap-2">
-              {fleet.map((s,i)=> (
-                <button key={i} onClick={()=>setFocused(i)} className={`w-full text-left p-3 rounded-xl border mb-1 ${i===focused?'border-sky-400 bg-sky-400/10':'border-zinc-700 bg-zinc-900'}`}>
-                  <div className="flex items-center justify-between"><div className="font-semibold">{s.frame.name} <span className="text-xs opacity-70">(t{s.frame.tonnage})</span></div><PowerBadge use={s.stats.powerUse} prod={s.stats.powerProd} /></div>
-                  <div className="text-xs opacity-80 mt-1">Init {s.stats.init} • Tiles {s.parts.length}/{s.frame.tiles}</div>
-                  <div className="mt-1">Hull: {s.hull}/{s.stats.hullCap}</div>
-                  <div className="mt-1 text-xs">Parts: {s.parts.map((p:any)=>p.name).join(', ')||'—'}</div>
-                  {!s.stats.valid && <div className="text-xs text-rose-300 mt-1">Not deployable: needs Source + Drive and ⚡ OK</div>}
-                </button>
-              ))}
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <button onClick={buildShip} className="px-3 py-3 rounded-xl bg-sky-600 active:scale-95">Build Interceptor (3🧱 + 2¢)</button>
-              <button onClick={()=>upgradeShip(focused)} className="px-3 py-3 rounded-xl bg-amber-600 active:scale-95">Upgrade Focused</button>
-            </div>
-            {(() => { const info = upgradeLockInfo(focusedShip); if(!info) return null; const ok = (research.Military||1) >= info.need; return (
-              <div className={`mt-2 text-xs px-3 py-2 rounded ${ok? 'bg-emerald-900/30 text-emerald-200':'bg-zinc-900 border border-zinc-700 text-zinc-300'}`}>
-                {ok ? `Upgrade to ${info.next} unlocked (Military ≥ ${info.need})` : `Upgrade to ${info.next} locked: requires Military ≥ ${info.need}`}
-              </div>
-            ); })()}
-
-            {/* Blueprint Manager with Sell */}
-            <div className="mt-3">
-              <div className="text-sm font-semibold mb-1">Class Blueprint — {focusedShip?.frame.name}</div>
-              <div className="grid grid-cols-2 gap-2">
-                {blueprints[focusedShip?.frame.id as FrameId]?.map((p, idx)=> (
-                  <div key={idx} className="p-2 rounded border border-zinc-700 bg-zinc-900 text-xs">
-                    <div className="font-medium text-sm">{p.name}</div>
-                    <div className="opacity-70">{p.cat} • Tier {p.tier} {isSource(p)?`• +⚡${p.powerProd}`:`• ⚡${p.powerCost||0}`}</div>
-                    <div className="mt-1 flex justify-between items-center">
-                      <span className="opacity-70">Refund {Math.floor((p.cost||0)*0.25)}¢</span>
-                      <button onClick={()=> sellPart(focusedShip.frame.id as FrameId, idx)} className="px-2 py-1 rounded bg-rose-600">Sell</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Outpost Inventory (items) */}
-          <div className="p-3">
-            <div className="text-lg font-semibold mb-2">Outpost Inventory</div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {shop.items.map((it:any, i:number)=> { const canAfford = resources.credits >= (it.cost||0); const gd = focusedShip? ghost(focusedShip, it) : null; return (<ItemCard key={i} item={it} canAfford={canAfford} ghostDelta={gd} onBuy={()=>buyAndInstall(it)} />); })}
-            </div>
-          </div>
-
-          {/* Docks */}
-          <div className="px-3 pb-24">
-            <div className="font-semibold mb-2">Dock Upgrades</div>
-            <div className="grid grid-cols-2 gap-2">
-              <button onClick={upgradeDock} className="px-3 py-3 rounded-xl bg-indigo-600 active:scale-95">Expand Capacity +2 (4🧱 + 4¢)</button>
-              <div className="px-3 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-sm">Capacity: <b>{capacity.cap}</b> • Used: <b>{tonnage.used}</b></div>
-            </div>
-          </div>
-
-          {/* Start Combat */}
-          <div className="sticky bottom-0 z-10 p-3 bg-zinc-950/95 backdrop-blur border-t border-zinc-800 flex items-center gap-2">
-            <button onClick={()=> fleetValid && startCombat()} className={`flex-1 px-4 py-3 rounded-xl ${fleetValid?'bg-emerald-600':'bg-zinc-700 opacity-60'}`}>Start Combat</button>
-            {!fleet.every(s=>s.stats.valid) && <div className="text-xs text-rose-300">Fix fleet (Source + Drive + ⚡ OK)</div>}
-            {tonnage.used > capacity.cap && <div className="text-xs text-rose-300">Over capacity — expand docks</div>}
-          </div>
-        </div>
+        <OutpostPage
+          resources={resources}
+          rerollCost={rerollCost}
+          doReroll={doReroll}
+          research={research}
+          researchLabel={researchLabel}
+          canResearch={canResearch}
+          researchTrack={researchTrack}
+          fleet={fleet}
+          focused={focused}
+          setFocused={setFocused}
+          buildShip={buildShip}
+          upgradeShip={upgradeShip}
+          upgradeDock={upgradeDock}
+          upgradeLockInfo={upgradeLockInfo}
+          blueprints={blueprints as any}
+          sellPart={sellPart as any}
+          shop={shop}
+          ghost={ghost}
+          buyAndInstall={buyAndInstall}
+          capacity={capacity}
+          tonnage={tonnage}
+          fleetValid={fleetValid}
+          startCombat={startCombat}
+        />
       )}
 
       {mode==='COMBAT' && (
-        <div className="p-3">
-          {combatOver && (
-            <div className={`mb-2 p-3 rounded-lg text-sm ${outcome.startsWith('Victory') ? 'bg-emerald-900/40 text-emerald-200' : 'bg-rose-900/40 text-rose-200'}`}>
-              {outcome}
-            </div>
-          )}
-          {/* Enemy row */}
-          <div className="flex items-center justify-between mb-2">
-            <div className="text-sm font-semibold">Enemy</div>
-            <div className="text-xs opacity-60">Round {roundNum}{queue[turnPtr]? ` • Next: ${(queue[turnPtr].side==='P'?'P':'E')} ${queue[turnPtr].side==='P'?fleet[queue[turnPtr].idx]?.frame.name:enemyFleet[queue[turnPtr].idx]?.frame.name}`: ''}</div>
-          </div>
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {enemyFleet.map((s,i)=> (
-              <CompactShip key={'e'+i} ship={s} side='E' active={!combatOver && queue[turnPtr]?.side==='E' && queue[turnPtr]?.idx===i} />
-            ))}
-          </div>
-          {/* Player row */}
-          <div className="flex items-center justify-between mt-4 mb-2">
-            <div className="text-sm font-semibold">Player</div>
-            <div className="text-xs opacity-60">Capacity {tonnage.used}/{capacity.cap}</div>
-          </div>
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {fleet.map((s,i)=> (
-              <CompactShip key={'p'+i} ship={s} side='P' active={!combatOver && queue[turnPtr]?.side==='P' && queue[turnPtr]?.idx===i} />
-            ))}
-          </div>
-          {/* Mini Log */}
-          <div className="mt-3 p-2 rounded bg-zinc-900 text-xs min-h-[56px]">{log.slice(-3).map((ln,i)=>(<div key={i} className={i===log.length-1? 'font-medium' : 'opacity-80'}>{ln}</div>))}</div>
-          {/* Controls */}
-          <div className="sticky bottom-0 z-10 mt-3 p-3 bg-zinc-950/95 backdrop-blur border-t border-zinc-800 flex items-center gap-2">
-            <button disabled={combatOver} onClick={()=> { if (!initRoundIfNeeded()) stepTurn(); }} className={`flex-1 px-4 py-3 rounded-xl ${combatOver? 'bg-zinc-700 opacity-60':'bg-sky-600'}`}>▶ Step</button>
-            <button disabled={combatOver} onClick={()=> setAuto(a=>!a)} className={`px-4 py-3 rounded-xl ${auto && !combatOver? 'bg-emerald-700':'bg-zinc-800'}`}>{auto? '⏸ Auto' : '⏩ Auto'}</button>
-            <button
-              onClick={()=>{
-                if(!combatOver) return;
-                if(outcome==='Victory'){
-                  restoreAndCullFleetAfterCombat();
-                  setMode('OUTPOST');
-                  setShop({ items: rollInventory(research as any, 8) });
-                } else {
-                  if(difficulty==='hard'){
-                    resetRun();
-                  } else {
-                    setFleet([ makeShip(getFrame('interceptor'), [ ...blueprints.interceptor ]) ]);
-                    setResources(r=>({ ...r, credits: 0, materials: 0 }));
-                    setMode('OUTPOST');
-                    setShop({ items: rollInventory(research as any, 8) });
-                  }
-                }
-              }}
-              className="px-4 py-3 rounded-xl bg-emerald-800"
-            >Return to Outpost</button>
-          </div>
-        </div>
+        <CombatPage
+          combatOver={combatOver}
+          outcome={outcome}
+          roundNum={roundNum}
+          queue={queue}
+          turnPtr={turnPtr}
+          fleet={fleet}
+          enemyFleet={enemyFleet}
+          stepTurn={stepTurn}
+          initRoundIfNeeded={initRoundIfNeeded}
+          auto={auto}
+          setAuto={setAuto}
+          log={log}
+          onReturn={handleReturnFromCombat}
+        />
       )}
 
       {/* Floating reopen rules button at bottom */}
@@ -643,18 +359,3 @@ export default function EclipseIntegrated(){
     </div>
   );
 }
-
-// Named exports for testing and future modularization
-export {
-  successThreshold,
-  rollSuccesses,
-  sizeRank,
-  makeShip,
-  tierCap,
-  rollInventory,
-  sectorScaling,
-  randomEnemyPartsFor,
-  getFrame,
-  FRAMES,
-  PARTS,
-};

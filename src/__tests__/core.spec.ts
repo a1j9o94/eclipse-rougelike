@@ -5,7 +5,7 @@ import {
   makeShip,
   getFrame,
   PARTS,
-} from '../App'
+} from '../game'
 
 describe('core helpers', () => {
   it('successThreshold clamps between 2 and 6', () => {
