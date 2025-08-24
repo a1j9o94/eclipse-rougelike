@@ -1,0 +1,26 @@
+// Economy & pacing knobs in one place
+
+export const ECONOMY = {
+  buildInterceptor: { credits: 2, materials: 3 },
+  upgradeCosts: {
+    interceptorToCruiser: { credits: 3, materials: 3 },
+    cruiserToDread: { credits: 4, materials: 5 },
+  },
+  dockUpgrade: { credits: 4, materials: 4, capacityDelta: 2, capacityMax: 10 },
+  reroll: { base: 12, increment: 6 },
+} as const;
+
+export function nextTierCost(curr:number){
+  if(curr===1) return { c:40, s:1 } as const;
+  if(curr===2) return { c:120, s:2 } as const;
+  return null;
+}
+
+export function calcRewardsForFrameId(frameId:string){
+  if(frameId==='interceptor') return { c:18, m:1, s:0 };
+  if(frameId==='cruiser') return { c:28, m:1, s:1 };
+  if(frameId==='dread') return { c:45, m:2, s:1 };
+  return { c:0, m:0, s:0 };
+}
+
+

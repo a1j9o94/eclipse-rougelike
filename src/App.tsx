@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import './index.css'
 import { FRAMES, PARTS, getFrame, successThreshold, rollSuccesses, sizeRank, makeShip, rollInventory, sectorScaling, randomEnemyPartsFor, nextTierCost, isSource, isHull, isDrive, isWeapon } from './game'
+import { INITIAL_BLUEPRINTS, INITIAL_RESEARCH, INITIAL_RESOURCES, type Resources, type Research } from './config/defaults'
 import { type FrameId } from './game'
 import { ResourceBar } from './components/ui'
 import OutpostPage from './pages/OutpostPage'
 import CombatPage from './pages/CombatPage'
+import { type Part } from './config/parts'
+import { type Ship, type GhostDelta, type InitiativeEntry } from './config/types'
 
 /**
  * Eclipse Roguelike — Integrated App (v3.24)
@@ -21,13 +24,7 @@ import CombatPage from './pages/CombatPage'
 
 
 // ------------------------------- Initial Config ----------------------------
-const INITIAL_BLUEPRINTS: Record<FrameId, any[]> = {
-  interceptor: [PARTS.sources[0], PARTS.drives[0], PARTS.weapons[0], PARTS.computers[0]],
-  cruiser:     [PARTS.sources[1], PARTS.drives[1], PARTS.weapons[0], PARTS.shields[0]],
-  dread:       [PARTS.sources[1], PARTS.drives[1], PARTS.weapons[0], PARTS.weapons[0], PARTS.shields[0]],
-};
-const INITIAL_RESEARCH = { Military: 1, Grid: 1, Nano: 1 };
-const INITIAL_RESOURCES = { credits: 10, materials: 5, science: 0 };
+// Defaults are now configured in src/config/defaults.ts
 
 // ------------------------------- Integrated App ----------------------------
 export default function EclipseIntegrated(){
@@ -37,11 +34,11 @@ export default function EclipseIntegrated(){
   const [showNewRun, setShowNewRun] = useState(true);
 
   // Class blueprints (shared per hull class)
-  const [blueprints, setBlueprints] = useState<Record<FrameId, any[]>>({...INITIAL_BLUEPRINTS});
+  const [blueprints, setBlueprints] = useState<Record<FrameId, Part[]>>({...INITIAL_BLUEPRINTS});
 
   // Resources & research
-  const [resources, setResources] = useState({...INITIAL_RESOURCES});
-  const [research, setResearch] = useState({...INITIAL_RESEARCH});
+  const [resources, setResources] = useState<Resources>({...INITIAL_RESOURCES});
+  const [research, setResearch] = useState<Research>({...INITIAL_RESEARCH});
 
   // Economy knobs
   const [rerollCost, setRerollCost] = useState(12);
@@ -50,7 +47,7 @@ export default function EclipseIntegrated(){
   const [capacity, setCapacity] = useState({ cap: 3 });
 
   // Fleet — lazy init so it doesn't depend on state variables
-  const [fleet, setFleet] = useState<any[]>(() => [ makeShip(getFrame('interceptor'), [ ...INITIAL_BLUEPRINTS.interceptor ]) ]);
+  const [fleet, setFleet] = useState<Ship[]>(() => [ makeShip(getFrame('interceptor'), [ ...INITIAL_BLUEPRINTS.interceptor ]) ] as unknown as Ship[]);
   const usedTonnage = useMemo(()=> fleet.reduce((a,s)=> a + (s.alive? s.frame.tonnage : 0), 0), [fleet]);
   const tonnage = { used: usedTonnage, cap: capacity.cap };
 
@@ -59,10 +56,10 @@ export default function EclipseIntegrated(){
   const [shop, setShop] = useState(()=>({ items: rollInventory(INITIAL_RESEARCH, 8) }));
 
   // Combat state
-  const [enemyFleet, setEnemyFleet] = useState<any[]>([]);
+  const [enemyFleet, setEnemyFleet] = useState<Ship[]>([]);
   const [log, setLog] = useState<string[]>([]);
   const [roundNum, setRoundNum] = useState(1);
-  const [queue, setQueue] = useState<any[]>([]);
+  const [queue, setQueue] = useState<InitiativeEntry[]>([]);
   const [turnPtr, setTurnPtr] = useState(-1);
   const [auto, setAuto] = useState(false);
   const [combatOver, setCombatOver] = useState(false);
@@ -91,12 +88,12 @@ export default function EclipseIntegrated(){
   function resetRun(){ setShowNewRun(true); }
 
   // ---------- Blueprint helpers ----------
-  function applyBlueprintToFleet(frameId:FrameId, parts:any[]){ setFleet(f=> f.map(sh => sh.frame.id===frameId ? makeShip(sh.frame, parts) : sh)); }
-  function updateBlueprint(frameId:FrameId, mutate:(arr:any[])=>any[]){ setBlueprints(bp => { const next = { ...bp } as Record<FrameId,any[]>; const after = mutate(next[frameId]); const tmp = makeShip(getFrame(frameId), after); if(!tmp.stats.valid) return bp; next[frameId] = after; applyBlueprintToFleet(frameId, after); return next; }); }
-  function canInstallOnClass(frameId:FrameId, part:any){ const tmp = makeShip(getFrame(frameId), [...blueprints[frameId], part]); return { ok: tmp.stats.valid, tmp }; }
-  function ghost(ship:any, part:any){ const frameId = ship.frame.id as FrameId; const chk = canInstallOnClass(frameId, part); const base = makeShip(ship.frame, blueprints[frameId]); return { targetName: ship.frame.name + " (class)", use: chk.tmp.stats.powerUse, prod: chk.tmp.stats.powerProd, valid: chk.tmp.stats.valid, initBefore: base.stats.init, initAfter: chk.tmp.stats.init, initDelta: chk.tmp.stats.init - base.stats.init, hullBefore: base.stats.hullCap, hullAfter: chk.tmp.stats.hullCap, hullDelta: chk.tmp.stats.hullCap - base.stats.hullCap }; }
-  function buyAndInstall(part:any){ if(resources.credits < (part.cost||0)) return; const ship = fleet[focused]; if(!ship) return; const frameId = ship.frame.id as FrameId; const chk = canInstallOnClass(frameId, part); setResources(r=>({...r, credits: r.credits - (part.cost||0)})); if(chk.ok){ updateBlueprint(frameId, arr => [...arr, part]); } }
-  function sellPart(frameId:FrameId, idx:number){ const arr = (blueprints as any)[frameId]; if(!arr) return; const part = arr[idx]; if(!part) return; const next = arr.filter((_:any,i:number)=> i!==idx); const tmp = makeShip(getFrame(frameId), next); if(!tmp.stats.valid) return; const refund = Math.floor((part.cost||0)*0.25); setResources(r=>({...r, credits: r.credits + refund })); updateBlueprint(frameId, _=> next); }
+  function applyBlueprintToFleet(frameId:FrameId, parts:Part[]){ setFleet(f=> f.map(sh => sh.frame.id===frameId ? makeShip(sh.frame, parts) as unknown as Ship : sh)); }
+  function updateBlueprint(frameId:FrameId, mutate:(arr:Part[])=>Part[]){ setBlueprints(bp => { const next = { ...bp } as Record<FrameId,Part[]>; const after = mutate(next[frameId]); const tmp = makeShip(getFrame(frameId), after); if(!tmp.stats.valid) return bp; next[frameId] = after; applyBlueprintToFleet(frameId, after); return next; }); }
+  function canInstallOnClass(frameId:FrameId, part:Part){ const tmp = makeShip(getFrame(frameId), [...blueprints[frameId], part]); return { ok: tmp.stats.valid, tmp }; }
+  function ghost(ship:Ship, part:Part): GhostDelta { const frameId = ship.frame.id as FrameId; const chk = canInstallOnClass(frameId, part); const base = makeShip(ship.frame, blueprints[frameId]); return { targetName: ship.frame.name + " (class)", use: chk.tmp.stats.powerUse, prod: chk.tmp.stats.powerProd, valid: chk.tmp.stats.valid, initBefore: base.stats.init, initAfter: chk.tmp.stats.init, initDelta: chk.tmp.stats.init - base.stats.init, hullBefore: base.stats.hullCap, hullAfter: chk.tmp.stats.hullCap, hullDelta: chk.tmp.stats.hullCap - base.stats.hullCap }; }
+  function buyAndInstall(part:Part){ if(resources.credits < (part.cost||0)) return; const ship = fleet[focused]; if(!ship) return; const frameId = ship.frame.id as FrameId; const chk = canInstallOnClass(frameId, part); setResources(r=>({...r, credits: r.credits - (part.cost||0)})); if(chk.ok){ updateBlueprint(frameId, arr => [...arr, part]); } }
+  function sellPart(frameId:FrameId, idx:number){ const arr = blueprints[frameId]; if(!arr) return; const part = arr[idx]; if(!part) return; const next = arr.filter((_,i:number)=> i!==idx); const tmp = makeShip(getFrame(frameId), next); if(!tmp.stats.valid) return; const refund = Math.floor((part.cost||0)*0.25); setResources(r=>({...r, credits: r.credits + refund })); updateBlueprint(frameId, () => next); }
 
   // ---------- Capacity & build/upgrade ----------
   function buildShip(){
@@ -111,7 +108,7 @@ export default function EclipseIntegrated(){
   }
   function upgradeShip(idx:number){
     const s = fleet[idx]; if(!s) return;
-    const nextId = s.frame.id === 'interceptor' ? 'cruiser' : s.frame.id === 'cruiser' ? 'dread' : null as any;
+    const nextId = s.frame.id === 'interceptor' ? 'cruiser' : s.frame.id === 'cruiser' ? 'dread' : null as unknown as FrameId;
     const needMil = s.frame.id === 'interceptor' ? 2 : s.frame.id === 'cruiser' ? 3 : 99; if(!nextId) return;
     if((research.Military||1) < needMil) return; // locked by tech
     // Upgrade costs: I→C: 3🧱+3¢, C→D: 5🧱+4¢
@@ -138,12 +135,12 @@ export default function EclipseIntegrated(){
     setRerollCost(x=> x + 6);
   }
   function researchTrack(track:'Military'|'Grid'|'Nano'){
-    const curr = (research as any)[track]||1; if(curr>=3) return; const cost:any = nextTierCost(curr); if(!cost) return; if(resources.credits < cost.c || resources.science < cost.s) return;
+    const curr = (research as Research)[track]||1; if(curr>=3) return; const cost = nextTierCost(curr); if(!cost) return; if(resources.credits < cost.c || resources.science < cost.s) return;
     const nextTier = curr + 1;
     setResearch(t=>({ ...t, [track]: nextTier }));
     setResources(r=>({ ...r, credits: r.credits - cost.c, science: r.science - cost.s }));
     // research triggers shop reroll and raises reroll cost
-    setShop({ items: rollInventory({ ...research, [track]: nextTier } as any, 8) });
+    setShop({ items: rollInventory({ ...research, [track]: nextTier } as Research, 8) });
     setRerollCost(x=> x + 6);
   }
   function handleReturnFromCombat(){
@@ -151,7 +148,7 @@ export default function EclipseIntegrated(){
     if(outcome==='Victory'){
       restoreAndCullFleetAfterCombat();
       setMode('OUTPOST');
-      setShop({ items: rollInventory(research as any, 8) });
+      setShop({ items: rollInventory(research as Research, 8) });
     } else {
       if(difficulty==='hard'){
         resetRun();
@@ -159,7 +156,7 @@ export default function EclipseIntegrated(){
         setFleet([ makeShip(getFrame('interceptor'), [ ...blueprints.interceptor ]) ]);
         setResources(r=>({ ...r, credits: 0, materials: 0 }));
         setMode('OUTPOST');
-        setShop({ items: rollInventory(research as any, 8) });
+        setShop({ items: rollInventory(research as Research, 8) });
       }
     }
   }
@@ -170,14 +167,14 @@ export default function EclipseIntegrated(){
     const { tonBonus, tierBonus, boss } = sectorScaling(sector);
     const options = [FRAMES.dread, FRAMES.cruiser, FRAMES.interceptor];
     let remaining = Math.max(1, matchTonnage + tonBonus);
-    const ships:any[] = [];
+    const ships:Ship[] = [] as unknown as Ship[];
     let bossAssigned = false;
     const minTonnage = Math.min(...options.map(f=>f.tonnage));
     while(remaining >= minTonnage){
       const viable = options.filter(f => f.tonnage <= remaining);
       if(viable.length === 0) break;
       const pick = viable[Math.floor(Math.random()*viable.length)];
-      const parts = randomEnemyPartsFor(pick, research as any, tierBonus as number, boss && !bossAssigned);
+      const parts = randomEnemyPartsFor(pick, research as Research, tierBonus as number, boss && !bossAssigned);
       ships.push(makeShip(pick, parts));
       if(boss && !bossAssigned && pick.id!=='interceptor') bossAssigned = true;
       remaining -= pick.tonnage;
@@ -186,8 +183,8 @@ export default function EclipseIntegrated(){
   }
 
   // ---------- Combat helpers ----------
-  function buildInitiative(pFleet:any[], eFleet:any[]){ const q:any[] = []; pFleet.forEach((s, i) => { if (s.alive && s.stats.valid) q.push({ side: 'P', idx: i, init: s.stats.init, size: sizeRank(s.frame) }); }); eFleet.forEach((s, i) => { if (s.alive && s.stats.valid) q.push({ side: 'E', idx: i, init: s.stats.init, size: sizeRank(s.frame) }); }); q.sort((a, b) => (b.init - a.init) || (b.size - a.size) || (Math.random() - 0.5)); return q; }
-  function targetIndex(defFleet:any[], strategy:'kill'|'guns'){
+  function buildInitiative(pFleet:Ship[], eFleet:Ship[]){ const q:InitiativeEntry[] = []; pFleet.forEach((s, i) => { if (s.alive && s.stats.valid) q.push({ side: 'P', idx: i, init: s.stats.init, size: sizeRank(s.frame) }); }); eFleet.forEach((s, i) => { if (s.alive && s.stats.valid) q.push({ side: 'E', idx: i, init: s.stats.init, size: sizeRank(s.frame) }); }); q.sort((a, b) => (b.init - a.init) || (b.size - a.size) || (Math.random() - 0.5)); return q as InitiativeEntry[]; }
+  function targetIndex(defFleet:Ship[], strategy:'kill'|'guns'){
     if(strategy==='kill'){
       let best=-1, bestHull=1e9; for(let i=0;i<defFleet.length;i++){ const s=defFleet[i]; if(s && s.alive && s.stats.valid){ if(s.hull < bestHull){ bestHull=s.hull; best=i; } } } if(best!==-1) return best;
     }
@@ -196,7 +193,7 @@ export default function EclipseIntegrated(){
     }
     return defFleet.findIndex(s=>s.alive && s.stats.valid);
   }
-  function volley(attacker:any, defender:any, side:'P'|'E', logArr:string[]){ const thr = successThreshold(attacker.stats.aim, defender.stats.shieldTier); attacker.weapons.forEach((w:any) => { const succ = rollSuccesses(w.dice, thr); const dmg = succ * w.dmgPerHit; if (succ > 0) { defender.hull -= dmg; logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} → ${defender.frame.name} | ${w.name}: ${succ} hit(s) → ${dmg} hull (thr ≥ ${thr})`); if (defender.hull <= 0) { defender.alive = false; defender.hull = 0; logArr.push(`💥 ${defender.frame.name} destroyed!`); } } else { logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} misses with ${w.name} (thr ≥ ${thr})`); } }); }
+  function volley(attacker:Ship, defender:Ship, side:'P'|'E', logArr:string[]){ const thr = successThreshold(attacker.stats.aim, defender.stats.shieldTier); attacker.weapons.forEach((w:Part) => { const succ = rollSuccesses(w.dice||0, thr); const dmg = succ * (w.dmgPerHit||0); if (succ > 0) { defender.hull -= dmg; logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} → ${defender.frame.name} | ${w.name}: ${succ} hit(s) → ${dmg} hull (thr ≥ ${thr})`); if (defender.hull <= 0) { defender.alive = false; defender.hull = 0; logArr.push(`💥 ${defender.frame.name} destroyed!`); } } else { logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} misses with ${w.name} (thr ≥ ${thr})`); } }); }
 
   function startCombat(){ const enemy = genEnemyFleet(tonnage.used); setEnemyFleet(enemy); setLog([`Sector ${sector}: Engagement begins — enemy tonnage ~${tonnage.used}`]); setRoundNum(1); setQueue([]); setTurnPtr(-1); setAuto(false); setCombatOver(false); setOutcome(''); setRewardPaid(false); setMode('COMBAT'); }
   function startFirstCombat(){ // tutorial fight vs one interceptor
@@ -217,10 +214,11 @@ export default function EclipseIntegrated(){
     if (initRoundIfNeeded()) return; const e = queue[turnPtr]; const isP = e.side==='P'; const atk = isP ? fleet[e.idx] : enemyFleet[e.idx]; const defFleet = isP ? enemyFleet : fleet; const strategy = isP ? 'guns' : 'kill'; const defIdx = targetIndex(defFleet, strategy); if (!atk || !atk.alive || !atk.stats.valid || defIdx === -1) { advancePtr(); return; } const lines:string[] = []; volley(atk, defFleet[defIdx], e.side, lines); setLog(l=>[...l, ...lines]); if (isP) setEnemyFleet([...defFleet]); else setFleet([...defFleet]); advancePtr(); }
   function advancePtr(){ const np = turnPtr + 1; setTurnPtr(np); if (np >= queue.length) endRound(); }
   function endRound(){ const pAlive = fleet.some(s => s.alive && s.stats.valid); const eAlive = enemyFleet.some(s => s.alive && s.stats.valid); if (!pAlive || !eAlive) { setAuto(false); return; } setRoundNum(n=>n+1); setTurnPtr(-1); setQueue([]); }
-  function calcRewards(enemy:any[], sector:number){ let c=0,m=0,s=0; enemy.forEach(sh=>{ if(!sh) return; if(sh.frame.id==='interceptor'){ c+=18; m+=1; } else if(sh.frame.id==='cruiser'){ c+=28; m+=1; s+=1; } else if(sh.frame.id==='dread'){ c+=45; m+=2; s+=1; } }); const boss = (sector===5 || sector===10); const mult = 1 + Math.floor(Math.max(0, sector-1))*0.06; c = Math.floor(c*mult * (boss?1.25:1)); if(boss){ s += 1; m += 1; } return { c, m, s }; }
+  function calcRewards(enemy:Ship[], sector:number){ let c=0,m=0,s=0; enemy.forEach(sh=>{ if(!sh) return; if(sh.frame.id==='interceptor'){ c+=18; m+=1; } else if(sh.frame.id==='cruiser'){ c+=28; m+=1; s+=1; } else if(sh.frame.id==='dread'){ c+=45; m+=2; s+=1; } }); const boss = (sector===5 || sector===10); const mult = 1 + Math.floor(Math.max(0, sector-1))*0.06; c = Math.floor(c*mult * (boss?1.25:1)); if(boss){ s += 1; m += 1; } return { c, m, s }; }
   function restoreAndCullFleetAfterCombat(){ setFleet(f => f.filter(s => s.alive).map(s => ({...s, hull: s.stats.hullCap}))); setFocused(0); }
 
   // Auto-step loop
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(()=>{ if(!auto || mode!=='COMBAT' || combatOver) return; const t = setInterval(()=> stepTurn(), 500); return ()=> clearInterval(t); }, [auto, mode, combatOver, queue, turnPtr, fleet, enemyFleet]);
 
   // First-visit rules & new-run modal
@@ -247,7 +245,7 @@ export default function EclipseIntegrated(){
       const hasHull = items.some(isHull), hasDrive = items.some(isDrive), hasSrc = items.some(isSource), hasWeap = items.some(isWeapon);
       console.assert(hasHull && hasDrive && hasSrc && hasWeap, 'Shop guarantees present');
       // Frame safety & makeShip on all frames
-      ['interceptor','cruiser','dread'].forEach((id:any)=>{
+      (['interceptor','cruiser','dread'] as FrameId[]).forEach((id:FrameId)=>{
         const f = getFrame(id);
         const s = makeShip(f, [PARTS.sources[0], PARTS.drives[0]]);
         console.assert(s.stats.hullCap>=1 && s.stats.valid, `makeShip valid for ${id}`);
@@ -258,9 +256,9 @@ export default function EclipseIntegrated(){
   // ---------- View ----------
   const fleetValid = fleet.every(s=>s.stats.valid) && tonnage.used <= capacity.cap;
 
-  function researchLabel(track:'Military'|'Grid'|'Nano'){ const curr = (research as any)[track]||1; if(curr>=3) return `${track} 3 (max)`; const nxt = curr+1; const cost:any = nextTierCost(curr)!; return `${track} ${curr}→${nxt} (${cost.c}¢ + ${cost.s}🔬)`; }
-  function canResearch(track:'Military'|'Grid'|'Nano'){ const curr = (research as any)[track]||1; if(curr>=3) return false; const {c,s}:any = nextTierCost(curr)!; return resources.credits>=c && resources.science>=s; }
-  function upgradeLockInfo(ship:any){ if(!ship) return null; if(ship.frame.id==='interceptor'){ return { need: 2, next:'Cruiser' }; } if(ship.frame.id==='cruiser'){ return { need: 3, next:'Dreadnought' }; } return null; }
+  function researchLabel(track:'Military'|'Grid'|'Nano'){ const curr = (research as Research)[track]||1; if(curr>=3) return `${track} 3 (max)`; const nxt = curr+1; const cost = nextTierCost(curr)!; return `${track} ${curr}→${nxt} (${cost.c}¢ + ${cost.s}🔬)`; }
+  function canResearch(track:'Military'|'Grid'|'Nano'){ const curr = (research as Research)[track]||1; if(curr>=3) return false; const {c,s} = nextTierCost(curr)!; return resources.credits>=c && resources.science>=s; }
+  function upgradeLockInfo(ship:Ship|null|undefined){ if(!ship) return null; if(ship.frame.id==='interceptor'){ return { need: 2, next:'Cruiser' }; } if(ship.frame.id==='cruiser'){ return { need: 3, next:'Dreadnought' }; } return null; }
 
   return (
     <div className="bg-zinc-950 min-h-screen text-zinc-100">
@@ -322,8 +320,8 @@ export default function EclipseIntegrated(){
           upgradeShip={upgradeShip}
           upgradeDock={upgradeDock}
           upgradeLockInfo={upgradeLockInfo}
-          blueprints={blueprints as any}
-          sellPart={sellPart as any}
+          blueprints={blueprints}
+          sellPart={sellPart}
           shop={shop}
           ghost={ghost}
           buyAndInstall={buyAndInstall}

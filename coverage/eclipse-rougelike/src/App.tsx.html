@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">69.85% </span>
+                <span class="strong">69.2% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>197/282</span>
+                <span class='fraction'>191/276</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">69.85% </span>
+                <span class="strong">69.2% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>197/282</span>
+                <span class='fraction'>191/276</span>
             </div>
         
             
@@ -419,34 +419,7 @@
 <a name='L354'></a><a href='#L354'>354</a>
 <a name='L355'></a><a href='#L355'>355</a>
 <a name='L356'></a><a href='#L356'>356</a>
-<a name='L357'></a><a href='#L357'>357</a>
-<a name='L358'></a><a href='#L358'>358</a>
-<a name='L359'></a><a href='#L359'>359</a>
-<a name='L360'></a><a href='#L360'>360</a>
-<a name='L361'></a><a href='#L361'>361</a>
-<a name='L362'></a><a href='#L362'>362</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L357'></a><a href='#L357'>357</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -454,6 +427,23 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
@@ -788,6 +778,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { useEffect, useMemo, useState } from "react";
 import './index.css'
 import { FRAMES, PARTS, getFrame, successThreshold, rollSuccesses, sizeRank, makeShip, rollInventory, sectorScaling, randomEnemyPartsFor, nextTierCost, isSource, isHull, isDrive, isWeapon } from './game'
+import { INITIAL_BLUEPRINTS, INITIAL_RESEARCH, INITIAL_RESOURCES } from './config/defaults'
 import { type FrameId } from './game'
 import { ResourceBar } from './components/ui'
 import OutpostPage from './pages/OutpostPage'
@@ -808,13 +799,7 @@ import CombatPage from './pages/CombatPage'
 &nbsp;
 &nbsp;
 // ------------------------------- Initial Config ----------------------------
-const INITIAL_BLUEPRINTS: Record&lt;FrameId, any[]&gt; = {
-  interceptor: [PARTS.sources[0], PARTS.drives[0], PARTS.weapons[0], PARTS.computers[0]],
-  cruiser:     [PARTS.sources[1], PARTS.drives[1], PARTS.weapons[0], PARTS.shields[0]],
-  dread:       [PARTS.sources[1], PARTS.drives[1], PARTS.weapons[0], PARTS.weapons[0], PARTS.shields[0]],
-};
-const INITIAL_RESEARCH = { Military: 1, Grid: 1, Nano: 1 };
-const INITIAL_RESOURCES = { credits: 10, materials: 5, science: 0 };
+// Defaults are now configured in src/config/defaults.ts
 &nbsp;
 // ------------------------------- Integrated App ----------------------------
 export default function EclipseIntegrated(){
@@ -1153,7 +1138,7 @@ export default function EclipseIntegrated(){
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-24T15:22:47.324Z
+                at 2025-08-24T15:36:09.136Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

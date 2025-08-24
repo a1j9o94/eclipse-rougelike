@@ -4,13 +4,13 @@ import {
   tierCap,
   makeShip,
   getFrame,
-  PARTS,
 } from '../game'
+import { PARTS } from '../config/parts'
 
 describe('core helpers', () => {
   it('successThreshold clamps between 2 and 6', () => {
-    expect(successThreshold(-5 as any, 10 as any)).toBe(6)
-    expect(successThreshold(10 as any, -5 as any)).toBe(2)
+    expect(successThreshold(-5, 10)).toBe(6)
+    expect(successThreshold(10, -5)).toBe(2)
   })
 
   it('tierCap averages and clamps 1..3', () => {

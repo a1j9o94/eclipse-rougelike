@@ -1,6 +1,9 @@
 // React import not required with modern JSX transform
 import { ItemCard, PowerBadge } from '../components/ui'
 import { type FrameId, isSource } from '../game'
+import { type Resources, type Research } from '../config/defaults'
+import { type Part } from '../config/parts'
+import { type Ship, type GhostDelta } from '../config/types'
 
 export function OutpostPage({
   resources,
@@ -27,25 +30,25 @@ export function OutpostPage({
   fleetValid,
   startCombat,
 }:{
-  resources:any,
+  resources:Resources,
   rerollCost:number,
   doReroll:()=>void,
-  research:any,
+  research:Research,
   researchLabel:(t:'Military'|'Grid'|'Nano')=>string,
   canResearch:(t:'Military'|'Grid'|'Nano')=>boolean,
   researchTrack:(t:'Military'|'Grid'|'Nano')=>void,
-  fleet:any[],
+  fleet:Ship[],
   focused:number,
   setFocused:(n:number)=>void,
   buildShip:()=>void,
   upgradeShip:(idx:number)=>void,
   upgradeDock:()=>void,
-  upgradeLockInfo:(ship:any)=>{need:number,next:string}|null,
-  blueprints:Record<FrameId, any[]>,
+  upgradeLockInfo:(ship:Ship|undefined|null)=>{need:number,next:string}|null,
+  blueprints:Record<FrameId, Part[]>,
   sellPart:(frameId:FrameId, idx:number)=>void,
-  shop:{items:any[]},
-  ghost:(ship:any, part:any)=>any,
-  buyAndInstall:(part:any)=>void,
+  shop:{items:Part[]},
+  ghost:(ship:Ship, part:Part)=>GhostDelta,
+  buyAndInstall:(part:Part)=>void,
   capacity:{cap:number},
   tonnage:{used:number,cap:number},
   fleetValid:boolean,
@@ -76,7 +79,7 @@ export function OutpostPage({
               <div className="flex items-center justify-between"><div className="font-semibold">{s.frame.name} <span className="text-xs opacity-70">(t{s.frame.tonnage})</span></div><PowerBadge use={s.stats.powerUse} prod={s.stats.powerProd} /></div>
               <div className="text-xs opacity-80 mt-1">Init {s.stats.init} • Tiles {s.parts.length}/{s.frame.tiles}</div>
               <div className="mt-1">Hull: {s.hull}/{s.stats.hullCap}</div>
-              <div className="mt-1 text-xs">Parts: {s.parts.map((p:any)=>p.name).join(', ')||'—'}</div>
+              <div className="mt-1 text-xs">Parts: {s.parts.map((p:Part)=>p.name).join(', ')||'—'}</div>
               {!s.stats.valid && <div className="text-xs text-rose-300 mt-1">Not deployable: needs Source + Drive and ⚡ OK</div>}
             </button>
           ))}
@@ -113,7 +116,7 @@ export function OutpostPage({
       <div className="p-3">
         <div className="text-lg font-semibold mb-2">Outpost Inventory</div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {shop.items.map((it:any, i:number)=> { const canAfford = resources.credits >= (it.cost||0); const gd = focusedShip? ghost(focusedShip, it) : null; return (<ItemCard key={i} item={it} canAfford={canAfford} ghostDelta={gd} onBuy={()=>buyAndInstall(it)} />); })}
+          {shop.items.map((it:Part, i:number)=> { const canAfford = resources.credits >= (it.cost||0); const gd = focusedShip? ghost(focusedShip, it) : null; return (<ItemCard key={i} item={it} canAfford={canAfford} ghostDelta={gd} onBuy={()=>buyAndInstall(it)} />); })}
         </div>
       </div>
 
