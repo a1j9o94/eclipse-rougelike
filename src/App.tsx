@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import './index.css'
-import { FRAMES, PARTS, getFrame, successThreshold, rollSuccesses, sizeRank, makeShip, rollInventory, randomEnemyPartsFor, nextTierCost, isSource, isHull, isDrive, isWeapon, getSectorSpec, SECTORS } from './game'
+import { FRAMES, PARTS, getFrame, successThreshold, rollSuccesses, sizeRank, makeShip, rollInventory, randomEnemyPartsFor, nextTierCost, isSource, isHull, isDrive, isWeapon, getSectorSpec } from './game'
 import { INITIAL_BLUEPRINTS, INITIAL_RESEARCH, INITIAL_RESOURCES, type Resources, type Research } from './config/defaults'
 import { ECONOMY } from './config/economy'
 import { type FrameId } from './game'
