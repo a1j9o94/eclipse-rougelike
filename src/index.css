@@ -1,0 +1,8 @@
+/* src/index.css */
+@import "tailwindcss";
+
+/* Tell Tailwind what to scan (v4 way; no tailwind.config needed) */
+@source "./index.html";
+@source "./src/**/*.{ts,tsx}";
+
+html, body, #root { height: 100%; }
