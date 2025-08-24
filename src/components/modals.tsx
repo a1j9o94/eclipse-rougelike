@@ -1,5 +1,32 @@
 // React import not required with modern JSX transform
 import { ECONOMY, nextTierCost } from '../config/economy'
+import { getSectorSpec } from '../game'
+import { type SectorSpec } from '../config/types'
+import { FRAMES } from '../game'
+
+// Compute previews once per session so content is stable across openings
+type Preview = { sector:number; tonnage:number; tierCap:number; boss:boolean; example:string[] };
+let PREVIEWS_CACHE: Preview[] | null = null;
+function initPreviews(){
+  if(PREVIEWS_CACHE) return PREVIEWS_CACHE;
+  const targets = [1,5,10];
+  const out: Preview[] = [];
+  for(const s of targets){
+    const spec:SectorSpec = getSectorSpec(s);
+    // Simple deterministic-ish example: fill by largest-first frames up to tonnage
+    const options = [FRAMES.dread, FRAMES.cruiser, FRAMES.interceptor];
+    let rem = spec.enemyTonnage;
+    const names:string[] = [];
+    for(const f of options){
+      while(rem - f.tonnage >= 0){ names.push(f.name); rem -= f.tonnage; if(rem<=0) break; }
+      if(rem<=0) break;
+    }
+    if(names.length===0) names.push('Interceptor');
+    out.push({ sector: s, tonnage: spec.enemyTonnage, tierCap: spec.enemyTierCap, boss: spec.boss, example: names });
+  }
+  PREVIEWS_CACHE = out;
+  return PREVIEWS_CACHE;
+}
 import { SECTORS } from '../game'
 
 export function NewRunModal({ onNewRun }:{ onNewRun:(diff:'easy'|'medium'|'hard')=>void }){
@@ -19,6 +46,7 @@ export function NewRunModal({ onNewRun }:{ onNewRun:(diff:'easy'|'medium'|'hard'
 }
 
 export function RulesModal({ onDismiss }:{ onDismiss:()=>void }){
+  const previews = initPreviews();
   const buildMat = ECONOMY.buildInterceptor.materials;
   const buildCred = ECONOMY.buildInterceptor.credits;
   const dockMat = ECONOMY.dockUpgrade.materials;
@@ -64,6 +92,21 @@ export function RulesModal({ onDismiss }:{ onDismiss:()=>void }){
           </div>
           <div>
             <b>Sector Plan.</b> Each sector has a fixed enemy tonnage and tech tier cap. You can preview all sectors in the Combat Plan.
+          </div>
+          <div>
+            <b>Progression & Examples.</b> Below are snapshots for upcoming milestones — a typical enemy tonnage and a plausible fleet mix.
+            <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {previews.map(p=> (
+                <div key={p.sector} className="p-2 rounded-lg border border-zinc-700 bg-zinc-900">
+                  <div className="font-medium">Sector {p.sector} {p.boss? '(Boss)':''}</div>
+                  <div className="text-xs opacity-80">Enemy tonnage {p.tonnage} • Tier cap T{p.tierCap}</div>
+                  <div className="text-xs mt-1">
+                    <div className="opacity-70">Example fleet:</div>
+                    <div>{p.example.join(', ')}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
         <div className="mt-3"><button onClick={onDismiss} className="w-full px-4 py-2 rounded-xl bg-emerald-600">Let’s go</button></div>
