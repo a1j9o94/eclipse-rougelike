@@ -301,7 +301,6 @@ export default function EclipseIntegrated(){
   function sellPart(frameId:FrameId, idx:number){ const arr = (blueprints as any)[frameId]; if(!arr) return; const part = arr[idx]; if(!part) return; const next = arr.filter((_:any,i:number)=> i!==idx); const tmp = makeShip(getFrame(frameId), next); if(!tmp.stats.valid) return; const refund = Math.floor((part.cost||0)*0.25); setResources(r=>({...r, credits: r.credits + refund })); updateBlueprint(frameId, _=> next); }
 
   // ---------- Capacity & build/upgrade ----------
-  function canAddTonnage(delta:number){ return (tonnage.used + delta) <= capacity.cap; }
   function buildShip(){
     // Build Interceptor: 3🧱 + 2¢
     const cost = { c:2, m:3 };
