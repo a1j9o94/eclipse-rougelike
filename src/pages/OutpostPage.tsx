@@ -93,52 +93,15 @@ export function OutpostPage({
   }
   return (
     <div className="mx-auto max-w-5xl">
-      {/* Shop Header: Reroll + Research */}
-      <div className="p-3 border-b border-zinc-800 bg-zinc-950">
-        <div className="flex gap-2 items-center flex-wrap">
-          <button onClick={doReroll} disabled={resources.credits<rerollCost} className={`px-3 py-2 rounded-lg text-sm sm:text-base ${resources.credits>=rerollCost?'bg-purple-700 hover:bg-purple-600 active:scale-[.99]':'bg-zinc-700 opacity-60'}`}>Reroll ({rerollCost}¢)</button>
-          <div className="text-[11px] sm:text-xs opacity-70">Reroll +{ECONOMY.reroll.increment} after each Reroll/Research</div>
-          <div className="flex-1" />
-          <button onClick={()=>setShowPlan(true)} className="px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs">📋 Combat Plan</button>
-        </div>
-        <div className="mt-2 grid grid-cols-3 gap-2 text-sm">
-          {tracks.map(t=> (
-            <button key={t} onClick={()=>researchTrack(t)} disabled={!canResearch(t)} className={`px-3 py-2 rounded-xl leading-tight ${canResearch(t)?'bg-zinc-900 border border-zinc-700 hover:border-zinc-500':'bg-zinc-800 opacity-60'}`}>{researchLabel(t)}</button>
-          ))}
-        </div>
-        <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
-          {tracks.map(t=> {
-            if(t==='Military'){
-              const note = militaryNextNote();
-              return (
-                <div key={t} className="text-[11px] sm:text-xs px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800">
-                  <div className="font-medium mb-1">{t} — Next unlock</div>
-                  <div className="opacity-80">{note}</div>
-                </div>
-              );
-            }
-            const nxt = nextUnlocksFor(t); const preview = nxt.slice(0,3); const more = Math.max(0, nxt.length - preview.length);
-            return (
-              <div key={t} className="text-[11px] sm:text-xs px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800">
-                <div className="font-medium mb-1">{t} — Next unlocks</div>
-                {nxt.length===0 ? (
-                  <div className="opacity-70">Maxed or no new parts at next tier</div>
-                ) : (
-                  <div className="space-y-0.5">
-                    {preview.map((p, i)=> (<div key={i} className="flex items-center justify-between"><span>{p.name}</span><span className="opacity-60">{p.cat} • T{p.tier}</span></div>))}
-                    {more>0 && <div className="opacity-60">+{more} more…</div>}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
       {showPlan && <CombatPlanModal onClose={()=>setShowPlan(false)} />}
 
       {/* Hangar */}
       <div className="p-3">
-        <div className="text-lg font-semibold mb-2">Hangar (Class Blueprints)</div>
+        <div className="flex items-center gap-2 mb-2">
+          <div className="text-lg font-semibold">Hangar (Class Blueprints)</div>
+          <div className="flex-1" />
+          <button onClick={()=>setShowPlan(true)} className="px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs">📋 Combat Plan</button>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {fleet.map((s,i)=> (
             <button key={i} onClick={()=>setFocused(i)} className={`w-full text-left p-3 rounded-xl border transition ${i===focused?'border-sky-400 bg-sky-400/10':'border-zinc-700 bg-zinc-900 hover:border-zinc-600'}`}>
@@ -159,6 +122,10 @@ export function OutpostPage({
             {ok ? `Upgrade to ${info.next} unlocked (Military ≥ ${info.need})` : `Upgrade to ${info.next} locked: requires Military ≥ ${info.need}`}
           </div>
         ); })()}
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          <button onClick={upgradeDock} className="px-3 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95">Expand Capacity +{ECONOMY.dockUpgrade.capacityDelta} ({ECONOMY.dockUpgrade.materials}🧱 + {ECONOMY.dockUpgrade.credits}¢)</button>
+          <div className="px-3 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-sm">Capacity: <b>{capacity.cap}</b> • Used: <b>{tonnage.used}</b></div>
+        </div>
 
         {/* Blueprint Manager with Sell */}
         <div className="mt-3">
@@ -178,22 +145,59 @@ export function OutpostPage({
         </div>
       </div>
 
-      {/* Outpost Inventory (items) */}
+      {/* Outpost: Reroll + Shop + Tech Upgrades */}
       <div className="p-3">
-        <div className="text-lg font-semibold mb-2">Outpost Inventory</div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-          {shop.items.map((it:Part, i:number)=> { const canAfford = resources.credits >= (it.cost||0); const gd = focusedShip? ghost(focusedShip, it) : null; return (<ItemCard key={i} item={it} canAfford={canAfford} ghostDelta={gd as GhostDelta} onBuy={()=>buyAndInstall(it)} />); })}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+          {/* Shop side */}
+          <div className="lg:col-span-2">
+            <div className="flex gap-2 items-center flex-wrap mb-2">
+              <button onClick={doReroll} disabled={resources.credits<rerollCost} className={`px-3 py-2 rounded-lg text-sm sm:text-base ${resources.credits>=rerollCost?'bg-purple-700 hover:bg-purple-600 active:scale-[.99]':'bg-zinc-700 opacity-60'}`}>Reroll ({rerollCost}¢)</button>
+              <div className="text-[11px] sm:text-xs opacity-70">Reroll +{ECONOMY.reroll.increment} after each Reroll/Research</div>
+            </div>
+            <div className="text-lg font-semibold mb-2">Outpost Inventory</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {shop.items.map((it:Part, i:number)=> { const canAfford = resources.credits >= (it.cost||0); const gd = focusedShip? ghost(focusedShip, it) : null; return (<ItemCard key={i} item={it} canAfford={canAfford} ghostDelta={gd as GhostDelta} onBuy={()=>buyAndInstall(it)} />); })}
+            </div>
+          </div>
+          {/* Tech Upgrades side */}
+          <div>
+            <div className="text-lg font-semibold mb-2">Tech Upgrades</div>
+            <div className="grid grid-cols-3 gap-2 text-sm">
+              {tracks.map(t=> (
+                <button key={t} onClick={()=>researchTrack(t)} disabled={!canResearch(t)} className={`px-3 py-2 rounded-xl leading-tight ${canResearch(t)?'bg-zinc-900 border border-zinc-700 hover:border-zinc-500':'bg-zinc-800 opacity-60'}`}>{researchLabel(t)}</button>
+              ))}
+            </div>
+            <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-2">
+              {tracks.map(t=> {
+                if(t==='Military'){
+                  const note = militaryNextNote();
+                  return (
+                    <div key={t} className="text-[11px] sm:text-xs px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800">
+                      <div className="font-medium mb-1">{t} — Next unlock</div>
+                      <div className="opacity-80">{note}</div>
+                    </div>
+                  );
+                }
+                const nxt = nextUnlocksFor(t); const preview = nxt.slice(0,3); const more = Math.max(0, nxt.length - preview.length);
+                return (
+                  <div key={t} className="text-[11px] sm:text-xs px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800">
+                    <div className="font-medium mb-1">{t} — Next unlocks</div>
+                    {nxt.length===0 ? (
+                      <div className="opacity-70">Maxed or no new parts at next tier</div>
+                    ) : (
+                      <div className="space-y-0.5">
+                        {preview.map((p, i)=> (<div key={i} className="flex items-center justify-between"><span>{p.name}</span><span className="opacity-60">{p.cat} • T{p.tier}</span></div>))}
+                        {more>0 && <div className="opacity-60">+{more} more…</div>}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* Docks */}
-      <div className="px-3 pb-24">
-        <div className="font-semibold mb-2">Dock Upgrades</div>
-        <div className="grid grid-cols-2 gap-2">
-          <button onClick={upgradeDock} className="px-3 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95">Expand Capacity +{ECONOMY.dockUpgrade.capacityDelta} ({ECONOMY.dockUpgrade.materials}🧱 + {ECONOMY.dockUpgrade.credits}¢)</button>
-          <div className="px-3 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-sm">Capacity: <b>{capacity.cap}</b> • Used: <b>{tonnage.used}</b></div>
-        </div>
-      </div>
+      
 
       {/* Start Combat */}
       <div className="sticky bottom-0 z-10 p-3 bg-zinc-950/95 backdrop-blur border-t border-zinc-800">

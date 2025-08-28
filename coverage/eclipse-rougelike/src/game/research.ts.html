@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for eclipse-rougelike/src/config/frames.ts</title>
+    <title>Code coverage report for eclipse-rougelike/src/game/research.ts</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../../prettify.css" />
     <link rel="stylesheet" href="../../../base.css" />
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../../index.html">All files</a> / <a href="index.html">eclipse-rougelike/src/config</a> frames.ts</h1>
+        <h1><a href="../../../index.html">All files</a> / <a href="index.html">eclipse-rougelike/src/game</a> research.ts</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>5/5</span>
+                <span class='fraction'>7/7</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">28.57% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/0</span>
+                <span class='fraction'>2/7</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/0</span>
+                <span class='fraction'>2/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>5/5</span>
+                <span class='fraction'>7/7</span>
             </div>
         
             
@@ -74,48 +74,27 @@
 <a name='L9'></a><a href='#L9'>9</a>
 <a name='L10'></a><a href='#L10'>10</a>
 <a name='L11'></a><a href='#L11'>11</a>
-<a name='L12'></a><a href='#L12'>12</a>
-<a name='L13'></a><a href='#L13'>13</a>
-<a name='L14'></a><a href='#L14'>14</a>
-<a name='L15'></a><a href='#L15'>15</a>
-<a name='L16'></a><a href='#L16'>16</a>
-<a name='L17'></a><a href='#L17'>17</a>
-<a name='L18'></a><a href='#L18'>18</a>
-<a name='L19'></a><a href='#L19'>19</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L12'></a><a href='#L12'>12</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">42x</span>
+<span class="cline-any cline-yes">42x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">84x</span>
+<span class="cline-any cline-yes">84x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">export type Frame = {
-    id: string;
-    name: string;
-    tiles: number;
-    baseHull: number;
-    rank: number;
-    tonnage: number;
-};
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { nextTierCost } from '../config/economy'
 &nbsp;
+export function researchLabel(track:'Military'|'Grid'|'Nano', research:{Military:number, Grid:number, Nano:number}){
+  const curr = research[track<span class="branch-0 cbranch-no" title="branch not covered" >]||1; i</span>f(curr&gt;=3) <span class="branch-0 cbranch-no" title="branch not covered" >return `${track} 3 (max)`; c</span>onst nxt = curr+1; const cost = nextTierCost(curr)!; return `${track} ${curr}→${nxt} (${cost.c}¢ + ${cost.s}🔬)`;
+}
 &nbsp;
-export const FRAMES: Record&lt;FrameId, Frame&gt; = {
-  interceptor: { id: "interceptor", name: "Interceptor", tiles: 6, baseHull: 1, rank: 1, tonnage: 1 },
-  cruiser: { id: "cruiser", name: "Cruiser", tiles: 8, baseHull: 1, rank: 2, tonnage: 2 },
-  dread: { id: "dread", name: "Dreadnought", tiles: 10, baseHull: 1, rank: 3, tonnage: 3 },
-} as const;
+export function canResearch(track:'Military'|'Grid'|'Nano', research:{Military:number, Grid:number, Nano:number}, resources:{credits:number, science:number}){
+  const curr = research[track<span class="branch-0 cbranch-no" title="branch not covered" >]||1; i</span>f(curr&gt;=3) <span class="branch-0 cbranch-no" title="branch not covered" >return false; c</span>onst cost = nextTierCost(curr)!; return resources.credits&gt;=cost.<span class="branch-0 cbranch-no" title="branch not covered" >c &amp;&amp; resources.science&gt;=cost.s;</span>
+}
 &nbsp;
-export type FrameId = 'interceptor' | 'cruiser' | 'dread';
 &nbsp;
 &nbsp;</pre></td></tr></table></pre>
 

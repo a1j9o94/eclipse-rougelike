@@ -3,9 +3,11 @@ import { ECONOMY, nextTierCost } from '../config/economy'
 import { getSectorSpec } from '../game'
 import { type SectorSpec } from '../config/types'
 import { FRAMES } from '../game'
+import { useState } from 'react'
+import { FACTIONS, type FactionId } from '../config/factions'
 
 // Compute previews once per session so content is stable across openings
-type Preview = { sector:number; tonnage:number; tierCap:number; boss:boolean; example:string[] };
+type Preview = { sector:number; tonnage:number; scienceCap:number; boss:boolean; example:string[] };
 let PREVIEWS_CACHE: Preview[] | null = null;
 function initPreviews(){
   if(PREVIEWS_CACHE) return PREVIEWS_CACHE;
@@ -22,23 +24,36 @@ function initPreviews(){
       if(rem<=0) break;
     }
     if(names.length===0) names.push('Interceptor');
-    out.push({ sector: s, tonnage: spec.enemyTonnage, tierCap: spec.enemyTierCap, boss: spec.boss, example: names });
+    out.push({ sector: s, tonnage: spec.enemyTonnage, scienceCap: spec.enemyScienceCap, boss: spec.boss, example: names });
   }
   PREVIEWS_CACHE = out;
   return PREVIEWS_CACHE;
 }
 import { SECTORS } from '../game'
 
-export function NewRunModal({ onNewRun }:{ onNewRun:(diff:'easy'|'medium'|'hard')=>void }){
+export function NewRunModal({ onNewRun }:{ onNewRun:(diff:'easy'|'medium'|'hard', faction:FactionId)=>void }){
+  const [faction, setFaction] = useState<FactionId>('scientists');
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 bg-black/70">
       <div className="w-full max-w-md bg-zinc-900 border border-zinc-700 rounded-2xl p-4">
         <div className="text-lg font-semibold">Start New Run</div>
-        <div className="text-sm opacity-80 mt-1">Choose difficulty. Easy/Medium grant a grace respawn after a wipe; Hard is a full reset.</div>
+        <div className="text-sm opacity-80 mt-1">Choose a faction and difficulty. Easy/Medium grant a grace respawn after a wipe; Hard is a full reset.</div>
+        <div className="mt-3 grid grid-cols-1 gap-2">
+          {FACTIONS.map(f => (
+            <button
+              key={f.id}
+              onClick={()=>setFaction(f.id)}
+              className={`text-left px-3 py-2 rounded-xl border ${faction===f.id? 'border-emerald-500 bg-emerald-900/20' : 'border-zinc-700 bg-zinc-900'}`}
+            >
+              <div className="font-medium">{f.name}</div>
+              <div className="text-xs opacity-80">{f.description}</div>
+            </button>
+          ))}
+        </div>
         <div className="grid grid-cols-3 gap-2 mt-3">
-          <button className="px-3 py-2 rounded-xl bg-emerald-700" onClick={()=>onNewRun('easy')}>Easy (3✈)</button>
-          <button className="px-3 py-2 rounded-xl bg-amber-700" onClick={()=>onNewRun('medium')}>Medium (2✈)</button>
-          <button className="px-3 py-2 rounded-xl bg-rose-700" onClick={()=>onNewRun('hard')}>Hard (1✈)</button>
+          <button className="px-3 py-2 rounded-xl bg-emerald-700" onClick={()=>onNewRun('easy', faction)}>Easy (3✈)</button>
+          <button className="px-3 py-2 rounded-xl bg-amber-700" onClick={()=>onNewRun('medium', faction)}>Medium (2✈)</button>
+          <button className="px-3 py-2 rounded-xl bg-rose-700" onClick={()=>onNewRun('hard', faction)}>Hard (1✈)</button>
         </div>
       </div>
     </div>
@@ -99,7 +114,7 @@ export function RulesModal({ onDismiss }:{ onDismiss:()=>void }){
               {previews.map(p=> (
                 <div key={p.sector} className="p-2 rounded-lg border border-zinc-700 bg-zinc-900">
                   <div className="font-medium">Sector {p.sector} {p.boss? '(Boss)':''}</div>
-                  <div className="text-xs opacity-80">Enemy tonnage {p.tonnage} • Tier cap T{p.tierCap}</div>
+                  <div className="text-xs opacity-80">Enemy tonnage {p.tonnage} • Tier cap T{p.scienceCap}</div>
                   <div className="text-xs mt-1">
                     <div className="opacity-70">Example fleet:</div>
                     <div>{p.example.join(', ')}</div>
@@ -124,7 +139,7 @@ export function CombatPlanModal({ onClose }:{ onClose:()=>void }){
           {SECTORS.map(s=> (
             <div key={s.sector} className="px-2 py-1 rounded bg-zinc-950 border border-zinc-800 flex items-center justify-between">
               <div>Sector {s.sector}{s.boss? ' (Boss)':''}</div>
-              <div className="opacity-80">Enemy tonnage {s.enemyTonnage} • Tier cap T{s.enemyTierCap}</div>
+              <div className="opacity-80">Enemy tonnage {s.enemyTonnage} • Science cap T{s.enemyScienceCap}</div>
             </div>
           ))}
         </div>

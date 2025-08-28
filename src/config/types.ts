@@ -35,8 +35,14 @@ export type InitiativeEntry = {
 export type SectorSpec = {
   sector: number;
   enemyTonnage: number;
-  enemyTierCap: 1|2|3;
+  enemyScienceCap: 1|2|3;
   boss: boolean;
 }
+
+// State slice aliases: small, focused state shapes shared across modules
+export type ResourcesState = { credits:number; materials:number; science:number };
+export type ResearchState = { Military:number; Grid:number; Nano:number };
+export type CapacityState = { cap:number };
+export type TonnageState = { used:number; cap:number };
 
 

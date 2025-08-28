@@ -80,20 +80,19 @@ export function rollInventory(research:{Military:number, Grid:number, Nano:numbe
 // ------------------------------- Enemy Scaling -----------------------------
 // sectorScaling now provided by config/pacing
 
-export function randomEnemyPartsFor(frame:Frame, playerResearch:{Military:number, Grid:number, Nano:number}, tierBonus:number, boss:boolean){
+export function randomEnemyPartsFor(frame:Frame, scienceCap:number, boss:boolean){
   // Defensive: ensure a valid frame object
   if(!frame){
     console.warn('randomEnemyPartsFor called without frame; defaulting to interceptor');
     frame = FRAMES.interceptor;
   }
-  const baseCap = tierCap(playerResearch);
-  const cap = Math.min(3, baseCap + (tierBonus||0));
-  const src = cap>=2 ? PARTS.sources[1] : PARTS.sources[0];
-  const drv = cap>=2 ? PARTS.drives[1] : PARTS.drives[0];
-  const weapon = cap>=2 ? PARTS.weapons[1] : PARTS.weapons[0];
-  const comp = cap>=2 ? PARTS.computers[1] : PARTS.computers[0];
-  const shld = cap>=2 ? PARTS.shields[1] : PARTS.shields[0];
-  const hull = cap>=2 ? PARTS.hull[1] : PARTS.hull[0];
+  
+  const src = scienceCap>=2 ? PARTS.sources[1] : PARTS.sources[0];
+  const drv = scienceCap>=2 ? PARTS.drives[1] : PARTS.drives[0];
+  const weapon = scienceCap>=2 ? PARTS.weapons[1] : PARTS.weapons[0];
+  const comp = scienceCap>=2 ? PARTS.computers[1] : PARTS.computers[0];
+  const shld = scienceCap>=2 ? PARTS.shields[1] : PARTS.shields[0];
+  const hull = scienceCap>=2 ? PARTS.hull[1] : PARTS.hull[0];
 
   // Start with hull-first survivability
   let build:Part[] = [src, drv, hull, weapon];
