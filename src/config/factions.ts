@@ -14,6 +14,7 @@ export type Faction = {
   startingResearchDelta?: Partial<Research>; // add to initial research
   startingResourcesDelta?: Partial<Resources>; // add resources
   startingCapacityDelta?: number; // add to initial dock capacity
+  startingShopItemsDelta?: number; // influence shop size
 };
 
 export const FACTIONS: readonly Faction[] = [
@@ -36,6 +37,7 @@ export const FACTIONS: readonly Faction[] = [
     name: 'Helios Cartel',
     description: '+10¢ +3🧱 to jumpstart the economy; rerolls become cheaper to start.',
     startingResourcesDelta: { credits: 10, materials: 3 },
+    startingShopItemsDelta: 0,
   },
   {
     id: 'raiders',

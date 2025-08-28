@@ -3,6 +3,7 @@ import { type FrameId } from '../config/frames'
 import { getFaction, type FactionId } from '../config/factions'
 import { type Part } from '../config/parts'
 import { getFrame, makeShip, rollInventory } from './index'
+import { ECONOMY } from '../config/economy'
 
 export type NewRunParams = { difficulty: 'easy'|'medium'|'hard'; faction: FactionId };
 export type NewRunState = {
@@ -47,7 +48,7 @@ export function initNewRun({ difficulty, faction }: NewRunParams): NewRunState{
   const count = difficulty==='easy'?3 : difficulty==='medium'?2 : 1;
   const fleet = Array.from({length: count}, ()=> makeShip(getFrame(startFrameId), [ ...classBlueprints[startFrameId] ]));
 
-  const shopItems = rollInventory(research, 8);
+  const shopItems = rollInventory(research, ECONOMY.shop.itemsBase + (f.startingShopItemsDelta||0));
 
   const capacity = { cap: INITIAL_CAPACITY.cap + (f.startingCapacityDelta||0) };
 

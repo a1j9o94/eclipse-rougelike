@@ -8,6 +8,7 @@ export const ECONOMY = {
   },
   dockUpgrade: { credits: 4, materials: 4, capacityDelta: 2, capacityMax: 10 },
   reroll: { base: 8, increment: 4 },
+  shop: { itemsBase: 4 },
 } as const;
 
 export function nextTierCost(curr:number){

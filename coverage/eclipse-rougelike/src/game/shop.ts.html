@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">56.25% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>9/16</span>
+                <span class='fraction'>16/16</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">28.57% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>1/2</span>
+                <span class='fraction'>2/7</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/2</span>
+                <span class='fraction'>2/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">56.25% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>9/16</span>
+                <span class='fraction'>16/16</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -94,13 +94,13 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { type Part } from '../config/parts'
@@ -109,18 +109,18 @@ import { rollInventory } from './index'
 &nbsp;
 export function doRerollAction(resources:{credits:number}, rerollCost:number, research:{Military:number, Grid:number, Nano:number}){
   if(resources.credits &lt; rerollCost) <span class="branch-0 cbranch-no" title="branch not covered" >return { ok:false as const };</span>
-  const items:Part[] = rollInventory(research, 8);
+  const items:Part[] = rollInventory(research, ECONOMY.shop.itemsBase);
   return { ok:true as const, delta:{ credits: -rerollCost }, items, nextRerollCostDelta: ECONOMY.reroll.increment };
 }
 &nbsp;
-export <span class="fstat-no" title="function not covered" >function researchAction(track:'Military'|'Grid'|'Nano', resources:{credits:number, science:number}, research:{Military:number, Grid:number, Nano:number}){</span>
-<span class="cstat-no" title="statement not covered" >  const curr = research[track]||1; if(curr&gt;=3) return { ok:false as const };</span>
-<span class="cstat-no" title="statement not covered" >  const cost = nextTierCost(curr); if(!cost) return { ok:false as const };</span>
-<span class="cstat-no" title="statement not covered" >  if(resources.credits &lt; cost.c || resources.science &lt; cost.s) return { ok:false as const };</span>
-<span class="cstat-no" title="statement not covered" >  const nextTier = curr + 1;</span>
-<span class="cstat-no" title="statement not covered" >  const items:Part[] = rollInventory({ ...research, [track]: nextTier } as {Military:number, Grid:number, Nano:number}, 8);</span>
-<span class="cstat-no" title="statement not covered" >  return { ok:true as const, nextTier, delta:{ credits: -cost.c, science: -cost.s }, items, nextRerollCostDelta: ECONOMY.reroll.increment };</span>
-<span class="cstat-no" title="statement not covered" >}</span>
+export function researchAction(track:'Military'|'Grid'|'Nano', resources:{credits:number, science:number}, research:{Military:number, Grid:number, Nano:number}){
+  const curr = research[track<span class="branch-0 cbranch-no" title="branch not covered" >]||1; i</span>f(curr&gt;=3) <span class="branch-0 cbranch-no" title="branch not covered" >return { ok:false as const };</span>
+  const cost = nextTierCost(curr); if(!cost) <span class="branch-0 cbranch-no" title="branch not covered" >return { ok:false as const };</span>
+  if(resources.credits &lt; cost.c || resources.science &lt; cost.s) <span class="branch-0 cbranch-no" title="branch not covered" >return { ok:false as const };</span>
+  const nextTier = curr + 1;
+  const items:Part[] = rollInventory({ ...research, [track]: nextTier } as {Military:number, Grid:number, Nano:number}, ECONOMY.shop.itemsBase);
+  return { ok:true as const, nextTier, delta:{ credits: -cost.c, science: -cost.s }, items, nextRerollCostDelta: ECONOMY.reroll.increment };
+}
 &nbsp;
 &nbsp;
 &nbsp;</pre></td></tr></table></pre>
@@ -130,7 +130,7 @@ export <span class="fstat-no" title="function not covered" >function researchAct
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-28T04:40:20.159Z
+                at 2025-08-28T23:08:42.450Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

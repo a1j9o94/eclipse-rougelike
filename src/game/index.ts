@@ -3,6 +3,7 @@
 // ------------------------------- Data Models -------------------------------
 import { FRAMES, type Frame, type FrameId } from '../config/frames'
 import { PARTS, ALL_PARTS, type Part } from '../config/parts'
+import { ECONOMY } from '../config/economy'
 export { FRAMES, type FrameId } from '../config/frames'
 export { PARTS, ALL_PARTS, type Part } from '../config/parts'
 export { getSectorSpec, SECTORS } from '../config/pacing'
@@ -63,8 +64,14 @@ export function makeShip(frame:Frame, parts:Part[]){
 
 export function tierCap(research:{Military:number, Grid:number, Nano:number}){ const avg = ((research.Military||1) + (research.Grid||1) + (research.Nano||1))/3; return Math.max(1, Math.min(3, Math.floor(avg))); }
 
-export function rollInventory(research:{Military:number, Grid:number, Nano:number}, count=8){
-  const pool = ALL_PARTS.filter((p:Part) => p.tier <= tierCap(research));
+export function rollInventory(research:{Military:number, Grid:number, Nano:number}, count: number = ECONOMY.shop.itemsBase){
+  // Exclude lower-tier items for any track already upgraded beyond them.
+  const minTierByCat:Record<'Military'|'Grid'|'Nano', number> = {
+    Military: research.Military||1,
+    Grid: research.Grid||1,
+    Nano: research.Nano||1,
+  };
+  const pool = ALL_PARTS.filter((p:Part) => p.tier <= tierCap(research) && p.tier >= minTierByCat[p.tech_category as 'Military'|'Grid'|'Nano']);
   const pick = (f:(p:Part)=>boolean)=>{ const cand = pool.filter(f); return cand.length? cand[Math.floor(Math.random()*cand.length)] : null; };
   const items:Part[] = [];
   // Prioritize Hull → Drive → Source → Weapon → (Shield|Computer)

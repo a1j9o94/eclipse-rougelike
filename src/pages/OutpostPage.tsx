@@ -155,7 +155,7 @@ export function OutpostPage({
               <div className="text-[11px] sm:text-xs opacity-70">Reroll +{ECONOMY.reroll.increment} after each Reroll/Research</div>
             </div>
             <div className="text-lg font-semibold mb-2">Outpost Inventory</div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-2">
               {shop.items.map((it:Part, i:number)=> { const canAfford = resources.credits >= (it.cost||0); const gd = focusedShip? ghost(focusedShip, it) : null; return (<ItemCard key={i} item={it} canAfford={canAfford} ghostDelta={gd as GhostDelta} onBuy={()=>buyAndInstall(it)} />); })}
             </div>
           </div>

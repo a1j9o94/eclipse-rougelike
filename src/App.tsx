@@ -64,7 +64,7 @@ export default function EclipseIntegrated(){
 
   // Shop state — lazy init based on INITIAL_RESEARCH
   const [focused, setFocused] = useState(0);
-  const [shop, setShop] = useState(()=>({ items: rollInventory(INITIAL_RESEARCH, 8) }));
+  const [shop, setShop] = useState(()=>({ items: rollInventory(INITIAL_RESEARCH) }));
   const [shopVersion, setShopVersion] = useState(0);
 
   // Combat state
@@ -134,7 +134,7 @@ export default function EclipseIntegrated(){
     if(outcome==='Victory'){
       restoreAndCullFleetAfterCombat();
       setMode('OUTPOST');
-      setShop({ items: rollInventory(research as Research, 8) });
+      setShop({ items: rollInventory(research as Research) });
       setShopVersion(v=> v+1);
     } else {
       if(difficulty==='hard'){
@@ -143,7 +143,7 @@ export default function EclipseIntegrated(){
         setFleet(graceRecoverFleet(blueprints as Record<FrameId, Part[]>));
         setResources(r=> ensureGraceResources(r));
         setMode('OUTPOST');
-        setShop({ items: rollInventory(research as Research, 8) });
+        setShop({ items: rollInventory(research as Research) });
         setShopVersion(v=> v+1);
       }
     }
@@ -184,7 +184,7 @@ export default function EclipseIntegrated(){
   useEffect(()=>{ if(!auto || mode!=='COMBAT' || combatOver) return; const t = setInterval(()=> stepTurn(), 500); return ()=> clearInterval(t); }, [auto, mode, combatOver, queue, turnPtr, fleet, enemyFleet]);
 
   // Keep shop items in sync when explicit rerolls happen or research changes
-  useEffect(()=>{ setShop({ items: rollInventory(research as Research, 8) }); }, [shopVersion, research]);
+  useEffect(()=>{ setShop({ items: rollInventory(research as Research) }); }, [shopVersion, research]);
 
   // First-visit rules & new-run modal
   useEffect(()=>{
