@@ -26,7 +26,7 @@ export function CompactShip({ ship, side, active }:{ship:Ship, side:'P'|'E', act
   return (
     <div className={`relative w-28 sm:w-32 p-2 rounded-xl border shadow-sm ${dead? 'border-zinc-700 bg-zinc-900 opacity-60' : side==='P' ? 'border-sky-600/60 bg-slate-900' : 'border-pink-600/60 bg-zinc-900'} ${active? 'ring-2 ring-amber-400 animate-pulse':''}`}>
       <div className="text-[11px] sm:text-xs font-semibold truncate pr-6">{ship.frame.name}</div>
-      <div className="text-[10px] opacity-70">Init {ship.stats.init}</div>
+      <div className="text-[10px] opacity-70">Init {ship.stats.init} • 🎯 {ship.stats.aim} • 🛡️ S{ship.stats.shieldTier}</div>
       <HullPips current={Math.max(0, ship.hull)} max={ship.stats.hullCap} />
       {/* Dice/Damage summary per weapon */}
       <div className="mt-1 flex flex-wrap gap-1 min-h-[18px]">

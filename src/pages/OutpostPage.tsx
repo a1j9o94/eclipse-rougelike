@@ -106,7 +106,7 @@ export function OutpostPage({
           {fleet.map((s,i)=> (
             <button key={i} onClick={()=>setFocused(i)} className={`w-full text-left p-3 rounded-xl border transition ${i===focused?'border-sky-400 bg-sky-400/10':'border-zinc-700 bg-zinc-900 hover:border-zinc-600'}`}>
               <div className="flex items-center justify-between"><div className="font-semibold text-sm sm:text-base">{s.frame.name} <span className="text-xs opacity-70">(t{s.frame.tonnage})</span></div><PowerBadge use={s.stats.powerUse} prod={s.stats.powerProd} /></div>
-              <div className="text-xs opacity-80 mt-1">Init {s.stats.init} • Tiles {s.parts.length}/{s.frame.tiles}</div>
+              <div className="text-xs opacity-80 mt-1">Init {s.stats.init} • 🎯 {s.stats.aim} • 🛡️ S{s.stats.shieldTier} • Tiles {s.parts.length}/{s.frame.tiles}</div>
               <div className="mt-1">Hull: {s.hull}/{s.stats.hullCap}</div>
               <div className="mt-1 text-xs">Parts: {s.parts.map((p:Part)=>p.name).join(', ')||'—'}</div>
               {!s.stats.valid && <div className="text-xs text-rose-300 mt-1">Not deployable: needs Source + Drive and ⚡ OK</div>}

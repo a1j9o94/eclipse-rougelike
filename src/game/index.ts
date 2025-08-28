@@ -57,8 +57,12 @@ export function makeShip(frame:Frame, parts:Part[]){
   const powerProd = sources.reduce((a:number,s:Part)=>a+(s.powerProd||0),0);
   const powerUse = parts.reduce((a:number,p:Part)=>a+(p.powerCost||0),0);
   const valid = !!drive && sources.length>0 && powerUse<=powerProd && parts.length<=frame.tiles;
+  // Aggregate stats from all relevant parts so hybrid items contribute (e.g., Sentient Hull adds aim and hull)
+  const totalAim = parts.reduce((sum:number, p:Part)=> sum + (p.aim||0), 0);
+  const totalShieldTier = parts.reduce((sum:number, p:Part)=> sum + (p.shieldTier||0), 0);
+  const totalInit = parts.reduce((sum:number, p:Part)=> sum + (p.init||0), 0);
   return { frame, parts, weapons, computer, shield, hullParts, drive, sources,
-    stats:{ hullCap, aim: computer?.aim||0, shieldTier: shield?.shieldTier||0, init: drive?.init||0, powerProd, powerUse, valid },
+    stats:{ hullCap, aim: totalAim, shieldTier: totalShieldTier, init: totalInit, powerProd, powerUse, valid },
     hull: hullCap, alive: true };
 }
 
@@ -72,12 +76,11 @@ export function rollInventory(research:{Military:number, Grid:number, Nano:numbe
     Nano: research.Nano||1,
   };
   const pool = ALL_PARTS.filter((p:Part) => p.tier <= tierCap(research) && p.tier >= minTierByCat[p.tech_category as 'Military'|'Grid'|'Nano']);
-  const pick = (f:(p:Part)=>boolean)=>{ const cand = pool.filter(f); return cand.length? cand[Math.floor(Math.random()*cand.length)] : null; };
   const items:Part[] = [];
-  // Prioritize Hull → Drive → Source → Weapon → (Shield|Computer)
-  const guarantees = [ ()=>pick(isHull), ()=>pick(isDrive), ()=>pick(isSource), ()=>pick(isWeapon), ()=>pick((p:Part)=>isShield(p)||isComputer(p)) ];
-  for(const g of guarantees){ const it = g(); if(it) items.push(it); }
-  while(items.length < count){ items.push(pool[Math.floor(Math.random()*pool.length)]); }
+  // Randomly select from all available parts
+  while(items.length < count){
+    items.push(pool[Math.floor(Math.random()*pool.length)]);
+  }
   return items.slice(0,count);
 }
 

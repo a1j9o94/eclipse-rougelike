@@ -56,14 +56,13 @@ export const PARTS: PartCatalog = {
     { id: "neutrino", name: "Neutrino Computer", aim: 3, powerCost: 3, tier: 3, cost: 100, cat: "Computer", tech_category: "Grid" },
     { id: "quantum_cpu", name: "Quantum Computer", aim: 2, powerCost: 1, tier: 2, cost: 70, cat: "Computer", tech_category: "Grid" },
     { id: "sentient_ai", name: "Sentient AI", aim: 4, powerCost: 3, tier: 3, cost: 150, cat: "Computer", tech_category: "Grid" },
-    { id: "sentient_hull", name: "Sentient Hull", extraHull: 1, aim: 1, powerCost: 0, tier: 2, cost: 0, cat: "Computer", tech_category: "Nano" },
+    { id: "sentient_hull", name: "Sentient Hull", extraHull: 1, aim: 1, powerCost: 0, tier: 2, cost: 50, cat: "Computer", tech_category: "Nano" },
   ],
   shields: [
     { id: "gauss", name: "Gauss Shield", shieldTier: 1, powerCost: 1, tier: 1, cost: 20, cat: "Shield", tech_category: "Nano" },
     { id: "phase", name: "Phase Shield", shieldTier: 2, powerCost: 2, tier: 2, cost: 60, cat: "Shield", tech_category: "Nano" },
     { id: "omega", name: "Omega Shield", shieldTier: 3, powerCost: 3, tier: 3, cost: 100, cat: "Shield", tech_category: "Nano" },
     { id: "absorption", name: "Absorption Shield", shieldTier: 2, powerCost: 1, tier: 2, cost: 65, cat: "Shield", tech_category: "Nano" },
-    { id: "sentient_hull_field", name: "Sentient Hull Field", shieldTier: 3, powerCost: 2, tier: 3, cost: 130, cat: "Shield", tech_category: "Nano" },
   ],
   hull: [
     { id: "improved", name: "Improved Hull", extraHull: 1, powerCost: 0, tier: 2, cost: 22, cat: "Hull", tech_category: "Nano" },
