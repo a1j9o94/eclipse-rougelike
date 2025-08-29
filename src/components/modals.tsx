@@ -5,6 +5,8 @@ import { type SectorSpec } from '../config/types'
 import { FRAMES } from '../game'
 import { useState } from 'react'
 import { FACTIONS, type FactionId } from '../config/factions'
+import { getStartingShipCount } from '../config/difficulty'
+import { type DifficultyId } from '../config/types'
 
 // Compute previews once per session so content is stable across openings
 type Preview = { sector:number; tonnage:number; scienceCap:number; boss:boolean; example:string[] };
@@ -33,8 +35,30 @@ import { SECTORS, getBossVariants, getBossFleetFor, getOpponentFaction, ALL_PART
 import { CompactShip } from './ui'
 import { type Ship } from '../config/types'
 
-export function NewRunModal({ onNewRun }:{ onNewRun:(diff:'easy'|'medium'|'hard', faction:FactionId)=>void }){
+function BossFleetPreview({ sector }:{ sector:5|10 }){
+  const opp = getOpponentFaction();
+  if(!opp) return null;
+  const spec = getBossFleetFor(opp, sector);
+  const oppName = FACTIONS.find(f=>f.id===opp)?.name || String(opp);
+  const ships = (spec.ships.map(bs => makeShip(
+    FRAMES[bs.frame],
+    bs.parts.map(pid => ALL_PARTS.find(p=>p.id===pid)!).filter(Boolean)
+  )) as unknown) as Ship[];
+  return (
+    <div className="mt-1">
+      <div className="text-[11px] opacity-80">Opponent: {oppName} — "{spec.name}"</div>
+      <div className="mt-1 flex gap-2 overflow-x-auto pb-1">
+        {ships.map((sh, i)=>(<CompactShip key={i} ship={sh} side='E' active={false} />))}
+      </div>
+    </div>
+  );
+}
+
+export function NewRunModal({ onNewRun }:{ onNewRun:(diff:DifficultyId, faction:FactionId)=>void }){
   const [faction, setFaction] = useState<FactionId>('scientists');
+  const easyShips = getStartingShipCount('easy');
+  const mediumShips = getStartingShipCount('medium');
+  const hardShips = getStartingShipCount('hard');
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 bg-black/70">
       <div className="w-full max-w-md bg-zinc-900 border border-zinc-700 rounded-2xl p-4">
@@ -53,9 +77,9 @@ export function NewRunModal({ onNewRun }:{ onNewRun:(diff:'easy'|'medium'|'hard'
           ))}
         </div>
         <div className="grid grid-cols-3 gap-2 mt-3">
-          <button className="px-3 py-2 rounded-xl bg-emerald-700" onClick={()=>onNewRun('easy', faction)}>Easy (3✈)</button>
-          <button className="px-3 py-2 rounded-xl bg-amber-700" onClick={()=>onNewRun('medium', faction)}>Medium (2✈)</button>
-          <button className="px-3 py-2 rounded-xl bg-rose-700" onClick={()=>onNewRun('hard', faction)}>Hard (1✈)</button>
+          <button className="px-3 py-2 rounded-xl bg-emerald-700" onClick={()=>onNewRun('easy', faction)}>Easy ({easyShips}✈)</button>
+          <button className="px-3 py-2 rounded-xl bg-amber-700" onClick={()=>onNewRun('medium', faction)}>Medium ({mediumShips}✈)</button>
+          <button className="px-3 py-2 rounded-xl bg-rose-700" onClick={()=>onNewRun('hard', faction)}>Hard ({hardShips}✈)</button>
         </div>
       </div>
     </div>
@@ -125,6 +149,19 @@ export function RulesModal({ onDismiss }:{ onDismiss:()=>void }){
               ))}
             </div>
           </div>
+          <div>
+            <b>Boss Previews.</b> These are the exact boss fleets you will face at Sectors 5 and 10 from the current opponent.
+            <div className="mt-2 space-y-2">
+              <div className="p-2 rounded-lg border border-zinc-700 bg-zinc-900">
+                <div className="font-medium">Sector 5 (Boss)</div>
+                <BossFleetPreview sector={5} />
+              </div>
+              <div className="p-2 rounded-lg border border-zinc-700 bg-zinc-900">
+                <div className="font-medium">Sector 10 (Boss)</div>
+                <BossFleetPreview sector={10} />
+              </div>
+            </div>
+          </div>
         </div>
         <div className="mt-3"><button onClick={onDismiss} className="w-full px-4 py-2 rounded-xl bg-emerald-600">Let’s go</button></div>
       </div>
@@ -145,24 +182,7 @@ export function CombatPlanModal({ onClose }:{ onClose:()=>void }){
                 {s.boss && (
                   <>
                     <div className="opacity-70 mt-0.5">Variants: {getBossVariants(s.sector).map(v=>v.label).join(', ')}</div>
-                    {(() => {
-                      const opp = getOpponentFaction();
-                      if(!opp) return null;
-                      const spec = getBossFleetFor(opp, s.sector);
-                      const oppName = FACTIONS.find(f=>f.id===opp)?.name || String(opp);
-                      const ships = (spec.ships.map(bs => makeShip(
-                        FRAMES[bs.frame],
-                        bs.parts.map(pid => ALL_PARTS.find(p=>p.id===pid)!).filter(Boolean)
-                      )) as unknown) as Ship[];
-                      return (
-                        <div className="mt-1">
-                          <div className="text-[11px] opacity-80">Opponent: {oppName} — "{spec.name}"</div>
-                          <div className="mt-1 flex gap-2 overflow-x-auto pb-1">
-                            {ships.map((sh, i)=>(<CompactShip key={i} ship={sh} side='E' active={false} />))}
-                          </div>
-                        </div>
-                      );
-                    })()}
+                    <BossFleetPreview sector={s.sector as 5|10} />
                   </>
                 )}
               </div>

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import './index.css'
 import { PARTS, getFrame, successThreshold, rollSuccesses, makeShip, rollInventory, getSectorSpec } from './game'
 import { INITIAL_BLUEPRINTS, INITIAL_RESEARCH, INITIAL_RESOURCES, INITIAL_CAPACITY, type Resources, type Research } from './config/defaults'
-import { type CapacityState } from './config/types'
+import { type CapacityState, type DifficultyId } from './config/types'
 import { type FrameId } from './game'
 import { ResourceBar } from './components/ui'
 import { NewRunModal, RulesModal } from './components/modals'
@@ -12,6 +12,7 @@ import CombatPage from './pages/CombatPage'
 import { type Part } from './config/parts'
 import { type Ship, type GhostDelta, type InitiativeEntry } from './config/types'
 import { initNewRun } from './game/setup'
+import { getDefeatPolicy } from './config/difficulty'
 import { buildInitiative as buildInitiativeCore, targetIndex as targetIndexCore, volley as volleyCore } from './game/combat'
 import { generateEnemyFleetFor } from './game/enemy'
 import { doRerollAction, researchAction } from './game/shop'
@@ -41,7 +42,7 @@ import { researchLabel as researchLabelCore, canResearch as canResearchCore } fr
 export default function EclipseIntegrated(){
   const [mode, setMode] = useState<'OUTPOST'|'COMBAT'>('OUTPOST');
   const [showRules, setShowRules] = useState(false);
-  const [difficulty, setDifficulty] = useState<null|'easy'|'medium'|'hard'>(null);
+  const [difficulty, setDifficulty] = useState<null|DifficultyId>(null);
   const [showNewRun, setShowNewRun] = useState(true);
 
   // Class blueprints (shared per hull class)
@@ -80,7 +81,7 @@ export default function EclipseIntegrated(){
   const [sector, setSector] = useState(1); // difficulty progression
 
   // ---------- Run management ----------
-  function newRun(diff:'easy'|'medium'|'hard', pick:FactionId){
+  function newRun(diff: DifficultyId, pick:FactionId){
     setDifficulty(diff);
     setShowNewRun(false);
     const st = initNewRun({ difficulty: diff, faction: pick });
@@ -137,7 +138,7 @@ export default function EclipseIntegrated(){
       setShop({ items: rollInventory(research as Research) });
       setShopVersion(v=> v+1);
     } else {
-      if(difficulty==='hard'){
+      if(difficulty && getDefeatPolicy(difficulty)==='reset'){
         resetRun();
       } else {
         setFleet(graceRecoverFleet(blueprints as Record<FrameId, Part[]>));
@@ -169,7 +170,7 @@ export default function EclipseIntegrated(){
   function stepTurn(){ if(combatOver) return; const pAlive = fleet.some(s => s.alive && s.stats.valid); const eAlive = enemyFleet.some(s => s.alive && s.stats.valid); if (!pAlive || !eAlive) {
       if(pAlive){ if(!rewardPaid){ const rw = calcRewards(enemyFleet, sector); setResources(r=>({...r, credits: r.credits + rw.c, materials: r.materials + rw.m, science: r.science + rw.s })); setRewardPaid(true); setLog(l=>[...l, `✅ Victory — +${rw.c}¢, +${rw.m}🧱, +${rw.s}🔬`]); } setOutcome('Victory'); setSector(s=> Math.min(10, s+1)); setRerollCost(8); }
       else {
-        if(difficulty==='hard') { setOutcome('Defeat — Run Over'); }
+        if(difficulty && getDefeatPolicy(difficulty)==='reset') { setOutcome('Defeat — Run Over'); }
         else { setOutcome('Defeat — Grace'); }
         setLog(l=>[...l, '💀 Defeat']);
       }

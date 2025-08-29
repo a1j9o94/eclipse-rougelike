@@ -29,6 +29,17 @@ export function getFrame(id: FrameId){
   return f;
 }
 
+// Centralized validator for ship builds so configs can be checked anywhere
+export function isValidShipBuild(frame: Frame, parts: Part[]): boolean {
+  if(!frame){ return false; }
+  const hasDrive = !!parts.find(isDrive);
+  const sources = parts.filter(isSource);
+  const powerProd = sources.reduce((a:number,s:Part)=>a+(s.powerProd||0),0);
+  const powerUse = parts.reduce((a:number,p:Part)=>a+(p.powerCost||0),0);
+  const tilesOk = parts.length <= frame.tiles;
+  return hasDrive && sources.length>0 && powerUse <= powerProd && tilesOk;
+}
+
 // ------------------------------- Core Helpers ------------------------------
 export function successThreshold(aim:number, shieldTier:number) {
   // Clamp to 2..6 so 1s always miss and 6s always hit.
@@ -59,7 +70,7 @@ export function makeShip(frame:Frame, parts:Part[]){
   const hullCap = frame.baseHull + hullParts.reduce((a:number,h:Part)=>a+(h.extraHull||0),0);
   const powerProd = sources.reduce((a:number,s:Part)=>a+(s.powerProd||0),0);
   const powerUse = parts.reduce((a:number,p:Part)=>a+(p.powerCost||0),0);
-  const valid = !!drive && sources.length>0 && powerUse<=powerProd && parts.length<=frame.tiles;
+  const valid = isValidShipBuild(frame, parts);
   // Aggregate stats from all relevant parts so hybrid items contribute (e.g., Sentient Hull adds aim and hull)
   const totalAim = parts.reduce((sum:number, p:Part)=> sum + (p.aim||0), 0);
   const totalShieldTier = parts.reduce((sum:number, p:Part)=> sum + (p.shieldTier||0), 0);
@@ -87,12 +98,18 @@ export function rollInventory(research:{Military:number, Grid:number, Nano:numbe
 
   const items:Part[] = [];
   
-  // Randomly select parts until we hit the count
+  // Randomly select parts until we hit the count, avoiding duplicates
+  const available = [...pool]; // Copy pool to avoid modifying original
+  while(items.length < count && available.length > 0) {
+    const idx = Math.floor(Math.random() * available.length);
+    const part = available[idx];
+    items.push(part);
+    available.splice(idx, 1); // Remove selected part from available pool
+  }
+  // If we run out of unique parts, fill remaining slots with random parts from original pool
   while(items.length < count) {
     const idx = Math.floor(Math.random() * pool.length);
-    const part = pool[idx];
-    // Allow duplicates to avoid infinite loops when pool < count
-    items.push(part);
+    items.push(pool[idx]);
   }
 
   return items;

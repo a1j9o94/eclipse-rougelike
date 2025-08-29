@@ -4,8 +4,10 @@ import { getFaction, type FactionId } from '../config/factions'
 import { type Part } from '../config/parts'
 import { getFrame, makeShip, rollInventory, setPlayerFaction, pickOpponentFaction } from './index'
 import { ECONOMY } from '../config/economy'
+import { getStartingShipCount, getBaseRerollCost, getInitialCapacityForDifficulty } from '../config/difficulty'
+import { type DifficultyId } from '../config/types'
 
-export type NewRunParams = { difficulty: 'easy'|'medium'|'hard'; faction: FactionId };
+export type NewRunParams = { difficulty: DifficultyId; faction: FactionId };
 export type NewRunState = {
   resources: Resources;
   research: Research;
@@ -47,14 +49,16 @@ export function initNewRun({ difficulty, faction }: NewRunParams): NewRunState{
   }
 
   const startFrameId = (f.startingFrame || 'interceptor') as FrameId;
-  const count = difficulty==='easy'?3 : difficulty==='medium'?2 : 1;
+  const count = getStartingShipCount(difficulty);
   const fleet = Array.from({length: count}, ()=> makeShip(getFrame(startFrameId), [ ...classBlueprints[startFrameId] ]));
 
   const shopItems = rollInventory(research, ECONOMY.shop.itemsBase + (f.startingShopItemsDelta||0));
 
-  const capacity = { cap: INITIAL_CAPACITY.cap + (f.startingCapacityDelta||0) };
+  const baseCap = getInitialCapacityForDifficulty(difficulty, (f.startingFrame||'interceptor') as FrameId);
+  const capacity = { cap: Math.max(baseCap, INITIAL_CAPACITY.cap + (f.startingCapacityDelta||0)) };
 
-  return { resources: res, research, rerollCost: 8, sector: 1, blueprints: classBlueprints, fleet, shopItems, capacity };
+  const rerollCost = getBaseRerollCost(difficulty);
+  return { resources: res, research, rerollCost, sector: 1, blueprints: classBlueprints, fleet, shopItems, capacity };
 }
 
 

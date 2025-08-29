@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import React from 'react'
 import App from '../App'
-import { getOpponentFaction, getBossFleetFor } from '../game'
+import { getOpponentFaction, getBossFleetFor, isValidShipBuild } from '../game'
 import { generateEnemyFleetFor } from '../game/enemy'
 
 describe('Predefined boss fleets and opponent selection', () => {
@@ -33,6 +33,7 @@ describe('Predefined boss fleets and opponent selection', () => {
       expect(ship.frame.id).toBe(expected.frame)
       const partIds = ship.parts.map(p => p.id).sort()
       expect(partIds).toEqual([...expected.parts].sort())
+      expect(isValidShipBuild(ship.frame, ship.parts)).toBe(true)
     })
     // Sector 10
     const e10 = generateEnemyFleetFor(10)
@@ -43,6 +44,7 @@ describe('Predefined boss fleets and opponent selection', () => {
       expect(ship.frame.id).toBe(expected.frame)
       const partIds = ship.parts.map(p => p.id).sort()
       expect(partIds).toEqual([...expected.parts].sort())
+      expect(isValidShipBuild(ship.frame, ship.parts)).toBe(true)
     })
   })
 })

@@ -52,4 +52,7 @@ export type ResearchState = { Military:number; Grid:number; Nano:number };
 export type CapacityState = { cap:number };
 export type TonnageState = { used:number; cap:number };
 
+// Difficulty identifiers used across the app
+export type DifficultyId = 'easy' | 'medium' | 'hard';
+
 

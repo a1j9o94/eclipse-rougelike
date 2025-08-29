@@ -18,9 +18,9 @@ export function nextTierCost(curr:number){
 }
 
 export function calcRewardsForFrameId(frameId:string){
-  if(frameId==='interceptor') return { c:22, m:1, s:0 };
-  if(frameId==='cruiser') return { c:32, m:1, s:1 };
-  if(frameId==='dread') return { c:52, m:2, s:1 };
+  if(frameId==='interceptor') return { c:22, m:2, s:1 };
+  if(frameId==='cruiser') return { c:32, m:3, s:2 };
+  if(frameId==='dread') return { c:52, m:4, s:3 };
   return { c:0, m:0, s:0 };
 }
 

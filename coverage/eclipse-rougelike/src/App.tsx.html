@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">87.06% </span>
+                <span class="strong">87.12% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>175/201</span>
+                <span class='fraction'>176/202</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">87.06% </span>
+                <span class="strong">87.12% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>175/201</span>
+                <span class='fraction'>176/202</span>
             </div>
         
             
@@ -337,7 +337,9 @@
 <a name='L272'></a><a href='#L272'>272</a>
 <a name='L273'></a><a href='#L273'>273</a>
 <a name='L274'></a><a href='#L274'>274</a>
-<a name='L275'></a><a href='#L275'>275</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L275'></a><a href='#L275'>275</a>
+<a name='L276'></a><a href='#L276'>276</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -615,7 +617,7 @@
 import './index.css'
 import { PARTS, getFrame, successThreshold, rollSuccesses, makeShip, rollInventory, getSectorSpec } from './game'
 import { INITIAL_BLUEPRINTS, INITIAL_RESEARCH, INITIAL_RESOURCES, INITIAL_CAPACITY, type Resources, type Research } from './config/defaults'
-import { type CapacityState } from './config/types'
+import { type CapacityState, type DifficultyId } from './config/types'
 import { type FrameId } from './game'
 import { ResourceBar } from './components/ui'
 import { NewRunModal, RulesModal } from './components/modals'
@@ -625,6 +627,7 @@ import CombatPage from './pages/CombatPage'
 import { type Part } from './config/parts'
 import { type Ship, type GhostDelta, type InitiativeEntry } from './config/types'
 import { initNewRun } from './game/setup'
+import { getDefeatPolicy } from './config/difficulty'
 import { buildInitiative as buildInitiativeCore, targetIndex as targetIndexCore, volley as volleyCore } from './game/combat'
 import { generateEnemyFleetFor } from './game/enemy'
 import { doRerollAction, researchAction } from './game/shop'
@@ -654,7 +657,7 @@ import { researchLabel as researchLabelCore, canResearch as canResearchCore } fr
 export default function EclipseIntegrated(){
   const [mode, setMode] = useState&lt;'OUTPOST'|'COMBAT'&gt;('OUTPOST');
   const [showRules, setShowRules] = useState(false);
-  const [difficulty, setDifficulty] = useState&lt;null|'easy'|'medium'|'hard'&gt;(null);
+  const [difficulty, setDifficulty] = useState&lt;null|DifficultyId&gt;(null);
   const [showNewRun, setShowNewRun] = useState(true);
 &nbsp;
   // Class blueprints (shared per hull class)
@@ -693,7 +696,7 @@ export default function EclipseIntegrated(){
   const [sector, setSector] = useState(1); // difficulty progression
 &nbsp;
   // ---------- Run management ----------
-  function newRun(diff:'easy'|'medium'|'hard', pick:FactionId){
+  function newRun(diff: DifficultyId, pick:FactionId){
     setDifficulty(diff);
     setShowNewRun(false);
     const st = initNewRun({ difficulty: diff, faction: pick });
@@ -750,7 +753,7 @@ export default function EclipseIntegrated(){
 <span class="cstat-no" title="statement not covered" >      setShop({ items: rollInventory(research as Research) });</span>
 <span class="cstat-no" title="statement not covered" >      setShopVersion(v=&gt; v+1);</span>
 <span class="cstat-no" title="statement not covered" >    } else {</span>
-<span class="cstat-no" title="statement not covered" >      if(difficulty==='hard'){</span>
+<span class="cstat-no" title="statement not covered" >      if(difficulty &amp;&amp; getDefeatPolicy(difficulty)==='reset'){</span>
 <span class="cstat-no" title="statement not covered" >        resetRun();</span>
 <span class="cstat-no" title="statement not covered" >      } else {</span>
 <span class="cstat-no" title="statement not covered" >        setFleet(graceRecoverFleet(blueprints as Record&lt;FrameId, Part[]&gt;));</span>
@@ -782,7 +785,7 @@ export default function EclipseIntegrated(){
 <span class="fstat-no" title="function not covered" >  function stepTurn(){ if(combatOver) return; const pAlive = fleet.some(s =&gt; s.alive &amp;&amp; s.stats.valid); const eAlive = enemyFleet.some(s =&gt; s.alive &amp;&amp; s.stats.valid); if (!pAlive || !eAlive) {</span>
 <span class="cstat-no" title="statement not covered" >      if(pAlive){ if(!rewardPaid){ const rw = calcRewards(enemyFleet, sector); setResources(r=&gt;({...r, credits: r.credits + rw.c, materials: r.materials + rw.m, science: r.science + rw.s })); setRewardPaid(true); setLog(l=&gt;[...l, `✅ Victory — +${rw.c}¢, +${rw.m}🧱, +${rw.s}🔬`]); } setOutcome('Victory'); setSector(s=&gt; Math.min(10, s+1)); setRerollCost(8); }</span>
 <span class="cstat-no" title="statement not covered" >      else {</span>
-<span class="cstat-no" title="statement not covered" >        if(difficulty==='hard') { setOutcome('Defeat — Run Over'); }</span>
+<span class="cstat-no" title="statement not covered" >        if(difficulty &amp;&amp; getDefeatPolicy(difficulty)==='reset') { setOutcome('Defeat — Run Over'); }</span>
 <span class="cstat-no" title="statement not covered" >        else { setOutcome('Defeat — Grace'); }</span>
 <span class="cstat-no" title="statement not covered" >        setLog(l=&gt;[...l, '💀 Defeat']);</span>
 <span class="cstat-no" title="statement not covered" >      }</span>
@@ -892,7 +895,7 @@ export default function EclipseIntegrated(){
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-29T00:05:35.799Z
+                at 2025-08-29T01:17:23.231Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

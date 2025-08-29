@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">98.52% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>68/68</span>
+                <span class='fraction'>67/68</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">83.78% </span>
+                <span class="strong">77.77% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>31/37</span>
+                <span class='fraction'>28/36</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">98.52% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>68/68</span>
+                <span class='fraction'>67/68</span>
             </div>
         
             
@@ -152,46 +152,46 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">184x</span>
-<span class="cline-any cline-yes">184x</span>
-<span class="cline-any cline-yes">184x</span>
-<span class="cline-any cline-yes">184x</span>
-<span class="cline-any cline-yes">184x</span>
+<span class="cline-any cline-yes">360x</span>
+<span class="cline-any cline-yes">360x</span>
+<span class="cline-any cline-yes">360x</span>
+<span class="cline-any cline-yes">360x</span>
+<span class="cline-any cline-yes">360x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">184x</span>
+<span class="cline-any cline-yes">360x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">132x</span>
-<span class="cline-any cline-yes">132x</span>
-<span class="cline-any cline-yes">132x</span>
-<span class="cline-any cline-yes">132x</span>
-<span class="cline-any cline-yes">139x</span>
-<span class="cline-any cline-yes">132x</span>
-<span class="cline-any cline-yes">132x</span>
+<span class="cline-any cline-yes">288x</span>
+<span class="cline-any cline-yes">288x</span>
+<span class="cline-any cline-yes">288x</span>
+<span class="cline-any cline-yes">288x</span>
+<span class="cline-any cline-yes">478x</span>
+<span class="cline-any cline-yes">288x</span>
+<span class="cline-any cline-yes">288x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">132x</span>
+<span class="cline-any cline-yes">288x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">132x</span>
-<span class="cline-any cline-yes">132x</span>
-<span class="cline-any cline-yes">132x</span>
-<span class="cline-any cline-yes">132x</span>
-<span class="cline-any cline-yes">132x</span>
-<span class="cline-any cline-yes">132x</span>
+<span class="cline-any cline-yes">288x</span>
+<span class="cline-any cline-yes">288x</span>
+<span class="cline-any cline-yes">288x</span>
+<span class="cline-any cline-yes">288x</span>
+<span class="cline-any cline-yes">288x</span>
+<span class="cline-any cline-yes">288x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">132x</span>
-<span class="cline-any cline-yes">132x</span>
-<span class="cline-any cline-yes">131x</span>
-<span class="cline-any cline-yes">131x</span>
-<span class="cline-any cline-yes">131x</span>
-<span class="cline-any cline-yes">131x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">288x</span>
+<span class="cline-any cline-yes">288x</span>
+<span class="cline-any cline-yes">308x</span>
+<span class="cline-any cline-yes">308x</span>
+<span class="cline-any cline-yes">308x</span>
+<span class="cline-any cline-yes">288x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">132x</span>
-<span class="cline-any cline-yes">132x</span>
-<span class="cline-any cline-yes">132x</span>
-<span class="cline-any cline-yes">132x</span>
-<span class="cline-any cline-yes">132x</span>
+<span class="cline-any cline-yes">288x</span>
+<span class="cline-any cline-yes">288x</span>
+<span class="cline-any cline-yes">288x</span>
+<span class="cline-any cline-yes">288x</span>
+<span class="cline-any cline-yes">288x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">132x</span>
+<span class="cline-any cline-yes">288x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">128x</span>
 <span class="cline-any cline-yes">128x</span>
@@ -237,7 +237,7 @@ import type { GhostDelta, Ship } from "../config/types";
 export function PowerBadge({use, prod}:{use:number, prod:number}){
   const ok = use&lt;=prod;
   return (
-    &lt;span className={`inline-flex items-center gap-1 font-medium font-mono px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs ${ok? 'bg-emerald-600/20 text-emerald-200 ring-1 ring-emerald-600/30' : 'bg-rose-600/20 text-rose-100 ring-1 ring-rose-600/30'}`}&gt;
+    &lt;span className={`inline-flex items-center gap-1 font-medium font-mono px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs ${ok? <span class="branch-0 cbranch-no" title="branch not covered" >'bg-emerald-600/20 text-emerald-200 ring-1 ring-emerald-600/30' : 'bg-rose-600/20 text-rose-100 ring-1 ring-rose-600/30'}</span>`}&gt;
       ⚡ &lt;span&gt;{use}&lt;/span&gt;/&lt;span&gt;{prod}&lt;/span&gt;
     &lt;/span&gt;
   );
@@ -265,11 +265,11 @@ export function CompactShip({ ship, side, active }:{ship:Ship, side:'P'|'E', act
           &lt;span key={i} className="px-1.5 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-[10px] whitespace-nowrap"&gt;
             {w.<span class="branch-0 cbranch-no" title="branch not covered" >dice||0}�</span>� × {w.<span class="branch-0 cbranch-no" title="branch not covered" >dmgPerHit||0}</span>
           &lt;/span&gt;
-        )) : (
-          &lt;span className="text-[10px] opacity-60"&gt;No weapons&lt;/span&gt;
+        )<span class="branch-0 cbranch-no" title="branch not covered" >) : (</span>
+<span class="cstat-no" title="statement not covered" >          &lt;span className="text-[10px] opacity-60"&gt;No weapons&lt;/span&gt;</span>
         )}
       &lt;/div&gt;
-      &lt;div className="mt-1 text-[10px] opacity-80 line-clamp-2 min-h-[20px]"&gt;{ship.weapons.map((w:Part)=&gt;w.name).join(', ')||'—'}&lt;/div&gt;
+      &lt;div className="mt-1 text-[10px] opacity-80 line-clamp-2 min-h-[20px]"&gt;{ship.weapons.map((w:Part)=&gt;w.name).join(', '<span class="branch-0 cbranch-no" title="branch not covered" >)||'—'}&lt;</span>/div&gt;
       &lt;div className="absolute top-1 right-1"&gt;&lt;PowerBadge use={ship.stats.powerUse} prod={ship.stats.powerProd} /&gt;&lt;/div&gt;
       {<span class="branch-0 cbranch-no" title="branch not covered" >dead &amp;&amp; &lt;div className="absolute inset-0 grid place-items-center text-2xl text-zinc-300"&gt;✖&lt;/div&gt;}</span>
     &lt;/div&gt;
@@ -304,7 +304,7 @@ export function ResourceBar({ credits, materials, science, tonnage, sector, onRe
     &lt;div className="sticky top-0 z-10 bg-zinc-950/95 backdrop-blur border-b border-zinc-800"&gt;
       &lt;div className="mx-auto max-w-5xl p-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm sm:text-base"&gt;
         &lt;div className="px-3 py-2 rounded-lg bg-zinc-900 flex items-center justify-between"&gt;&lt;span&gt;💰 &lt;b&gt;{credits}&lt;/b&gt; • 🧱 &lt;b&gt;{materials}&lt;/b&gt; • 🔬 &lt;b&gt;{science}&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;
-        &lt;div className={`px-3 py-2 rounded-lg ${<span class="branch-0 cbranch-no" title="branch not covered" >over? 'bg-rose-950/50 text-rose-200 ring-1 ring-rose-700/30' : '</span>bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20'}`}&gt;⚓ &lt;b&gt;{used}&lt;/b&gt; / &lt;b&gt;{cap}&lt;/b&gt;&lt;/div&gt;
+        &lt;div className={`px-3 py-2 rounded-lg ${over? 'bg-rose-950/50 text-rose-200 ring-1 ring-rose-700/30' : 'bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20'}`}&gt;⚓ &lt;b&gt;{used}&lt;/b&gt; / &lt;b&gt;{cap}&lt;/b&gt;&lt;/div&gt;
         &lt;div className="px-3 py-2 rounded-lg bg-zinc-900 flex items-center justify-between"&gt;🗺️ Sector &lt;b&gt;{sector}&lt;/b&gt; &lt;button onClick={onReset} className="ml-2 px-2 py-1 rounded bg-zinc-800 text-xs"&gt;Reset&lt;/button&gt;&lt;/div&gt;
       &lt;/div&gt;
     &lt;/div&gt;
@@ -319,7 +319,7 @@ export function ResourceBar({ credits, materials, science, tonnage, sector, onRe
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-29T00:05:35.799Z
+                at 2025-08-29T01:17:23.231Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
