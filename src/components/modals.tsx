@@ -29,7 +29,9 @@ function initPreviews(){
   PREVIEWS_CACHE = out;
   return PREVIEWS_CACHE;
 }
-import { SECTORS } from '../game'
+import { SECTORS, getBossVariants, getBossFleetFor, getOpponentFaction, ALL_PARTS, makeShip } from '../game'
+import { CompactShip } from './ui'
+import { type Ship } from '../config/types'
 
 export function NewRunModal({ onNewRun }:{ onNewRun:(diff:'easy'|'medium'|'hard', faction:FactionId)=>void }){
   const [faction, setFaction] = useState<FactionId>('scientists');
@@ -137,9 +139,34 @@ export function CombatPlanModal({ onClose }:{ onClose:()=>void }){
         <div className="text-lg font-semibold mb-2">Combat Plan</div>
         <div className="text-xs sm:text-sm space-y-1 max-h-[60vh] overflow-y-auto pr-1">
           {SECTORS.map(s=> (
-            <div key={s.sector} className="px-2 py-1 rounded bg-zinc-950 border border-zinc-800 flex items-center justify-between">
-              <div>Sector {s.sector}{s.boss? ' (Boss)':''}</div>
-              <div className="opacity-80">Enemy tonnage {s.enemyTonnage} • Science cap T{s.enemyScienceCap}</div>
+            <div key={s.sector} className="px-2 py-1 rounded bg-zinc-950 border border-zinc-800 flex items-start justify-between gap-2">
+              <div className="flex-1">
+                <div>Sector {s.sector}{s.boss? ' (Boss)':''}</div>
+                {s.boss && (
+                  <>
+                    <div className="opacity-70 mt-0.5">Variants: {getBossVariants(s.sector).map(v=>v.label).join(', ')}</div>
+                    {(() => {
+                      const opp = getOpponentFaction();
+                      if(!opp) return null;
+                      const spec = getBossFleetFor(opp, s.sector);
+                      const oppName = FACTIONS.find(f=>f.id===opp)?.name || String(opp);
+                      const ships = (spec.ships.map(bs => makeShip(
+                        FRAMES[bs.frame],
+                        bs.parts.map(pid => ALL_PARTS.find(p=>p.id===pid)!).filter(Boolean)
+                      )) as unknown) as Ship[];
+                      return (
+                        <div className="mt-1">
+                          <div className="text-[11px] opacity-80">Opponent: {oppName} — "{spec.name}"</div>
+                          <div className="mt-1 flex gap-2 overflow-x-auto pb-1">
+                            {ships.map((sh, i)=>(<CompactShip key={i} ship={sh} side='E' active={false} />))}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </>
+                )}
+              </div>
+              <div className="opacity-80 text-right whitespace-nowrap">Enemy tonnage {s.enemyTonnage} • Science cap T{s.enemyScienceCap}</div>
             </div>
           ))}
         </div>

@@ -39,6 +39,13 @@ export type SectorSpec = {
   boss: boolean;
 }
 
+export type BossVariant = {
+  // Short descriptive label to inform player planning in UI
+  label: string;
+  // Focus tag used by enemy generator to bias builds
+  focus: 'aim' | 'shields' | 'burst';
+}
+
 // State slice aliases: small, focused state shapes shared across modules
 export type ResourcesState = { credits:number; materials:number; science:number };
 export type ResearchState = { Military:number; Grid:number; Nano:number };

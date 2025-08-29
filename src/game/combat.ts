@@ -1,6 +1,6 @@
 import { type Part } from '../config/parts'
 import { type Ship, type InitiativeEntry } from '../config/types'
-import { FRAMES, makeShip, randomEnemyPartsFor, sizeRank } from './index'
+import { FRAMES, makeShip, randomEnemyPartsFor, sizeRank, getBossVariantFocus, getOpponentFaction, getBossFleetFor, PARTS } from './index'
 import { getSectorSpec } from './index'
 
 export function buildInitiative(pFleet:Ship[], eFleet:Ship[]): InitiativeEntry[] {
@@ -39,16 +39,31 @@ export function volley(attacker:Ship, defender:Ship, side:'P'|'E', logArr:string
 export function genEnemyFleet(sector:number){
   const spec = getSectorSpec(sector);
   const boss = spec.boss;
+  const focus = boss ? getBossVariantFocus(sector) : undefined;
   const options = [FRAMES.dread, FRAMES.cruiser, FRAMES.interceptor];
   let remaining = Math.max(1, spec.enemyTonnage);
   const ships:Ship[] = [] as unknown as Ship[];
   let bossAssigned = false;
   const minTonnage = Math.min(...options.map(f=>f.tonnage));
+
+  // Predefined boss fleets for opponent faction at 5 and 10
+  if(boss){
+    const opp = getOpponentFaction();
+    const bossSpec = getBossFleetFor(opp, sector);
+    if(bossSpec){
+      return bossSpec.ships.map(s => {
+        const frame = FRAMES[s.frame];
+        const allParts: Part[] = ([] as Part[]).concat(PARTS.sources, PARTS.drives, PARTS.weapons, PARTS.computers, PARTS.shields, PARTS.hull);
+        const parts = s.parts.map(pid => allParts.find((p)=> p.id===pid)).filter((p): p is Part => !!p);
+        return makeShip(frame, parts);
+      }) as unknown as Ship[];
+    }
+  }
   while(remaining >= minTonnage){
     const viable = options.filter(f => f.tonnage <= remaining);
     if(viable.length === 0) break;
     const pick = viable[Math.floor(Math.random()*viable.length)];
-    const parts = randomEnemyPartsFor(pick, spec.enemyScienceCap, boss && !bossAssigned);
+    const parts = randomEnemyPartsFor(pick, spec.enemyScienceCap, boss && !bossAssigned, focus);
     ships.push(makeShip(pick, parts));
     if(boss && !bossAssigned && pick.id!=='interceptor') bossAssigned = true;
     remaining -= pick.tonnage;

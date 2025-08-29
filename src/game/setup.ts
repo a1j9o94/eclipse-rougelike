@@ -2,7 +2,7 @@ import { type Research, type Resources, INITIAL_BLUEPRINTS, INITIAL_RESEARCH, IN
 import { type FrameId } from '../config/frames'
 import { getFaction, type FactionId } from '../config/factions'
 import { type Part } from '../config/parts'
-import { getFrame, makeShip, rollInventory } from './index'
+import { getFrame, makeShip, rollInventory, setPlayerFaction, pickOpponentFaction } from './index'
 import { ECONOMY } from '../config/economy'
 
 export type NewRunParams = { difficulty: 'easy'|'medium'|'hard'; faction: FactionId };
@@ -19,6 +19,8 @@ export type NewRunState = {
 
 export function initNewRun({ difficulty, faction }: NewRunParams): NewRunState{
   const f = getFaction(faction);
+  setPlayerFaction(f.id);
+  pickOpponentFaction();
   const baseRes = { ...INITIAL_RESOURCES };
   const baseTech = { ...INITIAL_RESEARCH };
   const res: Resources = {

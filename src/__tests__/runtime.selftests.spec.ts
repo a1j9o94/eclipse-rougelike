@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { successThreshold, rollInventory, getFrame, makeShip, PARTS, type Part } from '../game'
+import { successThreshold, rollInventory, getFrame, makeShip, PARTS, tierCap } from '../game'
 
 describe('Runtime self-tests (moved from App)', () => {
   it('combat threshold clamps', () => {
@@ -7,15 +7,11 @@ describe('Runtime self-tests (moved from App)', () => {
     expect(successThreshold(10, -5)).toBe(2)
   })
 
-  it('shop guarantees include basics', () => {
-    const items = rollInventory({Military:1, Grid:1, Nano:1}, 8)
-    const has = (pred:(p:Part)=>boolean)=> items.some(pred)
-    const isSource = (p:Part)=> 'powerProd' in p
-    const isDrive = (p:Part)=> 'init' in p
-    const isWeapon = (p:Part)=> 'dice' in p
-    expect(has(isDrive)).toBe(true)
-    expect(has(isSource)).toBe(true)
-    expect(has(isWeapon)).toBe(true)
+  it('shop respects tier caps and returns requested count', () => {
+    const research = {Military:1, Grid:1, Nano:1}
+    const items = rollInventory(research, 8)
+    expect(items.length).toBe(8)
+    expect(items.every(p => p.tier <= tierCap(research))).toBe(true)
   })
 
   it('makeShip valid for all frames', () => {
