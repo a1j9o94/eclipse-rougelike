@@ -70,6 +70,7 @@ export function OutpostPage({
     materials: Math.max(1, Math.floor(ECONOMY.dockUpgrade.materials * econ.materials)),
     credits: Math.max(1, Math.floor(ECONOMY.dockUpgrade.credits * econ.credits)),
   };
+  const dockAtCap = capacity.cap >= ECONOMY.dockUpgrade.capacityMax;
   const rrInc = Math.max(1, Math.floor(ECONOMY.reroll.increment * econ.credits));
   const nextUpgrade = (()=>{
     if(!focusedShip) return null;
@@ -109,8 +110,10 @@ export function OutpostPage({
     return '';
   }
   return (
-    <div className="mx-auto max-w-5xl">
+    <>
       {showPlan && <CombatPlanModal onClose={()=>setShowPlan(false)} />}
+
+      <div className="mx-auto max-w-5xl pb-24">
 
       {/* Hangar */}
       <div className="p-3">
@@ -140,7 +143,7 @@ export function OutpostPage({
           </div>
         ); })()}
         <div className="mt-2 grid grid-cols-2 gap-2">
-          <button onClick={upgradeDock} className="px-3 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95">Expand Capacity +{ECONOMY.dockUpgrade.capacityDelta} ({dockCost.materials}🧱 + {dockCost.credits}¢)</button>
+          <button onClick={upgradeDock} disabled={dockAtCap} className={`px-3 py-3 rounded-xl ${dockAtCap? 'bg-zinc-700 opacity-60' : 'bg-indigo-600 hover:bg-indigo-500 active:scale-95'}`}>{dockAtCap ? 'Capacity Maxed' : `Expand Capacity +${ECONOMY.dockUpgrade.capacityDelta} (${dockCost.materials}🧱 + ${dockCost.credits}¢)`}</button>
           <div className="px-3 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-sm">Capacity: <b>{capacity.cap}</b> • Used: <b>{tonnage.used}</b></div>
         </div>
 
@@ -214,17 +217,18 @@ export function OutpostPage({
           </div>
         </div>
       </div>
-      
+      </div>
+
 
       {/* Start Combat */}
-      <div className="sticky bottom-0 z-10 p-3 bg-zinc-950/95 backdrop-blur border-t border-zinc-800">
+      <div className="fixed bottom-0 left-0 w-full z-10 p-3 bg-zinc-950/95 backdrop-blur border-t border-zinc-800">
         <div className="mx-auto max-w-5xl flex items-center gap-2">
           <button onClick={()=> fleetValid && startCombat()} className={`flex-1 px-4 py-3 rounded-xl ${fleetValid?'bg-emerald-600':'bg-zinc-700 opacity-60'}`}>Start Combat</button>
           {!fleet.every(s=>s.stats.valid) && <div className="text-xs text-rose-300">Fix fleet (Source + Drive + ⚡ OK)</div>}
           {tonnage.used > capacity.cap && <div className="text-xs text-rose-300">Over capacity — expand docks</div>}
         </div>
       </div>
-    </div>
+    </>
   )
 }
 
