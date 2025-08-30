@@ -267,10 +267,6 @@ export default function EclipseIntegrated(){
       )}
 
       <ResourceBar {...resources} tonnage={tonnage} sector={sector} onReset={resetRun} />
-      <div className="sticky top-12 z-10 px-3 py-2 bg-zinc-950/95 border-b border-zinc-800 flex gap-2 text-sm">
-        <button onClick={()=>setMode('OUTPOST')} className={`px-3 py-2 rounded ${mode==='OUTPOST'?'bg-sky-700':'bg-zinc-800'}`}>Outpost</button>
-        <button onClick={()=> mode==='OUTPOST' && fleetValid ? startCombat() : null} className={`px-3 py-2 rounded ${mode==='COMBAT'?'bg-sky-700':'bg-zinc-800'}`}>{mode==='COMBAT'? 'Combat' : 'Start Combat'}</button>
-      </div>
 
       {mode==='OUTPOST' && (
         <OutpostPage

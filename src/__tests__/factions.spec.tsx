@@ -4,16 +4,18 @@ import App from '../App'
 import { getFaction } from '../config/factions'
 
 describe('Factions', () => {
-  it('Scientists start at Tier 2 across all tracks', () => {
+  it('Scientists start at Tier 2 across all tracks', async () => {
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: /Consortium of Scholars/i }))
     fireEvent.click(screen.getByRole('button', { name: /Easy/i }))
     fireEvent.click(screen.getByRole('button', { name: /Let’s go/i }))
-    fireEvent.click(screen.getByRole('button', { name: /^Outpost$/i }))
-    expect(screen.getByRole('button', { name: /Military 2→3/i })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /Auto/i }))
+    await screen.findByText(/^Victory$/i, undefined, { timeout: 10000 })
+    fireEvent.click(screen.getByRole('button', { name: /Return to Outpost/i }))
+    await screen.findByRole('button', { name: /Military 2→3/i })
     expect(screen.getByRole('button', { name: /Grid 2→3/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Nano 2→3/i })).toBeInTheDocument()
-  })
+  }, 20000)
 
   it('Warmongers start with a Cruiser on the field', () => {
     render(<App />)
@@ -30,15 +32,17 @@ describe('Factions', () => {
     expect(screen.getAllByText(/Antimatter Cannon/i).length).toBeGreaterThan(0)
   })
 
-  it('Industrialists start with free reroll and discounted build costs', () => {
+  it('Industrialists start with free reroll and discounted build costs', async () => {
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: /Helios Cartel/i }))
     fireEvent.click(screen.getByRole('button', { name: /Easy/i }))
     fireEvent.click(screen.getByRole('button', { name: /Let’s go/i }))
-    fireEvent.click(screen.getByRole('button', { name: /^Outpost$/i }))
-    expect(screen.getByRole('button', { name: /Reroll \(0¢\)/i })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /Auto/i }))
+    await screen.findByText(/^Victory$/i, undefined, { timeout: 10000 })
+    fireEvent.click(screen.getByRole('button', { name: /Return to Outpost/i }))
+    await screen.findByRole('button', { name: /Reroll \(0¢\)/i })
     expect(screen.getByRole('button', { name: /Build Interceptor \(2🧱 \+ 1¢\)/i })).toBeInTheDocument()
-  })
+  }, 20000)
 
   it('Faction config exposes starting frame and capacity', () => {
     const warmongers = getFaction('warmongers')
