@@ -15,5 +15,14 @@ export const SECTORS: SectorSpec[] = [
 
 export function getSectorSpec(sector:number): SectorSpec {
   const s = SECTORS.find(x=>x.sector===sector);
-  return s || SECTORS[SECTORS.length-1];
+  if(s) return s;
+  // Infinite mode scaffold: beyond predefined sectors scale tonnage and science cap
+  const last = SECTORS[SECTORS.length-1];
+  const extra = sector - SECTORS.length;
+  return {
+    sector,
+    enemyTonnage: last.enemyTonnage + extra,
+    enemyScienceCap: last.enemyScienceCap + Math.floor(extra/3),
+    boss: sector % 5 === 0,
+  };
 }

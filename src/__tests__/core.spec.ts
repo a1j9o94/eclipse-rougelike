@@ -4,6 +4,8 @@ import {
   tierCap,
   makeShip,
   getFrame,
+  getSectorSpec,
+  SECTORS,
 } from '../game'
 import { PARTS } from '../config/parts'
 
@@ -13,11 +15,10 @@ describe('core helpers', () => {
     expect(successThreshold(10, -5)).toBe(2)
   })
 
-  it('tierCap averages and clamps 1..3', () => {
-    expect(tierCap({ Military: 1, Grid: 1, Nano: 1 })).toBe(1)
-    expect(tierCap({ Military: 3, Grid: 3, Nano: 3 })).toBe(3)
-    expect(tierCap({ Military: 1, Grid: 3, Nano: 2 })).toBeGreaterThanOrEqual(1)
-    expect(tierCap({ Military: 1, Grid: 3, Nano: 2 })).toBeLessThanOrEqual(3)
+  it('tierCap clamps each track independently between 1 and 3', () => {
+    expect(tierCap({ Military: 1, Grid: 1, Nano: 1 })).toEqual({ Military:1, Grid:1, Nano:1 })
+    expect(tierCap({ Military: 3, Grid: 3, Nano: 3 })).toEqual({ Military:3, Grid:3, Nano:3 })
+    expect(tierCap({ Military: 0, Grid: 4, Nano: 2 })).toEqual({ Military:1, Grid:3, Nano:2 })
   })
 
   it('makeShip validates required parts and power constraints', () => {
@@ -34,6 +35,12 @@ describe('core helpers', () => {
     // Power overuse invalid
     const s4 = makeShip(frame, [PARTS.drives[1], PARTS.weapons[1]])
     expect(s4.stats.valid).toBe(false)
+  })
+
+  it('getSectorSpec scales beyond predefined sectors', () => {
+    const last = SECTORS[SECTORS.length-1]
+    const next = getSectorSpec(last.sector + 1)
+    expect(next.enemyTonnage).toBe(last.enemyTonnage + 1)
   })
 })
 
