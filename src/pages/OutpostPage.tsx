@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { ItemCard, PowerBadge } from '../components/ui'
 import { CombatPlanModal } from '../components/modals'
 import { ECONOMY } from '../config/economy'
-import { FRAMES, type FrameId, ALL_PARTS } from '../game'
+import { FRAMES, type FrameId, ALL_PARTS, getEconomyModifiers } from '../game'
 import { partEffects } from '../config/parts'
 import { type Resources, type Research } from '../config/defaults'
 import { type Part } from '../config/parts'
@@ -61,10 +61,26 @@ export function OutpostPage({
   const focusedShip = fleet[focused];
   const [showPlan, setShowPlan] = useState(false);
   const tracks = ['Military','Grid','Nano'] as const;
+  const econ = getEconomyModifiers();
+  const buildCost = {
+    materials: Math.max(1, Math.floor(ECONOMY.buildInterceptor.materials * econ.materials)),
+    credits: Math.max(1, Math.floor(ECONOMY.buildInterceptor.credits * econ.credits)),
+  };
+  const dockCost = {
+    materials: Math.max(1, Math.floor(ECONOMY.dockUpgrade.materials * econ.materials)),
+    credits: Math.max(1, Math.floor(ECONOMY.dockUpgrade.credits * econ.credits)),
+  };
+  const rrInc = Math.max(1, Math.floor(ECONOMY.reroll.increment * econ.credits));
   const nextUpgrade = (()=>{
     if(!focusedShip) return null;
-    if(focusedShip.frame.id==='interceptor') return ECONOMY.upgradeCosts.interceptorToCruiser;
-    if(focusedShip.frame.id==='cruiser') return ECONOMY.upgradeCosts.cruiserToDread;
+    if(focusedShip.frame.id==='interceptor') return {
+      materials: Math.max(1, Math.floor(ECONOMY.upgradeCosts.interceptorToCruiser.materials * econ.materials)),
+      credits: Math.max(1, Math.floor(ECONOMY.upgradeCosts.interceptorToCruiser.credits * econ.credits)),
+    };
+    if(focusedShip.frame.id==='cruiser') return {
+      materials: Math.max(1, Math.floor(ECONOMY.upgradeCosts.cruiserToDread.materials * econ.materials)),
+      credits: Math.max(1, Math.floor(ECONOMY.upgradeCosts.cruiserToDread.credits * econ.credits)),
+    };
     return null;
   })();
   const upgradeComputed = (()=>{
@@ -115,7 +131,7 @@ export function OutpostPage({
           ))}
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <button onClick={buildShip} className="px-3 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 active:scale-95">Build Interceptor ({ECONOMY.buildInterceptor.materials}🧱 + {ECONOMY.buildInterceptor.credits}¢)</button>
+          <button onClick={buildShip} className="px-3 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 active:scale-95">Build Interceptor ({buildCost.materials}🧱 + {buildCost.credits}¢)</button>
           <button onClick={()=>upgradeShip(focused)} disabled={upgradeComputed.disabled} className={`px-3 py-3 rounded-xl ${upgradeComputed.disabled?'bg-zinc-700 opacity-60':'bg-amber-600 hover:bg-amber-500 active:scale-95'}`}>{upgradeComputed.label}{nextUpgrade ? ` (${nextUpgrade.materials}🧱 + ${nextUpgrade.credits}¢)` : ''}</button>
         </div>
         {(() => { const info = upgradeLockInfo(focusedShip); if(!info) return null; const ok = (research.Military||1) >= info.need; return (
@@ -124,7 +140,7 @@ export function OutpostPage({
           </div>
         ); })()}
         <div className="mt-2 grid grid-cols-2 gap-2">
-          <button onClick={upgradeDock} className="px-3 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95">Expand Capacity +{ECONOMY.dockUpgrade.capacityDelta} ({ECONOMY.dockUpgrade.materials}🧱 + {ECONOMY.dockUpgrade.credits}¢)</button>
+          <button onClick={upgradeDock} className="px-3 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95">Expand Capacity +{ECONOMY.dockUpgrade.capacityDelta} ({dockCost.materials}🧱 + {dockCost.credits}¢)</button>
           <div className="px-3 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-sm">Capacity: <b>{capacity.cap}</b> • Used: <b>{tonnage.used}</b></div>
         </div>
 
@@ -153,7 +169,7 @@ export function OutpostPage({
           <div className="lg:col-span-2">
             <div className="flex gap-2 items-center flex-wrap mb-2">
               <button onClick={doReroll} disabled={resources.credits<rerollCost} className={`px-3 py-2 rounded-lg text-sm sm:text-base ${resources.credits>=rerollCost?'bg-purple-700 hover:bg-purple-600 active:scale-[.99]':'bg-zinc-700 opacity-60'}`}>Reroll ({rerollCost}¢)</button>
-              <div className="text-[11px] sm:text-xs opacity-70">Reroll +{ECONOMY.reroll.increment} after each Reroll/Research</div>
+              <div className="text-[11px] sm:text-xs opacity-70">Reroll +{rrInc} after each Reroll/Research</div>
             </div>
             <div className="text-lg font-semibold mb-2">Outpost Inventory</div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-2">

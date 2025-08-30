@@ -15,6 +15,11 @@ export type Faction = {
   startingResourcesDelta?: Partial<Resources>; // add resources
   startingCapacityDelta?: number; // add to initial dock capacity
   startingShopItemsDelta?: number; // influence shop size
+  economy?: {
+    rerollBase?: number;
+    creditMultiplier?: number;
+    materialMultiplier?: number;
+  };
 };
 
 export const FACTIONS: readonly Faction[] = [
@@ -35,9 +40,10 @@ export const FACTIONS: readonly Faction[] = [
   {
     id: 'industrialists',
     name: 'Helios Cartel',
-    description: '+10¢ +3🧱 to jumpstart the economy; rerolls become cheaper to start.',
+    description: '+10¢ +3🧱 to jumpstart the economy; rerolls free initially and actions cost less.',
     startingResourcesDelta: { credits: 10, materials: 3 },
     startingShopItemsDelta: 0,
+    economy: { rerollBase: 0, creditMultiplier: 0.75, materialMultiplier: 0.75 },
   },
   {
     id: 'raiders',

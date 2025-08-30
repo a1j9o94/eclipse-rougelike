@@ -36,6 +36,17 @@ describe('Factions', () => {
     // Player card should list Antimatter Cannon among weapons
     expect(screen.getAllByText(/Antimatter Cannon/i).length).toBeGreaterThan(0)
   })
+
+  it('Industrialists start with free reroll and discounted build costs', () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: /Helios Cartel/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Easy/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Let’s go/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^Outpost$/i }))
+
+    expect(screen.getByRole('button', { name: /Reroll \(0¢\)/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Build Interceptor \(2🧱 \+ 1¢\)/i })).toBeInTheDocument()
+  })
 })
 
 
