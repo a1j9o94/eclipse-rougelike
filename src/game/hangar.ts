@@ -1,10 +1,16 @@
 import { type Part } from '../config/parts'
-import { type FrameId, getFrame } from '../game'
+import { ECONOMY } from '../config/economy'
+import { type FrameId, getFrame, getEconomyModifiers } from '../game'
 import { makeShip } from '../game'
 import type { Ship } from '../config/types'
 
 export function canBuildInterceptor(resources:{credits:number, materials:number}, capacity:{cap:number}, tonnageUsed:number){
-  const cost = { c:2, m:3 };
+  const mod = getEconomyModifiers();
+  const base = ECONOMY.buildInterceptor;
+  const cost = {
+    c: Math.max(1, Math.floor(base.credits * mod.credits)),
+    m: Math.max(1, Math.floor(base.materials * mod.materials)),
+  };
   const fits = (tonnageUsed + getFrame('interceptor').tonnage) <= capacity.cap;
   const afford = resources.credits>=cost.c && resources.materials>=cost.m;
   return { ok: fits && afford, cost };
@@ -30,7 +36,12 @@ export function upgradeShipAt(idx:number, fleet:Ship[], blueprints:Record<FrameI
   const step = canUpgrade(s.frame.id as FrameId, research);
   if(!step.ok || !step.next) return null;
   const nextId = step.next;
-  const cost = s.frame.id === 'interceptor' ? {c:3,m:3} : {c:4,m:5};
+  const mod = getEconomyModifiers();
+  const base = s.frame.id === 'interceptor' ? ECONOMY.upgradeCosts.interceptorToCruiser : ECONOMY.upgradeCosts.cruiserToDread;
+  const cost = {
+    c: Math.max(1, Math.floor(base.credits * mod.credits)),
+    m: Math.max(1, Math.floor(base.materials * mod.materials)),
+  };
   const deltaTons = getFrame(nextId).tonnage - s.frame.tonnage;
   if((tonnageUsed + deltaTons) > capacity.cap) return null;
   if(resources.credits < cost.c || resources.materials < cost.m) return null;
@@ -39,9 +50,14 @@ export function upgradeShipAt(idx:number, fleet:Ship[], blueprints:Record<FrameI
 }
 
 export function expandDock(resources:{credits:number, materials:number}, capacity:{cap:number}){
-  const cost = { c:4, m:4 };
+  const mod = getEconomyModifiers();
+  const base = ECONOMY.dockUpgrade;
+  const cost = {
+    c: Math.max(1, Math.floor(base.credits * mod.credits)),
+    m: Math.max(1, Math.floor(base.materials * mod.materials)),
+  };
   if(resources.credits < cost.c || resources.materials < cost.m) return null;
-  const nextCap = Math.min(10, capacity.cap + 2);
+  const nextCap = Math.min(base.capacityMax, capacity.cap + base.capacityDelta);
   return { nextCap, delta:{ credits: -cost.c, materials: -cost.m } };
 }
 

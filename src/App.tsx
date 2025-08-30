@@ -56,6 +56,7 @@ export default function EclipseIntegrated(){
 
   // Economy knobs
   const [rerollCost, setRerollCost] = useState(() => 8);
+  const [baseRerollCost, setBaseRerollCost] = useState(() => 8);
 
   // Capacity
   const [capacity, setCapacity] = useState<CapacityState>({ cap: INITIAL_CAPACITY.cap });
@@ -91,6 +92,7 @@ export default function EclipseIntegrated(){
     setCapacity(st.capacity);
     setResearch(st.research);
     setRerollCost(st.rerollCost);
+    setBaseRerollCost(st.rerollCost);
     setSector(st.sector);
     setBlueprints(st.blueprints);
     setFleet(st.fleet as unknown as Ship[]);
@@ -155,6 +157,7 @@ export default function EclipseIntegrated(){
         setShopVersion(v=> v+1);
       }
     }
+    setRerollCost(baseRerollCost);
   }
 
 
@@ -175,7 +178,7 @@ export default function EclipseIntegrated(){
   }
   function initRoundIfNeeded(){ if (turnPtr === -1 || turnPtr >= queue.length) { const q = buildInitiative(fleet, enemyFleet); setQueue(q); setTurnPtr(0); setLog(l => [...l, `— Round ${roundNum} —`]); return true; } return false; }
   function stepTurn(){ if(combatOver) return; const pAlive = fleet.some(s => s.alive && s.stats.valid); const eAlive = enemyFleet.some(s => s.alive && s.stats.valid); if (!pAlive || !eAlive) {
-      if(pAlive){ if(!rewardPaid){ const rw = calcRewards(enemyFleet, sector); setResources(r=>({...r, credits: r.credits + rw.c, materials: r.materials + rw.m, science: r.science + rw.s })); setRewardPaid(true); setLog(l=>[...l, `✅ Victory — +${rw.c}¢, +${rw.m}🧱, +${rw.s}🔬`]); } setOutcome('Victory'); setSector(s=> s+1); setRerollCost(8); }
+      if(pAlive){ if(!rewardPaid){ const rw = calcRewards(enemyFleet, sector); setResources(r=>({...r, credits: r.credits + rw.c, materials: r.materials + rw.m, science: r.science + rw.s })); setRewardPaid(true); setLog(l=>[...l, `✅ Victory — +${rw.c}¢, +${rw.m}🧱, +${rw.s}🔬`]); } setOutcome('Victory'); setSector(s=> s+1); setRerollCost(baseRerollCost); }
       else {
         if(difficulty && getDefeatPolicy(difficulty)==='reset') { setOutcome('Defeat — Run Over'); }
         else { setOutcome('Defeat — Grace'); }
