@@ -5,7 +5,7 @@ import { INITIAL_BLUEPRINTS, INITIAL_RESEARCH, INITIAL_RESOURCES, INITIAL_CAPACI
 import { type CapacityState, type DifficultyId } from './config/types'
 import { type FrameId } from './game'
 import { ResourceBar } from './components/ui'
-import { NewRunModal, RulesModal } from './components/modals'
+import { NewRunModal, RulesModal, TechListModal, WinModal } from './components/modals'
 import { type FactionId } from './config/factions'
 import OutpostPage from './pages/OutpostPage'
 import CombatPage from './pages/CombatPage'
@@ -42,6 +42,8 @@ import { researchLabel as researchLabelCore, canResearch as canResearchCore } fr
 export default function EclipseIntegrated(){
   const [mode, setMode] = useState<'OUTPOST'|'COMBAT'>('OUTPOST');
   const [showRules, setShowRules] = useState(false);
+  const [showTechs, setShowTechs] = useState(false);
+  const [showWin, setShowWin] = useState(false);
   const [difficulty, setDifficulty] = useState<null|DifficultyId>(null);
   const [showNewRun, setShowNewRun] = useState(true);
 
@@ -134,9 +136,14 @@ export default function EclipseIntegrated(){
     if(!combatOver) return;
     if(outcome==='Victory'){
       restoreAndCullFleetAfterCombat();
-      setMode('OUTPOST');
-      setShop({ items: rollInventory(research as Research) });
-      setShopVersion(v=> v+1);
+      if(sector>10){
+        setMode('OUTPOST');
+        setShowWin(true);
+      } else {
+        setMode('OUTPOST');
+        setShop({ items: rollInventory(research as Research) });
+        setShopVersion(v=> v+1);
+      }
     } else {
       if(difficulty && getDefeatPolicy(difficulty)==='reset'){
         resetRun();
@@ -168,7 +175,7 @@ export default function EclipseIntegrated(){
   }
   function initRoundIfNeeded(){ if (turnPtr === -1 || turnPtr >= queue.length) { const q = buildInitiative(fleet, enemyFleet); setQueue(q); setTurnPtr(0); setLog(l => [...l, `— Round ${roundNum} —`]); return true; } return false; }
   function stepTurn(){ if(combatOver) return; const pAlive = fleet.some(s => s.alive && s.stats.valid); const eAlive = enemyFleet.some(s => s.alive && s.stats.valid); if (!pAlive || !eAlive) {
-      if(pAlive){ if(!rewardPaid){ const rw = calcRewards(enemyFleet, sector); setResources(r=>({...r, credits: r.credits + rw.c, materials: r.materials + rw.m, science: r.science + rw.s })); setRewardPaid(true); setLog(l=>[...l, `✅ Victory — +${rw.c}¢, +${rw.m}🧱, +${rw.s}🔬`]); } setOutcome('Victory'); setSector(s=> Math.min(10, s+1)); setRerollCost(8); }
+      if(pAlive){ if(!rewardPaid){ const rw = calcRewards(enemyFleet, sector); setResources(r=>({...r, credits: r.credits + rw.c, materials: r.materials + rw.m, science: r.science + rw.s })); setRewardPaid(true); setLog(l=>[...l, `✅ Victory — +${rw.c}¢, +${rw.m}🧱, +${rw.s}🔬`]); } setOutcome('Victory'); setSector(s=> s+1); setRerollCost(8); }
       else {
         if(difficulty && getDefeatPolicy(difficulty)==='reset') { setOutcome('Defeat — Run Over'); }
         else { setOutcome('Defeat — Grace'); }
@@ -212,6 +219,16 @@ export default function EclipseIntegrated(){
       {/* Rules Modal */}
       {showRules && (
         <RulesModal onDismiss={dismissRules} />
+      )}
+
+      {/* Tech List Modal */}
+      {showTechs && (
+        <TechListModal research={research as Research} onClose={()=>setShowTechs(false)} />
+      )}
+
+      {/* Win Modal */}
+      {showWin && (
+        <WinModal onRestart={()=>{ setShowWin(false); resetRun(); }} />
       )}
 
       <ResourceBar {...resources} tonnage={tonnage} sector={sector} onReset={resetRun} />
@@ -266,8 +283,9 @@ export default function EclipseIntegrated(){
         />
       )}
 
-      {/* Floating reopen rules button at bottom */}
-      <div className="fixed bottom-3 right-3 z-40">
+      {/* Floating utility buttons */}
+      <div className="fixed bottom-3 right-3 z-40 flex flex-col gap-2">
+        <button onClick={()=>setShowTechs(true)} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">🔬 Tech</button>
         <button onClick={()=>setShowRules(true)} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">❓ Rules</button>
       </div>
     </div>

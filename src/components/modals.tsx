@@ -34,6 +34,8 @@ function initPreviews(){
 import { SECTORS, getBossVariants, getBossFleetFor, getOpponentFaction, ALL_PARTS, makeShip } from '../game'
 import { CompactShip } from './ui'
 import { type Ship } from '../config/types'
+import { partEffects } from '../config/parts'
+import { type Research } from '../config/defaults'
 
 function BossFleetPreview({ sector }:{ sector:5|10 }){
   const opp = getOpponentFaction();
@@ -191,6 +193,55 @@ export function CombatPlanModal({ onClose }:{ onClose:()=>void }){
           ))}
         </div>
         <div className="mt-3"><button onClick={onClose} className="w-full px-4 py-2 rounded-xl bg-emerald-600">Close</button></div>
+      </div>
+    </div>
+  );
+}
+
+
+export function TechListModal({ onClose, research }:{ onClose:()=>void, research:Research }){
+  const tracks = ['Military','Grid','Nano'] as const;
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 bg-black/70">
+      <div className="w-full max-w-md bg-zinc-900 border border-zinc-700 rounded-2xl p-4">
+        <div className="text-lg font-semibold mb-2">Tech List</div>
+        <div className="max-h-[60vh] overflow-y-auto pr-1 text-xs sm:text-sm space-y-3">
+          {tracks.map(t => {
+            const parts = ALL_PARTS.filter(p=>p.tech_category===t).sort((a,b)=>a.tier-b.tier || a.cat.localeCompare(b.cat));
+            return (
+              <div key={t}>
+                <div className="font-medium mb-1">{t}</div>
+                <div className="space-y-1">
+                  {parts.map(p => {
+                    const unlocked = (research[t]||1) >= p.tier;
+                    return (
+                      <div key={p.id} className={`px-2 py-1 rounded border flex items-center justify-between ${unlocked? 'border-emerald-600/30 bg-emerald-900/20':'border-zinc-700 bg-zinc-900 opacity-70'}`}>
+                        <div>
+                          <div className="font-medium">{p.name}</div>
+                          <div className="text-[10px] opacity-70">{p.cat} • T{p.tier}{(()=>{const eff=partEffects(p).join(' • ');return eff?` • ${eff}`:'';})()}</div>
+                        </div>
+                        <div className="text-lg">{unlocked? '✅':'🔒'}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="mt-3"><button onClick={onClose} className="w-full px-4 py-2 rounded-xl bg-emerald-600">Close</button></div>
+      </div>
+    </div>
+  );
+}
+
+export function WinModal({ onRestart }:{ onRestart:()=>void }){
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/70">
+      <div className="w-full max-w-md bg-zinc-900 border border-zinc-700 rounded-2xl p-6 text-center">
+        <div className="text-2xl font-bold mb-2">You Win!</div>
+        <div className="text-sm mb-4">Sector 10 cleared. Congratulations!</div>
+        <button onClick={onRestart} className="px-4 py-2 rounded-xl bg-emerald-600">Restart Run</button>
       </div>
     </div>
   );

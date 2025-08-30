@@ -35,7 +35,7 @@ export type InitiativeEntry = {
 export type SectorSpec = {
   sector: number;
   enemyTonnage: number;
-  enemyScienceCap: 1|2|3;
+  enemyScienceCap: number;
   boss: boolean;
 }
 
