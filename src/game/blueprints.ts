@@ -8,19 +8,23 @@ export function applyBlueprintToFleet(frameId:FrameId, parts:Part[], fleet:Ship[
 }
 
 export function canInstallOnClass(blueprints:Record<FrameId, Part[]>, frameId:FrameId, part:Part){
-  const tmp = makeShip(getFrame(frameId), [...blueprints[frameId], part]);
-  return { ok: tmp.stats.valid, tmp };
+  const frame = getFrame(frameId);
+  const nextParts = [...blueprints[frameId], part];
+  const tmp = makeShip(frame, nextParts);
+  const tilesOk = nextParts.length <= frame.tiles;
+  return { ok: tilesOk, tmp };
 }
 
 export function updateBlueprint(
   blueprints:Record<FrameId, Part[]>,
   frameId:FrameId,
-  mutate:(arr:Part[])=>Part[]
+  mutate:(arr:Part[])=>Part[],
+  allowInvalid:boolean = false
 ){
   const next = { ...blueprints } as Record<FrameId,Part[]>;
   const after = mutate(next[frameId]);
   const tmp = makeShip(getFrame(frameId), after);
-  if(!tmp.stats.valid) return { blueprints, updated:false } as const;
+  if(!allowInvalid && !tmp.stats.valid) return { blueprints, updated:false } as const;
   next[frameId] = after;
   return { blueprints: next, updated:true } as const;
 }
