@@ -1,6 +1,5 @@
-import { type Research, type Resources } from './defaults'
-import { type FrameId } from './frames'
 import { PARTS, type Part } from './parts'
+import { buildFactionConfig, type GameConfig } from './game'
 
 export type FactionId = 'scientists' | 'warmongers' | 'industrialists' | 'raiders';
 
@@ -8,18 +7,7 @@ export type Faction = {
   id: FactionId;
   name: string;
   description: string;
-  // Optional starting overrides
-  startingFrame?: FrameId; // e.g., start with a cruiser
-  startingBlueprintOverrides?: Partial<Record<FrameId, Part[]>>; // swap class blueprints
-  startingResearchDelta?: Partial<Research>; // add to initial research
-  startingResourcesDelta?: Partial<Resources>; // add resources
-  startingCapacityDelta?: number; // add to initial dock capacity
-  startingShopItemsDelta?: number; // influence shop size
-  economy?: {
-    rerollBase?: number;
-    creditMultiplier?: number;
-    materialMultiplier?: number;
-  };
+  config: GameConfig;
 };
 
 export const FACTIONS: readonly Faction[] = [
@@ -27,31 +15,38 @@ export const FACTIONS: readonly Faction[] = [
     id: 'scientists',
     name: 'Consortium of Scholars',
     description: 'All tech tracks start at Tier 2. Better shop quality early.',
-    startingResearchDelta: { Military: 1, Grid: 1, Nano: 1 },
+    config: buildFactionConfig({
+      research: { Military: 2, Grid: 2, Nano: 2 },
+    }),
   },
   {
     id: 'warmongers',
     name: 'Crimson Vanguard',
     description: 'Begin with a Cruiser-class hull blueprint, one Cruiser deployed, and +2 dock capacity.',
-    startingFrame: 'cruiser',
-    startingCapacityDelta: 3,
-    startingResearchDelta: { Military: 1 },
+    config: buildFactionConfig({
+      startingFrame: 'cruiser',
+      capacity: 14,
+      research: { Military: 2 },
+    }),
   },
   {
     id: 'industrialists',
     name: 'Helios Cartel',
     description: '+10¢ +3🧱 to jumpstart the economy; rerolls free initially and actions cost less.',
-    startingResourcesDelta: { credits: 10, materials: 3 },
-    startingShopItemsDelta: 0,
-    economy: { rerollBase: 0, creditMultiplier: 0.75, materialMultiplier: 0.75 },
+    config: buildFactionConfig({
+      resources: { credits: 20, materials: 8 },
+      economy: { rerollBase: 0, creditMultiplier: 0.75, materialMultiplier: 0.75 },
+    }),
   },
   {
     id: 'raiders',
     name: 'Void Corsairs',
     description: 'Interceptors start with Tier 2 cannon and +1 initiative (better drives).',
-    startingBlueprintOverrides: {
-      interceptor: [PARTS.sources[1], PARTS.drives[1], PARTS.weapons[1], PARTS.computers[0]],
-    },
+    config: buildFactionConfig({
+      blueprints: {
+        interceptor: [PARTS.sources[1], PARTS.drives[1], PARTS.weapons[1], PARTS.computers[0]] as Part[],
+      },
+    }),
   },
 ];
 
@@ -113,5 +108,4 @@ export function getBossFleetFor(fid: FactionId|undefined|null, sector:number){
   const def = BOSS_FLEETS[id];
   return sector>=10 ? def.ten : def.five;
 }
-
 
