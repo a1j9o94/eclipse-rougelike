@@ -80,20 +80,20 @@ export function makeShip(frame:Frame, parts:Part[]){
     hull: hullCap, alive: true };
 }
 
-export function tierCap(research:{Military:number, Grid:number, Nano:number}){ const avg = ((research.Military||1) + (research.Grid||1) + (research.Nano||1))/3; return Math.max(1, Math.min(3, Math.floor(avg))); }
+export function tierCap(research:{Military:number, Grid:number, Nano:number}): Record<'Military'|'Grid'|'Nano', number>{
+  return {
+    Military: Math.max(1, Math.min(3, Math.floor(research.Military || 1))),
+    Grid: Math.max(1, Math.min(3, Math.floor(research.Grid || 1))),
+    Nano: Math.max(1, Math.min(3, Math.floor(research.Nano || 1))),
+  };
+}
 
 export function rollInventory(research:{Military:number, Grid:number, Nano:number}, count: number = ECONOMY.shop.itemsBase){
-  // Exclude lower-tier items for any track already upgraded beyond them
-  const minTierByCat:Record<'Military'|'Grid'|'Nano', number> = {
-    Military: research.Military||1,
-    Grid: research.Grid||1,
-    Nano: research.Nano||1,
-  };
-  
+  const capByCat = tierCap(research);
+
   // Filter parts pool to only include parts within research tier limits
-  const pool = ALL_PARTS.filter((p:Part) => 
-    p.tier <= tierCap(research) && 
-    p.tier >= minTierByCat[p.tech_category as 'Military'|'Grid'|'Nano']
+  const pool = ALL_PARTS.filter((p:Part) =>
+    p.tier === capByCat[p.tech_category as 'Military'|'Grid'|'Nano']
   );
 
   const items:Part[] = [];
@@ -107,7 +107,7 @@ export function rollInventory(research:{Military:number, Grid:number, Nano:numbe
     available.splice(idx, 1); // Remove selected part from available pool
   }
   // If we run out of unique parts, fill remaining slots with random parts from original pool
-  while(items.length < count) {
+  while(items.length < count && pool.length > 0) {
     const idx = Math.floor(Math.random() * pool.length);
     items.push(pool[idx]);
   }
