@@ -82,4 +82,39 @@ export const ALL_PARTS: Part[] = [
   ...PARTS.hull,
 ];
 
+export const PART_EFFECT_FIELDS = [
+  'powerProd',
+  'powerCost',
+  'init',
+  'dice',
+  'dmgPerHit',
+  'shieldTier',
+  'extraHull',
+  'aim',
+] as const;
+
+export type PartEffectField = typeof PART_EFFECT_FIELDS[number];
+
+export const PART_EFFECT_SYMBOLS: Record<PartEffectField, string> = {
+  powerProd: '⚡+',
+  powerCost: '⚡-',
+  init: '🚀',
+  dice: '🎲',
+  dmgPerHit: '💥',
+  shieldTier: '🛡️',
+  extraHull: '❤️',
+  aim: '🎯',
+} as const;
+
+export function partEffects(p: Part) {
+  const effects: string[] = [];
+  for (const key of PART_EFFECT_FIELDS) {
+    const val = p[key as keyof Part];
+    if (typeof val === 'number' && val !== 0) {
+      effects.push(`${PART_EFFECT_SYMBOLS[key]}${val}`);
+    }
+  }
+  return effects;
+}
+
 
