@@ -3,7 +3,8 @@ import { useState } from 'react'
 import { ItemCard, PowerBadge } from '../components/ui'
 import { CombatPlanModal } from '../components/modals'
 import { ECONOMY } from '../config/economy'
-import { FRAMES, type FrameId, isSource, ALL_PARTS } from '../game'
+import { FRAMES, type FrameId, ALL_PARTS } from '../game'
+import { partEffects } from '../config/parts'
 import { type Resources, type Research } from '../config/defaults'
 import { type Part } from '../config/parts'
 import { type Ship, type GhostDelta } from '../config/types'
@@ -134,7 +135,7 @@ export function OutpostPage({
             {blueprints[focusedShip?.frame.id as FrameId]?.map((p, idx)=> (
               <div key={idx} className="p-2 rounded border border-zinc-700 bg-zinc-900 text-xs">
                 <div className="font-medium text-sm">{p.name}</div>
-                <div className="opacity-70">{p.cat} • Tier {p.tier} {isSource(p)?`• +⚡${p.powerProd}`:`• ⚡${p.powerCost||0}`}</div>
+                <div className="opacity-70">{(() => { const eff = partEffects(p).join(' • '); return `${p.cat} • Tier ${p.tier}${eff ? ' • ' + eff : ''}`; })()}</div>
                 <div className="mt-1 flex justify-between items-center">
                   <span className="opacity-70">Refund {Math.floor((p.cost||0)*0.25)}¢</span>
                   <button onClick={()=> sellPart(focusedShip.frame.id as FrameId, idx)} className="px-2 py-1 rounded bg-rose-600">Sell</button>

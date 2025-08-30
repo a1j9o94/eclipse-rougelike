@@ -10,8 +10,9 @@ describe('Runtime self-tests (moved from App)', () => {
   it('shop respects tier caps and returns requested count', () => {
     const research = {Military:1, Grid:1, Nano:1}
     const items = rollInventory(research, 8)
+    const caps = tierCap(research)
     expect(items.length).toBe(8)
-    expect(items.every(p => p.tier <= tierCap(research))).toBe(true)
+    expect(items.every(p => p.tier === caps[p.tech_category as 'Military'|'Grid'|'Nano'])).toBe(true)
   })
 
   it('makeShip valid for all frames', () => {
