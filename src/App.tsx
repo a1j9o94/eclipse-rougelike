@@ -105,10 +105,29 @@ export default function EclipseIntegrated(){
 
   // ---------- Blueprint helpers ----------
   function applyBlueprintToFleet(frameId:FrameId, parts:Part[]){ setFleet(f=> applyBpToFleet(frameId, parts, f)); }
-  function updateBlueprint(frameId:FrameId, mutate:(arr:Part[])=>Part[]){ setBlueprints(bp => { const res = updateBp(bp as Record<FrameId,Part[]>, frameId, mutate); if(!res.updated) return bp; applyBlueprintToFleet(frameId, res.blueprints[frameId]); return res.blueprints; }); }
+  function updateBlueprint(frameId:FrameId, mutate:(arr:Part[])=>Part[], allowInvalid:boolean = false){
+    setBlueprints(bp => {
+      const res = updateBp(bp as Record<FrameId,Part[]>, frameId, mutate, allowInvalid);
+      if(!res.updated) return bp;
+      applyBlueprintToFleet(frameId, res.blueprints[frameId]);
+      return res.blueprints;
+    });
+  }
   function canInstallOnClass(frameId:FrameId, part:Part){ return canInstallClass(blueprints as Record<FrameId, Part[]>, frameId, part); }
   function ghost(ship:Ship, part:Part): GhostDelta { const frameId = ship.frame.id as FrameId; const chk = canInstallOnClass(frameId, part); const base = makeShip(ship.frame, blueprints[frameId]); return { targetName: ship.frame.name + " (class)", use: chk.tmp.stats.powerUse, prod: chk.tmp.stats.powerProd, valid: chk.tmp.stats.valid, initBefore: base.stats.init, initAfter: chk.tmp.stats.init, initDelta: chk.tmp.stats.init - base.stats.init, hullBefore: base.stats.hullCap, hullAfter: chk.tmp.stats.hullCap, hullDelta: chk.tmp.stats.hullCap - base.stats.hullCap }; }
-  function buyAndInstall(part:Part){ if(resources.credits < (part.cost||0)) return; const ship = fleet[focused]; if(!ship) return; const frameId = ship.frame.id as FrameId; const chk = canInstallOnClass(frameId, part); setResources(r=>({...r, credits: r.credits - (part.cost||0)})); if(chk.ok){ updateBlueprint(frameId, arr => [...arr, part]); } }
+  function buyAndInstall(part:Part){
+    if(resources.credits < (part.cost||0)) return;
+    const ship = fleet[focused];
+    if(!ship) return;
+    const frameId = ship.frame.id as FrameId;
+    const chk = canInstallOnClass(frameId, part);
+    if(!chk.ok) return;
+    setResources(r=>({...r, credits: r.credits - (part.cost||0)}));
+    updateBlueprint(frameId, arr => [...arr, part], true);
+    if(!chk.tmp.stats.valid){
+      console.warn('Ship will not participate in combat until power and drive requirements are met.');
+    }
+  }
   function sellPart(frameId:FrameId, idx:number){ const arr = blueprints[frameId]; if(!arr) return; const part = arr[idx]; if(!part) return; const next = arr.filter((_,i:number)=> i!==idx); const tmp = makeShip(getFrame(frameId), next); if(!tmp.stats.valid) return; const refund = Math.floor((part.cost||0)*0.25); setResources(r=>({...r, credits: r.credits + refund })); updateBlueprint(frameId, () => next); }
 
   // ---------- Capacity & build/upgrade ----------
