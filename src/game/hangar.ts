@@ -56,6 +56,7 @@ export function expandDock(resources:{credits:number, materials:number}, capacit
     c: Math.max(1, Math.floor(base.credits * mod.credits)),
     m: Math.max(1, Math.floor(base.materials * mod.materials)),
   };
+  if(capacity.cap >= base.capacityMax) return null;
   if(resources.credits < cost.c || resources.materials < cost.m) return null;
   const nextCap = Math.min(base.capacityMax, capacity.cap + base.capacityDelta);
   return { nextCap, delta:{ credits: -cost.c, materials: -cost.m } };

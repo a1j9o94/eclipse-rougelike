@@ -206,20 +206,20 @@ export default function EclipseIntegrated(){
     setRoundNum(1); setQueue([]); setTurnPtr(-1); setAuto(false); setCombatOver(false); setOutcome(''); setRewardPaid(false); setMode('COMBAT');
   }
   function initRoundIfNeeded(){ if (turnPtr === -1 || turnPtr >= queue.length) { const q = buildInitiative(fleet, enemyFleet); setQueue(q); setTurnPtr(0); setLog(l => [...l, `— Round ${roundNum} —`]); return true; } return false; }
-  function stepTurn(){ if(combatOver) return; const pAlive = fleet.some(s => s.alive && s.stats.valid); const eAlive = enemyFleet.some(s => s.alive && s.stats.valid); if (!pAlive || !eAlive) {
-      if(pAlive){
-        if(!rewardPaid){ const rw = calcRewards(enemyFleet, sector); setResources(r=>({...r, credits: r.credits + rw.c, materials: r.materials + rw.m, science: r.science + rw.s })); setRewardPaid(true); setLog(l=>[...l, `✅ Victory — +${rw.c}¢, +${rw.m}🧱, +${rw.s}🔬`]); }
-        setOutcome('Victory'); setSector(s=> s+1); setRerollCost(baseRerollCost);
-      }
-      else {
-        if(difficulty && (getDefeatPolicy(difficulty)==='reset' || graceUsed)) { setOutcome('Defeat — Run Over'); }
-        else { setOutcome('Defeat — Grace'); setGraceUsed(true); }
-        setLog(l=>[...l, '💀 Defeat']);
-      }
-      setCombatOver(true); setAuto(false); return; }
-    if (initRoundIfNeeded()) return; const e = queue[turnPtr]; const isP = e.side==='P'; const atk = isP ? fleet[e.idx] : enemyFleet[e.idx]; const defFleet = isP ? enemyFleet : fleet; const strategy = isP ? 'guns' : 'kill'; const defIdx = targetIndex(defFleet, strategy); if (!atk || !atk.alive || !atk.stats.valid || defIdx === -1) { advancePtr(); return; } const lines:string[] = []; volley(atk, defFleet[defIdx], e.side, lines); setLog(l=>[...l, ...lines]); if (isP) setEnemyFleet([...defFleet]); else setFleet([...defFleet]); advancePtr(); }
+  function resolveCombat(pAlive:boolean){
+    if(pAlive){
+      if(!rewardPaid){ const rw = calcRewards(enemyFleet, sector); setResources(r=>({...r, credits: r.credits + rw.c, materials: r.materials + rw.m, science: r.science + rw.s })); setRewardPaid(true); setLog(l=>[...l, `✅ Victory — +${rw.c}¢, +${rw.m}🧱, +${rw.s}🔬`]); }
+      setOutcome('Victory'); setSector(s=> s+1); setRerollCost(baseRerollCost);
+    } else {
+      if(difficulty && (getDefeatPolicy(difficulty)==='reset' || graceUsed)) { setOutcome('Defeat — Run Over'); }
+      else { setOutcome('Defeat — Grace'); setGraceUsed(true); }
+      setLog(l=>[...l, '💀 Defeat']);
+    }
+    setCombatOver(true); setAuto(false);
+  }
+  function stepTurn(){ if(combatOver) return; const pAlive = fleet.some(s => s.alive && s.stats.valid); const eAlive = enemyFleet.some(s => s.alive && s.stats.valid); if (!pAlive || !eAlive) { resolveCombat(pAlive); return; } if (initRoundIfNeeded()) return; const e = queue[turnPtr]; const isP = e.side==='P'; const atk = isP ? fleet[e.idx] : enemyFleet[e.idx]; const defFleet = isP ? enemyFleet : fleet; const strategy = isP ? 'guns' : 'kill'; const defIdx = targetIndex(defFleet, strategy); if (!atk || !atk.alive || !atk.stats.valid || defIdx === -1) { advancePtr(); return; } const lines:string[] = []; volley(atk, defFleet[defIdx], e.side, lines); setLog(l=>[...l, ...lines]); if (isP) setEnemyFleet([...defFleet]); else setFleet([...defFleet]); advancePtr(); }
   function advancePtr(){ const np = turnPtr + 1; setTurnPtr(np); if (np >= queue.length) endRound(); }
-  function endRound(){ const pAlive = fleet.some(s => s.alive && s.stats.valid); const eAlive = enemyFleet.some(s => s.alive && s.stats.valid); if (!pAlive || !eAlive) { setAuto(false); return; } setRoundNum(n=>n+1); setTurnPtr(-1); setQueue([]); }
+  function endRound(){ const pAlive = fleet.some(s => s.alive && s.stats.valid); const eAlive = enemyFleet.some(s => s.alive && s.stats.valid); if (!pAlive || !eAlive) { resolveCombat(pAlive); return; } setRoundNum(n=>n+1); setTurnPtr(-1); setQueue([]); }
   function restoreAndCullFleetAfterCombat(){ setFleet(f => f.filter(s => s.alive).map(s => ({...s, hull: s.stats.hullCap}))); setFocused(0); }
 
   // Auto-step loop
@@ -267,10 +267,6 @@ export default function EclipseIntegrated(){
       )}
 
       <ResourceBar {...resources} tonnage={tonnage} sector={sector} onReset={resetRun} />
-      <div className="sticky top-12 z-10 px-3 py-2 bg-zinc-950/95 border-b border-zinc-800 flex gap-2 text-sm">
-        <button onClick={()=>setMode('OUTPOST')} className={`px-3 py-2 rounded ${mode==='OUTPOST'?'bg-sky-700':'bg-zinc-800'}`}>Outpost</button>
-        <button onClick={()=> mode==='OUTPOST' && fleetValid ? startCombat() : null} className={`px-3 py-2 rounded ${mode==='COMBAT'?'bg-sky-700':'bg-zinc-800'}`}>{mode==='COMBAT'? 'Combat' : 'Start Combat'}</button>
-      </div>
 
       {mode==='OUTPOST' && (
         <OutpostPage

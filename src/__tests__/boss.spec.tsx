@@ -20,15 +20,15 @@ describe('Boss variants and planning', () => {
     expect(v10Labels.join(', ')).toMatch(/Tier 3|T3/i)
   })
 
-  it('Combat Plan shows boss variant labels for sectors 5 and 10', () => {
+  it('Combat Plan shows boss variant labels for sectors 5 and 10', async () => {
     render(<App />)
-    // Pick any faction and start on Easy
     fireEvent.click(screen.getByRole('button', { name: /Consortium of Scholars/i }))
     fireEvent.click(screen.getByRole('button', { name: /Easy/i }))
     fireEvent.click(screen.getByRole('button', { name: /Let’s go/i }))
-    fireEvent.click(screen.getByRole('button', { name: /^Outpost$/i }))
-
-    // Open combat plan
+    fireEvent.click(screen.getByRole('button', { name: /Auto/i }))
+    await screen.findByText(/^Victory$/i, undefined, { timeout: 10000 })
+    fireEvent.click(screen.getByRole('button', { name: /Return to Outpost/i }))
+    await screen.findByRole('button', { name: /Combat Plan/i })
     fireEvent.click(screen.getByRole('button', { name: /Combat Plan/i }))
 
     // Sector rows appear with variants summary for boss sectors
@@ -45,7 +45,7 @@ describe('Boss variants and planning', () => {
     const texts = variantLines.map(el => el.parentElement?.textContent || '')
     expect(texts.join(' | ')).toMatch(/High Aim/i)
     expect(texts.join(' | ')).toMatch(/High Shields|Tanky/i)
-  })
+  }, 20000)
 
   it('boss generation uses predefined opponent faction fleets at sector 5', () => {
     render(<App />)
