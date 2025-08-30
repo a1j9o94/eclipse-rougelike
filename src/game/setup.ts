@@ -2,7 +2,7 @@ import { type Research, type Resources, INITIAL_BLUEPRINTS, INITIAL_RESEARCH, IN
 import { type FrameId } from '../config/frames'
 import { getFaction, type FactionId } from '../config/factions'
 import { type Part } from '../config/parts'
-import { getFrame, makeShip, rollInventory, setPlayerFaction, pickOpponentFaction } from './index'
+import { getFrame, makeShip, rollInventory, setPlayerFaction, pickOpponentFaction, setEconomyModifiers } from './index'
 import { ECONOMY } from '../config/economy'
 import { getStartingShipCount, getBaseRerollCost, getInitialCapacityForDifficulty } from '../config/difficulty'
 import { type DifficultyId } from '../config/types'
@@ -23,6 +23,9 @@ export function initNewRun({ difficulty, faction }: NewRunParams): NewRunState{
   const f = getFaction(faction);
   setPlayerFaction(f.id);
   pickOpponentFaction();
+  const creditMult = f.economy?.creditMultiplier ?? 1;
+  const materialMult = f.economy?.materialMultiplier ?? 1;
+  setEconomyModifiers({ credits: creditMult, materials: materialMult });
   const baseRes = { ...INITIAL_RESOURCES };
   const baseTech = { ...INITIAL_RESEARCH };
   const res: Resources = {
@@ -57,7 +60,8 @@ export function initNewRun({ difficulty, faction }: NewRunParams): NewRunState{
   const baseCap = getInitialCapacityForDifficulty(difficulty, (f.startingFrame||'interceptor') as FrameId);
   const capacity = { cap: Math.max(baseCap, INITIAL_CAPACITY.cap + (f.startingCapacityDelta||0)) };
 
-  const rerollCost = getBaseRerollCost(difficulty);
+  const baseReroll = f.economy?.rerollBase ?? getBaseRerollCost(difficulty);
+  const rerollCost = Math.max(0, Math.floor(baseReroll * creditMult));
   return { resources: res, research, rerollCost, sector: 1, blueprints: classBlueprints, fleet, shopItems, capacity };
 }
 
