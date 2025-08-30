@@ -44,6 +44,8 @@ export default function EclipseIntegrated(){
   const [showRules, setShowRules] = useState(false);
   const [showTechs, setShowTechs] = useState(false);
   const [showWin, setShowWin] = useState(false);
+  const [endless, setEndless] = useState(false);
+  const [graceUsed, setGraceUsed] = useState(false);
   const [difficulty, setDifficulty] = useState<null|DifficultyId>(null);
   const [showNewRun, setShowNewRun] = useState(true);
 
@@ -87,6 +89,8 @@ export default function EclipseIntegrated(){
   function newRun(diff: DifficultyId, pick:FactionId){
     setDifficulty(diff);
     setShowNewRun(false);
+    setEndless(false);
+    setGraceUsed(false);
     const st = initNewRun({ difficulty: diff, faction: pick });
     setResources(st.resources);
     setCapacity(st.capacity);
@@ -101,7 +105,7 @@ export default function EclipseIntegrated(){
     startFirstCombat();
     setShowRules(true);
   }
-  function resetRun(){ setShowNewRun(true); }
+  function resetRun(){ setShowNewRun(true); setEndless(false); setGraceUsed(false); }
 
   // ---------- Blueprint helpers ----------
   function applyBlueprintToFleet(frameId:FrameId, parts:Part[]){ setFleet(f=> applyBpToFleet(frameId, parts, f)); }
@@ -158,15 +162,21 @@ export default function EclipseIntegrated(){
     if(outcome==='Victory'){
       restoreAndCullFleetAfterCombat();
       if(sector>10){
-        setMode('OUTPOST');
-        setShowWin(true);
+        if(endless){
+          setMode('OUTPOST');
+          setShop({ items: rollInventory(research as Research) });
+          setShopVersion(v=> v+1);
+        } else {
+          setMode('OUTPOST');
+          setShowWin(true);
+        }
       } else {
         setMode('OUTPOST');
         setShop({ items: rollInventory(research as Research) });
         setShopVersion(v=> v+1);
       }
     } else {
-      if(difficulty && getDefeatPolicy(difficulty)==='reset'){
+      if(outcome==='Defeat — Run Over'){
         resetRun();
       } else {
         setFleet(graceRecoverFleet(blueprints as Record<FrameId, Part[]>));
@@ -197,10 +207,13 @@ export default function EclipseIntegrated(){
   }
   function initRoundIfNeeded(){ if (turnPtr === -1 || turnPtr >= queue.length) { const q = buildInitiative(fleet, enemyFleet); setQueue(q); setTurnPtr(0); setLog(l => [...l, `— Round ${roundNum} —`]); return true; } return false; }
   function stepTurn(){ if(combatOver) return; const pAlive = fleet.some(s => s.alive && s.stats.valid); const eAlive = enemyFleet.some(s => s.alive && s.stats.valid); if (!pAlive || !eAlive) {
-      if(pAlive){ if(!rewardPaid){ const rw = calcRewards(enemyFleet, sector); setResources(r=>({...r, credits: r.credits + rw.c, materials: r.materials + rw.m, science: r.science + rw.s })); setRewardPaid(true); setLog(l=>[...l, `✅ Victory — +${rw.c}¢, +${rw.m}🧱, +${rw.s}🔬`]); } setOutcome('Victory'); setSector(s=> s+1); setRerollCost(baseRerollCost); }
+      if(pAlive){
+        if(!rewardPaid){ const rw = calcRewards(enemyFleet, sector); setResources(r=>({...r, credits: r.credits + rw.c, materials: r.materials + rw.m, science: r.science + rw.s })); setRewardPaid(true); setLog(l=>[...l, `✅ Victory — +${rw.c}¢, +${rw.m}🧱, +${rw.s}🔬`]); }
+        setOutcome('Victory'); setSector(s=> s+1); setRerollCost(baseRerollCost);
+      }
       else {
-        if(difficulty && getDefeatPolicy(difficulty)==='reset') { setOutcome('Defeat — Run Over'); }
-        else { setOutcome('Defeat — Grace'); }
+        if(difficulty && (getDefeatPolicy(difficulty)==='reset' || graceUsed)) { setOutcome('Defeat — Run Over'); }
+        else { setOutcome('Defeat — Grace'); setGraceUsed(true); }
         setLog(l=>[...l, '💀 Defeat']);
       }
       setCombatOver(true); setAuto(false); return; }
@@ -250,7 +263,7 @@ export default function EclipseIntegrated(){
 
       {/* Win Modal */}
       {showWin && (
-        <WinModal onRestart={()=>{ setShowWin(false); resetRun(); }} />
+        <WinModal onRestart={()=>{ setShowWin(false); resetRun(); }} onEndless={()=>{ setShowWin(false); setEndless(true); }} />
       )}
 
       <ResourceBar {...resources} tonnage={tonnage} sector={sector} onReset={resetRun} />

@@ -235,13 +235,16 @@ export function TechListModal({ onClose, research }:{ onClose:()=>void, research
   );
 }
 
-export function WinModal({ onRestart }:{ onRestart:()=>void }){
+export function WinModal({ onRestart, onEndless }:{ onRestart:()=>void; onEndless:()=>void }){
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/70">
       <div className="w-full max-w-md bg-zinc-900 border border-zinc-700 rounded-2xl p-6 text-center">
         <div className="text-2xl font-bold mb-2">You Win!</div>
         <div className="text-sm mb-4">Sector 10 cleared. Congratulations!</div>
-        <button onClick={onRestart} className="px-4 py-2 rounded-xl bg-emerald-600">Restart Run</button>
+        <div className="flex flex-col gap-2">
+          <button onClick={onRestart} className="px-4 py-2 rounded-xl bg-emerald-600">Restart Run</button>
+          <button onClick={onEndless} className="px-4 py-2 rounded-xl bg-sky-600">Endless War</button>
+        </div>
       </div>
     </div>
   );
