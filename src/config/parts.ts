@@ -65,7 +65,7 @@ export const PARTS: PartCatalog = {
     { id: "absorption", name: "Absorption Shield", shieldTier: 2, powerCost: 1, tier: 2, cost: 65, cat: "Shield", tech_category: "Nano" },
   ],
   hull: [
-    { id: "improved", name: "Improved Hull", extraHull: 1, powerCost: 0, tier: 2, cost: 22, cat: "Hull", tech_category: "Nano" },
+    { id: "improved", name: "Improved Hull", extraHull: 2, powerCost: 0, tier: 2, cost: 22, cat: "Hull", tech_category: "Nano" },
     { id: "reinforced", name: "Reinforced Hull", extraHull: 2, powerCost: 0, tier: 3, cost: 70, cat: "Hull", tech_category: "Nano" },
     { id: "adamantine", name: "Adamantine Hull", extraHull: 3, powerCost: 0, tier: 3, cost: 110, cat: "Hull", tech_category: "Nano" },
     { id: "composite", name: "Composite Hull", extraHull: 1, powerCost: 0, tier: 1, cost: 15, cat: "Hull", tech_category: "Nano" },
