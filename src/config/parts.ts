@@ -20,6 +20,12 @@ export type Part = {
   shieldTier?: number;
   extraHull?: number;
   aim?: number;
+  /** reduces target initiative on hit */
+  initLoss?: number;
+  /** hull regenerated each round */
+  regen?: number;
+  /** how many tiles this part occupies */
+  slots?: number;
   tier: number;
   cost: number;
   tech_category: TechTrack;
@@ -119,6 +125,19 @@ export const PARTS: PartCatalog = {
       tech_category: "Nano",
     },
     {
+      id: "disruptor",
+      name: "Disruptor Beam",
+      dice: 1,
+      dmgPerHit: 1,
+      faces: [ { dmg: 1 } ],
+      powerCost: 2,
+      tier: 2,
+      cost: 80,
+      cat: "Weapon",
+      tech_category: "Nano",
+      initLoss: 1,
+    },
+    {
       id: "plasma_array",
       name: "Plasma Array",
       dice: 2,
@@ -136,6 +155,46 @@ export const PARTS: PartCatalog = {
       cost: 60,
       cat: "Weapon",
       tech_category: "Nano",
+    },
+    {
+      id: "nova_battery",
+      name: "Nova Battery",
+      dice: 3,
+      dmgPerHit: 1,
+      faces: [
+        { roll: 1 },
+        { roll: 2 },
+        { roll: 3 },
+        { roll: 4 },
+        { roll: 5 },
+        { dmg: 1 },
+      ],
+      powerCost: 3,
+      tier: 3,
+      cost: 140,
+      cat: "Weapon",
+      tech_category: "Nano",
+      slots: 2,
+    },
+    {
+      id: "cluster_missiles",
+      name: "Cluster Missiles",
+      dice: 4,
+      dmgPerHit: 1,
+      faces: [
+        { roll: 1 },
+        { roll: 2 },
+        { roll: 3 },
+        { roll: 4 },
+        { roll: 5 },
+        { dmg: 1 },
+      ],
+      powerCost: 3,
+      tier: 3,
+      cost: 150,
+      cat: "Weapon",
+      tech_category: "Nano",
+      slots: 2,
     },
     {
       id: "antimatter_array",
@@ -172,6 +231,18 @@ export const PARTS: PartCatalog = {
     { id: "improved", name: "Improved Hull", extraHull: 2, powerCost: 0, tier: 2, cost: 22, cat: "Hull", tech_category: "Nano" },
     { id: "adamantine", name: "Adamantine Hull", extraHull: 3, powerCost: 1, tier: 3, cost: 110, cat: "Hull", tech_category: "Nano" },
     { id: "composite", name: "Composite Hull", extraHull: 1, powerCost: 0, tier: 1, cost: 15, cat: "Hull", tech_category: "Nano" },
+    {
+      id: "auto_repair",
+      name: "Auto-Repair Hull",
+      extraHull: 2,
+      regen: 1,
+      powerCost: 1,
+      tier: 2,
+      cost: 80,
+      cat: "Hull",
+      tech_category: "Nano",
+    },
+    { id: "reinforced", name: "Reinforced Hull", extraHull: 2, powerCost: 0, tier: 3, cost: 70, cat: "Hull", tech_category: "Nano" },
     { id: "monolith_plating", name: "Monolith Plating", extraHull: 4, powerCost: 2, tier: 3, cost: 160, cat: "Hull", tech_category: "Nano" },
   ],
 } as const;
@@ -235,6 +306,8 @@ export const PART_EFFECT_FIELDS = [
   'shieldTier',
   'extraHull',
   'aim',
+  'initLoss',
+  'regen',
 ] as const;
 
 export type PartEffectField = typeof PART_EFFECT_FIELDS[number];
@@ -249,6 +322,8 @@ export const PART_EFFECT_SYMBOLS: Record<PartEffectField, string> = {
   shieldTier: '🛡️',
   extraHull: '❤️',
   aim: '🎯',
+  initLoss: '🚀-',
+  regen: '❤️+',
 } as const;
 
 export function partEffects(p: Part) {

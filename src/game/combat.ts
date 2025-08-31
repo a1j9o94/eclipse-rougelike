@@ -17,8 +17,9 @@ export function rollSuccesses(numDice:number, threshold:number) {
 
 export function buildInitiative(pFleet:Ship[], eFleet:Ship[]): InitiativeEntry[] {
   const q:InitiativeEntry[] = []
-  pFleet.forEach((s, i) => { if (s.alive && s.stats.valid) q.push({ side: 'P', idx: i, init: s.stats.init, size: sizeRank(s.frame) }) })
-  eFleet.forEach((s, i) => { if (s.alive && s.stats.valid) q.push({ side: 'E', idx: i, init: s.stats.init, size: sizeRank(s.frame) }) })
+  const regen = (s:Ship)=>{ if(s.alive && s.stats.regen>0 && s.hull>0){ s.hull = Math.min(s.stats.hullCap, s.hull + s.stats.regen) } }
+  pFleet.forEach((s, i) => { regen(s); if (s.alive && s.stats.valid) q.push({ side: 'P', idx: i, init: s.stats.init, size: sizeRank(s.frame) }) })
+  eFleet.forEach((s, i) => { regen(s); if (s.alive && s.stats.valid) q.push({ side: 'E', idx: i, init: s.stats.init, size: sizeRank(s.frame) }) })
   q.sort((a, b) => (b.init - a.init) || (b.size - a.size) || (Math.random() - 0.5))
   return q as InitiativeEntry[]
 }
@@ -49,11 +50,13 @@ export function volley(attacker:Ship, defender:Ship, side:'P'|'E', logArr:string
         defender.hull -= dmg
         logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} → ${defender.frame.name} | ${w.name}: auto ${dmg}`)
         if(defender.hull<=0){ defender.alive=false; defender.hull=0; logArr.push(`💥 ${defender.frame.name} destroyed!`) }
+        if(w.initLoss){ defender.stats.init = Math.max(0, defender.stats.init - w.initLoss); logArr.push(`⌛ ${defender.frame.name} -${w.initLoss} INIT`)}
       } else if(typeof face.roll === 'number' && face.roll >= thr){
         const dmg = w.dmgPerHit||0
         defender.hull -= dmg
         logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} → ${defender.frame.name} | ${w.name}: roll ${face.roll} ≥ ${thr} → ${dmg}`)
         if(defender.hull<=0){ defender.alive=false; defender.hull=0; logArr.push(`💥 ${defender.frame.name} destroyed!`) }
+        if(w.initLoss){ defender.stats.init = Math.max(0, defender.stats.init - w.initLoss); logArr.push(`⌛ ${defender.frame.name} -${w.initLoss} INIT`)}
       } else {
         const rolled = typeof face.roll === 'number' ? face.roll : 'miss'
         logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} misses with ${w.name} (roll ${rolled} < ${thr})`)

@@ -1,7 +1,7 @@
 import { PARTS, type Part } from './parts'
 import { buildFactionConfig, type GameConfig } from './game'
 
-export type FactionId = 'scientists' | 'warmongers' | 'industrialists' | 'raiders';
+export type FactionId = 'scientists' | 'warmongers' | 'industrialists' | 'raiders' | 'timekeepers' | 'collective';
 
 export type Faction = {
   id: FactionId;
@@ -47,6 +47,28 @@ export const FACTIONS: readonly Faction[] = [
       blueprints: {
         interceptor: [PARTS.sources[1], PARTS.drives[1], PARTS.weapons[1], PARTS.computers[0]] as Part[],
       },
+    }),
+  },
+  {
+    id: 'timekeepers',
+    name: 'Temporal Vanguard',
+    description: 'Start with Disruptor Beam blueprint and advanced drives.',
+    config: buildFactionConfig({
+      research: { Grid: 2 },
+      blueprints: {
+        interceptor: [PARTS.sources[0], PARTS.drives[1], PARTS.weapons.find(p=>p.id==='disruptor') as Part, PARTS.computers[0]] as Part[],
+      },
+    }),
+  },
+  {
+    id: 'collective',
+    name: 'Regenerative Swarm',
+    description: 'Begin with Auto-Repair Hull blueprint and ships that mend each round.',
+    config: buildFactionConfig({
+      blueprints: {
+        interceptor: [PARTS.sources[0], PARTS.drives[0], PARTS.weapons[0], PARTS.hull.find(p=>p.id==='auto_repair') as Part],
+      },
+      research: { Nano: 2 },
     }),
   },
 ];
@@ -100,6 +122,26 @@ const BOSS_FLEETS: Record<FactionId, { five: BossFleetSpec; ten: BossFleetSpec }
     ten: { sector:10, name:'Void Reavers', ships:[
       { frame:'dread', parts:['zero_point','quantum_source','transition_drive','rift_cannon','sentient_ai','omega','gauss_array'] },
       { frame:'cruiser', parts:['tachyon_source','quantum_source','warp_drive','rift_cannon','positron','gauss','sentient_hull'] },
+    ]},
+  },
+  timekeepers: {
+    five: { sector:5, name:'Chrono Skirmish', ships:[
+      { frame:'cruiser', parts:['tachyon_source','tachyon_drive','disruptor','gluon','phase','composite'] },
+      { frame:'interceptor', parts:['fusion_source','tachyon_drive','disruptor','positron'] },
+    ]},
+    ten: { sector:10, name:'Epoch Armada', ships:[
+      { frame:'dread', parts:['zero_point','quantum_source','transition_drive','disruptor','neutrino','omega','monolith_plating'] },
+      { frame:'cruiser', parts:['tachyon_source','warp_drive','disruptor','gluon','phase','auto_repair'] },
+    ]},
+  },
+  collective: {
+    five: { sector:5, name:'Swarm Renewal', ships:[
+      { frame:'cruiser', parts:['tachyon_source','fusion_drive','plasma_array','positron','gauss','auto_repair'] },
+      { frame:'interceptor', parts:['fusion_source','fusion_drive','plasma','positron','auto_repair'] },
+    ]},
+    ten: { sector:10, name:'Enduring Mass', ships:[
+      { frame:'dread', parts:['zero_point','quantum_source','transition_drive','cluster_missiles','neutrino','omega','auto_repair','adamantine'] },
+      { frame:'cruiser', parts:['tachyon_source','warp_drive','nova_battery','gluon','phase','auto_repair'] },
     ]},
   },
 };
