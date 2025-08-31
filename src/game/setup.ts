@@ -2,7 +2,9 @@ import { type Research, type Resources } from '../config/defaults'
 import { type FrameId } from '../config/frames'
 import { getFaction, type FactionId } from '../config/factions'
 import { type Part } from '../config/parts'
-import { getFrame, makeShip, rollInventory, setPlayerFaction, pickOpponentFaction, setEconomyModifiers, setRareTechChance } from './index'
+import { getFrame, makeShip } from './ship'
+import { rollInventory, setRareTechChance } from './shop'
+import { setEconomyModifiers } from './economy'
 import { getStartingShipCount, getBaseRerollCost, getInitialCapacityForDifficulty } from '../config/difficulty'
 import { type DifficultyId } from '../config/types'
 
@@ -17,6 +19,18 @@ export type NewRunState = {
   shopItems: Part[];
   capacity: { cap: number };
 };
+
+let OPPONENT: FactionId | null = null;
+let PLAYER: FactionId | null = null;
+
+export function setPlayerFaction(fid:FactionId){ PLAYER = fid; pickOpponentFaction(); }
+export function pickOpponentFaction(){
+  const all: FactionId[] = ['scientists','warmongers','industrialists','raiders'];
+  const pool = all.filter(id => id !== PLAYER);
+  OPPONENT = pool[Math.floor(Math.random()*pool.length)];
+  return OPPONENT;
+}
+export function getOpponentFaction(){ return OPPONENT; }
 
 export function initNewRun({ difficulty, faction }: NewRunParams): NewRunState{
   const f = getFaction(faction);

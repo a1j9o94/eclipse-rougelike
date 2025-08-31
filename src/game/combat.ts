@@ -1,7 +1,19 @@
 import { type Part, RIFT_FACES } from '../config/parts'
 import { type Ship, type InitiativeEntry } from '../config/types'
-import { FRAMES, makeShip, randomEnemyPartsFor, sizeRank, getBossVariantFocus, getOpponentFaction, getBossFleetFor, ALL_PARTS, successThreshold } from './index'
-import { getSectorSpec } from './index'
+import { sizeRank } from './ship'
+
+export function successThreshold(aim:number, shieldTier:number) {
+  // Clamp to 2..6 so 1s always miss and 6s always hit.
+  return Math.min(6, Math.max(2, 6 - (aim - shieldTier)));
+}
+export function rollSuccesses(numDice:number, threshold:number) {
+  let hits = 0;
+  for (let i = 0; i < numDice; i++) {
+    const r = 1 + Math.floor(Math.random() * 6);
+    if (r >= threshold) hits++;
+  }
+  return hits;
+}
 
 export function buildInitiative(pFleet:Ship[], eFleet:Ship[]): InitiativeEntry[] {
   const q:InitiativeEntry[] = []
@@ -75,38 +87,5 @@ function assignRiftSelfDamage(friends:Ship[], side:'P'|'E', logArr:string[]){
   target.hull -= 1
   logArr.push(`${side==='P'?'🟦':'🟥'} ${target.frame.name} suffers 1 Rift backlash`)
   if(target.hull<=0){ target.alive=false; target.hull=0; logArr.push(`💥 ${target.frame.name} destroyed by Rift backlash!`) }
-}
-
-export function genEnemyFleet(sector:number){
-  const spec = getSectorSpec(sector)
-  const boss = spec.boss
-  const focus = boss ? getBossVariantFocus(sector) : undefined
-  const options = [FRAMES.dread, FRAMES.cruiser, FRAMES.interceptor]
-  let remaining = Math.max(1, spec.enemyTonnage)
-  const ships:Ship[] = [] as unknown as Ship[]
-  let bossAssigned = false
-  const minTonnage = Math.min(...options.map(f=>f.tonnage))
-
-  if(boss){
-    const opp = getOpponentFaction()
-    const bossSpec = getBossFleetFor(opp, sector)
-    if(bossSpec){
-      return bossSpec.ships.map(s => {
-        const frame = FRAMES[s.frame]
-        const parts = s.parts.map(pid => ALL_PARTS.find(p=>p.id===pid)).filter((p): p is Part => !!p)
-        return makeShip(frame, parts)
-      }) as unknown as Ship[]
-    }
-  }
-  while(remaining >= minTonnage){
-    const viable = options.filter(f => f.tonnage <= remaining)
-    if(viable.length === 0) break
-    const pick = viable[Math.floor(Math.random()*viable.length)]
-    const parts = randomEnemyPartsFor(pick, spec.enemyScienceCap, boss && !bossAssigned, focus)
-    ships.push(makeShip(pick, parts))
-    if(boss && !bossAssigned && pick.id!=='interceptor') bossAssigned = true
-    remaining -= pick.tonnage
-  }
-  return ships
 }
 
