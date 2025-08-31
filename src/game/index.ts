@@ -5,19 +5,19 @@ import { FRAMES, type Frame, type FrameId } from '../config/frames'
 import { PARTS, ALL_PARTS, type Part } from '../config/parts'
 import { ECONOMY } from '../config/economy'
 export { FRAMES, type FrameId } from '../config/frames'
-export { PARTS, ALL_PARTS, type Part } from '../config/parts'
+export { PARTS, ALL_PARTS, type Part, RIFT_FACES } from '../config/parts'
 export { getSectorSpec, SECTORS } from '../config/pacing'
 export { nextTierCost } from '../config/economy'
 import type { BossVariant } from '../config/types'
 import type { FactionId } from '../config/factions'
 export { getBossFleetFor } from '../config/factions'
 
-export const isSource = (p:Part)=>"powerProd" in p;
-export const isDrive = (p:Part)=>"init" in p;
-export const isWeapon = (p:Part)=>"dice" in p;
-export const isComputer = (p:Part)=>"aim" in p;
-export const isShield = (p:Part)=>"shieldTier" in p;
-export const isHull = (p:Part)=>"extraHull" in p;
+export const isSource = (p:Part)=> p.cat === 'Source';
+export const isDrive = (p:Part)=> p.cat === 'Drive';
+export const isWeapon = (p:Part)=> p.cat === 'Weapon';
+export const isComputer = (p:Part)=> p.cat === 'Computer';
+export const isShield = (p:Part)=> p.cat === 'Shield';
+export const isHull = (p:Part)=> p.cat === 'Hull';
 
 // Safe frame lookup to avoid undefined access
 export function getFrame(id: FrameId){
@@ -75,7 +75,8 @@ export function makeShip(frame:Frame, parts:Part[]){
   const totalAim = parts.reduce((sum:number, p:Part)=> sum + (p.aim||0), 0);
   const totalShieldTier = parts.reduce((sum:number, p:Part)=> sum + (p.shieldTier||0), 0);
   const totalInit = parts.reduce((sum:number, p:Part)=> sum + (p.init||0), 0);
-  return { frame, parts, weapons, computer, shield, hullParts, drive, sources,
+  const riftDice = parts.reduce((sum:number, p:Part)=> sum + (p.riftDice||0), 0);
+  return { frame, parts, weapons, riftDice, computer, shield, hullParts, drive, sources,
     stats:{ hullCap, aim: totalAim, shieldTier: totalShieldTier, init: totalInit, powerProd, powerUse, valid },
     hull: hullCap, alive: true };
 }
