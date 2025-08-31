@@ -23,6 +23,7 @@ export function HullPips({ current, max }:{current:number, max:number}){
 }
 export function CompactShip({ ship, side, active }:{ship:Ship, side:'P'|'E', active:boolean}){
   const dead = !ship.alive || ship.hull<=0;
+  const weaponParts = ship.parts.filter((p:Part)=> (p.dice||0) > 0 || (p.riftDice||0) > 0);
   return (
     <div className={`relative w-28 sm:w-32 p-2 rounded-xl border shadow-sm ${dead? 'border-zinc-700 bg-zinc-900 opacity-60' : side==='P' ? 'border-sky-600/60 bg-slate-900' : 'border-pink-600/60 bg-zinc-900'} ${active? 'ring-2 ring-amber-400 animate-pulse':''}`}>
       <div className="text-[11px] sm:text-xs font-semibold truncate pr-6">{ship.frame.name}</div>
@@ -30,18 +31,23 @@ export function CompactShip({ ship, side, active }:{ship:Ship, side:'P'|'E', act
       <HullPips current={Math.max(0, ship.hull)} max={ship.stats.hullCap} />
       {/* Dice/Damage summary per weapon */}
       <div className="mt-1 flex flex-wrap gap-1 min-h-[18px]">
-        {ship.weapons.length>0 ? ship.weapons.map((w:Part, i:number)=> {
-          const maxDmg = Math.max(w.dmgPerHit||0, ...(w.faces||[]).map(f=>f.dmg||0));
+        {weaponParts.map((p:Part, i:number)=> {
+          const dice = p.riftDice || p.dice || 0;
+          const icon = p.riftDice ? '🕳️' : '🎲';
+          const maxDmg = Math.max(p.dmgPerHit||0, ...(p.faces||[]).map(f=>f.dmg||0));
           return (
             <span key={i} className="px-1.5 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-[10px] whitespace-nowrap">
-              {w.dice||0}🎲 × {maxDmg}
+              {dice}{icon}{maxDmg>0 ? ` × ${maxDmg}` : ''}
             </span>
           );
-        }) : (
+        })}
+        {weaponParts.length===0 && (
           <span className="text-[10px] opacity-60">No weapons</span>
         )}
       </div>
-      <div className="mt-1 text-[10px] opacity-80 line-clamp-2 min-h-[20px]">{ship.weapons.map((w:Part)=>w.name).join(', ')||'—'}</div>
+      <div className="mt-1 text-[10px] opacity-80 line-clamp-2 min-h-[20px]">{
+        weaponParts.map((p:Part)=> p.riftDice ? `${p.riftDice} Rift die${p.riftDice>1?'s':''}` : p.name).join(', ') || '—'
+      }</div>
       <div className="absolute top-1 right-1"><PowerBadge use={ship.stats.powerUse} prod={ship.stats.powerProd} /></div>
       {dead && <div className="absolute inset-0 grid place-items-center text-2xl text-zinc-300">✖</div>}
     </div>
