@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import App from '../App'
 import { getBossVariants, getOpponentFaction, getBossFleetFor } from '../game'
@@ -21,6 +21,11 @@ describe('Boss variants and planning', () => {
   })
 
   it('Combat Plan shows boss variant labels for sectors 5 and 10', async () => {
+    let seed = 1
+    const rand = vi.spyOn(Math, 'random').mockImplementation(() => {
+      seed = (seed * 16807) % 2147483647
+      return (seed - 1) / 2147483646
+    })
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: /Consortium of Scholars/i }))
     fireEvent.click(screen.getByRole('button', { name: /Easy/i }))
@@ -30,6 +35,7 @@ describe('Boss variants and planning', () => {
     fireEvent.click(screen.getByRole('button', { name: /Return to Outpost/i }))
     await screen.findByRole('button', { name: /Combat Plan/i })
     fireEvent.click(screen.getByRole('button', { name: /Combat Plan/i }))
+    rand.mockRestore()
 
     // Sector rows appear with variants summary for boss sectors
     const s5 = screen.getByText(/Sector 5 \(Boss\)/i)
