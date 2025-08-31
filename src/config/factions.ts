@@ -74,7 +74,7 @@ const BOSS_FLEETS: Record<FactionId, { five: BossFleetSpec; ten: BossFleetSpec }
   },
   warmongers: {
     five: { sector:5, name:'Vanguard Spear', ships:[
-      { frame:'cruiser', parts:['tachyon_source','micro_fusion','tachyon_drive','gauss_array','positron','gauss','composite'] },
+      { frame:'cruiser', parts:['tachyon_source','micro_fusion','tachyon_drive','plasma_array','positron','gauss','composite'] },
       { frame:'interceptor', parts:['fusion_source','micro_fusion','ion_thruster','plasma','positron','gauss'] },
     ]},
     ten: { sector:10, name:'Crimson Armada', ships:[
