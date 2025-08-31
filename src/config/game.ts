@@ -16,6 +16,7 @@ export type GameConfig = {
   startingFrame: FrameId;
   capacity: number;
   shopSize: number;
+  rareChance: number;
   economy: GameEconomy;
 };
 
@@ -30,6 +31,7 @@ export const BASE_CONFIG: GameConfig = {
   startingFrame: 'interceptor',
   capacity: INITIAL_CAPACITY.cap,
   shopSize: ECONOMY.shop.itemsBase,
+  rareChance: 0.1,
   economy: {},
 };
 
@@ -40,6 +42,7 @@ export type GameConfigOverrides = {
   startingFrame?: FrameId;
   capacity?: number;
   shopSize?: number;
+  rareChance?: number;
   economy?: GameEconomy;
 };
 
@@ -59,6 +62,7 @@ export function buildFactionConfig(overrides: GameConfigOverrides): GameConfig {
     startingFrame: overrides.startingFrame ?? BASE_CONFIG.startingFrame,
     capacity: overrides.capacity ?? BASE_CONFIG.capacity,
     shopSize: overrides.shopSize ?? BASE_CONFIG.shopSize,
+    rareChance: overrides.rareChance ?? BASE_CONFIG.rareChance,
     economy: {
       rerollBase: overrides.economy?.rerollBase ?? BASE_CONFIG.economy.rerollBase,
       creditMultiplier:

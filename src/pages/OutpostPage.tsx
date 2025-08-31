@@ -98,7 +98,7 @@ export function OutpostPage({
   function nextUnlocksFor(track:'Military'|'Grid'|'Nano'){
     const curr = (research as Research)[track]||1;
     const next = Math.min(3, curr+1);
-    const items = ALL_PARTS.filter(p=> p.tech_category===track && p.tier===next);
+    const items = ALL_PARTS.filter(p=> !p.rare && p.tech_category===track && p.tier===next);
     return items;
   }
   function militaryNextNote(){

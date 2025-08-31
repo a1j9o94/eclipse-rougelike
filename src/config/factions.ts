@@ -17,6 +17,7 @@ export const FACTIONS: readonly Faction[] = [
     description: 'All tech tracks start at Tier 2. Better shop quality early.',
     config: buildFactionConfig({
       research: { Military: 2, Grid: 2, Nano: 2 },
+      rareChance: 0.2,
     }),
   },
   {

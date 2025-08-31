@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { PARTS, partEffects } from '../config/parts'
+import { PARTS, RARE_PARTS, partEffects } from '../config/parts'
 
 describe('partEffects display', () => {
   it('shows spike launcher max damage and hit chance', () => {
-    const spike = PARTS.weapons.find(p=>p.id==='spike_launcher')!
+    const spike = RARE_PARTS.find(p=>p.id==='spike_launcher')!
     const eff = partEffects(spike)
     expect(eff).toContain('💥3')
     expect(eff).toContain('🎯17%')

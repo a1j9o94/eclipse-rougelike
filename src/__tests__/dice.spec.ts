@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { makeShip, getFrame, PARTS } from '../game'
+import { makeShip, getFrame, PARTS, RARE_PARTS } from '../game'
 import { volley } from '../game/combat'
 
 describe('weapon dice faces', () => {
@@ -21,7 +21,7 @@ describe('weapon dice faces', () => {
   it('spike launcher deals big damage on spike face', () => {
     const src = PARTS.sources[0]
     const drv = PARTS.drives[0]
-    const spike = PARTS.weapons.find(p=>p.id==='spike_launcher')!
+    const spike = RARE_PARTS.find(p=>p.id==='spike_launcher')!
     const hullp = PARTS.hull.find(p=>p.id==='improved')!
     const attacker = makeShip(getFrame('interceptor'), [src, drv, spike])
     const defender = makeShip(getFrame('interceptor'), [src, drv, hullp])

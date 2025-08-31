@@ -207,7 +207,7 @@ export function TechListModal({ onClose, research }:{ onClose:()=>void, research
         <div className="text-lg font-semibold mb-2">Tech List</div>
         <div className="max-h-[60vh] overflow-y-auto pr-1 text-xs sm:text-sm space-y-3">
           {tracks.map(t => {
-            const parts = ALL_PARTS.filter(p=>p.tech_category===t).sort((a,b)=>a.tier-b.tier || a.cat.localeCompare(b.cat));
+            const parts = ALL_PARTS.filter(p=>p.tech_category===t && !p.rare).sort((a,b)=>a.tier-b.tier || a.cat.localeCompare(b.cat));
             return (
               <div key={t}>
                 <div className="font-medium mb-1">{t}</div>

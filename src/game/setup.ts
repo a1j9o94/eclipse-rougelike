@@ -2,7 +2,7 @@ import { type Research, type Resources } from '../config/defaults'
 import { type FrameId } from '../config/frames'
 import { getFaction, type FactionId } from '../config/factions'
 import { type Part } from '../config/parts'
-import { getFrame, makeShip, rollInventory, setPlayerFaction, pickOpponentFaction, setEconomyModifiers } from './index'
+import { getFrame, makeShip, rollInventory, setPlayerFaction, pickOpponentFaction, setEconomyModifiers, setRareTechChance } from './index'
 import { getStartingShipCount, getBaseRerollCost, getInitialCapacityForDifficulty } from '../config/difficulty'
 import { type DifficultyId } from '../config/types'
 
@@ -25,6 +25,7 @@ export function initNewRun({ difficulty, faction }: NewRunParams): NewRunState{
   const creditMult = f.config.economy.creditMultiplier ?? 1;
   const materialMult = f.config.economy.materialMultiplier ?? 1;
   setEconomyModifiers({ credits: creditMult, materials: materialMult });
+  setRareTechChance(f.config.rareChance);
 
   const res: Resources = { ...f.config.resources };
   const research: Research = { ...f.config.research } as Research;
