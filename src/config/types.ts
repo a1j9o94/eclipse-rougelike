@@ -6,7 +6,7 @@ export type Ship = {
   parts: Part[];
   weapons: Part[];
   riftDice: number;
-  stats: { init: number; hullCap: number; powerUse: number; powerProd: number; valid: boolean; aim: number; shieldTier: number };
+  stats: { init: number; hullCap: number; powerUse: number; powerProd: number; valid: boolean; aim: number; shieldTier: number; regen: number };
   hull: number;
   alive: boolean;
 }

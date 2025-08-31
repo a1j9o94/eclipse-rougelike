@@ -23,7 +23,7 @@ describe('rift weapons', () => {
     const src = PARTS.sources[0]
     const drv = PARTS.drives[0]
     const rift = RARE_PARTS.find(p=>p.id==='rift_cannon')!
-    const conductor = PARTS.hull.find(p=>p.id==='rift_conductor')!
+    const conductor = RARE_PARTS.find(p=>p.id==='rift_conductor')!
     const attacker = makeShip(getFrame('interceptor'), [src, drv, rift, conductor])
     const defender = makeShip(getFrame('interceptor'), [src, drv])
     const seq = [0, 0.2] // faces 1 and 2 -> total 3 dmg

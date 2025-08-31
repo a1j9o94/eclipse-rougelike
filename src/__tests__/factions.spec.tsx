@@ -49,4 +49,16 @@ describe('Factions', () => {
     expect(warmongers.config.startingFrame).toBe('cruiser')
     expect(warmongers.config.capacity).toBeGreaterThan(10)
   })
+
+  it('Timekeepers start with Disruptor Beam blueprint', () => {
+    const f = getFaction('timekeepers')
+    const ids = f.config.blueprints.interceptor.map(p=>p.id)
+    expect(ids).toContain('disruptor')
+  })
+
+  it('Collective begin with Auto-Repair Hull', () => {
+    const f = getFaction('collective')
+    const ids = f.config.blueprints.interceptor.map(p=>p.id)
+    expect(ids).toContain('auto_repair')
+  })
 })

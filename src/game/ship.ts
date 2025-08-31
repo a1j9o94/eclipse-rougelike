@@ -25,7 +25,8 @@ export function isValidShipBuild(frame: Frame, parts: Part[]): boolean {
   const sources = parts.filter(isSource);
   const powerProd = sources.reduce((a:number,s:Part)=>a+(s.powerProd||0),0);
   const powerUse = parts.reduce((a:number,p:Part)=>a+(p.powerCost||0),0);
-  const tilesOk = parts.length <= frame.tiles;
+  const tilesUsed = parts.reduce((a:number,p:Part)=>a+(p.slots||1),0);
+  const tilesOk = tilesUsed <= frame.tiles;
   return hasDrive && sources.length>0 && powerUse <= powerProd && tilesOk;
 }
 
@@ -51,9 +52,10 @@ export function makeShip(frame:Frame, parts:Part[]){
   const totalAim = parts.reduce((sum:number, p:Part)=> sum + (p.aim||0), 0);
   const totalShieldTier = parts.reduce((sum:number, p:Part)=> sum + (p.shieldTier||0), 0);
   const totalInit = parts.reduce((sum:number, p:Part)=> sum + (p.init||0), 0);
+  const totalRegen = parts.reduce((sum:number, p:Part)=> sum + (p.regen||0), 0);
   const riftDice = parts.reduce((sum:number, p:Part)=> sum + (p.riftDice||0), 0);
   return { frame, parts, weapons, riftDice, computer, shield, hullParts, drive, sources,
-    stats:{ hullCap, aim: totalAim, shieldTier: totalShieldTier, init: totalInit, powerProd, powerUse, valid },
+    stats:{ hullCap, aim: totalAim, shieldTier: totalShieldTier, init: totalInit, regen: totalRegen, powerProd, powerUse, valid },
     hull: hullCap, alive: true };
 }
 

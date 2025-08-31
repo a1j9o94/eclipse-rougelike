@@ -5,7 +5,8 @@ import { INITIAL_BLUEPRINTS, INITIAL_RESEARCH, INITIAL_RESOURCES, INITIAL_CAPACI
 import { type CapacityState, type DifficultyId } from './config/types'
 import { type FrameId } from './game'
 import { ResourceBar } from './components/ui'
-import { NewRunModal, RulesModal, TechListModal, WinModal } from './components/modals'
+import { RulesModal, TechListModal, WinModal } from './components/modals'
+import StartPage from './pages/StartPage'
 import { type FactionId } from './config/factions'
 import OutpostPage from './pages/OutpostPage'
 import CombatPage from './pages/CombatPage'
@@ -244,13 +245,12 @@ export default function EclipseIntegrated(){
   function canResearch(track:'Military'|'Grid'|'Nano'){ return canResearchCore(track, research as Research, resources); }
   function upgradeLockInfo(ship:Ship|null|undefined){ if(!ship) return null; if(ship.frame.id==='interceptor'){ return { need: 2, next:'Cruiser' }; } if(ship.frame.id==='cruiser'){ return { need: 3, next:'Dreadnought' }; } return null; }
 
+  if (showNewRun) {
+    return <StartPage onNewRun={newRun} />;
+  }
+
   return (
     <div className="bg-zinc-950 min-h-screen text-zinc-100">
-      {/* New Run Modal */}
-      {showNewRun && (
-        <NewRunModal onNewRun={newRun} />
-      )}
-
       {/* Rules Modal */}
       {showRules && (
         <RulesModal onDismiss={dismissRules} />
