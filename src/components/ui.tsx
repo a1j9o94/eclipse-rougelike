@@ -30,11 +30,14 @@ export function CompactShip({ ship, side, active }:{ship:Ship, side:'P'|'E', act
       <HullPips current={Math.max(0, ship.hull)} max={ship.stats.hullCap} />
       {/* Dice/Damage summary per weapon */}
       <div className="mt-1 flex flex-wrap gap-1 min-h-[18px]">
-        {ship.weapons.length>0 ? ship.weapons.map((w:Part, i:number)=> (
-          <span key={i} className="px-1.5 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-[10px] whitespace-nowrap">
-            {w.dice||0}🎲 × {w.dmgPerHit||0}
-          </span>
-        )) : (
+        {ship.weapons.length>0 ? ship.weapons.map((w:Part, i:number)=> {
+          const maxDmg = Math.max(w.dmgPerHit||0, ...(w.faces||[]).map(f=>f.dmg||0));
+          return (
+            <span key={i} className="px-1.5 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-[10px] whitespace-nowrap">
+              {w.dice||0}🎲 × {maxDmg}
+            </span>
+          );
+        }) : (
           <span className="text-[10px] opacity-60">No weapons</span>
         )}
       </div>

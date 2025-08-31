@@ -230,10 +230,25 @@ export const PART_EFFECT_SYMBOLS: Record<PartEffectField, string> = {
 export function partEffects(p: Part) {
   const effects: string[] = [];
   for (const key of PART_EFFECT_FIELDS) {
+    if (key === 'dmgPerHit') continue;
     const val = p[key as keyof Part];
     if (typeof val === 'number' && val !== 0) {
       effects.push(`${PART_EFFECT_SYMBOLS[key]}${val}`);
     }
+  }
+  if (p.cat === 'Weapon') {
+    const faces = p.faces || [];
+    const maxDmg = Math.max(p.dmgPerHit || 0, ...faces.map(f => f.dmg || 0));
+    if (maxDmg > 0) effects.push(`${PART_EFFECT_SYMBOLS.dmgPerHit}${maxDmg}`);
+    if (faces.length > 0) {
+      const hitFaces = faces.filter(f => f.dmg).length;
+      if (hitFaces > 0) {
+        const pct = Math.round((hitFaces / faces.length) * 100);
+        effects.push(`🎯${pct}%`);
+      }
+    }
+  } else if (typeof p.dmgPerHit === 'number' && p.dmgPerHit !== 0) {
+    effects.push(`${PART_EFFECT_SYMBOLS.dmgPerHit}${p.dmgPerHit}`);
   }
   return effects;
 }
