@@ -104,11 +104,13 @@ export function rollInventory(research:{Military:number, Grid:number, Nano:numbe
   const items:Part[] = [];
 
   const available = [...pool];
+  const rareAvailable = [...RARE_PARTS];
   while(items.length < count){
     const useRare = Math.random() < RARE_TECH_CHANCE;
-    if(useRare && RARE_PARTS.length > 0){
-      const ridx = Math.floor(Math.random() * RARE_PARTS.length);
-      items.push(RARE_PARTS[ridx]);
+    if(useRare && rareAvailable.length > 0){
+      const ridx = Math.floor(Math.random() * rareAvailable.length);
+      items.push(rareAvailable[ridx]);
+      rareAvailable.splice(ridx,1);
       continue;
     }
     if(available.length > 0){
@@ -119,9 +121,10 @@ export function rollInventory(research:{Military:number, Grid:number, Nano:numbe
     } else if(pool.length > 0){
       const idx = Math.floor(Math.random() * pool.length);
       items.push(pool[idx]);
-    } else if(RARE_PARTS.length > 0){
-      const ridx = Math.floor(Math.random() * RARE_PARTS.length);
-      items.push(RARE_PARTS[ridx]);
+    } else if(rareAvailable.length > 0){
+      const ridx = Math.floor(Math.random() * rareAvailable.length);
+      items.push(rareAvailable[ridx]);
+      rareAvailable.splice(ridx,1);
     } else {
       break;
     }
