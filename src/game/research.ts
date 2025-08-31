@@ -1,5 +1,5 @@
 import { nextTierCost } from '../config/economy';
-import { getEconomyModifiers } from './index';
+import { getEconomyModifiers } from './economy';
 
 export function researchLabel(track:'Military'|'Grid'|'Nano', research:{Military:number, Grid:number, Nano:number}){
   const curr = research[track]||1;

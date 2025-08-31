@@ -1,6 +1,6 @@
 import { type Ship } from '../config/types'
 import { calcRewardsForFrameId } from '../config/economy'
-import { makeShip, getFrame } from './index'
+import { makeShip, getFrame } from './ship'
 import { type FrameId } from '../config/frames'
 import { type Part } from '../config/parts'
 import { type Resources } from '../config/defaults'
