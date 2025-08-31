@@ -31,6 +31,7 @@ export function pickOpponentFaction(){
   return OPPONENT;
 }
 export function getOpponentFaction(){ return OPPONENT; }
+export function setOpponentFaction(fid:FactionId){ OPPONENT = fid; }
 
 export function initNewRun({ difficulty, faction }: NewRunParams): NewRunState{
   const f = getFaction(faction);

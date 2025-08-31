@@ -1,13 +1,16 @@
 import { PARTS, type Part } from './parts'
 import { buildFactionConfig, type GameConfig } from './game'
+import { type ResearchState as Research, type Ship } from './types'
 
 export type FactionId = 'scientists' | 'warmongers' | 'industrialists' | 'raiders' | 'timekeepers' | 'collective';
 
+export type UnlockContext = { research: Research; fleet: Ship[]; victory: boolean };
 export type Faction = {
   id: FactionId;
   name: string;
   description: string;
   config: GameConfig;
+  unlock?: (ctx: UnlockContext) => boolean;
 };
 
 export const FACTIONS: readonly Faction[] = [
@@ -19,6 +22,7 @@ export const FACTIONS: readonly Faction[] = [
       research: { Military: 2, Grid: 2, Nano: 2 },
       rareChance: 0.2,
     }),
+    unlock: ({ research }) => research.Military >= 3 && research.Grid >= 3 && research.Nano >= 3,
   },
   {
     id: 'warmongers',
@@ -29,6 +33,7 @@ export const FACTIONS: readonly Faction[] = [
       capacity: 14,
       research: { Military: 2 },
     }),
+    unlock: ({ fleet, victory }) => victory && fleet.some(s => s.frame.id === 'cruiser'),
   },
   {
     id: 'industrialists',
@@ -48,6 +53,8 @@ export const FACTIONS: readonly Faction[] = [
         interceptor: [PARTS.sources[1], PARTS.drives[1], PARTS.weapons[1], PARTS.computers[0]] as Part[],
       },
     }),
+    unlock: ({ fleet, victory }) =>
+      victory && fleet.length > 0 && fleet.every(s => s.frame.id === 'interceptor'),
   },
   {
     id: 'timekeepers',
@@ -59,6 +66,7 @@ export const FACTIONS: readonly Faction[] = [
         interceptor: [PARTS.sources[0], PARTS.drives[1], PARTS.weapons.find(p=>p.id==='disruptor') as Part, PARTS.computers[0]] as Part[],
       },
     }),
+    unlock: ({ research }) => research.Grid >= 3,
   },
   {
     id: 'collective',
@@ -70,6 +78,7 @@ export const FACTIONS: readonly Faction[] = [
       },
       research: { Nano: 2 },
     }),
+    unlock: ({ research }) => research.Nano >= 3,
   },
 ];
 

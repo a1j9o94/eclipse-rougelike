@@ -12,7 +12,7 @@ import OutpostPage from './pages/OutpostPage'
 import CombatPage from './pages/CombatPage'
 import { type Part } from './config/parts'
 import { type Ship, type GhostDelta, type InitiativeEntry } from './config/types'
-import { initNewRun } from './game/setup'
+import { initNewRun, getOpponentFaction } from './game/setup'
 import { getDefeatPolicy } from './config/difficulty'
 import { buildInitiative as buildInitiativeCore, targetIndex as targetIndexCore, volley as volleyCore } from './game/combat'
 import { generateEnemyFleetFor } from './game/enemy'
@@ -21,6 +21,7 @@ import { applyBlueprintToFleet as applyBpToFleet, canInstallOnClass as canInstal
 import { buildInterceptor as buildI, upgradeShipAt as upgradeAt, expandDock as expandD } from './game/hangar'
 import { calcRewards, ensureGraceResources, graceRecoverFleet } from './game/rewards'
 import { researchLabel as researchLabelCore, canResearch as canResearchCore } from './game/research'
+import { loadRunState, saveRunState, clearRunState, recordWin, restoreRunEnvironment, restoreOpponent, evaluateUnlocks } from './game/storage'
 
 /**
  * Eclipse Roguelike — Integrated App (v3.24)
@@ -41,37 +42,40 @@ import { researchLabel as researchLabelCore, canResearch as canResearchCore } fr
 
 // ------------------------------- Integrated App ----------------------------
 export default function EclipseIntegrated(){
+  const saved = loadRunState();
   const [mode, setMode] = useState<'OUTPOST'|'COMBAT'>('OUTPOST');
   const [showRules, setShowRules] = useState(false);
   const [showTechs, setShowTechs] = useState(false);
   const [showWin, setShowWin] = useState(false);
   const [endless, setEndless] = useState(false);
-  const [graceUsed, setGraceUsed] = useState(false);
-  const [difficulty, setDifficulty] = useState<null|DifficultyId>(null);
+  const [graceUsed, setGraceUsed] = useState(saved?.graceUsed ?? false);
+  const [difficulty, setDifficulty] = useState<null|DifficultyId>(saved?.difficulty ?? null);
+  const [faction, setFaction] = useState<FactionId>(saved?.faction ?? 'industrialists');
+  const [opponent, setOpponent] = useState<FactionId>(saved?.opponent ?? 'warmongers');
   const [showNewRun, setShowNewRun] = useState(true);
 
   // Class blueprints (shared per hull class)
-  const [blueprints, setBlueprints] = useState<Record<FrameId, Part[]>>({...INITIAL_BLUEPRINTS});
+  const [blueprints, setBlueprints] = useState<Record<FrameId, Part[]>>(saved?.blueprints ?? {...INITIAL_BLUEPRINTS});
 
   // Resources & research
-  const [resources, setResources] = useState<Resources>({...INITIAL_RESOURCES});
-  const [research, setResearch] = useState<Research>({...INITIAL_RESEARCH});
+  const [resources, setResources] = useState<Resources>(saved?.resources ?? {...INITIAL_RESOURCES});
+  const [research, setResearch] = useState<Research>(saved?.research ?? {...INITIAL_RESEARCH});
 
   // Economy knobs
-  const [rerollCost, setRerollCost] = useState(() => 8);
-  const [baseRerollCost, setBaseRerollCost] = useState(() => 8);
+  const [rerollCost, setRerollCost] = useState(() => saved?.rerollCost ?? 8);
+  const [baseRerollCost, setBaseRerollCost] = useState(() => saved?.baseRerollCost ?? 8);
 
   // Capacity
-  const [capacity, setCapacity] = useState<CapacityState>({ cap: INITIAL_CAPACITY.cap });
+  const [capacity, setCapacity] = useState<CapacityState>(saved?.capacity ?? { cap: INITIAL_CAPACITY.cap });
 
   // Fleet — lazy init so it doesn't depend on state variables
-  const [fleet, setFleet] = useState<Ship[]>(() => [ makeShip(getFrame('interceptor'), [ ...INITIAL_BLUEPRINTS.interceptor ]) ] as unknown as Ship[]);
+  const [fleet, setFleet] = useState<Ship[]>(() => (saved?.fleet ?? [ makeShip(getFrame('interceptor'), [ ...INITIAL_BLUEPRINTS.interceptor ]) ]) as unknown as Ship[]);
   const usedTonnage = useMemo(()=> fleet.reduce((a,s)=> a + (s.alive? s.frame.tonnage : 0), 0), [fleet]);
   const tonnage = { used: usedTonnage, cap: capacity.cap };
 
-  // Shop state — lazy init based on INITIAL_RESEARCH
+  // Shop state — lazy init based on INITIAL_RESEARCH or saved
   const [focused, setFocused] = useState(0);
-  const [shop, setShop] = useState(()=>({ items: rollInventory(INITIAL_RESEARCH) }));
+  const [shop, setShop] = useState(()=> saved?.shop ?? { items: rollInventory(saved?.research ?? INITIAL_RESEARCH) });
   const [shopVersion, setShopVersion] = useState(0);
 
   // Combat state
@@ -84,15 +88,19 @@ export default function EclipseIntegrated(){
   const [combatOver, setCombatOver] = useState(false);
   const [outcome, setOutcome] = useState('');
   const [rewardPaid, setRewardPaid] = useState(false);
-  const [sector, setSector] = useState(1); // difficulty progression
+  const [sector, setSector] = useState(saved?.sector ?? 1); // difficulty progression
 
   // ---------- Run management ----------
   function newRun(diff: DifficultyId, pick:FactionId){
+    clearRunState();
     setDifficulty(diff);
+    setFaction(pick);
     setShowNewRun(false);
     setEndless(false);
     setGraceUsed(false);
     const st = initNewRun({ difficulty: diff, faction: pick });
+    const opp = getOpponentFaction();
+    setOpponent(opp as FactionId);
     setResources(st.resources);
     setCapacity(st.capacity);
     setResearch(st.research);
@@ -106,7 +114,7 @@ export default function EclipseIntegrated(){
     startFirstCombat();
     setShowRules(true);
   }
-  function resetRun(){ setShowNewRun(true); setEndless(false); setGraceUsed(false); }
+  function resetRun(){ clearRunState(); setDifficulty(null); setShowNewRun(true); setEndless(false); setGraceUsed(false); }
 
   // ---------- Blueprint helpers ----------
   function applyBlueprintToFleet(frameId:FrameId, parts:Part[]){ setFleet(f=> applyBpToFleet(frameId, parts, f)); }
@@ -161,8 +169,11 @@ export default function EclipseIntegrated(){
   function handleReturnFromCombat(){
     if(!combatOver) return;
     if(outcome==='Victory'){
+      const wonFleet = [...fleet];
       restoreAndCullFleetAfterCombat();
       if(sector>10){
+        recordWin(faction, difficulty as DifficultyId, research as Research, wonFleet);
+        clearRunState();
         if(endless){
           setMode('OUTPOST');
           setShop({ items: rollInventory(research as Research) });
@@ -227,6 +238,15 @@ export default function EclipseIntegrated(){
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(()=>{ if(!auto || mode!=='COMBAT' || combatOver) return; const t = setInterval(()=> stepTurn(), 500); return ()=> clearInterval(t); }, [auto, mode, combatOver, queue, turnPtr, fleet, enemyFleet]);
 
+  // Restore environment if loading from save
+  useEffect(()=>{
+    if(saved){
+      restoreRunEnvironment(saved.faction);
+      restoreOpponent(saved.opponent);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Keep shop items in sync when explicit rerolls happen or research changes
   useEffect(()=>{ setShop({ items: rollInventory(research as Research) }); }, [shopVersion, research]);
 
@@ -234,6 +254,14 @@ export default function EclipseIntegrated(){
   useEffect(()=>{
     if(difficulty==null) setShowNewRun(true);
   },[difficulty]);
+
+  // Persist run state
+  useEffect(()=>{
+    if(!difficulty) return;
+    const st = { difficulty, faction, opponent, resources, research, rerollCost, baseRerollCost, capacity, sector, blueprints, fleet, shop, graceUsed };
+    saveRunState(st);
+    evaluateUnlocks(st);
+  }, [difficulty, faction, opponent, resources, research, rerollCost, baseRerollCost, capacity, sector, blueprints, fleet, shop, graceUsed]);
   function dismissRules(){ setShowRules(false); }
 
   // Self-tests moved to src/__tests__/runtime.selftests.spec.ts
@@ -246,7 +274,7 @@ export default function EclipseIntegrated(){
   function upgradeLockInfo(ship:Ship|null|undefined){ if(!ship) return null; if(ship.frame.id==='interceptor'){ return { need: 2, next:'Cruiser' }; } if(ship.frame.id==='cruiser'){ return { need: 3, next:'Dreadnought' }; } return null; }
 
   if (showNewRun) {
-    return <StartPage onNewRun={newRun} />;
+    return <StartPage onNewRun={newRun} onContinue={()=> setShowNewRun(false)} />;
   }
 
   return (
