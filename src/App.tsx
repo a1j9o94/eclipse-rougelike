@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import './index.css'
-import { PARTS, getFrame, successThreshold, rollSuccesses, makeShip, rollInventory, getSectorSpec } from './game'
+import { PARTS, getFrame, makeShip, rollInventory, getSectorSpec } from './game'
 import { INITIAL_BLUEPRINTS, INITIAL_RESEARCH, INITIAL_RESOURCES, INITIAL_CAPACITY, type Resources, type Research } from './config/defaults'
 import { type CapacityState, type DifficultyId } from './config/types'
 import { type FrameId } from './game'
@@ -196,7 +196,7 @@ export default function EclipseIntegrated(){
   // ---------- Combat helpers ----------
   function buildInitiative(pFleet:Ship[], eFleet:Ship[]){ return buildInitiativeCore(pFleet, eFleet) as InitiativeEntry[]; }
   function targetIndex(defFleet:Ship[], strategy:'kill'|'guns'){ return targetIndexCore(defFleet, strategy); }
-  function volley(attacker:Ship, defender:Ship, side:'P'|'E', logArr:string[]){ return volleyCore(attacker, defender, side, logArr, successThreshold, rollSuccesses); }
+  function volley(attacker:Ship, defender:Ship, side:'P'|'E', logArr:string[], friends:Ship[]){ return volleyCore(attacker, defender, side, logArr, friends); }
 
   function startCombat(){ const spec = getSectorSpec(sector); const enemy = genEnemyFleet(); setEnemyFleet(enemy); setLog([`Sector ${sector}: Engagement begins — enemy tonnage ${spec.enemyTonnage}`]); setRoundNum(1); setQueue([]); setTurnPtr(-1); setAuto(false); setCombatOver(false); setOutcome(''); setRewardPaid(false); setMode('COMBAT'); }
   function startFirstCombat(){ // tutorial fight vs one interceptor
@@ -217,7 +217,7 @@ export default function EclipseIntegrated(){
     }
     setCombatOver(true); setAuto(false);
   }
-  function stepTurn(){ if(combatOver) return; const pAlive = fleet.some(s => s.alive && s.stats.valid); const eAlive = enemyFleet.some(s => s.alive && s.stats.valid); if (!pAlive || !eAlive) { resolveCombat(pAlive); return; } if (initRoundIfNeeded()) return; const e = queue[turnPtr]; const isP = e.side==='P'; const atk = isP ? fleet[e.idx] : enemyFleet[e.idx]; const defFleet = isP ? enemyFleet : fleet; const strategy = isP ? 'guns' : 'kill'; const defIdx = targetIndex(defFleet, strategy); if (!atk || !atk.alive || !atk.stats.valid || defIdx === -1) { advancePtr(); return; } const lines:string[] = []; volley(atk, defFleet[defIdx], e.side, lines); setLog(l=>[...l, ...lines]); if (isP) setEnemyFleet([...defFleet]); else setFleet([...defFleet]); advancePtr(); }
+  function stepTurn(){ if(combatOver) return; const pAlive = fleet.some(s => s.alive && s.stats.valid); const eAlive = enemyFleet.some(s => s.alive && s.stats.valid); if (!pAlive || !eAlive) { resolveCombat(pAlive); return; } if (initRoundIfNeeded()) return; const e = queue[turnPtr]; const isP = e.side==='P'; const atk = isP ? fleet[e.idx] : enemyFleet[e.idx]; const defFleet = isP ? enemyFleet : fleet; const friends = isP ? fleet : enemyFleet; const strategy = isP ? 'guns' : 'kill'; const defIdx = targetIndex(defFleet, strategy); if (!atk || !atk.alive || !atk.stats.valid || defIdx === -1) { advancePtr(); return; } const lines:string[] = []; volley(atk, defFleet[defIdx], e.side, lines, friends); setLog(l=>[...l, ...lines]); if (isP) { setEnemyFleet([...defFleet]); setFleet([...friends]); } else { setFleet([...defFleet]); setEnemyFleet([...friends]); } advancePtr(); }
   function advancePtr(){ const np = turnPtr + 1; setTurnPtr(np); if (np >= queue.length) endRound(); }
   function endRound(){ const pAlive = fleet.some(s => s.alive && s.stats.valid); const eAlive = enemyFleet.some(s => s.alive && s.stats.valid); if (!pAlive || !eAlive) { resolveCombat(pAlive); return; } setRoundNum(n=>n+1); setTurnPtr(-1); setQueue([]); }
   function restoreAndCullFleetAfterCombat(){ setFleet(f => f.filter(s => s.alive).map(s => ({...s, hull: s.stats.hullCap}))); setFocused(0); }
