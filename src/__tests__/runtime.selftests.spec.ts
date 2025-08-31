@@ -12,7 +12,7 @@ describe('Runtime self-tests (moved from App)', () => {
     const items = rollInventory(research, 8)
     const caps = tierCap(research)
     expect(items.length).toBe(8)
-    expect(items.every(p => p.tier === caps[p.tech_category as 'Military'|'Grid'|'Nano'])).toBe(true)
+    expect(items.every(p => p.rare || p.tier === caps[p.tech_category as 'Military'|'Grid'|'Nano'])).toBe(true)
   })
 
   it('makeShip valid for all frames', () => {

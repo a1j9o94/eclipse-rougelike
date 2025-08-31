@@ -24,6 +24,7 @@ export type Part = {
   cost: number;
   tech_category: TechTrack;
   cat: PartCategory;
+  rare?: boolean;
 };
 
 export type PartCatalog = {
@@ -137,36 +138,6 @@ export const PARTS: PartCatalog = {
       cat: "Weapon",
       tech_category: "Nano",
     },
-    {
-      id: "spike_launcher",
-      name: "Spike Launcher",
-      dice: 1,
-      dmgPerHit: 1,
-      faces: [
-        { roll: 0 },
-        { roll: 0 },
-        { roll: 0 },
-        { roll: 0 },
-        { roll: 0 },
-        { dmg: 3 },
-      ],
-      powerCost: 1,
-      tier: 1,
-      cost: 30,
-      cat: "Weapon",
-      tech_category: "Nano",
-    },
-    {
-      id: "rift_cannon",
-      name: "Rift Cannon",
-      riftDice: 1,
-      faces: RIFT_FACES,
-      powerCost: 2,
-      tier: 2,
-      cost: 65,
-      cat: "Weapon",
-      tech_category: "Nano",
-    },
   ],
   computers: [
     { id: "positron", name: "Positron Computer", aim: 1, powerCost: 1, tier: 1, cost: 25, cat: "Computer", tech_category: "Grid" },
@@ -192,6 +163,41 @@ export const PARTS: PartCatalog = {
   ],
 } as const;
 
+export const RARE_PARTS: Part[] = [
+  {
+    id: "spike_launcher",
+    name: "Spike Launcher",
+    dice: 1,
+    dmgPerHit: 1,
+    faces: [
+      { roll: 0 },
+      { roll: 0 },
+      { roll: 0 },
+      { roll: 0 },
+      { roll: 0 },
+      { dmg: 3 },
+    ],
+    powerCost: 1,
+    tier: 1,
+    cost: 30,
+    cat: "Weapon",
+    tech_category: "Nano",
+    rare: true,
+  },
+  {
+    id: "rift_cannon",
+    name: "Rift Cannon",
+    riftDice: 1,
+    faces: RIFT_FACES,
+    powerCost: 2,
+    tier: 2,
+    cost: 65,
+    cat: "Weapon",
+    tech_category: "Nano",
+    rare: true,
+  },
+];
+
 export const ALL_PARTS: Part[] = [
   ...PARTS.sources,
   ...PARTS.drives,
@@ -199,6 +205,7 @@ export const ALL_PARTS: Part[] = [
   ...PARTS.computers,
   ...PARTS.shields,
   ...PARTS.hull,
+  ...RARE_PARTS,
 ];
 
 export const PART_EFFECT_FIELDS = [

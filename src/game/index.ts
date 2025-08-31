@@ -2,10 +2,10 @@
 
 // ------------------------------- Data Models -------------------------------
 import { FRAMES, type Frame, type FrameId } from '../config/frames'
-import { PARTS, ALL_PARTS, type Part } from '../config/parts'
+import { PARTS, ALL_PARTS, RARE_PARTS, type Part } from '../config/parts'
 import { ECONOMY } from '../config/economy'
 export { FRAMES, type FrameId } from '../config/frames'
-export { PARTS, ALL_PARTS, type Part, RIFT_FACES } from '../config/parts'
+export { PARTS, RARE_PARTS, ALL_PARTS, type Part, RIFT_FACES } from '../config/parts'
 export { getSectorSpec, SECTORS } from '../config/pacing'
 export { nextTierCost } from '../config/economy'
 import type { BossVariant } from '../config/types'
@@ -89,28 +89,45 @@ export function tierCap(research:{Military:number, Grid:number, Nano:number}): R
   };
 }
 
+let RARE_TECH_CHANCE = 0.1;
+export function setRareTechChance(ch:number){ RARE_TECH_CHANCE = ch; }
+export function getRareTechChance(){ return RARE_TECH_CHANCE; }
+
 export function rollInventory(research:{Military:number, Grid:number, Nano:number}, count: number = ECONOMY.shop.itemsBase){
   const capByCat = tierCap(research);
 
-  // Filter parts pool to only include parts within research tier limits
+  // Filter parts pool to only include parts within research tier limits and exclude rares
   const pool = ALL_PARTS.filter((p:Part) =>
-    p.tier === capByCat[p.tech_category as 'Military'|'Grid'|'Nano']
+    !p.rare && p.tier === capByCat[p.tech_category as 'Military'|'Grid'|'Nano']
   );
 
   const items:Part[] = [];
-  
-  // Randomly select parts until we hit the count, avoiding duplicates
-  const available = [...pool]; // Copy pool to avoid modifying original
-  while(items.length < count && available.length > 0) {
-    const idx = Math.floor(Math.random() * available.length);
-    const part = available[idx];
-    items.push(part);
-    available.splice(idx, 1); // Remove selected part from available pool
-  }
-  // If we run out of unique parts, fill remaining slots with random parts from original pool
-  while(items.length < count && pool.length > 0) {
-    const idx = Math.floor(Math.random() * pool.length);
-    items.push(pool[idx]);
+
+  const available = [...pool];
+  const rareAvailable = [...RARE_PARTS];
+  while(items.length < count){
+    const useRare = Math.random() < RARE_TECH_CHANCE;
+    if(useRare && rareAvailable.length > 0){
+      const ridx = Math.floor(Math.random() * rareAvailable.length);
+      items.push(rareAvailable[ridx]);
+      rareAvailable.splice(ridx,1);
+      continue;
+    }
+    if(available.length > 0){
+      const idx = Math.floor(Math.random() * available.length);
+      const part = available[idx];
+      items.push(part);
+      available.splice(idx,1);
+    } else if(pool.length > 0){
+      const idx = Math.floor(Math.random() * pool.length);
+      items.push(pool[idx]);
+    } else if(rareAvailable.length > 0){
+      const ridx = Math.floor(Math.random() * rareAvailable.length);
+      items.push(rareAvailable[ridx]);
+      rareAvailable.splice(ridx,1);
+    } else {
+      break;
+    }
   }
 
   return items;

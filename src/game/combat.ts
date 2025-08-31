@@ -1,6 +1,6 @@
 import { type Part, RIFT_FACES } from '../config/parts'
 import { type Ship, type InitiativeEntry } from '../config/types'
-import { FRAMES, makeShip, randomEnemyPartsFor, sizeRank, getBossVariantFocus, getOpponentFaction, getBossFleetFor, PARTS, successThreshold } from './index'
+import { FRAMES, makeShip, randomEnemyPartsFor, sizeRank, getBossVariantFocus, getOpponentFaction, getBossFleetFor, ALL_PARTS, successThreshold } from './index'
 import { getSectorSpec } from './index'
 
 export function buildInitiative(pFleet:Ship[], eFleet:Ship[]): InitiativeEntry[] {
@@ -93,8 +93,7 @@ export function genEnemyFleet(sector:number){
     if(bossSpec){
       return bossSpec.ships.map(s => {
         const frame = FRAMES[s.frame]
-        const allParts: Part[] = ([] as Part[]).concat(PARTS.sources, PARTS.drives, PARTS.weapons, PARTS.computers, PARTS.shields, PARTS.hull)
-        const parts = s.parts.map(pid => allParts.find((p)=> p.id===pid)).filter((p): p is Part => !!p)
+        const parts = s.parts.map(pid => ALL_PARTS.find(p=>p.id===pid)).filter((p): p is Part => !!p)
         return makeShip(frame, parts)
       }) as unknown as Ship[]
     }
