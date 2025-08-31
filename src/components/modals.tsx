@@ -3,10 +3,7 @@ import { ECONOMY, nextTierCost } from '../config/economy'
 import { getSectorSpec } from '../game'
 import { type SectorSpec } from '../config/types'
 import { FRAMES } from '../game'
-import { useState } from 'react'
-import { FACTIONS, type FactionId } from '../config/factions'
-import { getStartingShipCount } from '../config/difficulty'
-import { type DifficultyId } from '../config/types'
+import { FACTIONS } from '../config/factions'
 
 // Compute previews once per session so content is stable across openings
 type Preview = { sector:number; tonnage:number; scienceCap:number; boss:boolean; example:string[] };
@@ -51,38 +48,6 @@ function BossFleetPreview({ sector }:{ sector:5|10 }){
       <div className="text-[11px] opacity-80">Opponent: {oppName} — "{spec.name}"</div>
       <div className="mt-1 flex gap-2 overflow-x-auto pb-1">
         {ships.map((sh, i)=>(<CompactShip key={i} ship={sh} side='E' active={false} />))}
-      </div>
-    </div>
-  );
-}
-
-export function NewRunModal({ onNewRun }:{ onNewRun:(diff:DifficultyId, faction:FactionId)=>void }){
-  const [faction, setFaction] = useState<FactionId>('scientists');
-  const easyShips = getStartingShipCount('easy');
-  const mediumShips = getStartingShipCount('medium');
-  const hardShips = getStartingShipCount('hard');
-  return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 bg-black/70">
-      <div className="w-full max-w-md bg-zinc-900 border border-zinc-700 rounded-2xl p-4">
-        <div className="text-lg font-semibold">Start New Run</div>
-        <div className="text-sm opacity-80 mt-1">Choose a faction and difficulty. Easy/Medium grant a grace respawn after a wipe; Hard is a full reset.</div>
-        <div className="mt-3 grid grid-cols-1 gap-2">
-          {FACTIONS.map(f => (
-            <button
-              key={f.id}
-              onClick={()=>setFaction(f.id)}
-              className={`text-left px-3 py-2 rounded-xl border ${faction===f.id? 'border-emerald-500 bg-emerald-900/20' : 'border-zinc-700 bg-zinc-900'}`}
-            >
-              <div className="font-medium">{f.name}</div>
-              <div className="text-xs opacity-80">{f.description}</div>
-            </button>
-          ))}
-        </div>
-        <div className="grid grid-cols-3 gap-2 mt-3">
-          <button className="px-3 py-2 rounded-xl bg-emerald-700" onClick={()=>onNewRun('easy', faction)}>Easy ({easyShips}✈)</button>
-          <button className="px-3 py-2 rounded-xl bg-amber-700" onClick={()=>onNewRun('medium', faction)}>Medium ({mediumShips}✈)</button>
-          <button className="px-3 py-2 rounded-xl bg-rose-700" onClick={()=>onNewRun('hard', faction)}>Hard ({hardShips}✈)</button>
-        </div>
       </div>
     </div>
   );
