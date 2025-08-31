@@ -88,8 +88,8 @@ const BOSS_FLEETS: Record<FactionId, { five: BossFleetSpec; ten: BossFleetSpec }
       { frame:'interceptor', parts:['fusion_source','ion_thruster','composite','positron','plasma','absorption'] },
     ]},
     ten: { sector:10, name:'Cartel Citadel', ships:[
-      { frame:'dread', parts:['zero_point','quantum_source','transition_drive','monolith_plating','reinforced','omega','gauss_array','quantum_cpu','singularity'] },
-      { frame:'cruiser', parts:['tachyon_source','quantum_source','warp_drive','reinforced','phase','gauss_array','quantum_cpu'] },
+      { frame:'dread', parts:['zero_point','quantum_source','transition_drive','monolith_plating','reinforced','omega','plasma_array','quantum_cpu','singularity'] },
+      { frame:'cruiser', parts:['tachyon_source','quantum_source','warp_drive','reinforced','phase','plasma_array','quantum_cpu'] },
     ]},
   },
   raiders: {
