@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import App from '../App';
 
 vi.mock('../game/sound', () => ({
-  playEffect: vi.fn(() => new Promise<void>(resolve => setTimeout(resolve, 100))),
+  playEffect: vi.fn((_k:string, _d?:number) => new Promise<void>(resolve => setTimeout(resolve, 100))),
   playMusic: vi.fn(),
   stopMusic: vi.fn(),
 }));

@@ -53,7 +53,7 @@ const music = Object.fromEntries(
 let currentMusic: HTMLAudioElement | null = null;
 const EFFECT_DURATION = import.meta.env.MODE === 'test' ? 0 : 1000;
 
-export function playEffect(key: EffectKey): Promise<void> {
+export function playEffect(key: EffectKey, duration: number = EFFECT_DURATION): Promise<void> {
   const audio = effects[key];
   audio.currentTime = 0;
   // play returns a promise which can reject; ignore errors
@@ -64,7 +64,7 @@ export function playEffect(key: EffectKey): Promise<void> {
       audio.currentTime = 0;
       resolve();
     };
-    setTimeout(done, EFFECT_DURATION);
+    setTimeout(done, duration);
   });
 }
 

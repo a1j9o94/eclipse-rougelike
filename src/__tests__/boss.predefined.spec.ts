@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import React from 'react'
 import App from '../App'
@@ -18,6 +18,7 @@ describe('Predefined boss fleets and opponent selection', () => {
   })
 
   it('uses predefined boss fleet for opponent faction at sector 5 and 10', () => {
+    const rnd = vi.spyOn(Math, 'random').mockReturnValue(0.5)
     render(React.createElement(App))
     fireEvent.click(screen.getByRole('button', { name: /Crimson Vanguard/i }))
     fireEvent.click(screen.getByRole('button', { name: /Easy/i }))
@@ -46,6 +47,7 @@ describe('Predefined boss fleets and opponent selection', () => {
       expect(partIds).toEqual([...expected.parts].sort())
       expect(isValidShipBuild(ship.frame, ship.parts)).toBe(true)
     })
+    rnd.mockRestore()
   })
 })
 

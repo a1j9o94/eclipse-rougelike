@@ -15,6 +15,7 @@ describe('playEffect', () => {
   beforeEach(() => {
     FakeAudio.instances = [];
     vi.useFakeTimers();
+    vi.resetModules();
   });
   afterEach(() => {
     vi.useRealTimers();
@@ -25,6 +26,17 @@ describe('playEffect', () => {
     vi.unstubAllEnvs();
     const p = mod.playEffect('shot');
     vi.advanceTimersByTime(1000);
+    await p;
+    const inst = FakeAudio.instances[0];
+    expect(inst.pause).toHaveBeenCalled();
+    expect(inst.currentTime).toBe(0);
+  });
+  it('supports custom duration', async () => {
+    vi.stubEnv('MODE', 'development');
+    const mod = await import('../game/sound');
+    vi.unstubAllEnvs();
+    const p = mod.playEffect('shot', 200);
+    vi.advanceTimersByTime(200);
     await p;
     const inst = FakeAudio.instances[0];
     expect(inst.pause).toHaveBeenCalled();
