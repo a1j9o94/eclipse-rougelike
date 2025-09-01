@@ -21,6 +21,21 @@ export function HullPips({ current, max }:{current:number, max:number}){
     </div>
   );
 }
+
+export function DockSlots({ used, cap }:{used:number, cap:number}){
+  const arr = Array.from({length: cap});
+  return (
+    <div className="flex gap-0.5 mt-1">
+      {arr.map((_,i)=>(
+        <span
+          key={i}
+          data-testid={i<used ? 'dock-slot-filled' : 'dock-slot-empty'}
+          className={`w-2 h-2 rounded-sm ${i<used ? 'bg-emerald-400' : 'bg-zinc-700'}`}
+        />
+      ))}
+    </div>
+  );
+}
 export function CompactShip({ ship, side, active }:{ship:Ship, side:'P'|'E', active:boolean}){
   const dead = !ship.alive || ship.hull<=0;
   const weaponParts = ship.parts.filter((p:Part)=> (p.dice||0) > 0 || (p.riftDice||0) > 0);
@@ -83,7 +98,10 @@ export function ResourceBar({ credits, materials, science, tonnage, sector, onRe
     <div className="sticky top-0 z-10 bg-zinc-950/95 backdrop-blur border-b border-zinc-800">
       <div className="mx-auto max-w-5xl p-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm sm:text-base">
         <div className="px-3 py-2 rounded-lg bg-zinc-900 flex items-center justify-between"><span>💰 <b>{credits}</b> • 🧱 <b>{materials}</b> • 🔬 <b>{science}</b></span></div>
-        <div className={`px-3 py-2 rounded-lg ${over? 'bg-rose-950/50 text-rose-200 ring-1 ring-rose-700/30' : 'bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20'}`}>⚓ <b>{used}</b> / <b>{cap}</b></div>
+        <div className={`px-3 py-2 rounded-lg ${over? 'bg-rose-950/50 text-rose-200 ring-1 ring-rose-700/30' : 'bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20'}`}>
+          ⚓ <b>{used}</b> / <b>{cap}</b>
+          <DockSlots used={used} cap={cap} />
+        </div>
         <div className="px-3 py-2 rounded-lg bg-zinc-900 flex items-center justify-between">🗺️ Sector <b>{sector}</b> <button onClick={onReset} className="ml-2 px-2 py-1 rounded bg-zinc-800 text-xs">Reset</button></div>
       </div>
     </div>
