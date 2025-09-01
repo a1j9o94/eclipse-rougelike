@@ -10,6 +10,8 @@ export type DieFace = {
 export type Part = {
   id: string;
   name: string;
+  /** optional flavor description for the shop */
+  desc?: string;
   powerProd?: number;
   powerCost?: number;
   init?: number;
@@ -53,18 +55,18 @@ export const RIFT_FACES: DieFace[] = [
 
 export const PARTS: PartCatalog = {
   sources: [
-    { id: "fusion_source", name: "Fusion Source", powerProd: 3, tier: 1, cost: 18, cat: "Source", tech_category: "Grid" },
-    { id: "tachyon_source", name: "Tachyon Source", powerProd: 6, tier: 2, cost: 60, cat: "Source", tech_category: "Grid" },
-    { id: "quantum_source", name: "Quantum Source", powerProd: 9, tier: 3, cost: 120, cat: "Source", tech_category: "Grid" },
-    { id: "micro_fusion", name: "Micro Fusion", powerProd: 2, tier: 1, cost: 12, cat: "Source", tech_category: "Grid" },
-    { id: "zero_point", name: "Zero-Point Source", powerProd: 12, tier: 3, cost: 150, cat: "Source", tech_category: "Grid" },
+      { id: "fusion_source", name: "Fusion Source", powerProd: 3, tier: 1, cost: 18, cat: "Source", tech_category: "Grid", desc: "Produces 3 power." },
+      { id: "tachyon_source", name: "Tachyon Source", powerProd: 6, tier: 2, cost: 60, cat: "Source", tech_category: "Grid", desc: "Produces 6 power." },
+      { id: "quantum_source", name: "Quantum Source", powerProd: 9, tier: 3, cost: 120, cat: "Source", tech_category: "Grid", desc: "Produces 9 power." },
+      { id: "micro_fusion", name: "Micro Fusion", powerProd: 2, tier: 1, cost: 12, cat: "Source", tech_category: "Grid", desc: "Small reactor that makes 2 power." },
+      { id: "zero_point", name: "Zero-Point Source", powerProd: 12, tier: 3, cost: 150, cat: "Source", tech_category: "Grid", desc: "Generates 12 power." },
   ],
   drives: [
-    { id: "fusion_drive", name: "Fusion Drive", init: 1, powerCost: 1, tier: 1, cost: 18, cat: "Drive", tech_category: "Grid" },
-    { id: "tachyon_drive", name: "Tachyon Drive", init: 2, powerCost: 2, tier: 2, cost: 55, cat: "Drive", tech_category: "Grid" },
-    { id: "warp_drive", name: "Warp Drive", init: 3, powerCost: 3, tier: 2, cost: 95, cat: "Drive", tech_category: "Grid" },
-    { id: "ion_thruster", name: "Ion Thruster", init: 1, powerCost: 0, tier: 1, cost: 22, cat: "Drive", tech_category: "Grid" },
-    { id: "transition_drive", name: "Transition Drive", init: 3, powerCost: 2, tier: 3, cost: 120, cat: "Drive", tech_category: "Grid" },
+      { id: "fusion_drive", name: "Fusion Drive", init: 1, powerCost: 1, tier: 1, cost: 18, cat: "Drive", tech_category: "Grid", desc: "Adds +1 initiative; uses 1 power." },
+      { id: "tachyon_drive", name: "Tachyon Drive", init: 2, powerCost: 2, tier: 2, cost: 55, cat: "Drive", tech_category: "Grid", desc: "Adds +2 initiative; uses 2 power." },
+      { id: "warp_drive", name: "Warp Drive", init: 3, powerCost: 3, tier: 2, cost: 95, cat: "Drive", tech_category: "Grid", desc: "Adds +3 initiative; uses 3 power." },
+      { id: "ion_thruster", name: "Ion Thruster", init: 1, powerCost: 0, tier: 1, cost: 22, cat: "Drive", tech_category: "Grid", desc: "Adds +1 initiative with no power cost." },
+      { id: "transition_drive", name: "Transition Drive", init: 3, powerCost: 2, tier: 3, cost: 120, cat: "Drive", tech_category: "Grid", desc: "Adds +3 initiative for 2 power." },
   ],
   weapons: [
     {
@@ -85,6 +87,7 @@ export const PARTS: PartCatalog = {
       cost: 25,
       cat: "Weapon",
       tech_category: "Nano",
+      desc: "Rolls 1 die; hits deal 1 damage.",
     },
     {
       id: "antimatter",
@@ -104,6 +107,7 @@ export const PARTS: PartCatalog = {
       cost: 75,
       cat: "Weapon",
       tech_category: "Nano",
+      desc: "Rolls 1 die; hits deal 2 damage.",
     },
     {
       id: "singularity",
@@ -123,6 +127,7 @@ export const PARTS: PartCatalog = {
       cost: 120,
       cat: "Weapon",
       tech_category: "Nano",
+      desc: "Rolls 1 die; hits deal 3 damage.",
     },
     {
       id: "disruptor",
@@ -136,6 +141,7 @@ export const PARTS: PartCatalog = {
       cat: "Weapon",
       tech_category: "Nano",
       initLoss: 1,
+      desc: "Always hits for 1 damage and lowers enemy initiative by 1.",
     },
     {
       id: "plasma_array",
@@ -155,6 +161,7 @@ export const PARTS: PartCatalog = {
       cost: 60,
       cat: "Weapon",
       tech_category: "Nano",
+      desc: "Rolls 2 dice; each hit deals 1 damage.",
     },
     {
       id: "nova_battery",
@@ -175,6 +182,7 @@ export const PARTS: PartCatalog = {
       cat: "Weapon",
       tech_category: "Nano",
       slots: 2,
+      desc: "Rolls 3 dice; each hit deals 1 damage.",
     },
     {
       id: "cluster_missiles",
@@ -195,6 +203,7 @@ export const PARTS: PartCatalog = {
       cat: "Weapon",
       tech_category: "Nano",
       slots: 2,
+      desc: "Rolls 4 dice; each hit deals 1 damage.",
     },
     {
       id: "antimatter_array",
@@ -214,23 +223,24 @@ export const PARTS: PartCatalog = {
       cost: 150,
       cat: "Weapon",
       tech_category: "Nano",
+      desc: "Rolls 2 dice; each hit deals 2 damage.",
     },
   ],
   computers: [
-    { id: "positron", name: "Positron Computer", aim: 1, powerCost: 1, tier: 1, cost: 25, cat: "Computer", tech_category: "Grid" },
-    { id: "gluon", name: "Gluon Computer", aim: 2, powerCost: 2, tier: 2, cost: 60, cat: "Computer", tech_category: "Grid" },
-    { id: "neutrino", name: "Neutrino Computer", aim: 3, powerCost: 3, tier: 3, cost: 100, cat: "Computer", tech_category: "Grid" },
-    { id: "sentient_ai", name: "Sentient AI", aim: 4, powerCost: 3, tier: 3, cost: 150, cat: "Computer", tech_category: "Grid"},
+    { id: "positron", name: "Positron Computer", aim: 1, powerCost: 1, tier: 1, cost: 25, cat: "Computer", tech_category: "Grid", desc: "Adds +1 Aim; costs 1 power." },
+    { id: "gluon", name: "Gluon Computer", aim: 2, powerCost: 2, tier: 2, cost: 60, cat: "Computer", tech_category: "Grid", desc: "Adds +2 Aim; costs 2 power." },
+    { id: "neutrino", name: "Neutrino Computer", aim: 3, powerCost: 3, tier: 3, cost: 100, cat: "Computer", tech_category: "Grid", desc: "Adds +3 Aim; costs 3 power." },
+    { id: "sentient_ai", name: "Sentient AI", aim: 4, powerCost: 3, tier: 3, cost: 150, cat: "Computer", tech_category: "Grid", desc: "Adds +4 Aim; costs 3 power."},
   ],
   shields: [
-    { id: "gauss", name: "Gauss Shield", shieldTier: 1, powerCost: 1, tier: 1, cost: 20, cat: "Shield", tech_category: "Nano" },
-    { id: "phase", name: "Phase Shield", shieldTier: 2, powerCost: 2, tier: 2, cost: 60, cat: "Shield", tech_category: "Nano" },
-    { id: "omega", name: "Omega Shield", shieldTier: 3, powerCost: 3, tier: 3, cost: 100, cat: "Shield", tech_category: "Nano" },
+    { id: "gauss", name: "Gauss Shield", shieldTier: 1, powerCost: 1, tier: 1, cost: 20, cat: "Shield", tech_category: "Nano", desc: "Shield tier 1; uses 1 power." },
+    { id: "phase", name: "Phase Shield", shieldTier: 2, powerCost: 2, tier: 2, cost: 60, cat: "Shield", tech_category: "Nano", desc: "Shield tier 2; uses 2 power." },
+    { id: "omega", name: "Omega Shield", shieldTier: 3, powerCost: 3, tier: 3, cost: 100, cat: "Shield", tech_category: "Nano", desc: "Shield tier 3; uses 3 power." },
   ],
   hull: [
-    { id: "improved", name: "Improved Hull", extraHull: 2, powerCost: 0, tier: 2, cost: 22, cat: "Hull", tech_category: "Nano" },
-    { id: "adamantine", name: "Adamantine Hull", extraHull: 3, powerCost: 1, tier: 3, cost: 110, cat: "Hull", tech_category: "Nano" },
-    { id: "composite", name: "Composite Hull", extraHull: 1, powerCost: 0, tier: 1, cost: 15, cat: "Hull", tech_category: "Nano" },
+    { id: "improved", name: "Improved Hull", extraHull: 2, powerCost: 0, tier: 2, cost: 22, cat: "Hull", tech_category: "Nano", desc: "Adds 2 hull." },
+    { id: "adamantine", name: "Adamantine Hull", extraHull: 3, powerCost: 1, tier: 3, cost: 110, cat: "Hull", tech_category: "Nano", desc: "Adds 3 hull; uses 1 power." },
+    { id: "composite", name: "Composite Hull", extraHull: 1, powerCost: 0, tier: 1, cost: 15, cat: "Hull", tech_category: "Nano", desc: "Adds 1 hull." },
     {
       id: "auto_repair",
       name: "Auto-Repair Hull",
@@ -241,9 +251,10 @@ export const PARTS: PartCatalog = {
       cost: 80,
       cat: "Hull",
       tech_category: "Nano",
+      desc: "Adds 2 hull and regenerates 1 each round; uses 1 power.",
     },
-    { id: "reinforced", name: "Reinforced Hull", extraHull: 2, powerCost: 0, tier: 3, cost: 70, cat: "Hull", tech_category: "Nano" },
-    { id: "monolith_plating", name: "Monolith Plating", extraHull: 4, powerCost: 2, tier: 3, cost: 160, cat: "Hull", tech_category: "Nano" },
+    { id: "reinforced", name: "Reinforced Hull", extraHull: 2, powerCost: 0, tier: 3, cost: 70, cat: "Hull", tech_category: "Nano", desc: "Adds 2 hull." },
+    { id: "monolith_plating", name: "Monolith Plating", extraHull: 4, powerCost: 2, tier: 3, cost: 160, cat: "Hull", tech_category: "Nano", desc: "Adds 4 hull; uses 2 power." },
   ],
 } as const;
 
@@ -267,6 +278,7 @@ export const RARE_PARTS: Part[] = [
     cat: "Weapon",
     tech_category: "Nano",
     rare: true,
+    desc: "One die: only a 6 hits for 3 damage. Aim and computers don't help.",
   },
   {
     id: "rift_cannon",
@@ -279,11 +291,12 @@ export const RARE_PARTS: Part[] = [
     cat: "Weapon",
     tech_category: "Nano",
     rare: true,
+    desc: "Rolls one Rift die for 1-3 damage. A 3 also deals 1 damage to you. Aim and computers don't help.",
   },
-    { id: "sentient_hull", name: "Sentient Hull", extraHull: 1, aim: 1, powerCost: 0, tier: 2, cost: 50, cat: "Computer", tech_category: "Nano", rare: true },
-{ id: "absorption", name: "Absorption Shield", shieldTier: 1, powerProd: 4, tier: 2, cost: 65, cat: "Shield", tech_category: "Nano", rare: true},
- { id: "quantum_cpu", name: "Quantum Computer", aim: 2, powerCost: 1, tier: 2, cost: 70, cat: "Computer", tech_category: "Grid", rare: true},
-{ id: "rift_conductor", name: "Rift Conductor", extraHull: 1, riftDice: 1, powerCost: 1, tier: 2, cost: 40, cat: "Hull", tech_category: "Nano", rare: true},
+    { id: "sentient_hull", name: "Sentient Hull", extraHull: 1, aim: 1, powerCost: 0, tier: 2, cost: 50, cat: "Computer", tech_category: "Nano", rare: true, desc: "Adds 1 hull and +1 Aim with no power cost." },
+    { id: "absorption", name: "Absorption Shield", shieldTier: 1, powerProd: 4, tier: 2, cost: 65, cat: "Shield", tech_category: "Nano", rare: true, desc: "Shield tier 1 that also generates 4 power."},
+    { id: "quantum_cpu", name: "Quantum Computer", aim: 2, powerCost: 1, tier: 2, cost: 70, cat: "Computer", tech_category: "Grid", rare: true, desc: "Adds +2 Aim for only 1 power."},
+    { id: "rift_conductor", name: "Rift Conductor", extraHull: 1, riftDice: 1, powerCost: 1, tier: 2, cost: 40, cat: "Hull", tech_category: "Nano", rare: true, desc: "Adds 1 hull and rolls a Rift die (1-3 damage; a 3 also hits you for 1). Aim and computers don't help."},
 ];
 
 export const ALL_PARTS: Part[] = [
@@ -350,6 +363,28 @@ export function partEffects(p: Part) {
     effects.push(`${PART_EFFECT_SYMBOLS.dmgPerHit}${p.dmgPerHit}`);
   }
   return effects;
+}
+
+export function partDescription(p: Part): string {
+  if (p.desc) return p.desc;
+  switch (p.cat) {
+    case 'Source':
+      return `Generates ${p.powerProd || 0} power.`;
+    case 'Drive':
+      return `+${p.init || 0} initiative; costs ${p.powerCost || 0} power.`;
+    case 'Computer':
+      return `Adds +${p.aim || 0} Aim.`;
+    case 'Shield':
+      return `Provides shield tier ${p.shieldTier || 0}.`;
+    case 'Hull':
+      return `+${p.extraHull || 0} hull${p.regen ? `; regenerates ${p.regen} each round` : ''}.`;
+    case 'Weapon':
+    default:
+      if (p.riftDice) {
+        return `Rolls ${p.riftDice} Rift die${p.riftDice > 1 ? 's' : ''}.`;
+      }
+      return `Rolls ${p.dice || 0} die for ${p.dmgPerHit || 0} damage each.`;
+  }
 }
 
 

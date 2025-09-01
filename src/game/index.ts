@@ -5,6 +5,7 @@ export { nextTierCost } from '../config/economy';
 export { getBossFleetFor } from '../config/factions';
 
 export * from './ship';
+export * from './fleet';
 export { successThreshold, rollSuccesses } from './combat';
 export * from './shop';
 export * from './economy';

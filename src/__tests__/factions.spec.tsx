@@ -41,7 +41,7 @@ describe('Factions', () => {
     await screen.findByText(/^Victory$/i, undefined, { timeout: 10000 })
     fireEvent.click(screen.getByRole('button', { name: /Return to Outpost/i }))
     await screen.findByRole('button', { name: /Reroll \(0¢\)/i })
-    expect(screen.getByRole('button', { name: /Build Interceptor \(2🧱 \+ 1¢\)/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Build Interceptor 🟢 \(2🧱 \+ 1¢\)/i })).toBeInTheDocument()
   }, 20000)
 
   it('Faction config exposes starting frame and capacity', () => {
