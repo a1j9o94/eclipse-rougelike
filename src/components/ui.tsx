@@ -14,9 +14,9 @@ export function PowerBadge({use, prod}:{use:number, prod:number}){
 export function HullPips({ current, max }:{current:number, max:number}){
   const arr = Array.from({length: max});
   return (
-    <div className="flex gap-0.5 mt-1">
-      {arr.map((_,i)=>(
-        <span key={i} className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded ${i<current? 'bg-emerald-400':'bg-zinc-700'}`} />
+    <div className="flex gap-0.5 mt-1 text-[10px] sm:text-xs leading-none">
+      {arr.map((_, i) => (
+        <span key={i}>{i < current ? '❤️' : '🖤'}</span>
       ))}
     </div>
   );
