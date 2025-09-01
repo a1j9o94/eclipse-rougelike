@@ -38,9 +38,9 @@ export const FACTIONS: readonly Faction[] = [
   {
     id: 'industrialists',
     name: 'Helios Cartel',
-    description: '+10¢ +3🧱 to jumpstart the economy; rerolls free initially and actions cost less.',
+    description: 'Extra credits and materials to jumpstart the economy; rerolls free initially and actions cost less.',
     config: buildFactionConfig({
-      resources: { credits: 20, materials: 8 },
+      resources: { credits: 40, materials: 10 },
       economy: { rerollBase: 0, creditMultiplier: 0.75, materialMultiplier: 0.75 },
     }),
   },
