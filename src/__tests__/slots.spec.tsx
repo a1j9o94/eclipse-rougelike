@@ -1,0 +1,31 @@
+import { describe, it, expect } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { ItemCard } from '../components/ui';
+import { PARTS } from '../config/parts';
+import App from '../App';
+
+async function toOutpost(faction: RegExp) {
+  render(<App />);
+  fireEvent.click(screen.getByRole('button', { name: faction }));
+  fireEvent.click(screen.getByRole('button', { name: /Easy/i }));
+  fireEvent.click(screen.getByRole('button', { name: /Let’s go/i }));
+  fireEvent.click(screen.getByRole('button', { name: /Auto/i }));
+  await screen.findByText(/^Victory$/i, undefined, { timeout: 10000 });
+  fireEvent.click(screen.getByRole('button', { name: /Return to Outpost/i }));
+  await screen.findByText(/Outpost Inventory/i);
+}
+
+describe('slot displays', () => {
+  it('shows slot usage in ItemCard', () => {
+    const cluster = PARTS.weapons.find(p => p.id === 'cluster_missiles')!;
+    render(<ItemCard item={cluster} canAfford={true} ghostDelta={null as any} onBuy={() => {}} />);
+    expect(screen.getByText(/2 slots/i)).toBeInTheDocument();
+  });
+
+  it('shows slots in Class Blueprint header for Cruiser', async () => {
+    await toOutpost(/Crimson Vanguard/i);
+    const header = await screen.findByText(/Class Blueprint — Cruiser/i);
+    expect(header.textContent).toMatch(/4\/8/);
+  }, 20000);
+});
+
