@@ -21,7 +21,7 @@ describe('Factions', () => {
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: /Crimson Vanguard/i }))
     fireEvent.click(screen.getByRole('button', { name: /Easy/i }))
-    expect(screen.getAllByText(/Cruiser/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByTitle(/Cruiser/i).length).toBeGreaterThan(0)
   })
 
   it('Raiders start with T2 weapon (Antimatter Cannon) on Interceptor', () => {

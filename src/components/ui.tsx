@@ -14,9 +14,9 @@ export function PowerBadge({use, prod}:{use:number, prod:number}){
 export function HullPips({ current, max }:{current:number, max:number}){
   const arr = Array.from({length: max});
   return (
-    <div className="flex gap-0.5 mt-1">
-      {arr.map((_,i)=>(
-        <span key={i} className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded ${i<current? 'bg-emerald-400':'bg-zinc-700'}`} />
+    <div className="flex gap-0.5 mt-1 text-[10px] sm:text-xs leading-none">
+      {arr.map((_, i) => (
+        <span key={i}>{i < current ? '❤️' : '🖤'}</span>
       ))}
     </div>
   );
@@ -50,8 +50,16 @@ export function CompactShip({ ship, side, active }:{ship:Ship, side:'P'|'E', act
   const weaponParts = ship.parts.filter((p:Part)=> (p.dice||0) > 0 || (p.riftDice||0) > 0);
   return (
     <div className={`relative w-28 sm:w-32 p-2 rounded-xl border shadow-sm ${dead? 'border-zinc-700 bg-zinc-900 opacity-60' : side==='P' ? 'border-sky-600/60 bg-slate-900' : 'border-pink-600/60 bg-zinc-900'} ${active? 'ring-2 ring-amber-400 animate-pulse':''}`}>
-      <div className="text-[11px] sm:text-xs font-semibold truncate pr-6">{ship.frame.name}</div>
-      <div className="text-[10px] opacity-70">🚀 {ship.stats.init} • 🎯 {ship.stats.aim} • 🛡️ {ship.stats.shieldTier}</div>
+      <div className="flex items-start justify-between">
+        <div
+          className="text-[11px] sm:text-xs font-semibold"
+          title={ship.frame.name}
+        >
+          🟢 {ship.frame.tonnage}
+        </div>
+        <PowerBadge use={ship.stats.powerUse} prod={ship.stats.powerProd} />
+      </div>
+      <div className="mt-0.5 text-[10px] opacity-70">🚀 {ship.stats.init} • 🎯 {ship.stats.aim} • 🛡️ {ship.stats.shieldTier}</div>
       <HullPips current={Math.max(0, ship.hull)} max={ship.stats.hullCap} />
       {/* Dice/Damage summary per weapon */}
       <div className="mt-1 flex flex-wrap gap-1 min-h-[18px]">
@@ -72,7 +80,6 @@ export function CompactShip({ ship, side, active }:{ship:Ship, side:'P'|'E', act
       <div className="mt-1 text-[10px] opacity-80 line-clamp-2 min-h-[20px]">{
         weaponParts.map((p:Part)=> p.riftDice ? `${p.riftDice} Rift die${p.riftDice>1?'s':''}` : p.name).join(', ') || '—'
       }</div>
-      <div className="absolute top-1 right-1"><PowerBadge use={ship.stats.powerUse} prod={ship.stats.powerProd} /></div>
       {dead && <div className="absolute inset-0 grid place-items-center text-2xl text-zinc-300">✖</div>}
     </div>
   );

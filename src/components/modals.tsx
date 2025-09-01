@@ -1,6 +1,8 @@
 // React import not required with modern JSX transform
 import { FACTIONS } from '../config/factions'
 import { SECTORS, getBossVariants, getBossFleetFor, getOpponentFaction, ALL_PARTS, makeShip, FRAMES } from '../game'
+import { getInitialCapacityForDifficulty } from '../config/difficulty'
+import { BASE_CONFIG } from '../config/game'
 import { CompactShip } from './ui'
 import { type Ship } from '../config/types'
 import { partEffects } from '../config/parts'
@@ -26,6 +28,8 @@ function BossFleetPreview({ sector }:{ sector:5|10 }){
 }
 
 export function RulesModal({ onDismiss }:{ onDismiss:()=>void }){
+  const dockStart = getInitialCapacityForDifficulty('easy', BASE_CONFIG.startingFrame);
+  const dockCircles = '🟢'.repeat(dockStart);
   return (
     <div className="fixed inset-0 z-40 flex items-end sm:items-center justify-center p-3 bg-black/60">
       <div className="w-full max-w-lg bg-zinc-900 border border-zinc-700 rounded-2xl p-4 shadow-xl">
@@ -36,7 +40,7 @@ export function RulesModal({ onDismiss }:{ onDismiss:()=>void }){
           <div><b>Combat.</b> Ships act from highest 🚀 to lowest. Weapons roll 🎲; 1 misses and 6 hits. 🎯 lowers the roll needed while 🛡️ raises it.</div>
           <div><b>Outpost.</b> Between battles spend 💰 credits and 🧱 materials to buy parts, build ships, and reroll the shop. Each reroll costs more.</div>
           <div><b>Research.</b> Use 🔬 science on Military, Grid, and Nano to unlock higher-tier parts and ship upgrades.</div>
-          <div><b>Ships & Power.</b> Your dock starts with 🟢🟢🟢🟢🟢🟢 capacity. Ships cost 🟢 by size and each needs a ⚡ Source and a Drive. Keep power use within supply.</div>
+          <div><b>Ships & Power.</b> Your dock starts with {dockCircles} capacity. Ships cost 🟢 by size and each needs a ⚡ Source and a Drive. Keep power use within supply.</div>
           <div><b>Progress.</b> Winning a battle advances you to the next sector and grants rewards. Bosses await at sectors 5 and 10.</div>
         </div>
         <div className="mt-3"><button onClick={onDismiss} className="w-full px-4 py-2 rounded-xl bg-emerald-600">Let’s go</button></div>
