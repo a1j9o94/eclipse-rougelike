@@ -1,6 +1,6 @@
 // React import not required with modern JSX transform
 
-import { type Part, partEffects } from "../config/parts";
+import { type Part, partEffects, partDescription } from "../config/parts";
 import type { GhostDelta, Ship } from "../config/types";
 
 export function PowerBadge({use, prod}:{use:number, prod:number}){
@@ -60,6 +60,7 @@ export function ItemCard({ item, canAfford, onBuy, ghostDelta }:{item:Part, canA
         <div>
           <div className="font-semibold text-sm sm:text-base leading-tight">{item.name}</div>
           <div className="text-[11px] sm:text-xs opacity-70 mt-0.5">{(() => { const eff = partEffects(item).join(' • '); return `${item.cat} • Tier ${item.tier}${eff ? ' • ' + eff : ''}`; })()}</div>
+          <div className="text-[11px] sm:text-xs mt-1">{partDescription(item)}</div>
         </div>
         <div className="text-sm sm:text-base font-semibold whitespace-nowrap">{item.cost}¢</div>
       </div>
