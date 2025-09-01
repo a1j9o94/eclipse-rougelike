@@ -46,6 +46,8 @@ describe('dock and upgrade visuals', () => {
         buyAndInstall={()=>{}}
         capacity={{cap:6}}
         tonnage={{used:1, cap:6}}
+        sector={1}
+        endless={false}
         fleetValid={true}
         startCombat={()=>{}}
         onRestart={()=>{}}
@@ -87,6 +89,8 @@ describe('dock and upgrade visuals', () => {
         buyAndInstall={()=>{}}
         capacity={{cap:6}}
         tonnage={{used:1, cap:6}}
+        sector={1}
+        endless={false}
         fleetValid={false}
         startCombat={()=>{}}
         onRestart={()=>{}}
