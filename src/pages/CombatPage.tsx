@@ -25,7 +25,7 @@ export function CombatPage({
   fleet:Ship[],
   enemyFleet:Ship[],
   log:string[],
-  stepTurn:()=>void,
+  stepTurn:()=>Promise<void>,
   initRoundIfNeeded:()=>boolean,
   auto:boolean,
   setAuto:(f:(a:boolean)=>boolean)=>void,

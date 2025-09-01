@@ -3,6 +3,7 @@ import { FACTIONS, type FactionId } from '../config/factions';
 import { type DifficultyId } from '../config/types';
 import { getStartingShipCount } from '../config/difficulty';
 import { loadRunState, evaluateUnlocks, type Progress } from '../game/storage';
+import { playEffect } from '../game/sound';
 
 export default function StartPage({ onNewRun, onContinue }: { onNewRun: (diff: DifficultyId, faction: FactionId) => void; onContinue?: () => void }) {
   const progress: Progress = evaluateUnlocks(loadRunState());
@@ -28,7 +29,7 @@ export default function StartPage({ onNewRun, onContinue }: { onNewRun: (diff: D
             <button
               key={f.id}
               data-testid="faction-option"
-              onClick={() => setFaction(f.id)}
+              onClick={() => { setFaction(f.id); void playEffect('faction'); }}
               className={`text-left px-3 py-2 rounded-xl border ${faction===f.id ? 'border-emerald-500 bg-emerald-900/20' : 'border-zinc-700 bg-zinc-900'}`}
             >
               <div className="font-medium">{f.name}</div>
