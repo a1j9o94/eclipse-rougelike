@@ -50,7 +50,12 @@ export function CompactShip({ ship, side, active }:{ship:Ship, side:'P'|'E', act
   const weaponParts = ship.parts.filter((p:Part)=> (p.dice||0) > 0 || (p.riftDice||0) > 0);
   return (
     <div className={`relative w-28 sm:w-32 p-2 rounded-xl border shadow-sm ${dead? 'border-zinc-700 bg-zinc-900 opacity-60' : side==='P' ? 'border-sky-600/60 bg-slate-900' : 'border-pink-600/60 bg-zinc-900'} ${active? 'ring-2 ring-amber-400 animate-pulse':''}`}>
-      <div className="text-[11px] sm:text-xs font-semibold truncate pr-6">{ship.frame.name}</div>
+      <div
+        className="text-[11px] sm:text-xs font-semibold truncate pr-6"
+        title={ship.frame.name}
+      >
+        🟢 {ship.frame.tonnage}
+      </div>
       <div className="text-[10px] opacity-70">🚀 {ship.stats.init} • 🎯 {ship.stats.aim} • 🛡️ {ship.stats.shieldTier}</div>
       <HullPips current={Math.max(0, ship.hull)} max={ship.stats.hullCap} />
       {/* Dice/Damage summary per weapon */}

@@ -165,7 +165,27 @@ export function OutpostPage({
           </div>
         ); })()}
         <div className="mt-2 grid grid-cols-2 gap-2">
-          <button onClick={upgradeDock} disabled={dockAtCap} className={`px-3 py-3 rounded-xl ${dockAtCap? 'bg-zinc-700 opacity-60' : 'bg-indigo-600 hover:bg-indigo-500 active:scale-95'}`}>{dockAtCap ? 'Capacity Maxed' : `Expand Capacity +${ECONOMY.dockUpgrade.capacityDelta} (${dockCost.materials}🧱 + ${dockCost.credits}¢)`}</button>
+          <button
+            onClick={upgradeDock}
+            disabled={dockAtCap}
+            className={`px-3 py-3 rounded-xl ${dockAtCap? 'bg-zinc-700 opacity-60' : 'bg-indigo-600 hover:bg-indigo-500 active:scale-95'}`}
+          >
+            {dockAtCap ? (
+              'Capacity Maxed'
+            ) : (
+              <span className="inline-flex items-center gap-1">
+                <span>Expand Capacity</span>
+                <span className="inline-flex gap-0.5">
+                  {Array.from({length: ECONOMY.dockUpgrade.capacityDelta}).map((_, i) => (
+                    <span key={i} className="w-2 h-2 rounded-full bg-zinc-700" />
+                  ))}
+                </span>
+                <span>
+                  ({dockCost.materials}🧱 + {dockCost.credits}¢)
+                </span>
+              </span>
+            )}
+          </button>
           <div className="px-3 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-sm">
             <div>Capacity: <b>{capacity.cap}</b> • Used: <b>{tonnage.used}</b></div>
             <DockSlots used={tonnage.used} cap={capacity.cap} preview={dockPreview===null?undefined:dockPreview} />
