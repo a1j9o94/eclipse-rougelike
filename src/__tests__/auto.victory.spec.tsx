@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import App from '../App'
 
@@ -7,6 +7,7 @@ describe('auto combat', () => {
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: /Easy/i }))
     fireEvent.click(screen.getByRole('button', { name: /Auto/i }))
-    await screen.findByText(/Victory/i, undefined, { timeout: 10000 })
-  })
+    const wins = await screen.findAllByText(/Victory/i, undefined, { timeout: 10000 })
+    expect(wins.length).toBeGreaterThan(0)
+  }, 15000)
 })

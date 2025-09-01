@@ -48,6 +48,7 @@ describe('dock and upgrade visuals', () => {
         tonnage={{used:1, cap:6}}
         fleetValid={true}
         startCombat={()=>{}}
+        onRestart={()=>{}}
       />
     );
     const slotTexts = screen.getAllByText(/⬛ 6→8 slots/);
@@ -59,5 +60,39 @@ describe('dock and upgrade visuals', () => {
     expect(buildBtn).toHaveTextContent('🟢');
     fireEvent.mouseEnter(upgradeBtn);
     expect(screen.getAllByTestId('dock-slot-preview').length).toBeGreaterThan(0);
+  });
+
+  it('offers restart when fleet invalid and broke', () => {
+    const ship = makeShip(getFrame('interceptor'), [] as any);
+    render(
+      <OutpostPage
+        resources={{credits:0, materials:0, science:0}}
+        rerollCost={0}
+        doReroll={()=>{}}
+        research={{Military:1, Grid:1, Nano:1} as any}
+        researchLabel={(t)=>t}
+        canResearch={()=>false}
+        researchTrack={()=>{}}
+        fleet={[ship] as any}
+        focused={0}
+        setFocused={()=>{}}
+        buildShip={()=>{}}
+        upgradeShip={()=>{}}
+        upgradeDock={()=>{}}
+        upgradeLockInfo={()=>null}
+        blueprints={{interceptor:[], cruiser:[], dread:[]}}
+        sellPart={()=>{}}
+        shop={{items:[]}}
+        ghost={()=>({} as any)}
+        buyAndInstall={()=>{}}
+        capacity={{cap:6}}
+        tonnage={{used:1, cap:6}}
+        fleetValid={false}
+        startCombat={()=>{}}
+        onRestart={()=>{}}
+      />
+    );
+    expect(screen.getByText('Fleet inoperable and no credits')).toBeInTheDocument();
+    expect(screen.getByRole('button', {name:'Restart'})).toBeInTheDocument();
   });
 });
