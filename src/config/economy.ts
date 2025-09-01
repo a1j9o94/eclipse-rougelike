@@ -1,12 +1,12 @@
 // Economy & pacing knobs in one place
 
 export const ECONOMY = {
-  buildInterceptor: { credits: 2, materials: 3 },
+  buildInterceptor: { credits: 30, materials: 3 },
   upgradeCosts: {
-    interceptorToCruiser: { credits: 3, materials: 3 },
-    cruiserToDread: { credits: 4, materials: 5 },
+    interceptorToCruiser: { credits: 20, materials: 3 },
+    cruiserToDread: { credits: 4, materials: 15 },
   },
-  dockUpgrade: { credits: 4, materials: 4, capacityDelta: 2, capacityMax: 10 },
+  dockUpgrade: { credits: 15, materials: 3, capacityDelta: 1, capacityMax: 12 },
   reroll: { base: 8, increment: 4 },
   shop: { itemsBase: 4 },
 } as const;
