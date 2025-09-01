@@ -130,7 +130,30 @@ export default function EclipseIntegrated(){
     });
   }
   function canInstallOnClass(frameId:FrameId, part:Part){ return canInstallClass(blueprints as Record<FrameId, Part[]>, frameId, part); }
-  function ghost(ship:Ship, part:Part): GhostDelta { const frameId = ship.frame.id as FrameId; const chk = canInstallOnClass(frameId, part); const base = makeShip(ship.frame, blueprints[frameId]); return { targetName: ship.frame.name + " (class)", use: chk.tmp.stats.powerUse, prod: chk.tmp.stats.powerProd, valid: chk.tmp.stats.valid, initBefore: base.stats.init, initAfter: chk.tmp.stats.init, initDelta: chk.tmp.stats.init - base.stats.init, hullBefore: base.stats.hullCap, hullAfter: chk.tmp.stats.hullCap, hullDelta: chk.tmp.stats.hullCap - base.stats.hullCap }; }
+  function ghost(ship:Ship, part:Part): GhostDelta {
+    const frameId = ship.frame.id as FrameId;
+    const chk = canInstallOnClass(frameId, part);
+    const base = makeShip(ship.frame, blueprints[frameId]);
+    const powerOk = !!chk.tmp.drive && chk.tmp.sources.length>0 && chk.tmp.stats.powerUse <= chk.tmp.stats.powerProd;
+    const slotsUsed = chk.slotsUsed || ([...blueprints[frameId], part].reduce((a,p)=>a+(p.slots||1),0));
+    const slotCap = chk.slotCap || getFrame(frameId).tiles;
+    const slotOk = slotsUsed <= slotCap;
+    return {
+      targetName: ship.frame.name + " (class)",
+      use: chk.tmp.stats.powerUse,
+      prod: chk.tmp.stats.powerProd,
+      valid: powerOk,
+      slotsUsed,
+      slotCap,
+      slotOk,
+      initBefore: base.stats.init,
+      initAfter: chk.tmp.stats.init,
+      initDelta: chk.tmp.stats.init - base.stats.init,
+      hullBefore: base.stats.hullCap,
+      hullAfter: chk.tmp.stats.hullCap,
+      hullDelta: chk.tmp.stats.hullCap - base.stats.hullCap
+    };
+  }
   function buyAndInstall(part:Part){
     if(resources.credits < (part.cost||0)) return;
     const ship = fleet[focused];

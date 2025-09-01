@@ -104,6 +104,7 @@ export function ItemCard({ item, canAfford, onBuy, ghostDelta }:{item:Part, canA
         <div className="mt-2 text-[11px] sm:text-xs grid grid-cols-2 gap-x-3 gap-y-1">
           <div className="col-span-2 opacity-70">After install on {ghostDelta.targetName}:</div>
           <div className={`${ghostDelta.valid? 'text-emerald-300':'text-rose-300'}`}>⚡ {ghostDelta.use}/{ghostDelta.prod} {ghostDelta.valid? '✔️' : '❌'}</div>
+          <div className={`${ghostDelta.slotOk? 'text-emerald-300':'text-rose-300'}`}>⬛ {ghostDelta.slotsUsed}/{ghostDelta.slotCap} {ghostDelta.slotOk? '✔️' : '❌'}</div>
           {ghostDelta.initDelta!==0 && <div>🚀 {ghostDelta.initBefore} → <b>{ghostDelta.initAfter}</b></div>}
           {ghostDelta.hullDelta!==0 && <div>Hull {ghostDelta.hullBefore} → <b>{ghostDelta.hullAfter}</b></div>}
         </div>
