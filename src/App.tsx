@@ -22,6 +22,7 @@ import { buildInterceptor as buildI, upgradeShipAt as upgradeAt, expandDock as e
 import { calcRewards, ensureGraceResources, graceRecoverFleet } from './game/rewards'
 import { researchLabel as researchLabelCore, canResearch as canResearchCore } from './game/research'
 import { loadRunState, saveRunState, clearRunState, recordWin, restoreRunEnvironment, restoreOpponent, evaluateUnlocks } from './game/storage'
+import { playEffect, playMusic } from './game/sound'
 
 /**
  * Eclipse Roguelike — Integrated App (v3.24)
@@ -89,6 +90,7 @@ export default function EclipseIntegrated(){
   const [outcome, setOutcome] = useState('');
   const [rewardPaid, setRewardPaid] = useState(false);
   const [sector, setSector] = useState(saved?.sector ?? 1); // difficulty progression
+  const [stepLock, setStepLock] = useState(false);
 
   // ---------- Run management ----------
   function newRun(diff: DifficultyId, pick:FactionId){
@@ -96,6 +98,7 @@ export default function EclipseIntegrated(){
     setDifficulty(diff);
     setFaction(pick);
     setShowNewRun(false);
+    void playEffect('page');
     setEndless(false);
     setGraceUsed(false);
     const st = initNewRun({ difficulty: diff, faction: pick });
@@ -140,13 +143,14 @@ export default function EclipseIntegrated(){
     if(!chk.tmp.stats.valid){
       console.warn('Ship will not participate in combat until power and drive requirements are met.');
     }
+    void playEffect('equip');
   }
   function sellPart(frameId:FrameId, idx:number){ const arr = blueprints[frameId]; if(!arr) return; const part = arr[idx]; if(!part) return; const next = arr.filter((_,i:number)=> i!==idx); const tmp = makeShip(getFrame(frameId), next); if(!tmp.stats.valid) return; const refund = Math.floor((part.cost||0)*0.25); setResources(r=>({...r, credits: r.credits + refund })); updateBlueprint(frameId, () => next); }
 
   // ---------- Capacity & build/upgrade ----------
   function buildShip(){ const res = buildI(blueprints as Record<FrameId, Part[]>, resources, tonnage.used, capacity); if(!res) return; setFleet(f=>[...f, res.ship]); setFocused(fleet.length); setResources(r=>({ ...r, credits: r.credits + res.delta.credits, materials: r.materials + res.delta.materials })); }
   function upgradeShip(idx:number){ const res = upgradeAt(idx, fleet, blueprints as Record<FrameId, Part[]>, resources, { Military: research.Military||1 } as Research, capacity, tonnage.used); if(!res) return; setFleet(f => f.map((sh,i)=> i===idx? res.upgraded : sh)); setResources(r=>({ ...r, credits: r.credits + res.delta.credits, materials: r.materials + res.delta.materials })); }
-  function upgradeDock(){ const res = expandD(resources, capacity); if(!res) return; setCapacity({ cap: res.nextCap }); setResources(r=>({ ...r, credits: r.credits + res.delta.credits, materials: r.materials + res.delta.materials })); }
+  function upgradeDock(){ const res = expandD(resources, capacity); if(!res) return; setCapacity({ cap: res.nextCap }); setResources(r=>({ ...r, credits: r.credits + res.delta.credits, materials: r.materials + res.delta.materials })); void playEffect('dock'); }
 
   // ---------- Shop actions: reroll & research ----------
   function doReroll(){
@@ -156,6 +160,7 @@ export default function EclipseIntegrated(){
     setShop({ items: res.items });
     setRerollCost(x=> x + (res.nextRerollCostDelta||0));
     setShopVersion(v=> v+1);
+    void playEffect('reroll');
   }
   function researchTrack(track:'Military'|'Grid'|'Nano'){
     const res = researchAction(track, { credits: resources.credits, science: resources.science }, research as Research);
@@ -165,6 +170,7 @@ export default function EclipseIntegrated(){
     setShop({ items: res.items });
     setRerollCost(x=> x + (res.nextRerollCostDelta||0));
     setShopVersion(v=> v+1);
+    void playEffect('tech');
   }
   function handleReturnFromCombat(){
     if(!combatOver) return;
@@ -175,24 +181,29 @@ export default function EclipseIntegrated(){
         recordWin(faction, difficulty as DifficultyId, research as Research, wonFleet);
         clearRunState();
         if(endless){
+          void playEffect('page');
           setMode('OUTPOST');
           setShop({ items: rollInventory(research as Research) });
           setShopVersion(v=> v+1);
         } else {
+          void playEffect('page');
           setMode('OUTPOST');
           setShowWin(true);
         }
       } else {
+        void playEffect('page');
         setMode('OUTPOST');
         setShop({ items: rollInventory(research as Research) });
         setShopVersion(v=> v+1);
       }
     } else {
       if(outcome==='Defeat — Run Over'){
+        void playEffect('page');
         resetRun();
       } else {
         setFleet(graceRecoverFleet(blueprints as Record<FrameId, Part[]>));
         setResources(r=> ensureGraceResources(r));
+        void playEffect('page');
         setMode('OUTPOST');
         setShop({ items: rollInventory(research as Research) });
         setShopVersion(v=> v+1);
@@ -210,12 +221,12 @@ export default function EclipseIntegrated(){
   function targetIndex(defFleet:Ship[], strategy:'kill'|'guns'){ return targetIndexCore(defFleet, strategy); }
   function volley(attacker:Ship, defender:Ship, side:'P'|'E', logArr:string[], friends:Ship[]){ return volleyCore(attacker, defender, side, logArr, friends); }
 
-  function startCombat(){ const spec = getSectorSpec(sector); const enemy = genEnemyFleet(); setEnemyFleet(enemy); setLog([`Sector ${sector}: Engagement begins — enemy tonnage ${spec.enemyTonnage}`]); setRoundNum(1); setQueue([]); setTurnPtr(-1); setAuto(false); setCombatOver(false); setOutcome(''); setRewardPaid(false); setMode('COMBAT'); }
+  function startCombat(){ const spec = getSectorSpec(sector); const enemy = genEnemyFleet(); setEnemyFleet(enemy); setLog([`Sector ${sector}: Engagement begins — enemy tonnage ${spec.enemyTonnage}`]); setRoundNum(1); setQueue([]); setTurnPtr(-1); setAuto(false); setCombatOver(false); setOutcome(''); setRewardPaid(false); void playEffect('page'); void playEffect('startCombat'); setMode('COMBAT'); }
   function startFirstCombat(){ // tutorial fight vs one interceptor
     const enemy = [ makeShip(getFrame('interceptor'), [PARTS.sources[0], PARTS.drives[0], PARTS.weapons[0]]) ];
     setEnemyFleet(enemy);
     setLog([`Sector ${sector}: Skirmish — a lone Interceptor approaches.`]);
-    setRoundNum(1); setQueue([]); setTurnPtr(-1); setAuto(false); setCombatOver(false); setOutcome(''); setRewardPaid(false); setMode('COMBAT');
+    setRoundNum(1); setQueue([]); setTurnPtr(-1); setAuto(false); setCombatOver(false); setOutcome(''); setRewardPaid(false); void playEffect('page'); void playEffect('startCombat'); setMode('COMBAT');
   }
   function initRoundIfNeeded(){ if (turnPtr === -1 || turnPtr >= queue.length) { const q = buildInitiative(fleet, enemyFleet); setQueue(q); setTurnPtr(0); setLog(l => [...l, `— Round ${roundNum} —`]); return true; } return false; }
   function resolveCombat(pAlive:boolean){
@@ -229,14 +240,14 @@ export default function EclipseIntegrated(){
     }
     setCombatOver(true); setAuto(false);
   }
-  function stepTurn(){ if(combatOver) return; const pAlive = fleet.some(s => s.alive && s.stats.valid); const eAlive = enemyFleet.some(s => s.alive && s.stats.valid); if (!pAlive || !eAlive) { resolveCombat(pAlive); return; } if (initRoundIfNeeded()) return; const e = queue[turnPtr]; const isP = e.side==='P'; const atk = isP ? fleet[e.idx] : enemyFleet[e.idx]; const defFleet = isP ? enemyFleet : fleet; const friends = isP ? fleet : enemyFleet; const strategy = isP ? 'guns' : 'kill'; const defIdx = targetIndex(defFleet, strategy); if (!atk || !atk.alive || !atk.stats.valid || defIdx === -1) { advancePtr(); return; } const lines:string[] = []; volley(atk, defFleet[defIdx], e.side, lines, friends); setLog(l=>[...l, ...lines]); if (isP) { setEnemyFleet([...defFleet]); setFleet([...friends]); } else { setFleet([...defFleet]); setEnemyFleet([...friends]); } advancePtr(); }
+  async function stepTurn(){ if(combatOver || stepLock) return; setStepLock(true); try { const pAlive = fleet.some(s => s.alive && s.stats.valid); const eAlive = enemyFleet.some(s => s.alive && s.stats.valid); if (!pAlive || !eAlive) { resolveCombat(pAlive); return; } if (initRoundIfNeeded()) return; const e = queue[turnPtr]; const isP = e.side==='P'; const atk = isP ? fleet[e.idx] : enemyFleet[e.idx]; const defFleet = isP ? enemyFleet : fleet; const friends = isP ? fleet : enemyFleet; const strategy = isP ? 'guns' : 'kill'; const defIdx = targetIndex(defFleet, strategy); if (!atk || !atk.alive || !atk.stats.valid || defIdx === -1) { advancePtr(); return; } const lines:string[] = []; const def = defFleet[defIdx]; volley(atk, def, e.side, lines, friends); setLog(l=>[...l, ...lines]); if (isP) { setEnemyFleet([...defFleet]); setFleet([...friends]); } else { setFleet([...defFleet]); setEnemyFleet([...friends]); } if(atk.weapons.length>0 || atk.riftDice>0){ await playEffect('shot'); if(!def.alive){ await playEffect('explosion'); } } advancePtr(); } finally { setStepLock(false); } }
   function advancePtr(){ const np = turnPtr + 1; setTurnPtr(np); if (np >= queue.length) endRound(); }
   function endRound(){ const pAlive = fleet.some(s => s.alive && s.stats.valid); const eAlive = enemyFleet.some(s => s.alive && s.stats.valid); if (!pAlive || !eAlive) { resolveCombat(pAlive); return; } setRoundNum(n=>n+1); setTurnPtr(-1); setQueue([]); }
   function restoreAndCullFleetAfterCombat(){ setFleet(f => f.filter(s => s.alive).map(s => ({...s, hull: s.stats.hullCap}))); setFocused(0); }
 
   // Auto-step loop
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(()=>{ if(!auto || mode!=='COMBAT' || combatOver) return; const t = setInterval(()=> stepTurn(), 500); return ()=> clearInterval(t); }, [auto, mode, combatOver, queue, turnPtr, fleet, enemyFleet]);
+  useEffect(()=>{ if(!auto || mode!=='COMBAT' || combatOver || stepLock) return; let cancelled=false; const tick = async()=>{ if(cancelled) return; await stepTurn(); if(cancelled) return; setTimeout(tick, 100); }; tick(); return ()=>{ cancelled=true; }; }, [auto, mode, combatOver, stepLock, queue, turnPtr, fleet, enemyFleet]);
 
   // Restore environment if loading from save
   useEffect(()=>{
@@ -254,6 +265,12 @@ export default function EclipseIntegrated(){
   useEffect(()=>{
     if(difficulty==null) setShowNewRun(true);
   },[difficulty]);
+
+  useEffect(()=>{
+    if(combatOver && outcome.startsWith('Defeat')){ playMusic('lost'); return; }
+    if(showNewRun || mode==='COMBAT'){ playMusic('combat'); }
+    else { playMusic('shop'); }
+  }, [showNewRun, mode, combatOver, outcome]);
 
   // Persist run state
   useEffect(()=>{
@@ -274,7 +291,7 @@ export default function EclipseIntegrated(){
   function upgradeLockInfo(ship:Ship|null|undefined){ if(!ship) return null; if(ship.frame.id==='interceptor'){ return { need: 2, next:'Cruiser' }; } if(ship.frame.id==='cruiser'){ return { need: 3, next:'Dreadnought' }; } return null; }
 
   if (showNewRun) {
-    return <StartPage onNewRun={newRun} onContinue={()=> setShowNewRun(false)} />;
+    return <StartPage onNewRun={newRun} onContinue={()=>{ setShowNewRun(false); void playEffect('page'); }} />;
   }
 
   return (
@@ -338,6 +355,7 @@ export default function EclipseIntegrated(){
           auto={auto}
           setAuto={setAuto}
           log={log}
+          stepLock={stepLock}
           onReturn={handleReturnFromCombat}
         />
       )}
