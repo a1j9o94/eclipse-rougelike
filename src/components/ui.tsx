@@ -27,7 +27,7 @@ export function CompactShip({ ship, side, active }:{ship:Ship, side:'P'|'E', act
   return (
     <div className={`relative w-28 sm:w-32 p-2 rounded-xl border shadow-sm ${dead? 'border-zinc-700 bg-zinc-900 opacity-60' : side==='P' ? 'border-sky-600/60 bg-slate-900' : 'border-pink-600/60 bg-zinc-900'} ${active? 'ring-2 ring-amber-400 animate-pulse':''}`}>
       <div className="text-[11px] sm:text-xs font-semibold truncate pr-6">{ship.frame.name}</div>
-      <div className="text-[10px] opacity-70">Init {ship.stats.init} • 🎯 {ship.stats.aim} • 🛡️ S{ship.stats.shieldTier}</div>
+      <div className="text-[10px] opacity-70">🚀 {ship.stats.init} • 🎯 {ship.stats.aim} • 🛡️ {ship.stats.shieldTier}</div>
       <HullPips current={Math.max(0, ship.hull)} max={ship.stats.hullCap} />
       {/* Dice/Damage summary per weapon */}
       <div className="mt-1 flex flex-wrap gap-1 min-h-[18px]">
@@ -68,7 +68,7 @@ export function ItemCard({ item, canAfford, onBuy, ghostDelta }:{item:Part, canA
         <div className="mt-2 text-[11px] sm:text-xs grid grid-cols-2 gap-x-3 gap-y-1">
           <div className="col-span-2 opacity-70">After install on {ghostDelta.targetName}:</div>
           <div className={`${ghostDelta.valid? 'text-emerald-300':'text-rose-300'}`}>⚡ {ghostDelta.use}/{ghostDelta.prod} {ghostDelta.valid? '✔️' : '❌'}</div>
-          {ghostDelta.initDelta!==0 && <div>Init {ghostDelta.initBefore} → <b>{ghostDelta.initAfter}</b></div>}
+          {ghostDelta.initDelta!==0 && <div>🚀 {ghostDelta.initBefore} → <b>{ghostDelta.initAfter}</b></div>}
           {ghostDelta.hullDelta!==0 && <div>Hull {ghostDelta.hullBefore} → <b>{ghostDelta.hullAfter}</b></div>}
         </div>
       )}

@@ -3,8 +3,8 @@ import { useState } from 'react'
 import { ItemCard, PowerBadge } from '../components/ui'
 import { CombatPlanModal } from '../components/modals'
 import { ECONOMY } from '../config/economy'
-import { FRAMES, type FrameId, ALL_PARTS, getEconomyModifiers } from '../game'
-import { partEffects } from '../config/parts'
+import { FRAMES, type FrameId, ALL_PARTS, getEconomyModifiers, groupFleet } from '../game'
+import { partEffects, partDescription } from '../config/parts'
 import { type Resources, type Research } from '../config/defaults'
 import { type Part } from '../config/parts'
 import { type Ship, type GhostDelta } from '../config/types'
@@ -59,6 +59,7 @@ export function OutpostPage({
   startCombat:()=>void,
 }){
   const focusedShip = fleet[focused];
+  const fleetGroups = groupFleet(fleet);
   const [showPlan, setShowPlan] = useState(false);
   const tracks = ['Military','Grid','Nano'] as const;
   const econ = getEconomyModifiers();
@@ -123,15 +124,14 @@ export function OutpostPage({
           <button onClick={()=>setShowPlan(true)} className="px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs">📋 Combat Plan</button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          {fleet.map((s,i)=> (
-            <button key={i} onClick={()=>setFocused(i)} className={`w-full text-left p-3 rounded-xl border transition ${i===focused?'border-sky-400 bg-sky-400/10':'border-zinc-700 bg-zinc-900 hover:border-zinc-600'}`}>
-              <div className="flex items-center justify-between"><div className="font-semibold text-sm sm:text-base">{s.frame.name} <span className="text-xs opacity-70">(t{s.frame.tonnage})</span></div><PowerBadge use={s.stats.powerUse} prod={s.stats.powerProd} /></div>
-              <div className="text-xs opacity-80 mt-1">Init {s.stats.init} • 🎯 {s.stats.aim} • 🛡️ S{s.stats.shieldTier} • Tiles {s.parts.length}/{s.frame.tiles}</div>
-              <div className="mt-1">Hull: {s.hull}/{s.stats.hullCap}</div>
-              <div className="mt-1 text-xs">Parts: {s.parts.map((p:Part)=>p.name).join(', ')||'—'}</div>
-              {!s.stats.valid && <div className="text-xs text-rose-300 mt-1">Not deployable: needs Source + Drive and ⚡ OK</div>}
-            </button>
-          ))}
+          {fleetGroups.map((g,i)=> { const s = g.ship; const active = g.indices.includes(focused); return (
+              <button key={i} onClick={()=>setFocused(g.indices[0])} className={`w-full text-left p-3 rounded-xl border transition ${active?'border-sky-400 bg-sky-400/10':'border-zinc-700 bg-zinc-900 hover:border-zinc-600'}`}>
+                <div className="flex items-center justify-between"><div className="font-semibold text-sm sm:text-base">{s.frame.name}{g.count>1?` ×${g.count}`:''} <span className="text-xs opacity-70">(t{s.frame.tonnage})</span></div><PowerBadge use={s.stats.powerUse} prod={s.stats.powerProd} /></div>
+                <div className="text-xs opacity-80 mt-1">🚀 {s.stats.init} • 🎯 {s.stats.aim} • 🛡️ {s.stats.shieldTier} • ⬛ {s.parts.length}/{s.frame.tiles}</div>
+                <div className="mt-1">❤️ {s.hull}/{s.stats.hullCap}</div>
+                {!s.stats.valid && <div className="text-xs text-rose-300 mt-1">Not deployable: needs Source + Drive and ⚡ OK</div>}
+              </button>
+            ); })}
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
           <button onClick={buildShip} className="px-3 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 active:scale-95">Build Interceptor ({buildCost.materials}🧱 + {buildCost.credits}¢)</button>
@@ -202,14 +202,19 @@ export function OutpostPage({
                 return (
                   <div key={t} className="text-[11px] sm:text-xs px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800">
                     <div className="font-medium mb-1">{t} — Next unlocks</div>
-                    {nxt.length===0 ? (
-                      <div className="opacity-70">Maxed or no new parts at next tier</div>
-                    ) : (
-                      <div className="space-y-0.5">
-                        {preview.map((p, i)=> (<div key={i} className="flex items-center justify-between"><span>{p.name}</span><span className="opacity-60">{p.cat} • T{p.tier}</span></div>))}
-                        {more>0 && <div className="opacity-60">+{more} more…</div>}
-                      </div>
-                    )}
+                      {nxt.length===0 ? (
+                        <div className="opacity-70">Maxed or no new parts at next tier</div>
+                      ) : (
+                        <div className="space-y-1">
+                          {preview.map((p, i)=> (
+                            <div key={i}>
+                              <div className="flex items-center justify-between"><span>{p.name}</span><span className="opacity-60">{partEffects(p).join(' ')}</span></div>
+                              <div className="opacity-80">{partDescription(p)}</div>
+                            </div>
+                          ))}
+                          {more>0 && <div className="opacity-60">+{more} more…</div>}
+                        </div>
+                      )}
                   </div>
                 );
               })}
