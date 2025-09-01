@@ -63,7 +63,7 @@ export const FACTIONS: readonly Faction[] = [
     config: buildFactionConfig({
       research: { Grid: 2 },
       blueprints: {
-        interceptor: [PARTS.sources[0], PARTS.drives[1], PARTS.weapons.find(p=>p.id==='disruptor') as Part, PARTS.computers[0]] as Part[],
+        interceptor: [PARTS.sources[1], PARTS.drives[1], PARTS.weapons.find(p=>p.id==='disruptor') as Part, PARTS.computers[0]] as Part[],
       },
     }),
     unlock: ({ research }) => research.Grid >= 3,
@@ -74,7 +74,7 @@ export const FACTIONS: readonly Faction[] = [
     description: 'Begin with Auto-Repair Hull blueprint and ships that mend each round.',
     config: buildFactionConfig({
       blueprints: {
-        interceptor: [PARTS.sources[0], PARTS.drives[0], PARTS.weapons[0], PARTS.hull.find(p=>p.id==='auto_repair') as Part],
+        interceptor: [PARTS.sources[1], PARTS.drives[0], PARTS.weapons[0], PARTS.hull.find(p=>p.id==='auto_repair') as Part],
       },
       research: { Nano: 2 },
     }),
