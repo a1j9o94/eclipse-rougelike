@@ -1,10 +1,10 @@
 // React import not required with modern JSX transform
 import { useState } from 'react'
-import { ItemCard, PowerBadge } from '../components/ui'
+import { ItemCard, PowerBadge, DockSlots } from '../components/ui'
 import { CombatPlanModal } from '../components/modals'
 import { ECONOMY } from '../config/economy'
-import { FRAMES, type FrameId, ALL_PARTS, getEconomyModifiers } from '../game'
-import { partEffects } from '../config/parts'
+import { FRAMES, type FrameId, ALL_PARTS, getEconomyModifiers, groupFleet } from '../game'
+import { partEffects, partDescription } from '../config/parts'
 import { type Resources, type Research } from '../config/defaults'
 import { type Part } from '../config/parts'
 import { type Ship, type GhostDelta } from '../config/types'
@@ -59,6 +59,7 @@ export function OutpostPage({
   startCombat:()=>void,
 }){
   const focusedShip = fleet[focused];
+  const fleetGroups = groupFleet(fleet);
   const [showPlan, setShowPlan] = useState(false);
   const tracks = ['Military','Grid','Nano'] as const;
   const econ = getEconomyModifiers();
@@ -92,7 +93,7 @@ export function OutpostPage({
     const nextFrame = FRAMES[nextId];
     const targetUsed = tonnage.used + (nextFrame.tonnage - focusedShip.frame.tonnage);
     const lacksCapacity = targetUsed > capacity.cap;
-    const label = `Upgrade ${focusedShip.frame.name} to ${nextFrame.name} — will set tonnage to ${targetUsed}`;
+    const label = `Upgrade ${focusedShip.frame.name} to ${nextFrame.name} — ⬛ ${focusedShip.frame.tiles}→${nextFrame.tiles} slots`;
     return { label, disabled: lacksCapacity } as const;
   })();
   function nextUnlocksFor(track:'Military'|'Grid'|'Nano'){
@@ -105,8 +106,8 @@ export function OutpostPage({
     const curr = (research as Research).Military||1;
     if(curr>=3) return 'Maxed — no further ship tiers';
     const next = curr+1;
-    if(next===2) return 'Unlocks class upgrade: Interceptor → Cruiser';
-    if(next===3) return 'Unlocks class upgrade: Cruiser → Dreadnought';
+    if(next===2) return `Unlocks class upgrade: Interceptor → Cruiser — ⬛ ${FRAMES.interceptor.tiles}→${FRAMES.cruiser.tiles} slots`;
+    if(next===3) return `Unlocks class upgrade: Cruiser → Dreadnought — ⬛ ${FRAMES.cruiser.tiles}→${FRAMES.dread.tiles} slots`;
     return '';
   }
   return (
@@ -123,15 +124,20 @@ export function OutpostPage({
           <button onClick={()=>setShowPlan(true)} className="px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs">📋 Combat Plan</button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          {fleet.map((s,i)=> (
-            <button key={i} onClick={()=>setFocused(i)} className={`w-full text-left p-3 rounded-xl border transition ${i===focused?'border-sky-400 bg-sky-400/10':'border-zinc-700 bg-zinc-900 hover:border-zinc-600'}`}>
-              <div className="flex items-center justify-between"><div className="font-semibold text-sm sm:text-base">{s.frame.name} <span className="text-xs opacity-70">(t{s.frame.tonnage})</span></div><PowerBadge use={s.stats.powerUse} prod={s.stats.powerProd} /></div>
-              <div className="text-xs opacity-80 mt-1">Init {s.stats.init} • 🎯 {s.stats.aim} • 🛡️ S{s.stats.shieldTier} • Tiles {s.parts.length}/{s.frame.tiles}</div>
-              <div className="mt-1">Hull: {s.hull}/{s.stats.hullCap}</div>
-              <div className="mt-1 text-xs">Parts: {s.parts.map((p:Part)=>p.name).join(', ')||'—'}</div>
-              {!s.stats.valid && <div className="text-xs text-rose-300 mt-1">Not deployable: needs Source + Drive and ⚡ OK</div>}
-            </button>
-          ))}
+          {fleetGroups.map((g,i)=> { const s = g.ship; const active = g.indices.includes(focused); const stack = Math.min(g.count-1,2); return (
+              <div key={i} className="relative">
+                {Array.from({length: stack}).map((_,j)=>(
+                  <div key={j} className={`pointer-events-none absolute inset-0 rounded-xl border ${active?'border-sky-400':'border-zinc-700'} bg-zinc-900`} style={{transform:`translate(${(j+1)*4}px, ${(j+1)*4}px)`}} />
+                ))}
+                <button onClick={()=>setFocused(g.indices[0])} className={`relative w-full text-left p-3 rounded-xl border transition ${active?'border-sky-400 bg-sky-400/10':'border-zinc-700 bg-zinc-900 hover:border-zinc-600'}`}>
+                  {g.count>1 && <div className="absolute -top-2 -left-2 bg-zinc-800 px-1 rounded text-xs">×{g.count}</div>}
+                  <div className="flex items-center justify-between"><div className="font-semibold text-sm sm:text-base">{s.frame.name} <span className="text-xs opacity-70">(t{s.frame.tonnage})</span></div><PowerBadge use={s.stats.powerUse} prod={s.stats.powerProd} /></div>
+                  <div className="text-xs opacity-80 mt-1">🚀 {s.stats.init} • 🎯 {s.stats.aim} • 🛡️ {s.stats.shieldTier} • ⬛ {s.parts.length}/{s.frame.tiles}</div>
+                  <div className="mt-1">❤️ {s.hull}/{s.stats.hullCap}</div>
+                  {!s.stats.valid && <div className="text-xs text-rose-300 mt-1">Not deployable: needs Source + Drive and ⚡ OK</div>}
+                </button>
+              </div>
+            ); })}
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
           <button onClick={buildShip} className="px-3 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 active:scale-95">Build Interceptor ({buildCost.materials}🧱 + {buildCost.credits}¢)</button>
@@ -144,7 +150,10 @@ export function OutpostPage({
         ); })()}
         <div className="mt-2 grid grid-cols-2 gap-2">
           <button onClick={upgradeDock} disabled={dockAtCap} className={`px-3 py-3 rounded-xl ${dockAtCap? 'bg-zinc-700 opacity-60' : 'bg-indigo-600 hover:bg-indigo-500 active:scale-95'}`}>{dockAtCap ? 'Capacity Maxed' : `Expand Capacity +${ECONOMY.dockUpgrade.capacityDelta} (${dockCost.materials}🧱 + ${dockCost.credits}¢)`}</button>
-          <div className="px-3 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-sm">Capacity: <b>{capacity.cap}</b> • Used: <b>{tonnage.used}</b></div>
+          <div className="px-3 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-sm">
+            <div>Capacity: <b>{capacity.cap}</b> • Used: <b>{tonnage.used}</b></div>
+            <DockSlots used={tonnage.used} cap={capacity.cap} />
+          </div>
         </div>
 
         {/* Blueprint Manager with Sell */}
@@ -202,14 +211,19 @@ export function OutpostPage({
                 return (
                   <div key={t} className="text-[11px] sm:text-xs px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800">
                     <div className="font-medium mb-1">{t} — Next unlocks</div>
-                    {nxt.length===0 ? (
-                      <div className="opacity-70">Maxed or no new parts at next tier</div>
-                    ) : (
-                      <div className="space-y-0.5">
-                        {preview.map((p, i)=> (<div key={i} className="flex items-center justify-between"><span>{p.name}</span><span className="opacity-60">{p.cat} • T{p.tier}</span></div>))}
-                        {more>0 && <div className="opacity-60">+{more} more…</div>}
-                      </div>
-                    )}
+                      {nxt.length===0 ? (
+                        <div className="opacity-70">Maxed or no new parts at next tier</div>
+                      ) : (
+                        <div className="space-y-1">
+                          {preview.map((p, i)=> (
+                            <div key={i}>
+                              <div className="flex items-center justify-between"><span>{p.name}</span><span className="opacity-60">{partEffects(p).join(' ')}</span></div>
+                              <div className="opacity-80">{partDescription(p)}</div>
+                            </div>
+                          ))}
+                          {more>0 && <div className="opacity-60">+{more} more…</div>}
+                        </div>
+                      )}
                   </div>
                 );
               })}

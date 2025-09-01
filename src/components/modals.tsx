@@ -1,34 +1,6 @@
 // React import not required with modern JSX transform
-import { ECONOMY, nextTierCost } from '../config/economy'
-import { getSectorSpec } from '../game'
-import { type SectorSpec } from '../config/types'
-import { FRAMES } from '../game'
 import { FACTIONS } from '../config/factions'
-
-// Compute previews once per session so content is stable across openings
-type Preview = { sector:number; tonnage:number; scienceCap:number; boss:boolean; example:string[] };
-let PREVIEWS_CACHE: Preview[] | null = null;
-function initPreviews(){
-  if(PREVIEWS_CACHE) return PREVIEWS_CACHE;
-  const targets = [1,5,10];
-  const out: Preview[] = [];
-  for(const s of targets){
-    const spec:SectorSpec = getSectorSpec(s);
-    // Simple deterministic-ish example: fill by largest-first frames up to tonnage
-    const options = [FRAMES.dread, FRAMES.cruiser, FRAMES.interceptor];
-    let rem = spec.enemyTonnage;
-    const names:string[] = [];
-    for(const f of options){
-      while(rem - f.tonnage >= 0){ names.push(f.name); rem -= f.tonnage; if(rem<=0) break; }
-      if(rem<=0) break;
-    }
-    if(names.length===0) names.push('Interceptor');
-    out.push({ sector: s, tonnage: spec.enemyTonnage, scienceCap: spec.enemyScienceCap, boss: spec.boss, example: names });
-  }
-  PREVIEWS_CACHE = out;
-  return PREVIEWS_CACHE;
-}
-import { SECTORS, getBossVariants, getBossFleetFor, getOpponentFaction, ALL_PARTS, makeShip } from '../game'
+import { SECTORS, getBossVariants, getBossFleetFor, getOpponentFaction, ALL_PARTS, makeShip, FRAMES } from '../game'
 import { CompactShip } from './ui'
 import { type Ship } from '../config/types'
 import { partEffects } from '../config/parts'
@@ -54,81 +26,18 @@ function BossFleetPreview({ sector }:{ sector:5|10 }){
 }
 
 export function RulesModal({ onDismiss }:{ onDismiss:()=>void }){
-  const previews = initPreviews();
-  const buildMat = ECONOMY.buildInterceptor.materials;
-  const buildCred = ECONOMY.buildInterceptor.credits;
-  const dockMat = ECONOMY.dockUpgrade.materials;
-  const dockCred = ECONOMY.dockUpgrade.credits;
-  const dockDelta = ECONOMY.dockUpgrade.capacityDelta;
-  const rrBase = ECONOMY.reroll.base;
-  const rrInc = ECONOMY.reroll.increment;
-  const c12 = nextTierCost(1);
-  const c23 = nextTierCost(2);
   return (
     <div className="fixed inset-0 z-40 flex items-end sm:items-center justify-center p-3 bg-black/60">
       <div className="w-full max-w-lg bg-zinc-900 border border-zinc-700 rounded-2xl p-4 shadow-xl">
         <div className="text-lg font-semibold mb-2">How to Play</div>
         <div className="text-sm space-y-3 max-h-[60vh] overflow-y-auto pr-1">
-          <div>
-            <b>Objective.</b> Build a small fleet, win battles, and clear sectors up to 10. If every ship is destroyed, the run ends (on Easy/Medium you get a grace respawn once).
-          </div>
-          <div>
-            <b>The Loop.</b> You alternate between the <i>Outpost</i> and <i>Combat</i>:
-            <ul className="list-disc ml-5 mt-1 space-y-1">
-              <li>At the Outpost you buy parts, research, build or upgrade ships.</li>
-              <li>In Combat your fleet fights automatically by initiative; you choose when to step/auto.</li>
-              <li>Victory pays credits/materials/science; tougher sectors pay more and unlock new challenges.</li>
-            </ul>
-          </div>
-          <div>
-            <b>Fleet & Blueprints.</b> Parts are installed per <i>class</i> (Interceptor, Cruiser, Dreadnought). Installing a part on a class applies to all ships of that class. Each ship must have a <i>Source</i> (⚡ producer) and a <i>Drive</i>; stay within power limits.
-          </div>
-          <div>
-            <b>Getting More Ships.</b> Build an Interceptor at the Outpost for {buildMat}🧱 + {buildCred}¢. Dock capacity limits how many total tons you can field. Expand docks by +{dockDelta} capacity for {dockMat}🧱 + {dockCred}¢ (up to the cap).
-          </div>
-          <div>
-            <b>Advancing the Tech Tree.</b> Research has three tracks (Military, Grid, Nano). Each track starts at 1 and can reach 3. Going 1→2 costs {c12?.c}¢ + {c12?.s}🔬; 2→3 costs {c23?.c}¢ + {c23?.s}🔬. Research improves the shop inventory and unlocks ship upgrades.
-          </div>
-          <div>
-            <b>Upgrading Ship Classes.</b> With enough Military research you can upgrade a class to the next hull: Interceptor → Cruiser (Military ≥ 2), Cruiser → Dreadnought (Military ≥ 3). Upgrades change stats like hull, tiles, and power limits, and open stronger parts for that class.
-          </div>
-          <div>
-            <b>Shop & Rerolls.</b> You start with a shop inventory and can reroll it for {rrBase}¢. Each reroll or research increases the next reroll cost by +{rrInc}. Selling any part refunds 25% of its price.
-          </div>
-          <div>
-            <b>Combat Basics.</b> Initiative is driven by your ship’s engines; ships act from highest to lowest. Weapons roll dice to hit; 1s miss and 6s hit. Enemies tend to focus targets with the lowest hull. Keep your fleet powered and within tile limits to deploy.
-          </div>
-          <div>
-            <b>Sector Plan.</b> Each sector has a fixed enemy tonnage and tech tier cap. You can preview all sectors in the Combat Plan.
-          </div>
-          <div>
-            <b>Progression & Examples.</b> Below are snapshots for upcoming milestones — a typical enemy tonnage and a plausible fleet mix.
-            <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
-              {previews.map(p=> (
-                <div key={p.sector} className="p-2 rounded-lg border border-zinc-700 bg-zinc-900">
-                  <div className="font-medium">Sector {p.sector} {p.boss? '(Boss)':''}</div>
-                  <div className="text-xs opacity-80">Enemy tonnage {p.tonnage} • Tier cap T{p.scienceCap}</div>
-                  <div className="text-xs mt-1">
-                    <div className="opacity-70">Example fleet:</div>
-                    <div>{p.example.join(', ')}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div>
-            <b>Boss Previews.</b> These are the exact boss fleets you will face at Sectors 5 and 10 from the current opponent.
-            <div className="mt-2 space-y-2">
-              <div className="p-2 rounded-lg border border-zinc-700 bg-zinc-900">
-                <div className="font-medium">Sector 5 (Boss)</div>
-                <BossFleetPreview sector={5} />
-              </div>
-              <div className="p-2 rounded-lg border border-zinc-700 bg-zinc-900">
-                <div className="font-medium">Sector 10 (Boss)</div>
-                <BossFleetPreview sector={10} />
-              </div>
-            </div>
-          </div>
+          <div><b>Goal.</b> Clear 10 sectors with your fleet. If every ship is destroyed, the run ends.</div>
+          <div><b>Symbols.</b> ⚡ Power • 🚀 Initiative • 🎯 Aim • 🛡️ Shields • ❤️ Hull • 🎲 Weapon die • 🕳️ Rift die • ⬛ Slot</div>
+          <div><b>Combat.</b> Ships act from highest 🚀 to lowest. Weapons roll 🎲; 1 misses and 6 hits. 🎯 lowers the roll needed while 🛡️ raises it.</div>
+          <div><b>Outpost.</b> Between battles spend 💰 credits and 🧱 materials to buy parts, build ships, and reroll the shop. Each reroll costs more.</div>
+          <div><b>Research.</b> Use 🔬 science on Military, Grid, and Nano to unlock higher-tier parts and ship upgrades.</div>
+          <div><b>Ships & Power.</b> Your dock starts with ⬛⬛⬛⬛⬛⬛ slots. Ships cost ⬛ by size and each needs a ⚡ Source and a Drive. Keep power use within supply.</div>
+          <div><b>Progress.</b> Winning a battle advances you to the next sector and grants rewards. Bosses await at sectors 5 and 10.</div>
         </div>
         <div className="mt-3"><button onClick={onDismiss} className="w-full px-4 py-2 rounded-xl bg-emerald-600">Let’s go</button></div>
       </div>
