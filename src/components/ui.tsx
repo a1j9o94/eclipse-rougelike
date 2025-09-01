@@ -116,15 +116,14 @@ export function ItemCard({ item, canAfford, onBuy, ghostDelta }:{item:Part, canA
 export function ResourceBar({ credits, materials, science, tonnage, sector, onReset }:{credits:number, materials:number, science:number, tonnage:{used:number,cap:number}, sector:number, onReset:()=>void}){
   const used = tonnage.used, cap = tonnage.cap;
   const over = used>cap;
+  const capIcon = over ? '🔴' : '🟢';
   return (
     <div className="sticky top-0 z-10 bg-zinc-950/95 backdrop-blur border-b border-zinc-800">
-      <div className="mx-auto max-w-5xl p-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm sm:text-base">
-        <div className="px-3 py-2 rounded-lg bg-zinc-900 flex items-center justify-between"><span>💰 <b>{credits}</b> • 🧱 <b>{materials}</b> • 🔬 <b>{science}</b></span></div>
-        <div className={`px-3 py-2 rounded-lg ${over? 'bg-rose-950/50 text-rose-200 ring-1 ring-rose-700/30' : 'bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20'}`}>
-          ⚓ <b>{used}</b> / <b>{cap}</b>
-          <DockSlots used={used} cap={cap} />
-        </div>
-        <div className="px-3 py-2 rounded-lg bg-zinc-900 flex items-center justify-between">🗺️ Sector <b>{sector}</b> <button onClick={onReset} className="ml-2 px-2 py-1 rounded bg-zinc-800 text-xs">Reset</button></div>
+      <div className="mx-auto max-w-5xl p-2 flex items-center gap-2 flex-wrap text-sm sm:text-base">
+        <div className="px-2 py-1 rounded-lg bg-zinc-900 flex-1 whitespace-nowrap">💰 <b>{credits}</b> • 🧱 <b>{materials}</b> • 🔬 <b>{science}</b></div>
+        <div className={`px-2 py-1 rounded-lg whitespace-nowrap ${over? 'bg-rose-950/50 text-rose-200 ring-1 ring-rose-700/30' : 'bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20'}`}>{capIcon} <b>{used}</b>/<b>{cap}</b></div>
+        <div className="px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap">🗺️ <b>{sector}</b></div>
+        <button onClick={onReset} className="px-2 py-1 rounded bg-zinc-800 text-xs">Restart</button>
       </div>
     </div>
   );

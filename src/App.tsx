@@ -48,6 +48,7 @@ export default function EclipseIntegrated(){
   const [showRules, setShowRules] = useState(false);
   const [showTechs, setShowTechs] = useState(false);
   const [showWin, setShowWin] = useState(false);
+  const [showHelpMenu, setShowHelpMenu] = useState(false);
   const [endless, setEndless] = useState(false);
   const [graceUsed, setGraceUsed] = useState(saved?.graceUsed ?? false);
   const [difficulty, setDifficulty] = useState<null|DifficultyId>(saved?.difficulty ?? null);
@@ -399,8 +400,21 @@ export default function EclipseIntegrated(){
 
       {/* Floating utility buttons */}
       <div className="fixed bottom-3 right-3 z-40 flex flex-col gap-2">
-        <button onClick={()=>setShowTechs(true)} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">🔬 Tech</button>
-        <button onClick={()=>setShowRules(true)} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">❓ Rules</button>
+        <div className="hidden sm:flex flex-col gap-2">
+          <button onClick={()=>setShowTechs(true)} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">🔬 Tech</button>
+          <button onClick={()=>setShowRules(true)} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">❓ Rules</button>
+        </div>
+        <div className="sm:hidden">
+          {showHelpMenu ? (
+            <div className="flex flex-col gap-2">
+              <button onClick={()=>{ setShowTechs(true); setShowHelpMenu(false); }} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">🔬 Tech</button>
+              <button onClick={()=>{ setShowRules(true); setShowHelpMenu(false); }} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">❓ Rules</button>
+              <button onClick={()=>setShowHelpMenu(false)} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">✖</button>
+            </div>
+          ) : (
+            <button onClick={()=>setShowHelpMenu(true)} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">❓</button>
+          )}
+        </div>
       </div>
     </div>
   );
