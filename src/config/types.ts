@@ -16,6 +16,9 @@ export type GhostDelta = {
   use: number;
   prod: number;
   valid: boolean;
+  slotsUsed: number;
+  slotCap: number;
+  slotOk: boolean;
   initBefore: number;
   initAfter: number;
   initDelta: number;

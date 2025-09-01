@@ -11,8 +11,9 @@ export function canInstallOnClass(blueprints:Record<FrameId, Part[]>, frameId:Fr
   const frame = getFrame(frameId);
   const nextParts = [...blueprints[frameId], part];
   const tmp = makeShip(frame, nextParts);
-  const tilesOk = nextParts.length <= frame.tiles;
-  return { ok: tilesOk, tmp };
+  const slotsUsed = nextParts.reduce((a,p)=>a+(p.slots||1),0);
+  const tilesOk = slotsUsed <= frame.tiles;
+  return { ok: tilesOk, tmp, slotsUsed, slotCap: frame.tiles };
 }
 
 export function updateBlueprint(

@@ -27,5 +27,47 @@ describe('slot displays', () => {
     const header = await screen.findByText(/Class Blueprint — Cruiser/i);
     expect(header.textContent).toMatch(/4\/8/);
   }, 20000);
+
+  it('previews slot usage in ItemCard ghost delta', () => {
+    const part = PARTS.weapons[0];
+    const ghost = {
+      targetName: 'Interceptor',
+      use: 0,
+      prod: 0,
+      valid: true,
+      slotsUsed: 5,
+      slotCap: 6,
+      slotOk: true,
+      initBefore: 0,
+      initAfter: 0,
+      initDelta: 0,
+      hullBefore: 0,
+      hullAfter: 0,
+      hullDelta: 0,
+    };
+    render(<ItemCard item={part} canAfford={true} ghostDelta={ghost as any} onBuy={() => {}} />);
+    expect(screen.getByText('⬛ 5/6 ✔️')).toBeInTheDocument();
+  });
+
+  it('shows ❌ when slot limit exceeded in preview', () => {
+    const part = PARTS.weapons[0];
+    const ghost = {
+      targetName: 'Interceptor',
+      use: 0,
+      prod: 0,
+      valid: true,
+      slotsUsed: 7,
+      slotCap: 6,
+      slotOk: false,
+      initBefore: 0,
+      initAfter: 0,
+      initDelta: 0,
+      hullBefore: 0,
+      hullAfter: 0,
+      hullDelta: 0,
+    };
+    render(<ItemCard item={part} canAfford={true} ghostDelta={ghost as any} onBuy={() => {}} />);
+    expect(screen.getByText('⬛ 7/6 ❌')).toBeInTheDocument();
+  });
 });
 
