@@ -90,6 +90,7 @@ export default function EclipseIntegrated(){
   const [outcome, setOutcome] = useState('');
   const [rewardPaid, setRewardPaid] = useState(false);
   const [sector, setSector] = useState(saved?.sector ?? 1); // difficulty progression
+  const [stepLock, setStepLock] = useState(false);
 
   // ---------- Run management ----------
   function newRun(diff: DifficultyId, pick:FactionId){
@@ -239,14 +240,14 @@ export default function EclipseIntegrated(){
     }
     setCombatOver(true); setAuto(false);
   }
-  async function stepTurn(){ if(combatOver) return; const pAlive = fleet.some(s => s.alive && s.stats.valid); const eAlive = enemyFleet.some(s => s.alive && s.stats.valid); if (!pAlive || !eAlive) { resolveCombat(pAlive); return; } if (initRoundIfNeeded()) return; const e = queue[turnPtr]; const isP = e.side==='P'; const atk = isP ? fleet[e.idx] : enemyFleet[e.idx]; const defFleet = isP ? enemyFleet : fleet; const friends = isP ? fleet : enemyFleet; const strategy = isP ? 'guns' : 'kill'; const defIdx = targetIndex(defFleet, strategy); if (!atk || !atk.alive || !atk.stats.valid || defIdx === -1) { advancePtr(); return; } const lines:string[] = []; const def = defFleet[defIdx]; volley(atk, def, e.side, lines, friends); setLog(l=>[...l, ...lines]); if (isP) { setEnemyFleet([...defFleet]); setFleet([...friends]); } else { setFleet([...defFleet]); setEnemyFleet([...friends]); } if(atk.weapons.length>0 || atk.riftDice>0){ await playEffect('shot'); if(!def.alive){ await playEffect('explosion'); } } advancePtr(); }
+  async function stepTurn(){ if(combatOver || stepLock) return; setStepLock(true); try { const pAlive = fleet.some(s => s.alive && s.stats.valid); const eAlive = enemyFleet.some(s => s.alive && s.stats.valid); if (!pAlive || !eAlive) { resolveCombat(pAlive); return; } if (initRoundIfNeeded()) return; const e = queue[turnPtr]; const isP = e.side==='P'; const atk = isP ? fleet[e.idx] : enemyFleet[e.idx]; const defFleet = isP ? enemyFleet : fleet; const friends = isP ? fleet : enemyFleet; const strategy = isP ? 'guns' : 'kill'; const defIdx = targetIndex(defFleet, strategy); if (!atk || !atk.alive || !atk.stats.valid || defIdx === -1) { advancePtr(); return; } const lines:string[] = []; const def = defFleet[defIdx]; volley(atk, def, e.side, lines, friends); setLog(l=>[...l, ...lines]); if (isP) { setEnemyFleet([...defFleet]); setFleet([...friends]); } else { setFleet([...defFleet]); setEnemyFleet([...friends]); } if(atk.weapons.length>0 || atk.riftDice>0){ await playEffect('shot'); if(!def.alive){ await playEffect('explosion'); } } advancePtr(); } finally { setStepLock(false); } }
   function advancePtr(){ const np = turnPtr + 1; setTurnPtr(np); if (np >= queue.length) endRound(); }
   function endRound(){ const pAlive = fleet.some(s => s.alive && s.stats.valid); const eAlive = enemyFleet.some(s => s.alive && s.stats.valid); if (!pAlive || !eAlive) { resolveCombat(pAlive); return; } setRoundNum(n=>n+1); setTurnPtr(-1); setQueue([]); }
   function restoreAndCullFleetAfterCombat(){ setFleet(f => f.filter(s => s.alive).map(s => ({...s, hull: s.stats.hullCap}))); setFocused(0); }
 
   // Auto-step loop
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(()=>{ if(!auto || mode!=='COMBAT' || combatOver) return; let cancelled=false; const tick = async()=>{ if(cancelled) return; await stepTurn(); if(cancelled) return; setTimeout(tick, 100); }; tick(); return ()=>{ cancelled=true; }; }, [auto, mode, combatOver, queue, turnPtr, fleet, enemyFleet]);
+  useEffect(()=>{ if(!auto || mode!=='COMBAT' || combatOver || stepLock) return; let cancelled=false; const tick = async()=>{ if(cancelled) return; await stepTurn(); if(cancelled) return; setTimeout(tick, 100); }; tick(); return ()=>{ cancelled=true; }; }, [auto, mode, combatOver, stepLock, queue, turnPtr, fleet, enemyFleet]);
 
   // Restore environment if loading from save
   useEffect(()=>{
@@ -354,6 +355,7 @@ export default function EclipseIntegrated(){
           auto={auto}
           setAuto={setAuto}
           log={log}
+          stepLock={stepLock}
           onReturn={handleReturnFromCombat}
         />
       )}

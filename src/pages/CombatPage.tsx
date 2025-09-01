@@ -16,6 +16,7 @@ export function CombatPage({
   auto,
   setAuto,
   onReturn,
+  stepLock,
 }:{
   combatOver:boolean,
   outcome:string,
@@ -30,6 +31,7 @@ export function CombatPage({
   auto:boolean,
   setAuto:(f:(a:boolean)=>boolean)=>void,
   onReturn:()=>void,
+  stepLock:boolean,
 }){
   return (
     <div className="p-3 mx-auto max-w-5xl">
@@ -66,7 +68,7 @@ export function CombatPage({
       {/* Controls */}
       <div className="sticky bottom-0 z-10 mt-3 p-3 bg-zinc-950/95 backdrop-blur border-t border-zinc-800">
         <div className="mx-auto max-w-5xl flex items-center gap-2">
-          <button disabled={combatOver} onClick={()=> { if (!initRoundIfNeeded()) stepTurn(); }} className={`flex-1 px-4 py-3 rounded-xl ${combatOver? 'bg-zinc-700 opacity-60':'bg-sky-600 hover:bg-sky-500'}`}>▶ Step</button>
+          <button disabled={combatOver || stepLock} onClick={()=> { if (!initRoundIfNeeded()) stepTurn(); }} className={`flex-1 px-4 py-3 rounded-xl ${(combatOver||stepLock)? 'bg-zinc-700 opacity-60':'bg-sky-600 hover:bg-sky-500'}`}>▶ Step</button>
           <button disabled={combatOver} onClick={()=> setAuto(a=>!a)} className={`px-4 py-3 rounded-xl ${auto && !combatOver? 'bg-emerald-700':'bg-zinc-800'}`}>{auto? '⏸ Auto' : '⏩ Auto'}</button>
           <button onClick={onReturn} className="px-4 py-3 rounded-xl bg-emerald-800 hover:bg-emerald-700">Return to Outpost</button>
         </div>
