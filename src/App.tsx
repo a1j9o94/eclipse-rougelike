@@ -238,8 +238,13 @@ export default function EclipseIntegrated(){
         void playEffect('page');
         resetRun();
       } else {
-        setFleet(graceRecoverFleet(blueprints as Record<FrameId, Part[]>));
-        setResources(r=> ensureGraceResources(r));
+        setFleet(graceRecoverFleet(fleet, blueprints as Record<FrameId, Part[]>));
+        const rw = calcRewards(enemyFleet, sector);
+        setResources(r=> ensureGraceResources({
+          credits: r.credits + rw.c,
+          materials: r.materials + rw.m,
+          science: r.science + rw.s
+        }));
         void playEffect('page');
         setMode('OUTPOST');
         setShop({ items: rollInventory(research as Research) });
