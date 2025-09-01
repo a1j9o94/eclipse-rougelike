@@ -21,18 +21,27 @@ export function HullPips({ current, max }:{current:number, max:number}){
     </div>
   );
 }
-
-export function DockSlots({ used, cap }:{used:number, cap:number}){
-  const arr = Array.from({length: cap});
+export function DockSlots({ used, cap, preview }:{used:number, cap:number, preview?:number}){
+  const len = preview!==undefined ? Math.max(cap, preview) : cap;
+  const arr = Array.from({length: len});
   return (
     <div className="flex gap-0.5 mt-1">
-      {arr.map((_,i)=>(
-        <span
-          key={i}
-          data-testid={i<used ? 'dock-slot-filled' : 'dock-slot-empty'}
-          className={`w-2 h-2 rounded-sm ${i<used ? 'bg-emerald-400' : 'bg-zinc-700'}`}
-        />
-      ))}
+      {arr.map((_,i)=>{
+        const filled = i < used;
+        const willFill = preview!==undefined && i < preview;
+        const over = i >= cap;
+        const base = 'w-2 h-2 rounded-full';
+        if(over && willFill){
+          return <span key={i} data-testid="dock-slot-over" className={`${base} bg-rose-500 text-[8px] grid place-items-center`}>✖</span>;
+        }
+        if(filled){
+          return <span key={i} data-testid="dock-slot-filled" className={`${base} bg-emerald-400`} />;
+        }
+        if(willFill){
+          return <span key={i} data-testid="dock-slot-preview" className={`${base} bg-emerald-700`} />;
+        }
+        return <span key={i} data-testid="dock-slot-empty" className={`${base} bg-zinc-700`} />;
+      })}
     </div>
   );
 }

@@ -61,6 +61,7 @@ export function OutpostPage({
   const focusedShip = fleet[focused];
   const fleetGroups = groupFleet(fleet);
   const [showPlan, setShowPlan] = useState(false);
+  const [dockPreview, setDockPreview] = useState<number|null>(null);
   const tracks = ['Military','Grid','Nano'] as const;
   const econ = getEconomyModifiers();
   const buildCost = {
@@ -86,15 +87,15 @@ export function OutpostPage({
     return null;
   })();
   const upgradeComputed = (()=>{
-    if(!focusedShip) return { label: 'Upgrade — Maxed', disabled: true } as const;
+    if(!focusedShip) return { label: 'Upgrade — Maxed', disabled: true, targetUsed: tonnage.used } as const;
     const currId = focusedShip.frame.id as FrameId;
     const nextId = currId==='interceptor' ? 'cruiser' : currId==='cruiser' ? 'dread' : null as unknown as FrameId;
-    if(!nextId) return { label: 'Upgrade — Maxed', disabled: true } as const;
+    if(!nextId) return { label: 'Upgrade — Maxed', disabled: true, targetUsed: tonnage.used } as const;
     const nextFrame = FRAMES[nextId];
     const targetUsed = tonnage.used + (nextFrame.tonnage - focusedShip.frame.tonnage);
     const lacksCapacity = targetUsed > capacity.cap;
-    const label = `Upgrade ${focusedShip.frame.name} to ${nextFrame.name} — ⬛ ${focusedShip.frame.tiles}→${nextFrame.tiles} slots`;
-    return { label, disabled: lacksCapacity } as const;
+    const label = `Upgrade ${focusedShip.frame.name} to ${nextFrame.name} — ⬛ ${focusedShip.frame.tiles}→${nextFrame.tiles} slots • 🟢 ${focusedShip.frame.tonnage}→${nextFrame.tonnage} dock`;
+    return { label, disabled: lacksCapacity, targetUsed } as const;
   })();
   function nextUnlocksFor(track:'Military'|'Grid'|'Nano'){
     const curr = (research as Research)[track]||1;
@@ -140,8 +141,23 @@ export function OutpostPage({
             ); })}
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <button onClick={buildShip} className="px-3 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 active:scale-95">Build Interceptor ({buildCost.materials}🧱 + {buildCost.credits}¢)</button>
-          <button onClick={()=>upgradeShip(focused)} disabled={upgradeComputed.disabled} className={`px-3 py-3 rounded-xl ${upgradeComputed.disabled?'bg-zinc-700 opacity-60':'bg-amber-600 hover:bg-amber-500 active:scale-95'}`}>{upgradeComputed.label}{nextUpgrade ? ` (${nextUpgrade.materials}🧱 + ${nextUpgrade.credits}¢)` : ''}</button>
+          <button
+            onClick={buildShip}
+            onMouseEnter={()=>setDockPreview(tonnage.used + FRAMES.interceptor.tonnage)}
+            onMouseLeave={()=>setDockPreview(null)}
+            className="px-3 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 active:scale-95"
+          >
+            Build Interceptor 🟢 ({buildCost.materials}🧱 + {buildCost.credits}¢)
+          </button>
+          <button
+            onClick={()=>upgradeShip(focused)}
+            onMouseEnter={()=>setDockPreview(upgradeComputed.targetUsed)}
+            onMouseLeave={()=>setDockPreview(null)}
+            disabled={upgradeComputed.disabled}
+            className={`px-3 py-3 rounded-xl ${upgradeComputed.disabled?'bg-zinc-700 opacity-60':'bg-amber-600 hover:bg-amber-500 active:scale-95'}`}
+          >
+            {upgradeComputed.label}{nextUpgrade ? ` (${nextUpgrade.materials}🧱 + ${nextUpgrade.credits}¢)` : ''}
+          </button>
         </div>
         {(() => { const info = upgradeLockInfo(focusedShip); if(!info) return null; const ok = (research.Military||1) >= info.need; return (
           <div className={`mt-2 text-xs px-3 py-2 rounded ${ok? 'bg-emerald-900/30 text-emerald-200':'bg-zinc-900 border border-zinc-700 text-zinc-300'}`}>
@@ -152,10 +168,9 @@ export function OutpostPage({
           <button onClick={upgradeDock} disabled={dockAtCap} className={`px-3 py-3 rounded-xl ${dockAtCap? 'bg-zinc-700 opacity-60' : 'bg-indigo-600 hover:bg-indigo-500 active:scale-95'}`}>{dockAtCap ? 'Capacity Maxed' : `Expand Capacity +${ECONOMY.dockUpgrade.capacityDelta} (${dockCost.materials}🧱 + ${dockCost.credits}¢)`}</button>
           <div className="px-3 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-sm">
             <div>Capacity: <b>{capacity.cap}</b> • Used: <b>{tonnage.used}</b></div>
-            <DockSlots used={tonnage.used} cap={capacity.cap} />
+            <DockSlots used={tonnage.used} cap={capacity.cap} preview={dockPreview===null?undefined:dockPreview} />
           </div>
         </div>
-
         {/* Blueprint Manager with Sell */}
         <div className="mt-3">
           <div className="text-sm font-semibold mb-1">Class Blueprint — {focusedShip?.frame.name}</div>

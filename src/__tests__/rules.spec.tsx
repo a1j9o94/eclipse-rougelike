@@ -7,6 +7,6 @@ import { RulesModal } from '../components/modals';
 describe('rules modal', () => {
   it('shows slot pips in ship & power section', () => {
     render(<RulesModal onDismiss={() => {}} />);
-    expect(screen.getByText(/⬛⬛⬛⬛⬛⬛/)).toBeInTheDocument();
+    expect(screen.getByText(/🟢🟢🟢🟢🟢🟢/)).toBeInTheDocument();
   });
 });

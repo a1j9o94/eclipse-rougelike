@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+
+import { render, screen, fireEvent } from '@testing-library/react';
 import { DockSlots } from '../components/ui';
 import OutpostPage from '../pages/OutpostPage';
 import { makeShip, getFrame, PARTS } from '../game';
@@ -13,7 +14,14 @@ describe('dock and upgrade visuals', () => {
     expect(screen.getAllByTestId('dock-slot-empty')).toHaveLength(2);
   });
 
-  it('shows slot increase in upgrade note and button', () => {
+  it('previews and shows overflow slots', () => {
+    render(<DockSlots used={2} cap={4} preview={5} />);
+    expect(screen.getAllByTestId('dock-slot-filled')).toHaveLength(2);
+    expect(screen.getAllByTestId('dock-slot-preview')).toHaveLength(2);
+    expect(screen.getAllByTestId('dock-slot-over')).toHaveLength(1);
+  });
+
+  it('shows slot increase and dock icon in upgrade and build buttons', () => {
     const ship = makeShip(getFrame('interceptor'), [PARTS.sources[0], PARTS.drives[0]]);
     render(
       <OutpostPage
@@ -43,7 +51,13 @@ describe('dock and upgrade visuals', () => {
       />
     );
     const slotTexts = screen.getAllByText(/⬛ 6→8 slots/);
-    expect(slotTexts.length).toBeGreaterThan(1);
-    expect(screen.getByRole('button', {name:/Upgrade Interceptor to Cruiser/})).toHaveTextContent('⬛ 6→8');
+    expect(slotTexts.length).toBeGreaterThan(1)
+    const upgradeBtn = screen.getByRole('button', {name:/Upgrade Interceptor to Cruiser/});
+    expect(upgradeBtn).toHaveTextContent('⬛ 6→8');
+    expect(upgradeBtn).toHaveTextContent('🟢');
+    const buildBtn = screen.getByRole('button', {name:/Build Interceptor/});
+    expect(buildBtn).toHaveTextContent('🟢');
+    fireEvent.mouseEnter(upgradeBtn);
+    expect(screen.getAllByTestId('dock-slot-preview').length).toBeGreaterThan(0);
   });
 });
