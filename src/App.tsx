@@ -378,6 +378,8 @@ export default function EclipseIntegrated(){
           buyAndInstall={buyAndInstall}
           capacity={capacity}
           tonnage={tonnage}
+          sector={sector}
+          endless={endless}
           fleetValid={fleetValid}
           startCombat={startCombat}
           onRestart={resetRun}

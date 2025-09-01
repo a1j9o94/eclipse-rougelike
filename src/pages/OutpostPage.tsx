@@ -31,6 +31,8 @@ export function OutpostPage({
   buyAndInstall,
   capacity,
   tonnage,
+  sector,
+  endless,
   fleetValid,
   startCombat,
   onRestart,
@@ -56,6 +58,8 @@ export function OutpostPage({
   buyAndInstall:(part:Part)=>void,
   capacity:{cap:number},
   tonnage:{used:number,cap:number},
+  sector:number,
+  endless:boolean,
   fleetValid:boolean,
   startCombat:()=>void,
   onRestart:()=>void,
@@ -117,7 +121,7 @@ export function OutpostPage({
   }
   return (
     <>
-      {showPlan && <CombatPlanModal onClose={()=>setShowPlan(false)} />}
+      {showPlan && <CombatPlanModal onClose={()=>setShowPlan(false)} sector={sector} endless={endless} />}
 
       <div className="mx-auto max-w-5xl pb-24">
 

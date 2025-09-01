@@ -1,6 +1,6 @@
 // React import not required with modern JSX transform
 import { FACTIONS } from '../config/factions'
-import { SECTORS, getBossVariants, getBossFleetFor, getOpponentFaction, ALL_PARTS, makeShip, FRAMES } from '../game'
+import { SECTORS, getBossVariants, getBossFleetFor, getOpponentFaction, ALL_PARTS, makeShip, FRAMES, getSectorSpec } from '../game'
 import { getInitialCapacityForDifficulty } from '../config/difficulty'
 import { BASE_CONFIG } from '../config/game'
 import { CompactShip } from './ui'
@@ -49,13 +49,16 @@ export function RulesModal({ onDismiss }:{ onDismiss:()=>void }){
   );
 }
 
-export function CombatPlanModal({ onClose }:{ onClose:()=>void }){
+export function CombatPlanModal({ onClose, sector, endless }:{ onClose:()=>void, sector:number, endless:boolean }){
+  const plan = endless
+    ? Array.from({length:5}, (_,i)=> getSectorSpec(sector + i))
+    : SECTORS;
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 bg-black/70">
       <div className="w-full max-w-lg bg-zinc-900 border border-zinc-700 rounded-2xl p-4">
         <div className="text-lg font-semibold mb-2">Combat Plan</div>
         <div className="text-xs sm:text-sm space-y-1 max-h-[60vh] overflow-y-auto pr-1">
-          {SECTORS.map(s=> (
+          {plan.map(s=> (
             <div key={s.sector} className="px-2 py-1 rounded bg-zinc-950 border border-zinc-800 flex items-start justify-between gap-2">
               <div className="flex-1">
                 <div>Sector {s.sector}{s.boss? ' (Boss)':''}</div>
