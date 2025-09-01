@@ -33,6 +33,7 @@ export function OutpostPage({
   tonnage,
   fleetValid,
   startCombat,
+  onRestart,
 }:{
   resources:Resources,
   rerollCost:number,
@@ -57,6 +58,7 @@ export function OutpostPage({
   tonnage:{used:number,cap:number},
   fleetValid:boolean,
   startCombat:()=>void,
+  onRestart:()=>void,
 }){
   const focusedShip = fleet[focused];
   const fleetGroups = groupFleet(fleet);
@@ -273,10 +275,19 @@ export function OutpostPage({
 
       {/* Start Combat */}
       <div className="fixed bottom-0 left-0 w-full z-10 p-3 bg-zinc-950/95 backdrop-blur border-t border-zinc-800">
-        <div className="mx-auto max-w-5xl flex items-center gap-2">
+      <div className="mx-auto max-w-5xl flex items-center gap-2">
           <button onClick={()=> fleetValid && startCombat()} className={`flex-1 px-4 py-3 rounded-xl ${fleetValid?'bg-emerald-600':'bg-zinc-700 opacity-60'}`}>Start Combat</button>
-          {!fleet.every(s=>s.stats.valid) && <div className="text-xs text-rose-300">Fix fleet (Source + Drive + ⚡ OK)</div>}
-          {tonnage.used > capacity.cap && <div className="text-xs text-rose-300">Over capacity — expand docks</div>}
+          {(!fleetValid && resources.credits<=0) ? (
+            <>
+              <div className="text-xs text-rose-300">Fleet inoperable and no credits</div>
+              <button onClick={onRestart} className="px-2 py-1 rounded bg-rose-600 text-xs">Restart</button>
+            </>
+          ) : (
+            <>
+              {!fleet.every(s=>s.stats.valid) && <div className="text-xs text-rose-300">Fix fleet (Source + Drive + ⚡ OK)</div>}
+              {tonnage.used > capacity.cap && <div className="text-xs text-rose-300">Over capacity — expand docks</div>}
+            </>
+          )}
         </div>
       </div>
     </>

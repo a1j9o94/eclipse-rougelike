@@ -145,7 +145,20 @@ export default function EclipseIntegrated(){
     }
     void playEffect('equip');
   }
-  function sellPart(frameId:FrameId, idx:number){ const arr = blueprints[frameId]; if(!arr) return; const part = arr[idx]; if(!part) return; const next = arr.filter((_,i:number)=> i!==idx); const tmp = makeShip(getFrame(frameId), next); if(!tmp.stats.valid) return; const refund = Math.floor((part.cost||0)*0.25); setResources(r=>({...r, credits: r.credits + refund })); updateBlueprint(frameId, () => next); }
+  function sellPart(frameId:FrameId, idx:number){
+    const arr = blueprints[frameId];
+    if(!arr) return;
+    const part = arr[idx];
+    if(!part) return;
+    const next = arr.filter((_,i:number)=> i!==idx);
+    const tmp = makeShip(getFrame(frameId), next);
+    const refund = Math.floor((part.cost||0)*0.25);
+    setResources(r=>({...r, credits: r.credits + refund }));
+    updateBlueprint(frameId, () => next, true);
+    if(!tmp.stats.valid){
+      console.warn('Ship will not participate in combat until power and drive requirements are met.');
+    }
+  }
 
   // ---------- Capacity & build/upgrade ----------
   function buildShip(){ const res = buildI(blueprints as Record<FrameId, Part[]>, resources, tonnage.used, capacity); if(!res) return; setFleet(f=>[...f, res.ship]); setFocused(fleet.length); setResources(r=>({ ...r, credits: r.credits + res.delta.credits, materials: r.materials + res.delta.materials })); }
@@ -338,6 +351,7 @@ export default function EclipseIntegrated(){
           tonnage={tonnage}
           fleetValid={fleetValid}
           startCombat={startCombat}
+          onRestart={resetRun}
         />
       )}
 
