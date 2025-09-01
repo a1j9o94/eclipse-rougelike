@@ -21,7 +21,6 @@ export function HullPips({ current, max }:{current:number, max:number}){
     </div>
   );
 }
-
 export function DockSlots({ used, cap, preview }:{used:number, cap:number, preview?:number}){
   const len = preview!==undefined ? Math.max(cap, preview) : cap;
   const arr = Array.from({length: len});
