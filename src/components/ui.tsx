@@ -89,9 +89,14 @@ export function ItemCard({ item, canAfford, onBuy, ghostDelta }:{item:Part, canA
     <div className={`p-3 rounded-xl border bg-zinc-900 transition ${canAfford? 'border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800/70' : 'border-zinc-800 opacity-90'}`}>
       <div className="flex items-start justify-between gap-2">
         <div>
-          <div className="font-semibold text-sm sm:text-base leading-tight">{item.name}</div>
-          <div className="text-[11px] sm:text-xs opacity-70 mt-0.5">{(() => { const eff = partEffects(item).join(' • '); return `${item.cat} • Tier ${item.tier}${eff ? ' • ' + eff : ''}`; })()}</div>
-          <div className="text-[11px] sm:text-xs mt-1">{partDescription(item)}</div>
+            <div className="font-semibold text-sm sm:text-base leading-tight">{item.name}</div>
+            <div className="text-[11px] sm:text-xs opacity-70 mt-0.5">{(() => {
+              const eff = partEffects(item).join(' • ');
+              const slots = item.slots || 1;
+              const slotLabel = `⬛ ${slots} slot${slots>1?'s':''}`;
+              return `${item.cat} • Tier ${item.tier} • ${slotLabel}${eff ? ' • ' + eff : ''}`;
+            })()}</div>
+            <div className="text-[11px] sm:text-xs mt-1">{partDescription(item)}</div>
         </div>
         <div className="text-sm sm:text-base font-semibold whitespace-nowrap">{item.cost}¢</div>
       </div>

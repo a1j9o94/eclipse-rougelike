@@ -74,6 +74,8 @@ export function OutpostPage({
   };
   const dockAtCap = capacity.cap >= ECONOMY.dockUpgrade.capacityMax;
   const rrInc = Math.max(1, Math.floor(ECONOMY.reroll.increment * econ.credits));
+  const currentBlueprint = blueprints[focusedShip?.frame.id as FrameId] || [];
+  const bpSlotsUsed = currentBlueprint.reduce((a,p)=>a+(p.slots||1),0);
   const nextUpgrade = (()=>{
     if(!focusedShip) return null;
     if(focusedShip.frame.id==='interceptor') return {
@@ -191,11 +193,11 @@ export function OutpostPage({
             <DockSlots used={tonnage.used} cap={capacity.cap} preview={dockPreview===null?undefined:dockPreview} />
           </div>
         </div>
-        {/* Blueprint Manager with Sell */}
-        <div className="mt-3">
-          <div className="text-sm font-semibold mb-1">Class Blueprint — {focusedShip?.frame.name}</div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {blueprints[focusedShip?.frame.id as FrameId]?.map((p, idx)=> (
+          {/* Blueprint Manager with Sell */}
+          <div className="mt-3">
+            <div className="text-sm font-semibold mb-1">Class Blueprint — {focusedShip?.frame.name} ⬛ {bpSlotsUsed}/{focusedShip?.frame.tiles}</div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {currentBlueprint.map((p, idx)=> (
               <div key={idx} className="p-2 rounded border border-zinc-700 bg-zinc-900 text-xs">
                 <div className="font-medium text-sm">{p.name}</div>
                 <div className="opacity-70">{(() => { const eff = partEffects(p).join(' • '); return `${p.cat} • Tier ${p.tier}${eff ? ' • ' + eff : ''}`; })()}</div>
