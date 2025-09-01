@@ -171,7 +171,6 @@ export function OutpostPage({
             <DockSlots used={tonnage.used} cap={capacity.cap} preview={dockPreview===null?undefined:dockPreview} />
           </div>
         </div>
-
         {/* Blueprint Manager with Sell */}
         <div className="mt-3">
           <div className="text-sm font-semibold mb-1">Class Blueprint — {focusedShip?.frame.name}</div>

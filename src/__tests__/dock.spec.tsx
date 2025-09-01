@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import { render, screen, fireEvent } from '@testing-library/react';
 import { DockSlots } from '../components/ui';
 import OutpostPage from '../pages/OutpostPage';
@@ -50,7 +51,7 @@ describe('dock and upgrade visuals', () => {
       />
     );
     const slotTexts = screen.getAllByText(/⬛ 6→8 slots/);
-    expect(slotTexts.length).toBeGreaterThan(1);
+    expect(slotTexts.length).toBeGreaterThan(1)
     const upgradeBtn = screen.getByRole('button', {name:/Upgrade Interceptor to Cruiser/});
     expect(upgradeBtn).toHaveTextContent('⬛ 6→8');
     expect(upgradeBtn).toHaveTextContent('🟢');
