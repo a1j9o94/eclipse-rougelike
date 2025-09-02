@@ -1,6 +1,6 @@
 // React import not required with modern JSX transform
-import { CompactShip } from '../components/ui'
 import { type Ship, type InitiativeEntry } from '../config/types'
+import { FleetRow } from '../components/FleetRow'
 
 export function CombatPage({
   combatOver,
@@ -47,20 +47,12 @@ export function CombatPage({
           Round {roundNum}{queue[turnPtr]? ` • Next: ${(queue[turnPtr].side==='P'?'P':'E')} ${queue[turnPtr].side==='P'?fleet[queue[turnPtr].idx]?.frame.name:enemyFleet[queue[turnPtr].idx]?.frame.name}`: ''}
         </div>
       </div>
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {enemyFleet.map((s,i)=> (
-          <CompactShip key={'e'+i} ship={s} side='E' active={!combatOver && queue[turnPtr]?.side==='E' && queue[turnPtr]?.idx===i} />
-        ))}
-      </div>
+      <FleetRow ships={enemyFleet} side='E' activeIdx={!combatOver && queue[turnPtr]?.side==='E' ? queue[turnPtr].idx : -1} />
       {/* Player row */}
       <div className="flex items-center justify-between mt-4 mb-2">
         <div className="text-sm font-semibold">Player</div>
       </div>
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {fleet.map((s,i)=> (
-          <CompactShip key={'p'+i} ship={s} side='P' active={!combatOver && queue[turnPtr]?.side==='P' && queue[turnPtr]?.idx===i} />
-        ))}
-      </div>
+      <FleetRow ships={fleet} side='P' activeIdx={!combatOver && queue[turnPtr]?.side==='P' ? queue[turnPtr].idx : -1} />
       {/* Mini Log */}
       <div className="mt-3 p-2 rounded bg-zinc-900 text-xs sm:text-sm min-h-[56px]">
         {log.slice(-5).map((ln,i)=>(<div key={i} className={i===log.length-1? 'font-medium' : 'opacity-80'}>{ln}</div>))}

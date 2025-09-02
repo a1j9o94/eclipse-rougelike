@@ -12,9 +12,16 @@ export function PowerBadge({use, prod}:{use:number, prod:number}){
   );
 }
 export function HullPips({ current, max }:{current:number, max:number}){
-  const arr = Array.from({length: max});
+  if (max > 20) {
+    return (
+      <div className="flex gap-1 mt-1 text-[10px] sm:text-xs leading-none">
+        {current}/{max} 🤎
+      </div>
+    );
+  }
+  const arr = Array.from({ length: max });
   return (
-    <div className="flex gap-0.5 mt-1 text-[10px] sm:text-xs leading-none">
+    <div className="flex flex-wrap gap-0.5 mt-1 text-[10px] sm:text-xs leading-none">
       {arr.map((_, i) => (
         <span key={i}>{i < current ? '❤️' : '🖤'}</span>
       ))}
@@ -50,14 +57,11 @@ export function CompactShip({ ship, side, active }:{ship:Ship, side:'P'|'E', act
   const weaponParts = ship.parts.filter((p:Part)=> (p.dice||0) > 0 || (p.riftDice||0) > 0);
   return (
     <div className={`relative w-28 sm:w-32 p-2 rounded-xl border shadow-sm ${dead? 'border-zinc-700 bg-zinc-900 opacity-60' : side==='P' ? 'border-sky-600/60 bg-slate-900' : 'border-pink-600/60 bg-zinc-900'} ${active? 'ring-2 ring-amber-400 animate-pulse':''}`}>
-      <div className="flex items-start justify-between">
-        <div
-          className="text-[11px] sm:text-xs font-semibold"
-          title={ship.frame.name}
-        >
-          🟢 {ship.frame.tonnage}
-        </div>
-        <PowerBadge use={ship.stats.powerUse} prod={ship.stats.powerProd} />
+      <div
+        className="text-[11px] sm:text-xs font-semibold"
+        title={ship.frame.name}
+      >
+        🟢 {ship.frame.tonnage}
       </div>
       <div className="mt-0.5 text-[10px] opacity-70">🚀 {ship.stats.init} • 🎯 {ship.stats.aim} • 🛡️ {ship.stats.shieldTier}</div>
       <HullPips current={Math.max(0, ship.hull)} max={ship.stats.hullCap} />
