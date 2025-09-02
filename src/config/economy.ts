@@ -4,7 +4,7 @@ export const ECONOMY = {
   buildInterceptor: { credits: 30, materials: 3 },
   upgradeCosts: {
     interceptorToCruiser: { credits: 20, materials: 3 },
-    cruiserToDread: { credits: 4, materials: 15 },
+    cruiserToDread: { credits: 15, materials: 5 },
   },
   dockUpgrade: { credits: 15, materials: 3, capacityDelta: 1, capacityMax: 12 },
   reroll: { base: 8, increment: 4 },
