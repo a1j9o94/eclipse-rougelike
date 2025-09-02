@@ -63,7 +63,7 @@ export const FACTIONS: readonly Faction[] = [
     config: buildFactionConfig({
       research: { Grid: 2 },
       blueprints: {
-        interceptor: [PARTS.sources[1], PARTS.drives[1], PARTS.weapons.find(p=>p.id==='disruptor') as Part, PARTS.computers[0]] as Part[],
+        interceptor: [PARTS.sources[1], PARTS.drives[1], PARTS.RARE_PARTS.find(p=>p.id==='disruptor') as Part, PARTS.computers[0]] as Part[],
       },
     }),
     unlock: ({ research }) => research.Grid >= 3,
@@ -74,7 +74,7 @@ export const FACTIONS: readonly Faction[] = [
     description: 'Begin with Auto-Repair Hull blueprint and ships that mend each round.',
     config: buildFactionConfig({
       blueprints: {
-        interceptor: [PARTS.sources[0], PARTS.drives[0], PARTS.weapons[0], PARTS.hull.find(p=>p.id==='auto_repair') as Part],
+        interceptor: [PARTS.sources[0], PARTS.drives[0], PARTS.weapons[0], PARTS.RARE_PARTS.find(p=>p.id==='auto_repair') as Part],
       },
       research: { Nano: 2 },
     }),
@@ -129,7 +129,7 @@ const BOSS_FLEETS: Record<FactionId, { five: BossFleetSpec; ten: BossFleetSpec }
       { frame:'interceptor', parts:['fusion_source','micro_fusion','ion_thruster','antimatter','positron','phase'] },
     ]},
     ten: { sector:10, name:'Void Reavers', ships:[
-      { frame:'dread', parts:['zero_point','quantum_source','transition_drive','rift_cannon','sentient_ai','omega','gauss_array'] },
+      { frame:'dread', parts:['zero_point','quantum_source','transition_drive','rift_cannon','sentient_ai','omega','plasma_array'] },
       { frame:'cruiser', parts:['tachyon_source','quantum_source','warp_drive','rift_cannon','positron','gauss','sentient_hull'] },
     ]},
   },
@@ -149,7 +149,7 @@ const BOSS_FLEETS: Record<FactionId, { five: BossFleetSpec; ten: BossFleetSpec }
       { frame:'interceptor', parts:['fusion_source','fusion_drive','plasma','positron','auto_repair'] },
     ]},
     ten: { sector:10, name:'Enduring Mass', ships:[
-      { frame:'dread', parts:['zero_point','quantum_source','transition_drive','cluster_missiles','neutrino','omega','auto_repair','adamantine'] },
+      { frame:'dread', parts:['zero_point','quantum_source','transition_drive','plasma_cluster','neutrino','omega','auto_repair','adamantine'] },
       { frame:'cruiser', parts:['tachyon_source','warp_drive','nova_battery','gluon','phase','auto_repair'] },
     ]},
   },
