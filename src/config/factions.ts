@@ -100,7 +100,7 @@ const BOSS_FLEETS: Record<FactionId, { five: BossFleetSpec; ten: BossFleetSpec }
     ]},
     ten: { sector:10, name:'Quantum Phalanx', ships:[
       { frame:'dread', parts:['zero_point','quantum_source','transition_drive','sentient_ai','neutrino','omega','rift_cannon','monolith_plating'] },
-      { frame:'cruiser', parts:['tachyon_source','quantum_source','warp_drive','neutrino','omega','rift_cannon','reinforced'] },
+      { frame:'cruiser', parts:['tachyon_source','quantum_source','warp_drive','neutrino','omega','rift_cannon','improved'] },
     ]},
   },
   warmongers: {
@@ -110,7 +110,7 @@ const BOSS_FLEETS: Record<FactionId, { five: BossFleetSpec; ten: BossFleetSpec }
     ]},
     ten: { sector:10, name:'Crimson Armada', ships:[
       { frame:'dread', parts:['zero_point','quantum_source','transition_drive','rift_cannon','neutrino','omega','adamantine'] },
-      { frame:'cruiser', parts:['tachyon_source','quantum_source','warp_drive','antimatter','gluon','phase','reinforced'] },
+      { frame:'cruiser', parts:['tachyon_source','quantum_source','warp_drive','antimatter','gluon','phase','improved'] },
     ]},
   },
   industrialists: {
@@ -119,8 +119,8 @@ const BOSS_FLEETS: Record<FactionId, { five: BossFleetSpec; ten: BossFleetSpec }
       { frame:'interceptor', parts:['fusion_source','ion_thruster','composite','positron','plasma','absorption'] },
     ]},
     ten: { sector:10, name:'Cartel Citadel', ships:[
-      { frame:'dread', parts:['zero_point','quantum_source','transition_drive','monolith_plating','reinforced','omega','plasma_array','quantum_cpu','singularity'] },
-      { frame:'cruiser', parts:['tachyon_source','quantum_source','warp_drive','reinforced','phase','plasma_array','quantum_cpu'] },
+      { frame:'dread', parts:['zero_point','quantum_source','transition_drive','monolith_plating','improved','omega','plasma_array','quantum_cpu','singularity'] },
+      { frame:'cruiser', parts:['tachyon_source','quantum_source','warp_drive','improved','phase','plasma_array','quantum_cpu'] },
     ]},
   },
   raiders: {
@@ -150,7 +150,7 @@ const BOSS_FLEETS: Record<FactionId, { five: BossFleetSpec; ten: BossFleetSpec }
     ]},
     ten: { sector:10, name:'Enduring Mass', ships:[
       { frame:'dread', parts:['zero_point','quantum_source','transition_drive','plasma_cluster','neutrino','omega','auto_repair','adamantine'] },
-      { frame:'cruiser', parts:['tachyon_source','warp_drive','nova_battery','gluon','phase','auto_repair'] },
+      { frame:'cruiser', parts:['tachyon_source','warp_drive','plasma_battery','gluon','phase','auto_repair'] },
     ]},
   },
 };

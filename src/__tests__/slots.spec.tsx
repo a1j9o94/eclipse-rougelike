@@ -17,7 +17,7 @@ async function toOutpost(faction: RegExp) {
 
 describe('slot displays', () => {
   it('shows slot usage in ItemCard', () => {
-    const cluster = PARTS.weapons.find(p => p.id === 'cluster_missiles')!;
+    const cluster = PARTS.weapons.find(p => p.id === 'plasma_cluster')!;
     render(<ItemCard item={cluster} canAfford={true} ghostDelta={null as any} onBuy={() => {}} />);
     expect(screen.getByText(/2 slots/i)).toBeInTheDocument();
   });

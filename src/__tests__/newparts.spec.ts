@@ -32,8 +32,8 @@ describe('New part mechanics', () => {
     const frame = getFrame('interceptor')
     const src = PARTS.sources[0]
     const drv = PARTS.drives[0]
-    const nova = PARTS.weapons.find(p=>p.id==='nova_battery')!
-    const ship = makeShip(frame, [src, drv, nova, nova, PARTS.hull[0]])
+    const plasma = PARTS.weapons.find(p=>p.id==='plasma_battery')!
+    const ship = makeShip(frame, [src, drv, plasma, plasma, PARTS.hull[0]])
     expect(ship.stats.valid).toBe(false)
   })
 })
