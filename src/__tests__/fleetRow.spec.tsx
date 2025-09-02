@@ -22,4 +22,16 @@ describe('FleetRow', () => {
     render(<FleetRow ships={ships} side='P' activeIdx={-1} />)
     await waitFor(() => expect(screen.getByText('×5')).toBeInTheDocument())
   })
+
+  it('removes destroyed ships from stacks', async () => {
+    const src = PARTS.sources[0]
+    const drv = PARTS.drives[0]
+    const ships = Array.from({length:3}, () => makeShip(getFrame('interceptor'), [src, drv]) as any)
+    ships[0].hull = 0
+    ships[0].alive = false
+    Object.defineProperty(HTMLElement.prototype, 'offsetWidth', { configurable: true, value: 150 })
+    render(<FleetRow ships={ships} side='P' activeIdx={-1} />)
+    await waitFor(() => expect(screen.getByText('×2')).toBeInTheDocument())
+    expect(screen.queryByText('×3')).toBeNull()
+  })
 })

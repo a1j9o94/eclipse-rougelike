@@ -16,13 +16,15 @@ export function FleetRow({ ships, side, activeIdx }:{ ships:Ship[], side:'P'|'E'
   }, [])
 
   const cardWidth = 112 // approximate width of w-28
-  let groups = ships.map((ship, idx) => ({ ship, count:1, indices:[idx] }))
+  const alive = ships.map((ship, idx) => ({ ship, idx })).filter(({ ship }) => ship.alive && ship.hull > 0)
+  let groups = alive.map(({ ship, idx }) => ({ ship, count:1, indices:[idx] }))
 
-  if (width && ships.length > 1){
-    const step = (width - cardWidth) / (ships.length - 1)
+  if (width && alive.length > 1){
+    const step = (width - cardWidth) / (alive.length - 1)
     if (step < 50){
-      groups = groupFleet(ships).map(g => {
-        const sorted = [...g.indices].sort((a,b)=> ships[a].hull - ships[b].hull)
+      groups = groupFleet(alive.map(a=>a.ship)).map(g => {
+        const mapped = g.indices.map(i => alive[i].idx)
+        const sorted = [...mapped].sort((a,b)=> ships[a].hull - ships[b].hull)
         return { ...g, indices: sorted, ship: ships[sorted[0]] }
       })
     }
