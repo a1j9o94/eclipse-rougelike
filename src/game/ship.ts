@@ -1,12 +1,13 @@
 import { FRAMES, type Frame, type FrameId } from '../config/frames';
 import type { Part } from '../config/parts';
 
-export const isSource = (p:Part)=> p.cat === 'Source';
-export const isDrive = (p:Part)=> p.cat === 'Drive';
-export const isWeapon = (p:Part)=> p.cat === 'Weapon';
-export const isComputer = (p:Part)=> p.cat === 'Computer';
-export const isShield = (p:Part)=> p.cat === 'Shield';
-export const isHull = (p:Part)=> p.cat === 'Hull';
+// Parts may provide their effects even if categorized differently
+export const isSource = (p:Part)=> p.powerProd !== undefined;
+export const isDrive = (p:Part)=> p.init !== undefined;
+export const isWeapon = (p:Part)=> p.dice !== undefined;
+export const isComputer = (p:Part)=> p.aim !== undefined;
+export const isShield = (p:Part)=> p.shieldTier !== undefined;
+export const isHull = (p:Part)=> p.extraHull !== undefined;
 
 // Safe frame lookup to avoid undefined access
 export function getFrame(id: FrameId){
