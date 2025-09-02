@@ -42,6 +42,7 @@ export type PartCatalog = {
   computers: Part[];
   shields: Part[];
   hull: Part[];
+  rare: Part[];
 }
 
 export const RIFT_FACES: DieFace[] = [
@@ -52,6 +53,73 @@ export const RIFT_FACES: DieFace[] = [
   {},
   {},
 ] as const;
+
+export const RARE_PARTS: Part[] = [
+  {
+    id: "spike_launcher",
+    name: "Spike Launcher",
+    dice: 1,
+    dmgPerHit: 3,
+    faces: [
+      { roll: 0 },
+      { roll: 0 },
+      { roll: 0 },
+      { roll: 0 },
+      { roll: 0 },
+      { dmg: 3 },
+    ],
+    powerCost: 1,
+    tier: 1,
+    cost: 30,
+    cat: "Weapon",
+    tech_category: "Nano",
+    rare: true,
+    desc: "One die: only a 6 hits for 3 damage. Aim and computers don't help.",
+  },
+  {
+    id: "rift_cannon",
+    name: "Rift Cannon",
+    riftDice: 1,
+    faces: RIFT_FACES,
+    powerCost: 2,
+    tier: 2,
+    cost: 65,
+    cat: "Weapon",
+    tech_category: "Nano",
+    rare: true,
+    desc: "Rolls one Rift die for 1-3 damage. A 3 also deals 1 damage to you. Aim and computers don't help.",
+  },
+    { id: "sentient_hull", name: "Sentient Hull", extraHull: 1, aim: 1, powerCost: 0, tier: 2, cost: 50, cat: "Computer", tech_category: "Nano", rare: true, desc: "Adds 1 hull and +1 Aim with no power cost." },
+    { id: "absorption", name: "Absorption Shield", shieldTier: 1, powerProd: 4, tier: 2, cost: 65, cat: "Shield", tech_category: "Nano", rare: true, desc: "Shield tier 1 that also generates 4 power."},
+    { id: "quantum_cpu", name: "Quantum Computer", aim: 2, powerCost: 1, tier: 2, cost: 70, cat: "Computer", tech_category: "Grid", rare: true, desc: "Adds +2 Aim for only 1 power."},
+    { id: "rift_conductor", name: "Rift Conductor", extraHull: 1, riftDice: 1, powerCost: 1, tier: 2, cost: 40, cat: "Hull", tech_category: "Nano", rare: true, desc: "Adds 1 hull and rolls a Rift die (1-3 damage; a 3 also hits you for 1). Aim and computers don't help."},
+{
+      id: "disruptor",
+      name: "Disruptor Beam",
+      dice: 1,
+      dmgPerHit: 1,
+      faces: [ { dmg: 1 } ],
+      powerCost: 2,
+      tier: 2,
+      cost: 80,
+      cat: "Weapon",
+      tech_category: "Nano",
+      initLoss: 1,
+      desc: "Always hits for 1 damage and lowers enemy initiative by 1.",
+    },
+{
+      id: "auto_repair",
+      name: "Auto-Repair Hull",
+      extraHull: 2,
+      regen: 1,
+      powerCost: 1,
+      tier: 2,
+      cost: 80,
+      cat: "Hull",
+      tech_category: "Nano",
+      desc: "Adds 2 hull and regenerates 1 each round; uses 1 power.",
+    },
+];
 
 export const PARTS: PartCatalog = {
   sources: [
@@ -229,74 +297,8 @@ export const PARTS: PartCatalog = {
     { id: "composite", name: "Composite Hull", extraHull: 1, powerCost: 0, tier: 1, cost: 15, cat: "Hull", tech_category: "Nano", desc: "Adds 1 hull." },
     { id: "monolith_plating", name: "Monolith Plating", extraHull: 4, powerCost: 2, tier: 3, cost: 160, cat: "Hull", tech_category: "Nano", desc: "Adds 4 hull; uses 2 power." },
   ],
+  rare: RARE_PARTS,
 } as const;
-
-export const RARE_PARTS: Part[] = [
-  {
-    id: "spike_launcher",
-    name: "Spike Launcher",
-    dice: 1,
-    dmgPerHit: 3,
-    faces: [
-      { roll: 0 },
-      { roll: 0 },
-      { roll: 0 },
-      { roll: 0 },
-      { roll: 0 },
-      { dmg: 3 },
-    ],
-    powerCost: 1,
-    tier: 1,
-    cost: 30,
-    cat: "Weapon",
-    tech_category: "Nano",
-    rare: true,
-    desc: "One die: only a 6 hits for 3 damage. Aim and computers don't help.",
-  },
-  {
-    id: "rift_cannon",
-    name: "Rift Cannon",
-    riftDice: 1,
-    faces: RIFT_FACES,
-    powerCost: 2,
-    tier: 2,
-    cost: 65,
-    cat: "Weapon",
-    tech_category: "Nano",
-    rare: true,
-    desc: "Rolls one Rift die for 1-3 damage. A 3 also deals 1 damage to you. Aim and computers don't help.",
-  },
-    { id: "sentient_hull", name: "Sentient Hull", extraHull: 1, aim: 1, powerCost: 0, tier: 2, cost: 50, cat: "Computer", tech_category: "Nano", rare: true, desc: "Adds 1 hull and +1 Aim with no power cost." },
-    { id: "absorption", name: "Absorption Shield", shieldTier: 1, powerProd: 4, tier: 2, cost: 65, cat: "Shield", tech_category: "Nano", rare: true, desc: "Shield tier 1 that also generates 4 power."},
-    { id: "quantum_cpu", name: "Quantum Computer", aim: 2, powerCost: 1, tier: 2, cost: 70, cat: "Computer", tech_category: "Grid", rare: true, desc: "Adds +2 Aim for only 1 power."},
-    { id: "rift_conductor", name: "Rift Conductor", extraHull: 1, riftDice: 1, powerCost: 1, tier: 2, cost: 40, cat: "Hull", tech_category: "Nano", rare: true, desc: "Adds 1 hull and rolls a Rift die (1-3 damage; a 3 also hits you for 1). Aim and computers don't help."},
-{
-      id: "disruptor",
-      name: "Disruptor Beam",
-      dice: 1,
-      dmgPerHit: 1,
-      faces: [ { dmg: 1 } ],
-      powerCost: 2,
-      tier: 2,
-      cost: 80,
-      cat: "Weapon",
-      tech_category: "Nano",
-      initLoss: 1,
-      desc: "Always hits for 1 damage and lowers enemy initiative by 1.",
-    },
-{
-      id: "auto_repair",
-      name: "Auto-Repair Hull",
-      extraHull: 2,
-      regen: 1,
-      powerCost: 1,
-      tier: 2,
-      cost: 80,
-      cat: "Hull",
-      tech_category: "Nano",
-      desc: "Adds 2 hull and regenerates 1 each round; uses 1 power.",
-    },
-];
 
 export const ALL_PARTS: Part[] = [
   ...PARTS.sources,
