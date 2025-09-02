@@ -65,7 +65,7 @@ export const PARTS: PartCatalog = {
       { id: "fusion_drive", name: "Fusion Drive", init: 1, powerCost: 1, tier: 1, cost: 18, cat: "Drive", tech_category: "Grid", desc: "Adds +1 initiative; uses 1 power." },
       { id: "tachyon_drive", name: "Tachyon Drive", init: 2, powerCost: 2, tier: 2, cost: 55, cat: "Drive", tech_category: "Grid", desc: "Adds +2 initiative; uses 2 power." },
       { id: "warp_drive", name: "Warp Drive", init: 3, powerCost: 3, tier: 2, cost: 95, cat: "Drive", tech_category: "Grid", desc: "Adds +3 initiative; uses 3 power." },
-      { id: "ion_thruster", name: "Ion Thruster", init: 1, powerCost: 0, tier: 1, cost: 22, cat: "Drive", tech_category: "Grid", desc: "Adds +1 initiative with no power cost." },
+      { id: "ion_thruster", name: "Ion Thruster", init: 1, powerCost: 0, tier: 1, cost: 30, cat: "Drive", tech_category: "Grid", desc: "Adds +1 initiative with no power cost." },
       { id: "transition_drive", name: "Transition Drive", init: 3, powerCost: 2, tier: 3, cost: 120, cat: "Drive", tech_category: "Grid", desc: "Adds +3 initiative for 2 power." },
   ],
   weapons: [
@@ -111,7 +111,7 @@ export const PARTS: PartCatalog = {
     },
     {
       id: "singularity",
-      name: "Singularity Launcher",
+      name: "Singularity Cannon",
       dice: 1,
       dmgPerHit: 3,
       faces: [
@@ -128,20 +128,6 @@ export const PARTS: PartCatalog = {
       cat: "Weapon",
       tech_category: "Nano",
       desc: "Rolls 1 die; hits deal 3 damage.",
-    },
-    {
-      id: "disruptor",
-      name: "Disruptor Beam",
-      dice: 1,
-      dmgPerHit: 1,
-      faces: [ { dmg: 1 } ],
-      powerCost: 2,
-      tier: 2,
-      cost: 80,
-      cat: "Weapon",
-      tech_category: "Nano",
-      initLoss: 1,
-      desc: "Always hits for 1 damage and lowers enemy initiative by 1.",
     },
     {
       id: "plasma_array",
@@ -164,8 +150,8 @@ export const PARTS: PartCatalog = {
       desc: "Rolls 2 dice; each hit deals 1 damage.",
     },
     {
-      id: "nova_battery",
-      name: "Nova Battery",
+      id: "plasma_battery",
+      name: "Plasma Battery",
       dice: 3,
       dmgPerHit: 1,
       faces: [
@@ -185,8 +171,8 @@ export const PARTS: PartCatalog = {
       desc: "Rolls 3 dice; each hit deals 1 damage.",
     },
     {
-      id: "cluster_missiles",
-      name: "Cluster Missiles",
+      id: "plasma_cluster",
+      name: "Plasma Cluster",
       dice: 4,
       dmgPerHit: 1,
       faces: [
@@ -241,19 +227,6 @@ export const PARTS: PartCatalog = {
     { id: "improved", name: "Improved Hull", extraHull: 2, powerCost: 0, tier: 2, cost: 22, cat: "Hull", tech_category: "Nano", desc: "Adds 2 hull." },
     { id: "adamantine", name: "Adamantine Hull", extraHull: 3, powerCost: 1, tier: 3, cost: 110, cat: "Hull", tech_category: "Nano", desc: "Adds 3 hull; uses 1 power." },
     { id: "composite", name: "Composite Hull", extraHull: 1, powerCost: 0, tier: 1, cost: 15, cat: "Hull", tech_category: "Nano", desc: "Adds 1 hull." },
-    {
-      id: "auto_repair",
-      name: "Auto-Repair Hull",
-      extraHull: 2,
-      regen: 1,
-      powerCost: 1,
-      tier: 2,
-      cost: 80,
-      cat: "Hull",
-      tech_category: "Nano",
-      desc: "Adds 2 hull and regenerates 1 each round; uses 1 power.",
-    },
-    { id: "reinforced", name: "Reinforced Hull", extraHull: 2, powerCost: 0, tier: 3, cost: 70, cat: "Hull", tech_category: "Nano", desc: "Adds 2 hull." },
     { id: "monolith_plating", name: "Monolith Plating", extraHull: 4, powerCost: 2, tier: 3, cost: 160, cat: "Hull", tech_category: "Nano", desc: "Adds 4 hull; uses 2 power." },
   ],
 } as const;
@@ -297,6 +270,32 @@ export const RARE_PARTS: Part[] = [
     { id: "absorption", name: "Absorption Shield", shieldTier: 1, powerProd: 4, tier: 2, cost: 65, cat: "Shield", tech_category: "Nano", rare: true, desc: "Shield tier 1 that also generates 4 power."},
     { id: "quantum_cpu", name: "Quantum Computer", aim: 2, powerCost: 1, tier: 2, cost: 70, cat: "Computer", tech_category: "Grid", rare: true, desc: "Adds +2 Aim for only 1 power."},
     { id: "rift_conductor", name: "Rift Conductor", extraHull: 1, riftDice: 1, powerCost: 1, tier: 2, cost: 40, cat: "Hull", tech_category: "Nano", rare: true, desc: "Adds 1 hull and rolls a Rift die (1-3 damage; a 3 also hits you for 1). Aim and computers don't help."},
+{
+      id: "disruptor",
+      name: "Disruptor Beam",
+      dice: 1,
+      dmgPerHit: 1,
+      faces: [ { dmg: 1 } ],
+      powerCost: 2,
+      tier: 2,
+      cost: 80,
+      cat: "Weapon",
+      tech_category: "Nano",
+      initLoss: 1,
+      desc: "Always hits for 1 damage and lowers enemy initiative by 1.",
+    },
+{
+      id: "auto_repair",
+      name: "Auto-Repair Hull",
+      extraHull: 2,
+      regen: 1,
+      powerCost: 1,
+      tier: 2,
+      cost: 80,
+      cat: "Hull",
+      tech_category: "Nano",
+      desc: "Adds 2 hull and regenerates 1 each round; uses 1 power.",
+    },
 ];
 
 export const ALL_PARTS: Part[] = [
