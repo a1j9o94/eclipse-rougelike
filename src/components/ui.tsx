@@ -1,6 +1,6 @@
 // React import not required with modern JSX transform
 
-import { type Part, partEffects, partDescription, PART_EFFECT_SYMBOLS } from "../config/parts";
+import { type Part, partEffects, partDescription, PART_EFFECT_SYMBOLS, type PartEffectField } from "../config/parts";
 import type { GhostDelta, Ship } from "../config/types";
 import type { FrameId } from "../config/frames";
 
@@ -58,37 +58,38 @@ export function DockSlots({ used, cap, preview }:{used:number, cap:number, previ
 // Rows are centered to roughly match Eclipse ship diagrams.
 const FRAME_LAYOUTS: Record<FrameId, number[]> = {
   interceptor: [3, 2, 1],
-  cruiser: [4, 2, 2],
+  cruiser: [3, 3, 2],
   dread: [4, 3, 3],
 };
 
-function partIcon(p: Part): string {
-  switch (p.cat) {
-    case 'Source':
-      return PART_EFFECT_SYMBOLS.powerProd;
-    case 'Drive':
-      return PART_EFFECT_SYMBOLS.init;
-    case 'Weapon':
-      return PART_EFFECT_SYMBOLS.dice;
-    case 'Computer':
-      return PART_EFFECT_SYMBOLS.aim;
-    case 'Shield':
-      return PART_EFFECT_SYMBOLS.shieldTier;
-    case 'Hull':
-      return PART_EFFECT_SYMBOLS.extraHull;
-    default:
-      return '';
-  }
+const CATEGORY_EFFECTS: Record<Part['cat'], PartEffectField[]> = {
+  Source: ['powerProd'],
+  Drive: ['init'],
+  Weapon: ['dice', 'riftDice', 'dmgPerHit'],
+  Computer: ['aim'],
+  Shield: ['shieldTier', 'powerProd', 'dice', 'riftDice', 'dmgPerHit'],
+  Hull: ['extraHull', 'powerProd', 'init', 'aim', 'dice', 'riftDice', 'dmgPerHit', 'shieldTier', 'regen', 'initLoss'],
+};
+
+function effectLabels(p: Part, fields: PartEffectField[]) {
+  const labels: string[] = [];
+  fields.forEach(f => {
+    if (f === 'extraHull') return;
+    const val = (p as any)[f];
+    if (typeof val === 'number' && val !== 0) {
+      const sym = PART_EFFECT_SYMBOLS[f].replace(/[+-]$/, '');
+      labels.push(val > 1 ? `${val}${sym}` : sym);
+    }
+  });
+  return labels.join('');
 }
 
 export function ShipFrameSlots({ ship, side, active }: { ship: Ship, side: 'P' | 'E', active?: boolean }) {
   const layout = FRAME_LAYOUTS[ship.frame.id as FrameId] || [ship.frame.tiles];
   const cells: { slots: number, label: string }[] = [];
-  let remainingHull = ship.hull;
-  const baseHull = ship.frame.baseHull;
-  const baseHullRemain = Math.min(remainingHull, baseHull);
-  remainingHull -= baseHullRemain;
-  cells.push({ slots: 1, label: baseHull > 1 ? `${baseHullRemain > 0 ? baseHullRemain : '0'}❤️` : baseHullRemain === 1 ? '❤️' : '🖤' });
+  // Hull upgrades show hearts for remaining hull beyond the frame's base value,
+  // but the intrinsic hull does not occupy a slot or render a cell.
+  let remainingHull = Math.max(0, ship.hull - ship.frame.baseHull);
   ship.parts.forEach(p => {
     const slots = p.slots || 1;
     if (p.cat === 'Hull') {
@@ -101,10 +102,10 @@ export function ShipFrameSlots({ ship, side, active }: { ship: Ship, side: 'P' |
       } else {
         label = rem === 0 ? '🖤' : `${rem}❤️`;
       }
-      cells.push({ slots, label });
+      const extra = effectLabels(p, CATEGORY_EFFECTS.Hull);
+      cells.push({ slots, label: label + extra });
     } else {
-      const icon = partIcon(p);
-      const label = slots > 1 ? `${slots}${icon}` : icon;
+      const label = effectLabels(p, CATEGORY_EFFECTS[p.cat]);
       cells.push({ slots, label });
     }
   });
@@ -127,7 +128,7 @@ export function ShipFrameSlots({ ship, side, active }: { ship: Ship, side: 'P' |
         }
         if (row.length === 0) return null;
         return (
-          <div key={r} className="flex justify-center gap-1">
+          <div key={r} data-testid="frame-slot-row" className="flex justify-center gap-1">
             {row.map((label, i) => (
               <div
                 key={i}

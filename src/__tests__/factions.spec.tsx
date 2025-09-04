@@ -29,8 +29,9 @@ describe('Factions', () => {
     fireEvent.click(screen.getByRole('button', { name: /Void Corsairs/i }))
     fireEvent.click(screen.getByRole('button', { name: /Easy/i }))
     fireEvent.click(screen.getByRole('button', { name: /Let’s go/i }))
-    const icons = screen.getAllByTestId('frame-slot-filled').map(el => el.textContent)
-    expect(icons).toContain('🎲')
+    const icons = screen.getAllByTestId('frame-slot-filled').map(el => el.textContent || '')
+    expect(icons.some(t => t.includes('🎲'))).toBe(true)
+
   })
 
   it('Industrialists start with free reroll and discounted build costs', () => {
