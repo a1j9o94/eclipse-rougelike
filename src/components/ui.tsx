@@ -52,6 +52,35 @@ export function DockSlots({ used, cap, preview }:{used:number, cap:number, previ
     </div>
   );
 }
+
+function catColor(cat: Part["cat"]){
+  switch(cat){
+    case 'Source': return 'bg-yellow-400';
+    case 'Drive': return 'bg-sky-400';
+    case 'Weapon': return 'bg-rose-500';
+    case 'Computer': return 'bg-indigo-400';
+    case 'Shield': return 'bg-emerald-500';
+    case 'Hull': return 'bg-orange-400';
+    default: return 'bg-zinc-500';
+  }
+}
+
+export function FrameSlots({ tiles, parts }:{tiles:number, parts:Part[]}){
+  const slotColors:string[] = [];
+  parts.forEach(p => {
+    const n = p.slots || 1;
+    for(let i=0;i<n;i++) slotColors.push(catColor(p.cat));
+  });
+  const cells = Array.from({length: tiles}, (_,i)=> slotColors[i] || null);
+  const cols = tiles<=6 ? 3 : tiles<=8 ? 4 : 5;
+  return (
+    <div className="grid gap-0.5 mt-1" style={{gridTemplateColumns:`repeat(${cols}, minmax(0,1fr))`}}>
+      {cells.map((color,i)=>(
+        <div key={i} data-testid={color? 'frame-slot-filled':'frame-slot-empty'} className={`w-3 h-3 sm:w-4 sm:h-4 rounded ${color || 'bg-zinc-700'}`} />
+      ))}
+    </div>
+  );
+}
 export function CompactShip({ ship, side, active }:{ship:Ship, side:'P'|'E', active:boolean}){
   const dead = !ship.alive || ship.hull<=0;
   const weaponParts = ship.parts.filter((p:Part)=> (p.dice||0) > 0 || (p.riftDice||0) > 0);
@@ -64,6 +93,7 @@ export function CompactShip({ ship, side, active }:{ship:Ship, side:'P'|'E', act
         🟢 {ship.frame.tonnage}
       </div>
       <div className="mt-0.5 text-[10px] opacity-70">🚀 {ship.stats.init} • 🎯 {ship.stats.aim} • 🛡️ {ship.stats.shieldTier}</div>
+      <FrameSlots tiles={ship.frame.tiles} parts={ship.parts} />
       <HullPips current={Math.max(0, ship.hull)} max={ship.stats.hullCap} />
       {/* Dice/Damage summary per weapon */}
       <div className="mt-1 flex flex-wrap gap-1 min-h-[18px]">
