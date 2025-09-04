@@ -1,7 +1,8 @@
 // React import not required with modern JSX transform
 
-import { type Part, partEffects, partDescription } from "../config/parts";
+import { type Part, partEffects, partDescription, PART_EFFECT_SYMBOLS } from "../config/parts";
 import type { GhostDelta, Ship } from "../config/types";
+import type { FrameId } from "../config/frames";
 
 export function PowerBadge({use, prod}:{use:number, prod:number}){
   const ok = use<=prod;
@@ -52,38 +53,101 @@ export function DockSlots({ used, cap, preview }:{used:number, cap:number, previ
     </div>
   );
 }
+
+// Layout of frame slots for a simple visual representation.
+// Rows are centered to roughly match Eclipse ship diagrams.
+const FRAME_LAYOUTS: Record<FrameId, number[]> = {
+  interceptor: [3, 2, 1],
+  cruiser: [4, 2, 2],
+  dread: [4, 3, 3],
+};
+
+function partIcon(p: Part): string {
+  switch (p.cat) {
+    case 'Source':
+      return PART_EFFECT_SYMBOLS.powerProd;
+    case 'Drive':
+      return PART_EFFECT_SYMBOLS.init;
+    case 'Weapon':
+      return PART_EFFECT_SYMBOLS.dice;
+    case 'Computer':
+      return PART_EFFECT_SYMBOLS.aim;
+    case 'Shield':
+      return PART_EFFECT_SYMBOLS.shieldTier;
+    case 'Hull':
+      return PART_EFFECT_SYMBOLS.extraHull;
+    default:
+      return '';
+  }
+}
+
+export function ShipFrameSlots({ ship, side, active }: { ship: Ship, side: 'P' | 'E', active?: boolean }) {
+  const layout = FRAME_LAYOUTS[ship.frame.id as FrameId] || [ship.frame.tiles];
+  const cells: { slots: number, label: string }[] = [];
+  let remainingHull = ship.hull;
+  const baseHull = ship.frame.baseHull;
+  const baseHullRemain = Math.min(remainingHull, baseHull);
+  remainingHull -= baseHullRemain;
+  cells.push({ slots: 1, label: baseHull > 1 ? `${baseHullRemain > 0 ? baseHullRemain : '0'}❤️` : baseHullRemain === 1 ? '❤️' : '🖤' });
+  ship.parts.forEach(p => {
+    const slots = p.slots || 1;
+    if (p.cat === 'Hull') {
+      const max = p.extraHull || 1;
+      const rem = Math.min(remainingHull, max);
+      remainingHull -= rem;
+      let label = '';
+      if (max === 1) {
+        label = rem === 1 ? '❤️' : '🖤';
+      } else {
+        label = rem === 0 ? '🖤' : `${rem}❤️`;
+      }
+      cells.push({ slots, label });
+    } else {
+      const icon = partIcon(p);
+      const label = slots > 1 ? `${slots}${icon}` : icon;
+      cells.push({ slots, label });
+    }
+  });
+  const used = cells.reduce((a, p) => a + p.slots, 0);
+  const empties = Math.max(0, ship.frame.tiles - used);
+  const labels = cells.map(p => p.label).concat(Array(empties).fill(''));
+  let idx = 0;
+  const glow = side === 'P'
+    ? 'ring-sky-400 shadow-[0_0_4px_#38bdf8]'
+    : 'ring-pink-500 shadow-[0_0_4px_#ec4899]';
+  const activeGlow = active ? 'animate-pulse' : '';
+  return (
+    <div className="inline-block">
+      {layout.map((count, r) => {
+        const row: string[] = [];
+        let added = 0;
+        while (idx < labels.length && added < count) {
+          row.push(labels[idx++]);
+          added++;
+        }
+        if (row.length === 0) return null;
+        return (
+          <div key={r} className="flex justify-center gap-1">
+            {row.map((label, i) => (
+              <div
+                key={i}
+                data-testid={label ? 'frame-slot-filled' : 'frame-slot-empty'}
+                className={`w-6 h-6 sm:w-7 sm:h-7 text-[11px] sm:text-xs grid place-items-center rounded ${glow} ${activeGlow}`}
+              >
+                {label}
+              </div>
+            ))}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 export function CompactShip({ ship, side, active }:{ship:Ship, side:'P'|'E', active:boolean}){
   const dead = !ship.alive || ship.hull<=0;
-  const weaponParts = ship.parts.filter((p:Part)=> (p.dice||0) > 0 || (p.riftDice||0) > 0);
   return (
-    <div className={`relative w-28 sm:w-32 p-2 rounded-xl border shadow-sm ${dead? 'border-zinc-700 bg-zinc-900 opacity-60' : side==='P' ? 'border-sky-600/60 bg-slate-900' : 'border-pink-600/60 bg-zinc-900'} ${active? 'ring-2 ring-amber-400 animate-pulse':''}`}>
-      <div
-        className="text-[11px] sm:text-xs font-semibold"
-        title={ship.frame.name}
-      >
-        🟢 {ship.frame.tonnage}
-      </div>
-      <div className="mt-0.5 text-[10px] opacity-70">🚀 {ship.stats.init} • 🎯 {ship.stats.aim} • 🛡️ {ship.stats.shieldTier}</div>
-      <HullPips current={Math.max(0, ship.hull)} max={ship.stats.hullCap} />
-      {/* Dice/Damage summary per weapon */}
-      <div className="mt-1 flex flex-wrap gap-1 min-h-[18px]">
-        {weaponParts.map((p:Part, i:number)=> {
-          const dice = p.riftDice || p.dice || 0;
-          const icon = p.riftDice ? '🕳️' : '🎲';
-          const maxDmg = Math.max(p.dmgPerHit||0, ...(p.faces||[]).map(f=>f.dmg||0));
-          return (
-            <span key={i} className="px-1.5 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-[10px] whitespace-nowrap">
-              {dice}{icon}{maxDmg>0 ? ` × ${maxDmg}` : ''}
-            </span>
-          );
-        })}
-        {weaponParts.length===0 && (
-          <span className="text-[10px] opacity-60">No weapons</span>
-        )}
-      </div>
-      <div className="mt-1 text-[10px] opacity-80 line-clamp-2 min-h-[20px]">{
-        weaponParts.map((p:Part)=> p.riftDice ? `${p.riftDice} Rift die${p.riftDice>1?'s':''}` : p.name).join(', ') || '—'
-      }</div>
+    <div data-ship className="relative inline-block" title={ship.frame.name}>
+      <ShipFrameSlots ship={ship} side={side} active={active} />
       {dead && <div className="absolute inset-0 grid place-items-center text-2xl text-zinc-300">✖</div>}
     </div>
   );
