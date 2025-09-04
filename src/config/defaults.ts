@@ -12,8 +12,8 @@ export const INITIAL_CAPACITY = { cap: 3 } as const;
 
 export const INITIAL_BLUEPRINTS: Record<FrameId, Part[]> = {
   interceptor: [PARTS.sources[0], PARTS.drives[0], PARTS.weapons[0], PARTS.computers[0]],
-  cruiser:     [PARTS.sources[1], PARTS.drives[1], PARTS.weapons[0], PARTS.shields[0]],
-  dread:       [PARTS.sources[1], PARTS.drives[1], PARTS.weapons[0], PARTS.weapons[0], PARTS.shields[0]],
+  cruiser:     [],
+  dread:       [],
 };
 
 

@@ -26,7 +26,7 @@ describe('slot displays', () => {
   it('shows slots in Class Blueprint header for Cruiser', async () => {
     await toOutpost(/Crimson Vanguard/i);
     const header = await screen.findByText(/Class Blueprint — Cruiser/i);
-    expect(header.textContent).toMatch(/4\/8/);
+    expect(header.textContent).toMatch(/0\/8/);
   }, 20000);
 
   it('previews slot usage in ItemCard ghost delta', () => {
