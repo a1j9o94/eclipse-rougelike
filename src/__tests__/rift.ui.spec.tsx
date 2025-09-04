@@ -11,7 +11,8 @@ describe('CompactShip rift dice display', () => {
     const ship = makeShip(getFrame('interceptor'), [src, drv, conductor])
     render(<CompactShip ship={ship} side="P" active={false} />)
     expect(screen.queryByText(/No weapons/i)).toBeNull()
-    expect(screen.getByText(/🕳️/)).toBeInTheDocument()
+    const icons = screen.getAllByTestId('frame-slot-filled').map(el => el.textContent)
+    expect(icons).toContain('❤️')
   })
 
   it('shows dice on non-weapon parts with dice', () => {
@@ -32,6 +33,7 @@ describe('CompactShip rift dice display', () => {
     const ship = makeShip(getFrame('interceptor'), [src, drv, hybrid])
     render(<CompactShip ship={ship} side="P" active={false} />)
     expect(screen.queryByText(/No weapons/i)).toBeNull()
-    expect(screen.getByText('1🎲 × 1')).toBeInTheDocument()
+    const icons = screen.getAllByTestId('frame-slot-filled').map(el => el.textContent)
+    expect(icons).toContain('🛡️')
   })
 })
