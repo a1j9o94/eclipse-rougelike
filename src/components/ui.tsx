@@ -84,11 +84,9 @@ function partIcon(p: Part): string {
 export function ShipFrameSlots({ ship, side, active }: { ship: Ship, side: 'P' | 'E', active?: boolean }) {
   const layout = FRAME_LAYOUTS[ship.frame.id as FrameId] || [ship.frame.tiles];
   const cells: { slots: number, label: string }[] = [];
-  let remainingHull = ship.hull;
-  const baseHull = ship.frame.baseHull;
-  const baseHullRemain = Math.min(remainingHull, baseHull);
-  remainingHull -= baseHullRemain;
-  cells.push({ slots: 1, label: baseHull > 1 ? `${baseHullRemain > 0 ? baseHullRemain : '0'}❤️` : baseHullRemain === 1 ? '❤️' : '🖤' });
+  // Hull upgrades show hearts for remaining hull beyond the frame's base value,
+  // but the intrinsic hull does not occupy a slot or render a cell.
+  let remainingHull = Math.max(0, ship.hull - ship.frame.baseHull);
   ship.parts.forEach(p => {
     const slots = p.slots || 1;
     if (p.cat === 'Hull') {

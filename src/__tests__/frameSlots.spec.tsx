@@ -11,15 +11,14 @@ describe('CompactShip frame slot display', () => {
     const bigWeapon = PARTS.weapons.find(p => p.id === 'plasma_battery')!
     const ship = makeShip(getFrame('interceptor'), [src, drv, bigWeapon])
     render(<CompactShip ship={ship} side="P" active={false} />)
-    const used = ship.parts.reduce((a, p) => a + (p.slots || 1), 0) + 1
+    const used = ship.parts.reduce((a, p) => a + (p.slots || 1), 0)
     const filled = screen.getAllByTestId('frame-slot-filled')
-    expect(filled.length).toBe(ship.parts.length + 1)
+    expect(filled.length).toBe(ship.parts.length)
     expect(screen.getAllByTestId('frame-slot-empty').length).toBe(Math.max(0, ship.frame.tiles - used))
     const icons = filled.map(el => el.textContent)
     expect(icons).toContain('⚡+')
     expect(icons).toContain('🚀')
     expect(icons).toContain('2🎲')
-    expect(icons).toContain('❤️')
   })
 
   it('shows black hearts for destroyed hull', () => {
@@ -29,7 +28,7 @@ describe('CompactShip frame slot display', () => {
     render(<CompactShip ship={ship} side="P" active={false} />)
     const icons = screen.getAllByTestId('frame-slot-filled').map(el => el.textContent)
     expect(icons).toContain('🖤')
-    expect(icons).toContain('❤️')
+    expect(icons).not.toContain('❤️')
   })
 
   it('arranges rows based on frame layout', () => {
