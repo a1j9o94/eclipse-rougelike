@@ -81,25 +81,48 @@ function partIcon(p: Part): string {
   }
 }
 
-export function ShipFrameSlots({ ship }: { ship: Ship }) {
+export function ShipFrameSlots({ ship, side, active }: { ship: Ship, side: 'P' | 'E', active?: boolean }) {
   const layout = FRAME_LAYOUTS[ship.frame.id as FrameId] || [ship.frame.tiles];
-  const parts = ship.parts.map(p => {
+  const cells: { slots: number, label: string }[] = [];
+  let remainingHull = ship.hull;
+  const baseHull = ship.frame.baseHull;
+  const baseHullRemain = Math.min(remainingHull, baseHull);
+  remainingHull -= baseHullRemain;
+  cells.push({ slots: 1, label: baseHull > 1 ? `${baseHullRemain > 0 ? baseHullRemain : '0'}❤️` : baseHullRemain === 1 ? '❤️' : '🖤' });
+  ship.parts.forEach(p => {
     const slots = p.slots || 1;
-    const icon = partIcon(p);
-    const label = slots > 1 ? `${slots}${icon}` : icon;
-    return { slots, label };
+    if (p.cat === 'Hull') {
+      const max = p.extraHull || 1;
+      const rem = Math.min(remainingHull, max);
+      remainingHull -= rem;
+      let label = '';
+      if (max === 1) {
+        label = rem === 1 ? '❤️' : '🖤';
+      } else {
+        label = rem === 0 ? '🖤' : `${rem}❤️`;
+      }
+      cells.push({ slots, label });
+    } else {
+      const icon = partIcon(p);
+      const label = slots > 1 ? `${slots}${icon}` : icon;
+      cells.push({ slots, label });
+    }
   });
-  const used = parts.reduce((a, p) => a + p.slots, 0);
-  const empties = ship.frame.tiles - used;
-  const cells = parts.map(p => p.label).concat(Array(empties).fill(''));
+  const used = cells.reduce((a, p) => a + p.slots, 0);
+  const empties = Math.max(0, ship.frame.tiles - used);
+  const labels = cells.map(p => p.label).concat(Array(empties).fill(''));
   let idx = 0;
+  const glow = side === 'P'
+    ? 'ring-sky-400 shadow-[0_0_4px_#38bdf8]'
+    : 'ring-pink-500 shadow-[0_0_4px_#ec4899]';
+  const activeGlow = active ? 'animate-pulse' : '';
   return (
     <div className="inline-block">
       {layout.map((count, r) => {
         const row: string[] = [];
         let added = 0;
-        while (idx < cells.length && added < count) {
-          row.push(cells[idx++]);
+        while (idx < labels.length && added < count) {
+          row.push(labels[idx++]);
           added++;
         }
         if (row.length === 0) return null;
@@ -109,7 +132,7 @@ export function ShipFrameSlots({ ship }: { ship: Ship }) {
               <div
                 key={i}
                 data-testid={label ? 'frame-slot-filled' : 'frame-slot-empty'}
-                className="w-6 h-6 sm:w-7 sm:h-7 text-[11px] sm:text-xs grid place-items-center"
+                className={`w-6 h-6 sm:w-7 sm:h-7 text-[11px] sm:text-xs grid place-items-center rounded ${glow} ${activeGlow}`}
               >
                 {label}
               </div>
@@ -123,18 +146,8 @@ export function ShipFrameSlots({ ship }: { ship: Ship }) {
 export function CompactShip({ ship, side, active }:{ship:Ship, side:'P'|'E', active:boolean}){
   const dead = !ship.alive || ship.hull<=0;
   return (
-    <div className={`relative w-28 sm:w-32 p-2 rounded-xl border shadow-sm ${dead? 'border-zinc-700 bg-zinc-900 opacity-60' : side==='P' ? 'border-sky-600/60 bg-slate-900' : 'border-pink-600/60 bg-zinc-900'} ${active? 'ring-2 ring-amber-400 animate-pulse':''}`}>
-      <div
-        className="text-[11px] sm:text-xs font-semibold"
-        title={ship.frame.name}
-      >
-        🟢 {ship.frame.tonnage}
-      </div>
-      <div className="mt-0.5 text-[10px] opacity-70">🚀 {ship.stats.init} • 🎯 {ship.stats.aim} • 🛡️ {ship.stats.shieldTier}</div>
-      <div className="mt-1 flex justify-center">
-        <ShipFrameSlots ship={ship} />
-      </div>
-      <HullPips current={Math.max(0, ship.hull)} max={ship.stats.hullCap} />
+    <div className="relative inline-block" title={ship.frame.name}>
+      <ShipFrameSlots ship={ship} side={side} active={active} />
       {dead && <div className="absolute inset-0 grid place-items-center text-2xl text-zinc-300">✖</div>}
     </div>
   );
