@@ -19,6 +19,7 @@ describe('CompactShip frame slot display', () => {
     expect(icons.some(t => t.includes('3⚡'))).toBe(true)
     expect(icons.some(t => t.includes('2🎯'))).toBe(true)
     expect(icons.some(t => t.includes('2🎲2💥'))).toBe(true)
+
   })
 
   it('shows black hearts for destroyed hull', () => {
