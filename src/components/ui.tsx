@@ -2,6 +2,7 @@
 
 import { type Part, partEffects, partDescription } from "../config/parts";
 import type { GhostDelta, Ship } from "../config/types";
+import type { FrameId } from "../config/frames";
 
 export function PowerBadge({use, prod}:{use:number, prod:number}){
   const ok = use<=prod;
@@ -52,6 +53,63 @@ export function DockSlots({ used, cap, preview }:{used:number, cap:number, previ
     </div>
   );
 }
+
+// Layout of frame slots for a simple visual representation.
+// Rows are centered to roughly match Eclipse ship diagrams.
+const FRAME_LAYOUTS: Record<FrameId, number[]> = {
+  interceptor: [3, 2, 1],
+  cruiser: [4, 2, 2],
+  dread: [4, 3, 3],
+};
+
+function partIcon(p: Part): string {
+  switch (p.cat) {
+    case 'Source':
+      return '⚡';
+    case 'Drive':
+      return '🚀';
+    case 'Weapon':
+      return '⭐';
+    case 'Computer':
+      return '🎯';
+    case 'Shield':
+      return '🛡️';
+    case 'Hull':
+      return '🧱';
+    default:
+      return '';
+  }
+}
+
+export function ShipFrameSlots({ ship }: { ship: Ship }) {
+  const layout = FRAME_LAYOUTS[ship.frame.id as FrameId] || [ship.frame.tiles];
+  const icons = ship.parts.flatMap(p => {
+    const icon = partIcon(p);
+    const count = p.slots || 1;
+    return Array(count).fill(icon);
+  });
+  let idx = 0;
+  return (
+    <div className="inline-block">
+      {layout.map((count, r) => (
+        <div key={r} className="flex justify-center gap-0.5">
+          {Array.from({ length: count }).map((_, i) => {
+            const icon = icons[idx++];
+            return (
+              <div
+                key={i}
+                data-testid={icon ? 'frame-slot-filled' : 'frame-slot-empty'}
+                className="w-4 h-4 sm:w-5 sm:h-5 border border-zinc-600 text-[9px] sm:text-xs grid place-items-center"
+              >
+                {icon}
+              </div>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
 export function CompactShip({ ship, side, active }:{ship:Ship, side:'P'|'E', active:boolean}){
   const dead = !ship.alive || ship.hull<=0;
   const weaponParts = ship.parts.filter((p:Part)=> (p.dice||0) > 0 || (p.riftDice||0) > 0);
@@ -64,6 +122,9 @@ export function CompactShip({ ship, side, active }:{ship:Ship, side:'P'|'E', act
         🟢 {ship.frame.tonnage}
       </div>
       <div className="mt-0.5 text-[10px] opacity-70">🚀 {ship.stats.init} • 🎯 {ship.stats.aim} • 🛡️ {ship.stats.shieldTier}</div>
+      <div className="mt-1 flex justify-center">
+        <ShipFrameSlots ship={ship} />
+      </div>
       <HullPips current={Math.max(0, ship.hull)} max={ship.stats.hullCap} />
       {/* Dice/Damage summary per weapon */}
       <div className="mt-1 flex flex-wrap gap-1 min-h-[18px]">
