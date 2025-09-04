@@ -1,6 +1,6 @@
 // React import not required with modern JSX transform
 
-import { type Part, partEffects, partDescription, PART_EFFECT_SYMBOLS } from "../config/parts";
+import { type Part, partEffects, partDescription, PART_EFFECT_SYMBOLS, type PartEffectField } from "../config/parts";
 import type { GhostDelta, Ship } from "../config/types";
 import type { FrameId } from "../config/frames";
 
@@ -62,23 +62,26 @@ const FRAME_LAYOUTS: Record<FrameId, number[]> = {
   dread: [4, 3, 3],
 };
 
-function partIcon(p: Part): string {
-  switch (p.cat) {
-    case 'Source':
-      return PART_EFFECT_SYMBOLS.powerProd;
-    case 'Drive':
-      return PART_EFFECT_SYMBOLS.init;
-    case 'Weapon':
-      return PART_EFFECT_SYMBOLS.dice;
-    case 'Computer':
-      return PART_EFFECT_SYMBOLS.aim;
-    case 'Shield':
-      return PART_EFFECT_SYMBOLS.shieldTier;
-    case 'Hull':
-      return PART_EFFECT_SYMBOLS.extraHull;
-    default:
-      return '';
-  }
+const CATEGORY_EFFECTS: Record<Part['cat'], PartEffectField[]> = {
+  Source: ['powerProd'],
+  Drive: ['init'],
+  Weapon: ['dice', 'riftDice', 'dmgPerHit'],
+  Computer: ['aim'],
+  Shield: ['shieldTier', 'powerProd', 'dice', 'riftDice', 'dmgPerHit'],
+  Hull: ['extraHull', 'powerProd', 'init', 'aim', 'dice', 'riftDice', 'dmgPerHit', 'shieldTier', 'regen', 'initLoss'],
+};
+
+function effectLabels(p: Part, fields: PartEffectField[]) {
+  const labels: string[] = [];
+  fields.forEach(f => {
+    if (f === 'extraHull') return;
+    const val = (p as any)[f];
+    if (typeof val === 'number' && val !== 0) {
+      const sym = PART_EFFECT_SYMBOLS[f].replace(/[+-]$/, '');
+      labels.push(val > 1 ? `${val}${sym}` : sym);
+    }
+  });
+  return labels.join('');
 }
 
 export function ShipFrameSlots({ ship, side, active }: { ship: Ship, side: 'P' | 'E', active?: boolean }) {
@@ -99,10 +102,10 @@ export function ShipFrameSlots({ ship, side, active }: { ship: Ship, side: 'P' |
       } else {
         label = rem === 0 ? '🖤' : `${rem}❤️`;
       }
-      cells.push({ slots, label });
+      const extra = effectLabels(p, CATEGORY_EFFECTS.Hull);
+      cells.push({ slots, label: label + extra });
     } else {
-      const icon = partIcon(p);
-      const label = slots > 1 ? `${slots}${icon}` : icon;
+      const label = effectLabels(p, CATEGORY_EFFECTS[p.cat]);
       cells.push({ slots, label });
     }
   });
