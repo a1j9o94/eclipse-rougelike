@@ -45,7 +45,13 @@ export function upgradeShipAt(idx:number, fleet:Ship[], blueprints:Record<FrameI
   const deltaTons = getFrame(nextId).tonnage - s.frame.tonnage;
   if((tonnageUsed + deltaTons) > capacity.cap) return null;
   if(resources.credits < cost.c || resources.materials < cost.m) return null;
-  const upgraded = makeShip(getFrame(nextId), [ ...blueprints[nextId as FrameId] ]);
+  const nextFrame = getFrame(nextId);
+  let merged = [...s.parts];
+  for(const p of blueprints[nextId as FrameId]){
+    const test = makeShip(nextFrame, [...merged, p]);
+    if(test.stats.valid) merged = test.parts;
+  }
+  const upgraded = makeShip(nextFrame, merged);
   return { idx, upgraded: upgraded as unknown as Ship, delta:{ credits: -cost.c, materials: -cost.m } };
 }
 

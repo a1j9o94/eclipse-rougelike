@@ -65,8 +65,12 @@ export function randomEnemyPartsFor(frame:Frame, scienceCap:number, boss:boolean
   const shld = pickMax(shdPool as unknown as Part[], 'shieldTier' as keyof Part);
   const hull = pickMax(hulPool as unknown as Part[], 'extraHull' as keyof Part);
 
-  // Start with hull-first survivability
-  let build:Part[] = [src, drv, hull, weapon];
+  // Start build varies by focus
+  let build:Part[];
+  if(variantFocus==='aim') build = [src, drv, comp, weapon];
+  else if(variantFocus==='shields') build = [src, drv, shld, weapon];
+  else if(variantFocus==='burst') build = [src, drv, weapon, weapon];
+  else build = [src, drv, hull, weapon];
   let ship = makeShip(frame, build);
 
   // Boss perks: ensure targeted strengths first
@@ -97,7 +101,8 @@ export function randomEnemyPartsFor(frame:Frame, scienceCap:number, boss:boolean
 export function generateEnemyFleetFor(sector:number): Ship[]{
   const spec = getSectorSpec(sector);
   const boss = spec.boss;
-  const focus = boss ? getBossVariantFocus(sector) : undefined;
+  const bossFocus = boss ? getBossVariantFocus(sector) : undefined;
+  const focuses: (undefined|'aim'|'shields'|'burst')[] = ['aim','shields','burst', undefined];
   const options = [FRAMES.dread, FRAMES.cruiser, FRAMES.interceptor];
   let remaining = Math.max(1, spec.enemyTonnage);
   const ships:Ship[] = [] as unknown as Ship[];
@@ -119,6 +124,7 @@ export function generateEnemyFleetFor(sector:number): Ship[]{
     const viable = options.filter(f => f.tonnage <= remaining);
     if(viable.length === 0) break;
     const pick = viable[Math.floor(Math.random()*viable.length)];
+    const focus = boss ? bossFocus : focuses[Math.floor(Math.random()*focuses.length)];
     const parts = randomEnemyPartsFor(pick, spec.enemyScienceCap, boss && !bossAssigned, focus);
     ships.push(makeShip(pick, parts) as unknown as Ship);
     if(boss && !bossAssigned && pick.id!=='interceptor') bossAssigned = true;
