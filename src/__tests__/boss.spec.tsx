@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import App from '../App'
 import { getBossVariants, getOpponentFaction, getBossFleetFor } from '../game'
 import { generateEnemyFleetFor } from '../game/enemy'
@@ -30,9 +30,10 @@ describe('Boss variants and planning', () => {
     fireEvent.click(screen.getByRole('button', { name: /Consortium of Scholars/i }))
     fireEvent.click(screen.getByRole('button', { name: /Easy/i }))
     fireEvent.click(screen.getByRole('button', { name: /Let’s go/i }))
-    fireEvent.click(screen.getByRole('button', { name: /Auto/i }))
     await screen.findByText(/^Victory$/i, undefined, { timeout: 10000 })
-    fireEvent.click(screen.getByRole('button', { name: /Return to Outpost/i }))
+    const ret = screen.getByRole('button', { name: /Return to Outpost/i })
+    await waitFor(() => expect(ret).not.toBeDisabled())
+    fireEvent.click(ret)
     await screen.findByRole('button', { name: /Combat Plan/i })
     fireEvent.click(screen.getByRole('button', { name: /Combat Plan/i }))
     rand.mockRestore()

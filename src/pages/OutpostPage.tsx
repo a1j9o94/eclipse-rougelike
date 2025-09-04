@@ -4,6 +4,7 @@ import { ItemCard, PowerBadge, DockSlots } from '../components/ui'
 import { CombatPlanModal } from '../components/modals'
 import { ECONOMY } from '../config/economy'
 import { FRAMES, type FrameId, ALL_PARTS, getEconomyModifiers, groupFleet } from '../game'
+import { canBuildInterceptor } from '../game/hangar'
 import { partEffects, partDescription } from '../config/parts'
 import { type Resources, type Research } from '../config/defaults'
 import { type Part } from '../config/parts'
@@ -70,15 +71,21 @@ export function OutpostPage({
   const [dockPreview, setDockPreview] = useState<number|null>(null);
   const tracks = ['Military','Grid','Nano'] as const;
   const econ = getEconomyModifiers();
-  const buildCost = {
-    materials: Math.max(1, Math.floor(ECONOMY.buildInterceptor.materials * econ.materials)),
-    credits: Math.max(1, Math.floor(ECONOMY.buildInterceptor.credits * econ.credits)),
-  };
+  const buildChk = canBuildInterceptor(resources, capacity, tonnage.used);
+  const buildCost = { materials: buildChk.cost.m, credits: buildChk.cost.c };
+  const buildFits = (tonnage.used + FRAMES.interceptor.tonnage) <= capacity.cap;
+  const buildAffordable = resources.credits >= buildCost.credits && resources.materials >= buildCost.materials;
+  const buildDisabled = !buildFits || !buildAffordable;
+  const buildLabel = buildDisabled
+    ? (buildFits ? `Build Interceptor — Need ${buildCost.materials}🧱 + ${buildCost.credits}¢` : 'Build Interceptor — Expand Docks')
+    : `Build Interceptor 🟢 (${buildCost.materials}🧱 + ${buildCost.credits}¢)`;
   const dockCost = {
     materials: Math.max(1, Math.floor(ECONOMY.dockUpgrade.materials * econ.materials)),
     credits: Math.max(1, Math.floor(ECONOMY.dockUpgrade.credits * econ.credits)),
   };
   const dockAtCap = capacity.cap >= ECONOMY.dockUpgrade.capacityMax;
+  const dockAffordable = resources.credits >= dockCost.credits && resources.materials >= dockCost.materials;
+  const dockDisabled = dockAtCap || !dockAffordable;
   const rrInc = Math.max(1, Math.floor(ECONOMY.reroll.increment * econ.credits));
   const currentBlueprint = blueprints[focusedShip?.frame.id as FrameId] || [];
   const bpSlotsUsed = currentBlueprint.reduce((a,p)=>a+(p.slots||1),0);
@@ -104,6 +111,16 @@ export function OutpostPage({
     const lacksCapacity = targetUsed > capacity.cap;
     const label = `Upgrade ${focusedShip.frame.name} to ${nextFrame.name} — ⬛ ${focusedShip.frame.tiles}→${nextFrame.tiles} slots • 🟢 ${focusedShip.frame.tonnage}→${nextFrame.tonnage} dock`;
     return { label, disabled: lacksCapacity, targetUsed } as const;
+  })();
+  const upgradeLock = upgradeLockInfo(focusedShip);
+  const upgradeUnlocked = !upgradeLock || (research.Military||1) >= upgradeLock.need;
+  const upgradeAffordable = nextUpgrade ? (resources.materials >= nextUpgrade.materials && resources.credits >= nextUpgrade.credits) : false;
+  const upgradeDisabled = upgradeComputed.disabled || !upgradeUnlocked || !upgradeAffordable;
+  const upgradeLabel = (()=>{
+    if(!focusedShip) return 'Upgrade — Maxed';
+    if(!upgradeUnlocked) return `Upgrade ${focusedShip.frame.name} — Requires Military ≥ ${upgradeLock?.need}`;
+    if(!upgradeAffordable && nextUpgrade) return `Upgrade ${focusedShip.frame.name} — Need ${nextUpgrade.materials}🧱 + ${nextUpgrade.credits}¢`;
+    return `${upgradeComputed.label}${nextUpgrade ? ` (${nextUpgrade.materials}🧱 + ${nextUpgrade.credits}¢)` : ''}`;
   })();
   function nextUnlocksFor(track:'Military'|'Grid'|'Nano'){
     const curr = (research as Research)[track]||1;
@@ -153,33 +170,29 @@ export function OutpostPage({
             onClick={buildShip}
             onMouseEnter={()=>setDockPreview(tonnage.used + FRAMES.interceptor.tonnage)}
             onMouseLeave={()=>setDockPreview(null)}
-            className="px-3 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 active:scale-95"
+            disabled={buildDisabled}
+            className={`px-3 py-3 rounded-xl ${buildDisabled?'bg-zinc-700 opacity-60':'bg-sky-600 hover:bg-sky-500 active:scale-95'}`}
           >
-            Build Interceptor 🟢 ({buildCost.materials}🧱 + {buildCost.credits}¢)
+            {buildLabel}
           </button>
           <button
             onClick={()=>upgradeShip(focused)}
             onMouseEnter={()=>setDockPreview(upgradeComputed.targetUsed)}
             onMouseLeave={()=>setDockPreview(null)}
-            disabled={upgradeComputed.disabled}
-            className={`px-3 py-3 rounded-xl ${upgradeComputed.disabled?'bg-zinc-700 opacity-60':'bg-amber-600 hover:bg-amber-500 active:scale-95'}`}
+            disabled={upgradeDisabled}
+            className={`px-3 py-3 rounded-xl ${upgradeDisabled?'bg-zinc-700 opacity-60':'bg-amber-600 hover:bg-amber-500 active:scale-95'}`}
           >
-            {upgradeComputed.label}{nextUpgrade ? ` (${nextUpgrade.materials}🧱 + ${nextUpgrade.credits}¢)` : ''}
+            {upgradeLabel}
           </button>
         </div>
-        {(() => { const info = upgradeLockInfo(focusedShip); if(!info) return null; const ok = (research.Military||1) >= info.need; return (
-          <div className={`mt-2 text-xs px-3 py-2 rounded ${ok? 'bg-emerald-900/30 text-emerald-200':'bg-zinc-900 border border-zinc-700 text-zinc-300'}`}>
-            {ok ? `Upgrade to ${info.next} unlocked (Military ≥ ${info.need})` : `Upgrade to ${info.next} locked: requires Military ≥ ${info.need}`}
-          </div>
-        ); })()}
         <div className="mt-2 grid grid-cols-2 gap-2">
           <button
             onClick={upgradeDock}
-            disabled={dockAtCap}
-            className={`px-3 py-3 rounded-xl ${dockAtCap? 'bg-zinc-700 opacity-60' : 'bg-indigo-600 hover:bg-indigo-500 active:scale-95'}`}
+            disabled={dockDisabled}
+            className={`px-3 py-3 rounded-xl ${dockDisabled? 'bg-zinc-700 opacity-60' : 'bg-indigo-600 hover:bg-indigo-500 active:scale-95'}`}
           >
-            {dockAtCap ? (
-              'Capacity Maxed'
+            {dockDisabled ? (
+              dockAtCap ? 'Capacity Maxed' : `Expand Capacity — Need ${dockCost.materials}🧱 + ${dockCost.credits}¢`
             ) : (
               <span className="inline-flex items-center gap-1">
                 <span>Expand Capacity</span>
@@ -280,7 +293,7 @@ export function OutpostPage({
       {/* Start Combat */}
       <div className="fixed bottom-0 left-0 w-full z-10 p-3 bg-zinc-950/95 backdrop-blur border-t border-zinc-800">
       <div className="mx-auto max-w-5xl flex items-center gap-2">
-          <button onClick={()=> fleetValid && startCombat()} className={`flex-1 px-4 py-3 rounded-xl ${fleetValid?'bg-emerald-600':'bg-zinc-700 opacity-60'}`}>Start Combat</button>
+          <button onClick={()=> fleetValid && startCombat()} disabled={!fleetValid} className={`flex-1 px-4 py-3 rounded-xl ${fleetValid?'bg-emerald-600':'bg-zinc-700 opacity-60'}`}>Start Combat</button>
           {(!fleetValid && resources.credits<=0) ? (
             <>
               <div className="text-xs text-rose-300">Fleet inoperable and no credits</div>

@@ -3,21 +3,23 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import App from '../App'
 
 describe('App integration', () => {
-  it('renders new run modal and starts a run', () => {
+  it('renders new run modal and starts a run', async () => {
     render(<App />)
     // Should see Start New Run options
     expect(screen.getByText(/Start New Run/i)).toBeInTheDocument()
 
     // Start on Easy
     fireEvent.click(screen.getByRole('button', { name: /Easy/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Let’s go/i }))
 
     // Should be in Combat mode (first tutorial fight)
     expect(screen.getByText(/^Enemy$/i)).toBeInTheDocument()
     expect(screen.getByText(/^Player$/i)).toBeInTheDocument()
 
-    // Step once
-    fireEvent.click(screen.getByRole('button', { name: /Step/i }))
-  })
+    // Auto-resolves to victory
+    await screen.findAllByText(/Victory/i, undefined, { timeout: 10000 })
+    await new Promise(r => setTimeout(r, 200))
+  }, 15000)
 })
 
 

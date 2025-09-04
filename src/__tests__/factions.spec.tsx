@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import App from '../App'
 import { getFaction } from '../config/factions'
 
@@ -9,9 +9,10 @@ describe('Factions', () => {
     fireEvent.click(screen.getByRole('button', { name: /Consortium of Scholars/i }))
     fireEvent.click(screen.getByRole('button', { name: /Easy/i }))
     fireEvent.click(screen.getByRole('button', { name: /Let’s go/i }))
-    fireEvent.click(screen.getByRole('button', { name: /Auto/i }))
     await screen.findByText(/^Victory$/i, undefined, { timeout: 10000 })
-    fireEvent.click(screen.getByRole('button', { name: /Return to Outpost/i }))
+    const ret = screen.getByRole('button', { name: /Return to Outpost/i })
+    await waitFor(() => expect(ret).not.toBeDisabled())
+    fireEvent.click(ret)
     await screen.findByRole('button', { name: /Military 2→3/i })
     expect(screen.getByRole('button', { name: /Grid 2→3/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Nano 2→3/i })).toBeInTheDocument()

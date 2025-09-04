@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ItemCard } from '../components/ui';
 import { PARTS } from '../config/parts';
 import App from '../App';
@@ -9,9 +9,10 @@ async function toOutpost(faction: RegExp) {
   fireEvent.click(screen.getByRole('button', { name: faction }));
   fireEvent.click(screen.getByRole('button', { name: /Easy/i }));
   fireEvent.click(screen.getByRole('button', { name: /Let’s go/i }));
-  fireEvent.click(screen.getByRole('button', { name: /Auto/i }));
-  await screen.findByRole('button', { name: /Return to Outpost/i }, { timeout: 20000 });
-  fireEvent.click(screen.getByRole('button', { name: /Return to Outpost/i }));
+  await screen.findByText(/^Victory$/i, undefined, { timeout: 10000 });
+  const ret = screen.getByRole('button', { name: /Return to Outpost/i });
+  await waitFor(() => expect(ret).not.toBeDisabled());
+  fireEvent.click(ret);
   await screen.findByText(/Outpost Inventory/i);
 }
 
