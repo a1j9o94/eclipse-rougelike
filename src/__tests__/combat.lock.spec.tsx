@@ -13,9 +13,10 @@ describe('combat auto resolution', () => {
     render(<App />);
     fireEvent.click(screen.getByRole('button', { name: /Easy/i }));
     fireEvent.click(screen.getByRole('button', { name: /Let’s go/i }));
-    const ret = screen.getByRole('button', { name: /Return to Outpost/i });
+    const ret = screen.getByRole('button', { name: /Resolving/i });
     expect(ret).toBeDisabled();
     await screen.findByText(/^Victory$/i, undefined, { timeout: 10000 });
+    await waitFor(() => expect(ret).toHaveTextContent(/Return to Outpost/i));
     await waitFor(() => expect(ret).not.toBeDisabled());
   });
 });

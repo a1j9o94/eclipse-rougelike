@@ -10,13 +10,15 @@ describe('App integration', () => {
 
     // Start on Easy
     fireEvent.click(screen.getByRole('button', { name: /Easy/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Let’s go/i }))
 
     // Should be in Combat mode (first tutorial fight)
     expect(screen.getByText(/^Enemy$/i)).toBeInTheDocument()
     expect(screen.getByText(/^Player$/i)).toBeInTheDocument()
 
     // Auto-resolves to victory
-    await screen.findByText(/Victory/i, undefined, { timeout: 10000 })
+    await screen.findAllByText(/Victory/i, undefined, { timeout: 10000 })
+    await new Promise(r => setTimeout(r, 200))
   }, 15000)
 })
 
