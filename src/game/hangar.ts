@@ -31,7 +31,15 @@ export function canUpgrade(frameId:FrameId, research:{Military:number}){
   return { ok:false, need:99, next:null as unknown as FrameId };
 }
 
-export function upgradeShipAt(idx:number, fleet:Ship[], blueprints:Record<FrameId, Part[]>, resources:{credits:number, materials:number}, research:{Military:number}, capacity:{cap:number}, tonnageUsed:number){
+export function upgradeShipAt(
+  idx:number,
+  fleet:Ship[],
+  blueprints:Record<FrameId, Part[]>,
+  resources:{credits:number, materials:number},
+  research:{Military:number},
+  capacity:{cap:number},
+  tonnageUsed:number
+){
   const s = fleet[idx]; if(!s) return null;
   const step = canUpgrade(s.frame.id as FrameId, research);
   if(!step.ok || !step.next) return null;
@@ -45,8 +53,11 @@ export function upgradeShipAt(idx:number, fleet:Ship[], blueprints:Record<FrameI
   const deltaTons = getFrame(nextId).tonnage - s.frame.tonnage;
   if((tonnageUsed + deltaTons) > capacity.cap) return null;
   if(resources.credits < cost.c || resources.materials < cost.m) return null;
-  const upgraded = makeShip(getFrame(nextId), [ ...blueprints[nextId as FrameId] ]);
-  return { idx, upgraded: upgraded as unknown as Ship, delta:{ credits: -cost.c, materials: -cost.m } };
+  const nextFrame = getFrame(nextId);
+  const carry = [...s.parts];
+  const upgraded = makeShip(nextFrame, carry);
+  const nextBlueprints = { ...blueprints, [nextId]: carry } as Record<FrameId, Part[]>;
+  return { idx, upgraded: upgraded as unknown as Ship, blueprints: nextBlueprints, delta:{ credits: -cost.c, materials: -cost.m } };
 }
 
 export function expandDock(resources:{credits:number, materials:number}, capacity:{cap:number}){

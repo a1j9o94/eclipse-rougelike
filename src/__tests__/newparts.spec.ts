@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { makeShip, getFrame } from '../game'
-import { PARTS } from '../config/parts'
+import { PARTS, RARE_PARTS } from '../config/parts'
 import { volley, buildInitiative } from '../game/combat'
 
 describe('New part mechanics', () => {
   it('Disruptor Beam reduces target initiative', () => {
     const frame = getFrame('interceptor')
-    const disruptor = PARTS.weapons.find(p=>p.id==='disruptor')!
+    const disruptor = RARE_PARTS.find(p=>p.id==='disruptor')!
     const src = PARTS.sources[0]
     const drv = PARTS.drives[0]
     const attacker = makeShip(frame, [src, drv, disruptor])
@@ -19,7 +19,7 @@ describe('New part mechanics', () => {
 
   it('Auto-Repair Hull regenerates at round start', () => {
     const frame = getFrame('interceptor')
-    const auto = PARTS.hull.find(p=>p.id==='auto_repair')!
+    const auto = RARE_PARTS.find(p=>p.id==='auto_repair')!
     const src = PARTS.sources[0]
     const drv = PARTS.drives[0]
     const ship = makeShip(frame, [src, drv, auto])

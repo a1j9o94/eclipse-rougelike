@@ -186,7 +186,13 @@ export default function EclipseIntegrated(){
 
   // ---------- Capacity & build/upgrade ----------
   function buildShip(){ const res = buildI(blueprints as Record<FrameId, Part[]>, resources, tonnage.used, capacity); if(!res) return; setFleet(f=>[...f, res.ship]); setFocused(fleet.length); setResources(r=>({ ...r, credits: r.credits + res.delta.credits, materials: r.materials + res.delta.materials })); }
-  function upgradeShip(idx:number){ const res = upgradeAt(idx, fleet, blueprints as Record<FrameId, Part[]>, resources, { Military: research.Military||1 } as Research, capacity, tonnage.used); if(!res) return; setFleet(f => f.map((sh,i)=> i===idx? res.upgraded : sh)); setResources(r=>({ ...r, credits: r.credits + res.delta.credits, materials: r.materials + res.delta.materials })); }
+  function upgradeShip(idx:number){
+    const res = upgradeAt(idx, fleet, blueprints as Record<FrameId, Part[]>, resources, { Military: research.Military||1 } as Research, capacity, tonnage.used);
+    if(!res) return;
+    setFleet(f => f.map((sh,i)=> i===idx? res.upgraded : sh));
+    setBlueprints(res.blueprints);
+    setResources(r=>({ ...r, credits: r.credits + res.delta.credits, materials: r.materials + res.delta.materials }));
+  }
   function upgradeDock(){ const res = expandD(resources, capacity); if(!res) return; setCapacity({ cap: res.nextCap }); setResources(r=>({ ...r, credits: r.credits + res.delta.credits, materials: r.materials + res.delta.materials })); void playEffect('dock'); }
 
   // ---------- Shop actions: reroll & research ----------
