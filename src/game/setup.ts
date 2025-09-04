@@ -47,8 +47,8 @@ export function initNewRun({ difficulty, faction }: NewRunParams): NewRunState{
 
   const classBlueprints: Record<FrameId, Part[]> = {
     interceptor: [ ...f.config.blueprints.interceptor ],
-    cruiser: [ ...f.config.blueprints.cruiser ],
-    dread: [ ...f.config.blueprints.dread ],
+    cruiser: [],
+    dread: [],
   };
 
   const startFrameId = f.config.startingFrame as FrameId;

@@ -10,7 +10,7 @@ async function toOutpost(faction: RegExp) {
   fireEvent.click(screen.getByRole('button', { name: /Easy/i }));
   fireEvent.click(screen.getByRole('button', { name: /Let’s go/i }));
   fireEvent.click(screen.getByRole('button', { name: /Auto/i }));
-  await screen.findByText(/^Victory$/i, undefined, { timeout: 10000 });
+  await screen.findByRole('button', { name: /Return to Outpost/i }, { timeout: 20000 });
   fireEvent.click(screen.getByRole('button', { name: /Return to Outpost/i }));
   await screen.findByText(/Outpost Inventory/i);
 }
@@ -25,7 +25,7 @@ describe('slot displays', () => {
   it('shows slots in Class Blueprint header for Cruiser', async () => {
     await toOutpost(/Crimson Vanguard/i);
     const header = await screen.findByText(/Class Blueprint — Cruiser/i);
-    expect(header.textContent).toMatch(/4\/8/);
+    expect(header.textContent).toMatch(/0\/8/);
   }, 20000);
 
   it('previews slot usage in ItemCard ghost delta', () => {

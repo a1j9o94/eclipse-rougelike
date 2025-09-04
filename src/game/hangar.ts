@@ -54,9 +54,12 @@ export function upgradeShipAt(
   if((tonnageUsed + deltaTons) > capacity.cap) return null;
   if(resources.credits < cost.c || resources.materials < cost.m) return null;
   const nextFrame = getFrame(nextId);
-  const carry = [...s.parts];
+  const nextBlueprints = { ...blueprints } as Record<FrameId, Part[]>;
+  if(nextBlueprints[nextId].length === 0){
+    nextBlueprints[nextId] = [ ...s.parts ];
+  }
+  const carry = [ ...nextBlueprints[nextId] ];
   const upgraded = makeShip(nextFrame, carry);
-  const nextBlueprints = { ...blueprints, [nextId]: carry } as Record<FrameId, Part[]>;
   return { idx, upgraded: upgraded as unknown as Ship, blueprints: nextBlueprints, delta:{ credits: -cost.c, materials: -cost.m } };
 }
 
