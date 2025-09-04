@@ -1,6 +1,6 @@
 // React import not required with modern JSX transform
 
-import { type Part, partEffects, partDescription } from "../config/parts";
+import { type Part, partEffects, partDescription, PART_EFFECT_SYMBOLS } from "../config/parts";
 import type { GhostDelta, Ship } from "../config/types";
 import type { FrameId } from "../config/frames";
 
@@ -65,17 +65,17 @@ const FRAME_LAYOUTS: Record<FrameId, number[]> = {
 function partIcon(p: Part): string {
   switch (p.cat) {
     case 'Source':
-      return '⚡';
+      return PART_EFFECT_SYMBOLS.powerProd;
     case 'Drive':
-      return '🚀';
+      return PART_EFFECT_SYMBOLS.init;
     case 'Weapon':
-      return '⭐';
+      return PART_EFFECT_SYMBOLS.dice;
     case 'Computer':
-      return '🎯';
+      return PART_EFFECT_SYMBOLS.aim;
     case 'Shield':
-      return '🛡️';
+      return PART_EFFECT_SYMBOLS.shieldTier;
     case 'Hull':
-      return '🧱';
+      return PART_EFFECT_SYMBOLS.extraHull;
     default:
       return '';
   }
