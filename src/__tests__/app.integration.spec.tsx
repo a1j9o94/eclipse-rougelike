@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import App from '../App'
 
 describe('App integration', () => {
-  it('renders new run modal and starts a run', () => {
+  it('renders new run modal and starts a run', async () => {
     render(<App />)
     // Should see Start New Run options
     expect(screen.getByText(/Start New Run/i)).toBeInTheDocument()
@@ -15,9 +15,9 @@ describe('App integration', () => {
     expect(screen.getByText(/^Enemy$/i)).toBeInTheDocument()
     expect(screen.getByText(/^Player$/i)).toBeInTheDocument()
 
-    // Step once
-    fireEvent.click(screen.getByRole('button', { name: /Step/i }))
-  })
+    // Auto-resolves to victory
+    await screen.findByText(/Victory/i, undefined, { timeout: 10000 })
+  }, 15000)
 })
 
 

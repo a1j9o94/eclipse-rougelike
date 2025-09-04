@@ -25,10 +25,10 @@ describe('dock and upgrade visuals', () => {
     const ship = makeShip(getFrame('interceptor'), [PARTS.sources[0], PARTS.drives[0]]);
     render(
       <OutpostPage
-        resources={{credits:0, materials:0, science:0}}
+        resources={{credits:100, materials:100, science:0}}
         rerollCost={0}
         doReroll={()=>{}}
-        research={{Military:1, Grid:1, Nano:1} as any}
+        research={{Military:2, Grid:1, Nano:1} as any}
         researchLabel={(t)=>t}
         canResearch={()=>false}
         researchTrack={()=>{}}
@@ -38,7 +38,7 @@ describe('dock and upgrade visuals', () => {
         buildShip={()=>{}}
         upgradeShip={()=>{}}
         upgradeDock={()=>{}}
-        upgradeLockInfo={()=>null}
+        upgradeLockInfo={()=>({need:2, next:'Cruiser'})}
         blueprints={{interceptor:[], cruiser:[], dread:[]}}
         sellPart={()=>{}}
         shop={{items:[]}}
@@ -53,8 +53,8 @@ describe('dock and upgrade visuals', () => {
         onRestart={()=>{}}
       />
     );
-    const slotTexts = screen.getAllByText(/⬛ 6→8 slots/);
-    expect(slotTexts.length).toBeGreaterThan(1)
+    const slotText = screen.getByText(/⬛ 6→8 slots/);
+    expect(slotText).toBeInTheDocument();
     const upgradeBtn = screen.getByRole('button', {name:/Upgrade Interceptor to Cruiser/});
     expect(upgradeBtn).toHaveTextContent('⬛ 6→8');
     expect(upgradeBtn).toHaveTextContent('🟢');
@@ -62,6 +62,78 @@ describe('dock and upgrade visuals', () => {
     expect(buildBtn).toHaveTextContent('🟢');
     fireEvent.mouseEnter(upgradeBtn);
     expect(screen.getAllByTestId('dock-slot-preview').length).toBeGreaterThan(0);
+  });
+
+  it('disables upgrade button when tech too low', () => {
+    const ship = makeShip(getFrame('interceptor'), [PARTS.sources[0], PARTS.drives[0]]);
+    render(
+      <OutpostPage
+        resources={{credits:100, materials:100, science:0}}
+        rerollCost={0}
+        doReroll={()=>{}}
+        research={{Military:1, Grid:1, Nano:1} as any}
+        researchLabel={(t)=>t}
+        canResearch={()=>false}
+        researchTrack={()=>{}}
+        fleet={[ship] as any}
+        focused={0}
+        setFocused={()=>{}}
+        buildShip={()=>{}}
+        upgradeShip={()=>{}}
+        upgradeDock={()=>{}}
+        upgradeLockInfo={()=>({need:2, next:'Cruiser'})}
+        blueprints={{interceptor:[], cruiser:[], dread:[]}}
+        sellPart={()=>{}}
+        shop={{items:[]}}
+        ghost={()=>({} as any)}
+        buyAndInstall={()=>{}}
+        capacity={{cap:6}}
+        tonnage={{used:1, cap:6}}
+        sector={1}
+        endless={false}
+        fleetValid={true}
+        startCombat={()=>{}}
+        onRestart={()=>{}}
+      />
+    );
+    const upgradeBtn = screen.getByRole('button', {name:/Requires Military ≥ 2/});
+    expect(upgradeBtn).toBeDisabled();
+  });
+
+  it('disables build button when unaffordable', () => {
+    const ship = makeShip(getFrame('interceptor'), [PARTS.sources[0], PARTS.drives[0]]);
+    render(
+      <OutpostPage
+        resources={{credits:0, materials:0, science:0}}
+        rerollCost={0}
+        doReroll={()=>{}}
+        research={{Military:2, Grid:1, Nano:1} as any}
+        researchLabel={(t)=>t}
+        canResearch={()=>false}
+        researchTrack={()=>{}}
+        fleet={[ship] as any}
+        focused={0}
+        setFocused={()=>{}}
+        buildShip={()=>{}}
+        upgradeShip={()=>{}}
+        upgradeDock={()=>{}}
+        upgradeLockInfo={()=>({need:2, next:'Cruiser'})}
+        blueprints={{interceptor:[], cruiser:[], dread:[]}}
+        sellPart={()=>{}}
+        shop={{items:[]}}
+        ghost={()=>({} as any)}
+        buyAndInstall={()=>{}}
+        capacity={{cap:6}}
+        tonnage={{used:1, cap:6}}
+        sector={1}
+        endless={false}
+        fleetValid={true}
+        startCombat={()=>{}}
+        onRestart={()=>{}}
+      />
+    );
+    const buildBtn = screen.getByRole('button', {name:/Build Interceptor/});
+    expect(buildBtn).toBeDisabled();
   });
 
   it('offers restart when fleet invalid and broke', () => {

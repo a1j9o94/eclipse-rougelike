@@ -86,7 +86,6 @@ export default function EclipseIntegrated(){
   const [roundNum, setRoundNum] = useState(1);
   const [queue, setQueue] = useState<InitiativeEntry[]>([]);
   const [turnPtr, setTurnPtr] = useState(-1);
-  const [auto, setAuto] = useState(false);
   const [combatOver, setCombatOver] = useState(false);
   const [outcome, setOutcome] = useState('');
   const [rewardPaid, setRewardPaid] = useState(false);
@@ -269,12 +268,12 @@ export default function EclipseIntegrated(){
   function targetIndex(defFleet:Ship[], strategy:'kill'|'guns'){ return targetIndexCore(defFleet, strategy); }
   function volley(attacker:Ship, defender:Ship, side:'P'|'E', logArr:string[], friends:Ship[]){ return volleyCore(attacker, defender, side, logArr, friends); }
 
-  function startCombat(){ const spec = getSectorSpec(sector); const enemy = genEnemyFleet(); setEnemyFleet(enemy); setLog([`Sector ${sector}: Engagement begins — enemy tonnage ${spec.enemyTonnage}`]); setRoundNum(1); setQueue([]); setTurnPtr(-1); setAuto(false); setCombatOver(false); setOutcome(''); setRewardPaid(false); void playEffect('page'); void playEffect('startCombat'); setMode('COMBAT'); }
+  function startCombat(){ const spec = getSectorSpec(sector); const enemy = genEnemyFleet(); setEnemyFleet(enemy); setLog([`Sector ${sector}: Engagement begins — enemy tonnage ${spec.enemyTonnage}`]); setRoundNum(1); setQueue([]); setTurnPtr(-1); setCombatOver(false); setOutcome(''); setRewardPaid(false); void playEffect('page'); void playEffect('startCombat'); setMode('COMBAT'); }
   function startFirstCombat(){ // tutorial fight vs one interceptor
     const enemy = [ makeShip(getFrame('interceptor'), [PARTS.sources[0], PARTS.drives[0], PARTS.weapons[0]]) ];
     setEnemyFleet(enemy);
     setLog([`Sector ${sector}: Skirmish — a lone Interceptor approaches.`]);
-    setRoundNum(1); setQueue([]); setTurnPtr(-1); setAuto(false); setCombatOver(false); setOutcome(''); setRewardPaid(false); void playEffect('page'); void playEffect('startCombat'); setMode('COMBAT');
+    setRoundNum(1); setQueue([]); setTurnPtr(-1); setCombatOver(false); setOutcome(''); setRewardPaid(false); void playEffect('page'); void playEffect('startCombat'); setMode('COMBAT');
   }
   function initRoundIfNeeded(){ if (turnPtr === -1 || turnPtr >= queue.length) { const q = buildInitiative(fleet, enemyFleet); setQueue(q); setTurnPtr(0); setLog(l => [...l, `— Round ${roundNum} —`]); return true; } return false; }
   function resolveCombat(pAlive:boolean){
@@ -286,7 +285,7 @@ export default function EclipseIntegrated(){
       else { setOutcome('Defeat — Grace'); setGraceUsed(true); }
       setLog(l=>[...l, '💀 Defeat']);
     }
-    setCombatOver(true); setAuto(false);
+    setCombatOver(true);
   }
   async function stepTurn(){ if(combatOver || stepLock) return; setStepLock(true); try { const pAlive = fleet.some(s => s.alive && s.stats.valid); const eAlive = enemyFleet.some(s => s.alive && s.stats.valid); if (!pAlive || !eAlive) { resolveCombat(pAlive); return; } if (initRoundIfNeeded()) return; const e = queue[turnPtr]; const isP = e.side==='P'; const atk = isP ? fleet[e.idx] : enemyFleet[e.idx]; const defFleet = isP ? enemyFleet : fleet; const friends = isP ? fleet : enemyFleet; const strategy = isP ? 'guns' : 'kill'; const defIdx = targetIndex(defFleet, strategy); if (!atk || !atk.alive || !atk.stats.valid || defIdx === -1) { advancePtr(); return; } const lines:string[] = []; const def = defFleet[defIdx]; volley(atk, def, e.side, lines, friends); setLog(l=>[...l, ...lines]); if (isP) { setEnemyFleet([...defFleet]); setFleet([...friends]); } else { setFleet([...defFleet]); setEnemyFleet([...friends]); } if(atk.weapons.length>0 || atk.riftDice>0){ const dur = import.meta.env.MODE==='test' ? 0 : Math.max(100, 1000 - (roundNum - 1) * 200); await playEffect('shot', dur); if(!def.alive){ await playEffect('explosion', dur); } } advancePtr(); } finally { setStepLock(false); } }
   function advancePtr(){ const np = turnPtr + 1; setTurnPtr(np); if (np >= queue.length) endRound(); }
@@ -295,7 +294,7 @@ export default function EclipseIntegrated(){
 
   // Auto-step loop
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(()=>{ if(!auto || mode!=='COMBAT' || combatOver || stepLock) return; let cancelled=false; const tick = async()=>{ if(cancelled) return; await stepTurn(); if(cancelled) return; setTimeout(tick, 100); }; tick(); return ()=>{ cancelled=true; }; }, [auto, mode, combatOver, stepLock, queue, turnPtr, fleet, enemyFleet]);
+  useEffect(()=>{ if(mode!=='COMBAT' || combatOver || stepLock) return; let cancelled=false; const tick = async()=>{ if(cancelled) return; await stepTurn(); if(cancelled) return; setTimeout(tick, 100); }; tick(); return ()=>{ cancelled=true; }; }, [mode, combatOver, stepLock, queue, turnPtr, fleet, enemyFleet]);
 
   // Restore environment if loading from save
   useEffect(()=>{
@@ -401,12 +400,7 @@ export default function EclipseIntegrated(){
           turnPtr={turnPtr}
           fleet={fleet}
           enemyFleet={enemyFleet}
-          stepTurn={stepTurn}
-          initRoundIfNeeded={initRoundIfNeeded}
-          auto={auto}
-          setAuto={setAuto}
           log={log}
-          stepLock={stepLock}
           onReturn={handleReturnFromCombat}
         />
       )}

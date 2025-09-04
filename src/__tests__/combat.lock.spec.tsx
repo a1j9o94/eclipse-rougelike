@@ -3,20 +3,19 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import App from '../App';
 
 vi.mock('../game/sound', () => ({
-  playEffect: vi.fn((_k:string, _d?:number) => new Promise<void>(resolve => setTimeout(resolve, 100))),
+  playEffect: vi.fn(() => Promise.resolve()),
   playMusic: vi.fn(),
   stopMusic: vi.fn(),
 }));
 
-describe('combat step locking', () => {
-  it('disables step button while sound plays', async () => {
-    const rnd = vi.spyOn(Math, 'random').mockReturnValue(0.5);
+describe('combat auto resolution', () => {
+  it('keeps return button disabled until combat ends', async () => {
     render(<App />);
     fireEvent.click(screen.getByRole('button', { name: /Easy/i }));
-    const step = await screen.findByRole('button', { name: /Step/i });
-    fireEvent.click(step); // init round
-    fireEvent.click(step);
-    await waitFor(() => expect(step).toBeDisabled());
-    rnd.mockRestore();
+    fireEvent.click(screen.getByRole('button', { name: /Let’s go/i }));
+    const ret = screen.getByRole('button', { name: /Return to Outpost/i });
+    expect(ret).toBeDisabled();
+    await screen.findByText(/^Victory$/i, undefined, { timeout: 10000 });
+    await waitFor(() => expect(ret).not.toBeDisabled());
   });
 });
