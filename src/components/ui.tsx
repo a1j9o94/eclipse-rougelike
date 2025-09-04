@@ -146,7 +146,7 @@ export function ShipFrameSlots({ ship, side, active }: { ship: Ship, side: 'P' |
 export function CompactShip({ ship, side, active }:{ship:Ship, side:'P'|'E', active:boolean}){
   const dead = !ship.alive || ship.hull<=0;
   return (
-    <div className="relative inline-block" title={ship.frame.name}>
+    <div data-ship className="relative inline-block" title={ship.frame.name}>
       <ShipFrameSlots ship={ship} side={side} active={active} />
       {dead && <div className="absolute inset-0 grid place-items-center text-2xl text-zinc-300">✖</div>}
     </div>
