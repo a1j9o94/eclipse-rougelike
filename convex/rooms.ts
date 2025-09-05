@@ -1,6 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 // import { maybeStartCombat } from "./helpers/match";
+import { simulateCombat, type ShipSnap } from "./engine/combat";
 
 // Helper function to generate a unique player ID
 function generatePlayerId(): string {
@@ -171,31 +172,19 @@ export const updatePlayerReady = mutation({
 
     const bothReady = players.length === 2 && players.every(p => p.isReady);
     if (bothReady && gs) {
-      const pStates = (gs.playerStates as Record<string, { fleet?: unknown; fleetValid?: boolean }>);
+      const pStates = (gs.playerStates as Record<string, { fleet?: unknown; fleetValid?: boolean; sector?: number }>);
       const haveSnapshots = players.every(p => pStates?.[p.playerId]?.fleet);
       const allValid = players.every(p => pStates?.[p.playerId]?.fleetValid !== false);
 
       if (haveSnapshots && allValid) {
         const roundNum = gs.roundNum || 1;
         const seed = `${player.roomId}:${roundNum}:${Date.now()}`;
-        // Simple deterministic resolve using seed + naive power
-        function hash32(s: string) { let h = 2166136261>>>0; for (let i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h>>>0; }
-        function powerOf(pid: string){
-          const f = pStates[pid]?.fleet as unknown as Array<{ stats?: { hullCap?: number; init?: number }, weapons?: unknown[] }> | undefined;
-          if(!f) return 0;
-          let total = 0;
-          for (const ship of f) {
-            const stats = ship?.stats || {};
-            const weapons = (ship?.weapons || []) as unknown[];
-            total += (stats.hullCap || 1) + (stats.init || 0) * 0.1 + weapons.length * 2;
-          }
-          return total;
-        }
+
         const pA = players[0].playerId, pB = players[1].playerId;
-        const scoreA = powerOf(pA), scoreB = powerOf(pB);
-        const r = (hash32(seed) % 1000) / 1000;
-        const bias = scoreA + scoreB > 0 ? scoreA / (scoreA + scoreB) : 0.5;
-        const winnerPlayerId = r < bias ? pA : pB;
+        const fleetA = (pStates[pA]?.fleet as unknown as ShipSnap[]) || [];
+        const fleetB = (pStates[pB]?.fleet as unknown as ShipSnap[]) || [];
+
+        const { winnerPlayerId, roundLog } = simulateCombat({ seed, playerAId: pA, playerBId: pB, fleetA, fleetB });
         const loserRow = players.find(p => p.playerId !== winnerPlayerId)!;
 
         // Archive winner fleet snapshot
@@ -213,12 +202,6 @@ export const updatePlayerReady = mutation({
         // Decrement loser lives
         const newLives = Math.max(0, (loserRow.lives ?? 0) - 1);
         await ctx.db.patch(loserRow._id, { lives: newLives });
-
-        const roundLog = [
-          `— Round ${roundNum} —`,
-          `Combat resolves (seed ${seed.slice(-6)})`,
-          `Winner: ${winnerPlayerId === pA ? 'Player A' : 'Player B'}`,
-        ];
 
         await ctx.db.patch(gs._id, {
           gamePhase: newLives === 0 ? "finished" : "combat",
