@@ -160,7 +160,9 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
     if (!playerId) throw new Error("No player ID found");
 
     try {
+      console.debug("[Client] setReady", { playerId, isReady });
       await updatePlayerReady({ playerId, isReady });
+      console.debug("[Client] setReady ok", { playerId, isReady });
     } catch (error) {
       console.error("Failed to update ready status:", error);
       throw error;
@@ -178,7 +180,9 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
     const playerId = getPlayerId();
     if (!playerId) throw new Error("No player ID found");
     try {
+      console.debug("[Client] updateFleetValidity", { playerId, roomId, fleetValid });
       await updatePlayerFleetValidity({ roomId, playerId, fleetValid });
+      console.debug("[Client] updateFleetValidity ok", { playerId });
     } catch (error) {
       console.error("Failed to update fleet validity:", error);
       throw error;
@@ -208,12 +212,10 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
     if (!isHost()) throw new Error("Only host can start game");
 
     try {
+      console.debug("[Client] startGame", { roomId });
       await startGame({ roomId });
-      // Initialize game state after starting
-      await initializeGameState({
-        roomId,
-        gameConfig: roomDetails!.room.gameConfig,
-      });
+      await initializeGameState({ roomId, gameConfig: roomDetails!.room.gameConfig });
+      console.debug("[Client] startGame ok");
     } catch (error) {
       console.error("Failed to start game:", error);
       throw error;
@@ -228,7 +230,9 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
     const playerId = getPlayerId();
     if (!playerId) throw new Error("No player ID found");
     try {
+      console.debug("[Client] submitFleetSnapshot", { playerId, roomId, count: Array.isArray(fleet) ? (fleet as unknown[]).length : 0, fleetValid });
       await submitFleetSnapshot({ roomId, playerId, fleet, fleetValid });
+      console.debug("[Client] submitFleetSnapshot ok");
     } catch (error) {
       console.error("Failed to submit fleet:", error);
       throw error;
@@ -241,7 +245,9 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
     const playerId = getPlayerId();
     if (!playerId) return;
     try {
+      console.debug("[Client] ackRoundPlayed", { playerId });
       await ackRoundPlayed({ roomId, playerId });
+      console.debug("[Client] ackRoundPlayed ok");
     } catch (error) {
       console.error("Failed to ack round:", error);
     }

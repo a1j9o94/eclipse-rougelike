@@ -1,6 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { maybeStartCombat } from "./helpers/match";
+import { logInfo, roomTag } from "./helpers/log";
 
 export const initializeGameState = mutation({
   args: { 
@@ -11,6 +12,7 @@ export const initializeGameState = mutation({
     }),
   },
   handler: async (ctx, args) => {
+    logInfo('init', 'initializeGameState called', { tag: roomTag(args.roomId as unknown as string) });
     const players = await ctx.db
       .query("players")
       .withIndex("by_room", (q) => q.eq("roomId", args.roomId))
@@ -52,6 +54,7 @@ export const initializeGameState = mutation({
       roundNum: 1,
       lastUpdate: Date.now(),
     });
+    logInfo('init', 'gameState inserted', { tag: roomTag(args.roomId as unknown as string), startingPlayer: startingPlayer.playerId });
 
     return true;
   },
@@ -100,6 +103,7 @@ export const updatePlayerFleetValidity = mutation({
     playerStates[args.playerId] = { ...prev, fleetValid: args.fleetValid };
 
     await ctx.db.patch(gameState!._id, { playerStates, lastUpdate: Date.now() });
+    logInfo('valid', 'fleet validity updated', { tag: roomTag(args.roomId as unknown as string), playerId: args.playerId, fleetValid: args.fleetValid });
     // Attempt to auto-start if readiness + validity satisfied
     await maybeStartCombat(ctx, args.roomId);
     return true;
@@ -149,6 +153,7 @@ export const updateGameState = mutation({
       playerStates: updatedPlayerStates,
       lastUpdate: Date.now(),
     });
+    logInfo('state', 'player updated state', { tag: roomTag(args.roomId as unknown as string), playerId: args.playerId, keys: Object.keys(args.updates) });
 
     return true;
   },
@@ -203,6 +208,7 @@ export const updateGamePhase = mutation({
       gamePhase: args.phase,
       lastUpdate: Date.now(),
     });
+    logInfo('phase', 'phase changed', { tag: roomTag(args.roomId as unknown as string), phase: args.phase });
 
     return true;
   },
@@ -326,6 +332,7 @@ export const submitFleetSnapshot = mutation({
     playerStates[args.playerId] = { ...prev, fleet: args.fleet, fleetValid: args.fleetValid };
 
     await ctx.db.patch(gameState._id, { playerStates, lastUpdate: Date.now() });
+    logInfo('snapshot', 'fleet snapshot submitted', { tag: roomTag(args.roomId as unknown as string), playerId: args.playerId, count: Array.isArray(args.fleet) ? (args.fleet as unknown[]).length : 0, fleetValid: args.fleetValid });
     return true;
   },
 });
@@ -363,10 +370,12 @@ export const ackRoundPlayed = mutation({
         roundNum: (gs.roundNum || 1) + 1,
         lastUpdate: Date.now(),
       });
+      logInfo('ack', 'all players acked — back to setup', { tag: roomTag(args.roomId as unknown as string), nextRound: (gs.roundNum || 1) + 1 });
       return { done: true };
     }
 
     await ctx.db.patch(gs._id, { acks, lastUpdate: Date.now() });
+    logInfo('ack', 'player acked round', { tag: roomTag(args.roomId as unknown as string), playerId: args.playerId });
     return { done: false };
   },
 });

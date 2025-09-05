@@ -371,6 +371,7 @@ export default function EclipseIntegrated(){
     const phase = multi.gameState?.gamePhase;
     if (phase === 'combat' && mode !== 'COMBAT') {
       if (gameMode === 'multiplayer') {
+        console.debug('[Nav] Phase → combat');
         setMode('COMBAT');
         const lines = (multi.gameState?.roundLog as string[] | undefined) || ["Combat resolved."];
         setLog(l => [...l, ...lines]);
@@ -380,8 +381,10 @@ export default function EclipseIntegrated(){
         startCombat();
       }
     } else if (phase === 'setup' && mode !== 'OUTPOST') {
+      console.debug('[Nav] Phase → setup');
       setMode('OUTPOST');
     } else if (phase === 'finished') {
+      console.debug('[Nav] Phase → finished → lobby');
       // Send players back to lobby when someone reaches 0 lives
       setMultiplayerPhase('lobby');
     }
@@ -518,12 +521,16 @@ export default function EclipseIntegrated(){
           startCombat={() => {
             if (gameMode === 'multiplayer') {
               try {
-                void multi.submitFleetSnapshot?.(fleet as unknown, fleetValid);
                 const me = multi.getCurrentPlayer?.();
                 const myReady = !!me?.isReady;
+                console.debug('[UI] StartCombat clicked', { myReady, fleetValid, fleetCount: fleet.length, me });
+                void multi.submitFleetSnapshot?.(fleet as unknown, fleetValid);
                 void multi.updateFleetValidity?.(fleetValid);
                 void multi.setReady?.(!myReady);
-              } catch { /* noop */ }
+                console.debug('[UI] StartCombat dispatched', { toggledTo: !myReady });
+              } catch (err) {
+                console.error('[UI] StartCombat error', err);
+              }
               return;
             }
             startCombat();

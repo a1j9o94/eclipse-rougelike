@@ -13,7 +13,6 @@ type GameState = {
 
 function logPhase(prefix: string, gs: GameState, players: PlayerRow[]) {
   const ready = players.map(p => `${p.playerName}:${p.isReady ? '✅' : '❌'}`).join(' ');
-  // eslint-disable-next-line no-console
   console.log(`${prefix} phase=${gs.gamePhase} round=${gs.roundNum} ready=[${ready}]`);
 }
 
@@ -58,7 +57,6 @@ describe('Multiplayer authoritative loop (server view + client logs)', () => {
     ];
     gs.playerStates['A'] = { ...gs.playerStates['A'], fleet: fleetA, fleetValid: true };
     gs.playerStates['B'] = { ...gs.playerStates['B'], fleet: fleetB, fleetValid: true };
-    // eslint-disable-next-line no-console
     console.log('[Client->Server] Snapshots submitted: A and B');
 
     // Players mark ready in Outpost
@@ -73,16 +71,13 @@ describe('Multiplayer authoritative loop (server view + client logs)', () => {
     gs.gamePhase = loser.lives === 0 ? 'finished' : 'combat';
     gs.roundLog = roundLog;
     gs.acks = {};
-    // eslint-disable-next-line no-console
     console.log(`[Server] Combat resolved. Winner=${winnerPlayerId}. Loser lives=${loser.lives}`);
-    // eslint-disable-next-line no-console
     console.log('[Server] Round log:\n' + (roundLog || []).join('\n'));
     expect(gs.gamePhase).toEqual('combat');
     expect(gs.roundLog && gs.roundLog.length).toBeGreaterThan(0);
 
     // Clients auto-ack after reading log
     gs.acks['A'] = true; gs.acks['B'] = true;
-    // eslint-disable-next-line no-console
     console.log(`[Client] A and B ack playback. acks=${JSON.stringify(gs.acks)}`);
 
     // Server observes all acks → reset to setup, increment round, reset readiness
@@ -94,7 +89,6 @@ describe('Multiplayer authoritative loop (server view + client logs)', () => {
     gs.roundLog = undefined;
     gs.acks = {};
     logPhase('[Loop]', gs, players);
-    // eslint-disable-next-line no-console
     console.log('[UI] Next shop is open for both players. They can re‑outfit and repeat.');
 
     expect(gs.gamePhase).toEqual('setup');
@@ -102,4 +96,3 @@ describe('Multiplayer authoritative loop (server view + client logs)', () => {
     expect(gs.roundNum).toBe(2);
   });
 });
-

@@ -2,6 +2,7 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 // import { maybeStartCombat } from "./helpers/match";
 import { simulateCombat, type ShipSnap } from "./engine/combat";
+import { logInfo, roomTag } from "./helpers/log";
 
 // Helper function to generate a unique player ID
 function generatePlayerId(): string {
@@ -159,6 +160,7 @@ export const updatePlayerReady = mutation({
     }
 
     await ctx.db.patch(player._id, { isReady: args.isReady });
+    logInfo('ready', `player toggled`, { playerId: player.playerId, isReady: args.isReady });
 
     // Attempt to resolve round when both players are ready and valid snapshots exist
     const gs = await ctx.db
@@ -179,6 +181,7 @@ export const updatePlayerReady = mutation({
       if (haveSnapshots && allValid) {
         const roundNum = gs.roundNum || 1;
         const seed = `${player.roomId}:${roundNum}:${Date.now()}`;
+        logInfo('combat', `starting resolve`, { tag: roomTag(player.roomId, roundNum), bothReady, haveSnapshots, allValid });
 
         const pA = players[0].playerId, pB = players[1].playerId;
         const fleetA = (pStates[pA]?.fleet as unknown as ShipSnap[]) || [];
@@ -186,6 +189,7 @@ export const updatePlayerReady = mutation({
 
         const { winnerPlayerId, roundLog } = simulateCombat({ seed, playerAId: pA, playerBId: pB, fleetA, fleetB });
         const loserRow = players.find(p => p.playerId !== winnerPlayerId)!;
+        logInfo('combat', `resolved`, { tag: roomTag(player.roomId, roundNum), winnerPlayerId, loserId: loserRow.playerId, seed });
 
         // Archive winner fleet snapshot
         const winnerState = pStates[winnerPlayerId] as { fleet?: unknown, sector?: number } | undefined;
@@ -213,6 +217,7 @@ export const updatePlayerReady = mutation({
 
         if (newLives === 0) {
           await ctx.db.patch(player.roomId, { status: "finished" });
+          logInfo('combat', `match finished`, { tag: roomTag(player.roomId, roundNum) });
         }
       }
     }
@@ -239,6 +244,7 @@ export const startGame = mutation({
 
     // Move room to playing; client will call initializeGameState which sets phase to setup.
     await ctx.db.patch(args.roomId, { status: "playing" });
+    logInfo('start', 'room moved to playing', { tag: roomTag(args.roomId as unknown as string) });
     return true;
   },
 });
