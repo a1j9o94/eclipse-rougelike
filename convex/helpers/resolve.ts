@@ -93,7 +93,6 @@ export async function maybeResolveRound(ctx: Ctx, roomId: Id<"rooms">) {
     if (id === 'dread') return { c: 52, m: 4, s: 3 } as const;
     return { c: 0, m: 0, s: 0 } as const;
   }
-  const winnerSnaps = winnerPlayerId === pA ? finalA : finalB;
   const loserSnaps = winnerPlayerId === pA ? finalB : finalA;
   // Count rewards only for ships that ended dead on the losing side
   let rc = 0, rm = 0, rs = 0;
