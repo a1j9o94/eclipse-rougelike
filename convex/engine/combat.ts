@@ -21,7 +21,7 @@ export type SimulateArgs = {
   fleetB: ShipSnap[];
 };
 
-export type SimulateResult = { winnerPlayerId: string; roundLog: string[] };
+export type SimulateResult = { winnerPlayerId: string; roundLog: string[]; finalA: ShipSnap[]; finalB: ShipSnap[] };
 
 // Small seeded RNG (mulberry32)
 function hash32(s: string) { let h = 2166136261 >>> 0; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
@@ -166,7 +166,7 @@ export function simulateCombat(args: SimulateArgs): SimulateResult {
   const winnerPlayerId = aAlive && !bAlive ? playerAId : (!aAlive && bAlive ? playerBId : (rng() < 0.5 ? playerAId : playerBId));
   log.push(`Winner: ${winnerPlayerId === playerAId ? 'Player A' : 'Player B'}`);
 
-  return { winnerPlayerId, roundLog: log };
+  return { winnerPlayerId, roundLog: log, finalA: A, finalB: B };
 }
 
 export default { simulateCombat };

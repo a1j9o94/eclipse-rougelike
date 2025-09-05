@@ -373,6 +373,25 @@ export default function EclipseIntegrated(){
       if (gameMode === 'multiplayer') {
         console.debug('[Nav] Phase → combat');
         setMode('COMBAT');
+        // Snapshot fleets from server for rendering
+        try {
+          const myId = multi.getPlayerId?.() as string | null;
+          const opp = multi.getOpponent?.();
+          const pStates = multi.gameState?.playerStates as Record<string, any> | undefined;
+          const myFleet = myId ? (pStates?.[myId]?.fleet as any[] | undefined) : undefined;
+          const oppFleet = opp ? (pStates?.[opp.playerId]?.fleet as any[] | undefined) : undefined;
+          const toClient = (snap: any): Ship => ({
+            frame: getFrame((snap?.frame?.id || 'interceptor') as any),
+            parts: [],
+            weapons: [],
+            riftDice: snap?.riftDice || 0,
+            stats: { init: snap?.stats?.init || 0, hullCap: snap?.stats?.hullCap || 1, powerUse: 0, powerProd: 0, valid: true, aim: snap?.stats?.aim || 0, shieldTier: snap?.stats?.shieldTier || 0, regen: snap?.stats?.regen || 0 },
+            hull: Math.max(0, snap?.hull ?? (snap?.stats?.hullCap || 1)),
+            alive: snap?.alive !== false,
+          });
+          if (Array.isArray(myFleet)) setFleet(myFleet.map(toClient) as unknown as Ship[]);
+          if (Array.isArray(oppFleet)) setEnemyFleet(oppFleet.map(toClient) as unknown as Ship[]);
+        } catch { /* ignore visual sync errors */ }
         const lines = (multi.gameState?.roundLog as string[] | undefined) || ["Combat resolved."];
         setLog(l => [...l, ...lines]);
         // Brief delay to display the result then ack
@@ -383,6 +402,17 @@ export default function EclipseIntegrated(){
     } else if (phase === 'setup' && mode !== 'OUTPOST') {
       console.debug('[Nav] Phase → setup');
       setMode('OUTPOST');
+      // Sync my resources from server so rewards are reflected
+      try {
+        if (gameMode === 'multiplayer') {
+          const myId = multi.getPlayerId?.() as string | null;
+          const st = myId ? (multi.gameState?.playerStates as any)?.[myId] : null;
+          const res = (st?.resources as { credits:number; materials:number; science:number } | undefined);
+          if (res && typeof res.credits === 'number') {
+            setResources(r => ({ ...r, ...res }));
+          }
+        }
+      } catch { /* ignore */ }
     } else if (phase === 'finished') {
       console.debug('[Nav] Phase → finished → lobby');
       // Send players back to lobby when someone reaches 0 lives
