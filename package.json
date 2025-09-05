@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "codegen": "convex codegen",
+    "build": "npm run codegen && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
@@ -19,6 +20,7 @@
     "react-dom": "^19.1.1"
   },
   "devDependencies": {
+    "@types/node": "^22.7.7",
     "@eslint/js": "^9.33.0",
     "@tailwindcss/postcss": "^4.1.12",
     "@testing-library/jest-dom": "^6.8.0",
