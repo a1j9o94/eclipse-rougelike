@@ -15,6 +15,25 @@ export function computeResolvePlan(players: PlayerRow[], gs: GameStateLike) {
   return { ok, flags: { inSetup, bothReady, haveSnapshots, allValid } } as const;
 }
 
+// Guard readiness toggles so a player cannot ready without a snapshot
+export function validateReadyToggle(args: {
+  playerId: string;
+  wantReady: boolean;
+  playerStates: Record<string, { fleet?: ShipSnap[]; fleetValid?: boolean } | undefined>;
+}): { ok: boolean; reason?: 'missingSnapshot' | 'invalidFleet' | 'notAllowed' } {
+  const { playerId, wantReady, playerStates } = args;
+  if (!wantReady) return { ok: true };
+  const st = playerStates[playerId];
+  // Missing state or snapshot
+  if (!st || !Array.isArray(st.fleet) || st.fleet.length === 0) {
+    return { ok: false, reason: 'missingSnapshot' };
+  }
+  if (st.fleetValid === false) {
+    return { ok: false, reason: 'invalidFleet' };
+  }
+  return { ok: true };
+}
+
 type Ctx = { db: DatabaseReader & DatabaseWriter };
 
 export async function maybeResolveRound(ctx: Ctx, roomId: Id<"rooms">) {

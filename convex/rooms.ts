@@ -2,7 +2,8 @@ import { mutation, query, type DatabaseReader, type DatabaseWriter } from "./_ge
 import { v } from "convex/values";
 // import { maybeStartCombat } from "./helpers/match";
 import { logInfo, roomTag } from "./helpers/log";
-import { maybeResolveRound } from "./helpers/resolve";
+import { maybeResolveRound, validateReadyToggle } from "./helpers/resolve";
+import type { ShipSnap } from "./engine/combat";
 
 // Helper function to generate a unique player ID
 function generatePlayerId(): string {
@@ -146,17 +147,21 @@ export const updatePlayerReady = mutation({
       throw new Error("Player not found");
     }
 
-    // If marking ready, ensure fleet is not explicitly invalid
-    if (args.isReady) {
-      const gs = await ctx.db
-        .query("gameState")
-        .withIndex("by_room", (q) => q.eq("roomId", player.roomId))
-        .first();
-      const states = (gs?.playerStates as Record<string, { fleetValid?: boolean }> | undefined) || {};
-      const st = states[player.playerId];
-      if (st && st.fleetValid === false) {
-        throw new Error("Your fleet is invalid. Fix it before readying up.");
-      }
+    // If marking ready, ensure snapshot exists and fleet isn't invalid
+    const gs = await ctx.db
+      .query("gameState")
+      .withIndex("by_room", (q) => q.eq("roomId", player.roomId))
+      .first();
+    const states = (gs?.playerStates as Record<string, { fleet?: ShipSnap[]; fleetValid?: boolean } | undefined> | undefined) || {};
+    const guard = validateReadyToggle({ playerId: player.playerId, wantReady: args.isReady, playerStates: states });
+    if (!guard.ok) {
+      const msg = guard.reason === 'missingSnapshot'
+        ? 'Submit your fleet snapshot first.'
+        : guard.reason === 'invalidFleet'
+          ? 'Your fleet is invalid. Fix it before readying up.'
+          : 'Not allowed.';
+      logInfo('ready', 'blocked by guard', { playerId: player.playerId, reason: guard.reason });
+      throw new Error(msg);
     }
 
     await ctx.db.patch(player._id, { isReady: args.isReady });
@@ -164,10 +169,6 @@ export const updatePlayerReady = mutation({
 
     // Attempt to resolve round when both players are ready and valid snapshots exist
     // Fetch current state to update readiness, then attempt to resolve round
-    await ctx.db
-      .query("gameState")
-      .withIndex("by_room", (q) => q.eq("roomId", player.roomId))
-      .first();
     await ctx.db
       .query("players")
       .withIndex("by_room", (q) => q.eq("roomId", player.roomId))
