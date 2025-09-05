@@ -26,6 +26,7 @@ import { playEffect, playMusic } from './game/sound'
 import MultiplayerStartPage from './pages/MultiplayerStartPage'
 import { RoomLobby } from './components/RoomLobby'
 import type { Id } from '../convex/_generated/dataModel'
+import { LivesBanner } from './components/LivesBanner'
 
 /**
  * Eclipse Roguelike — Integrated App (v3.24)
@@ -424,6 +425,9 @@ export default function EclipseIntegrated(){
 
   return (
     <div className="bg-zinc-950 min-h-screen text-zinc-100">
+      {gameMode==='single' && (
+        <LivesBanner variant="single" lives={livesRemaining} />
+      )}
       {/* Rules Modal */}
       {showRules && (
         <RulesModal onDismiss={dismissRules} />

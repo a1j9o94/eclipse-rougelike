@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useMultiplayerGame } from '../hooks/useMultiplayerGame';
 import type { Id } from '../../convex/_generated/dataModel';
+import { LivesBanner } from './LivesBanner';
 
 interface RoomLobbyProps {
   roomId: Id<"rooms">;
@@ -27,7 +28,7 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
 
   const currentPlayer = getCurrentPlayer();
   const room = roomDetails?.room;
-  type RoomPlayer = { playerId: string; isReady: boolean; lives: number; playerName: string; isHost: boolean };
+  type RoomPlayer = { playerId: string; isReady: boolean; lives: number; playerName?: string; isHost: boolean };
 
   // Auto-start game when both players are ready (server will validate)
   useEffect(() => {
@@ -123,16 +124,29 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
   const players = roomDetails.players as RoomPlayer[];
   const waitingForPlayers = players.length < 2;
   const allReady = players.every(p => p.isReady);
+  const myPlayer = players.find(p => p.playerId === currentPlayer.playerId) as RoomPlayer | undefined;
+  const opponent = players.find(p => p.playerId !== currentPlayer.playerId) || null;
 
   return (
     <div className="bg-zinc-950 min-h-screen text-zinc-100 p-4">
-      <div className="max-w-2xl mx-auto space-y-6">
+      {/* Top banner with lives */}
+      <LivesBanner
+        variant="multi"
+        me={{ name: (myPlayer?.playerName) || 'You', lives: (myPlayer as any)?.lives ?? 0 }}
+        opponent={opponent ? { name: (opponent as any).playerName || 'Opponent', lives: (opponent as any).lives ?? 0 } : null}
+        phase={gameState?.gamePhase}
+      />
+      <div className="pt-10 max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold">{room.roomName}</h1>
-            <div className="text-zinc-400 text-sm">
-              {room.isPublic ? 'Public Room' : 'Private Room'}
+            <div className="text-zinc-400 text-sm flex items-center gap-2">
+              <span>{room.isPublic ? 'Public Room' : 'Private Room'}</span>
+              {/* Multiplayer status pill */}
+              <span className={`px-2 py-0.5 rounded-full text-xs border ${allReady && players.length===2 ? 'bg-emerald-900/40 border-emerald-600 text-emerald-200' : 'bg-zinc-800 border-zinc-600 text-zinc-300'}`}>
+                {gameState?.gamePhase ?? 'setup'} · {players.filter(p=>p.isReady).length}/{players.length} ready
+              </span>
             </div>
           </div>
           <button
