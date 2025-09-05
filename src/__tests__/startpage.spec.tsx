@@ -32,10 +32,12 @@ describe('StartPage', () => {
     expect(screen.getByText('No battles yet.')).toBeInTheDocument();
   });
 
-  it('disables multiplayer mode until it is implemented', () => {
-    render(<StartPage onNewRun={() => {}} />);
-    const btn = screen.getByRole('button', { name: /Multiplayer \(Coming Soon\)/ });
-    expect(btn).toBeDisabled();
+  it('enables multiplayer when Convex URL is configured', () => {
+    // Provide the env var used by StartPage
+    vi.stubEnv('VITE_CONVEX_URL', 'https://example.convex.cloud');
+    render(<StartPage onNewRun={() => {}} onMultiplayer={() => {}} />);
+    const btn = screen.getByRole('button', { name: /^Multiplayer$/ });
+    expect(btn).toBeEnabled();
   });
 
   it('unlocks scientists when research tiers reach three', () => {

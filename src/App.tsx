@@ -375,6 +375,7 @@ export default function EclipseIntegrated(){
     return <StartPage
       onNewRun={newRun}
       onContinue={()=>{ setShowNewRun(false); void playEffect('page'); }}
+      onMultiplayer={()=>{ setGameMode('multiplayer'); setMultiplayerPhase('menu'); void playEffect('page'); }}
     />;
   }
 

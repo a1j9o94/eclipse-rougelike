@@ -7,10 +7,12 @@ import { playEffect } from '../game/sound';
 
 export default function StartPage({
   onNewRun,
-  onContinue
+  onContinue,
+  onMultiplayer,
 }: {
   onNewRun: (diff: DifficultyId, faction: FactionId) => void;
   onContinue?: () => void;
+  onMultiplayer?: () => void;
 }) {
   const progress: Progress = evaluateUnlocks(loadRunState());
   const available = FACTIONS.filter(f => progress.factions[f.id]?.unlocked);
@@ -38,13 +40,22 @@ export default function StartPage({
             </button>
           )}
           <div className="text-md font-medium mt-6">Multiplayer</div>
-          <div className="text-xs opacity-80 mb-2">Battle against another player in real-time combat (coming soon)</div>
-          <button
-            disabled
-            className="w-full px-3 py-2 rounded-xl bg-zinc-700 opacity-50 cursor-not-allowed"
-          >
-            Multiplayer (Coming Soon)
-          </button>
+          <div className="text-xs opacity-80 mb-2">Battle against another player in real-time combat.</div>
+          {import.meta.env.VITE_CONVEX_URL ? (
+            <button
+              onClick={onMultiplayer}
+              className="w-full px-3 py-2 rounded-xl bg-blue-700 hover:bg-blue-600"
+            >
+              Multiplayer
+            </button>
+          ) : (
+            <button
+              disabled
+              className="w-full px-3 py-2 rounded-xl bg-zinc-700 opacity-50 cursor-not-allowed"
+            >
+              Multiplayer (Requires server)
+            </button>
+          )}
         </div>
         <div className="mt-3 flex-1 overflow-y-auto space-y-2" data-testid="faction-list">
           {available.map(f => (
