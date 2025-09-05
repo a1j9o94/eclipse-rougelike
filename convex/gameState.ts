@@ -3,6 +3,24 @@ import { v } from "convex/values";
 // Legacy auto-start removed to prevent premature combat during Outpost
 import { logInfo, roomTag } from "./helpers/log";
 import { maybeResolveRound } from "./helpers/resolve";
+import type { ShipSnap } from "./engine/combat";
+
+// Build a minimal interceptor snapshot used for multiplayer seeding
+export function makeBasicInterceptorSnap(): ShipSnap {
+  return {
+    frame: { id: 'interceptor', name: 'Interceptor' },
+    weapons: [{ name: 'Plasma', dice: 1, dmgPerHit: 1, faces: [{ roll: 6 }] }],
+    riftDice: 0,
+    stats: { init: 1, hullCap: 1, valid: true, aim: 1, shieldTier: 0, regen: 0 },
+    hull: 1,
+    alive: true,
+  };
+}
+
+export function makeStartingFleetSnaps(count: number): ShipSnap[] {
+  const n = Math.max(0, Math.floor(count));
+  return Array.from({ length: n }, () => makeBasicInterceptorSnap());
+}
 
 export const initializeGameState = mutation({
   args: { 
@@ -27,11 +45,13 @@ export const initializeGameState = mutation({
     const initialPlayerStates: Record<string, unknown> = {};
     
     for (const player of players) {
+      const starting = Math.max(1, args.gameConfig.startingShips || 1);
       initialPlayerStates[player.playerId] = {
         resources: { credits: 20, materials: 5, science: 0 },
         research: { Military: 1, Grid: 1, Nano: 1 },
         lives: player.lives,
-        fleet: [], // Will be populated with starting interceptors
+        fleet: makeStartingFleetSnaps(starting),
+        fleetValid: true,
         blueprints: {
           interceptor: [], // Will contain default interceptor parts
           cruiser: [],
