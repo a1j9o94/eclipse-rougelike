@@ -147,21 +147,27 @@ export const updatePlayerReady = mutation({
       throw new Error("Player not found");
     }
 
-    // If marking ready, ensure snapshot exists and fleet isn't invalid
+    // Determine room status to decide which guard to apply
+    const room = await ctx.db.get(player.roomId);
+
+    // If marking ready during Outpost (room is playing and in setup), ensure snapshot exists and fleet isn't invalid
     const gs = await ctx.db
       .query("gameState")
       .withIndex("by_room", (q) => q.eq("roomId", player.roomId))
       .first();
-    const states = (gs?.playerStates as Record<string, { fleet?: ShipSnap[]; fleetValid?: boolean } | undefined> | undefined) || {};
-    const guard = validateReadyToggle({ playerId: player.playerId, wantReady: args.isReady, playerStates: states });
-    if (!guard.ok) {
-      const msg = guard.reason === 'missingSnapshot'
-        ? 'Submit your fleet snapshot first.'
-        : guard.reason === 'invalidFleet'
-          ? 'Your fleet is invalid. Fix it before readying up.'
-          : 'Not allowed.';
-      logInfo('ready', 'blocked by guard', { playerId: player.playerId, reason: guard.reason });
-      throw new Error(msg);
+    const isOutpostSetup = room?.status === 'playing' && gs?.gamePhase === 'setup';
+    if (args.isReady && isOutpostSetup) {
+      const states = (gs?.playerStates as Record<string, { fleet?: ShipSnap[]; fleetValid?: boolean } | undefined> | undefined) || {};
+      const guard = validateReadyToggle({ playerId: player.playerId, wantReady: true, playerStates: states });
+      if (!guard.ok) {
+        const msg = guard.reason === 'missingSnapshot'
+          ? 'Submit your fleet snapshot first.'
+          : guard.reason === 'invalidFleet'
+            ? 'Your fleet is invalid. Fix it before readying up.'
+            : 'Not allowed.';
+        logInfo('ready', 'blocked by guard', { playerId: player.playerId, reason: guard.reason });
+        throw new Error(msg);
+      }
     }
 
     await ctx.db.patch(player._id, { isReady: args.isReady });
@@ -174,8 +180,10 @@ export const updatePlayerReady = mutation({
       .withIndex("by_room", (q) => q.eq("roomId", player.roomId))
       .collect();
 
-    // Try resolving a round now that readiness might have changed
-    await maybeResolveRound(ctx as unknown as { db: DatabaseReader & DatabaseWriter }, player.roomId);
+    // Try resolving a round now that readiness might have changed (only meaningful during Outpost)
+    if (isOutpostSetup) {
+      await maybeResolveRound(ctx as unknown as { db: DatabaseReader & DatabaseWriter }, player.roomId);
+    }
 
     return player._id;
   },
