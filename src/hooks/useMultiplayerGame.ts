@@ -5,12 +5,12 @@ import type { MultiplayerGameConfig } from "../config/multiplayer";
 
 export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
   // Detect vitest and allow tests to bypass Convex entirely
-  const isTestEnv = Boolean((import.meta as unknown as { vitest?: unknown }).vitest);
+  const isTestEnv = Boolean((import.meta as unknown as { vitest?: unknown }).vitest) || import.meta.env.MODE === 'test';
   // Check if Convex is available (tests and single‑player use should work without it)
   const isConvexAvailable = !!import.meta.env.VITE_CONVEX_URL && !isTestEnv;
 
   // In environments without Convex (e.g., tests), return a safe stub and avoid calling Convex hooks
-  if (!isConvexAvailable || !roomId) {
+  if (!isConvexAvailable) {
     const noopAsync = async () => { /* no-op for tests */ };
     const noopCreateRoom = async () => ({
       roomId: '' as Id<'rooms'>,
@@ -314,7 +314,7 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
     endCombatToSetup: handleEndCombatToSetup,
     
     // Loading states and availability
-    isLoading: isConvexAvailable && (roomDetails === undefined || gameState === undefined),
+    isLoading: isConvexAvailable && !!roomId && (roomDetails === undefined || gameState === undefined),
     isConvexAvailable,
   };
 }
