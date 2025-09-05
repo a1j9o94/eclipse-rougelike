@@ -384,8 +384,8 @@ export default function EclipseIntegrated(){
           const oppFleet = opp ? (pStates?.[opp.playerId]?.fleet as any[] | undefined) : undefined;
           const toClient = (snap: any): Ship => ({
             frame: getFrame((snap?.frame?.id || 'interceptor') as any),
-            parts: [],
-            weapons: [],
+            parts: Array.isArray(snap?.parts) ? snap.parts : [],
+            weapons: Array.isArray(snap?.weapons) ? snap.weapons : [],
             riftDice: snap?.riftDice || 0,
             stats: { init: snap?.stats?.init || 0, hullCap: snap?.stats?.hullCap || 1, powerUse: 0, powerProd: 0, valid: true, aim: snap?.stats?.aim || 0, shieldTier: snap?.stats?.shieldTier || 0, regen: snap?.stats?.regen || 0 },
             hull: Math.max(0, snap?.hull ?? (snap?.stats?.hullCap || 1)),

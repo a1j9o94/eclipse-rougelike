@@ -39,6 +39,7 @@ export default defineSchema({
     roundSeed: v.optional(v.string()),
     roundLog: v.optional(v.any()),
     acks: v.optional(v.any()), // { [playerId]: boolean }
+    matchResult: v.optional(v.object({ winnerPlayerId: v.string() })),
     lastUpdate: v.number(),
   }).index("by_room", ["roomId"]),
 
