@@ -381,12 +381,10 @@ export default function EclipseIntegrated(){
   }, [multi?.gameState?.gamePhase]);
 
   useEffect(() => {
-    if (!multi) return;
-    // Stream validity whenever it changes while in Outpost
-    if (mode === 'OUTPOST') {
-      try { void multi.updateFleetValidity?.(fleetValid); } catch { /* ignore */ }
-    }
-  }, [multi, fleetValid, mode]);
+    // Stream validity whenever it changes while in Outpost, but only when we know the room id
+    if (gameMode !== 'multiplayer' || mode !== 'OUTPOST' || !currentRoomId) return;
+    try { void multi.updateFleetValidity?.(fleetValid); } catch { /* ignore */ }
+  }, [fleetValid, mode, gameMode, currentRoomId]);
 
   // Keep shop items in sync when explicit rerolls happen or research changes
   useEffect(()=>{ setShop({ items: rollInventory(research as Research) }); }, [shopVersion, research]);

@@ -169,7 +169,10 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
     if (!isConvexAvailable) {
       throw new Error("Multiplayer features are not available. Please check your connection and try again.");
     }
-    if (!roomId) throw new Error("No room ID");
+    if (!roomId) {
+      // Silent no-op if room is not yet established on this client
+      return;
+    }
     const playerId = getPlayerId();
     if (!playerId) throw new Error("No player ID found");
     try {
@@ -264,7 +267,10 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
     if (!isConvexAvailable) {
       throw new Error("Multiplayer features are not available. Please check your connection and try again.");
     }
-    if (!roomId) throw new Error("No room ID");
+    if (!roomId) {
+      // If room lost locally, skip (other client will have reported the result)
+      return { processed: false } as unknown as { processed: boolean };
+    }
     try {
       return await resolveCombatResult({ roomId, winnerPlayerId });
     } catch (error) {
