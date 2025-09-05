@@ -4,7 +4,7 @@ import { INITIAL_BLUEPRINTS, INITIAL_RESEARCH, INITIAL_RESOURCES, INITIAL_CAPACI
 import { type CapacityState, type DifficultyId } from './config/types'
 import { type FrameId } from './game'
 import { ResourceBar } from './components/ui'
-import { RulesModal, TechListModal, WinModal } from './components/modals'
+import { RulesModal, TechListModal, WinModal, MatchOverModal } from './components/modals'
 import StartPage from './pages/StartPage'
 import { type FactionId } from './config/factions'
 import OutpostPage from './pages/OutpostPage'
@@ -23,6 +23,7 @@ import { researchLabel as researchLabelCore, canResearch as canResearchCore } fr
 import { loadRunState, saveRunState, clearRunState, recordWin, restoreRunEnvironment, restoreOpponent, evaluateUnlocks } from './game/storage'
 import { playEffect, playMusic } from './game/sound'
 import MultiplayerStartPage from './pages/MultiplayerStartPage'
+import { computePlaybackDelay } from './utils/playback'
 import { RoomLobby } from './components/RoomLobby'
 import type { Id } from '../convex/_generated/dataModel'
 import { useMultiplayerGame } from './hooks/useMultiplayerGame'
@@ -102,6 +103,7 @@ export default function EclipseIntegrated(){
   const [rewardPaid, setRewardPaid] = useState(false);
   const [sector, setSector] = useState(saved?.sector ?? 1); // difficulty progression
   const [stepLock, setStepLock] = useState(false);
+  const [matchOver, setMatchOver] = useState<{ winnerName: string } | null>(null);
 
   // Multiplayer state
   const [gameMode, setGameMode] = useState<'single' | 'multiplayer'>('single');
@@ -394,8 +396,9 @@ export default function EclipseIntegrated(){
         } catch { /* ignore visual sync errors */ }
         const lines = (multi.gameState?.roundLog as string[] | undefined) || ["Combat resolved."];
         setLog(l => [...l, ...lines]);
-        // Brief delay to display the result then ack
-        setTimeout(() => { try { void multi.ackRoundPlayed?.(); } catch { /* noop */ } }, 1200);
+        // Slower playback pacing proportional to log size
+        const delay = computePlaybackDelay(lines as string[]);
+        setTimeout(() => { try { void multi.ackRoundPlayed?.(); } catch { /* noop */ } }, delay);
       } else {
         startCombat();
       }
@@ -414,9 +417,16 @@ export default function EclipseIntegrated(){
         }
       } catch { /* ignore */ }
     } else if (phase === 'finished') {
-      console.debug('[Nav] Phase → finished → lobby');
-      // Send players back to lobby when someone reaches 0 lives
-      setMultiplayerPhase('lobby');
+      console.debug('[Nav] Phase → finished');
+      if (gameMode === 'multiplayer') {
+        try {
+          const winnerId = (multi.gameState as any)?.matchResult?.winnerPlayerId as string | undefined;
+          const winnerName = (multi.roomDetails?.players as any[] | undefined)?.find(p=>p.playerId===winnerId)?.playerName || 'Winner';
+          setMatchOver({ winnerName });
+        } catch { /* ignore */ }
+      } else {
+        setMultiplayerPhase('lobby');
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [multi?.gameState?.gamePhase]);
@@ -494,6 +504,12 @@ export default function EclipseIntegrated(){
 
   return (
     <div className={`bg-zinc-950 min-h-screen text-zinc-100`}>
+      {matchOver && (
+        <MatchOverModal
+          winnerName={matchOver.winnerName}
+          onClose={() => { setMatchOver(null); setMultiplayerPhase('lobby'); }}
+        />
+      )}
       {gameMode==='single' && (
         <LivesBanner variant="single" lives={livesRemaining} />
       )}

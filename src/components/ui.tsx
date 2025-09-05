@@ -90,25 +90,40 @@ export function ShipFrameSlots({ ship, side, active }: { ship: Ship, side: 'P' |
   // Hull upgrades show hearts for remaining hull beyond the frame's base value,
   // but the intrinsic hull does not occupy a slot or render a cell.
   let remainingHull = Math.max(0, ship.hull - ship.frame.baseHull);
-  ship.parts.forEach(p => {
-    const slots = p.slots || 1;
-    if (p.cat === 'Hull') {
-      const max = p.extraHull || 1;
-      const rem = Math.min(remainingHull, max);
-      remainingHull -= rem;
-      let label = '';
-      if (max === 1) {
-        label = rem === 1 ? '❤️' : '🖤';
+  if (ship.parts && ship.parts.length > 0) {
+    ship.parts.forEach(p => {
+      const slots = p.slots || 1;
+      if (p.cat === 'Hull') {
+        const max = p.extraHull || 1;
+        const rem = Math.min(remainingHull, max);
+        remainingHull -= rem;
+        let label = '';
+        if (max === 1) {
+          label = rem === 1 ? '❤️' : '🖤';
+        } else {
+          label = rem === 0 ? '🖤' : `${rem}❤️`;
+        }
+        const extra = effectLabels(p, CATEGORY_EFFECTS.Hull);
+        cells.push({ slots, label: label + extra });
       } else {
-        label = rem === 0 ? '🖤' : `${rem}❤️`;
+        const label = effectLabels(p, CATEGORY_EFFECTS[p.cat]);
+        cells.push({ slots, label });
       }
-      const extra = effectLabels(p, CATEGORY_EFFECTS.Hull);
-      cells.push({ slots, label: label + extra });
-    } else {
-      const label = effectLabels(p, CATEGORY_EFFECTS[p.cat]);
-      cells.push({ slots, label });
-    }
-  });
+    });
+  } else {
+    // Fallback for snapshot-only ships (no parts): render simplified tokens
+    const tokens: string[] = [];
+    const aim = Math.max(0, ship.stats?.aim || 0);
+    const shields = Math.max(0, ship.stats?.shieldTier || 0);
+    const init = Math.max(0, ship.stats?.init || 0);
+    const rift = Math.max(0, (ship as any).riftDice || 0);
+    for (let i = 0; i < Math.min(aim, 3); i++) tokens.push('🎯');
+    for (let i = 0; i < Math.min(shields, 3); i++) tokens.push('🛡️');
+    for (let i = 0; i < Math.min(Math.ceil(init/2), 3); i++) tokens.push('🚀');
+    for (let i = 0; i < Math.min(rift, 2); i++) tokens.push('🕳️');
+    while (tokens.length < (ship.frame.tiles || 3)) tokens.push('');
+    tokens.slice(0, ship.frame.tiles).forEach(lbl => cells.push({ slots: 1, label: lbl }));
+  }
   const used = cells.reduce((a, p) => a + p.slots, 0);
   const empties = Math.max(0, ship.frame.tiles - used);
   const labels = cells.map(p => p.label).concat(Array(empties).fill(''));
@@ -197,5 +212,4 @@ export function ResourceBar({ credits, materials, science, tonnage, sector, onRe
     </div>
   );
 }
-
 

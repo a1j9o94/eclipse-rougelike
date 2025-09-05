@@ -115,6 +115,7 @@ export async function maybeResolveRound(ctx: Ctx, roomId: Id<"rooms">) {
     roundLog,
     acks: {},
     playerStates: statesAfter,
+    matchResult: newLives === 0 ? { winnerPlayerId } : undefined,
     lastUpdate: Date.now(),
   });
 
