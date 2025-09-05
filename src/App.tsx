@@ -518,6 +518,8 @@ export default function EclipseIntegrated(){
           sector={sector}
           endless={endless}
           fleetValid={fleetValid}
+          myReady={(() => { try { return !!multi.getCurrentPlayer?.()?.isReady; } catch { return false; } })()}
+          oppReady={(() => { try { return !!multi.getOpponent?.()?.isReady; } catch { return false; } })()}
           startCombat={() => {
             if (gameMode === 'multiplayer') {
               try {
