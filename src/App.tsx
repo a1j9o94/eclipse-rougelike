@@ -106,6 +106,37 @@ export default function EclipseIntegrated(){
   const [matchOver, setMatchOver] = useState<{ winnerName: string } | null>(null);
   const [mpSeeded, setMpSeeded] = useState(false);
 
+  // MP: Convert server ShipSnap to client Ship with synthetic parts that reflect stats
+  function fromSnapshotToShip(snap: any): Ship {
+    const frame = getFrame((snap?.frame?.id || 'interceptor') as any);
+    const base: Ship = {
+      frame,
+      parts: [],
+      weapons: [],
+      riftDice: snap?.riftDice || 0,
+      stats: { init: snap?.stats?.init || 0, hullCap: snap?.stats?.hullCap || 1, powerUse: 0, powerProd: 0, valid: true, aim: snap?.stats?.aim || 0, shieldTier: snap?.stats?.shieldTier || 0, regen: snap?.stats?.regen || 0 },
+      hull: Math.max(0, snap?.hull ?? (snap?.stats?.hullCap || 1)),
+      alive: snap?.alive !== false,
+    } as Ship;
+
+    const parts: any[] = [];
+    const st = base.stats as any;
+    if (st.init > 0) parts.push({ id: `mp_drive_${st.init}`, name: 'Drive', init: st.init, powerCost: 0, tier: 1, cost: 0, cat: 'Drive', tech_category: 'Grid' });
+    if (st.aim > 0) parts.push({ id: `mp_comp_${st.aim}`, name: 'Computer', aim: st.aim, powerCost: 0, tier: 1, cost: 0, cat: 'Computer', tech_category: 'Grid' });
+    if (st.shieldTier > 0) parts.push({ id: `mp_shield_${st.shieldTier}`, name: 'Shield', shieldTier: st.shieldTier, powerCost: 0, tier: 1, cost: 0, cat: 'Shield', tech_category: 'Nano' });
+    const extraHull = Math.max(0, (st.hullCap || 0) - (frame.baseHull || 0));
+    if (extraHull > 0 || st.regen > 0) parts.push({ id: `mp_hull_${extraHull}_${st.regen||0}`, name: 'Hull', extraHull, regen: st.regen || 0, powerCost: 0, tier: 1, cost: 0, cat: 'Hull', tech_category: 'Nano' });
+    const ws = Array.isArray(snap?.weapons) ? snap.weapons : [];
+    for (let i = 0; i < ws.length; i++) {
+      const w = ws[i];
+      parts.push({ id: `mp_w_${i}`, name: w.name || 'Weapon', dice: w.dice || 0, dmgPerHit: w.dmgPerHit || 0, faces: w.faces || [], initLoss: w.initLoss || 0, powerCost: 0, tier: 1, cost: 0, cat: 'Weapon', tech_category: 'Nano' });
+    }
+    if (base.riftDice > 0) parts.push({ id: `mp_rift_${base.riftDice}`, name: 'Rift', riftDice: base.riftDice, faces: [], powerCost: 0, tier: 1, cost: 0, cat: 'Weapon', tech_category: 'Nano' });
+    base.parts = parts as any;
+    base.weapons = parts.filter(p => p.cat === 'Weapon') as any;
+    return base;
+  }
+
   // Multiplayer state
   const [gameMode, setGameMode] = useState<'single' | 'multiplayer'>('single');
   const [multiplayerPhase, setMultiplayerPhase] = useState<'menu' | 'lobby' | 'game'>('menu');
@@ -383,18 +414,8 @@ export default function EclipseIntegrated(){
           const pStates = multi.gameState?.playerStates as Record<string, any> | undefined;
           const myFleet = myId ? (pStates?.[myId]?.fleet as any[] | undefined) : undefined;
           const oppFleet = opp ? (pStates?.[opp.playerId]?.fleet as any[] | undefined) : undefined;
-          const toClient = (snap: any): Ship => ({
-            frame: getFrame((snap?.frame?.id || 'interceptor') as any),
-            // Multiplayer snapshots don't carry client Part objects; use token fallback in UI
-            parts: [],
-            weapons: [],
-            riftDice: snap?.riftDice || 0,
-            stats: { init: snap?.stats?.init || 0, hullCap: snap?.stats?.hullCap || 1, powerUse: 0, powerProd: 0, valid: true, aim: snap?.stats?.aim || 0, shieldTier: snap?.stats?.shieldTier || 0, regen: snap?.stats?.regen || 0 },
-            hull: Math.max(0, snap?.hull ?? (snap?.stats?.hullCap || 1)),
-            alive: snap?.alive !== false,
-          });
-          if (Array.isArray(myFleet)) setFleet(myFleet.map(toClient) as unknown as Ship[]);
-          if (Array.isArray(oppFleet)) setEnemyFleet(oppFleet.map(toClient) as unknown as Ship[]);
+          if (Array.isArray(myFleet)) setFleet(myFleet.map(fromSnapshotToShip) as unknown as Ship[]);
+          if (Array.isArray(oppFleet)) setEnemyFleet(oppFleet.map(fromSnapshotToShip) as unknown as Ship[]);
         } catch { /* ignore visual sync errors */ }
         const lines = (multi.gameState?.roundLog as string[] | undefined) || ["Combat resolved."];
         setLog(l => [...l, ...lines]);
@@ -418,16 +439,7 @@ export default function EclipseIntegrated(){
             setResources(r => ({ ...r, ...res }));
           }
           // Prefer server snapshot of my fleet for consistency across clients
-          const toClient = (snap: any): Ship => ({
-            frame: getFrame((snap?.frame?.id || 'interceptor') as any),
-            parts: [],
-            weapons: [],
-            riftDice: snap?.riftDice || 0,
-            stats: { init: snap?.stats?.init || 0, hullCap: snap?.stats?.hullCap || 1, powerUse: 0, powerProd: 0, valid: true, aim: snap?.stats?.aim || 0, shieldTier: snap?.stats?.shieldTier || 0, regen: snap?.stats?.regen || 0 },
-            hull: Math.max(0, snap?.hull ?? (snap?.stats?.hullCap || 1)),
-            alive: snap?.alive !== false,
-          });
-          const serverFleet = Array.isArray(st?.fleet) ? st.fleet.map(toClient) as unknown as Ship[] : [];
+          const serverFleet = Array.isArray(st?.fleet) ? st.fleet.map(fromSnapshotToShip) as unknown as Ship[] : [];
           if (serverFleet.length > 0) {
             setFleet(serverFleet);
             setCapacity(c => ({ cap: Math.max(c.cap, serverFleet.length) }));
@@ -461,7 +473,7 @@ export default function EclipseIntegrated(){
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [multi?.gameState?.gamePhase]);
+  }, [multi?.gameState?.gamePhase, multi?.roomDetails?.room?.status, multi?.roomDetails?.room?.gameConfig?.startingShips, multi?.gameState?.playerStates]);
 
   useEffect(() => {
     // Avoid spamming validity; readiness will submit snapshots explicitly
