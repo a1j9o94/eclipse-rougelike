@@ -15,9 +15,12 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
   
   const {
     roomDetails,
+    gameState,
     isHost,
     getCurrentPlayer,
-    updatePlayerReady,
+    setReady,
+    updateFleetValidity,
+    restartToSetup,
     startGame,
     isLoading,
   } = useMultiplayerGame(roomId);
@@ -47,15 +50,32 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
     }
   }, [roomDetails, isHost, startGame, onGameStart, isStarting]);
 
+  const localPlayerId = currentPlayer?.playerId;
+  const localState = (gameState?.playerStates?.[localPlayerId as string] as { fleetValid?: boolean } | undefined);
+  const localFleetValid = localState?.fleetValid !== false; // undefined treated as valid for now
+
   const handleReadyToggle = async () => {
     const newReadyState = !isReady;
     setIsReady(newReadyState);
     
     try {
-      await updatePlayerReady(newReadyState);
+      if (newReadyState) {
+        // Assume fleet valid on ready for now; callers can set validity earlier from outfitting
+        await updateFleetValidity(true);
+      }
+      await setReady(newReadyState);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update ready status');
       setIsReady(!newReadyState); // Revert on error
+    }
+  };
+
+  const handleRestart = async () => {
+    try {
+      setError('');
+      await restartToSetup();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to restart');
     }
   };
 
@@ -216,7 +236,7 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
           <div className="text-center">
             <button
               onClick={handleReadyToggle}
-              disabled={isStarting}
+              disabled={isStarting || !localFleetValid}
               className={`px-8 py-3 rounded-lg font-medium text-lg ${
                 isReady
                   ? 'bg-red-600 hover:bg-red-700'
@@ -230,6 +250,9 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
                 : 'Ready to Play'
               }
             </button>
+            {!localFleetValid && (
+              <div className="mt-2 text-sm text-red-400">Your fleet is invalid.</div>
+            )}
             
             {allReady && isHost() && (
               <div className="mt-2 text-sm text-green-400">
@@ -242,6 +265,15 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
                 Waiting for host to start the game...
               </div>
             )}
+
+            <div className="mt-4">
+              <button
+                onClick={handleRestart}
+                className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded text-sm"
+              >
+                Restart (Lose a life)
+              </button>
+            </div>
           </div>
         )}
       </div>

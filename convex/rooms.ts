@@ -143,6 +143,19 @@ export const updatePlayerReady = mutation({
       throw new Error("Player not found");
     }
 
+    // If marking ready, ensure fleet is not explicitly invalid
+    if (args.isReady) {
+      const gs = await ctx.db
+        .query("gameState")
+        .withIndex("by_room", (q) => q.eq("roomId", player.roomId))
+        .first();
+      const states = (gs?.playerStates as Record<string, { fleetValid?: boolean }> | undefined) || {};
+      const st = states[player.playerId];
+      if (st && st.fleetValid === false) {
+        throw new Error("Your fleet is invalid. Fix it before readying up.");
+      }
+    }
+
     await ctx.db.patch(player._id, {
       isReady: args.isReady,
     });
