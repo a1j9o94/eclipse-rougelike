@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { maybeStartCombat } from "./helpers/match";
+// Legacy auto-start removed to prevent premature combat during Outpost
 import { logInfo, roomTag } from "./helpers/log";
 
 export const initializeGameState = mutation({
@@ -104,8 +104,7 @@ export const updatePlayerFleetValidity = mutation({
 
     await ctx.db.patch(gameState!._id, { playerStates, lastUpdate: Date.now() });
     logInfo('valid', 'fleet validity updated', { tag: roomTag(args.roomId as unknown as string), playerId: args.playerId, fleetValid: args.fleetValid });
-    // Attempt to auto-start if readiness + validity satisfied
-    await maybeStartCombat(ctx, args.roomId);
+    // Do not auto-start combat here; combat starts only when both players Ready in Outpost and snapshots exist.
     return true;
   },
 });

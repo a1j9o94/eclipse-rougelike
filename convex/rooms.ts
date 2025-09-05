@@ -242,9 +242,15 @@ export const startGame = mutation({
     const allReady = players.every(p => p.isReady);
     if (!allReady) throw new Error("Both players must be ready");
 
-    // Move room to playing; client will call initializeGameState which sets phase to setup.
+    // Move room to playing; reset readiness so Outpost ready is decoupled from lobby readiness
     await ctx.db.patch(args.roomId, { status: "playing" });
     logInfo('start', 'room moved to playing', { tag: roomTag(args.roomId as unknown as string) });
+    const inRoom = await ctx.db
+      .query("players")
+      .withIndex("by_room", q => q.eq("roomId", args.roomId))
+      .collect();
+    await Promise.all(inRoom.map(p => ctx.db.patch(p._id, { isReady: false })));
+    logInfo('start', 'reset player readiness for Outpost', { tag: roomTag(args.roomId as unknown as string) });
     return true;
   },
 });
