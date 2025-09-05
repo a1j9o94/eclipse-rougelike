@@ -531,3 +531,60 @@ No migration needed as this is a new feature addition that doesn't modify existi
 - Game architecture: `src/App.tsx`, `src/game/`
 - Combat system: `src/game/combat.ts`
 - Configuration system: `src/config/`
+
+---
+
+## Phase 7: Two‑Player Ready/Combat Loop (New)
+
+### Overview
+Implement the minimal PvP loop so a match waits for both players to ready up, validates both fleets, and starts combat. If a player must restart due to an invalid fleet, they lose a life and return to setup. This replaces the old “grace” logic with explicit lives and is shared between single‑ and multi‑player modes.
+
+### Player Experience
+- Lobby shows both players, their `ready` state, and remaining `lives`.
+- Players toggle Ready. The game begins automatically once both are ready and both fleets are valid.
+- If a fleet is invalid at start, Ready is blocked; if invalidity is discovered at transition, server resets that player to Setup and decrements `lives`.
+- When a player’s lives reach 0, the room ends in `finished`.
+
+### Backend: Convex
+Schema: keep existing `players.lives`, `players.isReady`, `rooms.status`, `gameState.gamePhase`.
+
+New mutations/queries (files: `convex/rooms.ts`, `convex/gameState.ts`):
+- `setPlayerReady({ roomId, playerId, isReady })`
+  - Reject `isReady=true` if `playerStates[playerId].fleetValid === false`.
+  - Update `players.isReady` and call `maybeStartCombat(roomId)`.
+- `updatePlayerFleetValidity({ roomId, playerId, fleetValid })`
+  - Upsert `gameState.playerStates[playerId].fleetValid` and call `maybeStartCombat(roomId)`.
+- `restartToSetup({ roomId, playerId })`
+  - Atomically decrement `players.lives`. If 0 ⇒ mark elimination, set `rooms.status='finished'` and `gameState.gamePhase='finished'`; else set `gameState.gamePhase='setup'` and clear queues, set both players `isReady=false`.
+- `maybeStartCombat(roomId)` (server helper)
+  - If exactly two players, both `isReady` and `fleetValid`, set `rooms.status='playing'`, `gameState.gamePhase='combat'`, `roundNum=1`, and seed `combatQueue`.
+
+Adjust existing `getRoomDetails` to include `playerStates[playerId].fleetValid` for both players.
+
+### Frontend
+Hook `src/hooks/useMultiplayerGame.ts`:
+- Expose `setReady`, `updateFleetValidity`, `restartToSetup`.
+- Computed flags: `{ phase, bothReady, canStart, livesRemaining }`.
+
+UI `src/components/RoomLobby.tsx`:
+- Show both players with lives and Ready toggles.
+- Disable Ready when local `fleetValid` is false.
+- Show “Starting…” when both ready → transition to combat.
+
+Single‑player lives unification:
+- Replace `graceUsed` with `livesRemaining` in `src/game/storage.ts` and `src/App.tsx`.
+- Difficulty config determines starting lives; multiplayer reads lives from room config (`livesPerPlayer`).
+
+### TDD Plan
+1) Unit tests:
+   - `src/__tests__/lives.logic.spec.ts` — single‑player lives behavior replaces grace.
+   - `src/__tests__/lobby.ready.spec.tsx` — UI states using a mocked hook (`bothReady`, `canStart`, lives display, disabled Ready when invalid).
+2) Server‑side tests (light integration):
+   - Call `setPlayerReady`/`updatePlayerFleetValidity`/`restartToSetup` against a test room via Convex dev; assert status/phase/lives transitions.
+3) Keep existing suite green and add coverage gates in CI.
+
+### Acceptance Criteria
+- Two clients in a room can Ready and auto‑start combat when both valid.
+- Restart due to invalid fleet decrements lives and returns to setup.
+- Reaching 0 lives ends the room (`finished`).
+- No runtime errors on Preview/Production; ErrorBoundary handles unexpected issues; build includes `convex codegen`.
