@@ -459,10 +459,8 @@ export default function EclipseIntegrated(){
     // multiplayerPhase === 'game' falls through to Outpost/Combat views below
   }
 
-  const showMultiReadyBar = gameMode==='multiplayer' && mode==='OUTPOST' && !!multi && !showRules && !showTechs;
-
   return (
-    <div className={`bg-zinc-950 min-h-screen text-zinc-100 ${showMultiReadyBar ? 'pb-20' : ''}`}>
+    <div className={`bg-zinc-950 min-h-screen text-zinc-100`}>
       {gameMode==='single' && (
         <LivesBanner variant="single" lives={livesRemaining} />
       )}
@@ -534,30 +532,7 @@ export default function EclipseIntegrated(){
         />
       )}
 
-      {/* Multiplayer: Outpost Ready Bar */}
-      {showMultiReadyBar && (
-        (() => {
-          const me = multi.getCurrentPlayer?.();
-          const players = (multi.roomDetails?.players || []) as Array<{ playerId:string; isReady:boolean }>;
-          const readyCount = players.filter(p=>p.isReady).length;
-          const myReady = !!me?.isReady;
-          return (
-            <div className="fixed bottom-0 left-0 right-0 z-20 bg-zinc-900/95 border-t border-zinc-700 px-4 py-2 flex items-center justify-between">
-              <div className={fleetValid ? 'text-emerald-300' : 'text-rose-300'}>
-                {fleetValid ? 'Fleet valid' : 'Fleet invalid — fix power/drive/slots'}
-              </div>
-              <div className="text-zinc-400 text-sm">Ready: {readyCount}/{players.length}</div>
-              <button
-                onClick={()=>{ void multi.updateFleetValidity?.(fleetValid); void multi.setReady?.(!myReady); }}
-                className={`px-4 py-2 rounded ${myReady ? 'bg-rose-600 hover:bg-rose-700' : 'bg-emerald-600 hover:bg-emerald-700'} disabled:opacity-50`}
-                disabled={!fleetValid}
-              >
-                {myReady ? 'Cancel Ready' : 'Ready'}
-              </button>
-            </div>
-          );
-        })()
-      )}
+      {/* Multiplayer: Outpost uses Start Combat only; no extra readiness bar */}
 
       {mode==='COMBAT' && (
         <CombatPage
