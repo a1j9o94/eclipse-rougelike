@@ -68,6 +68,41 @@ export const getGameState = query({
   },
 });
 
+export const updatePlayerFleetValidity = mutation({
+  args: { roomId: v.id("rooms"), playerId: v.string(), fleetValid: v.boolean() },
+  handler: async (ctx, args) => {
+    let gameState = await ctx.db
+      .query("gameState")
+      .withIndex("by_room", (q) => q.eq("roomId", args.roomId))
+      .first();
+
+    // Create a placeholder gameState during setup if missing
+    if (!gameState) {
+      await ctx.db.insert("gameState", {
+        roomId: args.roomId,
+        currentTurn: args.playerId,
+        gamePhase: "setup",
+        playerStates: {},
+        combatQueue: [],
+        roundNum: 1,
+        lastUpdate: Date.now(),
+      });
+      // Fetch the inserted record (ctx.db.insert returns id)
+      gameState = await ctx.db
+        .query("gameState")
+        .withIndex("by_room", (q) => q.eq("roomId", args.roomId))
+        .first();
+    }
+
+    const playerStates = { ...(gameState!.playerStates as Record<string, unknown>) };
+    const prev = (playerStates[args.playerId] as Record<string, unknown>) || {};
+    playerStates[args.playerId] = { ...prev, fleetValid: args.fleetValid };
+
+    await ctx.db.patch(gameState!._id, { playerStates, lastUpdate: Date.now() });
+    return true;
+  },
+});
+
 export const updateGameState = mutation({
   args: {
     roomId: v.id("rooms"),

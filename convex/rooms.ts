@@ -182,3 +182,47 @@ export const startGame = mutation({
     return true;
   },
 });
+
+export const restartToSetup = mutation({
+  args: { roomId: v.id("rooms"), playerId: v.string() },
+  handler: async (ctx, args) => {
+    // Find player row
+    const player = await ctx.db
+      .query("players")
+      .withIndex("by_player_id", (q) => q.eq("playerId", args.playerId))
+      .first();
+    if (!player) throw new Error("Player not found");
+
+    const lives = Math.max(0, (player.lives ?? 0) - 1);
+    await ctx.db.patch(player._id, { lives, isReady: false });
+
+    // Reset room/game state
+    const gs = await ctx.db
+      .query("gameState")
+      .withIndex("by_room", (q) => q.eq("roomId", args.roomId))
+      .first();
+    if (gs) {
+      await ctx.db.patch(gs._id, {
+        gamePhase: lives === 0 ? "finished" : "setup",
+        combatQueue: [],
+        lastUpdate: Date.now(),
+      });
+    }
+    // If a player is out of lives, mark room finished
+    if (lives === 0) {
+      await ctx.db.patch(args.roomId, { status: "finished" });
+    } else {
+      // Ensure all players become not-ready to prevent accidental start
+      const others = await ctx.db
+        .query("players")
+        .withIndex("by_room", (q) => q.eq("roomId", args.roomId))
+        .collect();
+      for (const p of others) {
+        await ctx.db.patch(p._id, { isReady: false });
+      }
+      await ctx.db.patch(args.roomId, { status: "waiting" });
+    }
+
+    return { lives };
+  },
+});

@@ -22,6 +22,8 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
   const createRoom = useMutation(api.rooms.createRoom);
   const joinRoom = useMutation(api.rooms.joinRoom);
   const updatePlayerReady = useMutation(api.rooms.updatePlayerReady);
+  const updatePlayerFleetValidity = useMutation(api.gameState.updatePlayerFleetValidity);
+  const restartToSetup = useMutation(api.rooms.restartToSetup);
   const startGame = useMutation(api.rooms.startGame);
   const updateGameState = useMutation(api.gameState.updateGameState);
   const switchTurn = useMutation(api.gameState.switchTurn);
@@ -115,6 +117,36 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
     }
   };
 
+  const handleUpdateFleetValidity = async (fleetValid: boolean) => {
+    if (!isConvexAvailable) {
+      throw new Error("Multiplayer features are not available. Please check your connection and try again.");
+    }
+    if (!roomId) throw new Error("No room ID");
+    const playerId = getPlayerId();
+    if (!playerId) throw new Error("No player ID found");
+    try {
+      await updatePlayerFleetValidity({ roomId, playerId, fleetValid });
+    } catch (error) {
+      console.error("Failed to update fleet validity:", error);
+      throw error;
+    }
+  };
+
+  const handleRestartToSetup = async () => {
+    if (!isConvexAvailable) {
+      throw new Error("Multiplayer features are not available. Please check your connection and try again.");
+    }
+    if (!roomId) throw new Error("No room ID");
+    const playerId = getPlayerId();
+    if (!playerId) throw new Error("No player ID found");
+    try {
+      return await restartToSetup({ roomId, playerId });
+    } catch (error) {
+      console.error("Failed to restart to setup:", error);
+      throw error;
+    }
+  };
+
   const handleStartGame = async () => {
     if (!isConvexAvailable) {
       throw new Error("Multiplayer features are not available. Please check your connection and try again.");
@@ -198,7 +230,10 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
     createRoom: handleCreateRoom,
     joinRoom: handleJoinRoom,
     updatePlayerReady: handlePlayerReady,
+    setReady: handlePlayerReady,
+    updateFleetValidity: handleUpdateFleetValidity,
     startGame: handleStartGame,
+    restartToSetup: handleRestartToSetup,
     
     // Game actions
     updateGameState: handleGameStateUpdate,
