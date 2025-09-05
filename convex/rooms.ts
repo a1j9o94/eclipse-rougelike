@@ -1,8 +1,8 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, type DatabaseReader, type DatabaseWriter } from "./_generated/server";
 import { v } from "convex/values";
 // import { maybeStartCombat } from "./helpers/match";
-import { simulateCombat, type ShipSnap } from "./engine/combat";
 import { logInfo, roomTag } from "./helpers/log";
+import { maybeResolveRound } from "./helpers/resolve";
 
 // Helper function to generate a unique player ID
 function generatePlayerId(): string {
@@ -163,64 +163,18 @@ export const updatePlayerReady = mutation({
     logInfo('ready', `player toggled`, { playerId: player.playerId, isReady: args.isReady });
 
     // Attempt to resolve round when both players are ready and valid snapshots exist
-    const gs = await ctx.db
+    // Fetch current state to update readiness, then attempt to resolve round
+    await ctx.db
       .query("gameState")
       .withIndex("by_room", (q) => q.eq("roomId", player.roomId))
       .first();
-    const players = await ctx.db
+    await ctx.db
       .query("players")
       .withIndex("by_room", (q) => q.eq("roomId", player.roomId))
       .collect();
 
-    const bothReady = players.length === 2 && players.every(p => p.isReady);
-    if (bothReady && gs) {
-      const pStates = (gs.playerStates as Record<string, { fleet?: unknown; fleetValid?: boolean; sector?: number }>);
-      const haveSnapshots = players.every(p => pStates?.[p.playerId]?.fleet);
-      const allValid = players.every(p => pStates?.[p.playerId]?.fleetValid !== false);
-
-      if (haveSnapshots && allValid) {
-        const roundNum = gs.roundNum || 1;
-        const seed = `${player.roomId}:${roundNum}:${Date.now()}`;
-        logInfo('combat', `starting resolve`, { tag: roomTag(player.roomId, roundNum), bothReady, haveSnapshots, allValid });
-
-        const pA = players[0].playerId, pB = players[1].playerId;
-        const fleetA = (pStates[pA]?.fleet as unknown as ShipSnap[]) || [];
-        const fleetB = (pStates[pB]?.fleet as unknown as ShipSnap[]) || [];
-
-        const { winnerPlayerId, roundLog } = simulateCombat({ seed, playerAId: pA, playerBId: pB, fleetA, fleetB });
-        const loserRow = players.find(p => p.playerId !== winnerPlayerId)!;
-        logInfo('combat', `resolved`, { tag: roomTag(player.roomId, roundNum), winnerPlayerId, loserId: loserRow.playerId, seed });
-
-        // Archive winner fleet snapshot
-        const winnerState = pStates[winnerPlayerId] as { fleet?: unknown, sector?: number } | undefined;
-        if (winnerState?.fleet) {
-          await ctx.db.insert("fleetArchives", {
-            roomId: player.roomId,
-            roundNum,
-            createdAt: Date.now(),
-            fleet: winnerState.fleet,
-            sector: winnerState.sector,
-          });
-        }
-
-        // Decrement loser lives
-        const newLives = Math.max(0, (loserRow.lives ?? 0) - 1);
-        await ctx.db.patch(loserRow._id, { lives: newLives });
-
-        await ctx.db.patch(gs._id, {
-          gamePhase: newLives === 0 ? "finished" : "combat",
-          roundSeed: seed,
-          roundLog,
-          acks: {},
-          lastUpdate: Date.now(),
-        });
-
-        if (newLives === 0) {
-          await ctx.db.patch(player.roomId, { status: "finished" });
-          logInfo('combat', `match finished`, { tag: roomTag(player.roomId, roundNum) });
-        }
-      }
-    }
+    // Try resolving a round now that readiness might have changed
+    await maybeResolveRound(ctx as unknown as { db: DatabaseReader & DatabaseWriter }, player.roomId);
 
     return player._id;
   },

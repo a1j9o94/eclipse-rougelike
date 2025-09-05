@@ -1,7 +1,8 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, type DatabaseReader, type DatabaseWriter } from "./_generated/server";
 import { v } from "convex/values";
 // Legacy auto-start removed to prevent premature combat during Outpost
 import { logInfo, roomTag } from "./helpers/log";
+import { maybeResolveRound } from "./helpers/resolve";
 
 export const initializeGameState = mutation({
   args: { 
@@ -332,6 +333,8 @@ export const submitFleetSnapshot = mutation({
 
     await ctx.db.patch(gameState._id, { playerStates, lastUpdate: Date.now() });
     logInfo('snapshot', 'fleet snapshot submitted', { tag: roomTag(args.roomId as unknown as string), playerId: args.playerId, count: Array.isArray(args.fleet) ? (args.fleet as unknown[]).length : 0, fleetValid: args.fleetValid });
+    // If both players are ready and snapshots exist, resolve now
+    await maybeResolveRound(ctx as unknown as { db: DatabaseReader & DatabaseWriter }, args.roomId);
     return true;
   },
 });

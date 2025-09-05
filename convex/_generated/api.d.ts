@@ -18,6 +18,7 @@ import type * as gameState from "../gameState.js";
 import type * as helpers_log from "../helpers/log.js";
 import type * as helpers_match from "../helpers/match.js";
 import type * as helpers_ready from "../helpers/ready.js";
+import type * as helpers_resolve from "../helpers/resolve.js";
 import type * as rooms from "../rooms.js";
 
 /**
@@ -34,6 +35,7 @@ declare const fullApi: ApiFromModules<{
   "helpers/log": typeof helpers_log;
   "helpers/match": typeof helpers_match;
   "helpers/ready": typeof helpers_ready;
+  "helpers/resolve": typeof helpers_resolve;
   rooms: typeof rooms;
 }>;
 export declare const api: FilterApi<
