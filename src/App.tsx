@@ -385,8 +385,9 @@ export default function EclipseIntegrated(){
           const oppFleet = opp ? (pStates?.[opp.playerId]?.fleet as any[] | undefined) : undefined;
           const toClient = (snap: any): Ship => ({
             frame: getFrame((snap?.frame?.id || 'interceptor') as any),
-            parts: Array.isArray(snap?.parts) ? snap.parts : [],
-            weapons: Array.isArray(snap?.weapons) ? snap.weapons : [],
+            // Multiplayer snapshots don't carry client Part objects; use token fallback in UI
+            parts: [],
+            weapons: [],
             riftDice: snap?.riftDice || 0,
             stats: { init: snap?.stats?.init || 0, hullCap: snap?.stats?.hullCap || 1, powerUse: 0, powerProd: 0, valid: true, aim: snap?.stats?.aim || 0, shieldTier: snap?.stats?.shieldTier || 0, regen: snap?.stats?.regen || 0 },
             hull: Math.max(0, snap?.hull ?? (snap?.stats?.hullCap || 1)),
@@ -410,32 +411,52 @@ export default function EclipseIntegrated(){
       try {
         if (gameMode === 'multiplayer') {
           const myId = multi.getPlayerId?.() as string | null;
-          const st = myId ? (multi.gameState?.playerStates as any)?.[myId] : null;
+          const pStates = multi.gameState?.playerStates as Record<string, any> | undefined;
+          const st = myId ? pStates?.[myId] : null;
           const res = (st?.resources as { credits:number; materials:number; science:number } | undefined);
           if (res && typeof res.credits === 'number') {
             setResources(r => ({ ...r, ...res }));
           }
-          // Seed starting fleet on first multiplayer setup
-          const starting = multi.roomDetails?.room?.gameConfig?.startingShips as number | undefined;
-          const roundNum = (multi.gameState?.roundNum || 1) as number;
-          if (!mpSeeded && roundNum === 1 && (starting && starting > 0)) {
-            const ships = Array.from({ length: starting }, () => makeShip(getFrame('interceptor'), [ ...INITIAL_BLUEPRINTS.interceptor ])) as unknown as Ship[];
-            setFleet(ships);
-            setCapacity(c => ({ cap: Math.max(c.cap, starting) }));
+          // Prefer server snapshot of my fleet for consistency across clients
+          const toClient = (snap: any): Ship => ({
+            frame: getFrame((snap?.frame?.id || 'interceptor') as any),
+            parts: [],
+            weapons: [],
+            riftDice: snap?.riftDice || 0,
+            stats: { init: snap?.stats?.init || 0, hullCap: snap?.stats?.hullCap || 1, powerUse: 0, powerProd: 0, valid: true, aim: snap?.stats?.aim || 0, shieldTier: snap?.stats?.shieldTier || 0, regen: snap?.stats?.regen || 0 },
+            hull: Math.max(0, snap?.hull ?? (snap?.stats?.hullCap || 1)),
+            alive: snap?.alive !== false,
+          });
+          const serverFleet = Array.isArray(st?.fleet) ? st.fleet.map(toClient) as unknown as Ship[] : [];
+          if (serverFleet.length > 0) {
+            setFleet(serverFleet);
+            setCapacity(c => ({ cap: Math.max(c.cap, serverFleet.length) }));
             setFocused(0);
             setMpSeeded(true);
+          } else {
+            // Seed starting fleet on first multiplayer setup if no snapshot yet
+            const starting = multi.roomDetails?.room?.gameConfig?.startingShips as number | undefined;
+            const roundNum = (multi.gameState?.roundNum || 1) as number;
+            if (!mpSeeded && roundNum === 1 && (starting && starting > 0)) {
+              const ships = Array.from({ length: starting }, () => makeShip(getFrame('interceptor'), [ ...INITIAL_BLUEPRINTS.interceptor ])) as unknown as Ship[];
+              setFleet(ships);
+              setCapacity(c => ({ cap: Math.max(c.cap, starting) }));
+              setFocused(0);
+              setMpSeeded(true);
+            }
           }
         }
       } catch { /* ignore */ }
     } else if (phase === 'finished') {
       console.debug('[Nav] Phase → finished');
-      if (gameMode === 'multiplayer') {
+      // Only show Match Over modal when room is truly finished
+      if (gameMode === 'multiplayer' && multi.roomDetails?.room?.status === 'finished') {
         try {
           const winnerId = (multi.gameState as any)?.matchResult?.winnerPlayerId as string | undefined;
           const winnerName = (multi.roomDetails?.players as any[] | undefined)?.find(p=>p.playerId===winnerId)?.playerName || 'Winner';
           setMatchOver({ winnerName });
         } catch { /* ignore */ }
-      } else {
+      } else if (gameMode !== 'multiplayer') {
         setMultiplayerPhase('lobby');
       }
     }
