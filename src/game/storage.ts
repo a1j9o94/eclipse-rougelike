@@ -8,7 +8,7 @@ import { getFaction } from '../config/factions';
 import { setEconomyModifiers } from './economy';
 import { setRareTechChance } from './shop';
 import { setPlayerFaction, setOpponentFaction } from './setup';
-declare const process: any;
+declare const process: { env: Record<string, string | undefined> };
 
 export type ProgressFaction = { unlocked: boolean; difficulties: DifficultyId[] };
 export type Progress = {

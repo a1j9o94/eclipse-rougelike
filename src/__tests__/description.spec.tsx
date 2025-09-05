@@ -20,7 +20,7 @@ describe('part descriptions', () => {
 
   it('renders description in ItemCard', () => {
     const spike = RARE_PARTS.find(p => p.id === 'spike_launcher')!;
-    render(<ItemCard item={spike} canAfford={true} ghostDelta={null as any} onBuy={() => {}} />);
+    render(<ItemCard item={spike} canAfford={true} ghostDelta={null} onBuy={() => {}} />);
     expect(screen.getByText(/only a 6 hits/i)).toBeInTheDocument();
   });
 });

@@ -5,14 +5,12 @@ import { getStartingShipCount } from '../config/difficulty';
 import { loadRunState, evaluateUnlocks, type Progress } from '../game/storage';
 import { playEffect } from '../game/sound';
 
-export default function StartPage({ 
-  onNewRun, 
-  onContinue, 
-  onMultiplayer 
-}: { 
-  onNewRun: (diff: DifficultyId, faction: FactionId) => void; 
+export default function StartPage({
+  onNewRun,
+  onContinue
+}: {
+  onNewRun: (diff: DifficultyId, faction: FactionId) => void;
   onContinue?: () => void;
-  onMultiplayer?: () => void;
 }) {
   const progress: Progress = evaluateUnlocks(loadRunState());
   const available = FACTIONS.filter(f => progress.factions[f.id]?.unlocked);
@@ -39,18 +37,14 @@ export default function StartPage({
               Continue Run
             </button>
           )}
-          {onMultiplayer && (
-            <>
-              <div className="text-md font-medium mt-6">Multiplayer</div>
-              <div className="text-xs opacity-80 mb-2">Battle against another player in real-time combat</div>
-              <button 
-                className="w-full px-3 py-2 rounded-xl bg-blue-700 hover:bg-blue-600" 
-                onClick={onMultiplayer}
-              >
-                Play Multiplayer
-              </button>
-            </>
-          )}
+          <div className="text-md font-medium mt-6">Multiplayer</div>
+          <div className="text-xs opacity-80 mb-2">Battle against another player in real-time combat (coming soon)</div>
+          <button
+            disabled
+            className="w-full px-3 py-2 rounded-xl bg-zinc-700 opacity-50 cursor-not-allowed"
+          >
+            Multiplayer (Coming Soon)
+          </button>
         </div>
         <div className="mt-3 flex-1 overflow-y-auto space-y-2" data-testid="faction-list">
           {available.map(f => (

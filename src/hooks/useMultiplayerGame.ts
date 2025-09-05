@@ -1,6 +1,7 @@
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
+import type { MultiplayerGameConfig } from "../config/multiplayer";
 
 export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
   // Check if Convex is available
@@ -32,9 +33,12 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
   const setPlayerId = (id: string) => localStorage.setItem('eclipse-player-id', id);
 
   // Helper functions
+  type RoomPlayer = { playerId: string; isHost?: boolean; isReady?: boolean };
+  const players = roomDetails?.players as RoomPlayer[] | undefined;
+
   const isHost = () => {
     const playerId = getPlayerId();
-    return roomDetails?.players.find((p: any) => p.playerId === playerId)?.isHost ?? false;
+    return players?.find(p => p.playerId === playerId)?.isHost ?? false;
   };
 
   const isMyTurn = () => {
@@ -44,12 +48,12 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
 
   const getCurrentPlayer = () => {
     const playerId = getPlayerId();
-    return roomDetails?.players.find((p: any) => p.playerId === playerId);
+    return players?.find(p => p.playerId === playerId);
   };
 
   const getOpponent = () => {
     const playerId = getPlayerId();
-    return roomDetails?.players.find((p: any) => p.playerId !== playerId);
+    return players?.find(p => p.playerId !== playerId);
   };
 
   const getMyGameState = () => {
@@ -63,7 +67,7 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
   };
 
   // Room management actions
-  const handleCreateRoom = async (roomName: string, isPublic: boolean, playerName: string, gameConfig: any) => {
+  const handleCreateRoom = async (roomName: string, isPublic: boolean, playerName: string, gameConfig: MultiplayerGameConfig) => {
     if (!isConvexAvailable) {
       throw new Error("Multiplayer features are not available. Please check your connection and try again.");
     }
@@ -132,7 +136,7 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
   };
 
   // Game state actions
-  const handleGameStateUpdate = async (updates: any) => {
+  const handleGameStateUpdate = async (updates: Record<string, unknown>) => {
     if (!isConvexAvailable) {
       throw new Error("Multiplayer features are not available. Please check your connection and try again.");
     }

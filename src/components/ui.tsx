@@ -75,7 +75,7 @@ function effectLabels(p: Part, fields: PartEffectField[]) {
   const labels: string[] = [];
   fields.forEach(f => {
     if (f === 'extraHull') return;
-    const val = (p as any)[f];
+    const val = (p as Record<PartEffectField, number | undefined>)[f];
     if (typeof val === 'number' && val !== 0) {
       const sym = PART_EFFECT_SYMBOLS[f].replace(/[+-]$/, '');
       labels.push(val > 1 ? `${val}${sym}` : sym);
@@ -153,7 +153,7 @@ export function CompactShip({ ship, side, active }:{ship:Ship, side:'P'|'E', act
     </div>
   );
 }
-export function ItemCard({ item, canAfford, onBuy, ghostDelta }:{item:Part, canAfford:boolean, onBuy:()=>void, ghostDelta:GhostDelta}){
+export function ItemCard({ item, canAfford, onBuy, ghostDelta }:{item:Part, canAfford:boolean, onBuy:()=>void, ghostDelta:GhostDelta|null}){
   return (
     <div className={`p-3 rounded-xl border bg-zinc-900 transition ${canAfford? 'border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800/70' : 'border-zinc-800 opacity-90'}`}>
       <div className="flex items-start justify-between gap-2">

@@ -6,7 +6,7 @@ class FakeAudio {
   loop = false;
   play = vi.fn(() => Promise.resolve());
   pause = vi.fn();
-  constructor(_src?:string){ FakeAudio.instances.push(this); }
+  constructor(){ FakeAudio.instances.push(this); }
 }
 
 vi.stubGlobal('Audio', FakeAudio as unknown as typeof Audio);

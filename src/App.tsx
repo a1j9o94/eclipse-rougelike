@@ -127,14 +127,6 @@ export default function EclipseIntegrated(){
   }
   function resetRun(){ clearRunState(); setDifficulty(null); setShowNewRun(true); setEndless(false); setGraceUsed(false); }
 
-  // ---------- Multiplayer handlers ----------
-  function handleMultiplayerMode() {
-    setGameMode('multiplayer');
-    setMultiplayerPhase('menu');
-    setShowNewRun(false);
-    void playEffect('page');
-  }
-
   function handleRoomJoined(roomId: string) {
     setCurrentRoomId(roomId as Id<"rooms">);
     setMultiplayerPhase('lobby');
@@ -380,10 +372,9 @@ export default function EclipseIntegrated(){
 
   // Main routing logic
   if (showNewRun && gameMode === 'single') {
-    return <StartPage 
-      onNewRun={newRun} 
+    return <StartPage
+      onNewRun={newRun}
       onContinue={()=>{ setShowNewRun(false); void playEffect('page'); }}
-      onMultiplayer={handleMultiplayerMode}
     />;
   }
 
