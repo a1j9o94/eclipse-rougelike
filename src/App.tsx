@@ -53,7 +53,14 @@ export default function EclipseIntegrated(){
   const [showWin, setShowWin] = useState(false);
   const [showHelpMenu, setShowHelpMenu] = useState(false);
   const [endless, setEndless] = useState(false);
-  const [graceUsed, setGraceUsed] = useState(saved?.graceUsed ?? false);
+  // Lives system replaces old grace
+  const inferStartingLives = (diff: DifficultyId | null, sv?: { livesRemaining?: number; graceUsed?: boolean }) => {
+    if (sv?.livesRemaining != null) return sv.livesRemaining as number;
+    if (sv?.graceUsed != null) return sv.graceUsed ? 0 : 1;
+    if (!diff) return 0;
+    return getDefeatPolicy(diff) === 'grace' ? 1 : 0;
+  };
+  const [livesRemaining, setLivesRemaining] = useState<number>(inferStartingLives(saved?.difficulty ?? null, saved ?? undefined));
   const [difficulty, setDifficulty] = useState<null|DifficultyId>(saved?.difficulty ?? null);
   const [faction, setFaction] = useState<FactionId>(saved?.faction ?? 'industrialists');
   const [opponent, setOpponent] = useState<FactionId>(saved?.opponent ?? 'warmongers');
@@ -108,7 +115,7 @@ export default function EclipseIntegrated(){
     setShowNewRun(false);
     void playEffect('page');
     setEndless(false);
-    setGraceUsed(false);
+    setLivesRemaining(getDefeatPolicy(diff) === 'grace' ? 1 : 0);
     const st = initNewRun({ difficulty: diff, faction: pick });
     const opp = getOpponentFaction();
     setOpponent(opp as FactionId);
@@ -125,7 +132,7 @@ export default function EclipseIntegrated(){
     startFirstCombat();
     setShowRules(true);
   }
-  function resetRun(){ clearRunState(); setDifficulty(null); setShowNewRun(true); setEndless(false); setGraceUsed(false); }
+  function resetRun(){ clearRunState(); setDifficulty(null); setShowNewRun(true); setEndless(false); setLivesRemaining(0); }
 
   function handleRoomJoined(roomId: string) {
     setCurrentRoomId(roomId as Id<"rooms">);
@@ -314,8 +321,8 @@ export default function EclipseIntegrated(){
       if(!rewardPaid){ const rw = calcRewards(enemyFleet, sector); setResources(r=>({...r, credits: r.credits + rw.c, materials: r.materials + rw.m, science: r.science + rw.s })); setRewardPaid(true); setLog(l=>[...l, `✅ Victory — +${rw.c}¢, +${rw.m}🧱, +${rw.s}🔬`]); }
       setOutcome('Victory'); setSector(s=> s+1); setRerollCost(baseRerollCost);
     } else {
-      if(difficulty && (getDefeatPolicy(difficulty)==='reset' || graceUsed)) { setOutcome('Defeat — Run Over'); }
-      else { setOutcome('Defeat — Grace'); setGraceUsed(true); }
+      if(difficulty && (getDefeatPolicy(difficulty)==='reset' || livesRemaining<=0)) { setOutcome('Defeat — Run Over'); }
+      else { setOutcome('Defeat — Life Lost'); setLivesRemaining(n=> Math.max(0, n-1)); }
       setLog(l=>[...l, '💀 Defeat']);
     }
     setCombatOver(true);
@@ -355,10 +362,10 @@ export default function EclipseIntegrated(){
   // Persist run state
   useEffect(()=>{
     if(!difficulty) return;
-    const st = { difficulty, faction, opponent, resources, research, rerollCost, baseRerollCost, capacity, sector, blueprints, fleet, shop, graceUsed };
+    const st = { difficulty, faction, opponent, resources, research, rerollCost, baseRerollCost, capacity, sector, blueprints, fleet, shop, livesRemaining };
     saveRunState(st);
     evaluateUnlocks(st);
-  }, [difficulty, faction, opponent, resources, research, rerollCost, baseRerollCost, capacity, sector, blueprints, fleet, shop, graceUsed]);
+  }, [difficulty, faction, opponent, resources, research, rerollCost, baseRerollCost, capacity, sector, blueprints, fleet, shop, livesRemaining]);
   function dismissRules(){ setShowRules(false); }
 
   // Self-tests moved to src/__tests__/runtime.selftests.spec.ts

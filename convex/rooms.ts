@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { maybeStartCombat } from "./helpers/match";
 
 // Helper function to generate a unique player ID
 function generatePlayerId(): string {
@@ -160,6 +161,9 @@ export const updatePlayerReady = mutation({
       isReady: args.isReady,
     });
 
+    // Attempt to auto-start if both players are ready and valid
+    await maybeStartCombat(ctx, player.roomId);
+
     return player._id;
   },
 });
@@ -167,32 +171,12 @@ export const updatePlayerReady = mutation({
 export const startGame = mutation({
   args: { roomId: v.id("rooms") },
   handler: async (ctx, args) => {
-    const room = await ctx.db.get(args.roomId);
-    if (!room) throw new Error("Room not found");
-
-    const players = await ctx.db
-      .query("players")
-      .withIndex("by_room", (q) => q.eq("roomId", args.roomId))
-      .collect();
-
-    if (players.length !== 2) {
-      throw new Error("Need exactly 2 players to start");
+    // Anyone can request start; server checks readiness/validity
+    const started = await maybeStartCombat(ctx, args.roomId);
+    if (!started) {
+      throw new Error("Both players must be ready with valid fleets");
     }
-
-    const allReady = players.every(p => p.isReady);
-    if (!allReady) {
-      throw new Error("All players must be ready");
-    }
-
-    // Update room status
-    await ctx.db.patch(args.roomId, {
-      status: "playing",
-    });
-
-    // Initialize game state (will be implemented later)
-    // This is where we'll create the initial game state for multiplayer
-
-    return true;
+    return started;
   },
 });
 

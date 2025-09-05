@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { maybeStartCombat } from "./helpers/match";
 
 export const initializeGameState = mutation({
   args: { 
@@ -99,6 +100,8 @@ export const updatePlayerFleetValidity = mutation({
     playerStates[args.playerId] = { ...prev, fleetValid: args.fleetValid };
 
     await ctx.db.patch(gameState!._id, { playerStates, lastUpdate: Date.now() });
+    // Attempt to auto-start if readiness + validity satisfied
+    await maybeStartCombat(ctx, args.roomId);
     return true;
   },
 });

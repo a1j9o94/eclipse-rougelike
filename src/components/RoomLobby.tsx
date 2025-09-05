@@ -29,9 +29,9 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
   const room = roomDetails?.room;
   type RoomPlayer = { playerId: string; isReady: boolean; lives: number; playerName: string; isHost: boolean };
 
-  // Auto-start game when both players are ready and we're the host
+  // Auto-start game when both players are ready (server will validate)
   useEffect(() => {
-    if (!roomDetails || !isHost()) return;
+    if (!roomDetails) return;
     
     const players = roomDetails.players as RoomPlayer[];
     const allReady = players.every(p => p.isReady);
@@ -48,7 +48,15 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
           setIsStarting(false);
         });
     }
-  }, [roomDetails, isHost, startGame, onGameStart, isStarting]);
+  }, [roomDetails, startGame, onGameStart, isStarting]);
+
+  // Navigate when server flips phase to combat
+  useEffect(() => {
+    if (gameState?.gamePhase === 'combat' && !isStarting) {
+      setIsStarting(true);
+      onGameStart();
+    }
+  }, [gameState?.gamePhase, isStarting, onGameStart]);
 
   const localPlayerId = currentPlayer?.playerId;
   const localState = (gameState?.playerStates?.[localPlayerId as string] as { fleetValid?: boolean } | undefined);

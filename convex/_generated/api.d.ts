@@ -14,6 +14,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as gameState from "../gameState.js";
+import type * as helpers_match from "../helpers/match.js";
 import type * as helpers_ready from "../helpers/ready.js";
 import type * as rooms from "../rooms.js";
 
@@ -27,6 +28,7 @@ import type * as rooms from "../rooms.js";
  */
 declare const fullApi: ApiFromModules<{
   gameState: typeof gameState;
+  "helpers/match": typeof helpers_match;
   "helpers/ready": typeof helpers_ready;
   rooms: typeof rooms;
 }>;
