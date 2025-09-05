@@ -5,7 +5,15 @@ import { getStartingShipCount } from '../config/difficulty';
 import { loadRunState, evaluateUnlocks, type Progress } from '../game/storage';
 import { playEffect } from '../game/sound';
 
-export default function StartPage({ onNewRun, onContinue }: { onNewRun: (diff: DifficultyId, faction: FactionId) => void; onContinue?: () => void }) {
+export default function StartPage({ 
+  onNewRun, 
+  onContinue, 
+  onMultiplayer 
+}: { 
+  onNewRun: (diff: DifficultyId, faction: FactionId) => void; 
+  onContinue?: () => void;
+  onMultiplayer?: () => void;
+}) {
   const progress: Progress = evaluateUnlocks(loadRunState());
   const available = FACTIONS.filter(f => progress.factions[f.id]?.unlocked);
   const [faction, setFaction] = useState<FactionId>(available[0]?.id || 'industrialists');
@@ -19,11 +27,31 @@ export default function StartPage({ onNewRun, onContinue }: { onNewRun: (diff: D
   return (
     <div className="h-screen overflow-y-auto bg-zinc-950 text-zinc-100 p-4 flex flex-col">
       <div className="w-full max-w-md mx-auto flex flex-col flex-1">
-        <div className="text-lg font-semibold">Start New Run</div>
-        <div className="text-sm opacity-80 mt-1">Choose a faction and difficulty. Easy/Medium grant a grace respawn after a wipe; Hard is a full reset.</div>
-        {save && (
-          <button className="mt-2 px-3 py-2 rounded-xl bg-zinc-700" onClick={onContinue}>Continue Run</button>
-        )}
+        <div className="text-lg font-semibold">Eclipse Roguelike</div>
+        <div className="text-sm opacity-80 mt-1">Choose your game mode</div>
+        
+        {/* Game Mode Selection */}
+        <div className="mt-4 space-y-2">
+          <div className="text-md font-medium">Single Player</div>
+          <div className="text-xs opacity-80 mb-2">Choose a faction and difficulty. Easy/Medium grant a grace respawn after a wipe; Hard is a full reset.</div>
+          {save && (
+            <button className="w-full px-3 py-2 rounded-xl bg-zinc-700 hover:bg-zinc-600" onClick={onContinue}>
+              Continue Run
+            </button>
+          )}
+          {onMultiplayer && (
+            <>
+              <div className="text-md font-medium mt-6">Multiplayer</div>
+              <div className="text-xs opacity-80 mb-2">Battle against another player in real-time combat</div>
+              <button 
+                className="w-full px-3 py-2 rounded-xl bg-blue-700 hover:bg-blue-600" 
+                onClick={onMultiplayer}
+              >
+                Play Multiplayer
+              </button>
+            </>
+          )}
+        </div>
         <div className="mt-3 flex-1 overflow-y-auto space-y-2" data-testid="faction-list">
           {available.map(f => (
             <button

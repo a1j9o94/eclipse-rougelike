@@ -23,6 +23,9 @@ import { calcRewards, ensureGraceResources, graceRecoverFleet } from './game/rew
 import { researchLabel as researchLabelCore, canResearch as canResearchCore } from './game/research'
 import { loadRunState, saveRunState, clearRunState, recordWin, restoreRunEnvironment, restoreOpponent, evaluateUnlocks } from './game/storage'
 import { playEffect, playMusic } from './game/sound'
+import MultiplayerStartPage from './pages/MultiplayerStartPage'
+import { RoomLobby } from './components/RoomLobby'
+import type { Id } from '../convex/_generated/dataModel'
 
 /**
  * Eclipse Roguelike — Integrated App (v3.24)
@@ -92,6 +95,11 @@ export default function EclipseIntegrated(){
   const [sector, setSector] = useState(saved?.sector ?? 1); // difficulty progression
   const [stepLock, setStepLock] = useState(false);
 
+  // Multiplayer state
+  const [gameMode, setGameMode] = useState<'single' | 'multiplayer'>('single');
+  const [multiplayerPhase, setMultiplayerPhase] = useState<'menu' | 'lobby' | 'game'>('menu');
+  const [currentRoomId, setCurrentRoomId] = useState<Id<"rooms"> | null>(null);
+
   // ---------- Run management ----------
   function newRun(diff: DifficultyId, pick:FactionId){
     clearRunState();
@@ -118,6 +126,39 @@ export default function EclipseIntegrated(){
     setShowRules(true);
   }
   function resetRun(){ clearRunState(); setDifficulty(null); setShowNewRun(true); setEndless(false); setGraceUsed(false); }
+
+  // ---------- Multiplayer handlers ----------
+  function handleMultiplayerMode() {
+    setGameMode('multiplayer');
+    setMultiplayerPhase('menu');
+    setShowNewRun(false);
+    void playEffect('page');
+  }
+
+  function handleRoomJoined(roomId: string) {
+    setCurrentRoomId(roomId as Id<"rooms">);
+    setMultiplayerPhase('lobby');
+    void playEffect('page');
+  }
+
+  function handleGameStart() {
+    setMultiplayerPhase('game');
+    void playEffect('page');
+  }
+
+  function handleLeaveRoom() {
+    setCurrentRoomId(null);
+    setMultiplayerPhase('menu');
+    void playEffect('page');
+  }
+
+  function handleBackToMainMenu() {
+    setGameMode('single');
+    setMultiplayerPhase('menu');
+    setCurrentRoomId(null);
+    setShowNewRun(true);
+    void playEffect('page');
+  }
 
   // ---------- Blueprint helpers ----------
   function applyBlueprintToFleet(frameId:FrameId, parts:Part[]){ setFleet(f=> applyBpToFleet(frameId, parts, f)); }
@@ -337,8 +378,49 @@ export default function EclipseIntegrated(){
   function canResearch(track:'Military'|'Grid'|'Nano'){ return canResearchCore(track, research as Research, resources); }
   function upgradeLockInfo(ship:Ship|null|undefined){ if(!ship) return null; if(ship.frame.id==='interceptor'){ return { need: 2, next:'Cruiser' }; } if(ship.frame.id==='cruiser'){ return { need: 3, next:'Dreadnought' }; } return null; }
 
-  if (showNewRun) {
-    return <StartPage onNewRun={newRun} onContinue={()=>{ setShowNewRun(false); void playEffect('page'); }} />;
+  // Main routing logic
+  if (showNewRun && gameMode === 'single') {
+    return <StartPage 
+      onNewRun={newRun} 
+      onContinue={()=>{ setShowNewRun(false); void playEffect('page'); }}
+      onMultiplayer={handleMultiplayerMode}
+    />;
+  }
+
+  // Multiplayer routing
+  if (gameMode === 'multiplayer') {
+    if (multiplayerPhase === 'menu') {
+      return <MultiplayerStartPage 
+        onRoomJoined={handleRoomJoined}
+        onBack={handleBackToMainMenu}
+      />;
+    }
+    
+    if (multiplayerPhase === 'lobby' && currentRoomId) {
+      return <RoomLobby
+        roomId={currentRoomId}
+        onGameStart={handleGameStart}
+        onLeaveRoom={handleLeaveRoom}
+      />;
+    }
+    
+    if (multiplayerPhase === 'game' && currentRoomId) {
+      // TODO: Implement multiplayer game page
+      return (
+        <div className="bg-zinc-950 min-h-screen text-zinc-100 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-2xl mb-4">Multiplayer Game</div>
+            <div className="text-zinc-400 mb-4">Coming soon!</div>
+            <button
+              onClick={handleLeaveRoom}
+              className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded"
+            >
+              Back to Lobby
+            </button>
+          </div>
+        </div>
+      );
+    }
   }
 
   return (

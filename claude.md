@@ -1,0 +1,1 @@
+See AGENTS.md for instructions on how to work with this project.
