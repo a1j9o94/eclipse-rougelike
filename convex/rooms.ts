@@ -157,9 +157,82 @@ export const updatePlayerReady = mutation({
       }
     }
 
-    await ctx.db.patch(player._id, {
-      isReady: args.isReady,
-    });
+    await ctx.db.patch(player._id, { isReady: args.isReady });
+
+    // Attempt to resolve round when both players are ready and valid snapshots exist
+    const gs = await ctx.db
+      .query("gameState")
+      .withIndex("by_room", (q) => q.eq("roomId", player.roomId))
+      .first();
+    const players = await ctx.db
+      .query("players")
+      .withIndex("by_room", (q) => q.eq("roomId", player.roomId))
+      .collect();
+
+    const bothReady = players.length === 2 && players.every(p => p.isReady);
+    if (bothReady && gs) {
+      const pStates = (gs.playerStates as Record<string, { fleet?: unknown; fleetValid?: boolean }>);
+      const haveSnapshots = players.every(p => pStates?.[p.playerId]?.fleet);
+      const allValid = players.every(p => pStates?.[p.playerId]?.fleetValid !== false);
+
+      if (haveSnapshots && allValid) {
+        const roundNum = gs.roundNum || 1;
+        const seed = `${player.roomId}:${roundNum}:${Date.now()}`;
+        // Simple deterministic resolve using seed + naive power
+        function hash32(s: string) { let h = 2166136261>>>0; for (let i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h>>>0; }
+        function powerOf(pid: string){
+          const f = pStates[pid]?.fleet as unknown as Array<{ stats?: { hullCap?: number; init?: number }, weapons?: unknown[] }> | undefined;
+          if(!f) return 0;
+          let total = 0;
+          for (const ship of f) {
+            const stats = ship?.stats || {};
+            const weapons = (ship?.weapons || []) as unknown[];
+            total += (stats.hullCap || 1) + (stats.init || 0) * 0.1 + weapons.length * 2;
+          }
+          return total;
+        }
+        const pA = players[0].playerId, pB = players[1].playerId;
+        const scoreA = powerOf(pA), scoreB = powerOf(pB);
+        const r = (hash32(seed) % 1000) / 1000;
+        const bias = scoreA + scoreB > 0 ? scoreA / (scoreA + scoreB) : 0.5;
+        const winnerPlayerId = r < bias ? pA : pB;
+        const loserRow = players.find(p => p.playerId !== winnerPlayerId)!;
+
+        // Archive winner fleet snapshot
+        const winnerState = pStates[winnerPlayerId] as { fleet?: unknown, sector?: number } | undefined;
+        if (winnerState?.fleet) {
+          await ctx.db.insert("fleetArchives", {
+            roomId: player.roomId,
+            roundNum,
+            createdAt: Date.now(),
+            fleet: winnerState.fleet,
+            sector: winnerState.sector,
+          });
+        }
+
+        // Decrement loser lives
+        const newLives = Math.max(0, (loserRow.lives ?? 0) - 1);
+        await ctx.db.patch(loserRow._id, { lives: newLives });
+
+        const roundLog = [
+          `— Round ${roundNum} —`,
+          `Combat resolves (seed ${seed.slice(-6)})`,
+          `Winner: ${winnerPlayerId === pA ? 'Player A' : 'Player B'}`,
+        ];
+
+        await ctx.db.patch(gs._id, {
+          gamePhase: newLives === 0 ? "finished" : "combat",
+          roundSeed: seed,
+          roundLog,
+          acks: {},
+          lastUpdate: Date.now(),
+        });
+
+        if (newLives === 0) {
+          await ctx.db.patch(player.roomId, { status: "finished" });
+        }
+      }
+    }
 
     return player._id;
   },

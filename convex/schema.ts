@@ -36,6 +36,9 @@ export default defineSchema({
     playerStates: v.any(), // Store individual player game states
     combatQueue: v.any(), // Initiative queue for combat
     roundNum: v.number(),
+    roundSeed: v.optional(v.string()),
+    roundLog: v.optional(v.any()),
+    acks: v.optional(v.any()), // { [playerId]: boolean }
     lastUpdate: v.number(),
   }).index("by_room", ["roomId"]),
 

@@ -311,3 +311,62 @@ export const resolveCombatResult = mutation({
     return { processed: true, finished: false, loserLives: newLives };
   },
 });
+
+export const submitFleetSnapshot = mutation({
+  args: { roomId: v.id("rooms"), playerId: v.string(), fleet: v.any(), fleetValid: v.boolean() },
+  handler: async (ctx, args) => {
+    const gameState = await ctx.db
+      .query("gameState")
+      .withIndex("by_room", (q) => q.eq("roomId", args.roomId))
+      .first();
+    if (!gameState) throw new Error("Game state not found");
+
+    const playerStates = { ...(gameState.playerStates as Record<string, unknown>) };
+    const prev = (playerStates[args.playerId] as Record<string, unknown>) || {};
+    playerStates[args.playerId] = { ...prev, fleet: args.fleet, fleetValid: args.fleetValid };
+
+    await ctx.db.patch(gameState._id, { playerStates, lastUpdate: Date.now() });
+    return true;
+  },
+});
+
+export const ackRoundPlayed = mutation({
+  args: { roomId: v.id("rooms"), playerId: v.string() },
+  handler: async (ctx, args) => {
+    const gs = await ctx.db
+      .query("gameState")
+      .withIndex("by_room", (q) => q.eq("roomId", args.roomId))
+      .first();
+    if (!gs) throw new Error("Game state not found");
+
+    const players = await ctx.db
+      .query("players")
+      .withIndex("by_room", (q) => q.eq("roomId", args.roomId))
+      .collect();
+
+    const acksSource = (gs.acks as Record<string, boolean> | undefined) || {};
+    const acks: Record<string, boolean> = { ...acksSource };
+    acks[args.playerId] = true;
+
+    // If all players ack'd, go back to setup
+    const allAck = players.every(p => acks[p.playerId]);
+    if (allAck === true) {
+      const resetReadiness: Promise<void>[] = [];
+      for (const p of players) {
+        resetReadiness.push(ctx.db.patch(p._id, { isReady: false }));
+      }
+      await Promise.all(resetReadiness);
+      await ctx.db.patch(gs._id, {
+        gamePhase: "setup",
+        roundLog: undefined,
+        acks: {},
+        roundNum: (gs.roundNum || 1) + 1,
+        lastUpdate: Date.now(),
+      });
+      return { done: true };
+    }
+
+    await ctx.db.patch(gs._id, { acks, lastUpdate: Date.now() });
+    return { done: false };
+  },
+});

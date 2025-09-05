@@ -370,7 +370,15 @@ export default function EclipseIntegrated(){
     // Phase-based navigation
     const phase = multi.gameState?.gamePhase;
     if (phase === 'combat' && mode !== 'COMBAT') {
-      startCombat();
+      if (gameMode === 'multiplayer') {
+        setMode('COMBAT');
+        const lines = (multi.gameState?.roundLog as string[] | undefined) || ["Combat resolved."];
+        setLog(l => [...l, ...lines]);
+        // Brief delay to display the result then ack
+        setTimeout(() => { try { void multi.ackRoundPlayed?.(); } catch { /* noop */ } }, 1200);
+      } else {
+        startCombat();
+      }
     } else if (phase === 'setup' && mode !== 'OUTPOST') {
       setMode('OUTPOST');
     } else if (phase === 'finished') {
@@ -381,9 +389,7 @@ export default function EclipseIntegrated(){
   }, [multi?.gameState?.gamePhase]);
 
   useEffect(() => {
-    // Stream validity whenever it changes while in Outpost, but only when we know the room id
-    if (gameMode !== 'multiplayer' || mode !== 'OUTPOST' || !currentRoomId) return;
-    try { void multi.updateFleetValidity?.(fleetValid); } catch { /* ignore */ }
+    // Avoid spamming validity; readiness will submit snapshots explicitly
   }, [fleetValid, mode, gameMode, currentRoomId]);
 
   // Keep shop items in sync when explicit rerolls happen or research changes
@@ -460,6 +466,14 @@ export default function EclipseIntegrated(){
       {gameMode==='single' && (
         <LivesBanner variant="single" lives={livesRemaining} />
       )}
+      {gameMode==='multiplayer' && (
+        <LivesBanner
+          variant="multi"
+          me={{ name: (multi.getCurrentPlayer?.()?.playerName || 'You') as string, lives: (multi.roomDetails?.players?.find?.((p: { playerId:string; lives:number }) => p.playerId === multi.getCurrentPlayer?.()?.playerId)?.lives) ?? 0 }}
+          opponent={(multi.getOpponent?.()) ? { name: (multi.getOpponent?.()?.playerName || 'Opponent') as string, lives: (multi.roomDetails?.players?.find?.((p: { playerId:string; lives:number }) => p.playerId === multi.getOpponent?.()?.playerId)?.lives) ?? 0 } : null}
+          phase={multi.gameState?.gamePhase as unknown as 'setup' | 'combat' | 'finished'}
+        />
+      )}
       {/* Rules Modal */}
       {showRules && (
         <RulesModal onDismiss={dismissRules} />
@@ -503,7 +517,19 @@ export default function EclipseIntegrated(){
           sector={sector}
           endless={endless}
           fleetValid={fleetValid}
-          startCombat={startCombat}
+          startCombat={() => {
+            if (gameMode === 'multiplayer') {
+              try {
+                void multi.submitFleetSnapshot?.(fleet as unknown, fleetValid);
+                const me = multi.getCurrentPlayer?.();
+                const myReady = !!me?.isReady;
+                void multi.updateFleetValidity?.(fleetValid);
+                void multi.setReady?.(!myReady);
+              } catch { /* noop */ }
+              return;
+            }
+            startCombat();
+          }}
           onRestart={resetRun}
         />
       )}

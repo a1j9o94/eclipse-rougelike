@@ -72,10 +72,12 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
   const startGame = useMutation(api.rooms.startGame);
   const updateGameState = useMutation(api.gameState.updateGameState);
   const endCombatToSetup = useMutation(api.gameState.endCombatToSetup);
+  const submitFleetSnapshot = useMutation(api.gameState.submitFleetSnapshot);
   const resolveCombatResult = useMutation(api.gameState.resolveCombatResult);
   const switchTurn = useMutation(api.gameState.switchTurn);
   const updateGamePhase = useMutation(api.gameState.updateGamePhase);
   const initializeGameState = useMutation(api.gameState.initializeGameState);
+  const ackRoundPlayed = useMutation(api.gameState.ackRoundPlayed);
   /* eslint-enable react-hooks/rules-of-hooks */
 
   // Get current player info from localStorage
@@ -218,6 +220,33 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
     }
   };
 
+  const handleSubmitFleetSnapshot = async (fleet: unknown, fleetValid: boolean) => {
+    if (!isConvexAvailable) {
+      throw new Error("Multiplayer features are not available. Please check your connection and try again.");
+    }
+    if (!roomId) return;
+    const playerId = getPlayerId();
+    if (!playerId) throw new Error("No player ID found");
+    try {
+      await submitFleetSnapshot({ roomId, playerId, fleet, fleetValid });
+    } catch (error) {
+      console.error("Failed to submit fleet:", error);
+      throw error;
+    }
+  };
+
+  const handleAckRoundPlayed = async () => {
+    if (!isConvexAvailable) return;
+    if (!roomId) return;
+    const playerId = getPlayerId();
+    if (!playerId) return;
+    try {
+      await ackRoundPlayed({ roomId, playerId });
+    } catch (error) {
+      console.error("Failed to ack round:", error);
+    }
+  };
+
   // Game state actions
   const handleGameStateUpdate = async (updates: Record<string, unknown>) => {
     if (!isConvexAvailable) {
@@ -318,6 +347,8 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
     updateGamePhase: handlePhaseChange,
     resolveCombatResult: handleResolveCombatResult,
     endCombatToSetup: handleEndCombatToSetup,
+    submitFleetSnapshot: handleSubmitFleetSnapshot,
+    ackRoundPlayed: handleAckRoundPlayed,
     
     // Loading states and availability
     isLoading: isConvexAvailable && !!roomId && (roomDetails === undefined || gameState === undefined),
