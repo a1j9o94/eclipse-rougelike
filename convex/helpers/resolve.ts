@@ -83,8 +83,12 @@ export async function maybeResolveRound(ctx: Ctx, roomId: Id<"rooms">) {
   }
 
   // Decrement loser lives
-  const newLives = Math.max(0, (loserRow.lives ?? 0) - 1);
-  await ctx.db.patch(loserRow._id, { lives: newLives });
+  const prevLives = (loserRow.lives ?? 0);
+  const newLives = Math.max(0, prevLives - 1);
+  if (newLives !== prevLives) {
+    await ctx.db.patch(loserRow._id, { lives: newLives });
+    logInfo('lives', 'decrement', { tag: roomTag(roomId as unknown as string, roundNum), playerId: loserRow.playerId, prevLives, newLives });
+  }
 
   // Winner rewards: grant credits/materials/science for destroyed enemy ships
   function rewardForFrame(id: string) {

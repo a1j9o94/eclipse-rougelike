@@ -475,6 +475,27 @@ export default function EclipseIntegrated(){
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [multi?.gameState?.gamePhase, multi?.roomDetails?.room?.status, multi?.roomDetails?.room?.gameConfig?.startingShips, multi?.gameState?.playerStates]);
 
+  // Ensure client fleet stays in sync with server snapshot during setup even if mode is already OUTPOST
+  useEffect(() => {
+    if (gameMode !== 'multiplayer') return;
+    if (multi.gameState?.gamePhase !== 'setup') return;
+    try {
+      const myId = multi.getPlayerId?.() as string | null;
+      const st = myId ? (multi.gameState?.playerStates as any)?.[myId] : null;
+      const serverFleet = Array.isArray(st?.fleet) ? (st.fleet as any[]) : [];
+      if (serverFleet.length > 0) {
+        const mapped = serverFleet.map(fromSnapshotToShip) as unknown as Ship[];
+        // Only update if counts differ to avoid clobbering local edits mid-setup
+        if (mapped.length !== fleet.length) {
+          setFleet(mapped);
+          setCapacity(c => ({ cap: Math.max(c.cap, mapped.length) }));
+          setFocused(0);
+        }
+      }
+    } catch { /* ignore */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameMode, multi?.gameState?.playerStates]);
+
   useEffect(() => {
     // Avoid spamming validity; readiness will submit snapshots explicitly
   }, [fleetValid, mode, gameMode, currentRoomId]);
