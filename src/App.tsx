@@ -104,6 +104,7 @@ export default function EclipseIntegrated(){
   const [sector, setSector] = useState(saved?.sector ?? 1); // difficulty progression
   const [stepLock, setStepLock] = useState(false);
   const [matchOver, setMatchOver] = useState<{ winnerName: string } | null>(null);
+  const [mpSeeded, setMpSeeded] = useState(false);
 
   // Multiplayer state
   const [gameMode, setGameMode] = useState<'single' | 'multiplayer'>('single');
@@ -413,6 +414,16 @@ export default function EclipseIntegrated(){
           const res = (st?.resources as { credits:number; materials:number; science:number } | undefined);
           if (res && typeof res.credits === 'number') {
             setResources(r => ({ ...r, ...res }));
+          }
+          // Seed starting fleet on first multiplayer setup
+          const starting = multi.roomDetails?.room?.gameConfig?.startingShips as number | undefined;
+          const roundNum = (multi.gameState?.roundNum || 1) as number;
+          if (!mpSeeded && roundNum === 1 && (starting && starting > 0)) {
+            const ships = Array.from({ length: starting }, () => makeShip(getFrame('interceptor'), [ ...INITIAL_BLUEPRINTS.interceptor ])) as unknown as Ship[];
+            setFleet(ships);
+            setCapacity(c => ({ cap: Math.max(c.cap, starting) }));
+            setFocused(0);
+            setMpSeeded(true);
           }
         }
       } catch { /* ignore */ }
