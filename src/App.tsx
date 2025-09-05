@@ -444,11 +444,21 @@ export default function EclipseIntegrated(){
         onLeaveRoom={handleLeaveRoom}
       />;
     }
-    // During multiplayer game, we fall through to the shared Outpost/Combat views below.
+    if (multiplayerPhase !== 'game') {
+      // Guard: Do not fall through to single-player views before the game starts
+      return (
+        <div className="bg-zinc-950 min-h-screen text-zinc-100 flex items-center justify-center">
+          <div className="text-center text-zinc-400">Preparing multiplayer lobby…</div>
+        </div>
+      );
+    }
+    // multiplayerPhase === 'game' falls through to Outpost/Combat views below
   }
 
+  const showMultiReadyBar = gameMode==='multiplayer' && mode==='OUTPOST' && !!multi && !showRules && !showTechs;
+
   return (
-    <div className="bg-zinc-950 min-h-screen text-zinc-100">
+    <div className={`bg-zinc-950 min-h-screen text-zinc-100 ${showMultiReadyBar ? 'pb-20' : ''}`}>
       {gameMode==='single' && (
         <LivesBanner variant="single" lives={livesRemaining} />
       )}
@@ -501,14 +511,14 @@ export default function EclipseIntegrated(){
       )}
 
       {/* Multiplayer: Outpost Ready Bar */}
-      {gameMode==='multiplayer' && mode==='OUTPOST' && multi && (
+      {showMultiReadyBar && (
         (() => {
           const me = multi.getCurrentPlayer?.();
           const players = (multi.roomDetails?.players || []) as Array<{ playerId:string; isReady:boolean }>;
           const readyCount = players.filter(p=>p.isReady).length;
           const myReady = !!me?.isReady;
           return (
-            <div className="fixed bottom-0 left-0 right-0 z-40 bg-zinc-900/95 border-t border-zinc-700 px-4 py-2 flex items-center justify-between">
+            <div className="fixed bottom-0 left-0 right-0 z-20 bg-zinc-900/95 border-t border-zinc-700 px-4 py-2 flex items-center justify-between">
               <div className={fleetValid ? 'text-emerald-300' : 'text-rose-300'}>
                 {fleetValid ? 'Fleet valid' : 'Fleet invalid — fix power/drive/slots'}
               </div>
