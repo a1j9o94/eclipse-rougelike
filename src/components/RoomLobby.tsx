@@ -54,13 +54,16 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
     }
   }, [roomDetails, startGame, onGameStart, isStarting]);
 
-  // Navigate when server flips phase to combat
+  // Guest navigation: when server moves to playing/setup or combat, enter game view
   useEffect(() => {
-    if (gameState?.gamePhase === 'combat' && !isStarting) {
+    const isServerPlaying = room?.status === 'playing';
+    const phase = gameState?.gamePhase;
+    const hasGamePhase = phase === 'setup' || phase === 'combat' || phase === 'finished';
+    if (!isStarting && isServerPlaying && hasGamePhase) {
       setIsStarting(true);
       onGameStart();
     }
-  }, [gameState?.gamePhase, isStarting, onGameStart]);
+  }, [room?.status, gameState?.gamePhase, isStarting, onGameStart]);
 
   const localPlayerId = currentPlayer?.playerId;
   const localState = (gameState?.playerStates?.[localPlayerId as string] as { fleetValid?: boolean } | undefined);
