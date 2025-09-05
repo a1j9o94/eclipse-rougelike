@@ -30,7 +30,7 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
   const room = roomDetails?.room;
   type RoomPlayer = { playerId: string; isReady: boolean; lives?: number; playerName?: string; isHost: boolean };
 
-  // Auto-start game when both players are ready (server will validate)
+  // Auto-start game when both players are ready (host only)
   useEffect(() => {
     if (!roomDetails) return;
     
@@ -38,8 +38,11 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
     const allReady = players.every(p => p.isReady);
     const hasFullPlayers = players.length === 2;
     
-    if (allReady && hasFullPlayers && !isStarting) {
+    if (isHost() && allReady && hasFullPlayers && !isStarting) {
       setIsStarting(true);
+      // Only host triggers start; guests wait for phase change
+      // eslint-disable-next-line no-console
+      console.debug('[Lobby] Host starting game');
       startGame()
         .then(() => {
           onGameStart();
