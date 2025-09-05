@@ -4,6 +4,7 @@ import './index.css'
 import App from './App.tsx'
 import { Analytics } from '@vercel/analytics/react'
 import { ConvexProvider, ConvexReactClient } from "convex/react";
+import { ErrorBoundary, ErrorFallback } from './components/ErrorBoundary';
 
 // Environment variable validation with detailed logging
 console.log('=== Environment Debug ===');
@@ -30,43 +31,29 @@ if (CONVEX_URL) {
   }
 }
 
-// Error fallback component
-function ErrorFallback({ message }: { message: string }) {
-  return (
-    <div style={{ 
-      padding: '20px', 
-      textAlign: 'center', 
-      backgroundColor: '#1a1a1a', 
-      color: '#fff', 
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center'
-    }}>
-      <h1>Configuration Error</h1>
-      <p>{message}</p>
-      <p>Multiplayer features are currently unavailable.</p>
-      <p style={{ fontSize: '14px', opacity: 0.7 }}>
-        Please check the console for more details.
-      </p>
-    </div>
-  );
-}
+// Global error listeners to surface runtime issues in preview/prod
+window.addEventListener('error', (e) => {
+  console.error('Global error:', e.error || e.message, e);
+});
+window.addEventListener('unhandledrejection', (e) => {
+  console.error('Unhandled promise rejection:', e.reason);
+});
 
-export { ErrorFallback };
+export { ErrorFallback } from './components/ErrorBoundary';
 
 // Render the app
 try {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
-      {convex ? (
-        <ConvexProvider client={convex}>
-          <App />
-        </ConvexProvider>
-      ) : (
-        <ErrorFallback message="The application is missing required environment variables." />
-      )}
+      <ErrorBoundary>
+        {convex ? (
+          <ConvexProvider client={convex}>
+            <App />
+          </ConvexProvider>
+        ) : (
+          <ErrorFallback message="The application is missing required environment variables." />
+        )}
+      </ErrorBoundary>
       <Analytics />
     </StrictMode>,
   );

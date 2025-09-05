@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
+    build: { sourcemap: true },
     test: {
       environment: 'jsdom',
       setupFiles: ['./src/test/setup.ts'],
