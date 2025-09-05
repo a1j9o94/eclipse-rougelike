@@ -136,10 +136,7 @@ export const updateGameState = mutation({
       throw new Error("Game state not found");
     }
 
-    // Verify it's the player's turn (for actions that require it)
-    if (gameState.currentTurn !== args.playerId) {
-      throw new Error("Not your turn");
-    }
+    // Allow updates regardless of turn so both players can outfit concurrently
 
     // Update the player's state
     const updatedPlayerStates = { ...gameState.playerStates };
@@ -208,5 +205,109 @@ export const updateGamePhase = mutation({
     });
 
     return true;
+  },
+});
+
+export const endCombatToSetup = mutation({
+  args: { roomId: v.id("rooms") },
+  handler: async (ctx, args) => {
+    const gameState = await ctx.db
+      .query("gameState")
+      .withIndex("by_room", (q) => q.eq("roomId", args.roomId))
+      .first();
+
+    if (!gameState) {
+      throw new Error("Game state not found");
+    }
+
+    // Rotate the current turn to the next player for the next setup phase
+    const players = await ctx.db
+      .query("players")
+      .withIndex("by_room", (q) => q.eq("roomId", args.roomId))
+      .collect();
+
+    // Reset readiness for both players; keep room in playing status
+    for (const p of players) {
+      await ctx.db.patch(p._id, { isReady: false });
+    }
+
+    await ctx.db.patch(gameState._id, {
+      gamePhase: "setup",
+      roundNum: (gameState.roundNum || 1) + 1,
+      // currentTurn retained but not used for outpost; no rotation needed
+      lastUpdate: Date.now(),
+    });
+
+    return true;
+  },
+});
+
+export const resolveCombatResult = mutation({
+  args: { roomId: v.id("rooms"), winnerPlayerId: v.string() },
+  handler: async (ctx, args) => {
+    const gameState = await ctx.db
+      .query("gameState")
+      .withIndex("by_room", (q) => q.eq("roomId", args.roomId))
+      .first();
+
+    if (!gameState) throw new Error("Game state not found");
+    if (gameState.gamePhase !== "combat") {
+      // Already processed this round
+      return { processed: false };
+    }
+
+    const players = await ctx.db
+      .query("players")
+      .withIndex("by_room", (q) => q.eq("roomId", args.roomId))
+      .collect();
+
+    if (players.length !== 2) throw new Error("Expected two players");
+    const winner = players.find(p => p.playerId === args.winnerPlayerId);
+    if (!winner) throw new Error("Winner not found in room");
+    const loser = players.find(p => p.playerId !== args.winnerPlayerId)!;
+
+    const newLives = Math.max(0, (loser.lives ?? 0) - 1);
+    await ctx.db.patch(loser._id, { lives: newLives });
+
+    // Update per-player state lives if present
+    const states = { ...(gameState.playerStates as Record<string, unknown>) } as Record<string, { [k: string]: unknown }>;
+    if (states[loser.playerId]) {
+      states[loser.playerId] = { ...states[loser.playerId], lives: newLives };
+    }
+
+    // Archive winner fleet snapshot if available
+    const winnerState = (states[winner.playerId] as { fleet?: unknown; sector?: number } | undefined);
+    if (winnerState?.fleet) {
+      await ctx.db.insert("fleetArchives", {
+        roomId: args.roomId,
+        roundNum: (gameState.roundNum || 1),
+        createdAt: Date.now(),
+        fleet: winnerState.fleet,
+        sector: winnerState.sector,
+      });
+    }
+
+    if (newLives === 0) {
+      await ctx.db.patch(args.roomId, { status: "finished" });
+      await ctx.db.patch(gameState._id, {
+        gamePhase: "finished",
+        playerStates: states,
+        lastUpdate: Date.now(),
+      });
+      return { processed: true, finished: true, loserLives: newLives };
+    }
+
+    // Otherwise loop back to setup
+    for (const p of players) {
+      await ctx.db.patch(p._id, { isReady: false });
+    }
+    await ctx.db.patch(gameState._id, {
+      gamePhase: "setup",
+      roundNum: (gameState.roundNum || 1) + 1,
+      playerStates: states,
+      lastUpdate: Date.now(),
+    });
+
+    return { processed: true, finished: false, loserLives: newLives };
   },
 });

@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import './index.css'
 import { PARTS, getFrame, makeShip, rollInventory, getSectorSpec } from './game'
 import { INITIAL_BLUEPRINTS, INITIAL_RESEARCH, INITIAL_RESOURCES, INITIAL_CAPACITY, type Resources, type Research } from './config/defaults'
 import { type CapacityState, type DifficultyId } from './config/types'
@@ -26,6 +25,7 @@ import { playEffect, playMusic } from './game/sound'
 import MultiplayerStartPage from './pages/MultiplayerStartPage'
 import { RoomLobby } from './components/RoomLobby'
 import type { Id } from '../convex/_generated/dataModel'
+import { useMultiplayerGame } from './hooks/useMultiplayerGame'
 import { LivesBanner } from './components/LivesBanner'
 
 /**
@@ -107,6 +107,9 @@ export default function EclipseIntegrated(){
   const [gameMode, setGameMode] = useState<'single' | 'multiplayer'>('single');
   const [multiplayerPhase, setMultiplayerPhase] = useState<'menu' | 'lobby' | 'game'>('menu');
   const [currentRoomId, setCurrentRoomId] = useState<Id<"rooms"> | null>(null);
+
+  // Multiplayer data (available when in a room)
+  const multi = useMultiplayerGame(currentRoomId);
 
   // ---------- Run management ----------
   function newRun(diff: DifficultyId, pick:FactionId){
@@ -255,7 +258,7 @@ export default function EclipseIntegrated(){
     setShopVersion(v=> v+1);
     void playEffect('tech');
   }
-  function handleReturnFromCombat(){
+  async function handleReturnFromCombat(){
     if(!combatOver) return;
     if(outcome==='Victory'){
       const wonFleet = [...fleet];
@@ -280,6 +283,10 @@ export default function EclipseIntegrated(){
         setShopVersion(v=> v+1);
       }
     } else {
+      // Multiplayer: inform server and let phase return to outpost
+      if (gameMode==='multiplayer' && multi) {
+        try { await multi.restartToSetup?.(); } catch {/* ignore */}
+      }
       if(outcome==='Defeat — Run Over'){
         void playEffect('page');
         resetRun();
@@ -327,6 +334,16 @@ export default function EclipseIntegrated(){
       setLog(l=>[...l, '💀 Defeat']);
     }
     setCombatOver(true);
+    // Multiplayer: report result to server to decrement lives and transition
+    if (gameMode === 'multiplayer' && multi) {
+      try {
+        const myId = multi.getPlayerId?.();
+        const winnerId = pAlive ? (myId || '') : (multi.getOpponent()?.playerId || '');
+        if (winnerId) {
+          void multi.resolveCombatResult?.(winnerId);
+        }
+      } catch { /* ignore */ }
+    }
   }
   async function stepTurn(){ if(combatOver || stepLock || showRules) return; setStepLock(true); try { const pAlive = fleet.some(s => s.alive && s.stats.valid); const eAlive = enemyFleet.some(s => s.alive && s.stats.valid); if (!pAlive || !eAlive) { resolveCombat(pAlive); return; } if (initRoundIfNeeded()) return; const e = queue[turnPtr]; const isP = e.side==='P'; const atk = isP ? fleet[e.idx] : enemyFleet[e.idx]; const defFleet = isP ? enemyFleet : fleet; const friends = isP ? fleet : enemyFleet; const strategy = isP ? 'guns' : 'kill'; const defIdx = targetIndex(defFleet, strategy); if (!atk || !atk.alive || !atk.stats.valid || defIdx === -1) { advancePtr(); return; } const lines:string[] = []; const def = defFleet[defIdx]; volley(atk, def, e.side, lines, friends); setLog(l=>[...l, ...lines]); if (isP) { setEnemyFleet([...defFleet]); setFleet([...friends]); } else { setFleet([...defFleet]); setEnemyFleet([...friends]); } if(atk.weapons.length>0 || atk.riftDice>0){ const dur = import.meta.env.MODE==='test' ? 0 : Math.max(100, 1000 - (roundNum - 1) * 200); await playEffect('shot', dur); if(!def.alive){ await playEffect('explosion', dur); } } advancePtr(); } finally { setStepLock(false); } }
   function advancePtr(){ const np = turnPtr + 1; setTurnPtr(np); if (np >= queue.length) endRound(); }
@@ -345,6 +362,31 @@ export default function EclipseIntegrated(){
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Multiplayer: drive navigation by server game phase and stream fleet validity
+  const fleetValid = fleet.every(s=>s.stats.valid) && tonnage.used <= capacity.cap;
+  useEffect(() => {
+    if (!multi) return;
+    // Phase-based navigation
+    const phase = multi.gameState?.gamePhase;
+    if (phase === 'combat' && mode !== 'COMBAT') {
+      startCombat();
+    } else if (phase === 'setup' && mode !== 'OUTPOST') {
+      setMode('OUTPOST');
+    } else if (phase === 'finished') {
+      // Send players back to lobby when someone reaches 0 lives
+      setMultiplayerPhase('lobby');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [multi?.gameState?.gamePhase]);
+
+  useEffect(() => {
+    if (!multi) return;
+    // Stream validity whenever it changes while in Outpost
+    if (mode === 'OUTPOST') {
+      try { void multi.updateFleetValidity?.(fleetValid); } catch { /* ignore */ }
+    }
+  }, [multi, fleetValid, mode]);
 
   // Keep shop items in sync when explicit rerolls happen or research changes
   useEffect(()=>{ setShop({ items: rollInventory(research as Research) }); }, [shopVersion, research]);
@@ -372,7 +414,6 @@ export default function EclipseIntegrated(){
   // Self-tests moved to src/__tests__/runtime.selftests.spec.ts
 
   // ---------- View ----------
-  const fleetValid = fleet.every(s=>s.stats.valid) && tonnage.used <= capacity.cap;
 
   function researchLabel(track:'Military'|'Grid'|'Nano'){ return researchLabelCore(track, research as Research); }
   function canResearch(track:'Military'|'Grid'|'Nano'){ return canResearchCore(track, research as Research, resources); }
@@ -403,24 +444,7 @@ export default function EclipseIntegrated(){
         onLeaveRoom={handleLeaveRoom}
       />;
     }
-    
-    if (multiplayerPhase === 'game' && currentRoomId) {
-      // TODO: Implement multiplayer game page
-      return (
-        <div className="bg-zinc-950 min-h-screen text-zinc-100 flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-2xl mb-4">Multiplayer Game</div>
-            <div className="text-zinc-400 mb-4">Coming soon!</div>
-            <button
-              onClick={handleLeaveRoom}
-              className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded"
-            >
-              Back to Lobby
-            </button>
-          </div>
-        </div>
-      );
-    }
+    // During multiplayer game, we fall through to the shared Outpost/Combat views below.
   }
 
   return (
@@ -474,6 +498,31 @@ export default function EclipseIntegrated(){
           startCombat={startCombat}
           onRestart={resetRun}
         />
+      )}
+
+      {/* Multiplayer: Outpost Ready Bar */}
+      {gameMode==='multiplayer' && mode==='OUTPOST' && multi && (
+        (() => {
+          const me = multi.getCurrentPlayer?.();
+          const players = (multi.roomDetails?.players || []) as Array<{ playerId:string; isReady:boolean }>;
+          const readyCount = players.filter(p=>p.isReady).length;
+          const myReady = !!me?.isReady;
+          return (
+            <div className="fixed bottom-0 left-0 right-0 z-40 bg-zinc-900/95 border-t border-zinc-700 px-4 py-2 flex items-center justify-between">
+              <div className={fleetValid ? 'text-emerald-300' : 'text-rose-300'}>
+                {fleetValid ? 'Fleet valid' : 'Fleet invalid — fix power/drive/slots'}
+              </div>
+              <div className="text-zinc-400 text-sm">Ready: {readyCount}/{players.length}</div>
+              <button
+                onClick={()=>{ void multi.updateFleetValidity?.(fleetValid); void multi.setReady?.(!myReady); }}
+                className={`px-4 py-2 rounded ${myReady ? 'bg-rose-600 hover:bg-rose-700' : 'bg-emerald-600 hover:bg-emerald-700'} disabled:opacity-50`}
+                disabled={!fleetValid}
+              >
+                {myReady ? 'Cancel Ready' : 'Ready'}
+              </button>
+            </div>
+          );
+        })()
       )}
 
       {mode==='COMBAT' && (

@@ -38,4 +38,15 @@ export default defineSchema({
     roundNum: v.number(),
     lastUpdate: v.number(),
   }).index("by_room", ["roomId"]),
+
+  // Winner fleet archives (no player names stored)
+  fleetArchives: defineTable({
+    roomId: v.id("rooms"),
+    roundNum: v.number(),
+    createdAt: v.number(),
+    // snapshot of winner's fleet for this round
+    fleet: v.any(),
+    // optional metadata for future use
+    sector: v.optional(v.number()),
+  }).index("by_room_round", ["roomId", "roundNum"]),
 });

@@ -28,7 +28,7 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
 
   const currentPlayer = getCurrentPlayer();
   const room = roomDetails?.room;
-  type RoomPlayer = { playerId: string; isReady: boolean; lives: number; playerName?: string; isHost: boolean };
+  type RoomPlayer = { playerId: string; isReady: boolean; lives?: number; playerName?: string; isHost: boolean };
 
   // Auto-start game when both players are ready (server will validate)
   useEffect(() => {
@@ -132,8 +132,8 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
       {/* Top banner with lives */}
       <LivesBanner
         variant="multi"
-        me={{ name: (myPlayer?.playerName) || 'You', lives: (myPlayer as any)?.lives ?? 0 }}
-        opponent={opponent ? { name: (opponent as any).playerName || 'Opponent', lives: (opponent as any).lives ?? 0 } : null}
+        me={{ name: (myPlayer?.playerName) || 'You', lives: myPlayer?.lives ?? 0 }}
+        opponent={opponent ? { name: opponent.playerName || 'Opponent', lives: opponent.lives ?? 0 } : null}
         phase={gameState?.gamePhase}
       />
       <div className="pt-10 max-w-2xl mx-auto space-y-6">
