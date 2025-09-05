@@ -18,7 +18,7 @@ describe('FleetRow', () => {
   it('groups ships when width is small', async () => {
     const src = PARTS.sources[0]
     const drv = PARTS.drives[0]
-    const ships = Array.from({length:5}, () => makeShip(getFrame('interceptor'), [src, drv]) as any)
+    const ships = Array.from({length:5}, () => makeShip(getFrame('interceptor'), [src, drv]))
     render(<FleetRow ships={ships} side='P' activeIdx={-1} />)
     await waitFor(() => expect(screen.getByText('×5')).toBeInTheDocument())
   })
@@ -26,7 +26,7 @@ describe('FleetRow', () => {
   it('removes destroyed ships from stacks', async () => {
     const src = PARTS.sources[0]
     const drv = PARTS.drives[0]
-    const ships = Array.from({length:3}, () => makeShip(getFrame('interceptor'), [src, drv]) as any)
+    const ships = Array.from({length:3}, () => makeShip(getFrame('interceptor'), [src, drv]))
     ships[0].hull = 0
     ships[0].alive = false
     Object.defineProperty(HTMLElement.prototype, 'offsetWidth', { configurable: true, value: 150 })

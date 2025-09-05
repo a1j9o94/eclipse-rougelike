@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { expandDock, upgradeShipAt } from '../game/hangar'
 import { ECONOMY } from '../config/economy'
 import { makeShip, getFrame, type FrameId } from '../game'
+import type { Ship } from '../config/types'
 import { PARTS } from '../config/parts'
 
 describe('dock expansion', () => {
@@ -15,8 +16,8 @@ describe('dock expansion', () => {
 describe('ship upgrade', () => {
   it('seeds cruiser blueprint from first interceptor upgrade', () => {
     const interceptorParts = [PARTS.sources[0], PARTS.drives[0]]
-    const fleet = [makeShip(getFrame('interceptor'), interceptorParts)] as any
-    const blueprints: Record<FrameId, typeof interceptorParts> = { interceptor: interceptorParts, cruiser: [], dread: [] } as any
+    const fleet: Ship[] = [makeShip(getFrame('interceptor'), interceptorParts)]
+    const blueprints: Record<FrameId, typeof interceptorParts> = { interceptor: interceptorParts, cruiser: [], dread: [] }
     const result = upgradeShipAt(0, fleet, blueprints, { credits: 1000, materials: 1000 }, { Military: 3 }, { cap: 999 }, 0)
     expect(result?.upgraded.parts.map(p=>p.id)).toEqual(interceptorParts.map(p=>p.id))
     expect(result?.blueprints.cruiser.map(p=>p.id)).toEqual(interceptorParts.map(p=>p.id))
@@ -24,11 +25,11 @@ describe('ship upgrade', () => {
 
   it('applies updated blueprints to subsequent upgrades', () => {
     const interceptorParts = [PARTS.sources[0], PARTS.drives[0]]
-    let blueprints: Record<FrameId, typeof interceptorParts> = { interceptor: interceptorParts, cruiser: [], dread: [] } as any
-    const fleet = [
+    let blueprints: Record<FrameId, typeof interceptorParts> = { interceptor: interceptorParts, cruiser: [], dread: [] }
+    const fleet: Ship[] = [
       makeShip(getFrame('interceptor'), interceptorParts),
       makeShip(getFrame('interceptor'), interceptorParts)
-    ] as any
+    ]
 
     const first = upgradeShipAt(0, fleet, blueprints, { credits: 1000, materials: 1000 }, { Military: 3 }, { cap: 999 }, 0)
     if(first){
@@ -44,8 +45,8 @@ describe('ship upgrade', () => {
 
   it('seeds dreadnought blueprint from first cruiser upgrade', () => {
     const cruiserParts = [PARTS.sources[0], PARTS.drives[0]]
-    const fleet = [makeShip(getFrame('cruiser'), cruiserParts)] as any
-    const blueprints: Record<FrameId, typeof cruiserParts> = { interceptor: cruiserParts, cruiser: cruiserParts, dread: [] } as any
+    const fleet: Ship[] = [makeShip(getFrame('cruiser'), cruiserParts)]
+    const blueprints: Record<FrameId, typeof cruiserParts> = { interceptor: cruiserParts, cruiser: cruiserParts, dread: [] }
     const result = upgradeShipAt(0, fleet, blueprints, { credits: 1000, materials: 1000 }, { Military: 3 }, { cap: 999 }, 0)
     expect(result?.upgraded.parts.map(p=>p.id)).toEqual(cruiserParts.map(p=>p.id))
     expect(result?.blueprints.dread.map(p=>p.id)).toEqual(cruiserParts.map(p=>p.id))

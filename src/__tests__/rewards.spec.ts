@@ -7,7 +7,7 @@ import { ECONOMY, calcRewardsForFrameId } from '../config/economy'
 
 describe('rewards', () => {
   it('treats every fifth sector as a boss', () => {
-    const enemy = [makeShip(getFrame('interceptor'), [PARTS.sources[0], PARTS.drives[0]])] as any
+    const enemy = [makeShip(getFrame('interceptor'), [PARTS.sources[0], PARTS.drives[0]])]
     enemy[0].alive = false
     const normal = calcRewards(enemy, 16)
     const boss = calcRewards(enemy, 15)
@@ -16,8 +16,8 @@ describe('rewards', () => {
   })
 
   it('only counts destroyed ships for rewards', () => {
-    const dead = makeShip(getFrame('interceptor'), [PARTS.sources[0], PARTS.drives[0]]) as any
-    const alive = makeShip(getFrame('interceptor'), [PARTS.sources[0], PARTS.drives[0]]) as any
+    const dead = makeShip(getFrame('interceptor'), [PARTS.sources[0], PARTS.drives[0]])
+    const alive = makeShip(getFrame('interceptor'), [PARTS.sources[0], PARTS.drives[0]])
     dead.alive = false
     const rw = calcRewards([dead, alive], 1)
     const base = calcRewardsForFrameId('interceptor')
@@ -30,7 +30,7 @@ describe('rewards', () => {
     const fleet = [
       makeShip(getFrame('interceptor'), INITIAL_BLUEPRINTS.interceptor),
       makeShip(getFrame('cruiser'), INITIAL_BLUEPRINTS.cruiser)
-    ] as any
+    ]
     const recovered = graceRecoverFleet(fleet, INITIAL_BLUEPRINTS)
     expect(recovered.length).toBe(2)
     expect(recovered[0].frame.id).toBe('interceptor')

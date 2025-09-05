@@ -6,6 +6,6 @@ class SilentAudio {
   play() { return Promise.resolve(); }
   pause() {}
 }
-(globalThis as any).Audio = SilentAudio;
+(globalThis as unknown as { Audio: typeof Audio }).Audio = SilentAudio as unknown as typeof Audio;
 
 

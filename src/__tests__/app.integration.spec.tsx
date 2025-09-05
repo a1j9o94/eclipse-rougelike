@@ -4,9 +4,10 @@ import App from '../App'
 
 describe('App integration', () => {
   it('renders new run modal and starts a run', async () => {
+    localStorage.clear()
     render(<App />)
-    // Should see Start New Run options
-    expect(screen.getByText(/Start New Run/i)).toBeInTheDocument()
+    // Should show the start page
+    expect(screen.getByText(/Choose your game mode/i)).toBeInTheDocument()
 
     // Start on Easy
     fireEvent.click(screen.getByRole('button', { name: /Easy/i }))

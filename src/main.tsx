@@ -19,7 +19,7 @@ if (!CONVEX_URL) {
 }
 
 // Only create ConvexReactClient if URL is available
-let convex: any = null;
+let convex: ConvexReactClient | null = null;
 if (CONVEX_URL) {
   try {
     convex = new ConvexReactClient(CONVEX_URL);
@@ -53,6 +53,8 @@ function ErrorFallback({ message }: { message: string }) {
     </div>
   );
 }
+
+export { ErrorFallback };
 
 // Render the app
 try {

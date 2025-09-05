@@ -4,6 +4,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { DockSlots } from '../components/ui';
 import OutpostPage from '../pages/OutpostPage';
 import { makeShip, getFrame, PARTS } from '../game';
+import type { ResearchState as Research, GhostDelta, Ship } from '../config/types';
 
 // React import not required
 
@@ -22,17 +23,17 @@ describe('dock and upgrade visuals', () => {
   });
 
   it('shows slot increase and dock icon in upgrade and build buttons', () => {
-    const ship = makeShip(getFrame('interceptor'), [PARTS.sources[0], PARTS.drives[0]]);
+    const ship: Ship = makeShip(getFrame('interceptor'), [PARTS.sources[0], PARTS.drives[0]]);
     render(
       <OutpostPage
         resources={{credits:100, materials:100, science:0}}
         rerollCost={0}
         doReroll={()=>{}}
-        research={{Military:2, Grid:1, Nano:1} as any}
+        research={{Military:2, Grid:1, Nano:1} as Research}
         researchLabel={(t)=>t}
         canResearch={()=>false}
         researchTrack={()=>{}}
-        fleet={[ship] as any}
+        fleet={[ship]}
         focused={0}
         setFocused={()=>{}}
         buildShip={()=>{}}
@@ -42,7 +43,21 @@ describe('dock and upgrade visuals', () => {
         blueprints={{interceptor:[], cruiser:[], dread:[]}}
         sellPart={()=>{}}
         shop={{items:[]}}
-        ghost={()=>({} as any)}
+        ghost={(): GhostDelta => ({
+          targetName: 'X',
+          use: 0,
+          prod: 0,
+          valid: true,
+          slotsUsed: 0,
+          slotCap: 0,
+          slotOk: true,
+          initBefore: 0,
+          initAfter: 0,
+          initDelta: 0,
+          hullBefore: 0,
+          hullAfter: 0,
+          hullDelta: 0,
+        })}
         buyAndInstall={()=>{}}
         capacity={{cap:6}}
         tonnage={{used:1, cap:6}}
@@ -65,17 +80,17 @@ describe('dock and upgrade visuals', () => {
   });
 
   it('disables upgrade button when tech too low', () => {
-    const ship = makeShip(getFrame('interceptor'), [PARTS.sources[0], PARTS.drives[0]]);
+    const ship: Ship = makeShip(getFrame('interceptor'), [PARTS.sources[0], PARTS.drives[0]]);
     render(
       <OutpostPage
         resources={{credits:100, materials:100, science:0}}
         rerollCost={0}
         doReroll={()=>{}}
-        research={{Military:1, Grid:1, Nano:1} as any}
+        research={{Military:1, Grid:1, Nano:1} as Research}
         researchLabel={(t)=>t}
         canResearch={()=>false}
         researchTrack={()=>{}}
-        fleet={[ship] as any}
+        fleet={[ship]}
         focused={0}
         setFocused={()=>{}}
         buildShip={()=>{}}
@@ -85,7 +100,21 @@ describe('dock and upgrade visuals', () => {
         blueprints={{interceptor:[], cruiser:[], dread:[]}}
         sellPart={()=>{}}
         shop={{items:[]}}
-        ghost={()=>({} as any)}
+        ghost={(): GhostDelta => ({
+          targetName: 'X',
+          use: 0,
+          prod: 0,
+          valid: true,
+          slotsUsed: 0,
+          slotCap: 0,
+          slotOk: true,
+          initBefore: 0,
+          initAfter: 0,
+          initDelta: 0,
+          hullBefore: 0,
+          hullAfter: 0,
+          hullDelta: 0,
+        })}
         buyAndInstall={()=>{}}
         capacity={{cap:6}}
         tonnage={{used:1, cap:6}}
@@ -107,11 +136,11 @@ describe('dock and upgrade visuals', () => {
         resources={{credits:0, materials:0, science:0}}
         rerollCost={0}
         doReroll={()=>{}}
-        research={{Military:2, Grid:1, Nano:1} as any}
+        research={{Military:2, Grid:1, Nano:1} as Research}
         researchLabel={(t)=>t}
         canResearch={()=>false}
         researchTrack={()=>{}}
-        fleet={[ship] as any}
+        fleet={[ship]}
         focused={0}
         setFocused={()=>{}}
         buildShip={()=>{}}
@@ -121,7 +150,21 @@ describe('dock and upgrade visuals', () => {
         blueprints={{interceptor:[], cruiser:[], dread:[]}}
         sellPart={()=>{}}
         shop={{items:[]}}
-        ghost={()=>({} as any)}
+        ghost={(): GhostDelta => ({
+          targetName: 'X',
+          use: 0,
+          prod: 0,
+          valid: true,
+          slotsUsed: 0,
+          slotCap: 0,
+          slotOk: true,
+          initBefore: 0,
+          initAfter: 0,
+          initDelta: 0,
+          hullBefore: 0,
+          hullAfter: 0,
+          hullDelta: 0,
+        })}
         buyAndInstall={()=>{}}
         capacity={{cap:6}}
         tonnage={{used:1, cap:6}}
@@ -137,17 +180,17 @@ describe('dock and upgrade visuals', () => {
   });
 
   it('offers restart when fleet invalid and broke', () => {
-    const ship = makeShip(getFrame('interceptor'), [] as any);
+    const ship: Ship = makeShip(getFrame('interceptor'), []);
     render(
       <OutpostPage
         resources={{credits:0, materials:0, science:0}}
         rerollCost={0}
         doReroll={()=>{}}
-        research={{Military:1, Grid:1, Nano:1} as any}
+        research={{Military:1, Grid:1, Nano:1} as Research}
         researchLabel={(t)=>t}
         canResearch={()=>false}
         researchTrack={()=>{}}
-        fleet={[ship] as any}
+        fleet={[ship]}
         focused={0}
         setFocused={()=>{}}
         buildShip={()=>{}}
@@ -157,7 +200,21 @@ describe('dock and upgrade visuals', () => {
         blueprints={{interceptor:[], cruiser:[], dread:[]}}
         sellPart={()=>{}}
         shop={{items:[]}}
-        ghost={()=>({} as any)}
+        ghost={(): GhostDelta => ({
+          targetName: 'X',
+          use: 0,
+          prod: 0,
+          valid: true,
+          slotsUsed: 0,
+          slotCap: 0,
+          slotOk: true,
+          initBefore: 0,
+          initAfter: 0,
+          initDelta: 0,
+          hullBefore: 0,
+          hullAfter: 0,
+          hullDelta: 0,
+        })}
         buyAndInstall={()=>{}}
         capacity={{cap:6}}
         tonnage={{used:1, cap:6}}
