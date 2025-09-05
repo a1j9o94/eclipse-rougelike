@@ -3,6 +3,18 @@ import type { Id } from "../_generated/dataModel";
 import { logInfo, roomTag } from "./log";
 import { simulateCombat, type ShipSnap } from "../engine/combat";
 
+export type PlayerRow = { playerId: string; isReady: boolean };
+export type GameStateLike = { gamePhase: 'setup'|'combat'|'finished'; roundNum?: number; playerStates: Record<string, { fleet?: ShipSnap[]; fleetValid?: boolean }> };
+
+export function computeResolvePlan(players: PlayerRow[], gs: GameStateLike) {
+  const inSetup = gs.gamePhase === 'setup';
+  const bothReady = players.length === 2 && players.every(p => p.isReady);
+  const haveSnapshots = players.length === 2 && players.every(p => Array.isArray(gs.playerStates[p.playerId]?.fleet));
+  const allValid = players.length === 2 && players.every(p => gs.playerStates[p.playerId]?.fleetValid !== false);
+  const ok = Boolean(inSetup && bothReady && haveSnapshots && allValid);
+  return { ok, flags: { inSetup, bothReady, haveSnapshots, allValid } } as const;
+}
+
 type Ctx = { db: DatabaseReader & DatabaseWriter };
 
 export async function maybeResolveRound(ctx: Ctx, roomId: Id<"rooms">) {
@@ -22,12 +34,9 @@ export async function maybeResolveRound(ctx: Ctx, roomId: Id<"rooms">) {
   if (gs.gamePhase !== "setup") return false;
 
   const pStates = (gs.playerStates as Record<string, { fleet?: ShipSnap[]; fleetValid?: boolean; sector?: number }>);
-
-  const bothReady = players.every(p => p.isReady);
-  const haveSnapshots = players.every(p => Array.isArray(pStates?.[p.playerId]?.fleet));
-  const allValid = players.every(p => pStates?.[p.playerId]?.fleetValid !== false);
-  if (!(bothReady && haveSnapshots && allValid)) {
-    logInfo('combat', 'preconditions not met', { tag: roomTag(roomId as unknown as string, gs.roundNum || 1), bothReady, haveSnapshots, allValid });
+  const plan = computeResolvePlan(players as PlayerRow[], { gamePhase: gs.gamePhase as 'setup'|'combat'|'finished', roundNum: gs.roundNum, playerStates: pStates });
+  if (!plan.ok) {
+    logInfo('combat', 'preconditions not met', { tag: roomTag(roomId as unknown as string, gs.roundNum || 1), ...plan.flags });
     return false;
   }
 
@@ -37,7 +46,7 @@ export async function maybeResolveRound(ctx: Ctx, roomId: Id<"rooms">) {
   const fleetA = (pStates[pA]?.fleet as ShipSnap[]) || [];
   const fleetB = (pStates[pB]?.fleet as ShipSnap[]) || [];
 
-  logInfo('combat', 'starting resolve', { tag: roomTag(roomId as unknown as string, roundNum), bothReady, haveSnapshots, allValid });
+  logInfo('combat', 'starting resolve', { tag: roomTag(roomId as unknown as string, roundNum), ...plan.flags });
   const { winnerPlayerId, roundLog } = simulateCombat({ seed, playerAId: pA, playerBId: pB, fleetA, fleetB });
   const loserRow = players.find(p => p.playerId !== winnerPlayerId)!;
   logInfo('combat', 'resolved', { tag: roomTag(roomId as unknown as string, roundNum), winnerPlayerId, loserId: loserRow.playerId, seed });
@@ -73,4 +82,3 @@ export async function maybeResolveRound(ctx: Ctx, roomId: Id<"rooms">) {
 
   return true;
 }
-
