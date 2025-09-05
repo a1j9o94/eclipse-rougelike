@@ -85,7 +85,7 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
   const setPlayerId = (id: string) => localStorage.setItem('eclipse-player-id', id);
 
   // Helper functions
-  type RoomPlayer = { playerId: string; isHost?: boolean; isReady?: boolean };
+  type RoomPlayer = { playerId: string; isHost?: boolean; isReady?: boolean; playerName?: string; lives?: number };
   const players = roomDetails?.players as RoomPlayer[] | undefined;
 
   const isHost = () => {
