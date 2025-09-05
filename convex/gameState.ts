@@ -20,7 +20,7 @@ export const initializeGameState = mutation({
     }
 
     // Create initial player states based on multiplayer configuration
-    const initialPlayerStates: Record<string, any> = {};
+    const initialPlayerStates: Record<string, unknown> = {};
     
     for (const player of players) {
       initialPlayerStates[player.playerId] = {

@@ -24,13 +24,15 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
 
   const currentPlayer = getCurrentPlayer();
   const room = roomDetails?.room;
+  type RoomPlayer = { playerId: string; isReady: boolean; lives: number; playerName: string; isHost: boolean };
 
   // Auto-start game when both players are ready and we're the host
   useEffect(() => {
     if (!roomDetails || !isHost()) return;
     
-    const allReady = roomDetails.players.every((p: any) => p.isReady);
-    const hasFullPlayers = roomDetails.players.length === 2;
+    const players = roomDetails.players as RoomPlayer[];
+    const allReady = players.every(p => p.isReady);
+    const hasFullPlayers = players.length === 2;
     
     if (allReady && hasFullPlayers && !isStarting) {
       setIsStarting(true);
@@ -90,8 +92,9 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
     );
   }
 
-  const waitingForPlayers = roomDetails.players.length < 2;
-  const allReady = roomDetails.players.every((p: any) => p.isReady);
+  const players = roomDetails.players as RoomPlayer[];
+  const waitingForPlayers = players.length < 2;
+  const allReady = players.every(p => p.isReady);
 
   return (
     <div className="bg-zinc-950 min-h-screen text-zinc-100 p-4">
@@ -156,9 +159,9 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
 
         {/* Players */}
         <div className="space-y-3">
-          <h3 className="font-bold">Players ({roomDetails.players.length}/2)</h3>
-          
-          {roomDetails.players.map((player: any) => (
+          <h3 className="font-bold">Players ({players.length}/2)</h3>
+
+          {players.map(player => (
             <div
               key={player.playerId}
               className={`p-4 rounded-lg border ${

@@ -1,17 +1,21 @@
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
+import type { MultiplayerGameConfig } from "../config/multiplayer";
 
 export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
-  // Queries
+  // Check if Convex is available
+  const isConvexAvailable = !!import.meta.env.VITE_CONVEX_URL;
+  
+  // Queries - skip if Convex is not available
   const roomDetails = useQuery(
     api.rooms.getRoomDetails,
-    roomId ? { roomId } : "skip"
+    roomId && isConvexAvailable ? { roomId } : "skip"
   );
   
   const gameState = useQuery(
     api.gameState.getGameState,
-    roomId ? { roomId } : "skip"
+    roomId && isConvexAvailable ? { roomId } : "skip"
   );
 
   // Mutations
@@ -29,9 +33,12 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
   const setPlayerId = (id: string) => localStorage.setItem('eclipse-player-id', id);
 
   // Helper functions
+  type RoomPlayer = { playerId: string; isHost?: boolean; isReady?: boolean };
+  const players = roomDetails?.players as RoomPlayer[] | undefined;
+
   const isHost = () => {
     const playerId = getPlayerId();
-    return roomDetails?.players.find((p: any) => p.playerId === playerId)?.isHost ?? false;
+    return players?.find(p => p.playerId === playerId)?.isHost ?? false;
   };
 
   const isMyTurn = () => {
@@ -41,12 +48,12 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
 
   const getCurrentPlayer = () => {
     const playerId = getPlayerId();
-    return roomDetails?.players.find((p: any) => p.playerId === playerId);
+    return players?.find(p => p.playerId === playerId);
   };
 
   const getOpponent = () => {
     const playerId = getPlayerId();
-    return roomDetails?.players.find((p: any) => p.playerId !== playerId);
+    return players?.find(p => p.playerId !== playerId);
   };
 
   const getMyGameState = () => {
@@ -60,7 +67,10 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
   };
 
   // Room management actions
-  const handleCreateRoom = async (roomName: string, isPublic: boolean, playerName: string, gameConfig: any) => {
+  const handleCreateRoom = async (roomName: string, isPublic: boolean, playerName: string, gameConfig: MultiplayerGameConfig) => {
+    if (!isConvexAvailable) {
+      throw new Error("Multiplayer features are not available. Please check your connection and try again.");
+    }
     try {
       const result = await createRoom({
         roomName,
@@ -77,6 +87,9 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
   };
 
   const handleJoinRoom = async (roomCode: string, playerName: string) => {
+    if (!isConvexAvailable) {
+      throw new Error("Multiplayer features are not available. Please check your connection and try again.");
+    }
     try {
       const result = await joinRoom({ roomCode, playerName });
       setPlayerId(result.playerId);
@@ -88,6 +101,9 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
   };
 
   const handlePlayerReady = async (isReady: boolean) => {
+    if (!isConvexAvailable) {
+      throw new Error("Multiplayer features are not available. Please check your connection and try again.");
+    }
     const playerId = getPlayerId();
     if (!playerId) throw new Error("No player ID found");
 
@@ -100,6 +116,9 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
   };
 
   const handleStartGame = async () => {
+    if (!isConvexAvailable) {
+      throw new Error("Multiplayer features are not available. Please check your connection and try again.");
+    }
     if (!roomId) throw new Error("No room ID");
     if (!isHost()) throw new Error("Only host can start game");
 
@@ -117,7 +136,10 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
   };
 
   // Game state actions
-  const handleGameStateUpdate = async (updates: any) => {
+  const handleGameStateUpdate = async (updates: Record<string, unknown>) => {
+    if (!isConvexAvailable) {
+      throw new Error("Multiplayer features are not available. Please check your connection and try again.");
+    }
     if (!roomId) throw new Error("No room ID");
     const playerId = getPlayerId();
     if (!playerId) throw new Error("No player ID found");
@@ -131,6 +153,9 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
   };
 
   const handleSwitchTurn = async () => {
+    if (!isConvexAvailable) {
+      throw new Error("Multiplayer features are not available. Please check your connection and try again.");
+    }
     if (!roomId) throw new Error("No room ID");
 
     try {
@@ -142,6 +167,9 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
   };
 
   const handlePhaseChange = async (phase: "setup" | "combat" | "finished") => {
+    if (!isConvexAvailable) {
+      throw new Error("Multiplayer features are not available. Please check your connection and try again.");
+    }
     if (!roomId) throw new Error("No room ID");
 
     try {
@@ -177,7 +205,8 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
     switchTurn: handleSwitchTurn,
     updateGamePhase: handlePhaseChange,
     
-    // Loading states
-    isLoading: roomDetails === undefined || gameState === undefined,
+    // Loading states and availability
+    isLoading: isConvexAvailable && (roomDetails === undefined || gameState === undefined),
+    isConvexAvailable,
   };
 }

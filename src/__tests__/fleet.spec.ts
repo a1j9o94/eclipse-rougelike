@@ -10,7 +10,7 @@ describe('groupFleet', () => {
     const parts = [PARTS.sources[0], PARTS.drives[0]];
     const a = makeShip(frame, parts);
     const b = makeShip(frame, parts);
-    const groups = groupFleet([a as any, b as any]);
+    const groups = groupFleet([a, b]);
     expect(groups).toHaveLength(1);
     expect(groups[0].count).toBe(2);
   });
