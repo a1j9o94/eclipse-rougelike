@@ -97,8 +97,9 @@ export const initializeGameState = mutation({
         break;
       case 'timekeepers':
         research = { ...research, Grid: 2 };
-        modifiers.blueprintHints = { interceptor: ['fusion_source','tachyon_drive','disruptor','positron'] };
-        blueprintIds.interceptor = ['fusion_source','tachyon_drive','disruptor','positron'];
+        // Align with FACTIONS: sources[1] is tier-2 tachyon_source
+        modifiers.blueprintHints = { interceptor: ['tachyon_source','tachyon_drive','disruptor','positron'] };
+        blueprintIds.interceptor = ['tachyon_source','tachyon_drive','disruptor','positron'];
         {
           const snap = makeBasicInterceptorSnap();
           snap.stats.init = 2;
