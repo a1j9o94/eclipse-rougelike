@@ -47,23 +47,37 @@ export const initializeGameState = mutation({
     
     for (const player of players) {
       const starting = Math.max(1, args.gameConfig.startingShips || 1);
+      // Base defaults
+      let resources = { credits: 20, materials: 5, science: 0 } as { credits:number; materials:number; science:number };
+      let research = { Military: 1, Grid: 1, Nano: 1 } as { Military:number; Grid:number; Nano:number };
+      let economy: { rerollBase?: number } = {};
+      const faction = (player as any).faction as string | undefined;
+      // Apply minimal faction perks needed before the first shop
+      if (faction === 'scientists') {
+        research = { Military: 2, Grid: 2, Nano: 2 };
+      } else if (faction === 'industrialists') {
+        resources = { credits: resources.credits + 20, materials: resources.materials + 5, science: resources.science };
+        economy.rerollBase = 0;
+      }
       initialPlayerStates[player.playerId] = {
-        resources: { credits: 20, materials: 5, science: 0 },
-        research: { Military: 1, Grid: 1, Nano: 1 },
+        resources,
+        research,
+        economy,
+        faction,
         lives: player.lives,
         fleet: makeStartingFleetSnaps(starting),
         fleetValid: true,
         blueprints: {
-          interceptor: [], // Will contain default interceptor parts
+          interceptor: [],
           cruiser: [],
           dread: [],
         },
         isAlive: true,
         sector: 1,
         graceUsed: false,
-      };
+      } as any;
       // Log per-player seed counts for diagnostics
-      try { logInfo('init', 'seeded', { tag: roomTag(args.roomId as unknown as string), playerId: player.playerId, count: starting }); } catch {}
+      try { logInfo('init', 'seeded', { tag: roomTag(args.roomId as unknown as string), playerId: player.playerId, count: starting, faction }); } catch {}
     }
 
     // Set first player as starting player

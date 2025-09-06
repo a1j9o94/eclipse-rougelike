@@ -431,15 +431,20 @@ export default function EclipseIntegrated(){
     } else if (phase === 'setup' && mode !== 'OUTPOST') {
       console.debug('[Nav] Phase → setup');
       setMode('OUTPOST');
-      // Sync my resources from server so rewards are reflected
+      // Sync my starting config from server so research/resources/reroll reflect faction
       try {
         if (gameMode === 'multiplayer') {
           const myId = multi.getPlayerId?.() as string | null;
           const pStates = multi.gameState?.playerStates as Record<string, any> | undefined;
           const st = myId ? pStates?.[myId] : null;
           const res = (st?.resources as { credits:number; materials:number; science:number } | undefined);
-          if (res && typeof res.credits === 'number') {
-            setResources(r => ({ ...r, ...res }));
+          const srvResearch = (st?.research as Research | undefined);
+          const econ = (st?.economy as { rerollBase?: number } | undefined);
+          if (res && typeof res.credits === 'number') setResources(r => ({ ...r, ...res }));
+          if (srvResearch && typeof srvResearch.Military === 'number') setResearch({ ...srvResearch });
+          if (econ && typeof econ.rerollBase === 'number') {
+            setBaseRerollCost(econ.rerollBase);
+            setRerollCost(econ.rerollBase);
           }
           // Prefer server snapshot of my fleet for consistency across clients
           const serverFleet = Array.isArray(st?.fleet) ? st.fleet.map(fromSnapshotToShip) as unknown as Ship[] : [];
