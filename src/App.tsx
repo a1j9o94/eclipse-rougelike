@@ -480,22 +480,27 @@ export default function EclipseIntegrated(){
           }
           // Prefer server snapshot of my fleet for consistency across clients
           const serverFleet = Array.isArray(st?.fleet) ? st.fleet.map(fromSnapshotToShip) as unknown as Ship[] : [];
+          const roundNum = (multi.gameState?.roundNum || 1) as number;
           if (serverFleet.length > 0) {
             setFleet(serverFleet);
             setCapacity(c => ({ cap: Math.max(c.cap, serverFleet.length) }));
             setFocused(0);
             setMpSeeded(true);
-          } else {
-            // Seed starting fleet on first multiplayer setup if no snapshot yet
-            const starting = multi.roomDetails?.room?.gameConfig?.startingShips as number | undefined;
-            const roundNum = (multi.gameState?.roundNum || 1) as number;
-            if (!mpSeeded && roundNum === 1 && (starting && starting > 0)) {
-              const ships = Array.from({ length: starting }, () => makeShip(getFrame('interceptor'), [ ...INITIAL_BLUEPRINTS.interceptor ])) as unknown as Ship[];
+          } else if (!mpSeeded && roundNum === 1) {
+            // Build initial fleet from faction-adjusted blueprints and starting frame
+            const starting = Math.max(1, Number(multi.roomDetails?.room?.gameConfig?.startingShips) || 1);
+            // startingFrame hint may be present in modifiers
+            const sf = ((mods as any)?.startingFrame as any) || 'interceptor';
+            const bp = blueprints as Record<string, Part[]>;
+            try {
+              const ships = Array.from({ length: starting }, () => makeShip(getFrame(sf as any), [ ...(bp[sf as any] || []) ])) as unknown as Ship[];
               setFleet(ships);
               setCapacity(c => ({ cap: Math.max(c.cap, starting) }));
               setFocused(0);
               setMpSeeded(true);
-            }
+              // Submit snapshot to server so both sides stay in sync
+              try { void multi.submitFleetSnapshot?.(ships as unknown, fleetValid); } catch {/* ignore */}
+            } catch {/* ignore */}
           }
         }
       } catch { /* ignore */ }
