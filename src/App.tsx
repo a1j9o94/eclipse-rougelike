@@ -472,7 +472,18 @@ export default function EclipseIntegrated(){
   }, []);
 
   // Multiplayer: drive navigation by server game phase and stream fleet validity
-  const fleetValid = fleet.every(s=>s.stats.valid) && tonnage.used <= capacity.cap;
+  // Local validity (parts/power + capacity)
+  const localFleetValid = fleet.every(s=>s.stats.valid) && tonnage.used <= capacity.cap;
+  // In multiplayer setup, also respect the server's view of validity if present
+  const serverFleetValid: boolean | null = (() => {
+    try {
+      if (gameMode !== 'multiplayer') return null;
+      const myId = multi.getPlayerId?.() as string | null;
+      const st = myId ? (multi.gameState?.playerStates as Record<string, { fleetValid?: boolean }> | undefined)?.[myId] : undefined;
+      return typeof st?.fleetValid === 'boolean' ? st.fleetValid : null;
+    } catch { return null; }
+  })();
+  const fleetValid = (serverFleetValid == null ? true : serverFleetValid) && localFleetValid;
   useEffect(() => {
     if (!multi) return;
     // Phase-based navigation
