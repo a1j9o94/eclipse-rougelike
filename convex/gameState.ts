@@ -22,6 +22,15 @@ export function makeStartingFleetSnaps(count: number): ShipSnap[] {
   return Array.from({ length: n }, () => makeBasicInterceptorSnap());
 }
 
+function makeFleetForFrame(frameId: 'interceptor'|'cruiser'|'dread', count: number): ShipSnap[] {
+  const base = makeBasicInterceptorSnap();
+  const f = (id: 'interceptor'|'cruiser'|'dread') => ({ id, name: id.charAt(0).toUpperCase() + id.slice(1) });
+  return Array.from({ length: Math.max(0, count) }, () => ({
+    ...base,
+    frame: f(frameId),
+  }));
+}
+
 export const initializeGameState = mutation({
   args: { 
     roomId: v.id("rooms"),
@@ -50,22 +59,49 @@ export const initializeGameState = mutation({
       // Base defaults
       let resources = { credits: 20, materials: 5, science: 0 } as { credits:number; materials:number; science:number };
       let research = { Military: 1, Grid: 1, Nano: 1 } as { Military:number; Grid:number; Nano:number };
-      let economy: { rerollBase?: number } = {};
+      let economy: { rerollBase?: number; creditMultiplier?: number; materialMultiplier?: number } = {};
+      let modifiers: { rareChance?: number; capacityCap?: number; startingFrame?: 'interceptor'|'cruiser'|'dread'; blueprintHints?: Record<string, string[]> } = {};
+      let fleetSnaps: ShipSnap[] | null = null;
       const faction = (player as any).faction as string | undefined;
-      // Apply minimal faction perks needed before the first shop
-      if (faction === 'scientists') {
-        research = { Military: 2, Grid: 2, Nano: 2 };
-      } else if (faction === 'industrialists') {
-        resources = { credits: resources.credits + 20, materials: resources.materials + 5, science: resources.science };
-        economy.rerollBase = 0;
+      // Apply faction perks needed before the first shop and for fleet seed
+      switch (faction) {
+        case 'scientists':
+          research = { Military: 2, Grid: 2, Nano: 2 };
+          modifiers.rareChance = 0.2;
+          break;
+        case 'industrialists':
+          resources = { credits: resources.credits + 20, materials: resources.materials + 5, science: resources.science };
+          economy.rerollBase = 0;
+          economy.creditMultiplier = 0.75;
+          economy.materialMultiplier = 0.75;
+          break;
+        case 'warmongers':
+          research = { ...research, Military: 2 };
+          modifiers.startingFrame = 'cruiser';
+          modifiers.capacityCap = 14;
+          fleetSnaps = makeFleetForFrame('cruiser', starting);
+          break;
+        case 'raiders':
+          // Hint blueprints (Tier 2 cannon and better drives)
+          modifiers.blueprintHints = { interceptor: ['tachyon_source','tachyon_drive','antimatter','positron'] };
+          break;
+        case 'timekeepers':
+          research = { ...research, Grid: 2 };
+          modifiers.blueprintHints = { interceptor: ['fusion_source','tachyon_drive','disruptor','positron'] };
+          break;
+        case 'collective':
+          research = { ...research, Nano: 2 };
+          modifiers.blueprintHints = { interceptor: ['fusion_source','fusion_drive','plasma','auto_repair'] };
+          break;
       }
       initialPlayerStates[player.playerId] = {
         resources,
         research,
         economy,
+        modifiers,
         faction,
         lives: player.lives,
-        fleet: makeStartingFleetSnaps(starting),
+        fleet: fleetSnaps ?? makeStartingFleetSnaps(starting),
         fleetValid: true,
         blueprints: {
           interceptor: [],

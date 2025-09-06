@@ -439,12 +439,26 @@ export default function EclipseIntegrated(){
           const st = myId ? pStates?.[myId] : null;
           const res = (st?.resources as { credits:number; materials:number; science:number } | undefined);
           const srvResearch = (st?.research as Research | undefined);
-          const econ = (st?.economy as { rerollBase?: number } | undefined);
+          const econ = (st?.economy as { rerollBase?: number; creditMultiplier?:number; materialMultiplier?:number } | undefined);
+          const mods = (st?.modifiers as { rareChance?: number; capacityCap?: number } | undefined);
           if (res && typeof res.credits === 'number') setResources(r => ({ ...r, ...res }));
           if (srvResearch && typeof srvResearch.Military === 'number') setResearch({ ...srvResearch });
           if (econ && typeof econ.rerollBase === 'number') {
             setBaseRerollCost(econ.rerollBase);
             setRerollCost(econ.rerollBase);
+          }
+          if (econ && (typeof econ.creditMultiplier === 'number' || typeof econ.materialMultiplier === 'number')) {
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
+            const { setEconomyModifiers } = require('./game/economy');
+            setEconomyModifiers({ credits: econ.creditMultiplier ?? 1, materials: econ.materialMultiplier ?? 1 });
+          }
+          if (mods && typeof mods.rareChance === 'number') {
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
+            const { setRareTechChance } = require('./game/shop');
+            setRareTechChance(mods.rareChance as number);
+          }
+          if (mods && typeof mods.capacityCap === 'number') {
+            setCapacity(c => ({ cap: Math.max(c.cap, mods.capacityCap as number) }));
           }
           // Prefer server snapshot of my fleet for consistency across clients
           const serverFleet = Array.isArray(st?.fleet) ? st.fleet.map(fromSnapshotToShip) as unknown as Ship[] : [];
