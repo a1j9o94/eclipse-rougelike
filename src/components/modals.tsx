@@ -143,3 +143,26 @@ export function MatchOverModal({ winnerName, onClose }:{ winnerName: string; onC
   );
 }
 
+export function FactionPickModal({ current, onPick, onClose }:{ current?: string; onPick:(factionId:string)=>void; onClose:()=>void }){
+  // Minimal faction list from config
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { FACTIONS } = require('../config/factions');
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 bg-black/70">
+      <div className="w-full max-w-md bg-zinc-900 border border-zinc-700 rounded-2xl p-4">
+        <div className="text-lg font-semibold mb-2">Choose Faction</div>
+        <div className="max-h-[50vh] overflow-y-auto grid grid-cols-1 gap-2">
+          {FACTIONS.map((f:any)=> (
+            <button key={f.id} onClick={()=>onPick(f.id)} className={`text-left px-3 py-2 rounded border ${current===f.id?'border-emerald-500 bg-emerald-900/20':'border-zinc-700 bg-zinc-900 hover:border-zinc-500'}`}>
+              <div className="font-medium">{f.name}</div>
+              <div className="text-xs opacity-70">{f.desc || ''}</div>
+            </button>
+          ))}
+        </div>
+        <div className="mt-3 flex gap-2 justify-end">
+          <button onClick={onClose} className="px-3 py-2 rounded bg-zinc-700">Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -3,6 +3,7 @@ import { v } from "convex/values";
 // import { maybeStartCombat } from "./helpers/match";
 import { logInfo, roomTag } from "./helpers/log";
 import { maybeResolveRound, validateReadyToggle } from "./helpers/resolve";
+import { ECONOMY } from "../src/config/economy";
 import type { ShipSnap } from "./engine/combat";
 
 // Helper function to generate a unique player ID
@@ -28,7 +29,9 @@ export const createRoom = mutation({
     gameConfig: v.object({
       startingShips: v.number(),
       livesPerPlayer: v.number(),
+      multiplayerLossPct: v.optional(v.number()),
     }),
+    playerFaction: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const roomCode = generateRoomCode();
@@ -41,7 +44,7 @@ export const createRoom = mutation({
       status: "waiting",
       maxPlayers: 2,
       currentPlayers: 1,
-      gameConfig: args.gameConfig,
+      gameConfig: { ...args.gameConfig, multiplayerLossPct: ECONOMY.multiplayerLossPct },
       createdAt: Date.now(),
     });
 
@@ -50,6 +53,7 @@ export const createRoom = mutation({
       playerId,
       playerName: args.playerName,
       isHost: true,
+      faction: args.playerFaction,
       lives: args.gameConfig.livesPerPlayer,
       isReady: false,
       joinedAt: Date.now(),
@@ -63,6 +67,7 @@ export const joinRoom = mutation({
   args: {
     roomCode: v.string(),
     playerName: v.string(),
+    playerFaction: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const room = await ctx.db
@@ -89,6 +94,7 @@ export const joinRoom = mutation({
       playerId,
       playerName: args.playerName,
       isHost: false,
+      faction: args.playerFaction,
       lives: room.gameConfig.livesPerPlayer,
       isReady: false,
       joinedAt: Date.now(),
@@ -304,4 +310,18 @@ export const prepareRematch = mutation({
     logInfo('start', 'room prepared for rematch', { tag: roomTag(args.roomId as unknown as string) });
     return true;
   },
+});
+
+export const setPlayerFaction = mutation({
+  args: { playerId: v.string(), faction: v.string() },
+  handler: async (ctx, args) => {
+    const player = await ctx.db
+      .query('players')
+      .withIndex('by_player_id', q => q.eq('playerId', args.playerId))
+      .first();
+    if (!player) throw new Error('Player not found');
+    await ctx.db.patch(player._id, { faction: args.faction });
+    logInfo('ready', 'player faction set', { playerId: args.playerId, faction: args.faction });
+    return true;
+  }
 });

@@ -4,7 +4,7 @@ import { INITIAL_BLUEPRINTS, INITIAL_RESEARCH, INITIAL_RESOURCES, INITIAL_CAPACI
 import { type CapacityState, type DifficultyId } from './config/types'
 import { type FrameId } from './game'
 import { ResourceBar } from './components/ui'
-import { RulesModal, TechListModal, WinModal, MatchOverModal } from './components/modals'
+import { RulesModal, TechListModal, WinModal, MatchOverModal, FactionPickModal } from './components/modals'
 import StartPage from './pages/StartPage'
 import { type FactionId } from './config/factions'
 import OutpostPage from './pages/OutpostPage'
@@ -107,6 +107,8 @@ export default function EclipseIntegrated(){
   const [mpSeeded, setMpSeeded] = useState(false);
   const [mpSeedSubmitted, setMpSeedSubmitted] = useState(false);
   const [mpLastServerApplyRound, setMpLastServerApplyRound] = useState<number>(0);
+  const [showFactionModal, setShowFactionModal] = useState(false);
+  const [pendingReadyToggle, setPendingReadyToggle] = useState<boolean>(false);
 
   // MP: Convert server ShipSnap to client Ship with synthetic parts that reflect stats
   function fromSnapshotToShip(snap: any): Ship {
@@ -675,13 +677,10 @@ export default function EclipseIntegrated(){
               try {
                 const me = multi.getCurrentPlayer?.();
                 const myReady = !!me?.isReady;
-                console.debug('[UI] StartCombat clicked', { myReady, fleetValid, fleetCount: fleet.length, me });
-                void multi.submitFleetSnapshot?.(fleet as unknown, fleetValid);
-                void multi.updateFleetValidity?.(fleetValid);
-                void multi.setReady?.(!myReady);
-                console.debug('[UI] StartCombat dispatched', { toggledTo: !myReady });
+                setPendingReadyToggle(!myReady);
+                setShowFactionModal(true);
               } catch (err) {
-                console.error('[UI] StartCombat error', err);
+                console.error('[UI] Faction pick error', err);
               }
               return;
             }
@@ -710,6 +709,23 @@ export default function EclipseIntegrated(){
           enemyFleet={enemyFleet}
           log={log}
           onReturn={handleReturnFromCombat}
+        />
+      )}
+
+      {showFactionModal && (
+        <FactionPickModal
+          current={(multi.getCurrentPlayer?.() as any)?.faction}
+          onPick={(fid:string) => {
+            try {
+              void (multi as any)?.setPlayerFaction?.(fid);
+              void multi.submitFleetSnapshot?.(fleet as unknown, fleetValid);
+              void multi.updateFleetValidity?.(fleetValid);
+              if (pendingReadyToggle != null) void multi.setReady?.(pendingReadyToggle);
+            } finally {
+              setShowFactionModal(false);
+            }
+          }}
+          onClose={()=> setShowFactionModal(false)}
         />
       )}
 

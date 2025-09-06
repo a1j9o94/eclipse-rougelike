@@ -71,6 +71,7 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
   const restartToSetup = useMutation(api.rooms.restartToSetup);
   const startGame = useMutation(api.rooms.startGame);
   const prepareRematch = useMutation(api.rooms.prepareRematch);
+  const setPlayerFaction = useMutation(api.rooms.setPlayerFaction);
   const updateGameState = useMutation(api.gameState.updateGameState);
   const endCombatToSetup = useMutation(api.gameState.endCombatToSetup);
   const submitFleetSnapshot = useMutation(api.gameState.submitFleetSnapshot);
@@ -120,7 +121,7 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
   };
 
   // Room management actions
-  const handleCreateRoom = async (roomName: string, isPublic: boolean, playerName: string, gameConfig: MultiplayerGameConfig) => {
+  const handleCreateRoom = async (roomName: string, isPublic: boolean, playerName: string, gameConfig: MultiplayerGameConfig, playerFaction?: string) => {
     if (!isConvexAvailable) {
       throw new Error("Multiplayer features are not available. Please check your connection and try again.");
     }
@@ -130,6 +131,7 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
         isPublic,
         playerName,
         gameConfig,
+        playerFaction,
       });
       setPlayerId(result.playerId);
       return result;
@@ -139,12 +141,12 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
     }
   };
 
-  const handleJoinRoom = async (roomCode: string, playerName: string) => {
+  const handleJoinRoom = async (roomCode: string, playerName: string, playerFaction?: string) => {
     if (!isConvexAvailable) {
       throw new Error("Multiplayer features are not available. Please check your connection and try again.");
     }
     try {
-      const result = await joinRoom({ roomCode, playerName });
+      const result = await joinRoom({ roomCode, playerName, playerFaction });
       setPlayerId(result.playerId);
       return result;
     } catch (error) {
@@ -230,6 +232,17 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
       await prepareRematch({ roomId });
     } catch (err) {
       console.error('Failed to prepare rematch:', err);
+    }
+  };
+
+  const handleSetFaction = async (faction: string) => {
+    if (!isConvexAvailable) return;
+    const playerId = getPlayerId();
+    if (!playerId) return;
+    try {
+      await setPlayerFaction({ playerId, faction });
+    } catch (err) {
+      console.error('Failed to set player faction:', err);
     }
   };
 
@@ -367,6 +380,7 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
     submitFleetSnapshot: handleSubmitFleetSnapshot,
     ackRoundPlayed: handleAckRoundPlayed,
     prepareRematch: handlePrepareRematch,
+    setPlayerFaction: handleSetFaction,
     
     // Loading states and availability
     isLoading: isConvexAvailable && !!roomId && (roomDetails === undefined || gameState === undefined),

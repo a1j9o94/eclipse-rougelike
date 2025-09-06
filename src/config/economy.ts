@@ -9,6 +9,8 @@ export const ECONOMY = {
   dockUpgrade: { credits: 15, materials: 3, capacityDelta: 1, capacityMax: 12 },
   reroll: { base: 8, increment: 4 },
   shop: { itemsBase: 4 },
+  // Multiplayer tuning: percentage of winner's rewards granted to the loser as consolation
+  multiplayerLossPct: 0.5,
 } as const;
 
 export function nextTierCost(curr:number){
@@ -23,5 +25,4 @@ export function calcRewardsForFrameId(frameId:string){
   if(frameId==='dread') return { c:52, m:4, s:3 };
   return { c:0, m:0, s:0 };
 }
-
 

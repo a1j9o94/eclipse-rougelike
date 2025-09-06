@@ -91,6 +91,9 @@ export async function maybeResolveRound(ctx: Ctx, roomId: Id<"rooms">) {
   }
 
   // Winner rewards: grant credits/materials/science for destroyed enemy ships
+  // Loser consolation: (1) full credit for ships they destroyed, plus (2) percentage of winner's rewards
+  const roomRow = await ctx.db.get(roomId);
+  const lossPct = Math.max(0, Math.min(1, (roomRow?.gameConfig as any)?.multiplayerLossPct ?? 0.5));
   function rewardForFrame(id: string) {
     if (id === 'interceptor') return { c: 22, m: 2, s: 1 } as const;
     if (id === 'cruiser') return { c: 32, m: 3, s: 2 } as const;
@@ -98,7 +101,8 @@ export async function maybeResolveRound(ctx: Ctx, roomId: Id<"rooms">) {
     return { c: 0, m: 0, s: 0 } as const;
   }
   const loserSnaps = winnerPlayerId === pA ? finalB : finalA;
-  // Count rewards only for ships that ended dead on the losing side
+  const winnerSnaps = winnerPlayerId === pA ? finalA : finalB;
+  // Count rewards only for ships that ended dead on the other side
   let rc = 0, rm = 0, rs = 0;
   for (const s of loserSnaps) {
     if (!s.alive || s.hull <= 0) {
@@ -106,11 +110,30 @@ export async function maybeResolveRound(ctx: Ctx, roomId: Id<"rooms">) {
       rc += r.c; rm += r.m; rs += r.s;
     }
   }
+  // Loser also gets rewards for kills they achieved
+  let lc = 0, lm = 0, ls = 0;
+  for (const s of winnerSnaps) {
+    if (!s.alive || s.hull <= 0) {
+      const r = rewardForFrame(s.frame.id);
+      lc += r.c; lm += r.m; ls += r.s;
+    }
+  }
   const statesAfter = { ...pStates } as Record<string, { resources?: { credits: number; materials: number; science: number } }>;
   const curr = statesAfter[winnerPlayerId]?.resources || { credits: 0, materials: 0, science: 0 };
   statesAfter[winnerPlayerId] = {
     ...statesAfter[winnerPlayerId],
     resources: { credits: (curr.credits || 0) + rc, materials: (curr.materials || 0) + rm, science: (curr.science || 0) + rs },
+  } as any;
+  // Apply loser consolation
+  const loserId = loserRow.playerId;
+  const loserCurr = statesAfter[loserId]?.resources || { credits: 0, materials: 0, science: 0 };
+  statesAfter[loserId] = {
+    ...statesAfter[loserId],
+    resources: {
+      credits: (loserCurr.credits || 0) + lc + Math.floor(rc * lossPct),
+      materials: (loserCurr.materials || 0) + lm + Math.floor(rm * lossPct),
+      science: (loserCurr.science || 0) + ls + Math.floor(rs * lossPct),
+    },
   } as any;
 
   await ctx.db.patch(gs._id, {
