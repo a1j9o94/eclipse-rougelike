@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { PARTS, getFrame, makeShip, rollInventory, getSectorSpec } from './game'
 import { INITIAL_BLUEPRINTS, INITIAL_RESEARCH, INITIAL_RESOURCES, INITIAL_CAPACITY, type Resources, type Research } from '../shared/defaults'
+import type { PlayerState } from '../shared/mpTypes'
 import { type CapacityState, type DifficultyId } from '../shared/types'
 import { type FrameId } from './game'
 import { ResourceBar } from './components/ui'
@@ -445,8 +446,7 @@ export default function EclipseIntegrated(){
         try {
           const myId = multi.getPlayerId?.() as string | null;
           const opp = multi.getOpponent?.();
-          type ServerPlayerState = { fleet?: unknown[] };
-          const pStates = multi.gameState?.playerStates as Record<string, ServerPlayerState> | undefined;
+          const pStates = multi.gameState?.playerStates as Record<string, PlayerState> | undefined;
           const myFleet = myId ? pStates?.[myId]?.fleet : undefined;
           const oppFleet = opp ? pStates?.[opp.playerId]?.fleet : undefined;
           if (Array.isArray(myFleet)) {
@@ -472,15 +472,7 @@ export default function EclipseIntegrated(){
       try {
         if (gameMode === 'multiplayer') {
           const myId = multi.getPlayerId?.() as string | null;
-          type ServerPlayerStateFull = {
-            resources?: { credits:number; materials:number; science:number };
-            research?: Research;
-            economy?: { rerollBase?: number; creditMultiplier?:number; materialMultiplier?:number };
-            modifiers?: { rareChance?: number; capacityCap?: number; blueprintHints?: Record<string, string[]>; startingFrame?: 'interceptor'|'cruiser'|'dread' };
-            blueprintIds?: Record<FrameId, string[]>;
-            fleet?: unknown[];
-          };
-          const pStates = multi.gameState?.playerStates as Record<string, ServerPlayerStateFull> | undefined;
+          const pStates = multi.gameState?.playerStates as Record<string, PlayerState> | undefined;
           const st = myId ? pStates?.[myId] : null;
           const res = st?.resources;
           const srvResearch = st?.research as Research | undefined;
@@ -571,7 +563,7 @@ export default function EclipseIntegrated(){
     if (multi.gameState?.gamePhase !== 'setup') return;
     try {
       const myId = multi.getPlayerId?.() as string | null;
-      const st = myId ? (multi.gameState?.playerStates as Record<string, { fleet?: unknown[]; modifiers?: { blueprintHints?: Record<string,string[]> }; blueprintIds?: Record<FrameId, string[]> }> | undefined)?.[myId] : null;
+      const st = myId ? (multi.gameState?.playerStates as Record<string, PlayerState> | undefined)?.[myId] : null;
       const serverFleet = Array.isArray(st?.fleet) ? (st.fleet as ShipSnapshot[]) : [];
       const roundNum = (multi.gameState?.roundNum || 1) as number;
       // Apply blueprint hints if they arrive late
@@ -606,7 +598,7 @@ export default function EclipseIntegrated(){
     if (multi.gameState?.gamePhase !== 'setup') return;
     try {
       const myId = multi.getPlayerId?.() as string | null;
-      const st = myId ? (multi.gameState?.playerStates as Record<string, { fleet?: unknown[]; modifiers?: { blueprintHints?: Record<string,string[]> }; blueprintIds?: Record<FrameId, string[]> }> | undefined)?.[myId] : null;
+      const st = myId ? (multi.gameState?.playerStates as Record<string, PlayerState> | undefined)?.[myId] : null;
       const serverFleet = Array.isArray(st?.fleet) ? (st.fleet as ShipSnapshot[]) : [];
       const roundNum = (multi.gameState?.roundNum || 1) as number;
       const starting = (multi.roomDetails?.room?.gameConfig?.startingShips as number | undefined) || 1;
@@ -752,7 +744,7 @@ export default function EclipseIntegrated(){
         meFaction={gameMode==='multiplayer' ? (multi.getCurrentPlayer?.() as { faction?: string })?.faction as string : undefined}
         opponent={gameMode==='multiplayer' && (multi.getOpponent?.()) ? { name: (multi.getOpponent?.()?.playerName || 'Opponent') as string, lives: (multi.roomDetails?.players?.find?.((p: { playerId:string; lives:number }) => p.playerId === multi.getOpponent?.()?.playerId)?.lives) ?? 0 } : undefined}
         opponentFaction={gameMode==='multiplayer' ? (multi.getOpponent?.() as { faction?: string })?.faction as string : undefined}
-        phase={gameMode==='multiplayer' ? (multi.gameState?.gamePhase as unknown as 'setup' | 'combat' | 'finished') : undefined}
+        phase={gameMode==='multiplayer' ? multi.gameState?.gamePhase : undefined}
       />
 
       {mode==='OUTPOST' && (

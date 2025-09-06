@@ -2,9 +2,10 @@ import type { DatabaseReader, DatabaseWriter } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
 import { logInfo, roomTag } from "./log";
 import { simulateCombat, type ShipSnap } from "../engine/combat";
+import type { PlayerState } from "../../shared/mpTypes";
 
 export type PlayerRow = { playerId: string; isReady: boolean };
-export type GameStateLike = { gamePhase: 'setup'|'combat'|'finished'; roundNum?: number; playerStates: Record<string, { fleet?: ShipSnap[]; fleetValid?: boolean }> };
+export type GameStateLike = { gamePhase: 'setup'|'combat'|'finished'; roundNum?: number; playerStates: Record<string, PlayerState> };
 
 export function computeResolvePlan(players: PlayerRow[], gs: GameStateLike) {
   const inSetup = gs.gamePhase === 'setup';
@@ -19,7 +20,7 @@ export function computeResolvePlan(players: PlayerRow[], gs: GameStateLike) {
 export function validateReadyToggle(args: {
   playerId: string;
   wantReady: boolean;
-  playerStates: Record<string, { fleet?: ShipSnap[]; fleetValid?: boolean } | undefined>;
+  playerStates: Record<string, PlayerState | undefined>;
 }): { ok: boolean; reason?: 'missingSnapshot' | 'invalidFleet' | 'notAllowed' } {
   const { playerId, wantReady, playerStates } = args;
   if (!wantReady) return { ok: true };
@@ -52,7 +53,7 @@ export async function maybeResolveRound(ctx: Ctx, roomId: Id<"rooms">) {
 
   if (gs.gamePhase !== "setup") return false;
 
-  const pStates = (gs.playerStates as Record<string, { fleet?: ShipSnap[]; fleetValid?: boolean; sector?: number }>);
+  const pStates = (gs.playerStates as Record<string, PlayerState>);
   const plan = computeResolvePlan(players as PlayerRow[], { gamePhase: gs.gamePhase as 'setup'|'combat'|'finished', roundNum: gs.roundNum, playerStates: pStates });
   if (!plan.ok) {
     logInfo('combat', 'preconditions not met', { tag: roomTag(roomId as unknown as string, gs.roundNum || 1), ...plan.flags });
@@ -71,7 +72,7 @@ export async function maybeResolveRound(ctx: Ctx, roomId: Id<"rooms">) {
   logInfo('combat', 'resolved', { tag: roomTag(roomId as unknown as string, roundNum), winnerPlayerId, loserId: loserRow.playerId, seed });
 
   // Archive winner fleet snapshot
-  const winnerState = pStates[winnerPlayerId] as { fleet?: unknown, sector?: number } | undefined;
+  const winnerState = pStates[winnerPlayerId];
   if (winnerState?.fleet) {
     await ctx.db.insert("fleetArchives", {
       roomId,
@@ -118,8 +119,7 @@ export async function maybeResolveRound(ctx: Ctx, roomId: Id<"rooms">) {
       lc += r.c; lm += r.m; ls += r.s;
     }
   }
-  type Resources = { credits: number; materials: number; science: number };
-  const statesAfter: Record<string, { resources?: Resources; fleet?: unknown; fleetValid?: boolean; sector?: number } > = { ...pStates } as Record<string, { resources?: Resources; fleet?: unknown; fleetValid?: boolean; sector?: number }>;
+  const statesAfter: Record<string, PlayerState> = { ...pStates };
   const curr = statesAfter[winnerPlayerId]?.resources || { credits: 0, materials: 0, science: 0 };
   statesAfter[winnerPlayerId] = {
     ...statesAfter[winnerPlayerId],

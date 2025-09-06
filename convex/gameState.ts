@@ -5,6 +5,7 @@ import { logInfo, roomTag } from "./helpers/log";
 import { maybeResolveRound } from "./helpers/resolve";
 import type { ShipSnap } from "./engine/combat";
 import { SHARED_FACTIONS, type FactionId } from "../shared/factions";
+import type { PlayerState, ShipSnapshot, Resources, Research, FrameId } from "../shared/mpTypes";
 
 // Build a minimal interceptor snapshot used for multiplayer seeding
 export function makeBasicInterceptorSnap(): ShipSnap {
@@ -53,16 +54,16 @@ export const initializeGameState = mutation({
     }
 
     // Create initial player states based on multiplayer configuration
-    const initialPlayerStates: Record<string, unknown> = {};
+    const initialPlayerStates: Record<string, PlayerState> = {};
     
   for (const player of players) {
     const starting = Math.max(1, args.gameConfig.startingShips || 1);
     // Base defaults
-    let resources = { credits: 20, materials: 5, science: 0 } as { credits:number; materials:number; science:number };
-    let research = { Military: 1, Grid: 1, Nano: 1 } as { Military:number; Grid:number; Nano:number };
+    let resources: Resources = { credits: 20, materials: 5, science: 0 };
+    let research: Research = { Military: 1, Grid: 1, Nano: 1 };
     let economy: { rerollBase?: number; creditMultiplier?: number; materialMultiplier?: number } = {};
-    const modifiers: { rareChance?: number; capacityCap?: number; startingFrame?: 'interceptor'|'cruiser'|'dread'; blueprintHints?: Record<string, string[]> } = {};
-    const blueprintIds: Record<'interceptor'|'cruiser'|'dread', string[]> = { interceptor: [], cruiser: [], dread: [] };
+    const modifiers: PlayerState['modifiers'] = {};
+    const blueprintIds: Record<FrameId, string[]> = { interceptor: [], cruiser: [], dread: [] };
     let fleetSnaps: ShipSnap[] | null = null;
     const faction = player.faction as FactionId | undefined;
     // Apply faction perks needed before the first shop and for fleet seed
@@ -149,7 +150,7 @@ export const initializeGameState = mutation({
       isAlive: true,
       sector: 1,
       graceUsed: false,
-    } as Record<string, unknown>;
+    };
       // Log per-player seed counts for diagnostics
       try { logInfo('init', 'seeded', { tag: roomTag(args.roomId as unknown as string), playerId: player.playerId, count: starting, faction }); } catch { /* noop */ }
     }
@@ -233,8 +234,8 @@ export const updatePlayerFleetValidity = mutation({
         .first();
     }
 
-    const playerStates = { ...(gameState!.playerStates as Record<string, unknown>) };
-    const prev = (playerStates[args.playerId] as Record<string, unknown>) || {};
+    const playerStates = { ...(gameState!.playerStates as Record<string, PlayerState>) };
+    const prev = playerStates[args.playerId] || {};
     playerStates[args.playerId] = { ...prev, fleetValid: args.fleetValid };
 
     await ctx.db.patch(gameState!._id, { playerStates, lastUpdate: Date.now() });
@@ -410,13 +411,13 @@ export const resolveCombatResult = mutation({
     await ctx.db.patch(loser._id, { lives: newLives });
 
     // Update per-player state lives if present
-    const states = { ...(gameState.playerStates as Record<string, unknown>) } as Record<string, { [k: string]: unknown }>;
+    const states = { ...(gameState.playerStates as Record<string, PlayerState>) };
     if (states[loser.playerId]) {
       states[loser.playerId] = { ...states[loser.playerId], lives: newLives };
     }
 
     // Archive winner fleet snapshot if available
-    const winnerState = (states[winner.playerId] as { fleet?: unknown; sector?: number } | undefined);
+    const winnerState = states[winner.playerId];
     if (winnerState?.fleet) {
       await ctx.db.insert("fleetArchives", {
         roomId: args.roomId,
@@ -461,9 +462,9 @@ export const submitFleetSnapshot = mutation({
       .first();
     if (!gameState) throw new Error("Game state not found");
 
-    const playerStates = { ...(gameState.playerStates as Record<string, unknown>) };
-    const prev = (playerStates[args.playerId] as Record<string, unknown>) || {};
-    playerStates[args.playerId] = { ...prev, fleet: args.fleet, fleetValid: args.fleetValid };
+    const playerStates = { ...(gameState.playerStates as Record<string, PlayerState>) };
+    const prev = playerStates[args.playerId] || {};
+    playerStates[args.playerId] = { ...prev, fleet: args.fleet as ShipSnapshot[], fleetValid: args.fleetValid };
 
     await ctx.db.patch(gameState._id, { playerStates, lastUpdate: Date.now() });
     logInfo('snapshot', 'fleet snapshot submitted', { tag: roomTag(args.roomId as unknown as string), playerId: args.playerId, count: Array.isArray(args.fleet) ? (args.fleet as unknown[]).length : 0, fleetValid: args.fleetValid });

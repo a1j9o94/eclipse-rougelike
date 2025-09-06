@@ -2,6 +2,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import type { MultiplayerGameConfig } from "../../shared/multiplayer";
+import type { PlayerState, ShipSnapshot } from "../../shared/mpTypes";
 
 export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
   // Detect vitest and allow tests to bypass Convex entirely
@@ -29,8 +30,8 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
       isMyTurn: () => false,
       getCurrentPlayer: () => undefined,
       getOpponent: () => undefined,
-      getMyGameState: () => null,
-      getOpponentGameState: () => null,
+      getMyGameState: (): PlayerState | null => null,
+      getOpponentGameState: (): PlayerState | null => null,
       getPlayerId: () => null as unknown as string | null,
       // Actions (safe no-ops in tests)
       createRoom: noopCreateRoom,
@@ -110,14 +111,14 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
     return players?.find(p => p.playerId !== playerId);
   };
 
-  const getMyGameState = () => {
+  const getMyGameState = (): PlayerState | null => {
     const playerId = getPlayerId();
-    return playerId ? gameState?.playerStates[playerId] : null;
+    return playerId ? (gameState?.playerStates[playerId] as PlayerState) || null : null;
   };
 
-  const getOpponentGameState = () => {
+  const getOpponentGameState = (): PlayerState | null => {
     const opponent = getOpponent();
-    return opponent ? gameState?.playerStates[opponent.playerId] : null;
+    return opponent ? (gameState?.playerStates[opponent.playerId] as PlayerState) || null : null;
   };
 
   // Room management actions
@@ -271,9 +272,9 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
       try {
         if (Array.isArray(fleet)) {
           const ships = fleet as ClientShip[];
-          payload = ships.map((s) => ({
-            frame: { id: s?.frame?.id, name: s?.frame?.name },
-            weapons: Array.isArray(s?.weapons) ? s.weapons.map((w) => ({ name: w?.name, dice: w?.dice, dmgPerHit: w?.dmgPerHit, faces: w?.faces, initLoss: w?.initLoss })) : [],
+          payload = ships.map((s): ShipSnapshot => ({
+            frame: { id: s?.frame?.id || 'interceptor', name: s?.frame?.name },
+            weapons: Array.isArray(s?.weapons) ? s.weapons.map((w) => ({ name: w?.name, dice: w?.dice, dmgPerHit: w?.dmgPerHit, faces: w?.faces as ShipSnapshot['weapons'][0]['faces'], initLoss: w?.initLoss })) : [],
             riftDice: s?.riftDice || 0,
             stats: { init: s?.stats?.init || 0, hullCap: s?.stats?.hullCap || 1, valid: !!s?.stats?.valid, aim: s?.stats?.aim || 0, shieldTier: s?.stats?.shieldTier || 0, regen: s?.stats?.regen || 0 },
             hull: typeof s?.hull === 'number' ? s.hull : (s?.stats?.hullCap || 1),

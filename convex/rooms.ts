@@ -3,9 +3,9 @@ import { v } from "convex/values";
 // import { maybeStartCombat } from "./helpers/match";
 import { logInfo, roomTag } from "./helpers/log";
 import { maybeResolveRound, validateReadyToggle } from "./helpers/resolve";
+import type { PlayerState } from "../shared/mpTypes";
 // Default loss percent (server-side; do not import client code)
 const DEFAULT_LOSS_PCT = 0.5;
-import type { ShipSnap } from "./engine/combat";
 
 // Helper function to generate a unique player ID
 function generatePlayerId(): string {
@@ -164,7 +164,7 @@ export const updatePlayerReady = mutation({
       .first();
     const isOutpostSetup = room?.status === 'playing' && gs?.gamePhase === 'setup';
     if (args.isReady && isOutpostSetup) {
-      const states = (gs?.playerStates as Record<string, { fleet?: ShipSnap[]; fleetValid?: boolean } | undefined> | undefined) || {};
+      const states = (gs?.playerStates as Record<string, PlayerState | undefined>) || {};
       const guard = validateReadyToggle({ playerId: player.playerId, wantReady: true, playerStates: states });
       if (!guard.ok) {
         const msg = guard.reason === 'missingSnapshot'
