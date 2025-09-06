@@ -502,9 +502,9 @@ export default function EclipseIntegrated(){
               if (idsForFrame.length > 0) {
                 ships = seedFleetFromBlueprints(sf, idsForFrame, starting) as unknown as Ship[];
               } else {
-                // Fallback to whatever blueprints state currently has for sf
-                const bp = blueprints as Record<FrameId, Part[]>;
-                ships = Array.from({ length: starting }, () => makeShip(getFrame(sf), [ ...(bp[sf] || []) ])) as unknown as Ship[];
+                // Fallback to initial blueprints for factions without custom blueprints  
+                const initialBp = INITIAL_BLUEPRINTS[sf] || [];
+                ships = Array.from({ length: starting }, () => makeShip(getFrame(sf), [ ...initialBp ])) as unknown as Ship[];
               }
               setFleet(ships);
               setCapacity(c => ({ cap: Math.max(c.cap, starting) }));
