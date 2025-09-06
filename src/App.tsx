@@ -629,7 +629,7 @@ export default function EclipseIntegrated(){
       // Apply all faction effects from server
       const srvResearch = st?.research as Research | undefined;
       const econ = st?.economy;
-      const mods = (st?.modifiers as { rareChance?: number; capacityCap?: number; blueprintHints?: Record<string,string[]> } | undefined);
+      const mods = (st?.modifiers as { startingFrame?: 'interceptor'|'cruiser'|'dread'; rareChance?: number; capacityCap?: number; blueprintHints?: Record<string,string[]> } | undefined);
       const bpIds = (st?.blueprintIds as Record<FrameId, string[]> | undefined);
       
       // Blueprint application
@@ -644,7 +644,6 @@ export default function EclipseIntegrated(){
         blueprintsApplied = true;
       } else {
         // Backfill baseline class blueprints for current starting frame to avoid 0/6 display in MP
-        const sf = (mods?.startingFrame as FrameId | undefined) || 'interceptor';
         const base = {
           interceptor: [ ...INITIAL_BLUEPRINTS.interceptor ],
           cruiser: [ ...INITIAL_BLUEPRINTS.cruiser ],

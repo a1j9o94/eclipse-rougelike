@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, act } from '@testing-library/react'
 import type { PlayerState, GameState, ShipSnapshot } from '../../shared/mpTypes'
 
@@ -63,4 +63,3 @@ describe('MP fallback seed yields to server snapshot (Warmongers)', () => {
     await screen.findByText(/Class Blueprint — Cruiser/i)
   })
 })
-
