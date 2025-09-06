@@ -55,10 +55,14 @@ export function upgradeShipAt(
   if(resources.credits < cost.c || resources.materials < cost.m) return null;
   const nextFrame = getFrame(nextId);
   const nextBlueprints = { ...blueprints } as Record<FrameId, Part[]>;
-  if(nextBlueprints[nextId].length === 0){
+  const hasTargetClassAlready = fleet.some((sh, i) => sh && i !== idx && (sh.frame.id as FrameId) === nextId);
+  // Default behavior: first ship promoted to a class seeds that class blueprint from its parts
+  if(!hasTargetClassAlready && nextBlueprints[nextId].length === 0){
     nextBlueprints[nextId] = [ ...s.parts ];
   }
-  const carry = [ ...nextBlueprints[nextId] ];
+  const carry = (!hasTargetClassAlready && nextBlueprints[nextId].length === 0)
+    ? [ ...s.parts ]
+    : [ ...nextBlueprints[nextId] ];
   const upgraded = makeShip(nextFrame, carry);
   return { idx, upgraded: upgraded as unknown as Ship, blueprints: nextBlueprints, delta:{ credits: -cost.c, materials: -cost.m } };
 }
@@ -75,5 +79,4 @@ export function expandDock(resources:{credits:number, materials:number}, capacit
   const nextCap = Math.min(base.capacityMax, capacity.cap + base.capacityDelta);
   return { nextCap, delta:{ credits: -cost.c, materials: -cost.m } };
 }
-
 
