@@ -1,4 +1,4 @@
-import { type Part } from '../config/parts'
+import { type Part, ALL_PARTS } from '../config/parts'
 import { ECONOMY } from '../config/economy'
 import { type FrameId, getFrame, getEconomyModifiers } from '../game'
 import { makeShip } from '../game'
@@ -56,12 +56,19 @@ export function upgradeShipAt(
   const nextFrame = getFrame(nextId);
   const nextBlueprints = { ...blueprints } as Record<FrameId, Part[]>;
   const hasTargetClassAlready = fleet.some((sh, i) => sh && i !== idx && (sh.frame.id as FrameId) === nextId);
-  // First promotion to a class inherits the current ship's parts, even if a faction prefilled the target blueprint.
-  // This also establishes the class blueprint from the inherited parts.
+  // Determine inheritance source:
+  // - If promoting first ship to a class, inherit from the ship's parts normally.
+  // - BUT if the ship parts are synthetic (e.g., MP snapshot with ids like 'mp_*'),
+  //   prefer inheriting from the current class blueprint to keep real parts (with Sources).
+  const isSynthetic = (arr: Part[]) => arr.some(p => (p?.id || '').startsWith('mp_') || !(ALL_PARTS as Part[]).some(x => x.id === p.id));
+  const sourceParts = (!hasTargetClassAlready && isSynthetic(s.parts) && nextBlueprints[s.frame.id as FrameId]?.length)
+    ? [ ...nextBlueprints[s.frame.id as FrameId] ]
+    : [ ...s.parts ];
+
   let carry: Part[];
   if (!hasTargetClassAlready) {
-    carry = [ ...s.parts ];
-    nextBlueprints[nextId] = [ ...s.parts ];
+    carry = sourceParts;
+    nextBlueprints[nextId] = [ ...sourceParts ];
   } else {
     carry = [ ...nextBlueprints[nextId] ];
   }

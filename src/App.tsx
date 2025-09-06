@@ -138,6 +138,11 @@ export default function EclipseIntegrated(){
       parts.push({ id: `mp_w_${i}`, name: w.name || 'Weapon', dice: w.dice || 0, dmgPerHit: w.dmgPerHit || 0, faces: w.faces || [], initLoss: w.initLoss || 0, powerCost: 0, tier: 1, cost: 0, cat: 'Weapon', tech_category: 'Nano' });
     }
     if (base.riftDice > 0) parts.push({ id: `mp_rift_${base.riftDice}`, name: 'Rift', riftDice: base.riftDice, faces: [], powerCost: 0, tier: 1, cost: 0, cat: 'Weapon', tech_category: 'Nano' });
+    // Ensure ships have at least one Source so class builds are deployable and upgrades can inherit a valid build.
+    // We synthesize a zero-cost Source to satisfy validity in Outpost; combat does not use power accounting.
+    const hasSource = parts.some(p => typeof (p as any).powerProd === 'number');
+    if (!hasSource) parts.unshift({ id: 'mp_source', name: 'Source', powerProd: 0, tier: 1, cost: 0, cat: 'Source', tech_category: 'Grid' } as any);
+
     base.parts = parts as any;
     base.weapons = parts.filter(p => p.cat === 'Weapon') as any;
     return base;
