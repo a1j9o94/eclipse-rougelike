@@ -440,7 +440,7 @@ export default function EclipseIntegrated(){
           const res = (st?.resources as { credits:number; materials:number; science:number } | undefined);
           const srvResearch = (st?.research as Research | undefined);
           const econ = (st?.economy as { rerollBase?: number; creditMultiplier?:number; materialMultiplier?:number } | undefined);
-          const mods = (st?.modifiers as { rareChance?: number; capacityCap?: number } | undefined);
+          const mods = (st?.modifiers as { rareChance?: number; capacityCap?: number; blueprintHints?: Record<string, string[]> } | undefined);
           if (res && typeof res.credits === 'number') setResources(r => ({ ...r, ...res }));
           if (srvResearch && typeof srvResearch.Military === 'number') setResearch({ ...srvResearch });
           if (econ && typeof econ.rerollBase === 'number') {
@@ -459,6 +459,24 @@ export default function EclipseIntegrated(){
           }
           if (mods && typeof mods.capacityCap === 'number') {
             setCapacity(c => ({ cap: Math.max(c.cap, mods.capacityCap as number) }));
+          }
+          if (mods && mods.blueprintHints) {
+            try {
+              const hints = mods.blueprintHints as Record<string, string[]>;
+              setBlueprints(prev => {
+                const next = { ...prev } as typeof prev;
+                const { ALL_PARTS } = require('./config/parts');
+                (Object.keys(hints) as (keyof typeof next)[]).forEach((frameId) => {
+                  const ids = hints[frameId as string] as string[];
+                  const parts = ids.map(id => (ALL_PARTS as any[]).find(p => p.id === id)).filter(Boolean);
+                  if (Array.isArray(parts) && parts.length > 0) {
+                    // @ts-ignore dynamic index by frame id
+                    next[frameId] = parts as any;
+                  }
+                });
+                return next;
+              });
+            } catch {/* ignore */}
           }
           // Prefer server snapshot of my fleet for consistency across clients
           const serverFleet = Array.isArray(st?.fleet) ? st.fleet.map(fromSnapshotToShip) as unknown as Ship[] : [];
