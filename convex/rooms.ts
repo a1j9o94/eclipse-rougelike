@@ -261,3 +261,47 @@ export const restartToSetup = mutation({
     return { lives };
   },
 });
+
+export const prepareRematch = mutation({
+  args: { roomId: v.id("rooms") },
+  handler: async (ctx, args) => {
+    const room = await ctx.db.get(args.roomId);
+    if (!room) throw new Error('Room not found');
+
+    // Reset players lives and readiness
+    const players = await ctx.db
+      .query("players")
+      .withIndex("by_room", (q) => q.eq("roomId", args.roomId))
+      .collect();
+    const livesPerPlayer = room.gameConfig.livesPerPlayer;
+    for (const p of players) {
+      await ctx.db.patch(p._id, { lives: livesPerPlayer, isReady: false });
+    }
+
+    // Reset gameState to a clean setup placeholder so UI doesn't show old logs
+    const gs = await ctx.db
+      .query("gameState")
+      .withIndex("by_room", (q) => q.eq("roomId", args.roomId))
+      .first();
+    if (gs) {
+      await ctx.db.patch(gs._id, {
+        gamePhase: "setup",
+        roundNum: 1,
+        playerStates: {},
+        combatQueue: [],
+        roundSeed: undefined,
+        roundLog: undefined,
+        acks: {},
+        // Cleanup finishing markers if present
+        pendingFinish: undefined as unknown as never,
+        matchResult: undefined as unknown as never,
+        lastUpdate: Date.now(),
+      } as any);
+    }
+
+    // Move room back to waiting
+    await ctx.db.patch(args.roomId, { status: "waiting" });
+    logInfo('start', 'room prepared for rematch', { tag: roomTag(args.roomId as unknown as string) });
+    return true;
+  },
+});

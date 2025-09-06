@@ -596,7 +596,19 @@ export default function EclipseIntegrated(){
       {matchOver && (
         <MatchOverModal
           winnerName={matchOver.winnerName}
-          onClose={() => { setMatchOver(null); setMultiplayerPhase('lobby'); }}
+          onClose={() => {
+            try { void (multi as any)?.prepareRematch?.(); } catch {}
+            setMatchOver(null);
+            // Reset local context so UI is clean when returning to lobby
+            setMode('OUTPOST');
+            setLog([]);
+            setRoundNum(1);
+            setTurnPtr(-1);
+            setQueue([]);
+            setCombatOver(false);
+            setOutcome('');
+            setMultiplayerPhase('lobby');
+          }}
         />
       )}
       {gameMode==='single' && (
