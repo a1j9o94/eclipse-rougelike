@@ -5,6 +5,9 @@ import { type CapacityState, type DifficultyId } from './config/types'
 import { type FrameId } from './game'
 import { ResourceBar } from './components/ui'
 import { RulesModal, TechListModal, WinModal, MatchOverModal } from './components/modals'
+import { setEconomyModifiers } from './game/economy'
+import { setRareTechChance } from './game/shop'
+import { applyBlueprintHints } from './multiplayer/blueprintHints'
 import StartPage from './pages/StartPage'
 import { type FactionId } from './config/factions'
 import OutpostPage from './pages/OutpostPage'
@@ -448,35 +451,17 @@ export default function EclipseIntegrated(){
             setRerollCost(econ.rerollBase);
           }
           if (econ && (typeof econ.creditMultiplier === 'number' || typeof econ.materialMultiplier === 'number')) {
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
-            const { setEconomyModifiers } = require('./game/economy');
             setEconomyModifiers({ credits: econ.creditMultiplier ?? 1, materials: econ.materialMultiplier ?? 1 });
           }
           if (mods && typeof mods.rareChance === 'number') {
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
-            const { setRareTechChance } = require('./game/shop');
             setRareTechChance(mods.rareChance as number);
           }
           if (mods && typeof mods.capacityCap === 'number') {
             setCapacity(c => ({ cap: Math.max(c.cap, mods.capacityCap as number) }));
           }
           if (mods && mods.blueprintHints) {
-            try {
-              const hints = mods.blueprintHints as Record<string, string[]>;
-              setBlueprints(prev => {
-                const next = { ...prev } as typeof prev;
-                const { ALL_PARTS } = require('./config/parts');
-                (Object.keys(hints) as (keyof typeof next)[]).forEach((frameId) => {
-                  const ids = hints[frameId as string] as string[];
-                  const parts = ids.map(id => (ALL_PARTS as any[]).find(p => p.id === id)).filter(Boolean);
-                  if (Array.isArray(parts) && parts.length > 0) {
-                    // @ts-ignore dynamic index by frame id
-                    next[frameId] = parts as any;
-                  }
-                });
-                return next;
-              });
-            } catch {/* ignore */}
+            const hints = mods.blueprintHints as Record<string, string[]>;
+            setBlueprints(prev => applyBlueprintHints(prev as any, hints) as any);
           }
           // Prefer server snapshot of my fleet for consistency across clients
           const serverFleet = Array.isArray(st?.fleet) ? st.fleet.map(fromSnapshotToShip) as unknown as Ship[] : [];
