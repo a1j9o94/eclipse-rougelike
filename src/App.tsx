@@ -494,15 +494,7 @@ export default function EclipseIntegrated(){
           if (mods && typeof mods.capacityCap === 'number') {
             setCapacity(c => ({ cap: Math.max(c.cap, mods.capacityCap as number) }));
           }
-          // Apply authoritative blueprint IDs first if present; otherwise merge hints
-          if (bpIds && (bpIds.interceptor.length || bpIds.cruiser.length || bpIds.dread.length)) {
-            const mapped = mapBlueprintIdsToParts(bpIds);
-            try { console.debug('[MP] applied class blueprints from ids', { interceptor: mapped.interceptor.length, cruiser: mapped.cruiser.length, dread: mapped.dread.length }); } catch { /* noop */ }
-            setBlueprints({ ...mapped } as Record<FrameId, Part[]>);
-          } else if (mods && mods.blueprintHints) {
-            const hints = mods.blueprintHints as Record<string, string[]>;
-            setBlueprints(prev => applyBlueprintHints(prev as Record<string, Part[]>, hints));
-          }
+          // Blueprint application moved to sync effect to avoid race condition
           // Prefer server snapshot of my fleet for consistency across clients
           const serverFleet = Array.isArray(st?.fleet) ? (st.fleet as ShipSnapshot[]).map(fromSnapshotToShip) as unknown as Ship[] : [];
           const roundNum = (multi.gameState?.roundNum || 1) as number;
@@ -537,8 +529,7 @@ export default function EclipseIntegrated(){
               try { void multi.submitFleetSnapshot?.(ships as unknown, fleetValid); } catch {/* ignore */}
             } catch {/* ignore */}
           }
-          // Only after applying config and blueprints, switch to Outpost
-          setMode('OUTPOST');
+          // Mode switching moved to sync effect after blueprint application
         }
       } catch { /* ignore */ }
     } else if (phase === 'finished') {
@@ -569,12 +560,20 @@ export default function EclipseIntegrated(){
       // Apply blueprint hints if they arrive late
       const mods = (st?.modifiers as { blueprintHints?: Record<string,string[]> } | undefined);
       const bpIds = (st?.blueprintIds as Record<FrameId, string[]> | undefined);
+      let blueprintsApplied = false;
       if (bpIds && (bpIds.interceptor.length || bpIds.cruiser.length || bpIds.dread.length)) {
         const mapped = mapBlueprintIdsToParts(bpIds);
-        try { console.debug('[MP] applied class blueprints from ids (late apply)', { interceptor: mapped.interceptor.length, cruiser: mapped.cruiser.length, dread: mapped.dread.length }); } catch { /* noop */ }
+        try { console.debug('[MP] applied class blueprints from ids', { interceptor: mapped.interceptor.length, cruiser: mapped.cruiser.length, dread: mapped.dread.length }); } catch { /* noop */ }
         setBlueprints(mapped);
+        blueprintsApplied = true;
       } else if (mods && mods.blueprintHints) {
         setBlueprints(prev => applyBlueprintHints(prev as Record<string, Part[]>, mods.blueprintHints as Record<string, string[]>));
+        blueprintsApplied = true;
+      }
+      
+      // Switch to Outpost mode after faction effects are applied (only during setup)
+      if (multi.gameState?.gamePhase === 'setup' && mode !== 'OUTPOST' && (blueprintsApplied || (!bpIds && !mods?.blueprintHints))) {
+        setMode('OUTPOST');
       }
       if (serverFleet.length > 0) {
         const mapped = serverFleet.map(fromSnapshotToShip) as unknown as Ship[];
