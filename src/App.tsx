@@ -358,11 +358,29 @@ export default function EclipseIntegrated(){
       ? researchActionWithMods(track, { credits: resources.credits, science: resources.science }, research as Research, economyMods)
       : researchAction(track, { credits: resources.credits, science: resources.science }, research as Research);
     if(!res || !res.ok) return;
-    setResearch(t=>({ ...t, [track]: res.nextTier } as Research));
+    const nextResearch = { ...(research as Research), [track]: res.nextTier } as Research;
+    setResearch(nextResearch);
     setResources(r=>({ ...r, credits: r.credits + (res.delta.credits||0), science: r.science + (res.delta.science||0) }));
     setShop({ items: res.items });
     setRerollCost(x=> x + (res.nextRerollCostDelta||0));
     setShopVersion(v=> v+1);
+    // MP: persist research/resources so they survive setup→combat→setup
+    if (gameMode === 'multiplayer') {
+      try {
+        const myId = multi.getPlayerId?.() as string | null;
+        if (myId && (multi as { updateGameState?: (args: unknown)=>Promise<void> }).updateGameState) {
+          if (import.meta.env.DEV) {
+            console.debug('[MP] persist research', { nextResearch, track, delta: res.delta });
+          }
+          (multi as { updateGameState: (args: { roomId: string; playerId: string; updates: { research: Research; resources: { credits: number; materials: number; science: number } } })=>Promise<void> })
+            .updateGameState({
+              roomId: (currentRoomId as unknown as string) || ((multi as { roomDetails?: { room?: { _id?: string } } }).roomDetails?.room?._id as unknown as string) || 'ROOM',
+              playerId: myId,
+              updates: { research: nextResearch, resources: { credits: resources.credits + (res.delta.credits||0), materials: resources.materials, science: resources.science + (res.delta.science||0) } },
+            }).catch(()=>void 0);
+        }
+      } catch {/* noop */}
+    }
     void playEffect('tech');
   }
   async function handleReturnFromCombat(){
@@ -596,6 +614,13 @@ export default function EclipseIntegrated(){
     if (gameMode !== 'multiplayer') return;
     if (multi.gameState?.gamePhase !== 'setup') return;
     try {
+      // Diagnostics: log incoming server snapshot frames
+      const myId0 = multi.getPlayerId?.() as string | null;
+      const st0 = myId0 ? (multi.gameState?.playerStates as Record<string, PlayerState> | undefined)?.[myId0] : null;
+      const srv0 = Array.isArray(st0?.fleet) ? (st0!.fleet as ShipSnapshot[]) : [];
+      if (import.meta.env.DEV && srv0.length) {
+        console.debug('[Sync] server snapshot frames', srv0.map(s => s?.frame?.id));
+      }
       const myId = multi.getPlayerId?.() as string | null;
       const st = myId ? (multi.gameState?.playerStates as Record<string, PlayerState> | undefined)?.[myId] : null;
       const serverFleet = Array.isArray(st?.fleet) ? (st.fleet as ShipSnapshot[]) : [];
@@ -681,6 +706,7 @@ export default function EclipseIntegrated(){
       const serverFleet = Array.isArray(st?.fleet) ? (st.fleet as ShipSnapshot[]) : [];
       const roundNum = (multi.gameState?.roundNum || 1) as number;
       const starting = (multi.roomDetails?.room?.gameConfig?.startingShips as number | undefined) || 1;
+      // Fallback seed only if no server snapshot and we have not already applied it
       if (!mpSeedSubmitted && !mpSeeded && roundNum === 1 && serverFleet.length === 0) {
         const mods = (st?.modifiers as { startingFrame?: 'interceptor'|'cruiser'|'dread'; blueprintHints?: Record<string, string[]> } | undefined);
         const bpIds = (st?.blueprintIds as Record<FrameId, string[]> | undefined);
@@ -694,6 +720,9 @@ export default function EclipseIntegrated(){
         } else {
           const bp = blueprints as Record<FrameId, Part[]>;
           ships = Array.from({ length: Math.max(1, starting) }, () => makeShip(getFrame(sf), [ ...(bp[sf] || []) ])) as unknown as Ship[];
+        }
+        if (import.meta.env.DEV) {
+          console.debug('[Fallback] seeding local fleet', { frame: sf, count: ships.length });
         }
         setFleet(ships);
         setCapacity(c => ({ cap: Math.max(c.cap, ships.length) }));
