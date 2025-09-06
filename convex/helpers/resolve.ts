@@ -114,22 +114,19 @@ export async function maybeResolveRound(ctx: Ctx, roomId: Id<"rooms">) {
   } as any;
 
   await ctx.db.patch(gs._id, {
-    gamePhase: newLives === 0 ? "finished" : "combat",
+    gamePhase: "combat",
     roundSeed: seed,
     roundLog,
     acks: {},
     playerStates: statesAfter,
     matchResult: newLives === 0 ? { winnerPlayerId } : undefined,
+    pendingFinish: newLives === 0 ? true : undefined,
     lastUpdate: Date.now(),
   });
 
   if (newLives === 0) {
-    await ctx.db.patch(roomId, { status: "finished" });
-    // Ensure readiness is cleared so host doesn't auto-start another game
-    for (const p of players) {
-      await ctx.db.patch(p._id, { isReady: false });
-    }
-    logInfo('combat', 'match finished', { tag: roomTag(roomId as unknown as string, roundNum) });
+    // Do not mark the room as finished yet; allow clients to view final combat first.
+    logInfo('combat', 'final round — pending finish', { tag: roomTag(roomId as unknown as string, roundNum) });
   }
 
   return true;

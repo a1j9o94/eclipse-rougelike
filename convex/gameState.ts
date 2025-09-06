@@ -379,23 +379,39 @@ export const ackRoundPlayed = mutation({
     const acks: Record<string, boolean> = { ...acksSource };
     acks[args.playerId] = true;
 
-    // If all players ack'd, go back to setup
+    // If all players ack'd, go back to setup (or finish match if pending)
     const allAck = players.every(p => acks[p.playerId]);
     if (allAck === true) {
-      const resetReadiness: Promise<void>[] = [];
-      for (const p of players) {
-        resetReadiness.push(ctx.db.patch(p._id, { isReady: false }));
+      const pendingFinish = Boolean((gs as any).pendingFinish);
+      if (pendingFinish) {
+        // Mark room finished now and show match over; clear readiness
+        for (const p of players) {
+          await ctx.db.patch(p._id, { isReady: false });
+        }
+        await ctx.db.patch(args.roomId, { status: "finished" });
+        await ctx.db.patch(gs._id, {
+          gamePhase: "finished",
+          pendingFinish: undefined,
+          lastUpdate: Date.now(),
+        });
+        logInfo('ack', 'final combat acked — match finished', { tag: roomTag(args.roomId as unknown as string) });
+        return { done: true, finished: true } as any;
+      } else {
+        const resetReadiness: Promise<void>[] = [];
+        for (const p of players) {
+          resetReadiness.push(ctx.db.patch(p._id, { isReady: false }));
+        }
+        await Promise.all(resetReadiness);
+        await ctx.db.patch(gs._id, {
+          gamePhase: "setup",
+          roundLog: undefined,
+          acks: {},
+          roundNum: (gs.roundNum || 1) + 1,
+          lastUpdate: Date.now(),
+        });
+        logInfo('ack', 'all players acked — back to setup', { tag: roomTag(args.roomId as unknown as string), nextRound: (gs.roundNum || 1) + 1 });
+        return { done: true };
       }
-      await Promise.all(resetReadiness);
-      await ctx.db.patch(gs._id, {
-        gamePhase: "setup",
-        roundLog: undefined,
-        acks: {},
-        roundNum: (gs.roundNum || 1) + 1,
-        lastUpdate: Date.now(),
-      });
-      logInfo('ack', 'all players acked — back to setup', { tag: roomTag(args.roomId as unknown as string), nextRound: (gs.roundNum || 1) + 1 });
-      return { done: true };
     }
 
     await ctx.db.patch(gs._id, { acks, lastUpdate: Date.now() });
