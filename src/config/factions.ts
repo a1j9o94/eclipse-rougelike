@@ -1,6 +1,7 @@
-import { PARTS, type Part } from './parts'
+import { ALL_PARTS, type Part } from './parts'
 import { buildFactionConfig, type GameConfig } from './game'
 import { type ResearchState as Research, type Ship } from './types'
+import { FACTION_BLUEPRINT_IDS } from '../../shared/factionBlueprintIds'
 
 export type FactionId = 'scientists' | 'warmongers' | 'industrialists' | 'raiders' | 'timekeepers' | 'collective';
 
@@ -50,7 +51,7 @@ export const FACTIONS: readonly Faction[] = [
     description: 'Interceptors start with Tier 2 cannon and +1 initiative (better drives).',
     config: buildFactionConfig({
       blueprints: {
-        interceptor: [PARTS.sources[1], PARTS.drives[1], PARTS.weapons[1], PARTS.computers[0]] as Part[],
+        interceptor: (FACTION_BLUEPRINT_IDS.raiders.interceptor || []).map(id => (ALL_PARTS as Part[]).find(p=>p.id===id)!).filter(Boolean) as Part[],
       },
     }),
     unlock: ({ fleet, victory }) =>
@@ -63,7 +64,7 @@ export const FACTIONS: readonly Faction[] = [
     config: buildFactionConfig({
       research: { Grid: 2 },
       blueprints: {
-        interceptor: [PARTS.sources[1], PARTS.drives[1], PARTS.rare.find(p=>p.id==='disruptor') as Part, PARTS.computers[0]] as Part[],
+        interceptor: (FACTION_BLUEPRINT_IDS.timekeepers.interceptor || []).map(id => (ALL_PARTS as Part[]).find(p=>p.id===id)!).filter(Boolean) as Part[],
       },
     }),
     unlock: ({ research }) => research.Grid >= 3,
@@ -74,7 +75,7 @@ export const FACTIONS: readonly Faction[] = [
     description: 'Begin with Auto-Repair Hull blueprint and ships that mend each round.',
     config: buildFactionConfig({
       blueprints: {
-        interceptor: [PARTS.sources[0], PARTS.drives[0], PARTS.weapons[0], PARTS.rare.find(p=>p.id==='auto_repair') as Part],
+        interceptor: (FACTION_BLUEPRINT_IDS.collective.interceptor || []).map(id => (ALL_PARTS as Part[]).find(p=>p.id===id)!).filter(Boolean) as Part[],
       },
       research: { Nano: 2 },
     }),
@@ -160,4 +161,3 @@ export function getBossFleetFor(fid: FactionId|undefined|null, sector:number){
   const def = BOSS_FLEETS[id];
   return sector>=10 ? def.ten : def.five;
 }
-

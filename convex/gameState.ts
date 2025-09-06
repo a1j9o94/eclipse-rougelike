@@ -4,6 +4,7 @@ import { v } from "convex/values";
 import { logInfo, roomTag } from "./helpers/log";
 import { maybeResolveRound } from "./helpers/resolve";
 import type { ShipSnap } from "./engine/combat";
+import { FACTION_BLUEPRINT_IDS, type FactionId } from "../shared/factionBlueprintIds";
 
 // Build a minimal interceptor snapshot used for multiplayer seeding
 export function makeBasicInterceptorSnap(): ShipSnap {
@@ -63,9 +64,9 @@ export const initializeGameState = mutation({
     let modifiers: { rareChance?: number; capacityCap?: number; startingFrame?: 'interceptor'|'cruiser'|'dread'; blueprintHints?: Record<string, string[]> } = {};
     const blueprintIds: Record<'interceptor'|'cruiser'|'dread', string[]> = { interceptor: [], cruiser: [], dread: [] };
     let fleetSnaps: ShipSnap[] | null = null;
-    const faction = (player as any).faction as string | undefined;
+    const faction = (player as any).faction as FactionId | undefined;
     // Apply faction perks needed before the first shop and for fleet seed
-    switch (faction) {
+      switch (faction) {
       case 'scientists':
         research = { Military: 2, Grid: 2, Nano: 2 };
         modifiers.rareChance = 0.2;
@@ -85,9 +86,9 @@ export const initializeGameState = mutation({
         fleetSnaps = makeFleetForFrame('cruiser', starting);
         break;
       case 'raiders':
-        // Hint blueprints (Tier 2 cannon and better drives) and seed fleet stats/weapons
-        modifiers.blueprintHints = { interceptor: ['tachyon_source','tachyon_drive','antimatter','positron'] };
-        blueprintIds.interceptor = ['tachyon_source','tachyon_drive','antimatter','positron'];
+        // Use shared config for blueprint IDs; seed fleet stats/weapons for parity
+        blueprintIds.interceptor = [...(FACTION_BLUEPRINT_IDS.raiders.interceptor || [])];
+        if (blueprintIds.interceptor.length) modifiers.blueprintHints = { interceptor: blueprintIds.interceptor };
         {
           const snap = makeBasicInterceptorSnap();
           snap.stats.init = 2; // better drive
@@ -97,9 +98,8 @@ export const initializeGameState = mutation({
         break;
       case 'timekeepers':
         research = { ...research, Grid: 2 };
-        // Align with FACTIONS: sources[1] is tier-2 tachyon_source
-        modifiers.blueprintHints = { interceptor: ['tachyon_source','tachyon_drive','disruptor','positron'] };
-        blueprintIds.interceptor = ['tachyon_source','tachyon_drive','disruptor','positron'];
+        blueprintIds.interceptor = [...(FACTION_BLUEPRINT_IDS.timekeepers.interceptor || [])];
+        if (blueprintIds.interceptor.length) modifiers.blueprintHints = { interceptor: blueprintIds.interceptor };
         {
           const snap = makeBasicInterceptorSnap();
           snap.stats.init = 2;
@@ -109,8 +109,8 @@ export const initializeGameState = mutation({
         break;
       case 'collective':
         research = { ...research, Nano: 2 };
-        modifiers.blueprintHints = { interceptor: ['fusion_source','fusion_drive','plasma','auto_repair'] };
-        blueprintIds.interceptor = ['fusion_source','fusion_drive','plasma','auto_repair'];
+        blueprintIds.interceptor = [...(FACTION_BLUEPRINT_IDS.collective.interceptor || [])];
+        if (blueprintIds.interceptor.length) modifiers.blueprintHints = { interceptor: blueprintIds.interceptor };
         {
           const snap = makeBasicInterceptorSnap();
           snap.stats.hullCap = 2; snap.hull = 2; snap.stats.regen = 1;
@@ -118,7 +118,12 @@ export const initializeGameState = mutation({
         }
         break;
     }
-    initialPlayerStates[player.playerId] = {
+      // Warmongers cruiser blueprint IDs from shared config
+      if (faction === 'warmongers') {
+        blueprintIds.cruiser = [...(FACTION_BLUEPRINT_IDS.warmongers.cruiser || [])];
+      }
+
+      initialPlayerStates[player.playerId] = {
       resources,
       research,
       economy,
