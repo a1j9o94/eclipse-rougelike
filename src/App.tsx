@@ -17,7 +17,7 @@ import CombatPage from './pages/CombatPage'
 import { type Part, type DieFace } from '../shared/parts'
 import { type Ship, type GhostDelta, type InitiativeEntry } from '../shared/types'
 import { initNewRun, getOpponentFaction } from './game/setup'
-import { getDefeatPolicy } from '../shared/difficulty'
+import { getStartingLives } from '../shared/difficulty'
 import { buildInitiative as buildInitiativeCore, targetIndex as targetIndexCore, volley as volleyCore } from './game/combat'
 import { generateEnemyFleetFor } from './game/enemy'
 import { doRerollAction, researchAction } from './game/shop'
@@ -63,9 +63,10 @@ export default function EclipseIntegrated(){
   // Lives system replaces old grace
   const inferStartingLives = (diff: DifficultyId | null, sv?: { livesRemaining?: number; graceUsed?: boolean }) => {
     if (sv?.livesRemaining != null) return sv.livesRemaining as number;
+    // Backward compatibility with older saves that stored graceUsed
     if (sv?.graceUsed != null) return sv.graceUsed ? 0 : 1;
     if (!diff) return 0;
-    return getDefeatPolicy(diff) === 'grace' ? 1 : 0;
+    return getStartingLives(diff);
   };
   const [livesRemaining, setLivesRemaining] = useState<number>(inferStartingLives(saved?.difficulty ?? null, saved ?? undefined));
   const [difficulty, setDifficulty] = useState<null|DifficultyId>(saved?.difficulty ?? null);
@@ -193,7 +194,7 @@ export default function EclipseIntegrated(){
     setShowNewRun(false);
     void playEffect('page');
     setEndless(false);
-    setLivesRemaining(getDefeatPolicy(diff) === 'grace' ? 1 : 0);
+    setLivesRemaining(getStartingLives(diff));
     const st = initNewRun({ difficulty: diff, faction: pick });
     const opp = getOpponentFaction();
     setOpponent(opp as FactionId);
@@ -455,7 +456,7 @@ export default function EclipseIntegrated(){
       if(!rewardPaid){ const rw = calcRewards(enemyFleet, sector); setResources(r=>({...r, credits: r.credits + rw.c, materials: r.materials + rw.m, science: r.science + rw.s })); setRewardPaid(true); setLog(l=>[...l, `✅ Victory — +${rw.c}¢, +${rw.m}🧱, +${rw.s}🔬`]); }
       setOutcome('Victory'); setSector(s=> s+1); setRerollCost(baseRerollCost);
     } else {
-      if(difficulty && (getDefeatPolicy(difficulty)==='reset' || livesRemaining<=0)) { setOutcome('Defeat — Run Over'); }
+      if (livesRemaining <= 0) { setOutcome('Defeat — Run Over'); }
       else { setOutcome('Defeat — Life Lost'); setLivesRemaining(n=> Math.max(0, n-1)); }
       setLog(l=>[...l, '💀 Defeat']);
     }
