@@ -27,7 +27,7 @@ import { computePlaybackDelay } from './utils/playback'
 import { RoomLobby } from './components/RoomLobby'
 import type { Id } from '../convex/_generated/dataModel'
 import { useMultiplayerGame } from './hooks/useMultiplayerGame'
-import { LivesBanner } from './components/LivesBanner'
+// Lives now integrated into ResourceBar; banner removed
 
 /**
  * Eclipse Roguelike — Integrated App (v3.24)
@@ -615,17 +615,7 @@ export default function EclipseIntegrated(){
           }}
         />
       )}
-      {gameMode==='single' && (
-        <LivesBanner variant="single" lives={livesRemaining} />
-      )}
-      {gameMode==='multiplayer' && (
-        <LivesBanner
-          variant="multi"
-          me={{ name: (multi.getCurrentPlayer?.()?.playerName || 'You') as string, lives: (multi.roomDetails?.players?.find?.((p: { playerId:string; lives:number }) => p.playerId === multi.getCurrentPlayer?.()?.playerId)?.lives) ?? 0 }}
-          opponent={(multi.getOpponent?.()) ? { name: (multi.getOpponent?.()?.playerName || 'Opponent') as string, lives: (multi.roomDetails?.players?.find?.((p: { playerId:string; lives:number }) => p.playerId === multi.getOpponent?.()?.playerId)?.lives) ?? 0 } : null}
-          phase={multi.gameState?.gamePhase as unknown as 'setup' | 'combat' | 'finished'}
-        />
-      )}
+      {/* Lives banner removed; lives integrated in ResourceBar below */}
       {/* Rules Modal */}
       {showRules && (
         <RulesModal onDismiss={dismissRules} />
@@ -641,7 +631,16 @@ export default function EclipseIntegrated(){
         <WinModal onRestart={()=>{ setShowWin(false); resetRun(); }} onEndless={()=>{ setShowWin(false); setEndless(true); }} />
       )}
 
-      <ResourceBar {...resources} tonnage={tonnage} sector={sector} onReset={resetRun} />
+      <ResourceBar
+        {...resources}
+        tonnage={tonnage}
+        sector={sector}
+        onReset={resetRun}
+        lives={gameMode==='single' ? livesRemaining : (multi.roomDetails?.players?.find?.((p: { playerId:string; lives:number }) => p.playerId === multi.getCurrentPlayer?.()?.playerId)?.lives) ?? undefined}
+        meName={gameMode==='multiplayer' ? (multi.getCurrentPlayer?.()?.playerName || 'You') as string : undefined}
+        opponent={gameMode==='multiplayer' && (multi.getOpponent?.()) ? { name: (multi.getOpponent?.()?.playerName || 'Opponent') as string, lives: (multi.roomDetails?.players?.find?.((p: { playerId:string; lives:number }) => p.playerId === multi.getOpponent?.()?.playerId)?.lives) ?? 0 } : undefined}
+        phase={gameMode==='multiplayer' ? (multi.gameState?.gamePhase as unknown as 'setup' | 'combat' | 'finished') : undefined}
+      />
 
       {mode==='OUTPOST' && (
         <OutpostPage
