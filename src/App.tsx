@@ -480,10 +480,18 @@ export default function EclipseIntegrated(){
       if (gameMode !== 'multiplayer') return null;
       const myId = multi.getPlayerId?.() as string | null;
       const st = myId ? (multi.gameState?.playerStates as Record<string, { fleetValid?: boolean }> | undefined)?.[myId] : undefined;
+      if (import.meta.env.DEV) {
+        console.debug('[Guards] server flag raw', { myId, raw: st?.fleetValid });
+      }
       return typeof st?.fleetValid === 'boolean' ? st.fleetValid : null;
     } catch { return null; }
   })();
   const fleetValid = (serverFleetValid == null ? true : serverFleetValid) && localFleetValid;
+
+  // Dev log for validity combination (non-invasive)
+  if (import.meta.env.DEV && gameMode === 'multiplayer') {
+    try { console.debug('[Guards] valid', { localFleetValid, serverFleetValid, fleetValid }); } catch { /* noop */ }
+  }
   useEffect(() => {
     if (!multi) return;
     // Phase-based navigation
@@ -701,6 +709,8 @@ export default function EclipseIntegrated(){
     // Avoid spamming validity; readiness will submit snapshots explicitly
   }, [fleetValid, mode, gameMode, currentRoomId]);
 
+  // Multiplayer capacity is set by server modifiers when available
+
   // Keep shop items in sync when explicit rerolls happen or research changes
   useEffect(()=>{ setShop({ items: rollInventory(research as Research) }); }, [shopVersion, research]);
 
@@ -856,6 +866,24 @@ export default function EclipseIntegrated(){
           fleetValid={fleetValid}
           myReady={(() => { try { return !!multi.getCurrentPlayer?.()?.isReady; } catch { return false; } })()}
           oppReady={(() => { try { return !!multi.getOpponent?.()?.isReady; } catch { return false; } })()}
+          mpGuards={gameMode==='multiplayer' ? (() => {
+            try {
+              const myId = multi.getPlayerId?.() as string | null;
+              const pStates = multi.gameState?.playerStates as Record<string, PlayerState> | undefined;
+              const st = myId ? pStates?.[myId] : undefined;
+              const haveSnapshot = Array.isArray(st?.fleet) && st!.fleet!.length > 0;
+              const myReady = !!multi.getCurrentPlayer?.()?.isReady;
+              const oppReady = !!multi.getOpponent?.()?.isReady;
+              const serverValid = typeof st?.fleetValid === 'boolean' ? st?.fleetValid : undefined;
+              const guards = { myReady, oppReady, localValid: localFleetValid, serverValid, haveSnapshot };
+              if (import.meta.env.DEV) {
+                console.debug('[Guards] computed', guards);
+              }
+              return guards;
+            } catch {
+              return { myReady: false, oppReady: false, localValid: localFleetValid, serverValid: undefined, haveSnapshot: false };
+            }
+          })() : undefined}
           economyMods={gameMode==='multiplayer' ? getCurrentPlayerEconomyMods() : getEconomyModifiers()}
           startCombat={() => {
             if (gameMode === 'multiplayer') {

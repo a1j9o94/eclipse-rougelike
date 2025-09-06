@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 
 // Silence audio
@@ -61,4 +61,3 @@ describe('Outpost — Dreadnought header when startingFrame=dread', () => {
     await screen.findByText(/Class Blueprint — Dreadnought/i)
   })
 })
-

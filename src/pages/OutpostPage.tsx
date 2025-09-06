@@ -40,6 +40,7 @@ export function OutpostPage({
   onRestart,
   myReady,
   oppReady,
+  mpGuards,
   economyMods = getDefaultEconomyModifiers(),
 }:{
   resources:Resources,
@@ -70,6 +71,7 @@ export function OutpostPage({
   onRestart:()=>void,
   myReady?: boolean,
   oppReady?: boolean,
+  mpGuards?: { myReady:boolean; oppReady?:boolean; localValid:boolean; serverValid?:boolean; haveSnapshot:boolean },
   economyMods?: EconMods,
 }){
   const focusedShip = fleet[focused];
@@ -300,12 +302,22 @@ export function OutpostPage({
       <div className="fixed bottom-0 left-0 w-full z-10 p-3 bg-zinc-950/95 backdrop-blur border-t border-zinc-800">
       <div className="mx-auto max-w-5xl flex items-center gap-2">
           {(() => {
-            const amReady = Boolean(myReady);
-            const opponentReady = Boolean(oppReady);
+            const guards = mpGuards || undefined;
+            const amReady = guards ? Boolean(guards.myReady) : Boolean(myReady);
+            const opponentReady = guards ? Boolean(guards.oppReady) : Boolean(oppReady);
             const label = !amReady
               ? 'Start Combat'
               : (!opponentReady ? 'Waiting for opponent…' : 'Starting…');
-            const disabled = amReady ? true : !fleetValid;
+            // MP guard: disable unless localValid && (serverValid ?? true) && haveSnapshot, or if already ready
+            const disabled = amReady
+              ? true
+              : (guards
+                ? (!(guards.localValid && ((guards.serverValid ?? false)) && guards.haveSnapshot) || !fleetValid)
+                : !fleetValid);
+            if (import.meta.env.DEV && guards) {
+              // Non-invasive log for development to help debugging the guards
+              console.debug('[Outpost] MP guards', { ...guards, disabled, label });
+            }
             const cls = disabled ? 'bg-zinc-700 opacity-60' : 'bg-emerald-600';
             return (
               <button onClick={()=> (!disabled) && startCombat()} disabled={disabled} className={`flex-1 px-4 py-3 rounded-xl ${cls}`}>{label}</button>

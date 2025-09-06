@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
-import App from '../App'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import type { PlayerState, GameState } from '../../shared/mpTypes'
 
 // Silence audio
@@ -44,12 +43,8 @@ describe('Multiplayer Start button readiness + validity guards', () => {
       ]
       const gameState: GameState = {
         currentTurn: 'P1', gamePhase: 'setup',
-        playerStates: { P1: { lives: 3, fleetValid: false, modifiers: { capacityCap: 3 }, fleet: [
-          { frame: { id: 'interceptor', name: 'I' }, weapons: [], riftDice: 0, stats: { init: 1, hullCap: 1, valid: true, aim: 0, shieldTier: 0, regen: 0 }, hull: 1, alive: true, partIds: ['fusion_source','fusion_drive','plasma','positron'] },
-          { frame: { id: 'interceptor', name: 'I' }, weapons: [], riftDice: 0, stats: { init: 1, hullCap: 1, valid: true, aim: 0, shieldTier: 0, regen: 0 }, hull: 1, alive: true, partIds: ['fusion_source','fusion_drive','plasma','positron'] },
-          { frame: { id: 'interceptor', name: 'I' }, weapons: [], riftDice: 0, stats: { init: 1, hullCap: 1, valid: true, aim: 0, shieldTier: 0, regen: 0 }, hull: 1, alive: true, partIds: ['fusion_source','fusion_drive','plasma','positron'] },
-          { frame: { id: 'interceptor', name: 'I' }, weapons: [], riftDice: 0, stats: { init: 1, hullCap: 1, valid: true, aim: 0, shieldTier: 0, regen: 0 }, hull: 1, alive: true, partIds: ['fusion_source','fusion_drive','plasma','positron'] },
-        ] } as PlayerState, P2: { lives: 3, fleetValid: true } as PlayerState },
+        // No snapshot for me → haveSnapshot=false guard should disable Start
+        playerStates: { P1: { lives: 3, fleetValid: false, modifiers: { capacityCap: 3 } } as PlayerState, P2: { lives: 3, fleetValid: true } as PlayerState },
         roundNum: 1,
       } as unknown as GameState
       return { useMultiplayerGame: () => ({
@@ -73,10 +68,10 @@ describe('Multiplayer Start button readiness + validity guards', () => {
     await screen.findByText(/Mock Lobby/i)
     fireEvent.click(screen.getByRole('button', { name: /Enter Game/i }))
 
-    // Wait until capacity cap from server mods is applied (0)
-    await screen.findByText(/Capacity: 0/i)
+    // Wait until Outpost renders
+    await screen.findByRole('button', { name: 'Start Combat' })
     const startBtn = await screen.findByRole('button', { name: 'Start Combat' })
-    expect(startBtn).toHaveAttribute('disabled')
+    await waitFor(() => expect(startBtn).toHaveAttribute('disabled'))
     fireEvent.click(startBtn)
     const spies = (globalThis as unknown as { mpSpies: { submitFleetSnapshot: any; updateFleetValidity: any; setReady: any } }).mpSpies
     expect(spies.setReady).not.toHaveBeenCalled()
@@ -96,7 +91,10 @@ describe('Multiplayer Start button readiness + validity guards', () => {
       ]
       const gameState: GameState = {
         currentTurn: 'P1', gamePhase: 'setup',
-        playerStates: { P1: { lives: 3, fleetValid: true } as PlayerState, P2: { lives: 3, fleetValid: true } as PlayerState },
+        // Ensure snapshot exists to satisfy haveSnapshot guard
+        playerStates: { P1: { lives: 3, fleetValid: true, fleet: [
+          { frame: { id: 'interceptor', name: 'I' }, weapons: [], riftDice: 0, stats: { init: 1, hullCap: 1, valid: true, aim: 0, shieldTier: 0, regen: 0 }, hull: 1, alive: true, partIds: ['fusion_source','fusion_drive'] },
+        ] } as PlayerState, P2: { lives: 3, fleetValid: true } as PlayerState },
         roundNum: 1,
       } as unknown as GameState
       return { useMultiplayerGame: () => ({

@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, within } from '@testing-library/react'
-import App from '../App'
+import { render, screen, fireEvent } from '@testing-library/react'
 import type { FrameId } from '../../shared/factions'
 import type { PlayerState, GameState, ShipSnapshot } from '../../shared/mpTypes'
 
