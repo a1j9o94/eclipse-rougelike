@@ -611,14 +611,18 @@ export default function EclipseIntegrated(){
     if (multi.gameState?.gamePhase !== 'setup') return;
     try {
       // Diagnostics: log incoming server snapshot frames
-      const myId0 = multi.getPlayerId?.() as string | null;
-      const st0 = myId0 ? (multi.gameState?.playerStates as Record<string, PlayerState> | undefined)?.[myId0] : null;
+      const st0 = (multi.getMyGameState?.() as PlayerState | null) ?? (() => {
+        const myId = multi.getPlayerId?.() as string | null;
+        return myId ? (multi.gameState?.playerStates as Record<string, PlayerState> | undefined)?.[myId] || null : null;
+      })();
       const srv0 = Array.isArray(st0?.fleet) ? (st0!.fleet as ShipSnapshot[]) : [];
       if (srv0.length) {
         console.debug('[Sync] server snapshot frames', srv0.map(s => s?.frame?.id));
       }
-      const myId = multi.getPlayerId?.() as string | null;
-      const st = myId ? (multi.gameState?.playerStates as Record<string, PlayerState> | undefined)?.[myId] : null;
+      const st = (multi.getMyGameState?.() as PlayerState | null) ?? (() => {
+        const myId = multi.getPlayerId?.() as string | null;
+        return myId ? (multi.gameState?.playerStates as Record<string, PlayerState> | undefined)?.[myId] || null : null;
+      })();
       const serverFleet = Array.isArray(st?.fleet) ? (st.fleet as ShipSnapshot[]) : [];
       const roundNum = (multi.gameState?.roundNum || 1) as number;
       // Apply all faction effects from server
@@ -678,6 +682,7 @@ export default function EclipseIntegrated(){
         setRareTechChance(mods.rareChance as number);
         factionsApplied = true;
       }
+      // Capacity cap is per-player. Apply only from my state. Do not read opponent's modifiers.
       if (mods && typeof mods.capacityCap === 'number') {
         setCapacity(c => ({ cap: Math.max(c.cap, mods.capacityCap as number) }));
         factionsApplied = true;
