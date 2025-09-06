@@ -17,7 +17,6 @@ export function makeBasicInterceptorSnap(): ShipSnap {
   return {
     frame: { id: 'interceptor', name: 'Interceptor' },
     partIds: partIds,
-    parts: partIds.map(id => ({ id })),
     weapons: [], // Let client calculate from parts
     riftDice: 0,
     stats: { init: 0, hullCap: 0, valid: true, aim: 0, shieldTier: 0, regen: 0 }, // Let client calculate from parts

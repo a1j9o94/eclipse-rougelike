@@ -41,29 +41,54 @@ describe('Multiplayer server defaults', () => {
     });
   });
 
-  it('should have parts array for client reconstruction', async () => {
+  it('should have partIds for client reconstruction (no incomplete parts array)', async () => {
     const gameStateModule = await import('../../convex/gameState');
     
     const snap = gameStateModule.makeBasicInterceptorSnap();
     
-    // Should have parts array with id references for client reconstruction
-    expect(snap).toHaveProperty('parts');
-    expect(Array.isArray(snap.parts)).toBe(true);
-    expect(snap.parts?.length).toBe(4);
+    // Should have partIds but NOT incomplete parts array
+    expect(snap).toHaveProperty('partIds');
+    expect(snap).not.toHaveProperty('parts'); // Should not have incomplete parts
     
-    // Each part should have an id
-    snap.parts?.forEach(part => {
-      expect(part).toHaveProperty('id');
-      expect(typeof part.id).toBe('string');
-    });
-    
-    // Should have the expected part IDs
-    const partIds = snap.parts?.map(p => p.id);
-    expect(partIds).toEqual(expect.arrayContaining([
+    // PartIds should contain the default interceptor parts
+    expect(Array.isArray(snap.partIds)).toBe(true);
+    expect(snap.partIds?.length).toBe(4);
+    expect(snap.partIds).toEqual(expect.arrayContaining([
       'fusion_source',
       'fusion_drive',
       'plasma',
       'positron'
+    ]));
+  });
+
+  it('should allow client to reconstruct ships with proper parts', async () => {
+    const gameStateModule = await import('../../convex/gameState');
+    const { PARTS } = await import('../game');
+    
+    const snap = gameStateModule.makeBasicInterceptorSnap();
+    
+    // Simulate client reconstruction logic  
+    const fullParts: unknown[] = Array.isArray(snap?.parts) ? (snap.parts as unknown[]) : [];
+    const idList: string[] = Array.isArray(snap?.partIds) ? (snap.partIds as string[]) : [];
+    
+    // Should use partIds to map to catalog parts (since no fullParts)
+    expect(fullParts.length).toBe(0);
+    expect(idList.length).toBe(4);
+    
+    // Map IDs to catalog parts (simplified version of client logic)
+    const allParts = [...PARTS.sources, ...PARTS.drives, ...PARTS.weapons, ...PARTS.computers, ...PARTS.shields, ...PARTS.hull];
+    const reconstructedParts = idList.map(id => allParts.find(p => p.id === id)).filter(p => p !== undefined);
+    
+    // Should successfully reconstruct all 4 parts
+    expect(reconstructedParts.length).toBe(4);
+    
+    // Should have the expected part types
+    const partNames = reconstructedParts.map(p => p?.name);
+    expect(partNames).toEqual(expect.arrayContaining([
+      'Fusion Source',
+      'Fusion Drive', 
+      'Plasma Cannon',
+      'Positron Computer'
     ]));
   });
 });
