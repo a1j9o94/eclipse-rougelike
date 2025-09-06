@@ -1,4 +1,5 @@
 import { ALL_PARTS, type Part } from '../../shared/parts';
+import { INITIAL_BLUEPRINTS } from '../../shared/defaults';
 import type { FrameId } from '../../shared/frames';
 import { getFrame, makeShip } from '../game';
 import type { Ship } from '../../shared/types';
@@ -25,18 +26,21 @@ export function applyBlueprintHints(
  * Unknown IDs are ignored. Frames without IDs produce an empty array.
  */
 export function mapBlueprintIdsToParts(ids: Record<FrameId, string[]>): Record<FrameId, Part[]> {
-  const result: Record<FrameId, Part[]> = {
-    interceptor: [],
-    cruiser: [],
-    dread: [],
-  };
-  (Object.keys(ids) as FrameId[]).forEach((frameId: FrameId) => {
-    const list = ids[frameId] || [];
+  const frames: FrameId[] = ['interceptor','cruiser','dread'];
+  const result: Record<FrameId, Part[]> = { interceptor: [], cruiser: [], dread: [] };
+  for (const frameId of frames) {
+    const list = (ids && ids[frameId]) ? ids[frameId] : [];
     const mapped: Part[] = list
       .map((id) => (ALL_PARTS as Part[]).find((p) => p.id === id))
       .filter((p): p is Part => Boolean(p));
-    result[frameId] = mapped;
-  });
+    // Per-frame fallback: if server didn’t specify blueprint ids for a frame,
+    // backfill from INITIAL_BLUEPRINTS so newly-built ships are deployable.
+    // This is especially important for Warmongers building Interceptors when
+    // only Cruiser blueprints are provided.
+    result[frameId] = mapped.length > 0
+      ? mapped
+      : ([ ...INITIAL_BLUEPRINTS[frameId] ] as Part[]);
+  }
   return result;
 }
 
