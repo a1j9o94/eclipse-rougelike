@@ -721,7 +721,17 @@ export default function EclipseIntegrated(){
         if (roundNum !== mpLastServerApplyRound || mapped.length > fleet.length || differentFrames) {
           console.debug('[Sync] Applying server fleet snapshot in setup', { roundNum, prevRound: mpLastServerApplyRound, serverCount: mapped.length, localCount: fleet.length });
           setFleet(mapped);
-          setCapacity(c => ({ cap: Math.max(c.cap, mapped.length) }));
+          // Capacity reset semantics at start of a new match (round 1):
+          // - If my modifiers provide capacityCap (e.g., Warmongers), honor it as the baseline cap.
+          // - Otherwise, reset to baseline (INITIAL_CAPACITY or fleet size), discarding any previous-match carryover.
+          if (roundNum === 1) {
+            const baseline = Math.max(INITIAL_CAPACITY.cap, mapped.length);
+            const capFromMods = (mods && typeof mods.capacityCap === 'number') ? (mods.capacityCap as number) : undefined;
+            const nextCap = capFromMods != null ? Math.max(baseline, capFromMods) : baseline;
+            setCapacity({ cap: nextCap });
+          } else {
+            setCapacity(c => ({ cap: Math.max(c.cap, mapped.length) }));
+          }
           setFocused(0);
           setMpLastServerApplyRound(roundNum);
           setMpServerSnapshotApplied(true);
