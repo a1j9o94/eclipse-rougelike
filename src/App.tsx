@@ -116,6 +116,7 @@ export default function EclipseIntegrated(){
   const [mpSeeded, setMpSeeded] = useState(false);
   const [mpSeedSubmitted, setMpSeedSubmitted] = useState(false);
   const [mpServerSnapshotApplied, setMpServerSnapshotApplied] = useState(false);
+  const [mpRerollInitialized, setMpRerollInitialized] = useState(false);
   const [mpLastServerApplyRound, setMpLastServerApplyRound] = useState<number>(0);
   // Lobby handles faction selection before the first shop; Outpost no longer prompts per round
 
@@ -662,9 +663,12 @@ export default function EclipseIntegrated(){
       }
       
       // Economy effects
-      if (econ && typeof econ.rerollBase === 'number') {
-        setBaseRerollCost(econ.rerollBase);
-        setRerollCost(econ.rerollBase);
+      // Reroll base: for MP, always initialize reroll cost on round 1; if server supplies a value use it, else fall back to base (8)
+      if (roundNum === 1 && !mpRerollInitialized) {
+        const base = (econ && typeof econ.rerollBase === 'number') ? econ.rerollBase : ECONOMY.reroll.base;
+        setBaseRerollCost(base);
+        setRerollCost(base);
+        setMpRerollInitialized(true);
         factionsApplied = true;
       }
       if (econ && (typeof econ.creditMultiplier === 'number' || typeof econ.materialMultiplier === 'number')) {
@@ -692,8 +696,10 @@ export default function EclipseIntegrated(){
       }
       if (serverFleet.length > 0) {
         const mapped = serverFleet.map(fromSnapshotToShip) as unknown as Ship[];
-        // Only update if round advanced, or server has strictly more ships than we do
-        if (roundNum !== mpLastServerApplyRound || mapped.length > fleet.length) {
+        // Adopt server snapshot if (a) new round, (b) server has more ships, or (c) frame ids differ
+        const framesOf = (arr: Ship[]) => arr.map(s => s.frame.id).sort().join(',');
+        const differentFrames = framesOf(mapped) !== framesOf(fleet);
+        if (roundNum !== mpLastServerApplyRound || mapped.length > fleet.length || differentFrames) {
           console.debug('[Sync] Applying server fleet snapshot in setup', { roundNum, prevRound: mpLastServerApplyRound, serverCount: mapped.length, localCount: fleet.length });
           setFleet(mapped);
           setCapacity(c => ({ cap: Math.max(c.cap, mapped.length) }));
