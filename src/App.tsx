@@ -370,17 +370,10 @@ export default function EclipseIntegrated(){
     // MP: persist research/resources so they survive setup→combat→setup
     if (gameMode === 'multiplayer') {
       try {
-        const myId = multi.getPlayerId?.() as string | null;
-        if (myId && (multi as { updateGameState?: (args: unknown)=>Promise<void> }).updateGameState) {
-          if (import.meta.env.DEV) {
-            console.debug('[MP] persist research', { nextResearch, track, delta: res.delta });
-          }
-          (multi as { updateGameState: (args: { roomId: string; playerId: string; updates: { research: Research; resources: { credits: number; materials: number; science: number } } })=>Promise<void> })
-            .updateGameState({
-              roomId: (currentRoomId as unknown as string) || ((multi as { roomDetails?: { room?: { _id?: string } } }).roomDetails?.room?._id as unknown as string) || 'ROOM',
-              playerId: myId,
-              updates: { research: nextResearch, resources: { credits: resources.credits + (res.delta.credits||0), materials: resources.materials, science: resources.science + (res.delta.science||0) } },
-            }).catch(()=>void 0);
+        if ((multi as { updateGameState?: (updates: unknown)=>Promise<void> }).updateGameState) {
+          if (import.meta.env.DEV) console.debug('[MP] persist research', { nextResearch, track, delta: res.delta });
+          const updates = { research: nextResearch, resources: { credits: resources.credits + (res.delta.credits||0), materials: resources.materials, science: resources.science + (res.delta.science||0) } };
+          await (multi as { updateGameState: (updates: { research: Research; resources: { credits:number; materials:number; science:number } })=>Promise<void> }).updateGameState(updates);
         }
       } catch {/* noop */}
     }
