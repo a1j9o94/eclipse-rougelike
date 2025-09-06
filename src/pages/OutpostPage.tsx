@@ -3,12 +3,13 @@ import { useState } from 'react'
 import { ItemCard, PowerBadge, DockSlots } from '../components/ui'
 import { CombatPlanModal } from '../components/modals'
 import { ECONOMY } from '../../shared/economy'
-import { FRAMES, type FrameId, ALL_PARTS, getEconomyModifiers, groupFleet } from '../game'
-import { canBuildInterceptor } from '../game/hangar'
+import { FRAMES, type FrameId, ALL_PARTS, groupFleet } from '../game'
+import { canBuildInterceptorWithMods } from '../game/hangar'
 import { partEffects, partDescription } from '../../shared/parts'
 import { type Resources, type Research } from '../../shared/defaults'
 import { type Part } from '../../shared/parts'
 import { type Ship, type GhostDelta } from '../../shared/types'
+import { type EconMods, applyEconomyModifiers, getDefaultEconomyModifiers } from '../game/economy'
 
 export function OutpostPage({
   resources,
@@ -39,6 +40,7 @@ export function OutpostPage({
   onRestart,
   myReady,
   oppReady,
+  economyMods = getDefaultEconomyModifiers(),
 }:{
   resources:Resources,
   rerollCost:number,
@@ -68,14 +70,14 @@ export function OutpostPage({
   onRestart:()=>void,
   myReady?: boolean,
   oppReady?: boolean,
+  economyMods?: EconMods,
 }){
   const focusedShip = fleet[focused];
   const fleetGroups = groupFleet(fleet);
   const [showPlan, setShowPlan] = useState(false);
   const [dockPreview, setDockPreview] = useState<number|null>(null);
   const tracks = ['Military','Grid','Nano'] as const;
-  const econ = getEconomyModifiers();
-  const buildChk = canBuildInterceptor(resources, capacity, tonnage.used);
+  const buildChk = canBuildInterceptorWithMods(resources, capacity, tonnage.used, economyMods);
   const buildCost = { materials: buildChk.cost.m, credits: buildChk.cost.c };
   const buildFits = (tonnage.used + FRAMES.interceptor.tonnage) <= capacity.cap;
   const buildAffordable = resources.credits >= buildCost.credits && resources.materials >= buildCost.materials;
@@ -84,24 +86,24 @@ export function OutpostPage({
     ? (buildFits ? `Build Interceptor — Need ${buildCost.materials}🧱 + ${buildCost.credits}¢` : 'Build Interceptor — Expand Docks')
     : `Build Interceptor 🟢 (${buildCost.materials}🧱 + ${buildCost.credits}¢)`;
   const dockCost = {
-    materials: Math.max(1, Math.floor(ECONOMY.dockUpgrade.materials * econ.materials)),
-    credits: Math.max(1, Math.floor(ECONOMY.dockUpgrade.credits * econ.credits)),
+    materials: applyEconomyModifiers(ECONOMY.dockUpgrade.materials, economyMods, 'materials'),
+    credits: applyEconomyModifiers(ECONOMY.dockUpgrade.credits, economyMods, 'credits'),
   };
   const dockAtCap = capacity.cap >= ECONOMY.dockUpgrade.capacityMax;
   const dockAffordable = resources.credits >= dockCost.credits && resources.materials >= dockCost.materials;
   const dockDisabled = dockAtCap || !dockAffordable;
-  const rrInc = Math.max(1, Math.floor(ECONOMY.reroll.increment * econ.credits));
+  const rrInc = applyEconomyModifiers(ECONOMY.reroll.increment, economyMods, 'credits');
   const currentBlueprint = blueprints[focusedShip?.frame.id as FrameId] || [];
   const bpSlotsUsed = currentBlueprint.reduce((a,p)=>a+(p.slots||1),0);
   const nextUpgrade = (()=>{
     if(!focusedShip) return null;
     if(focusedShip.frame.id==='interceptor') return {
-      materials: Math.max(1, Math.floor(ECONOMY.upgradeCosts.interceptorToCruiser.materials * econ.materials)),
-      credits: Math.max(1, Math.floor(ECONOMY.upgradeCosts.interceptorToCruiser.credits * econ.credits)),
+      materials: applyEconomyModifiers(ECONOMY.upgradeCosts.interceptorToCruiser.materials, economyMods, 'materials'),
+      credits: applyEconomyModifiers(ECONOMY.upgradeCosts.interceptorToCruiser.credits, economyMods, 'credits'),
     };
     if(focusedShip.frame.id==='cruiser') return {
-      materials: Math.max(1, Math.floor(ECONOMY.upgradeCosts.cruiserToDread.materials * econ.materials)),
-      credits: Math.max(1, Math.floor(ECONOMY.upgradeCosts.cruiserToDread.credits * econ.credits)),
+      materials: applyEconomyModifiers(ECONOMY.upgradeCosts.cruiserToDread.materials, economyMods, 'materials'),
+      credits: applyEconomyModifiers(ECONOMY.upgradeCosts.cruiserToDread.credits, economyMods, 'credits'),
     };
     return null;
   })();

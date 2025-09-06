@@ -6,7 +6,7 @@ import { type CapacityState, type DifficultyId } from '../shared/types'
 import { type FrameId } from './game'
 import { ResourceBar } from './components/ui'
 import { RulesModal, TechListModal, WinModal, MatchOverModal } from './components/modals'
-import { setEconomyModifiers, type EconMods, getDefaultEconomyModifiers } from './game/economy'
+import { setEconomyModifiers, type EconMods, getDefaultEconomyModifiers, getEconomyModifiers } from './game/economy'
 import { setRareTechChance, doRerollActionWithMods, researchActionWithMods } from './game/shop'
 import { applyBlueprintHints, mapBlueprintIdsToParts, seedFleetFromBlueprints } from './multiplayer/blueprintHints'
 import StartPage from './pages/StartPage'
@@ -21,7 +21,7 @@ import { buildInitiative as buildInitiativeCore, targetIndex as targetIndexCore,
 import { generateEnemyFleetFor } from './game/enemy'
 import { doRerollAction, researchAction } from './game/shop'
 import { applyBlueprintToFleet as applyBpToFleet, canInstallOnClass as canInstallClass, updateBlueprint as updateBp } from './game/blueprints'
-import { buildInterceptor as buildI, upgradeShipAt as upgradeAt, expandDock as expandD } from './game/hangar'
+import { buildInterceptor as buildI, upgradeShipAt as upgradeAt, expandDock as expandD, buildInterceptorWithMods as buildIWM, upgradeShipAtWithMods as upgradeAtWM, expandDockWithMods as expandDWM } from './game/hangar'
 import { calcRewards, ensureGraceResources, graceRecoverFleet } from './game/rewards'
 import { researchLabel as researchLabelCore, canResearch as canResearchCore, researchLabelWithMods, canResearchWithMods } from './game/research'
 import { loadRunState, saveRunState, clearRunState, recordWin, restoreRunEnvironment, restoreOpponent, evaluateUnlocks } from './game/storage'
@@ -296,15 +296,28 @@ export default function EclipseIntegrated(){
   }
 
   // ---------- Capacity & build/upgrade ----------
-  function buildShip(){ const res = buildI(blueprints as Record<FrameId, Part[]>, resources, tonnage.used, capacity); if(!res) return; setFleet(f=>[...f, res.ship]); setFocused(fleet.length); setResources(r=>({ ...r, credits: r.credits + res.delta.credits, materials: r.materials + res.delta.materials })); }
+  function buildShip(){
+    const economyMods = gameMode === 'multiplayer' ? getCurrentPlayerEconomyMods() : getEconomyModifiers();
+    const res = gameMode === 'multiplayer'
+      ? buildIWM(blueprints as Record<FrameId, Part[]>, resources, tonnage.used, capacity, economyMods)
+      : buildI(blueprints as Record<FrameId, Part[]>, resources, tonnage.used, capacity);
+    if(!res) return; setFleet(f=>[...f, res.ship]); setFocused(fleet.length); setResources(r=>({ ...r, credits: r.credits + res.delta.credits, materials: r.materials + res.delta.materials }));
+  }
   function upgradeShip(idx:number){
-    const res = upgradeAt(idx, fleet, blueprints as Record<FrameId, Part[]>, resources, { Military: research.Military||1 } as Research, capacity, tonnage.used);
+    const economyMods = gameMode === 'multiplayer' ? getCurrentPlayerEconomyMods() : getEconomyModifiers();
+    const res = gameMode === 'multiplayer'
+      ? upgradeAtWM(idx, fleet, blueprints as Record<FrameId, Part[]>, resources, { Military: research.Military||1 } as Research, capacity, tonnage.used, economyMods)
+      : upgradeAt(idx, fleet, blueprints as Record<FrameId, Part[]>, resources, { Military: research.Military||1 } as Research, capacity, tonnage.used);
     if(!res) return;
     setFleet(f => f.map((sh,i)=> i===idx? res.upgraded : sh));
     setBlueprints(res.blueprints);
     setResources(r=>({ ...r, credits: r.credits + res.delta.credits, materials: r.materials + res.delta.materials }));
   }
-  function upgradeDock(){ const res = expandD(resources, capacity); if(!res) return; setCapacity({ cap: res.nextCap }); setResources(r=>({ ...r, credits: r.credits + res.delta.credits, materials: r.materials + res.delta.materials })); void playEffect('dock'); }
+  function upgradeDock(){
+    const economyMods = gameMode === 'multiplayer' ? getCurrentPlayerEconomyMods() : getEconomyModifiers();
+    const res = gameMode === 'multiplayer' ? expandDWM(resources, capacity, economyMods) : expandD(resources, capacity);
+    if(!res) return; setCapacity({ cap: res.nextCap }); setResources(r=>({ ...r, credits: r.credits + res.delta.credits, materials: r.materials + res.delta.materials })); void playEffect('dock');
+  }
 
   // Helper to get current player's economy modifiers in multiplayer
   function getCurrentPlayerEconomyMods(): EconMods {
@@ -832,6 +845,7 @@ export default function EclipseIntegrated(){
           fleetValid={fleetValid}
           myReady={(() => { try { return !!multi.getCurrentPlayer?.()?.isReady; } catch { return false; } })()}
           oppReady={(() => { try { return !!multi.getOpponent?.()?.isReady; } catch { return false; } })()}
+          economyMods={gameMode==='multiplayer' ? getCurrentPlayerEconomyMods() : getEconomyModifiers()}
           startCombat={() => {
             if (gameMode === 'multiplayer') {
               try {

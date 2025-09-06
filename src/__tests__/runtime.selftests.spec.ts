@@ -24,5 +24,3 @@ describe('Runtime self-tests (moved from App)', () => {
     })
   })
 })
-
-

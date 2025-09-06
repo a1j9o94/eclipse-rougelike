@@ -86,7 +86,6 @@ export const initializeGameState = mutation({
             ...baseSnap,
             frame: { id: 'cruiser', name: 'Cruiser' },
             partIds: [...blueprintIds.cruiser],
-            parts: [...blueprintIds.cruiser].map(id => ({ id })),
           };
           fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...cruiserSnap }));
         }
@@ -100,8 +99,6 @@ export const initializeGameState = mutation({
           snap.stats.init = 2; // better drive
           snap.weapons = [{ name: 'Antimatter', dice: 1, dmgPerHit: 2, faces: [{ dmg: 2 }] }];
           snap.partIds = [...blueprintIds.interceptor];
-          // Prefer full parts for exact reconstruction when feasible; keep ids for fallback
-          snap.parts = [...blueprintIds.interceptor].map(id => ({ id }));
           fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...snap }));
         }
         break;
@@ -114,7 +111,6 @@ export const initializeGameState = mutation({
           snap.stats.init = 2;
           snap.weapons = [{ name: 'Disruptor', dice: 1, dmgPerHit: 1, initLoss: 1, faces: [{ dmg: 1 }] }];
           snap.partIds = [...blueprintIds.interceptor];
-          snap.parts = [...blueprintIds.interceptor].map(id => ({ id }));
           fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...snap }));
         }
         break;
@@ -126,7 +122,6 @@ export const initializeGameState = mutation({
           const snap = makeBasicInterceptorSnap();
           snap.stats.hullCap = 2; snap.hull = 2; snap.stats.regen = 1;
           snap.partIds = [...blueprintIds.interceptor];
-          snap.parts = [...blueprintIds.interceptor].map(id => ({ id }));
           fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...snap }));
         }
         break;

@@ -3,6 +3,7 @@ import { ECONOMY } from '../../shared/economy'
 import { type FrameId, getFrame, getEconomyModifiers } from '../game'
 import { makeShip } from '../game'
 import type { Ship } from '../../shared/types'
+import { type EconMods, applyEconomyModifiers } from './economy'
 
 export function canBuildInterceptor(resources:{credits:number, materials:number}, capacity:{cap:number}, tonnageUsed:number){
   const mod = getEconomyModifiers();
@@ -82,6 +83,95 @@ export function expandDock(resources:{credits:number, materials:number}, capacit
   const cost = {
     c: Math.max(1, Math.floor(base.credits * mod.credits)),
     m: Math.max(1, Math.floor(base.materials * mod.materials)),
+  };
+  if(capacity.cap >= base.capacityMax) return null;
+  if(resources.credits < cost.c || resources.materials < cost.m) return null;
+  const nextCap = Math.min(base.capacityMax, capacity.cap + base.capacityDelta);
+  return { nextCap, delta:{ credits: -cost.c, materials: -cost.m } };
+}
+
+// -------------------- WithMods variants (for multiplayer isolation) --------------------
+export function canBuildInterceptorWithMods(
+  resources:{credits:number, materials:number},
+  capacity:{cap:number},
+  tonnageUsed:number,
+  economyMods: EconMods
+){
+  const base = ECONOMY.buildInterceptor;
+  const cost = {
+    c: applyEconomyModifiers(base.credits, economyMods, 'credits'),
+    m: applyEconomyModifiers(base.materials, economyMods, 'materials'),
+  };
+  const fits = (tonnageUsed + getFrame('interceptor').tonnage) <= capacity.cap;
+  const afford = resources.credits>=cost.c && resources.materials>=cost.m;
+  return { ok: fits && afford, cost };
+}
+
+export function buildInterceptorWithMods(
+  blueprints:Record<FrameId, Part[]>,
+  resources:{credits:number, materials:number},
+  tonnageUsed:number,
+  capacity:{cap:number},
+  economyMods: EconMods
+){
+  const chk = canBuildInterceptorWithMods(resources, capacity, tonnageUsed, economyMods);
+  if(!chk.ok) return null;
+  const frameId:FrameId = 'interceptor';
+  const newShip = makeShip(getFrame(frameId), [ ...blueprints[frameId] ]);
+  const delta = { credits: -chk.cost.c, materials: -chk.cost.m };
+  return { ship: newShip as unknown as Ship, delta };
+}
+
+export function upgradeShipAtWithMods(
+  idx:number,
+  fleet:Ship[],
+  blueprints:Record<FrameId, Part[]>,
+  resources:{credits:number, materials:number},
+  research:{Military:number},
+  capacity:{cap:number},
+  tonnageUsed:number,
+  economyMods: EconMods
+){
+  const s = fleet[idx]; if(!s) return null;
+  const step = canUpgrade(s.frame.id as FrameId, research);
+  if(!step.ok || !step.next) return null;
+  const nextId = step.next;
+  const base = s.frame.id === 'interceptor' ? ECONOMY.upgradeCosts.interceptorToCruiser : ECONOMY.upgradeCosts.cruiserToDread;
+  const cost = {
+    c: applyEconomyModifiers(base.credits, economyMods, 'credits'),
+    m: applyEconomyModifiers(base.materials, economyMods, 'materials'),
+  };
+  const deltaTons = getFrame(nextId).tonnage - s.frame.tonnage;
+  if((tonnageUsed + deltaTons) > capacity.cap) return null;
+  if(resources.credits < cost.c || resources.materials < cost.m) return null;
+  const nextFrame = getFrame(nextId);
+  const nextBlueprints = { ...blueprints } as Record<FrameId, Part[]>;
+  const hasTargetClassAlready = fleet.some((sh, i) => sh && i !== idx && (sh.frame.id as FrameId) === nextId);
+  const isSynthetic = (arr: Part[]) => arr.some(p => (p?.id || '').startsWith('mp_') || !(ALL_PARTS as Part[]).some(x => x.id === p.id));
+  const sourceParts = (!hasTargetClassAlready && isSynthetic(s.parts) && nextBlueprints[s.frame.id as FrameId]?.length)
+    ? [ ...nextBlueprints[s.frame.id as FrameId] ]
+    : [ ...s.parts ];
+
+  let carry: Part[];
+  if (!hasTargetClassAlready) {
+    carry = sourceParts;
+    nextBlueprints[nextId] = [ ...sourceParts ];
+  } else {
+    carry = [ ...nextBlueprints[nextId] ];
+  }
+  const upgraded = makeShip(nextFrame, carry);
+  return { idx, upgraded: upgraded as unknown as Ship, blueprints: nextBlueprints, delta:{ credits: -cost.c, materials: -cost.m } };
+}
+
+export function expandDockWithMods(
+  resources:{credits:number, materials:number},
+  capacity:{cap:number},
+  economyMods: EconMods
+){
+  const base = ECONOMY.dockUpgrade;
+  const cost = {
+    c: applyEconomyModifiers(base.credits, economyMods, 'credits'),
+    m: applyEconomyModifiers(base.materials, economyMods, 'materials'),
   };
   if(capacity.cap >= base.capacityMax) return null;
   if(resources.credits < cost.c || resources.materials < cost.m) return null;
