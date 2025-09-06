@@ -184,6 +184,34 @@ describe('Multiplayer Economy Isolation', () => {
       expect(scientistReroll2.ok && scientistReroll2.nextRerollCostDelta).toBe(4);
     });
 
+    it('should verify single-player global economy state still works', () => {
+      // Reset global state first
+      setEconomyModifiers({ credits: 1, materials: 1 });
+      
+      // Set industrialist global modifiers (simulating single-player)
+      setEconomyModifiers({ credits: 0.75, materials: 0.75 });
+      
+      const resources = { credits: 100 };
+      const research = { Military: 1, Grid: 1, Nano: 1 };
+      const baseRerollCost = 4;
+      
+      // Single-player functions should use global state
+      const reroll = doRerollAction(resources, baseRerollCost, research);
+      expect(reroll.ok).toBe(true);
+      if (reroll.ok) {
+        expect(reroll.nextRerollCostDelta).toBe(3); // 4 * 0.75 = 3 (industrialist discount)
+      }
+      
+      // Change global state to scientist values
+      setEconomyModifiers({ credits: 1, materials: 1 });
+      
+      const scientistReroll = doRerollAction(resources, baseRerollCost, research);
+      expect(scientistReroll.ok).toBe(true);
+      if (scientistReroll.ok) {
+        expect(scientistReroll.nextRerollCostDelta).toBe(4); // 4 * 1.0 = 4 (no discount)
+      }
+    });
+
     it('should properly isolate research costs using parameter-based functions', () => {
       const resources = { credits: 100, science: 10 };
       const research = { Military: 1, Grid: 1, Nano: 1 };

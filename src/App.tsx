@@ -601,7 +601,10 @@ export default function EclipseIntegrated(){
         factionsApplied = true;
       }
       if (econ && (typeof econ.creditMultiplier === 'number' || typeof econ.materialMultiplier === 'number')) {
-        setEconomyModifiers({ credits: econ.creditMultiplier ?? 1, materials: econ.materialMultiplier ?? 1 });
+        // Only set global economy for single-player mode
+        if (gameMode !== 'multiplayer') {
+          setEconomyModifiers({ credits: econ.creditMultiplier ?? 1, materials: econ.materialMultiplier ?? 1 });
+        }
         factionsApplied = true;
       }
       
