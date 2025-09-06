@@ -249,7 +249,12 @@ export function OutpostPage({
             </div>
             <div className="text-lg font-semibold mb-2">Outpost Inventory</div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-2">
-              {shop.items.map((it:Part, i:number)=> { const canAfford = resources.credits >= (it.cost||0); const gd = focusedShip? ghost(focusedShip, it) : null; return (<ItemCard key={i} item={it} canAfford={canAfford} ghostDelta={gd} onBuy={()=>buyAndInstall(it)} />); })}
+              {shop.items.map((it:Part, i:number)=> {
+                const price = applyEconomyModifiers((it.cost||0), economyMods, 'credits');
+                const canAfford = resources.credits >= price;
+                const gd = focusedShip? ghost(focusedShip, it) : null;
+                return (<ItemCard key={i} item={it} price={price} canAfford={canAfford} ghostDelta={gd} onBuy={()=>buyAndInstall(it)} />);
+              })}
             </div>
           </div>
           {/* Tech Upgrades side */}

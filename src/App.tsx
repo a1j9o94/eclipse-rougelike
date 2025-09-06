@@ -6,7 +6,7 @@ import { type CapacityState, type DifficultyId } from '../shared/types'
 import { type FrameId } from './game'
 import { ResourceBar } from './components/ui'
 import { RulesModal, TechListModal, WinModal, MatchOverModal } from './components/modals'
-import { setEconomyModifiers, type EconMods, getDefaultEconomyModifiers, getEconomyModifiers } from './game/economy'
+import { setEconomyModifiers, type EconMods, getDefaultEconomyModifiers, getEconomyModifiers, applyEconomyModifiers } from './game/economy'
 import { setRareTechChance, doRerollActionWithMods, researchActionWithMods } from './game/shop'
 import { ECONOMY } from '../shared/economy'
 import { applyBlueprintHints, mapBlueprintIdsToParts, seedFleetFromBlueprints } from './multiplayer/blueprintHints'
@@ -273,13 +273,15 @@ export default function EclipseIntegrated(){
     };
   }
   function buyAndInstall(part:Part){
-    if(resources.credits < (part.cost||0)) return;
+    const economyMods = gameMode === 'multiplayer' ? getCurrentPlayerEconomyMods() : getEconomyModifiers();
+    const price = Math.max(0, applyEconomyModifiers((part.cost||0), economyMods, 'credits'));
+    if(resources.credits < price) return;
     const ship = fleet[focused];
     if(!ship) return;
     const frameId = ship.frame.id as FrameId;
     const chk = canInstallOnClass(frameId, part);
     if(!chk.ok) return;
-    setResources(r=>({...r, credits: r.credits - (part.cost||0)}));
+    setResources(r=>({...r, credits: r.credits - price }));
     updateBlueprint(frameId, arr => [...arr, part], true);
     if(!chk.tmp.stats.valid){
       console.warn('Ship will not participate in combat until power and drive requirements are met.');
@@ -685,6 +687,15 @@ export default function EclipseIntegrated(){
         }
         factionsApplied = true;
       }
+
+      // If my economy now provides a rerollBase different from current base during setup, correct it once (before any rerolls)
+      if (multi.gameState?.gamePhase === 'setup' && typeof econ?.rerollBase === 'number' && baseRerollCost !== econ.rerollBase) {
+        if (rerollCost === baseRerollCost) {
+          setBaseRerollCost(econ.rerollBase);
+          setRerollCost(econ.rerollBase);
+          try { console.debug('[MP] reroll base corrected from econ (my state)', { playerId: multi.getPlayerId?.(), base: econ.rerollBase, round: roundNum }); } catch { /* noop */ }
+        }
+      }
       
       // Modifier effects
       if (mods && typeof mods.rareChance === 'number') {
@@ -954,7 +965,19 @@ export default function EclipseIntegrated(){
           }}
           onRestart={() => {
             if (gameMode === 'multiplayer') {
-              try { void (multi as { restartToSetup?: ()=>Promise<void> })?.restartToSetup?.(); } catch { /* noop */ }
+              try {
+                // Server: fully reset room to waiting with clean gameState so capacity/economy don’t leak
+                void (multi as { prepareRematch?: ()=>Promise<void> })?.prepareRematch?.();
+              } catch { /* noop */ }
+              // Client: proactively clear local MP state to avoid showing stale warmonger capacity/values
+              setBlueprints({ interceptor:[...INITIAL_BLUEPRINTS.interceptor], cruiser:[...INITIAL_BLUEPRINTS.cruiser], dread:[...INITIAL_BLUEPRINTS.dread] });
+              setResources({ ...INITIAL_RESOURCES });
+              setResearch({ ...INITIAL_RESEARCH });
+              setCapacity({ ...INITIAL_CAPACITY });
+              setRerollCost(ECONOMY.reroll.base);
+              setBaseRerollCost(ECONOMY.reroll.base);
+              setMpSeeded(false); setMpSeedSubmitted(false); setMpServerSnapshotApplied(false);
+              setMpLastServerApplyRound(0); setMpRerollInitRound(0);
               return;
             }
             resetRun();

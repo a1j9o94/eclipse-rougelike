@@ -168,7 +168,7 @@ export function CompactShip({ ship, side, active }:{ship:Ship, side:'P'|'E', act
     </div>
   );
 }
-export function ItemCard({ item, canAfford, onBuy, ghostDelta }:{item:Part, canAfford:boolean, onBuy:()=>void, ghostDelta:GhostDelta|null}){
+export function ItemCard({ item, price, canAfford, onBuy, ghostDelta }:{item:Part, price?:number, canAfford:boolean, onBuy:()=>void, ghostDelta:GhostDelta|null}){
   return (
     <div className={`p-3 rounded-xl border bg-zinc-900 transition ${canAfford? 'border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800/70' : 'border-zinc-800 opacity-90'}`}>
       <div className="flex items-start justify-between gap-2">
@@ -182,7 +182,7 @@ export function ItemCard({ item, canAfford, onBuy, ghostDelta }:{item:Part, canA
             })()}</div>
             <div className="text-[11px] sm:text-xs mt-1">{partDescription(item)}</div>
         </div>
-        <div className="text-sm sm:text-base font-semibold whitespace-nowrap">{item.cost}¢</div>
+        <div className="text-sm sm:text-base font-semibold whitespace-nowrap">{typeof price==='number' ? price : (item.cost||0)}¢</div>
       </div>
       {ghostDelta && (
         <div className="mt-2 text-[11px] sm:text-xs grid grid-cols-2 gap-x-3 gap-y-1">
