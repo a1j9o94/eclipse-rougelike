@@ -82,16 +82,33 @@ export const initializeGameState = mutation({
           fleetSnaps = makeFleetForFrame('cruiser', starting);
           break;
         case 'raiders':
-          // Hint blueprints (Tier 2 cannon and better drives)
+          // Hint blueprints (Tier 2 cannon and better drives) and seed fleet stats/weapons
           modifiers.blueprintHints = { interceptor: ['tachyon_source','tachyon_drive','antimatter','positron'] };
+          {
+            const snap = makeBasicInterceptorSnap();
+            snap.stats.init = 2; // better drive
+            snap.weapons = [{ name: 'Antimatter', dice: 1, dmgPerHit: 2, faces: [{ dmg: 2 }] }];
+            fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...snap }));
+          }
           break;
         case 'timekeepers':
           research = { ...research, Grid: 2 };
           modifiers.blueprintHints = { interceptor: ['fusion_source','tachyon_drive','disruptor','positron'] };
+          {
+            const snap = makeBasicInterceptorSnap();
+            snap.stats.init = 2;
+            snap.weapons = [{ name: 'Disruptor', dice: 1, dmgPerHit: 1, initLoss: 1, faces: [{ dmg: 1 }] }];
+            fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...snap }));
+          }
           break;
         case 'collective':
           research = { ...research, Nano: 2 };
           modifiers.blueprintHints = { interceptor: ['fusion_source','fusion_drive','plasma','auto_repair'] };
+          {
+            const snap = makeBasicInterceptorSnap();
+            snap.stats.hullCap = 2; snap.hull = 2; snap.stats.regen = 1;
+            fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...snap }));
+          }
           break;
       }
       initialPlayerStates[player.playerId] = {
