@@ -254,8 +254,23 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
     const playerId = getPlayerId();
     if (!playerId) throw new Error("No player ID found");
     try {
+      // Convert client Ship[] into server ShipSnap[] with partIds to avoid synthetic parts on reconstruction.
+      let payload: unknown = fleet;
+      try {
+        if (Array.isArray(fleet)) {
+          payload = (fleet as any[]).map((s: any) => ({
+            frame: { id: s?.frame?.id, name: s?.frame?.name },
+            weapons: Array.isArray(s?.weapons) ? s.weapons.map((w: any) => ({ name: w?.name, dice: w?.dice, dmgPerHit: w?.dmgPerHit, faces: w?.faces, initLoss: w?.initLoss })) : [],
+            riftDice: s?.riftDice || 0,
+            stats: { init: s?.stats?.init || 0, hullCap: s?.stats?.hullCap || 1, valid: !!s?.stats?.valid, aim: s?.stats?.aim || 0, shieldTier: s?.stats?.shieldTier || 0, regen: s?.stats?.regen || 0 },
+            hull: typeof s?.hull === 'number' ? s.hull : (s?.stats?.hullCap || 1),
+            alive: s?.alive !== false,
+            partIds: Array.isArray(s?.parts) ? s.parts.map((p: any) => p?.id).filter((id: any) => typeof id === 'string') : [],
+          }));
+        }
+      } catch { /* leave payload as fleet */ }
       console.debug("[Client] submitFleetSnapshot", { playerId, roomId, count: Array.isArray(fleet) ? (fleet as unknown[]).length : 0, fleetValid });
-      await submitFleetSnapshot({ roomId, playerId, fleet, fleetValid });
+      await submitFleetSnapshot({ roomId, playerId, fleet: payload, fleetValid });
       console.debug("[Client] submitFleetSnapshot ok");
     } catch (error) {
       console.error("Failed to submit fleet:", error);

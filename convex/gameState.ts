@@ -93,6 +93,7 @@ export const initializeGameState = mutation({
           const snap = makeBasicInterceptorSnap();
           snap.stats.init = 2; // better drive
           snap.weapons = [{ name: 'Antimatter', dice: 1, dmgPerHit: 2, faces: [{ dmg: 2 }] }];
+          snap.partIds = [...blueprintIds.interceptor];
           fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...snap }));
         }
         break;
@@ -104,6 +105,7 @@ export const initializeGameState = mutation({
           const snap = makeBasicInterceptorSnap();
           snap.stats.init = 2;
           snap.weapons = [{ name: 'Disruptor', dice: 1, dmgPerHit: 1, initLoss: 1, faces: [{ dmg: 1 }] }];
+          snap.partIds = [...blueprintIds.interceptor];
           fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...snap }));
         }
         break;
@@ -114,6 +116,7 @@ export const initializeGameState = mutation({
         {
           const snap = makeBasicInterceptorSnap();
           snap.stats.hullCap = 2; snap.hull = 2; snap.stats.regen = 1;
+          snap.partIds = [...blueprintIds.interceptor];
           fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...snap }));
         }
         break;
@@ -121,6 +124,10 @@ export const initializeGameState = mutation({
       // Warmongers cruiser blueprint IDs from shared config
       if (faction === 'warmongers') {
         blueprintIds.cruiser = [...(FACTION_BLUEPRINT_IDS.warmongers.cruiser || [])];
+        // If we seeded cruisers, include partIds as well
+        if (Array.isArray(fleetSnaps) && fleetSnaps.length > 0 && (modifiers.startingFrame === 'cruiser')) {
+          fleetSnaps = fleetSnaps.map(s => ({ ...s, partIds: [...blueprintIds.cruiser] }));
+        }
       }
 
       initialPlayerStates[player.playerId] = {

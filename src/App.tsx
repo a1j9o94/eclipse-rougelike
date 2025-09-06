@@ -125,7 +125,11 @@ export default function EclipseIntegrated(){
       alive: snap?.alive !== false,
     } as Ship;
 
-    const parts: any[] = [];
+    // If server provided concrete part IDs, prefer those and map to real parts from catalog.
+    const idList = Array.isArray(snap?.partIds) ? (snap.partIds as string[]) : [];
+    const parts: any[] = idList.length > 0
+      ? idList.map(id => (PARTS.sources.find(p=>p.id===id) || PARTS.drives.find(p=>p.id===id) || PARTS.weapons.find(p=>p.id===id) || PARTS.computers.find(p=>p.id===id) || PARTS.shields.find(p=>p.id===id) || PARTS.hull.find(p=>p.id===id) || null)).filter(Boolean)
+      : [];
     const st = base.stats as any;
     if (st.init > 0) parts.push({ id: `mp_drive_${st.init}`, name: 'Drive', init: st.init, powerCost: 0, tier: 1, cost: 0, cat: 'Drive', tech_category: 'Grid' });
     if (st.aim > 0) parts.push({ id: `mp_comp_${st.aim}`, name: 'Computer', aim: st.aim, powerCost: 0, tier: 1, cost: 0, cat: 'Computer', tech_category: 'Grid' });
@@ -137,7 +141,7 @@ export default function EclipseIntegrated(){
       const w = ws[i];
       parts.push({ id: `mp_w_${i}`, name: w.name || 'Weapon', dice: w.dice || 0, dmgPerHit: w.dmgPerHit || 0, faces: w.faces || [], initLoss: w.initLoss || 0, powerCost: 0, tier: 1, cost: 0, cat: 'Weapon', tech_category: 'Nano' });
     }
-    if (base.riftDice > 0) parts.push({ id: `mp_rift_${base.riftDice}`, name: 'Rift', riftDice: base.riftDice, faces: [], powerCost: 0, tier: 1, cost: 0, cat: 'Weapon', tech_category: 'Nano' });
+    if (idList.length === 0 && base.riftDice > 0) parts.push({ id: `mp_rift_${base.riftDice}`, name: 'Rift', riftDice: base.riftDice, faces: [], powerCost: 0, tier: 1, cost: 0, cat: 'Weapon', tech_category: 'Nano' });
     // Ensure ships have at least one Source so class builds are deployable and upgrades can inherit a valid build.
     // We synthesize a zero-cost Source to satisfy validity in Outpost; combat does not use power accounting.
     const hasSource = parts.some(p => typeof (p as any).powerProd === 'number');
