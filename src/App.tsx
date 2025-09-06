@@ -7,7 +7,7 @@ import { ResourceBar } from './components/ui'
 import { RulesModal, TechListModal, WinModal, MatchOverModal } from './components/modals'
 import { setEconomyModifiers } from './game/economy'
 import { setRareTechChance } from './game/shop'
-import { applyBlueprintHints } from './multiplayer/blueprintHints'
+import { applyBlueprintHints, mapBlueprintIdsToParts, seedFleetFromBlueprints } from './multiplayer/blueprintHints'
 import StartPage from './pages/StartPage'
 import { type FactionId } from './config/factions'
 import OutpostPage from './pages/OutpostPage'
@@ -433,8 +433,7 @@ export default function EclipseIntegrated(){
       }
     } else if (phase === 'setup' && mode !== 'OUTPOST') {
       console.debug('[Nav] Phase → setup');
-      setMode('OUTPOST');
-      // Sync my starting config from server so research/resources/reroll reflect faction
+      // Sync my starting config from server so research/resources/reroll and blueprints reflect faction
       try {
         if (gameMode === 'multiplayer') {
           const myId = multi.getPlayerId?.() as string | null;
@@ -443,7 +442,8 @@ export default function EclipseIntegrated(){
           const res = (st?.resources as { credits:number; materials:number; science:number } | undefined);
           const srvResearch = (st?.research as Research | undefined);
           const econ = (st?.economy as { rerollBase?: number; creditMultiplier?:number; materialMultiplier?:number } | undefined);
-          const mods = (st?.modifiers as { rareChance?: number; capacityCap?: number; blueprintHints?: Record<string, string[]> } | undefined);
+          const mods = (st?.modifiers as { rareChance?: number; capacityCap?: number; blueprintHints?: Record<string, string[]>; startingFrame?: 'interceptor'|'cruiser'|'dread' } | undefined);
+          const bpIds = (st?.blueprintIds as Record<FrameId, string[]> | undefined);
           if (res && typeof res.credits === 'number') setResources(r => ({ ...r, ...res }));
           if (srvResearch && typeof srvResearch.Military === 'number') setResearch({ ...srvResearch });
           if (econ && typeof econ.rerollBase === 'number') {
@@ -459,9 +459,14 @@ export default function EclipseIntegrated(){
           if (mods && typeof mods.capacityCap === 'number') {
             setCapacity(c => ({ cap: Math.max(c.cap, mods.capacityCap as number) }));
           }
-          if (mods && mods.blueprintHints) {
+          // Apply authoritative blueprint IDs first if present; otherwise merge hints
+          if (bpIds && (bpIds.interceptor.length || bpIds.cruiser.length || bpIds.dread.length)) {
+            const mapped = mapBlueprintIdsToParts(bpIds);
+            try { console.debug('[MP] applied class blueprints from ids', { interceptor: mapped.interceptor.length, cruiser: mapped.cruiser.length, dread: mapped.dread.length }); } catch { /* noop */ }
+            setBlueprints({ ...mapped } as Record<FrameId, Part[]>);
+          } else if (mods && mods.blueprintHints) {
             const hints = mods.blueprintHints as Record<string, string[]>;
-            setBlueprints(prev => applyBlueprintHints(prev as any, hints) as any);
+            setBlueprints(prev => applyBlueprintHints(prev as Record<string, Part[]>, hints));
           }
           // Prefer server snapshot of my fleet for consistency across clients
           const serverFleet = Array.isArray(st?.fleet) ? st.fleet.map(fromSnapshotToShip) as unknown as Ship[] : [];
@@ -475,10 +480,20 @@ export default function EclipseIntegrated(){
             // Build initial fleet from faction-adjusted blueprints and starting frame
             const starting = Math.max(1, Number(multi.roomDetails?.room?.gameConfig?.startingShips) || 1);
             // startingFrame hint may be present in modifiers
-            const sf = ((mods as any)?.startingFrame as any) || 'interceptor';
-            const bp = blueprints as Record<string, Part[]>;
+            const sf = (mods?.startingFrame as FrameId | undefined) || 'interceptor';
             try {
-              const ships = Array.from({ length: starting }, () => makeShip(getFrame(sf as any), [ ...(bp[sf as any] || []) ])) as unknown as Ship[];
+              // Prefer ids from bpIds for the starting frame; fall back to blueprint hints for that frame
+              const idsForFrame: string[] = Array.isArray(bpIds?.[sf]) && bpIds![sf].length>0
+                ? (bpIds as Record<FrameId, string[]>)[sf]
+                : ((mods?.blueprintHints as Record<string, string[]> | undefined)?.[sf] || []);
+              let ships: Ship[];
+              if (idsForFrame.length > 0) {
+                ships = seedFleetFromBlueprints(sf, idsForFrame, starting) as unknown as Ship[];
+              } else {
+                // Fallback to whatever blueprints state currently has for sf
+                const bp = blueprints as Record<FrameId, Part[]>;
+                ships = Array.from({ length: starting }, () => makeShip(getFrame(sf), [ ...(bp[sf] || []) ])) as unknown as Ship[];
+              }
               setFleet(ships);
               setCapacity(c => ({ cap: Math.max(c.cap, starting) }));
               setFocused(0);
@@ -487,6 +502,8 @@ export default function EclipseIntegrated(){
               try { void multi.submitFleetSnapshot?.(ships as unknown, fleetValid); } catch {/* ignore */}
             } catch {/* ignore */}
           }
+          // Only after applying config and blueprints, switch to Outpost
+          setMode('OUTPOST');
         }
       } catch { /* ignore */ }
     } else if (phase === 'finished') {
@@ -514,6 +531,16 @@ export default function EclipseIntegrated(){
       const st = myId ? (multi.gameState?.playerStates as any)?.[myId] : null;
       const serverFleet = Array.isArray(st?.fleet) ? (st.fleet as any[]) : [];
       const roundNum = (multi.gameState?.roundNum || 1) as number;
+      // Apply blueprint hints if they arrive late
+      const mods = (st?.modifiers as { blueprintHints?: Record<string,string[]> } | undefined);
+      const bpIds = (st?.blueprintIds as Record<FrameId, string[]> | undefined);
+      if (bpIds && (bpIds.interceptor.length || bpIds.cruiser.length || bpIds.dread.length)) {
+        const mapped = mapBlueprintIdsToParts(bpIds);
+        try { console.debug('[MP] applied class blueprints from ids (late apply)', { interceptor: mapped.interceptor.length, cruiser: mapped.cruiser.length, dread: mapped.dread.length }); } catch { /* noop */ }
+        setBlueprints(mapped);
+      } else if (mods && mods.blueprintHints) {
+        setBlueprints(prev => applyBlueprintHints(prev as Record<string, Part[]>, mods.blueprintHints as Record<string, string[]>));
+      }
       if (serverFleet.length > 0) {
         const mapped = serverFleet.map(fromSnapshotToShip) as unknown as Ship[];
         // Only update if round advanced, or server has strictly more ships than we do
@@ -540,8 +567,20 @@ export default function EclipseIntegrated(){
       const serverFleet = Array.isArray(st?.fleet) ? (st.fleet as any[]) : [];
       const roundNum = (multi.gameState?.roundNum || 1) as number;
       const starting = (multi.roomDetails?.room?.gameConfig?.startingShips as number | undefined) || 1;
-      if (!mpSeedSubmitted && roundNum === 1 && serverFleet.length === 0) {
-        const ships = Array.from({ length: Math.max(1, starting) }, () => makeShip(getFrame('interceptor'), [ ...INITIAL_BLUEPRINTS.interceptor ])) as unknown as Ship[];
+      if (!mpSeedSubmitted && !mpSeeded && roundNum === 1 && serverFleet.length === 0) {
+        const mods = (st?.modifiers as { startingFrame?: 'interceptor'|'cruiser'|'dread'; blueprintHints?: Record<string, string[]> } | undefined);
+        const bpIds = (st?.blueprintIds as Record<FrameId, string[]> | undefined);
+        const sf = (mods?.startingFrame as FrameId | undefined) || 'interceptor';
+        const idsForFrame: string[] = Array.isArray(bpIds?.[sf]) && bpIds![sf].length>0
+          ? (bpIds as Record<FrameId, string[]>)[sf]
+          : ((mods?.blueprintHints as Record<string, string[]> | undefined)?.[sf] || []);
+        let ships: Ship[];
+        if (idsForFrame.length > 0) {
+          ships = seedFleetFromBlueprints(sf, idsForFrame, Math.max(1, starting));
+        } else {
+          const bp = blueprints as Record<FrameId, Part[]>;
+          ships = Array.from({ length: Math.max(1, starting) }, () => makeShip(getFrame(sf), [ ...(bp[sf] || []) ])) as unknown as Ship[];
+        }
         setFleet(ships);
         setCapacity(c => ({ cap: Math.max(c.cap, ships.length) }));
         setFocused(0);

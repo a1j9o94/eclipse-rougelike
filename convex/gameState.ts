@@ -54,81 +54,88 @@ export const initializeGameState = mutation({
     // Create initial player states based on multiplayer configuration
     const initialPlayerStates: Record<string, unknown> = {};
     
-    for (const player of players) {
-      const starting = Math.max(1, args.gameConfig.startingShips || 1);
-      // Base defaults
-      let resources = { credits: 20, materials: 5, science: 0 } as { credits:number; materials:number; science:number };
-      let research = { Military: 1, Grid: 1, Nano: 1 } as { Military:number; Grid:number; Nano:number };
-      let economy: { rerollBase?: number; creditMultiplier?: number; materialMultiplier?: number } = {};
-      let modifiers: { rareChance?: number; capacityCap?: number; startingFrame?: 'interceptor'|'cruiser'|'dread'; blueprintHints?: Record<string, string[]> } = {};
-      let fleetSnaps: ShipSnap[] | null = null;
-      const faction = (player as any).faction as string | undefined;
-      // Apply faction perks needed before the first shop and for fleet seed
-      switch (faction) {
-        case 'scientists':
-          research = { Military: 2, Grid: 2, Nano: 2 };
-          modifiers.rareChance = 0.2;
-          break;
-        case 'industrialists':
-          resources = { credits: resources.credits + 20, materials: resources.materials + 5, science: resources.science };
-          economy.rerollBase = 0;
-          economy.creditMultiplier = 0.75;
-          economy.materialMultiplier = 0.75;
-          break;
-        case 'warmongers':
-          research = { ...research, Military: 2 };
-          modifiers.startingFrame = 'cruiser';
-          modifiers.capacityCap = 14;
-          fleetSnaps = makeFleetForFrame('cruiser', starting);
-          break;
-        case 'raiders':
-          // Hint blueprints (Tier 2 cannon and better drives) and seed fleet stats/weapons
-          modifiers.blueprintHints = { interceptor: ['tachyon_source','tachyon_drive','antimatter','positron'] };
-          {
-            const snap = makeBasicInterceptorSnap();
-            snap.stats.init = 2; // better drive
-            snap.weapons = [{ name: 'Antimatter', dice: 1, dmgPerHit: 2, faces: [{ dmg: 2 }] }];
-            fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...snap }));
-          }
-          break;
-        case 'timekeepers':
-          research = { ...research, Grid: 2 };
-          modifiers.blueprintHints = { interceptor: ['fusion_source','tachyon_drive','disruptor','positron'] };
-          {
-            const snap = makeBasicInterceptorSnap();
-            snap.stats.init = 2;
-            snap.weapons = [{ name: 'Disruptor', dice: 1, dmgPerHit: 1, initLoss: 1, faces: [{ dmg: 1 }] }];
-            fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...snap }));
-          }
-          break;
-        case 'collective':
-          research = { ...research, Nano: 2 };
-          modifiers.blueprintHints = { interceptor: ['fusion_source','fusion_drive','plasma','auto_repair'] };
-          {
-            const snap = makeBasicInterceptorSnap();
-            snap.stats.hullCap = 2; snap.hull = 2; snap.stats.regen = 1;
-            fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...snap }));
-          }
-          break;
-      }
-      initialPlayerStates[player.playerId] = {
-        resources,
-        research,
-        economy,
-        modifiers,
-        faction,
-        lives: player.lives,
-        fleet: fleetSnaps ?? makeStartingFleetSnaps(starting),
-        fleetValid: true,
-        blueprints: {
-          interceptor: [],
-          cruiser: [],
-          dread: [],
-        },
-        isAlive: true,
-        sector: 1,
-        graceUsed: false,
-      } as any;
+  for (const player of players) {
+    const starting = Math.max(1, args.gameConfig.startingShips || 1);
+    // Base defaults
+    let resources = { credits: 20, materials: 5, science: 0 } as { credits:number; materials:number; science:number };
+    let research = { Military: 1, Grid: 1, Nano: 1 } as { Military:number; Grid:number; Nano:number };
+    let economy: { rerollBase?: number; creditMultiplier?: number; materialMultiplier?: number } = {};
+    let modifiers: { rareChance?: number; capacityCap?: number; startingFrame?: 'interceptor'|'cruiser'|'dread'; blueprintHints?: Record<string, string[]> } = {};
+    const blueprintIds: Record<'interceptor'|'cruiser'|'dread', string[]> = { interceptor: [], cruiser: [], dread: [] };
+    let fleetSnaps: ShipSnap[] | null = null;
+    const faction = (player as any).faction as string | undefined;
+    // Apply faction perks needed before the first shop and for fleet seed
+    switch (faction) {
+      case 'scientists':
+        research = { Military: 2, Grid: 2, Nano: 2 };
+        modifiers.rareChance = 0.2;
+        break;
+      case 'industrialists':
+        resources = { credits: resources.credits + 20, materials: resources.materials + 5, science: resources.science };
+        economy.rerollBase = 0;
+        economy.creditMultiplier = 0.75;
+        economy.materialMultiplier = 0.75;
+        break;
+      case 'warmongers':
+        research = { ...research, Military: 2 };
+        modifiers.startingFrame = 'cruiser';
+        modifiers.capacityCap = 14;
+        // Authoritative cruiser class blueprint for warmongers
+        blueprintIds.cruiser = ['tachyon_source','tachyon_drive','plasma_array','positron','gauss','composite'];
+        fleetSnaps = makeFleetForFrame('cruiser', starting);
+        break;
+      case 'raiders':
+        // Hint blueprints (Tier 2 cannon and better drives) and seed fleet stats/weapons
+        modifiers.blueprintHints = { interceptor: ['tachyon_source','tachyon_drive','antimatter','positron'] };
+        blueprintIds.interceptor = ['tachyon_source','tachyon_drive','antimatter','positron'];
+        {
+          const snap = makeBasicInterceptorSnap();
+          snap.stats.init = 2; // better drive
+          snap.weapons = [{ name: 'Antimatter', dice: 1, dmgPerHit: 2, faces: [{ dmg: 2 }] }];
+          fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...snap }));
+        }
+        break;
+      case 'timekeepers':
+        research = { ...research, Grid: 2 };
+        modifiers.blueprintHints = { interceptor: ['fusion_source','tachyon_drive','disruptor','positron'] };
+        blueprintIds.interceptor = ['fusion_source','tachyon_drive','disruptor','positron'];
+        {
+          const snap = makeBasicInterceptorSnap();
+          snap.stats.init = 2;
+          snap.weapons = [{ name: 'Disruptor', dice: 1, dmgPerHit: 1, initLoss: 1, faces: [{ dmg: 1 }] }];
+          fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...snap }));
+        }
+        break;
+      case 'collective':
+        research = { ...research, Nano: 2 };
+        modifiers.blueprintHints = { interceptor: ['fusion_source','fusion_drive','plasma','auto_repair'] };
+        blueprintIds.interceptor = ['fusion_source','fusion_drive','plasma','auto_repair'];
+        {
+          const snap = makeBasicInterceptorSnap();
+          snap.stats.hullCap = 2; snap.hull = 2; snap.stats.regen = 1;
+          fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...snap }));
+        }
+        break;
+    }
+    initialPlayerStates[player.playerId] = {
+      resources,
+      research,
+      economy,
+      modifiers,
+      faction,
+      lives: player.lives,
+      fleet: fleetSnaps ?? makeStartingFleetSnaps(starting),
+      fleetValid: true,
+      blueprints: {
+        interceptor: [],
+        cruiser: [],
+        dread: [],
+      },
+      blueprintIds,
+      isAlive: true,
+      sector: 1,
+      graceUsed: false,
+    } as any;
       // Log per-player seed counts for diagnostics
       try { logInfo('init', 'seeded', { tag: roomTag(args.roomId as unknown as string), playerId: player.playerId, count: starting, faction }); } catch {}
     }
