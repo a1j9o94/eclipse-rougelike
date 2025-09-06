@@ -1,7 +1,7 @@
-import { type Research, type Resources, INITIAL_RESEARCH, INITIAL_RESOURCES, INITIAL_BLUEPRINTS, INITIAL_CAPACITY } from './defaults'
-import { type FrameId } from './frames'
-import { type Part } from './parts'
-import { ECONOMY } from './economy'
+import type { Part } from './parts';
+import type { FrameId } from './factions';
+import { INITIAL_RESEARCH, INITIAL_RESOURCES, INITIAL_BLUEPRINTS, INITIAL_CAPACITY } from './defaults';
+import { ECONOMY } from './economy';
 
 export type GameEconomy = {
   rerollBase?: number;
@@ -10,8 +10,8 @@ export type GameEconomy = {
 };
 
 export type GameConfig = {
-  research: Research;
-  resources: Resources;
+  research: { Military:number; Grid:number; Nano:number };
+  resources: { credits:number; materials:number; science:number };
   blueprints: Record<FrameId, Part[]>;
   startingFrame: FrameId;
   capacity: number;
@@ -36,8 +36,8 @@ export const BASE_CONFIG: GameConfig = {
 };
 
 export type GameConfigOverrides = {
-  research?: Partial<Research>;
-  resources?: Partial<Resources>;
+  research?: Partial<{ Military:number; Grid:number; Nano:number }>;
+  resources?: Partial<{ credits:number; materials:number; science:number }>;
   blueprints?: Partial<Record<FrameId, Part[]>>;
   startingFrame?: FrameId;
   capacity?: number;
@@ -51,12 +51,8 @@ export function buildFactionConfig(overrides: GameConfigOverrides): GameConfig {
     research: { ...BASE_CONFIG.research, ...(overrides.research || {}) },
     resources: { ...BASE_CONFIG.resources, ...(overrides.resources || {}) },
     blueprints: {
-      interceptor: [
-        ...(overrides.blueprints?.interceptor || BASE_CONFIG.blueprints.interceptor),
-      ],
-      cruiser: [
-        ...(overrides.blueprints?.cruiser || BASE_CONFIG.blueprints.cruiser),
-      ],
+      interceptor: [ ...(overrides.blueprints?.interceptor || BASE_CONFIG.blueprints.interceptor) ],
+      cruiser: [ ...(overrides.blueprints?.cruiser || BASE_CONFIG.blueprints.cruiser) ],
       dread: [ ...(overrides.blueprints?.dread || BASE_CONFIG.blueprints.dread) ],
     },
     startingFrame: overrides.startingFrame ?? BASE_CONFIG.startingFrame,
@@ -65,15 +61,8 @@ export function buildFactionConfig(overrides: GameConfigOverrides): GameConfig {
     rareChance: overrides.rareChance ?? BASE_CONFIG.rareChance,
     economy: {
       rerollBase: overrides.economy?.rerollBase ?? BASE_CONFIG.economy.rerollBase,
-      creditMultiplier:
-        overrides.economy?.creditMultiplier ??
-        BASE_CONFIG.economy.creditMultiplier ??
-        1,
-      materialMultiplier:
-        overrides.economy?.materialMultiplier ??
-        BASE_CONFIG.economy.materialMultiplier ??
-        1,
+      creditMultiplier: overrides.economy?.creditMultiplier ?? BASE_CONFIG.economy.creditMultiplier ?? 1,
+      materialMultiplier: overrides.economy?.materialMultiplier ?? BASE_CONFIG.economy.materialMultiplier ?? 1,
     },
   };
 }
-

@@ -4,7 +4,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { DockSlots } from '../components/ui';
 import OutpostPage from '../pages/OutpostPage';
 import { makeShip, getFrame, PARTS } from '../game';
-import type { ResearchState as Research, GhostDelta, Ship } from '../config/types';
+import type { ResearchState as Research, GhostDelta, Ship } from '../../shared/types';
 
 // React import not required
 

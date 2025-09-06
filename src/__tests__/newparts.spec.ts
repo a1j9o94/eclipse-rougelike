@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { makeShip, getFrame } from '../game'
-import { PARTS, RARE_PARTS } from '../config/parts'
+import { PARTS, RARE_PARTS } from '../../shared/parts'
 import { volley, buildInitiative } from '../game/combat'
 
 describe('New part mechanics', () => {

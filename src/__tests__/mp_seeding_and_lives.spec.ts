@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
+import type { ShipSnap } from '../../convex/engine/combat';
 
 describe('Multiplayer seeding and lives', () => {
   it('seeds starting fleet snapshots per player', async () => {
     const mod = await import('../../convex/gameState');
-    const make = (mod as any).makeStartingFleetSnaps as (n:number)=>any[];
+    const make = (mod as { makeStartingFleetSnaps: (n:number)=>unknown[] }).makeStartingFleetSnaps;
     const snaps = make(5);
     expect(Array.isArray(snaps)).toBe(true);
     expect(snaps.length).toBe(5);
@@ -17,7 +18,7 @@ describe('Multiplayer seeding and lives', () => {
     const A = [{ frame:{id:'interceptor',name:'I'}, weapons:[{ name:'Auto', faces:[{dmg:1}], dice:1, dmgPerHit:1 }], riftDice:0, stats:{ init:2, hullCap:1, valid:true, aim:2, shieldTier:0, regen:0 }, hull:1, alive:true }];
     const B = [{ frame:{id:'interceptor',name:'I'}, weapons:[{ name:'Plasma', faces:[{roll:6}], dice:1, dmgPerHit:1 }], riftDice:0, stats:{ init:1, hullCap:1, valid:true, aim:1, shieldTier:0, regen:0 }, hull:1, alive:true }];
     const seed = 'ROOM:1:TEST';
-    const r = simulateCombat({ seed, playerAId: 'A', playerBId: 'B', fleetA: A as any, fleetB: B as any });
+    const r = simulateCombat({ seed, playerAId: 'A', playerBId: 'B', fleetA: A as unknown as ShipSnap[], fleetB: B as unknown as ShipSnap[] });
     expect(r.roundLog.length).toBeGreaterThan(0);
     // The test emulates server decrement: exactly one loser loses 1 life
     const lives = { A: 5, B: 5 };
@@ -29,4 +30,3 @@ describe('Multiplayer seeding and lives', () => {
     expect(loserLives).toBe(4);
   });
 });
-

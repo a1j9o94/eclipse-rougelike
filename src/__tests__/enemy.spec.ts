@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { randomEnemyPartsFor } from '../game/enemy'
-import { FRAMES } from '../config/frames'
+import { FRAMES } from '../../shared/frames'
 
 describe('enemy build variants', () => {
   it('aim focus includes a computer', () => {

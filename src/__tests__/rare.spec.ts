@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { rollInventory, setRareTechChance } from '../game';
-import { RARE_PARTS } from '../config/parts';
+import { RARE_PARTS } from '../../shared/parts';
 
 describe('Rare tech generation', () => {
   it('rollInventory can produce unique rare parts when chance is high', () => {
@@ -13,4 +13,3 @@ describe('Rare tech generation', () => {
     setRareTechChance(0.1);
   });
 });
-

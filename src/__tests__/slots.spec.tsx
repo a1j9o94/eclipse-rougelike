@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ItemCard } from '../components/ui';
-import { PARTS } from '../config/parts';
-import type { GhostDelta } from '../config/types';
+import { PARTS } from '../../shared/parts';
+import type { GhostDelta } from '../../shared/types';
 import App from '../App';
 
 async function toOutpost(faction?: RegExp) {
@@ -74,4 +74,3 @@ describe('slot displays', () => {
     expect(screen.getByText('⬛ 7/6 ❌')).toBeInTheDocument();
   });
 });
-

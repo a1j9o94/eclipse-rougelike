@@ -1,5 +1,6 @@
-import { type FrameId } from './frames'
-import { type Part, PARTS } from './parts'
+import type { FrameId } from './frames';
+import type { Part } from './parts';
+import { PARTS } from './parts';
 
 export type Research = { Military: number; Grid: number; Nano: number };
 export type Resources = { credits: number; materials: number; science: number };
@@ -15,5 +16,3 @@ export const INITIAL_BLUEPRINTS: Record<FrameId, Part[]> = {
   cruiser:     [],
   dread:       [],
 };
-
-

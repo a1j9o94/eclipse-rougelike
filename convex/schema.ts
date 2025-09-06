@@ -12,6 +12,7 @@ export default defineSchema({
     gameConfig: v.object({
       startingShips: v.number(),
       livesPerPlayer: v.number(),
+      multiplayerLossPct: v.optional(v.number()),
     }),
     createdAt: v.number(),
   }).index("by_room_code", ["roomCode"])
@@ -22,11 +23,12 @@ export default defineSchema({
     roomId: v.id("rooms"),
     playerId: v.string(),
     playerName: v.string(),
+    faction: v.optional(v.string()),
     isHost: v.boolean(),
     lives: v.number(),
     isReady: v.boolean(),
     joinedAt: v.number(),
-  }).index("by_room", ["roomId"])
+  }).index("by_room", ["roomId"]) 
     .index("by_player_id", ["playerId"]),
   
   gameState: defineTable({

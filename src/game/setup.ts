@@ -1,12 +1,13 @@
-import { type Research, type Resources } from '../config/defaults'
-import { type FrameId } from '../config/frames'
-import { getFaction, type FactionId } from '../config/factions'
-import { type Part } from '../config/parts'
+import { type Research, type Resources } from '../../shared/defaults'
+import { type FrameId } from '../../shared/frames'
+import { getFaction, type FactionId } from '../../shared/factions'
+import { type Part } from '../../shared/parts'
 import { getFrame, makeShip } from './ship'
 import { rollInventory, setRareTechChance } from './shop'
+import { BASE_CONFIG } from '../../shared/game'
 import { setEconomyModifiers } from './economy'
-import { getStartingShipCount, getBaseRerollCost, getInitialCapacityForDifficulty } from '../config/difficulty'
-import { type DifficultyId } from '../config/types'
+import { getStartingShipCount, getBaseRerollCost, getInitialCapacityForDifficulty } from '../../shared/difficulty'
+import { type DifficultyId } from '../../shared/types'
 
 export type NewRunParams = { difficulty: DifficultyId; faction: FactionId };
 export type NewRunState = {
@@ -45,10 +46,18 @@ export function initNewRun({ difficulty, faction }: NewRunParams): NewRunState{
   const res: Resources = { ...f.config.resources };
   const research: Research = { ...f.config.research } as Research;
 
+  // Ensure starting class blueprints are valid: if a faction doesn't provide
+  // any for a frame, fall back to BASE_CONFIG defaults so ships are deployable.
   const classBlueprints: Record<FrameId, Part[]> = {
-    interceptor: [ ...f.config.blueprints.interceptor ],
-    cruiser: [],
-    dread: [],
+    interceptor: (f.config.blueprints.interceptor && f.config.blueprints.interceptor.length > 0)
+      ? [ ...f.config.blueprints.interceptor ]
+      : [ ...BASE_CONFIG.blueprints.interceptor ],
+    cruiser: (f.config.blueprints.cruiser && f.config.blueprints.cruiser.length > 0)
+      ? [ ...f.config.blueprints.cruiser ]
+      : [ ...BASE_CONFIG.blueprints.cruiser ],
+    dread: (f.config.blueprints.dread && f.config.blueprints.dread.length > 0)
+      ? [ ...f.config.blueprints.dread ]
+      : [ ...BASE_CONFIG.blueprints.dread ],
   };
 
   const startFrameId = f.config.startingFrame as FrameId;
@@ -64,4 +73,3 @@ export function initNewRun({ difficulty, faction }: NewRunParams): NewRunState{
   const rerollCost = Math.max(0, Math.floor(baseReroll * creditMult));
   return { resources: res, research, rerollCost, sector: 1, blueprints: classBlueprints, fleet, shopItems, capacity };
 }
-

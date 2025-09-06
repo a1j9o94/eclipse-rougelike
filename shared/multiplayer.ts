@@ -8,10 +8,7 @@ export const MULTIPLAYER_CONFIG = {
   MAX_LIVES_PER_PLAYER: 20,
 } as const;
 
-export type MultiplayerGameConfig = {
-  startingShips: number;
-  livesPerPlayer: number;
-};
+export type MultiplayerGameConfig = { startingShips: number; livesPerPlayer: number };
 
 export function createDefaultMultiplayerGameConfig(): MultiplayerGameConfig {
   return {
@@ -21,15 +18,8 @@ export function createDefaultMultiplayerGameConfig(): MultiplayerGameConfig {
 }
 
 export function validateMultiplayerGameConfig(config: MultiplayerGameConfig): boolean {
-  // Validate starting ships
-  if (config.startingShips < 1 || config.startingShips > MULTIPLAYER_CONFIG.MAX_STARTING_SHIPS) {
-    return false;
-  }
-
-  // Validate lives per player
-  if (config.livesPerPlayer < 1 || config.livesPerPlayer > MULTIPLAYER_CONFIG.MAX_LIVES_PER_PLAYER) {
-    return false;
-  }
-
+  if (config.startingShips < 1 || config.startingShips > MULTIPLAYER_CONFIG.MAX_STARTING_SHIPS) return false;
+  if (config.livesPerPlayer < 1 || config.livesPerPlayer > MULTIPLAYER_CONFIG.MAX_LIVES_PER_PLAYER) return false;
   return true;
 }
+

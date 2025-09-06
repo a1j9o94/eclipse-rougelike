@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useMultiplayerGame } from '../hooks/useMultiplayerGame';
 import type { Id } from '../../convex/_generated/dataModel';
-import { LivesBanner } from './LivesBanner';
+import { FactionPickModal } from './modals';
 
 interface RoomLobbyProps {
   roomId: Id<"rooms">;
@@ -13,6 +13,7 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
   const [isReady, setIsReady] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
   const [error, setError] = useState('');
+  const [showFactionModal, setShowFactionModal] = useState(false);
   
   const {
     roomDetails,
@@ -20,6 +21,7 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
     isHost,
     getCurrentPlayer,
     setReady,
+    setPlayerFaction,
     updateFleetValidity,
     restartToSetup,
     startGame,
@@ -28,7 +30,7 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
 
   const currentPlayer = getCurrentPlayer();
   const room = roomDetails?.room;
-  type RoomPlayer = { playerId: string; isReady: boolean; lives?: number; playerName?: string; isHost: boolean };
+  type RoomPlayer = { playerId: string; isReady: boolean; lives?: number; playerName?: string; isHost: boolean; faction?: string };
 
   // Auto-start game when both players are ready (host only)
   useEffect(() => {
@@ -41,7 +43,6 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
     if (isHost() && allReady && hasFullPlayers && !isStarting) {
       setIsStarting(true);
       // Only host triggers start; guests wait for phase change
-      // eslint-disable-next-line no-console
       console.debug('[Lobby] Host starting game');
       startGame()
         .then(() => {
@@ -52,7 +53,7 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
           setIsStarting(false);
         });
     }
-  }, [roomDetails, startGame, onGameStart, isStarting]);
+  }, [roomDetails, startGame, onGameStart, isStarting, isHost]);
 
   // Guest navigation: when server moves to playing/setup or combat, enter game view
   useEffect(() => {
@@ -71,18 +72,14 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
 
   const handleReadyToggle = async () => {
     const newReadyState = !isReady;
-    setIsReady(newReadyState);
-    
-    try {
-      if (newReadyState) {
-        // Assume fleet valid on ready for now; callers can set validity earlier from outfitting
-        await updateFleetValidity(true);
-      }
-      await setReady(newReadyState);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update ready status');
-      setIsReady(!newReadyState); // Revert on error
+    // On ready up, ask for faction first (important for first shop setup)
+    if (newReadyState) {
+      setShowFactionModal(true);
+      return;
     }
+    // Unready path
+    setIsReady(false);
+    try { await setReady(false); } catch (err) { setError(err instanceof Error ? err.message : 'Failed to update ready status'); }
   };
 
   const handleRestart = async () => {
@@ -130,19 +127,11 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
   const players = roomDetails.players as RoomPlayer[];
   const waitingForPlayers = players.length < 2;
   const allReady = players.every(p => p.isReady);
-  const myPlayer = players.find(p => p.playerId === currentPlayer.playerId) as RoomPlayer | undefined;
-  const opponent = players.find(p => p.playerId !== currentPlayer.playerId) || null;
+  // Lives are shown in top bar elsewhere; keep local references minimal
 
   return (
     <div className="bg-zinc-950 min-h-screen text-zinc-100 p-4">
-      {/* Top banner with lives */}
-      <LivesBanner
-        variant="multi"
-        me={{ name: (myPlayer?.playerName) || 'You', lives: myPlayer?.lives ?? 0 }}
-        opponent={opponent ? { name: opponent.playerName || 'Opponent', lives: opponent.lives ?? 0 } : null}
-        phase={gameState?.gamePhase}
-      />
-      <div className="pt-10 max-w-2xl mx-auto space-y-6">
+      <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -221,7 +210,9 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
               <div className="flex items-center justify-between">
                 <div>
                   <div className="font-medium">
-                    {player.playerName}
+                    {player.playerName}{player.faction ? (
+                      <span className="ml-1 opacity-70 text-xs">({player.faction})</span>
+                    ) : null}
                     {player.isHost && (
                       <span className="ml-2 px-2 py-1 bg-yellow-600 text-yellow-100 text-xs rounded">
                         Host
@@ -305,6 +296,24 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
           </div>
         )}
       </div>
+      {showFactionModal && (
+        <FactionPickModal
+          current={(getCurrentPlayer() as unknown as { faction?: string } | undefined)?.faction}
+          onPick={async (fid:string) => {
+            try { if (typeof setPlayerFaction === 'function') { await (setPlayerFaction as (f:string)=>Promise<void>)(fid); } } catch { /* noop */ }
+            try {
+              await updateFleetValidity(true);
+              await setReady(true);
+              setIsReady(true);
+              setShowFactionModal(false);
+            } catch (err) {
+              setError(err instanceof Error ? err.message : 'Failed to ready');
+              setShowFactionModal(false);
+            }
+          }}
+          onClose={()=> { setShowFactionModal(false); }}
+        />
+      )}
     </div>
   );
 }

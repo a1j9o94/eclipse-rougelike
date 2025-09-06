@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { FACTIONS, type FactionId } from '../config/factions';
-import { type DifficultyId } from '../config/types';
-import { getStartingShipCount } from '../config/difficulty';
+import { FACTIONS, type FactionId } from '../../shared/factions';
+import { type DifficultyId } from '../../shared/types';
+import { getStartingShipCount } from '../../shared/difficulty';
 import { loadRunState, evaluateUnlocks, type Progress } from '../game/storage';
 import { playEffect } from '../game/sound';
 

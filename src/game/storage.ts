@@ -1,10 +1,10 @@
-import { type DifficultyId } from '../config/types';
-import { type FactionId, FACTIONS } from '../config/factions';
-import { type ResearchState as Research, type CapacityState, type ResourcesState } from '../config/types';
-import { type FrameId } from '../config/frames';
-import { type Part } from '../config/parts';
-import { type Ship } from '../config/types';
-import { getFaction } from '../config/factions';
+import { type DifficultyId } from '../../shared/types';
+import { type FactionId, FACTIONS } from '../../shared/factions';
+import { type ResearchState as Research, type CapacityState, type ResourcesState } from '../../shared/types';
+import { type FrameId } from '../../shared/frames';
+import { type Part } from '../../shared/parts';
+import { type Ship } from '../../shared/types';
+import { getFaction } from '../../shared/factions';
 import { setEconomyModifiers } from './economy';
 import { setRareTechChance } from './shop';
 import { setPlayerFaction, setOpponentFaction } from './setup';

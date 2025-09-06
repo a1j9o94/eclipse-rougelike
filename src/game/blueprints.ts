@@ -1,7 +1,7 @@
-import { type Part } from '../config/parts'
+import { type Part } from '../../shared/parts'
 import { type FrameId, getFrame } from '../game'
 import { makeShip } from '../game'
-import type { Ship } from '../config/types'
+import type { Ship } from '../../shared/types'
 
 export function applyBlueprintToFleet(frameId:FrameId, parts:Part[], fleet:Ship[]): Ship[] {
   return fleet.map(sh => sh.frame.id===frameId ? makeShip(sh.frame, parts) as unknown as Ship : sh);
@@ -29,5 +29,3 @@ export function updateBlueprint(
   next[frameId] = after;
   return { blueprints: next, updated:true } as const;
 }
-
-

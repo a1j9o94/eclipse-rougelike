@@ -1,5 +1,6 @@
 // React import not required with modern JSX transform
-import { type Ship, type InitiativeEntry } from '../config/types'
+import { type Ship, type InitiativeEntry } from '../../shared/types'
+import { useEffect, useState } from 'react'
 import { FleetRow } from '../components/FleetRow'
 
 export function CombatPage({
@@ -23,6 +24,8 @@ export function CombatPage({
   log:string[],
   onReturn:()=>void,
 }){
+  const [resolvingHold, setResolvingHold] = useState(true);
+  useEffect(() => { const t = setTimeout(() => setResolvingHold(false), 25); return () => clearTimeout(t); }, []);
   return (
     <div className="p-3 mx-auto max-w-5xl">
       {combatOver && (
@@ -51,11 +54,11 @@ export function CombatPage({
       <div className="sticky bottom-0 z-10 mt-3 p-3 bg-zinc-950/95 backdrop-blur border-t border-zinc-800">
         <div className="mx-auto max-w-5xl">
           <button
-            disabled={!combatOver}
+            disabled={!combatOver || resolvingHold}
             onClick={onReturn}
             className={`w-full px-4 py-3 rounded-xl ${combatOver ? 'bg-emerald-800 hover:bg-emerald-700' : 'bg-zinc-700 opacity-60'}`}
           >
-            {combatOver ? 'Return to Outpost' : 'Resolving...'}
+            {(combatOver && !resolvingHold) ? 'Return to Outpost' : 'Resolving...'}
           </button>
         </div>
       </div>
@@ -64,5 +67,3 @@ export function CombatPage({
 }
 
 export default CombatPage
-
-

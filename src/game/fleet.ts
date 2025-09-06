@@ -1,4 +1,4 @@
-import type { Ship } from '../config/types';
+import type { Ship } from '../../shared/types';
 
 export type FleetGroup = { ship: Ship; count: number; indices: number[] };
 
@@ -16,4 +16,3 @@ export function groupFleet(fleet: Ship[]): FleetGroup[] {
   });
   return Array.from(map.values());
 }
-

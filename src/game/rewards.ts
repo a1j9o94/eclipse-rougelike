@@ -1,9 +1,9 @@
-import { type Ship } from '../config/types'
-import { calcRewardsForFrameId, ECONOMY } from '../config/economy'
+import { type Ship } from '../../shared/types'
+import { calcRewardsForFrameId, ECONOMY } from '../../shared/economy'
 import { makeShip, getFrame } from './ship'
-import { type FrameId } from '../config/frames'
-import { type Part } from '../config/parts'
-import { type Resources, INITIAL_RESOURCES } from '../config/defaults'
+import { type FrameId } from '../../shared/frames'
+import { type Part } from '../../shared/parts'
+import { type Resources, INITIAL_RESOURCES } from '../../shared/defaults'
 
 export function calcRewards(enemy:Ship[], sector:number){
   let c=0,m=0,s=0;
@@ -28,5 +28,3 @@ export function ensureGraceResources(resources:Resources): Resources{
     materials: Math.max(resources.materials, minM)
   };
 }
-
-

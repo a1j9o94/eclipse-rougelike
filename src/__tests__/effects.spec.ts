@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { PARTS, RARE_PARTS, partEffects } from '../config/parts'
+import { PARTS, RARE_PARTS, partEffects } from '../../shared/parts'
 
 describe('partEffects display', () => {
   it('shows spike launcher max damage and hit chance', () => {

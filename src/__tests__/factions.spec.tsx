@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import App from '../App'
-import { getFaction } from '../config/factions'
+import { getFaction } from '../../shared/factions'
 
 describe('Factions', () => {
   it('Scientists start at Tier 2 across all tracks', async () => {

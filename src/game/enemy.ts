@@ -1,8 +1,8 @@
-import { FRAMES, type Frame } from '../config/frames';
-import { PARTS, ALL_PARTS, type Part } from '../config/parts';
-import { getBossFleetFor } from '../config/factions';
-import { getSectorSpec } from '../config/pacing';
-import type { Ship, BossVariant } from '../config/types';
+import { FRAMES, type Frame } from '../../shared/frames';
+import { PARTS, ALL_PARTS, type Part } from '../../shared/parts';
+import { getBossFleetFor } from '../../shared/factions';
+import { getSectorSpec } from '../../shared/pacing';
+import type { Ship, BossVariant } from '../../shared/types';
 import { makeShip } from './ship';
 import { getOpponentFaction } from './setup';
 
