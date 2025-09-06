@@ -667,12 +667,15 @@ export default function EclipseIntegrated(){
         setBaseRerollCost(base);
         setRerollCost(base);
         setMpRerollInitialized(true);
+        try { console.debug('[MP] reroll base applied (my state)', { playerId: multi.getPlayerId?.(), base }); } catch { /* noop */ }
         factionsApplied = true;
       }
       if (econ && (typeof econ.creditMultiplier === 'number' || typeof econ.materialMultiplier === 'number')) {
         // Only set global economy for single-player mode
         if (gameMode !== 'multiplayer') {
           setEconomyModifiers({ credits: econ.creditMultiplier ?? 1, materials: econ.materialMultiplier ?? 1 });
+        } else {
+          try { console.debug('[MP] using my economy multipliers (UI only)', { playerId: multi.getPlayerId?.(), credits: econ.creditMultiplier ?? 1, materials: econ.materialMultiplier ?? 1 }); } catch { /* noop */ }
         }
         factionsApplied = true;
       }
@@ -684,7 +687,7 @@ export default function EclipseIntegrated(){
       }
       // Capacity cap is per-player. Apply only from my state. Do not read opponent's modifiers.
       if (mods && typeof mods.capacityCap === 'number') {
-        setCapacity(c => ({ cap: Math.max(c.cap, mods.capacityCap as number) }));
+        setCapacity(c => { const nextCap = Math.max(c.cap, mods.capacityCap as number); try { console.debug('[MP] capacity cap applied (my state)', { playerId: multi.getPlayerId?.(), prev: c.cap, next: nextCap }); } catch { /* noop */ } return ({ cap: nextCap }); });
         factionsApplied = true;
       }
       
