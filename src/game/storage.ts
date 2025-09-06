@@ -75,7 +75,10 @@ export type SavedRun = {
   blueprints: Record<FrameId, Part[]>;
   fleet: Ship[];
   shop: { items: Part[] };
-  graceUsed: boolean;
+  // Deprecated: graceUsed; kept for backward compatibility
+  graceUsed?: boolean;
+  // New unified lives counter (replaces grace)
+  livesRemaining?: number;
 };
 
 type PartialRun = Partial<SavedRun>;

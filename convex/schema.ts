@@ -36,6 +36,22 @@ export default defineSchema({
     playerStates: v.any(), // Store individual player game states
     combatQueue: v.any(), // Initiative queue for combat
     roundNum: v.number(),
+    roundSeed: v.optional(v.string()),
+    roundLog: v.optional(v.any()),
+    acks: v.optional(v.any()), // { [playerId]: boolean }
+    matchResult: v.optional(v.object({ winnerPlayerId: v.string() })),
+    pendingFinish: v.optional(v.boolean()),
     lastUpdate: v.number(),
   }).index("by_room", ["roomId"]),
+
+  // Winner fleet archives (no player names stored)
+  fleetArchives: defineTable({
+    roomId: v.id("rooms"),
+    roundNum: v.number(),
+    createdAt: v.number(),
+    // snapshot of winner's fleet for this round
+    fleet: v.any(),
+    // optional metadata for future use
+    sector: v.optional(v.number()),
+  }).index("by_room_round", ["roomId", "roundNum"]),
 });

@@ -90,25 +90,40 @@ export function ShipFrameSlots({ ship, side, active }: { ship: Ship, side: 'P' |
   // Hull upgrades show hearts for remaining hull beyond the frame's base value,
   // but the intrinsic hull does not occupy a slot or render a cell.
   let remainingHull = Math.max(0, ship.hull - ship.frame.baseHull);
-  ship.parts.forEach(p => {
-    const slots = p.slots || 1;
-    if (p.cat === 'Hull') {
-      const max = p.extraHull || 1;
-      const rem = Math.min(remainingHull, max);
-      remainingHull -= rem;
-      let label = '';
-      if (max === 1) {
-        label = rem === 1 ? '❤️' : '🖤';
+  if (ship.parts && ship.parts.length > 0) {
+    ship.parts.forEach(p => {
+      const slots = p.slots || 1;
+      if (p.cat === 'Hull') {
+        const max = p.extraHull || 1;
+        const rem = Math.min(remainingHull, max);
+        remainingHull -= rem;
+        let label = '';
+        if (max === 1) {
+          label = rem === 1 ? '❤️' : '🖤';
+        } else {
+          label = rem === 0 ? '🖤' : `${rem}❤️`;
+        }
+        const extra = effectLabels(p, CATEGORY_EFFECTS.Hull);
+        cells.push({ slots, label: label + extra });
       } else {
-        label = rem === 0 ? '🖤' : `${rem}❤️`;
+        const label = effectLabels(p, CATEGORY_EFFECTS[p.cat]);
+        cells.push({ slots, label });
       }
-      const extra = effectLabels(p, CATEGORY_EFFECTS.Hull);
-      cells.push({ slots, label: label + extra });
-    } else {
-      const label = effectLabels(p, CATEGORY_EFFECTS[p.cat]);
-      cells.push({ slots, label });
-    }
-  });
+    });
+  } else {
+    // Fallback for snapshot-only ships (no parts): render simplified tokens
+    const tokens: string[] = [];
+    const aim = Math.max(0, ship.stats?.aim || 0);
+    const shields = Math.max(0, ship.stats?.shieldTier || 0);
+    const init = Math.max(0, ship.stats?.init || 0);
+    const rift = Math.max(0, (ship as any).riftDice || 0);
+    for (let i = 0; i < Math.min(aim, 3); i++) tokens.push('🎯');
+    for (let i = 0; i < Math.min(shields, 3); i++) tokens.push('🛡️');
+    for (let i = 0; i < Math.min(Math.ceil(init/2), 3); i++) tokens.push('🚀');
+    for (let i = 0; i < Math.min(rift, 2); i++) tokens.push('🕳️');
+    while (tokens.length < (ship.frame.tiles || 3)) tokens.push('');
+    tokens.slice(0, ship.frame.tiles).forEach(lbl => cells.push({ slots: 1, label: lbl }));
+  }
   const used = cells.reduce((a, p) => a + p.slots, 0);
   const empties = Math.max(0, ship.frame.tiles - used);
   const labels = cells.map(p => p.label).concat(Array(empties).fill(''));
@@ -182,7 +197,7 @@ export function ItemCard({ item, canAfford, onBuy, ghostDelta }:{item:Part, canA
     </div>
   );
 }
-export function ResourceBar({ credits, materials, science, tonnage, sector, onReset }:{credits:number, materials:number, science:number, tonnage:{used:number,cap:number}, sector:number, onReset:()=>void}){
+export function ResourceBar({ credits, materials, science, tonnage, sector, onReset, lives, meName, opponent, phase }:{credits:number, materials:number, science:number, tonnage:{used:number,cap:number}, sector:number, onReset:()=>void, lives?:number, meName?:string, opponent?:{ name:string; lives:number }|null, phase?: 'setup'|'combat'|'finished'}){
   const used = tonnage.used, cap = tonnage.cap;
   const over = used>cap;
   const capIcon = over ? '🔴' : '🟢';
@@ -192,10 +207,14 @@ export function ResourceBar({ credits, materials, science, tonnage, sector, onRe
         <div className="px-2 py-1 rounded-lg bg-zinc-900 flex-1 whitespace-nowrap">💰 <b>{credits}</b> • 🧱 <b>{materials}</b> • 🔬 <b>{science}</b></div>
         <div className={`px-2 py-1 rounded-lg whitespace-nowrap ${over? 'bg-rose-950/50 text-rose-200 ring-1 ring-rose-700/30' : 'bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20'}`}>{capIcon} <b>{used}</b>/<b>{cap}</b></div>
         <div className="px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap">🗺️ <b>{sector}</b></div>
+        {typeof lives === 'number' && (
+          <div className="px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap">{meName ? `${meName}:` : ''} <b>{lives}</b> ❤</div>
+        )}
+        {opponent && (
+          <div className="px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap">vs {opponent.name}: <b>{opponent.lives}</b> ❤{phase ? <span className="ml-2 text-xs opacity-70">Phase: {phase}</span> : null}</div>
+        )}
         <button onClick={onReset} className="px-2 py-1 rounded bg-zinc-800 text-xs">Restart</button>
       </div>
     </div>
   );
 }
-
-
