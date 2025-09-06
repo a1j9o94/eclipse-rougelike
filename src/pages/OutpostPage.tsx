@@ -314,8 +314,7 @@ export function OutpostPage({
               : (guards
                 ? (!(guards.localValid && ((guards.serverValid ?? false)) && guards.haveSnapshot) || !fleetValid)
                 : !fleetValid);
-            if (import.meta.env.DEV && guards) {
-              // Non-invasive log for development to help debugging the guards
+            if (guards) {
               console.debug('[Outpost] MP guards', { ...guards, disabled, label });
             }
             const cls = disabled ? 'bg-zinc-700 opacity-60' : 'bg-emerald-600';

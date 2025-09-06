@@ -355,7 +355,7 @@ export default function EclipseIntegrated(){
     setShopVersion(v=> v+1);
     void playEffect('reroll');
   }
-  function researchTrack(track:'Military'|'Grid'|'Nano'){
+  async function researchTrack(track:'Military'|'Grid'|'Nano'){
     const economyMods = getCurrentPlayerEconomyMods();
     const res = gameMode === 'multiplayer'
       ? researchActionWithMods(track, { credits: resources.credits, science: resources.science }, research as Research, economyMods)
@@ -371,7 +371,7 @@ export default function EclipseIntegrated(){
     if (gameMode === 'multiplayer') {
       try {
         if ((multi as { updateGameState?: (updates: unknown)=>Promise<void> }).updateGameState) {
-          if (import.meta.env.DEV) console.debug('[MP] persist research', { nextResearch, track, delta: res.delta });
+          console.debug('[MP] persist research', { nextResearch, track, delta: res.delta });
           const updates = { research: nextResearch, resources: { credits: resources.credits + (res.delta.credits||0), materials: resources.materials, science: resources.science + (res.delta.science||0) } };
           await (multi as { updateGameState: (updates: { research: Research; resources: { credits:number; materials:number; science:number } })=>Promise<void> }).updateGameState(updates);
         }
@@ -502,8 +502,8 @@ export default function EclipseIntegrated(){
   })();
   const fleetValid = (serverFleetValid == null ? true : serverFleetValid) && localFleetValid;
 
-  // Dev log for validity combination (non-invasive)
-  if (import.meta.env.DEV && gameMode === 'multiplayer') {
+  // Log validity combination for staging/prod debugging
+  if (gameMode === 'multiplayer') {
     try { console.debug('[Guards] valid', { localFleetValid, serverFleetValid, fleetValid }); } catch { /* noop */ }
   }
   useEffect(() => {
@@ -914,9 +914,7 @@ export default function EclipseIntegrated(){
               const oppReady = !!multi.getOpponent?.()?.isReady;
               const serverValid = typeof st?.fleetValid === 'boolean' ? st?.fleetValid : undefined;
               const guards = { myReady, oppReady, localValid: localFleetValid, serverValid, haveSnapshot };
-              if (import.meta.env.DEV) {
-                console.debug('[Guards] computed', guards);
-              }
+              console.debug('[Guards] computed', guards);
               return guards;
             } catch {
               return { myReady: false, oppReady: false, localValid: localFleetValid, serverValid: undefined, haveSnapshot: false };
