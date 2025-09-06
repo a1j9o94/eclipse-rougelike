@@ -106,6 +106,7 @@ export default function EclipseIntegrated(){
   const [matchOver, setMatchOver] = useState<{ winnerName: string } | null>(null);
   const [mpSeeded, setMpSeeded] = useState(false);
   const [mpSeedSubmitted, setMpSeedSubmitted] = useState(false);
+  const [mpLastServerApplyRound, setMpLastServerApplyRound] = useState<number>(0);
 
   // MP: Convert server ShipSnap to client Ship with synthetic parts that reflect stats
   function fromSnapshotToShip(snap: any): Ship {
@@ -484,13 +485,16 @@ export default function EclipseIntegrated(){
       const myId = multi.getPlayerId?.() as string | null;
       const st = myId ? (multi.gameState?.playerStates as any)?.[myId] : null;
       const serverFleet = Array.isArray(st?.fleet) ? (st.fleet as any[]) : [];
+      const roundNum = (multi.gameState?.roundNum || 1) as number;
       if (serverFleet.length > 0) {
         const mapped = serverFleet.map(fromSnapshotToShip) as unknown as Ship[];
-        // Only update if counts differ to avoid clobbering local edits mid-setup
-        if (mapped.length !== fleet.length) {
+        // Only update if round advanced, or server has strictly more ships than we do
+        if (roundNum !== mpLastServerApplyRound || mapped.length > fleet.length) {
+          console.debug('[Sync] Applying server fleet snapshot in setup', { roundNum, prevRound: mpLastServerApplyRound, serverCount: mapped.length, localCount: fleet.length });
           setFleet(mapped);
           setCapacity(c => ({ cap: Math.max(c.cap, mapped.length) }));
           setFocused(0);
+          setMpLastServerApplyRound(roundNum);
         }
       }
     } catch { /* ignore */ }
@@ -684,7 +688,13 @@ export default function EclipseIntegrated(){
             }
             startCombat();
           }}
-          onRestart={resetRun}
+          onRestart={() => {
+            if (gameMode === 'multiplayer') {
+              try { void (multi as any)?.restartToSetup?.(); } catch {}
+              return;
+            }
+            resetRun();
+          }}
         />
       )}
 
