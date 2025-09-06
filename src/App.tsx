@@ -105,6 +105,7 @@ export default function EclipseIntegrated(){
   const [stepLock, setStepLock] = useState(false);
   const [matchOver, setMatchOver] = useState<{ winnerName: string } | null>(null);
   const [mpSeeded, setMpSeeded] = useState(false);
+  const [mpSeedSubmitted, setMpSeedSubmitted] = useState(false);
 
   // MP: Convert server ShipSnap to client Ship with synthetic parts that reflect stats
   function fromSnapshotToShip(snap: any): Ship {
@@ -495,6 +496,29 @@ export default function EclipseIntegrated(){
     } catch { /* ignore */ }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameMode, multi?.gameState?.playerStates]);
+
+  // One-time seed submit if server snapshot missing on round 1
+  useEffect(() => {
+    if (gameMode !== 'multiplayer') return;
+    if (!multi || !multi.isConvexAvailable) return;
+    if (multi.gameState?.gamePhase !== 'setup') return;
+    try {
+      const myId = multi.getPlayerId?.() as string | null;
+      const st = myId ? (multi.gameState?.playerStates as any)?.[myId] : null;
+      const serverFleet = Array.isArray(st?.fleet) ? (st.fleet as any[]) : [];
+      const roundNum = (multi.gameState?.roundNum || 1) as number;
+      const starting = (multi.roomDetails?.room?.gameConfig?.startingShips as number | undefined) || 1;
+      if (!mpSeedSubmitted && roundNum === 1 && serverFleet.length === 0) {
+        const ships = Array.from({ length: Math.max(1, starting) }, () => makeShip(getFrame('interceptor'), [ ...INITIAL_BLUEPRINTS.interceptor ])) as unknown as Ship[];
+        setFleet(ships);
+        setCapacity(c => ({ cap: Math.max(c.cap, ships.length) }));
+        setFocused(0);
+        setMpSeedSubmitted(true);
+        try { void multi.submitFleetSnapshot?.(ships as unknown, true); } catch { /* noop */ }
+      }
+    } catch { /* ignore */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameMode, multi?.gameState?.playerStates, multi?.gameState?.roundNum]);
 
   useEffect(() => {
     // Avoid spamming validity; readiness will submit snapshots explicitly

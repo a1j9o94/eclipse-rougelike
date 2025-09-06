@@ -61,6 +61,8 @@ export const initializeGameState = mutation({
         sector: 1,
         graceUsed: false,
       };
+      // Log per-player seed counts for diagnostics
+      try { logInfo('init', 'seeded', { tag: roomTag(args.roomId as unknown as string), playerId: player.playerId, count: starting }); } catch {}
     }
 
     // Set first player as starting player
