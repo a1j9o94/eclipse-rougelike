@@ -68,16 +68,39 @@ export const initializeGameState = mutation({
     // Set first player as starting player
     const startingPlayer = players.find(p => p.isHost) || players[0];
 
-    await ctx.db.insert("gameState", {
-      roomId: args.roomId,
-      currentTurn: startingPlayer.playerId,
-      gamePhase: "setup",
-      playerStates: initialPlayerStates,
-      combatQueue: [],
-      roundNum: 1,
-      lastUpdate: Date.now(),
-    });
-    logInfo('init', 'gameState inserted', { tag: roomTag(args.roomId as unknown as string), startingPlayer: startingPlayer.playerId });
+    // If a gameState already exists (e.g., after a previous match), reset it in place; otherwise insert a new record
+    const existing = await ctx.db
+      .query("gameState")
+      .withIndex("by_room", (q) => q.eq("roomId", args.roomId))
+      .first();
+
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        currentTurn: startingPlayer.playerId,
+        gamePhase: "setup",
+        playerStates: initialPlayerStates,
+        combatQueue: [],
+        roundNum: 1,
+        roundSeed: undefined,
+        roundLog: undefined,
+        acks: {},
+        pendingFinish: undefined,
+        matchResult: undefined,
+        lastUpdate: Date.now(),
+      } as any);
+      logInfo('init', 'gameState reset', { tag: roomTag(args.roomId as unknown as string), startingPlayer: startingPlayer.playerId });
+    } else {
+      await ctx.db.insert("gameState", {
+        roomId: args.roomId,
+        currentTurn: startingPlayer.playerId,
+        gamePhase: "setup",
+        playerStates: initialPlayerStates,
+        combatQueue: [],
+        roundNum: 1,
+        lastUpdate: Date.now(),
+      });
+      logInfo('init', 'gameState inserted', { tag: roomTag(args.roomId as unknown as string), startingPlayer: startingPlayer.playerId });
+    }
 
     return true;
   },
