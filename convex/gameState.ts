@@ -81,11 +81,14 @@ export const initializeGameState = mutation({
         blueprintIds.cruiser = [...(SHARED_FACTIONS.warmongers.blueprintIds.cruiser || [])];
         // Create properly configured cruiser fleet snapshots with faction-specific parts
         {
-          const snap = makeBasicInterceptorSnap();
-          snap.frame = { id: 'cruiser', name: 'Cruiser' };
-          snap.partIds = [...blueprintIds.cruiser];
-          snap.parts = [...blueprintIds.cruiser].map(id => ({ id }));
-          fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...snap }));
+          const baseSnap = makeBasicInterceptorSnap();
+          const cruiserSnap: ShipSnap = {
+            ...baseSnap,
+            frame: { id: 'cruiser', name: 'Cruiser' },
+            partIds: [...blueprintIds.cruiser],
+            parts: [...blueprintIds.cruiser].map(id => ({ id })),
+          };
+          fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...cruiserSnap }));
         }
         break;
       case 'raiders':
