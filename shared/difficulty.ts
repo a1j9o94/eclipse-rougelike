@@ -6,15 +6,16 @@ export type DefeatPolicy = 'reset' | 'grace';
 
 export type DifficultySpec = {
   startingShips: number;
-  defeatPolicy: DefeatPolicy;
+  // Explicit lives configuration; when 0 there is no respawn (hard mode)
+  lives: number;
   baseRerollCost: number;
   startingFrame?: FrameId;
 };
 
 const DIFFICULTY_SPECS: Record<DifficultyId, DifficultySpec> = {
-  easy: { startingShips: 5, defeatPolicy: 'grace', baseRerollCost: 5 },
-  medium: { startingShips: 3, defeatPolicy: 'grace', baseRerollCost: 8 },
-  hard: { startingShips: 3, defeatPolicy: 'reset', baseRerollCost: 12 },
+  easy: { startingShips: 5, lives: 1, baseRerollCost: 5 },
+  medium: { startingShips: 3, lives: 1, baseRerollCost: 8 },
+  hard: { startingShips: 3, lives: 0, baseRerollCost: 12 },
 };
 
 export function getDifficultySpec(difficulty: DifficultyId): DifficultySpec {
@@ -25,12 +26,17 @@ export function getStartingShipCount(difficulty: DifficultyId): number {
   return DIFFICULTY_SPECS[difficulty].startingShips;
 }
 
+// Backward-compat shim: derive defeat policy from lives
 export function getDefeatPolicy(difficulty: DifficultyId): DefeatPolicy {
-  return DIFFICULTY_SPECS[difficulty].defeatPolicy;
+  return DIFFICULTY_SPECS[difficulty].lives > 0 ? 'grace' : 'reset';
 }
 
 export function getBaseRerollCost(difficulty: DifficultyId): number {
   return DIFFICULTY_SPECS[difficulty].baseRerollCost;
+}
+
+export function getStartingLives(difficulty: DifficultyId): number {
+  return DIFFICULTY_SPECS[difficulty].lives;
 }
 
 export function getInitialCapacityForDifficulty(difficulty: DifficultyId, startingFrameId?: FrameId): number {
@@ -40,4 +46,3 @@ export function getInitialCapacityForDifficulty(difficulty: DifficultyId, starti
   const required = spec.startingShips * perShipTonnage;
   return Math.max(INITIAL_CAPACITY.cap, required + 1);
 }
-
