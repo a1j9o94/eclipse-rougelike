@@ -30,14 +30,6 @@ export function makeStartingFleetSnaps(count: number): ShipSnap[] {
   return Array.from({ length: n }, () => makeBasicInterceptorSnap());
 }
 
-function makeFleetForFrame(frameId: 'interceptor'|'cruiser'|'dread', count: number): ShipSnap[] {
-  const base = makeBasicInterceptorSnap();
-  const f = (id: 'interceptor'|'cruiser'|'dread') => ({ id, name: id.charAt(0).toUpperCase() + id.slice(1) });
-  return Array.from({ length: Math.max(0, count) }, () => ({
-    ...base,
-    frame: f(frameId),
-  }));
-}
 
 export const initializeGameState = mutation({
   args: { 
@@ -87,7 +79,14 @@ export const initializeGameState = mutation({
         modifiers.startingFrame = SHARED_FACTIONS.warmongers.startingFrame;
         modifiers.capacityCap = SHARED_FACTIONS.warmongers.capacity;
         blueprintIds.cruiser = [...(SHARED_FACTIONS.warmongers.blueprintIds.cruiser || [])];
-        fleetSnaps = makeFleetForFrame('cruiser', starting);
+        // Create properly configured cruiser fleet snapshots with faction-specific parts
+        {
+          const snap = makeBasicInterceptorSnap();
+          snap.frame = { id: 'cruiser', name: 'Cruiser' };
+          snap.partIds = [...blueprintIds.cruiser];
+          snap.parts = [...blueprintIds.cruiser].map(id => ({ id }));
+          fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...snap }));
+        }
         break;
       case 'raiders':
         // Use shared config for blueprint IDs; seed fleet stats/weapons for parity
@@ -129,14 +128,6 @@ export const initializeGameState = mutation({
         }
         break;
     }
-      // Warmongers cruiser blueprint IDs from shared config
-      if (faction === 'warmongers') {
-        blueprintIds.cruiser = [...(SHARED_FACTIONS.warmongers.blueprintIds.cruiser || [])];
-        // If we seeded cruisers, include partIds as well
-        if (Array.isArray(fleetSnaps) && fleetSnaps.length > 0 && (modifiers.startingFrame === 'cruiser')) {
-          fleetSnaps = fleetSnaps.map(s => ({ ...s, partIds: [...blueprintIds.cruiser], parts: [...blueprintIds.cruiser].map(id => ({ id })) }));
-        }
-      }
 
       initialPlayerStates[player.playerId] = {
       resources,
@@ -158,7 +149,9 @@ export const initializeGameState = mutation({
       graceUsed: false,
     };
       // Log per-player seed counts for diagnostics
-      try { logInfo('init', 'seeded', { tag: roomTag(args.roomId as unknown as string), playerId: player.playerId, count: starting, faction }); } catch { /* noop */ }
+      const fleetCount = Array.isArray(fleetSnaps) ? fleetSnaps.length : 0;
+      const frameId = fleetSnaps?.[0]?.frame?.id || 'interceptor';
+      try { logInfo('init', 'seeded', { tag: roomTag(args.roomId as unknown as string), playerId: player.playerId, count: starting, faction, fleetCount, frameId }); } catch { /* noop */ }
     }
 
     // Set first player as starting player
