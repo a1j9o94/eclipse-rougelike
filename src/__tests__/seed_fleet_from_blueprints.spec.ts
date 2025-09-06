@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { Part } from '../config/parts';
+import type { Part } from '../../shared/parts';
 import { seedFleetFromBlueprints } from '../multiplayer/blueprintHints';
 
 describe('seedFleetFromBlueprints', () => {

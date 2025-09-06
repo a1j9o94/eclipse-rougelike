@@ -13,6 +13,8 @@ export type ShipSnap = {
   alive: boolean;
   // Optional: list of part ids used to construct this ship (for client reconstruction)
   partIds?: string[];
+  // Optional: full part objects for exact reconstruction (preferred if present)
+  parts?: { id: string; [k: string]: unknown }[];
 };
 
 export type SimulateArgs = {

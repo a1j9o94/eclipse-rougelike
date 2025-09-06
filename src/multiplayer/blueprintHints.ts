@@ -1,7 +1,7 @@
-import { ALL_PARTS, type Part } from '../config/parts';
-import type { FrameId } from '../config/frames';
+import { ALL_PARTS, type Part } from '../../shared/parts';
+import type { FrameId } from '../../shared/frames';
 import { getFrame, makeShip } from '../game';
-import type { Ship } from '../config/types';
+import type { Ship } from '../../shared/types';
 
 export function applyBlueprintHints(
   current: Record<string, Part[]>,

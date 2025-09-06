@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { RARE_PARTS, ALL_PARTS, partDescription } from '../config/parts';
+import { RARE_PARTS, ALL_PARTS, partDescription } from '../../shared/parts';
 import { render, screen } from '@testing-library/react';
 import { ItemCard } from '../components/ui';
 

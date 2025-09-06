@@ -1,8 +1,8 @@
-export { FRAMES, type Frame, type FrameId } from '../config/frames';
-export { PARTS, RARE_PARTS, ALL_PARTS, type Part, RIFT_FACES } from '../config/parts';
-export { getSectorSpec, SECTORS } from '../config/pacing';
-export { nextTierCost } from '../config/economy';
-export { getBossFleetFor } from '../config/factions';
+export { FRAMES, type Frame, type FrameId } from '../../shared/frames';
+export { PARTS, RARE_PARTS, ALL_PARTS, type Part, RIFT_FACES } from '../../shared/parts';
+export { getSectorSpec, SECTORS } from '../../shared/pacing';
+export { nextTierCost } from '../../shared/economy';
+export { getBossFleetFor } from '../../shared/factions';
 
 export * from './ship';
 export * from './fleet';

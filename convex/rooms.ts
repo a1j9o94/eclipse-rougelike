@@ -300,10 +300,10 @@ export const prepareRematch = mutation({
         roundLog: undefined,
         acks: {},
         // Cleanup finishing markers if present
-        pendingFinish: undefined as unknown as never,
-        matchResult: undefined as unknown as never,
+        pendingFinish: undefined,
+        matchResult: undefined,
         lastUpdate: Date.now(),
-      } as any);
+      });
     }
 
     // Move room back to waiting

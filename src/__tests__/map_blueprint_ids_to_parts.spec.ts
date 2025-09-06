@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import type { FrameId } from '../config/frames';
-import type { Part } from '../config/parts';
-import { ALL_PARTS } from '../config/parts';
+import type { FrameId } from '../../shared/frames';
+import type { Part } from '../../shared/parts';
+import { ALL_PARTS } from '../../shared/parts';
 import { mapBlueprintIdsToParts } from '../multiplayer/blueprintHints';
 
 describe('mapBlueprintIdsToParts', () => {
@@ -44,4 +44,3 @@ describe('mapBlueprintIdsToParts', () => {
     expect(Array.isArray(mapped.dread)).toBe(true);
   });
 });
-

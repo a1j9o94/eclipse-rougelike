@@ -1,8 +1,8 @@
-import { type Part, ALL_PARTS } from '../config/parts'
-import { ECONOMY } from '../config/economy'
+import { type Part, ALL_PARTS } from '../../shared/parts'
+import { ECONOMY } from '../../shared/economy'
 import { type FrameId, getFrame, getEconomyModifiers } from '../game'
 import { makeShip } from '../game'
-import type { Ship } from '../config/types'
+import type { Ship } from '../../shared/types'
 
 export function canBuildInterceptor(resources:{credits:number, materials:number}, capacity:{cap:number}, tonnageUsed:number){
   const mod = getEconomyModifiers();

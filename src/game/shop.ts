@@ -1,5 +1,5 @@
-import { type Part, ALL_PARTS, RARE_PARTS } from '../config/parts'
-import { nextTierCost, ECONOMY } from '../config/economy'
+import { type Part, ALL_PARTS, RARE_PARTS } from '../../shared/parts'
+import { nextTierCost, ECONOMY } from '../../shared/economy'
 import { getEconomyModifiers } from './economy'
 
 let RARE_TECH_CHANCE = 0.1;
@@ -67,5 +67,3 @@ export function researchAction(track:'Military'|'Grid'|'Nano', resources:{credit
   const nextDelta = Math.max(1, Math.floor(ECONOMY.reroll.increment * mod.credits));
   return { ok:true as const, nextTier, delta:{ credits: -creditCost, science: -base.s }, items, nextRerollCostDelta: nextDelta };
 }
-
-

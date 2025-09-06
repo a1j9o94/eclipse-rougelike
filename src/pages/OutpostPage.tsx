@@ -2,13 +2,13 @@
 import { useState } from 'react'
 import { ItemCard, PowerBadge, DockSlots } from '../components/ui'
 import { CombatPlanModal } from '../components/modals'
-import { ECONOMY } from '../config/economy'
+import { ECONOMY } from '../../shared/economy'
 import { FRAMES, type FrameId, ALL_PARTS, getEconomyModifiers, groupFleet } from '../game'
 import { canBuildInterceptor } from '../game/hangar'
-import { partEffects, partDescription } from '../config/parts'
-import { type Resources, type Research } from '../config/defaults'
-import { type Part } from '../config/parts'
-import { type Ship, type GhostDelta } from '../config/types'
+import { partEffects, partDescription } from '../../shared/parts'
+import { type Resources, type Research } from '../../shared/defaults'
+import { type Part } from '../../shared/parts'
+import { type Ship, type GhostDelta } from '../../shared/types'
 
 export function OutpostPage({
   resources,
@@ -330,4 +330,3 @@ export function OutpostPage({
 }
 
 export default OutpostPage
-

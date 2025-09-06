@@ -1,8 +1,8 @@
 // React import not required with modern JSX transform
 
-import { type Part, partEffects, partDescription, PART_EFFECT_SYMBOLS, type PartEffectField } from "../config/parts";
-import type { GhostDelta, Ship } from "../config/types";
-import type { FrameId } from "../config/frames";
+import { type Part, partEffects, partDescription, PART_EFFECT_SYMBOLS, type PartEffectField } from "../../shared/parts";
+import type { GhostDelta, Ship } from "../../shared/types";
+import type { FrameId } from "../../shared/frames";
 
 export function PowerBadge({use, prod}:{use:number, prod:number}){
   const ok = use<=prod;
@@ -116,7 +116,7 @@ export function ShipFrameSlots({ ship, side, active }: { ship: Ship, side: 'P' |
     const aim = Math.max(0, ship.stats?.aim || 0);
     const shields = Math.max(0, ship.stats?.shieldTier || 0);
     const init = Math.max(0, ship.stats?.init || 0);
-    const rift = Math.max(0, (ship as any).riftDice || 0);
+    const rift = Math.max(0, ship.riftDice || 0);
     for (let i = 0; i < Math.min(aim, 3); i++) tokens.push('🎯');
     for (let i = 0; i < Math.min(shields, 3); i++) tokens.push('🛡️');
     for (let i = 0; i < Math.min(Math.ceil(init/2), 3); i++) tokens.push('🚀');

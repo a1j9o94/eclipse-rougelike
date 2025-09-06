@@ -4,7 +4,7 @@ import {
   createDefaultMultiplayerGameConfig, 
   validateMultiplayerGameConfig,
   type MultiplayerGameConfig 
-} from '../config/multiplayer';
+} from '../../shared/multiplayer';
 
 describe('Multiplayer Configuration', () => {
   describe('MULTIPLAYER_CONFIG constants', () => {

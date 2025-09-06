@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { makeShip, getFrame, groupFleet } from '../game';
-import { PARTS } from '../config/parts';
+import { PARTS } from '../../shared/parts';
 
 // React import not required
 

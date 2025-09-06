@@ -1,7 +1,7 @@
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
-import type { MultiplayerGameConfig } from "../config/multiplayer";
+import type { MultiplayerGameConfig } from "../../shared/multiplayer";
 
 export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
   // Detect vitest and allow tests to bypass Convex entirely
@@ -246,6 +246,18 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
     }
   };
 
+  type ClientWeapon = { name?: string; dice?: number; dmgPerHit?: number; faces?: unknown[]; initLoss?: number };
+  type ClientPart = { id?: string };
+  type ClientShip = {
+    frame?: { id?: string; name?: string };
+    weapons?: ClientWeapon[];
+    riftDice?: number;
+    stats?: { init?: number; hullCap?: number; valid?: boolean; aim?: number; shieldTier?: number; regen?: number };
+    hull?: number;
+    alive?: boolean;
+    parts?: ClientPart[];
+  };
+
   const handleSubmitFleetSnapshot = async (fleet: unknown, fleetValid: boolean) => {
     if (!isConvexAvailable) {
       throw new Error("Multiplayer features are not available. Please check your connection and try again.");
@@ -258,14 +270,15 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
       let payload: unknown = fleet;
       try {
         if (Array.isArray(fleet)) {
-          payload = (fleet as any[]).map((s: any) => ({
+          const ships = fleet as ClientShip[];
+          payload = ships.map((s) => ({
             frame: { id: s?.frame?.id, name: s?.frame?.name },
-            weapons: Array.isArray(s?.weapons) ? s.weapons.map((w: any) => ({ name: w?.name, dice: w?.dice, dmgPerHit: w?.dmgPerHit, faces: w?.faces, initLoss: w?.initLoss })) : [],
+            weapons: Array.isArray(s?.weapons) ? s.weapons.map((w) => ({ name: w?.name, dice: w?.dice, dmgPerHit: w?.dmgPerHit, faces: w?.faces, initLoss: w?.initLoss })) : [],
             riftDice: s?.riftDice || 0,
             stats: { init: s?.stats?.init || 0, hullCap: s?.stats?.hullCap || 1, valid: !!s?.stats?.valid, aim: s?.stats?.aim || 0, shieldTier: s?.stats?.shieldTier || 0, regen: s?.stats?.regen || 0 },
             hull: typeof s?.hull === 'number' ? s.hull : (s?.stats?.hullCap || 1),
             alive: s?.alive !== false,
-            partIds: Array.isArray(s?.parts) ? s.parts.map((p: any) => p?.id).filter((id: any) => typeof id === 'string') : [],
+            partIds: Array.isArray(s?.parts) ? s.parts.map((p) => p?.id).filter((id): id is string => typeof id === 'string') : [],
           }));
         }
       } catch { /* leave payload as fleet */ }

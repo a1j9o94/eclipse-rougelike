@@ -1,12 +1,12 @@
 // React import not required with modern JSX transform
-import { FACTIONS } from '../config/factions'
+import { FACTIONS } from '../../shared/factions'
 import { SECTORS, getBossVariants, getBossFleetFor, getOpponentFaction, ALL_PARTS, makeShip, FRAMES, getSectorSpec } from '../game'
-import { getInitialCapacityForDifficulty } from '../config/difficulty'
-import { BASE_CONFIG } from '../config/game'
+import { getInitialCapacityForDifficulty } from '../../shared/difficulty'
+import { BASE_CONFIG } from '../../shared/game'
 import { CompactShip } from './ui'
-import { type Ship } from '../config/types'
-import { partEffects } from '../config/parts'
-import { type Research } from '../config/defaults'
+import { type Ship } from '../../shared/types'
+import { partEffects } from '../../shared/parts'
+import { type Research } from '../../shared/defaults'
 
 function BossFleetPreview({ sector }:{ sector:5|10 }){
   const opp = getOpponentFaction();
@@ -150,10 +150,10 @@ export function FactionPickModal({ current, onPick, onClose }:{ current?: string
       <div className="w-full max-w-md bg-zinc-900 border border-zinc-700 rounded-2xl p-4">
         <div className="text-lg font-semibold mb-2">Choose Faction</div>
         <div className="max-h-[50vh] overflow-y-auto grid grid-cols-1 gap-2">
-          {factions.map((f:any)=> (
+          {factions.map((f)=> (
             <button key={f.id} onClick={()=>onPick(f.id)} className={`text-left px-3 py-2 rounded border ${current===f.id?'border-emerald-500 bg-emerald-900/20':'border-zinc-700 bg-zinc-900 hover:border-zinc-500'}`}>
               <div className="font-medium">{f.name}</div>
-              <div className="text-xs opacity-70">{f.desc || ''}</div>
+              <div className="text-xs opacity-70">{f.description}</div>
             </button>
           ))}
         </div>

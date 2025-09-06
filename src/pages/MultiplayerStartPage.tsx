@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { generateSpaceRoomName } from '../utils/roomNameGenerator';
-import { createDefaultMultiplayerGameConfig, MULTIPLAYER_CONFIG } from '../config/multiplayer';
+import { createDefaultMultiplayerGameConfig, MULTIPLAYER_CONFIG } from '../../shared/multiplayer';
 import { useMultiplayerGame } from '../hooks/useMultiplayerGame';
 
 interface MultiplayerStartPageProps {

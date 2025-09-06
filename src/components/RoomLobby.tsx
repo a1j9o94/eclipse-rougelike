@@ -43,7 +43,6 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
     if (isHost() && allReady && hasFullPlayers && !isStarting) {
       setIsStarting(true);
       // Only host triggers start; guests wait for phase change
-      // eslint-disable-next-line no-console
       console.debug('[Lobby] Host starting game');
       startGame()
         .then(() => {
@@ -54,7 +53,7 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
           setIsStarting(false);
         });
     }
-  }, [roomDetails, startGame, onGameStart, isStarting]);
+  }, [roomDetails, startGame, onGameStart, isStarting, isHost]);
 
   // Guest navigation: when server moves to playing/setup or combat, enter game view
   useEffect(() => {
@@ -299,9 +298,9 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
       </div>
       {showFactionModal && (
         <FactionPickModal
-          current={(getCurrentPlayer() as any)?.faction}
+          current={(getCurrentPlayer() as unknown as { faction?: string } | undefined)?.faction}
           onPick={async (fid:string) => {
-            try { if (typeof setPlayerFaction === 'function') { await (setPlayerFaction as (f:string)=>Promise<void>)(fid); } } catch {}
+            try { if (typeof setPlayerFaction === 'function') { await (setPlayerFaction as (f:string)=>Promise<void>)(fid); } } catch { /* noop */ }
             try {
               await updateFleetValidity(true);
               await setReady(true);

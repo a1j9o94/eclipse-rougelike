@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { calcRewards, graceRecoverFleet, ensureGraceResources } from '../game/rewards'
 import { makeShip, getFrame } from '../game'
-import { PARTS } from '../config/parts'
-import { INITIAL_BLUEPRINTS, INITIAL_RESOURCES } from '../config/defaults'
-import { ECONOMY, calcRewardsForFrameId } from '../config/economy'
+import { PARTS } from '../../shared/parts'
+import { INITIAL_BLUEPRINTS, INITIAL_RESOURCES } from '../../shared/defaults'
+import { ECONOMY, calcRewardsForFrameId } from '../../shared/economy'
 
 describe('rewards', () => {
   it('treats every fifth sector as a boss', () => {

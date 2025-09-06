@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { PARTS } from '../config/parts'
+import { PARTS } from '../../shared/parts'
 import { getFrame, makeShip } from '../game'
 import { canInstallOnClass, updateBlueprint } from '../game/blueprints'
-import type { FrameId } from '../config/frames'
+import type { FrameId } from '../../shared/frames'
 
 describe('blueprint install rules', () => {
   it('allows installing parts that exceed power but marks ship invalid', () => {
@@ -26,4 +26,3 @@ describe('blueprint install rules', () => {
     expect(chk.ok).toBe(false)
   })
 })
-

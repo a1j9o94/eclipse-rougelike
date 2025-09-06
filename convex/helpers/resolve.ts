@@ -93,7 +93,7 @@ export async function maybeResolveRound(ctx: Ctx, roomId: Id<"rooms">) {
   // Winner rewards: grant credits/materials/science for destroyed enemy ships
   // Loser consolation: (1) full credit for ships they destroyed, plus (2) percentage of winner's rewards
   const roomRow = await ctx.db.get(roomId);
-  const lossPct = Math.max(0, Math.min(1, (roomRow?.gameConfig as any)?.multiplayerLossPct ?? 0.5));
+  const lossPct = Math.max(0, Math.min(1, (roomRow?.gameConfig?.multiplayerLossPct ?? 0.5)));
   function rewardForFrame(id: string) {
     if (id === 'interceptor') return { c: 22, m: 2, s: 1 } as const;
     if (id === 'cruiser') return { c: 32, m: 3, s: 2 } as const;
@@ -118,12 +118,13 @@ export async function maybeResolveRound(ctx: Ctx, roomId: Id<"rooms">) {
       lc += r.c; lm += r.m; ls += r.s;
     }
   }
-  const statesAfter = { ...pStates } as Record<string, { resources?: { credits: number; materials: number; science: number } }>;
+  type Resources = { credits: number; materials: number; science: number };
+  const statesAfter: Record<string, { resources?: Resources; fleet?: unknown; fleetValid?: boolean; sector?: number } > = { ...pStates } as Record<string, { resources?: Resources; fleet?: unknown; fleetValid?: boolean; sector?: number }>;
   const curr = statesAfter[winnerPlayerId]?.resources || { credits: 0, materials: 0, science: 0 };
   statesAfter[winnerPlayerId] = {
     ...statesAfter[winnerPlayerId],
     resources: { credits: (curr.credits || 0) + rc, materials: (curr.materials || 0) + rm, science: (curr.science || 0) + rs },
-  } as any;
+  };
   // Apply loser consolation
   const loserId = loserRow.playerId;
   const loserCurr = statesAfter[loserId]?.resources || { credits: 0, materials: 0, science: 0 };
@@ -134,7 +135,7 @@ export async function maybeResolveRound(ctx: Ctx, roomId: Id<"rooms">) {
       materials: (loserCurr.materials || 0) + lm + Math.floor(rm * lossPct),
       science: (loserCurr.science || 0) + ls + Math.floor(rs * lossPct),
     },
-  } as any;
+  };
 
   await ctx.db.patch(gs._id, {
     gamePhase: "combat",

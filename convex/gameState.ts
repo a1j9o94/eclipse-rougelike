@@ -4,7 +4,7 @@ import { v } from "convex/values";
 import { logInfo, roomTag } from "./helpers/log";
 import { maybeResolveRound } from "./helpers/resolve";
 import type { ShipSnap } from "./engine/combat";
-import { FACTION_BLUEPRINT_IDS, type FactionId } from "../shared/factionBlueprintIds";
+import { SHARED_FACTIONS, type FactionId } from "../shared/factions";
 
 // Build a minimal interceptor snapshot used for multiplayer seeding
 export function makeBasicInterceptorSnap(): ShipSnap {
@@ -61,72 +61,73 @@ export const initializeGameState = mutation({
     let resources = { credits: 20, materials: 5, science: 0 } as { credits:number; materials:number; science:number };
     let research = { Military: 1, Grid: 1, Nano: 1 } as { Military:number; Grid:number; Nano:number };
     let economy: { rerollBase?: number; creditMultiplier?: number; materialMultiplier?: number } = {};
-    let modifiers: { rareChance?: number; capacityCap?: number; startingFrame?: 'interceptor'|'cruiser'|'dread'; blueprintHints?: Record<string, string[]> } = {};
+    const modifiers: { rareChance?: number; capacityCap?: number; startingFrame?: 'interceptor'|'cruiser'|'dread'; blueprintHints?: Record<string, string[]> } = {};
     const blueprintIds: Record<'interceptor'|'cruiser'|'dread', string[]> = { interceptor: [], cruiser: [], dread: [] };
     let fleetSnaps: ShipSnap[] | null = null;
-    const faction = (player as any).faction as FactionId | undefined;
+    const faction = player.faction as FactionId | undefined;
     // Apply faction perks needed before the first shop and for fleet seed
       switch (faction) {
       case 'scientists':
-        research = { Military: 2, Grid: 2, Nano: 2 };
-        modifiers.rareChance = 0.2;
+        research = { ...SHARED_FACTIONS.scientists.research };
+        modifiers.rareChance = SHARED_FACTIONS.scientists.rareChance;
         break;
       case 'industrialists':
-        resources = { credits: resources.credits + 20, materials: resources.materials + 5, science: resources.science };
-        economy.rerollBase = 0;
-        economy.creditMultiplier = 0.75;
-        economy.materialMultiplier = 0.75;
+        resources = { credits: SHARED_FACTIONS.industrialists.resources.credits, materials: SHARED_FACTIONS.industrialists.resources.materials, science: SHARED_FACTIONS.industrialists.resources.science };
+        economy = { ...SHARED_FACTIONS.industrialists.economy };
         break;
       case 'warmongers':
-        research = { ...research, Military: 2 };
-        modifiers.startingFrame = 'cruiser';
-        modifiers.capacityCap = 14;
-        // Authoritative cruiser class blueprint for warmongers
-        blueprintIds.cruiser = ['tachyon_source','tachyon_drive','plasma_array','positron','gauss','composite'];
+        research = { ...research, Military: SHARED_FACTIONS.warmongers.research.Military };
+        modifiers.startingFrame = SHARED_FACTIONS.warmongers.startingFrame;
+        modifiers.capacityCap = SHARED_FACTIONS.warmongers.capacity;
+        blueprintIds.cruiser = [...(SHARED_FACTIONS.warmongers.blueprintIds.cruiser || [])];
         fleetSnaps = makeFleetForFrame('cruiser', starting);
         break;
       case 'raiders':
         // Use shared config for blueprint IDs; seed fleet stats/weapons for parity
-        blueprintIds.interceptor = [...(FACTION_BLUEPRINT_IDS.raiders.interceptor || [])];
+        blueprintIds.interceptor = [...(SHARED_FACTIONS.raiders.blueprintIds.interceptor || [])];
         if (blueprintIds.interceptor.length) modifiers.blueprintHints = { interceptor: blueprintIds.interceptor };
         {
           const snap = makeBasicInterceptorSnap();
           snap.stats.init = 2; // better drive
           snap.weapons = [{ name: 'Antimatter', dice: 1, dmgPerHit: 2, faces: [{ dmg: 2 }] }];
           snap.partIds = [...blueprintIds.interceptor];
+          // Prefer full parts for exact reconstruction when feasible; keep ids for fallback
+          snap.parts = [...blueprintIds.interceptor].map(id => ({ id }));
           fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...snap }));
         }
         break;
       case 'timekeepers':
-        research = { ...research, Grid: 2 };
-        blueprintIds.interceptor = [...(FACTION_BLUEPRINT_IDS.timekeepers.interceptor || [])];
+        research = { ...research, Grid: SHARED_FACTIONS.timekeepers.research.Grid };
+        blueprintIds.interceptor = [...(SHARED_FACTIONS.timekeepers.blueprintIds.interceptor || [])];
         if (blueprintIds.interceptor.length) modifiers.blueprintHints = { interceptor: blueprintIds.interceptor };
         {
           const snap = makeBasicInterceptorSnap();
           snap.stats.init = 2;
           snap.weapons = [{ name: 'Disruptor', dice: 1, dmgPerHit: 1, initLoss: 1, faces: [{ dmg: 1 }] }];
           snap.partIds = [...blueprintIds.interceptor];
+          snap.parts = [...blueprintIds.interceptor].map(id => ({ id }));
           fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...snap }));
         }
         break;
       case 'collective':
-        research = { ...research, Nano: 2 };
-        blueprintIds.interceptor = [...(FACTION_BLUEPRINT_IDS.collective.interceptor || [])];
+        research = { ...research, Nano: SHARED_FACTIONS.collective.research.Nano };
+        blueprintIds.interceptor = [...(SHARED_FACTIONS.collective.blueprintIds.interceptor || [])];
         if (blueprintIds.interceptor.length) modifiers.blueprintHints = { interceptor: blueprintIds.interceptor };
         {
           const snap = makeBasicInterceptorSnap();
           snap.stats.hullCap = 2; snap.hull = 2; snap.stats.regen = 1;
           snap.partIds = [...blueprintIds.interceptor];
+          snap.parts = [...blueprintIds.interceptor].map(id => ({ id }));
           fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...snap }));
         }
         break;
     }
       // Warmongers cruiser blueprint IDs from shared config
       if (faction === 'warmongers') {
-        blueprintIds.cruiser = [...(FACTION_BLUEPRINT_IDS.warmongers.cruiser || [])];
+        blueprintIds.cruiser = [...(SHARED_FACTIONS.warmongers.blueprintIds.cruiser || [])];
         // If we seeded cruisers, include partIds as well
         if (Array.isArray(fleetSnaps) && fleetSnaps.length > 0 && (modifiers.startingFrame === 'cruiser')) {
-          fleetSnaps = fleetSnaps.map(s => ({ ...s, partIds: [...blueprintIds.cruiser] }));
+          fleetSnaps = fleetSnaps.map(s => ({ ...s, partIds: [...blueprintIds.cruiser], parts: [...blueprintIds.cruiser].map(id => ({ id })) }));
         }
       }
 
@@ -148,9 +149,9 @@ export const initializeGameState = mutation({
       isAlive: true,
       sector: 1,
       graceUsed: false,
-    } as any;
+    } as Record<string, unknown>;
       // Log per-player seed counts for diagnostics
-      try { logInfo('init', 'seeded', { tag: roomTag(args.roomId as unknown as string), playerId: player.playerId, count: starting, faction }); } catch {}
+      try { logInfo('init', 'seeded', { tag: roomTag(args.roomId as unknown as string), playerId: player.playerId, count: starting, faction }); } catch { /* noop */ }
     }
 
     // Set first player as starting player
@@ -175,7 +176,7 @@ export const initializeGameState = mutation({
         pendingFinish: undefined,
         matchResult: undefined,
         lastUpdate: Date.now(),
-      } as any);
+      });
       logInfo('init', 'gameState reset', { tag: roomTag(args.roomId as unknown as string), startingPlayer: startingPlayer.playerId });
     } else {
       await ctx.db.insert("gameState", {
@@ -493,7 +494,7 @@ export const ackRoundPlayed = mutation({
     // If all players ack'd, go back to setup (or finish match if pending)
     const allAck = players.every(p => acks[p.playerId]);
     if (allAck === true) {
-      const pendingFinish = Boolean((gs as any).pendingFinish);
+      const pendingFinish = Boolean((gs as { pendingFinish?: boolean }).pendingFinish);
       if (pendingFinish) {
         // Mark room finished now and show match over; clear readiness
         for (const p of players) {
@@ -506,7 +507,7 @@ export const ackRoundPlayed = mutation({
           lastUpdate: Date.now(),
         });
         logInfo('ack', 'final combat acked — match finished', { tag: roomTag(args.roomId as unknown as string) });
-        return { done: true, finished: true } as any;
+        return { done: true, finished: true };
       } else {
         const resetReadiness: Promise<void>[] = [];
         for (const p of players) {
