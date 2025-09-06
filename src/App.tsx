@@ -115,6 +115,7 @@ export default function EclipseIntegrated(){
   const [matchOver, setMatchOver] = useState<{ winnerName: string } | null>(null);
   const [mpSeeded, setMpSeeded] = useState(false);
   const [mpSeedSubmitted, setMpSeedSubmitted] = useState(false);
+  const [mpServerSnapshotApplied, setMpServerSnapshotApplied] = useState(false);
   const [mpLastServerApplyRound, setMpLastServerApplyRound] = useState<number>(0);
   // Lobby handles faction selection before the first shop; Outpost no longer prompts per round
 
@@ -618,7 +619,7 @@ export default function EclipseIntegrated(){
       const myId0 = multi.getPlayerId?.() as string | null;
       const st0 = myId0 ? (multi.gameState?.playerStates as Record<string, PlayerState> | undefined)?.[myId0] : null;
       const srv0 = Array.isArray(st0?.fleet) ? (st0!.fleet as ShipSnapshot[]) : [];
-      if (import.meta.env.DEV && srv0.length) {
+      if (srv0.length) {
         console.debug('[Sync] server snapshot frames', srv0.map(s => s?.frame?.id));
       }
       const myId = multi.getPlayerId?.() as string | null;
@@ -640,6 +641,16 @@ export default function EclipseIntegrated(){
         blueprintsApplied = true;
       } else if (mods && mods.blueprintHints) {
         setBlueprints(prev => applyBlueprintHints(prev as Record<string, Part[]>, mods.blueprintHints as Record<string, string[]>));
+        blueprintsApplied = true;
+      } else {
+        // Backfill baseline class blueprints for current starting frame to avoid 0/6 display in MP
+        const sf = (mods?.startingFrame as FrameId | undefined) || 'interceptor';
+        const base = {
+          interceptor: [ ...INITIAL_BLUEPRINTS.interceptor ],
+          cruiser: [ ...INITIAL_BLUEPRINTS.cruiser ],
+          dread: [ ...INITIAL_BLUEPRINTS.dread ],
+        } as Record<FrameId, Part[]>;
+        setBlueprints(base);
         blueprintsApplied = true;
       }
       
@@ -689,6 +700,7 @@ export default function EclipseIntegrated(){
           setCapacity(c => ({ cap: Math.max(c.cap, mapped.length) }));
           setFocused(0);
           setMpLastServerApplyRound(roundNum);
+          setMpServerSnapshotApplied(true);
         }
       }
     } catch { /* ignore */ }
@@ -707,7 +719,7 @@ export default function EclipseIntegrated(){
       const roundNum = (multi.gameState?.roundNum || 1) as number;
       const starting = (multi.roomDetails?.room?.gameConfig?.startingShips as number | undefined) || 1;
       // Fallback seed only if no server snapshot and we have not already applied it
-      if (!mpSeedSubmitted && !mpSeeded && roundNum === 1 && serverFleet.length === 0) {
+      if (!mpServerSnapshotApplied && !mpSeedSubmitted && !mpSeeded && roundNum === 1 && serverFleet.length === 0) {
         const mods = (st?.modifiers as { startingFrame?: 'interceptor'|'cruiser'|'dread'; blueprintHints?: Record<string, string[]> } | undefined);
         const bpIds = (st?.blueprintIds as Record<FrameId, string[]> | undefined);
         const sf = (mods?.startingFrame as FrameId | undefined) || 'interceptor';
@@ -721,9 +733,7 @@ export default function EclipseIntegrated(){
           const bp = blueprints as Record<FrameId, Part[]>;
           ships = Array.from({ length: Math.max(1, starting) }, () => makeShip(getFrame(sf), [ ...(bp[sf] || []) ])) as unknown as Ship[];
         }
-        if (import.meta.env.DEV) {
-          console.debug('[Fallback] seeding local fleet', { frame: sf, count: ships.length });
-        }
+        console.debug('[Fallback] seeding local fleet', { frame: sf, count: ships.length });
         setFleet(ships);
         setCapacity(c => ({ cap: Math.max(c.cap, ships.length) }));
         setFocused(0);
