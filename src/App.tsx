@@ -6,8 +6,8 @@ import { type CapacityState, type DifficultyId } from '../shared/types'
 import { type FrameId } from './game'
 import { ResourceBar } from './components/ui'
 import { RulesModal, TechListModal, WinModal, MatchOverModal } from './components/modals'
-import { setEconomyModifiers } from './game/economy'
-import { setRareTechChance } from './game/shop'
+import { setEconomyModifiers, type EconMods, getDefaultEconomyModifiers } from './game/economy'
+import { setRareTechChance, doRerollActionWithMods, researchActionWithMods } from './game/shop'
 import { applyBlueprintHints, mapBlueprintIdsToParts, seedFleetFromBlueprints } from './multiplayer/blueprintHints'
 import StartPage from './pages/StartPage'
 import { type FactionId } from '../shared/factions'
@@ -23,7 +23,7 @@ import { doRerollAction, researchAction } from './game/shop'
 import { applyBlueprintToFleet as applyBpToFleet, canInstallOnClass as canInstallClass, updateBlueprint as updateBp } from './game/blueprints'
 import { buildInterceptor as buildI, upgradeShipAt as upgradeAt, expandDock as expandD } from './game/hangar'
 import { calcRewards, ensureGraceResources, graceRecoverFleet } from './game/rewards'
-import { researchLabel as researchLabelCore, canResearch as canResearchCore } from './game/research'
+import { researchLabel as researchLabelCore, canResearch as canResearchCore, researchLabelWithMods, canResearchWithMods } from './game/research'
 import { loadRunState, saveRunState, clearRunState, recordWin, restoreRunEnvironment, restoreOpponent, evaluateUnlocks } from './game/storage'
 import { playEffect, playMusic } from './game/sound'
 import MultiplayerStartPage from './pages/MultiplayerStartPage'
@@ -306,9 +306,32 @@ export default function EclipseIntegrated(){
   }
   function upgradeDock(){ const res = expandD(resources, capacity); if(!res) return; setCapacity({ cap: res.nextCap }); setResources(r=>({ ...r, credits: r.credits + res.delta.credits, materials: r.materials + res.delta.materials })); void playEffect('dock'); }
 
+  // Helper to get current player's economy modifiers in multiplayer
+  function getCurrentPlayerEconomyMods(): EconMods {
+    if (gameMode !== 'multiplayer') {
+      return getDefaultEconomyModifiers(); // Use defaults for single player
+    }
+    try {
+      const myId = multi.getPlayerId?.() as string | null;
+      const pStates = multi.gameState?.playerStates as Record<string, PlayerState> | undefined;
+      const st = myId ? pStates?.[myId] : null;
+      const econ = st?.economy;
+      
+      return {
+        credits: econ?.creditMultiplier ?? 1,
+        materials: econ?.materialMultiplier ?? 1,
+      };
+    } catch {
+      return getDefaultEconomyModifiers();
+    }
+  }
+
   // ---------- Shop actions: reroll & research ----------
   function doReroll(){
-    const res = doRerollAction(resources, rerollCost, research as Research);
+    const economyMods = getCurrentPlayerEconomyMods();
+    const res = gameMode === 'multiplayer' 
+      ? doRerollActionWithMods(resources, rerollCost, research as Research, economyMods)
+      : doRerollAction(resources, rerollCost, research as Research);
     if(!res || !res.ok) return;
     setResources(r=> ({...r, credits: r.credits + (res.delta.credits||0) }));
     setShop({ items: res.items });
@@ -317,7 +340,10 @@ export default function EclipseIntegrated(){
     void playEffect('reroll');
   }
   function researchTrack(track:'Military'|'Grid'|'Nano'){
-    const res = researchAction(track, { credits: resources.credits, science: resources.science }, research as Research);
+    const economyMods = getCurrentPlayerEconomyMods();
+    const res = gameMode === 'multiplayer'
+      ? researchActionWithMods(track, { credits: resources.credits, science: resources.science }, research as Research, economyMods)
+      : researchAction(track, { credits: resources.credits, science: resources.science }, research as Research);
     if(!res || !res.ok) return;
     setResearch(t=>({ ...t, [track]: res.nextTier } as Research));
     setResources(r=>({ ...r, credits: r.credits + (res.delta.credits||0), science: r.science + (res.delta.science||0) }));
@@ -675,8 +701,18 @@ export default function EclipseIntegrated(){
 
   // ---------- View ----------
 
-  function researchLabel(track:'Military'|'Grid'|'Nano'){ return researchLabelCore(track, research as Research); }
-  function canResearch(track:'Military'|'Grid'|'Nano'){ return canResearchCore(track, research as Research, resources); }
+  function researchLabel(track:'Military'|'Grid'|'Nano'){ 
+    const economyMods = getCurrentPlayerEconomyMods();
+    return gameMode === 'multiplayer'
+      ? researchLabelWithMods(track, research as Research, economyMods)
+      : researchLabelCore(track, research as Research); 
+  }
+  function canResearch(track:'Military'|'Grid'|'Nano'){ 
+    const economyMods = getCurrentPlayerEconomyMods();
+    return gameMode === 'multiplayer'
+      ? canResearchWithMods(track, research as Research, resources, economyMods)
+      : canResearchCore(track, research as Research, resources); 
+  }
   function upgradeLockInfo(ship:Ship|null|undefined){ if(!ship) return null; if(ship.frame.id==='interceptor'){ return { need: 2, next:'Cruiser' }; } if(ship.frame.id==='cruiser'){ return { need: 3, next:'Dreadnought' }; } return null; }
 
   // Main routing logic
