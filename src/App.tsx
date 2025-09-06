@@ -462,6 +462,7 @@ export default function EclipseIntegrated(){
           // Apply authoritative blueprint IDs first if present; otherwise merge hints
           if (bpIds && (bpIds.interceptor.length || bpIds.cruiser.length || bpIds.dread.length)) {
             const mapped = mapBlueprintIdsToParts(bpIds);
+            try { console.debug('[MP] applied class blueprints from ids', { interceptor: mapped.interceptor.length, cruiser: mapped.cruiser.length, dread: mapped.dread.length }); } catch { /* noop */ }
             setBlueprints({ ...mapped } as Record<FrameId, Part[]>);
           } else if (mods && mods.blueprintHints) {
             const hints = mods.blueprintHints as Record<string, string[]>;
@@ -534,7 +535,9 @@ export default function EclipseIntegrated(){
       const mods = (st?.modifiers as { blueprintHints?: Record<string,string[]> } | undefined);
       const bpIds = (st?.blueprintIds as Record<FrameId, string[]> | undefined);
       if (bpIds && (bpIds.interceptor.length || bpIds.cruiser.length || bpIds.dread.length)) {
-        setBlueprints(mapBlueprintIdsToParts(bpIds));
+        const mapped = mapBlueprintIdsToParts(bpIds);
+        try { console.debug('[MP] applied class blueprints from ids (late apply)', { interceptor: mapped.interceptor.length, cruiser: mapped.cruiser.length, dread: mapped.dread.length }); } catch { /* noop */ }
+        setBlueprints(mapped);
       } else if (mods && mods.blueprintHints) {
         setBlueprints(prev => applyBlueprintHints(prev as Record<string, Part[]>, mods.blueprintHints as Record<string, string[]>));
       }
