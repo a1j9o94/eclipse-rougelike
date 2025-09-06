@@ -475,25 +475,10 @@ export default function EclipseIntegrated(){
           const pStates = multi.gameState?.playerStates as Record<string, PlayerState> | undefined;
           const st = myId ? pStates?.[myId] : null;
           const res = st?.resources;
-          const srvResearch = st?.research as Research | undefined;
-          const econ = st?.economy;
           const mods = st?.modifiers;
           const bpIds = st?.blueprintIds;
           if (res && typeof res.credits === 'number') setResources(r => ({ ...r, ...res }));
-          if (srvResearch && typeof srvResearch.Military === 'number') setResearch({ ...srvResearch });
-          if (econ && typeof econ.rerollBase === 'number') {
-            setBaseRerollCost(econ.rerollBase);
-            setRerollCost(econ.rerollBase);
-          }
-          if (econ && (typeof econ.creditMultiplier === 'number' || typeof econ.materialMultiplier === 'number')) {
-            setEconomyModifiers({ credits: econ.creditMultiplier ?? 1, materials: econ.materialMultiplier ?? 1 });
-          }
-          if (mods && typeof mods.rareChance === 'number') {
-            setRareTechChance(mods.rareChance as number);
-          }
-          if (mods && typeof mods.capacityCap === 'number') {
-            setCapacity(c => ({ cap: Math.max(c.cap, mods.capacityCap as number) }));
-          }
+          // All faction effect applications moved to sync effect to avoid race conditions
           // Blueprint application moved to sync effect to avoid race condition
           // Prefer server snapshot of my fleet for consistency across clients
           const serverFleet = Array.isArray(st?.fleet) ? (st.fleet as ShipSnapshot[]).map(fromSnapshotToShip) as unknown as Ship[] : [];
@@ -557,9 +542,13 @@ export default function EclipseIntegrated(){
       const st = myId ? (multi.gameState?.playerStates as Record<string, PlayerState> | undefined)?.[myId] : null;
       const serverFleet = Array.isArray(st?.fleet) ? (st.fleet as ShipSnapshot[]) : [];
       const roundNum = (multi.gameState?.roundNum || 1) as number;
-      // Apply blueprint hints if they arrive late
-      const mods = (st?.modifiers as { blueprintHints?: Record<string,string[]> } | undefined);
+      // Apply all faction effects from server
+      const srvResearch = st?.research as Research | undefined;
+      const econ = st?.economy;
+      const mods = (st?.modifiers as { rareChance?: number; capacityCap?: number; blueprintHints?: Record<string,string[]> } | undefined);
       const bpIds = (st?.blueprintIds as Record<FrameId, string[]> | undefined);
+      
+      // Blueprint application
       let blueprintsApplied = false;
       if (bpIds && (bpIds.interceptor.length || bpIds.cruiser.length || bpIds.dread.length)) {
         const mapped = mapBlueprintIdsToParts(bpIds);
@@ -571,8 +560,38 @@ export default function EclipseIntegrated(){
         blueprintsApplied = true;
       }
       
+      let factionsApplied = false;
+      
+      // Research state
+      if (srvResearch && typeof srvResearch.Military === 'number') {
+        setResearch({ ...srvResearch });
+        factionsApplied = true;
+      }
+      
+      // Economy effects
+      if (econ && typeof econ.rerollBase === 'number') {
+        setBaseRerollCost(econ.rerollBase);
+        setRerollCost(econ.rerollBase);
+        factionsApplied = true;
+      }
+      if (econ && (typeof econ.creditMultiplier === 'number' || typeof econ.materialMultiplier === 'number')) {
+        setEconomyModifiers({ credits: econ.creditMultiplier ?? 1, materials: econ.materialMultiplier ?? 1 });
+        factionsApplied = true;
+      }
+      
+      // Modifier effects
+      if (mods && typeof mods.rareChance === 'number') {
+        setRareTechChance(mods.rareChance as number);
+        factionsApplied = true;
+      }
+      if (mods && typeof mods.capacityCap === 'number') {
+        setCapacity(c => ({ cap: Math.max(c.cap, mods.capacityCap as number) }));
+        factionsApplied = true;
+      }
+      
       // Switch to Outpost mode after faction effects are applied (only during setup)
-      if (multi.gameState?.gamePhase === 'setup' && mode !== 'OUTPOST' && (blueprintsApplied || (!bpIds && !mods?.blueprintHints))) {
+      const allFactionsApplied = blueprintsApplied || factionsApplied || (!bpIds && !mods?.blueprintHints && !srvResearch);
+      if (multi.gameState?.gamePhase === 'setup' && mode !== 'OUTPOST' && allFactionsApplied) {
         setMode('OUTPOST');
       }
       if (serverFleet.length > 0) {
