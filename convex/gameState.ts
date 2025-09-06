@@ -28,6 +28,7 @@ export const initializeGameState = mutation({
     gameConfig: v.object({
       startingShips: v.number(),
       livesPerPlayer: v.number(),
+      multiplayerLossPct: v.optional(v.number()),
     }),
   },
   handler: async (ctx, args) => {

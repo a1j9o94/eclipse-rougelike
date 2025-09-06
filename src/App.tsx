@@ -576,6 +576,7 @@ export default function EclipseIntegrated(){
       return <MultiplayerStartPage 
         onRoomJoined={handleRoomJoined}
         onBack={handleBackToMainMenu}
+        currentFaction={faction as string}
       />;
     }
     
@@ -640,7 +641,9 @@ export default function EclipseIntegrated(){
         onReset={resetRun}
         lives={gameMode==='single' ? livesRemaining : (multi.roomDetails?.players?.find?.((p: { playerId:string; lives:number }) => p.playerId === multi.getCurrentPlayer?.()?.playerId)?.lives) ?? undefined}
         meName={gameMode==='multiplayer' ? (multi.getCurrentPlayer?.()?.playerName || 'You') as string : undefined}
+        meFaction={gameMode==='multiplayer' ? (multi.getCurrentPlayer?.() as any)?.faction as string : undefined}
         opponent={gameMode==='multiplayer' && (multi.getOpponent?.()) ? { name: (multi.getOpponent?.()?.playerName || 'Opponent') as string, lives: (multi.roomDetails?.players?.find?.((p: { playerId:string; lives:number }) => p.playerId === multi.getOpponent?.()?.playerId)?.lives) ?? 0 } : undefined}
+        opponentFaction={gameMode==='multiplayer' ? (multi.getOpponent?.() as any)?.faction as string : undefined}
         phase={gameMode==='multiplayer' ? (multi.gameState?.gamePhase as unknown as 'setup' | 'combat' | 'finished') : undefined}
       />
 

@@ -6,9 +6,10 @@ import { useMultiplayerGame } from '../hooks/useMultiplayerGame';
 interface MultiplayerStartPageProps {
   onRoomJoined: (roomId: string) => void;
   onBack: () => void;
+  currentFaction?: string;
 }
 
-export default function MultiplayerStartPage({ onRoomJoined, onBack }: MultiplayerStartPageProps) {
+export default function MultiplayerStartPage({ onRoomJoined, onBack, currentFaction }: MultiplayerStartPageProps) {
   const [mode, setMode] = useState<'menu' | 'create' | 'join' | 'public'>('menu');
   const [roomName, setRoomName] = useState(generateSpaceRoomName());
   const [playerName, setPlayerName] = useState('');
@@ -36,7 +37,7 @@ export default function MultiplayerStartPage({ onRoomJoined, onBack }: Multiplay
     setError('');
 
     try {
-      const result = await createRoom(roomName.trim(), isPublic, playerName.trim(), gameConfig);
+      const result = await createRoom(roomName.trim(), isPublic, playerName.trim(), gameConfig, currentFaction);
       onRoomJoined(result.roomId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create room');
@@ -60,7 +61,7 @@ export default function MultiplayerStartPage({ onRoomJoined, onBack }: Multiplay
     setError('');
 
     try {
-      const result = await joinRoom(roomCode.trim().toUpperCase(), playerName.trim());
+      const result = await joinRoom(roomCode.trim().toUpperCase(), playerName.trim(), currentFaction);
       onRoomJoined(result.roomId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to join room');

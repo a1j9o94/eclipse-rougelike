@@ -3,7 +3,8 @@ import { v } from "convex/values";
 // import { maybeStartCombat } from "./helpers/match";
 import { logInfo, roomTag } from "./helpers/log";
 import { maybeResolveRound, validateReadyToggle } from "./helpers/resolve";
-import { ECONOMY } from "../src/config/economy";
+// Default loss percent (server-side; do not import client code)
+const DEFAULT_LOSS_PCT = 0.5;
 import type { ShipSnap } from "./engine/combat";
 
 // Helper function to generate a unique player ID
@@ -44,7 +45,7 @@ export const createRoom = mutation({
       status: "waiting",
       maxPlayers: 2,
       currentPlayers: 1,
-      gameConfig: { ...args.gameConfig, multiplayerLossPct: ECONOMY.multiplayerLossPct },
+      gameConfig: { ...args.gameConfig, multiplayerLossPct: args.gameConfig.multiplayerLossPct ?? DEFAULT_LOSS_PCT },
       createdAt: Date.now(),
     });
 
