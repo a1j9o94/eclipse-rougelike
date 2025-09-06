@@ -117,7 +117,10 @@ export default function EclipseIntegrated(){
   const [mpSeeded, setMpSeeded] = useState(false);
   const [mpSeedSubmitted, setMpSeedSubmitted] = useState(false);
   const [mpServerSnapshotApplied, setMpServerSnapshotApplied] = useState(false);
-  const [mpRerollInitialized, setMpRerollInitialized] = useState(false);
+  // Legacy flag no longer used; reroll now initializes per-setup round via mpRerollInitRound
+  // const [mpRerollInitialized, setMpRerollInitialized] = useState(false);
+  // Track the round for which we last initialized reroll in MP so we can reset per-setup round
+  const [mpRerollInitRound, setMpRerollInitRound] = useState<number>(0);
   const [mpLastServerApplyRound, setMpLastServerApplyRound] = useState<number>(0);
   // Lobby handles faction selection before the first shop; Outpost no longer prompts per round
 
@@ -662,12 +665,15 @@ export default function EclipseIntegrated(){
       
       // Economy effects
       // Reroll base: for MP, always initialize reroll cost on round 1; if server supplies a value use it, else fall back to base (8)
-      if (roundNum === 1 && !mpRerollInitialized) {
-        const base = (econ && typeof econ.rerollBase === 'number') ? econ.rerollBase : ECONOMY.reroll.base;
+      // Initialize reroll base at the start of setup each round (per-player), preferring my economy.rerollBase when present
+      if (multi.gameState?.gamePhase === 'setup' && roundNum !== mpRerollInitRound) {
+        const fromEcon = (econ && typeof econ.rerollBase === 'number') ? econ.rerollBase : undefined;
+        const base = (fromEcon != null) ? fromEcon : ECONOMY.reroll.base;
         setBaseRerollCost(base);
         setRerollCost(base);
-        setMpRerollInitialized(true);
-        try { console.debug('[MP] reroll base applied (my state)', { playerId: multi.getPlayerId?.(), base }); } catch { /* noop */ }
+        // (no-op) legacy flag removed
+        setMpRerollInitRound(roundNum);
+        try { console.debug('[MP] reroll base applied (my state)', { playerId: multi.getPlayerId?.(), base, round: roundNum }); } catch { /* noop */ }
         factionsApplied = true;
       }
       if (econ && (typeof econ.creditMultiplier === 'number' || typeof econ.materialMultiplier === 'number')) {
