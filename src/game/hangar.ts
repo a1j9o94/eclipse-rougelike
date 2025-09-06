@@ -56,13 +56,15 @@ export function upgradeShipAt(
   const nextFrame = getFrame(nextId);
   const nextBlueprints = { ...blueprints } as Record<FrameId, Part[]>;
   const hasTargetClassAlready = fleet.some((sh, i) => sh && i !== idx && (sh.frame.id as FrameId) === nextId);
-  // Default behavior: first ship promoted to a class seeds that class blueprint from its parts
-  if(!hasTargetClassAlready && nextBlueprints[nextId].length === 0){
+  // First promotion to a class inherits the current ship's parts, even if a faction prefilled the target blueprint.
+  // This also establishes the class blueprint from the inherited parts.
+  let carry: Part[];
+  if (!hasTargetClassAlready) {
+    carry = [ ...s.parts ];
     nextBlueprints[nextId] = [ ...s.parts ];
+  } else {
+    carry = [ ...nextBlueprints[nextId] ];
   }
-  const carry = (!hasTargetClassAlready && nextBlueprints[nextId].length === 0)
-    ? [ ...s.parts ]
-    : [ ...nextBlueprints[nextId] ];
   const upgraded = makeShip(nextFrame, carry);
   return { idx, upgraded: upgraded as unknown as Ship, blueprints: nextBlueprints, delta:{ credits: -cost.c, materials: -cost.m } };
 }
@@ -79,4 +81,3 @@ export function expandDock(resources:{credits:number, materials:number}, capacit
   const nextCap = Math.min(base.capacityMax, capacity.cap + base.capacityDelta);
   return { nextCap, delta:{ credits: -cost.c, materials: -cost.m } };
 }
-
