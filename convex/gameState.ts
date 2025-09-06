@@ -5,15 +5,22 @@ import { logInfo, roomTag } from "./helpers/log";
 import { maybeResolveRound } from "./helpers/resolve";
 import type { ShipSnap } from "./engine/combat";
 import { SHARED_FACTIONS, type FactionId } from "../shared/factions";
+import { INITIAL_BLUEPRINTS } from "../shared/defaults";
 import type { PlayerState, ShipSnapshot, Resources, Research, FrameId } from "../shared/mpTypes";
 
-// Build a minimal interceptor snapshot used for multiplayer seeding
+// Build a default interceptor snapshot using shared defaults
 export function makeBasicInterceptorSnap(): ShipSnap {
+  // Use the same default parts as single-player
+  const defaultParts = INITIAL_BLUEPRINTS.interceptor;
+  const partIds = defaultParts.map(part => part.id);
+  
   return {
     frame: { id: 'interceptor', name: 'Interceptor' },
-    weapons: [{ name: 'Plasma', dice: 1, dmgPerHit: 1, faces: [{ roll: 6 }] }],
+    partIds: partIds,
+    parts: partIds.map(id => ({ id })),
+    weapons: [], // Let client calculate from parts
     riftDice: 0,
-    stats: { init: 1, hullCap: 1, valid: true, aim: 1, shieldTier: 0, regen: 0 },
+    stats: { init: 0, hullCap: 0, valid: true, aim: 0, shieldTier: 0, regen: 0 }, // Let client calculate from parts
     hull: 1,
     alive: true,
   };
