@@ -2,9 +2,10 @@ import type { DatabaseReader, DatabaseWriter } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
 import { logInfo, roomTag } from "./log";
 import { simulateCombat, type ShipSnap } from "../engine/combat";
+import type { PlayerState } from "../../shared/mpTypes";
 
 export type PlayerRow = { playerId: string; isReady: boolean };
-export type GameStateLike = { gamePhase: 'setup'|'combat'|'finished'; roundNum?: number; playerStates: Record<string, { fleet?: ShipSnap[]; fleetValid?: boolean }> };
+export type GameStateLike = { gamePhase: 'setup'|'combat'|'finished'; roundNum?: number; playerStates: Record<string, PlayerState> };
 
 export function computeResolvePlan(players: PlayerRow[], gs: GameStateLike) {
   const inSetup = gs.gamePhase === 'setup';
@@ -19,7 +20,7 @@ export function computeResolvePlan(players: PlayerRow[], gs: GameStateLike) {
 export function validateReadyToggle(args: {
   playerId: string;
   wantReady: boolean;
-  playerStates: Record<string, { fleet?: ShipSnap[]; fleetValid?: boolean } | undefined>;
+  playerStates: Record<string, PlayerState | undefined>;
 }): { ok: boolean; reason?: 'missingSnapshot' | 'invalidFleet' | 'notAllowed' } {
   const { playerId, wantReady, playerStates } = args;
   if (!wantReady) return { ok: true };
@@ -52,7 +53,7 @@ export async function maybeResolveRound(ctx: Ctx, roomId: Id<"rooms">) {
 
   if (gs.gamePhase !== "setup") return false;
 
-  const pStates = (gs.playerStates as Record<string, { fleet?: ShipSnap[]; fleetValid?: boolean; sector?: number }>);
+  const pStates = (gs.playerStates as Record<string, PlayerState>);
   const plan = computeResolvePlan(players as PlayerRow[], { gamePhase: gs.gamePhase as 'setup'|'combat'|'finished', roundNum: gs.roundNum, playerStates: pStates });
   if (!plan.ok) {
     logInfo('combat', 'preconditions not met', { tag: roomTag(roomId as unknown as string, gs.roundNum || 1), ...plan.flags });
@@ -71,7 +72,7 @@ export async function maybeResolveRound(ctx: Ctx, roomId: Id<"rooms">) {
   logInfo('combat', 'resolved', { tag: roomTag(roomId as unknown as string, roundNum), winnerPlayerId, loserId: loserRow.playerId, seed });
 
   // Archive winner fleet snapshot
-  const winnerState = pStates[winnerPlayerId] as { fleet?: unknown, sector?: number } | undefined;
+  const winnerState = pStates[winnerPlayerId];
   if (winnerState?.fleet) {
     await ctx.db.insert("fleetArchives", {
       roomId,
@@ -91,6 +92,9 @@ export async function maybeResolveRound(ctx: Ctx, roomId: Id<"rooms">) {
   }
 
   // Winner rewards: grant credits/materials/science for destroyed enemy ships
+  // Loser consolation: (1) full credit for ships they destroyed, plus (2) percentage of winner's rewards
+  const roomRow = await ctx.db.get(roomId);
+  const lossPct = Math.max(0, Math.min(1, (roomRow?.gameConfig?.multiplayerLossPct ?? 0.5)));
   function rewardForFrame(id: string) {
     if (id === 'interceptor') return { c: 22, m: 2, s: 1 } as const;
     if (id === 'cruiser') return { c: 32, m: 3, s: 2 } as const;
@@ -98,7 +102,8 @@ export async function maybeResolveRound(ctx: Ctx, roomId: Id<"rooms">) {
     return { c: 0, m: 0, s: 0 } as const;
   }
   const loserSnaps = winnerPlayerId === pA ? finalB : finalA;
-  // Count rewards only for ships that ended dead on the losing side
+  const winnerSnaps = winnerPlayerId === pA ? finalA : finalB;
+  // Count rewards only for ships that ended dead on the other side
   let rc = 0, rm = 0, rs = 0;
   for (const s of loserSnaps) {
     if (!s.alive || s.hull <= 0) {
@@ -106,12 +111,31 @@ export async function maybeResolveRound(ctx: Ctx, roomId: Id<"rooms">) {
       rc += r.c; rm += r.m; rs += r.s;
     }
   }
-  const statesAfter = { ...pStates } as Record<string, { resources?: { credits: number; materials: number; science: number } }>;
+  // Loser also gets rewards for kills they achieved
+  let lc = 0, lm = 0, ls = 0;
+  for (const s of winnerSnaps) {
+    if (!s.alive || s.hull <= 0) {
+      const r = rewardForFrame(s.frame.id);
+      lc += r.c; lm += r.m; ls += r.s;
+    }
+  }
+  const statesAfter: Record<string, PlayerState> = { ...pStates };
   const curr = statesAfter[winnerPlayerId]?.resources || { credits: 0, materials: 0, science: 0 };
   statesAfter[winnerPlayerId] = {
     ...statesAfter[winnerPlayerId],
     resources: { credits: (curr.credits || 0) + rc, materials: (curr.materials || 0) + rm, science: (curr.science || 0) + rs },
-  } as any;
+  };
+  // Apply loser consolation
+  const loserId = loserRow.playerId;
+  const loserCurr = statesAfter[loserId]?.resources || { credits: 0, materials: 0, science: 0 };
+  statesAfter[loserId] = {
+    ...statesAfter[loserId],
+    resources: {
+      credits: (loserCurr.credits || 0) + lc + Math.floor(rc * lossPct),
+      materials: (loserCurr.materials || 0) + lm + Math.floor(rm * lossPct),
+      science: (loserCurr.science || 0) + ls + Math.floor(rs * lossPct),
+    },
+  };
 
   await ctx.db.patch(gs._id, {
     gamePhase: "combat",

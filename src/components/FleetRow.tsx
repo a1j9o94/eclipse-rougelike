@@ -1,7 +1,7 @@
 // React import not required with modern JSX transform
 import { useRef, useState, useEffect } from 'react'
 import { CompactShip } from './ui'
-import type { Ship } from '../config/types'
+import type { Ship } from '../../shared/types'
 import { groupFleet } from '../game'
 
 export function FleetRow({ ships, side, activeIdx }:{ ships:Ship[], side:'P'|'E', activeIdx:number }){

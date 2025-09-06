@@ -11,6 +11,10 @@ export type ShipSnap = {
   stats: { init: number; hullCap: number; valid: boolean; aim: number; shieldTier: number; regen: number };
   hull: number;
   alive: boolean;
+  // Optional: list of part ids used to construct this ship (for client reconstruction)
+  partIds?: string[];
+  // Optional: full part objects for exact reconstruction (preferred if present)
+  parts?: { id: string; [k: string]: unknown }[];
 };
 
 export type SimulateArgs = {
@@ -42,6 +46,7 @@ function cloneFleet(fleet: ShipSnap[]): ShipSnap[] { return fleet.map(s => ({
   stats: { ...s.stats },
   hull: typeof s.hull === 'number' ? s.hull : (s.stats?.hullCap || 0),
   alive: s.alive !== false,
+  partIds: Array.isArray(s.partIds) ? [...s.partIds] : undefined,
 })); }
 
 function buildInitiative(rng: () => number, A: ShipSnap[], B: ShipSnap[]): InitEntry[] {

@@ -1,5 +1,5 @@
-import { FRAMES, type Frame, type FrameId } from '../config/frames';
-import type { Part } from '../config/parts';
+import { FRAMES, type Frame, type FrameId } from '../../shared/frames';
+import type { Part } from '../../shared/parts';
 
 // Parts may provide their effects even if categorized differently
 export const isSource = (p:Part)=> p.powerProd !== undefined;
@@ -59,4 +59,3 @@ export function makeShip(frame:Frame, parts:Part[]){
     stats:{ hullCap, aim: totalAim, shieldTier: totalShieldTier, init: totalInit, regen: totalRegen, powerProd, powerUse, valid },
     hull: hullCap, alive: true };
 }
-

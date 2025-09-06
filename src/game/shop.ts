@@ -1,6 +1,6 @@
-import { type Part, ALL_PARTS, RARE_PARTS } from '../config/parts'
-import { nextTierCost, ECONOMY } from '../config/economy'
-import { getEconomyModifiers } from './economy'
+import { type Part, ALL_PARTS, RARE_PARTS } from '../../shared/parts'
+import { nextTierCost, ECONOMY } from '../../shared/economy'
+import { getEconomyModifiers, type EconMods, applyEconomyModifiers } from './economy'
 
 let RARE_TECH_CHANCE = 0.1;
 export function setRareTechChance(ch:number){ RARE_TECH_CHANCE = ch; }
@@ -48,6 +48,7 @@ export function rollInventory(research:{Military:number, Grid:number, Nano:numbe
   return items;
 }
 
+// Legacy version using global state (for single-player compatibility)
 export function doRerollAction(resources:{credits:number}, rerollCost:number, research:{Military:number, Grid:number, Nano:number}){
   if(resources.credits < rerollCost) return { ok:false as const };
   const items:Part[] = rollInventory(research, ECONOMY.shop.itemsBase);
@@ -56,6 +57,15 @@ export function doRerollAction(resources:{credits:number}, rerollCost:number, re
   return { ok:true as const, delta:{ credits: -rerollCost }, items, nextRerollCostDelta: nextDelta };
 }
 
+// New version accepting economy modifiers as parameter (for multiplayer isolation)
+export function doRerollActionWithMods(resources:{credits:number}, rerollCost:number, research:{Military:number, Grid:number, Nano:number}, economyMods: EconMods){
+  if(resources.credits < rerollCost) return { ok:false as const };
+  const items:Part[] = rollInventory(research, ECONOMY.shop.itemsBase);
+  const nextDelta = applyEconomyModifiers(ECONOMY.reroll.increment, economyMods, 'credits');
+  return { ok:true as const, delta:{ credits: -rerollCost }, items, nextRerollCostDelta: nextDelta };
+}
+
+// Legacy version using global state (for single-player compatibility)
 export function researchAction(track:'Military'|'Grid'|'Nano', resources:{credits:number, science:number}, research:{Military:number, Grid:number, Nano:number}){
   const curr = research[track]||1; if(curr>=3) return { ok:false as const };
   const base = nextTierCost(curr); if(!base) return { ok:false as const };
@@ -68,4 +78,14 @@ export function researchAction(track:'Military'|'Grid'|'Nano', resources:{credit
   return { ok:true as const, nextTier, delta:{ credits: -creditCost, science: -base.s }, items, nextRerollCostDelta: nextDelta };
 }
 
-
+// New version accepting economy modifiers as parameter (for multiplayer isolation)
+export function researchActionWithMods(track:'Military'|'Grid'|'Nano', resources:{credits:number, science:number}, research:{Military:number, Grid:number, Nano:number}, economyMods: EconMods){
+  const curr = research[track]||1; if(curr>=3) return { ok:false as const };
+  const base = nextTierCost(curr); if(!base) return { ok:false as const };
+  const creditCost = applyEconomyModifiers(base.c, economyMods, 'credits');
+  if(resources.credits < creditCost || resources.science < base.s) return { ok:false as const };
+  const nextTier = curr + 1;
+  const items:Part[] = rollInventory({ ...research, [track]: nextTier } as {Military:number, Grid:number, Nano:number}, ECONOMY.shop.itemsBase);
+  const nextDelta = applyEconomyModifiers(ECONOMY.reroll.increment, economyMods, 'credits');
+  return { ok:true as const, nextTier, delta:{ credits: -creditCost, science: -base.s }, items, nextRerollCostDelta: nextDelta };
+}

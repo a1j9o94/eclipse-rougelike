@@ -4,14 +4,22 @@ import { v } from "convex/values";
 import { logInfo, roomTag } from "./helpers/log";
 import { maybeResolveRound } from "./helpers/resolve";
 import type { ShipSnap } from "./engine/combat";
+import { SHARED_FACTIONS, type FactionId } from "../shared/factions";
+import { INITIAL_BLUEPRINTS } from "../shared/defaults";
+import type { PlayerState, ShipSnapshot, Resources, Research, FrameId } from "../shared/mpTypes";
 
-// Build a minimal interceptor snapshot used for multiplayer seeding
+// Build a default interceptor snapshot using shared defaults
 export function makeBasicInterceptorSnap(): ShipSnap {
+  // Use the same default parts as single-player
+  const defaultParts = INITIAL_BLUEPRINTS.interceptor;
+  const partIds = defaultParts.map(part => part.id);
+  
   return {
     frame: { id: 'interceptor', name: 'Interceptor' },
-    weapons: [{ name: 'Plasma', dice: 1, dmgPerHit: 1, faces: [{ roll: 6 }] }],
+    partIds: partIds,
+    weapons: [], // Let client calculate from parts
     riftDice: 0,
-    stats: { init: 1, hullCap: 1, valid: true, aim: 1, shieldTier: 0, regen: 0 },
+    stats: { init: 0, hullCap: 0, valid: true, aim: 0, shieldTier: 0, regen: 0 }, // Let client calculate from parts
     hull: 1,
     alive: true,
   };
@@ -22,12 +30,14 @@ export function makeStartingFleetSnaps(count: number): ShipSnap[] {
   return Array.from({ length: n }, () => makeBasicInterceptorSnap());
 }
 
+
 export const initializeGameState = mutation({
   args: { 
     roomId: v.id("rooms"),
     gameConfig: v.object({
       startingShips: v.number(),
       livesPerPlayer: v.number(),
+      multiplayerLossPct: v.optional(v.number()),
     }),
   },
   handler: async (ctx, args) => {
@@ -42,27 +52,104 @@ export const initializeGameState = mutation({
     }
 
     // Create initial player states based on multiplayer configuration
-    const initialPlayerStates: Record<string, unknown> = {};
+    const initialPlayerStates: Record<string, PlayerState> = {};
     
-    for (const player of players) {
-      const starting = Math.max(1, args.gameConfig.startingShips || 1);
+  for (const player of players) {
+    const starting = Math.max(1, args.gameConfig.startingShips || 1);
+    // Base defaults
+    let resources: Resources = { credits: 20, materials: 5, science: 0 };
+    let research: Research = { Military: 1, Grid: 1, Nano: 1 };
+    let economy: { rerollBase?: number; creditMultiplier?: number; materialMultiplier?: number } = {};
+    const modifiers: PlayerState['modifiers'] = {};
+    const blueprintIds: Record<FrameId, string[]> = { interceptor: [], cruiser: [], dread: [] };
+    let fleetSnaps: ShipSnap[] | null = null;
+    const faction = player.faction as FactionId | undefined;
+    // Apply faction perks needed before the first shop and for fleet seed
+      switch (faction) {
+      case 'scientists':
+        research = { ...SHARED_FACTIONS.scientists.research };
+        modifiers.rareChance = SHARED_FACTIONS.scientists.rareChance;
+        break;
+      case 'industrialists':
+        resources = { credits: SHARED_FACTIONS.industrialists.resources.credits, materials: SHARED_FACTIONS.industrialists.resources.materials, science: SHARED_FACTIONS.industrialists.resources.science };
+        economy = { ...SHARED_FACTIONS.industrialists.economy };
+        break;
+      case 'warmongers':
+        research = { ...research, Military: SHARED_FACTIONS.warmongers.research.Military };
+        modifiers.startingFrame = SHARED_FACTIONS.warmongers.startingFrame;
+        modifiers.capacityCap = SHARED_FACTIONS.warmongers.capacity;
+        blueprintIds.cruiser = [...(SHARED_FACTIONS.warmongers.blueprintIds.cruiser || [])];
+        // Create properly configured cruiser fleet snapshots with faction-specific parts
+        {
+          const baseSnap = makeBasicInterceptorSnap();
+          const cruiserSnap: ShipSnap = {
+            ...baseSnap,
+            frame: { id: 'cruiser', name: 'Cruiser' },
+            partIds: [...blueprintIds.cruiser],
+          };
+          fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...cruiserSnap }));
+        }
+        break;
+      case 'raiders':
+        // Use shared config for blueprint IDs; seed fleet stats/weapons for parity
+        blueprintIds.interceptor = [...(SHARED_FACTIONS.raiders.blueprintIds.interceptor || [])];
+        if (blueprintIds.interceptor.length) modifiers.blueprintHints = { interceptor: blueprintIds.interceptor };
+        {
+          const snap = makeBasicInterceptorSnap();
+          snap.stats.init = 2; // better drive
+          snap.weapons = [{ name: 'Antimatter', dice: 1, dmgPerHit: 2, faces: [{ dmg: 2 }] }];
+          snap.partIds = [...blueprintIds.interceptor];
+          fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...snap }));
+        }
+        break;
+      case 'timekeepers':
+        research = { ...research, Grid: SHARED_FACTIONS.timekeepers.research.Grid };
+        blueprintIds.interceptor = [...(SHARED_FACTIONS.timekeepers.blueprintIds.interceptor || [])];
+        if (blueprintIds.interceptor.length) modifiers.blueprintHints = { interceptor: blueprintIds.interceptor };
+        {
+          const snap = makeBasicInterceptorSnap();
+          snap.stats.init = 2;
+          snap.weapons = [{ name: 'Disruptor', dice: 1, dmgPerHit: 1, initLoss: 1, faces: [{ dmg: 1 }] }];
+          snap.partIds = [...blueprintIds.interceptor];
+          fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...snap }));
+        }
+        break;
+      case 'collective':
+        research = { ...research, Nano: SHARED_FACTIONS.collective.research.Nano };
+        blueprintIds.interceptor = [...(SHARED_FACTIONS.collective.blueprintIds.interceptor || [])];
+        if (blueprintIds.interceptor.length) modifiers.blueprintHints = { interceptor: blueprintIds.interceptor };
+        {
+          const snap = makeBasicInterceptorSnap();
+          snap.stats.hullCap = 2; snap.hull = 2; snap.stats.regen = 1;
+          snap.partIds = [...blueprintIds.interceptor];
+          fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...snap }));
+        }
+        break;
+    }
+
       initialPlayerStates[player.playerId] = {
-        resources: { credits: 20, materials: 5, science: 0 },
-        research: { Military: 1, Grid: 1, Nano: 1 },
-        lives: player.lives,
-        fleet: makeStartingFleetSnaps(starting),
-        fleetValid: true,
-        blueprints: {
-          interceptor: [], // Will contain default interceptor parts
-          cruiser: [],
-          dread: [],
-        },
-        isAlive: true,
-        sector: 1,
-        graceUsed: false,
-      };
+      resources,
+      research,
+      economy,
+      modifiers,
+      faction,
+      lives: player.lives,
+      fleet: fleetSnaps ?? makeStartingFleetSnaps(starting),
+      fleetValid: true,
+      blueprints: {
+        interceptor: [],
+        cruiser: [],
+        dread: [],
+      },
+      blueprintIds,
+      isAlive: true,
+      sector: 1,
+      graceUsed: false,
+    };
       // Log per-player seed counts for diagnostics
-      try { logInfo('init', 'seeded', { tag: roomTag(args.roomId as unknown as string), playerId: player.playerId, count: starting }); } catch {}
+      const fleetCount = Array.isArray(fleetSnaps) ? fleetSnaps.length : 0;
+      const frameId = fleetSnaps?.[0]?.frame?.id || 'interceptor';
+      try { logInfo('init', 'seeded', { tag: roomTag(args.roomId as unknown as string), playerId: player.playerId, count: starting, faction, fleetCount, frameId }); } catch { /* noop */ }
     }
 
     // Set first player as starting player
@@ -87,7 +174,7 @@ export const initializeGameState = mutation({
         pendingFinish: undefined,
         matchResult: undefined,
         lastUpdate: Date.now(),
-      } as any);
+      });
       logInfo('init', 'gameState reset', { tag: roomTag(args.roomId as unknown as string), startingPlayer: startingPlayer.playerId });
     } else {
       await ctx.db.insert("gameState", {
@@ -144,8 +231,8 @@ export const updatePlayerFleetValidity = mutation({
         .first();
     }
 
-    const playerStates = { ...(gameState!.playerStates as Record<string, unknown>) };
-    const prev = (playerStates[args.playerId] as Record<string, unknown>) || {};
+    const playerStates = { ...(gameState!.playerStates as Record<string, PlayerState>) };
+    const prev = playerStates[args.playerId] || {};
     playerStates[args.playerId] = { ...prev, fleetValid: args.fleetValid };
 
     await ctx.db.patch(gameState!._id, { playerStates, lastUpdate: Date.now() });
@@ -321,13 +408,13 @@ export const resolveCombatResult = mutation({
     await ctx.db.patch(loser._id, { lives: newLives });
 
     // Update per-player state lives if present
-    const states = { ...(gameState.playerStates as Record<string, unknown>) } as Record<string, { [k: string]: unknown }>;
+    const states = { ...(gameState.playerStates as Record<string, PlayerState>) };
     if (states[loser.playerId]) {
       states[loser.playerId] = { ...states[loser.playerId], lives: newLives };
     }
 
     // Archive winner fleet snapshot if available
-    const winnerState = (states[winner.playerId] as { fleet?: unknown; sector?: number } | undefined);
+    const winnerState = states[winner.playerId];
     if (winnerState?.fleet) {
       await ctx.db.insert("fleetArchives", {
         roomId: args.roomId,
@@ -372,9 +459,9 @@ export const submitFleetSnapshot = mutation({
       .first();
     if (!gameState) throw new Error("Game state not found");
 
-    const playerStates = { ...(gameState.playerStates as Record<string, unknown>) };
-    const prev = (playerStates[args.playerId] as Record<string, unknown>) || {};
-    playerStates[args.playerId] = { ...prev, fleet: args.fleet, fleetValid: args.fleetValid };
+    const playerStates = { ...(gameState.playerStates as Record<string, PlayerState>) };
+    const prev = playerStates[args.playerId] || {};
+    playerStates[args.playerId] = { ...prev, fleet: args.fleet as ShipSnapshot[], fleetValid: args.fleetValid };
 
     await ctx.db.patch(gameState._id, { playerStates, lastUpdate: Date.now() });
     logInfo('snapshot', 'fleet snapshot submitted', { tag: roomTag(args.roomId as unknown as string), playerId: args.playerId, count: Array.isArray(args.fleet) ? (args.fleet as unknown[]).length : 0, fleetValid: args.fleetValid });
@@ -405,7 +492,7 @@ export const ackRoundPlayed = mutation({
     // If all players ack'd, go back to setup (or finish match if pending)
     const allAck = players.every(p => acks[p.playerId]);
     if (allAck === true) {
-      const pendingFinish = Boolean((gs as any).pendingFinish);
+      const pendingFinish = Boolean((gs as { pendingFinish?: boolean }).pendingFinish);
       if (pendingFinish) {
         // Mark room finished now and show match over; clear readiness
         for (const p of players) {
@@ -418,7 +505,7 @@ export const ackRoundPlayed = mutation({
           lastUpdate: Date.now(),
         });
         logInfo('ack', 'final combat acked — match finished', { tag: roomTag(args.roomId as unknown as string) });
-        return { done: true, finished: true } as any;
+        return { done: true, finished: true };
       } else {
         const resetReadiness: Promise<void>[] = [];
         for (const p of players) {

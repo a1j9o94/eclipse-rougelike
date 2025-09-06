@@ -51,4 +51,3 @@ describe('Predefined boss fleets and opponent selection', () => {
   })
 })
 
-

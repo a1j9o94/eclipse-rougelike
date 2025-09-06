@@ -12,7 +12,7 @@ import {
   isShield,
   isHull,
 } from '../game'
-import { PARTS, RARE_PARTS, type Part } from '../config/parts'
+import { PARTS, RARE_PARTS, type Part } from '../../shared/parts'
 
 describe('core helpers', () => {
   it('successThreshold clamps between 2 and 6', () => {
@@ -99,5 +99,3 @@ describe('core helpers', () => {
     expect(next.enemyTonnage).toBe(last.enemyTonnage + 1)
   })
 })
-
-

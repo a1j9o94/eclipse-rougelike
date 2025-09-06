@@ -1,8 +1,8 @@
 // React import not required with modern JSX transform
 
-import { type Part, partEffects, partDescription, PART_EFFECT_SYMBOLS, type PartEffectField } from "../config/parts";
-import type { GhostDelta, Ship } from "../config/types";
-import type { FrameId } from "../config/frames";
+import { type Part, partEffects, partDescription, PART_EFFECT_SYMBOLS, type PartEffectField } from "../../shared/parts";
+import type { GhostDelta, Ship } from "../../shared/types";
+import type { FrameId } from "../../shared/frames";
 
 export function PowerBadge({use, prod}:{use:number, prod:number}){
   const ok = use<=prod;
@@ -116,7 +116,7 @@ export function ShipFrameSlots({ ship, side, active }: { ship: Ship, side: 'P' |
     const aim = Math.max(0, ship.stats?.aim || 0);
     const shields = Math.max(0, ship.stats?.shieldTier || 0);
     const init = Math.max(0, ship.stats?.init || 0);
-    const rift = Math.max(0, (ship as any).riftDice || 0);
+    const rift = Math.max(0, ship.riftDice || 0);
     for (let i = 0; i < Math.min(aim, 3); i++) tokens.push('🎯');
     for (let i = 0; i < Math.min(shields, 3); i++) tokens.push('🛡️');
     for (let i = 0; i < Math.min(Math.ceil(init/2), 3); i++) tokens.push('🚀');
@@ -168,7 +168,7 @@ export function CompactShip({ ship, side, active }:{ship:Ship, side:'P'|'E', act
     </div>
   );
 }
-export function ItemCard({ item, canAfford, onBuy, ghostDelta }:{item:Part, canAfford:boolean, onBuy:()=>void, ghostDelta:GhostDelta|null}){
+export function ItemCard({ item, price, canAfford, onBuy, ghostDelta }:{item:Part, price?:number, canAfford:boolean, onBuy:()=>void, ghostDelta:GhostDelta|null}){
   return (
     <div className={`p-3 rounded-xl border bg-zinc-900 transition ${canAfford? 'border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800/70' : 'border-zinc-800 opacity-90'}`}>
       <div className="flex items-start justify-between gap-2">
@@ -182,7 +182,7 @@ export function ItemCard({ item, canAfford, onBuy, ghostDelta }:{item:Part, canA
             })()}</div>
             <div className="text-[11px] sm:text-xs mt-1">{partDescription(item)}</div>
         </div>
-        <div className="text-sm sm:text-base font-semibold whitespace-nowrap">{item.cost}¢</div>
+        <div className="text-sm sm:text-base font-semibold whitespace-nowrap">{typeof price==='number' ? price : (item.cost||0)}¢</div>
       </div>
       {ghostDelta && (
         <div className="mt-2 text-[11px] sm:text-xs grid grid-cols-2 gap-x-3 gap-y-1">
@@ -197,7 +197,7 @@ export function ItemCard({ item, canAfford, onBuy, ghostDelta }:{item:Part, canA
     </div>
   );
 }
-export function ResourceBar({ credits, materials, science, tonnage, sector, onReset, lives, meName, opponent, phase }:{credits:number, materials:number, science:number, tonnage:{used:number,cap:number}, sector:number, onReset:()=>void, lives?:number, meName?:string, opponent?:{ name:string; lives:number }|null, phase?: 'setup'|'combat'|'finished'}){
+export function ResourceBar({ credits, materials, science, tonnage, sector, onReset, lives, meName, meFaction, opponent, opponentFaction, phase }:{credits:number, materials:number, science:number, tonnage:{used:number,cap:number}, sector:number, onReset:()=>void, lives?:number, meName?:string, meFaction?:string, opponent?:{ name:string; lives:number }|null, opponentFaction?:string|null, phase?: 'setup'|'combat'|'finished'}){
   const used = tonnage.used, cap = tonnage.cap;
   const over = used>cap;
   const capIcon = over ? '🔴' : '🟢';
@@ -208,10 +208,10 @@ export function ResourceBar({ credits, materials, science, tonnage, sector, onRe
         <div className={`px-2 py-1 rounded-lg whitespace-nowrap ${over? 'bg-rose-950/50 text-rose-200 ring-1 ring-rose-700/30' : 'bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20'}`}>{capIcon} <b>{used}</b>/<b>{cap}</b></div>
         <div className="px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap">🗺️ <b>{sector}</b></div>
         {typeof lives === 'number' && (
-          <div className="px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap">{meName ? `${meName}:` : ''} <b>{lives}</b> ❤</div>
+          <div className="px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap">{meName ? `${meName}${meFaction?` (${meFaction})`:''}:` : ''} <b>{lives}</b> ❤</div>
         )}
         {opponent && (
-          <div className="px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap">vs {opponent.name}: <b>{opponent.lives}</b> ❤{phase ? <span className="ml-2 text-xs opacity-70">Phase: {phase}</span> : null}</div>
+          <div className="px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap">vs {opponent.name}{opponentFaction?` (${opponentFaction})`:''}: <b>{opponent.lives}</b> ❤{phase ? <span className="ml-2 text-xs opacity-70">Phase: {phase}</span> : null}</div>
         )}
         <button onClick={onReset} className="px-2 py-1 rounded bg-zinc-800 text-xs">Restart</button>
       </div>

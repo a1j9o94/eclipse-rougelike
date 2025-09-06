@@ -2,13 +2,14 @@
 import { useState } from 'react'
 import { ItemCard, PowerBadge, DockSlots } from '../components/ui'
 import { CombatPlanModal } from '../components/modals'
-import { ECONOMY } from '../config/economy'
-import { FRAMES, type FrameId, ALL_PARTS, getEconomyModifiers, groupFleet } from '../game'
-import { canBuildInterceptor } from '../game/hangar'
-import { partEffects, partDescription } from '../config/parts'
-import { type Resources, type Research } from '../config/defaults'
-import { type Part } from '../config/parts'
-import { type Ship, type GhostDelta } from '../config/types'
+import { ECONOMY } from '../../shared/economy'
+import { FRAMES, type FrameId, ALL_PARTS, groupFleet } from '../game'
+import { canBuildInterceptorWithMods } from '../game/hangar'
+import { partEffects, partDescription } from '../../shared/parts'
+import { type Resources, type Research } from '../../shared/defaults'
+import { type Part } from '../../shared/parts'
+import { type Ship, type GhostDelta } from '../../shared/types'
+import { type EconMods, applyEconomyModifiers, getDefaultEconomyModifiers } from '../game/economy'
 
 export function OutpostPage({
   resources,
@@ -39,6 +40,8 @@ export function OutpostPage({
   onRestart,
   myReady,
   oppReady,
+  mpGuards,
+  economyMods = getDefaultEconomyModifiers(),
 }:{
   resources:Resources,
   rerollCost:number,
@@ -68,14 +71,15 @@ export function OutpostPage({
   onRestart:()=>void,
   myReady?: boolean,
   oppReady?: boolean,
+  mpGuards?: { myReady:boolean; oppReady?:boolean; localValid:boolean; serverValid?:boolean; haveSnapshot:boolean },
+  economyMods?: EconMods,
 }){
   const focusedShip = fleet[focused];
   const fleetGroups = groupFleet(fleet);
   const [showPlan, setShowPlan] = useState(false);
   const [dockPreview, setDockPreview] = useState<number|null>(null);
   const tracks = ['Military','Grid','Nano'] as const;
-  const econ = getEconomyModifiers();
-  const buildChk = canBuildInterceptor(resources, capacity, tonnage.used);
+  const buildChk = canBuildInterceptorWithMods(resources, capacity, tonnage.used, economyMods);
   const buildCost = { materials: buildChk.cost.m, credits: buildChk.cost.c };
   const buildFits = (tonnage.used + FRAMES.interceptor.tonnage) <= capacity.cap;
   const buildAffordable = resources.credits >= buildCost.credits && resources.materials >= buildCost.materials;
@@ -84,24 +88,24 @@ export function OutpostPage({
     ? (buildFits ? `Build Interceptor — Need ${buildCost.materials}🧱 + ${buildCost.credits}¢` : 'Build Interceptor — Expand Docks')
     : `Build Interceptor 🟢 (${buildCost.materials}🧱 + ${buildCost.credits}¢)`;
   const dockCost = {
-    materials: Math.max(1, Math.floor(ECONOMY.dockUpgrade.materials * econ.materials)),
-    credits: Math.max(1, Math.floor(ECONOMY.dockUpgrade.credits * econ.credits)),
+    materials: applyEconomyModifiers(ECONOMY.dockUpgrade.materials, economyMods, 'materials'),
+    credits: applyEconomyModifiers(ECONOMY.dockUpgrade.credits, economyMods, 'credits'),
   };
   const dockAtCap = capacity.cap >= ECONOMY.dockUpgrade.capacityMax;
   const dockAffordable = resources.credits >= dockCost.credits && resources.materials >= dockCost.materials;
   const dockDisabled = dockAtCap || !dockAffordable;
-  const rrInc = Math.max(1, Math.floor(ECONOMY.reroll.increment * econ.credits));
+  const rrInc = applyEconomyModifiers(ECONOMY.reroll.increment, economyMods, 'credits');
   const currentBlueprint = blueprints[focusedShip?.frame.id as FrameId] || [];
   const bpSlotsUsed = currentBlueprint.reduce((a,p)=>a+(p.slots||1),0);
   const nextUpgrade = (()=>{
     if(!focusedShip) return null;
     if(focusedShip.frame.id==='interceptor') return {
-      materials: Math.max(1, Math.floor(ECONOMY.upgradeCosts.interceptorToCruiser.materials * econ.materials)),
-      credits: Math.max(1, Math.floor(ECONOMY.upgradeCosts.interceptorToCruiser.credits * econ.credits)),
+      materials: applyEconomyModifiers(ECONOMY.upgradeCosts.interceptorToCruiser.materials, economyMods, 'materials'),
+      credits: applyEconomyModifiers(ECONOMY.upgradeCosts.interceptorToCruiser.credits, economyMods, 'credits'),
     };
     if(focusedShip.frame.id==='cruiser') return {
-      materials: Math.max(1, Math.floor(ECONOMY.upgradeCosts.cruiserToDread.materials * econ.materials)),
-      credits: Math.max(1, Math.floor(ECONOMY.upgradeCosts.cruiserToDread.credits * econ.credits)),
+      materials: applyEconomyModifiers(ECONOMY.upgradeCosts.cruiserToDread.materials, economyMods, 'materials'),
+      credits: applyEconomyModifiers(ECONOMY.upgradeCosts.cruiserToDread.credits, economyMods, 'credits'),
     };
     return null;
   })();
@@ -245,7 +249,12 @@ export function OutpostPage({
             </div>
             <div className="text-lg font-semibold mb-2">Outpost Inventory</div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-2">
-              {shop.items.map((it:Part, i:number)=> { const canAfford = resources.credits >= (it.cost||0); const gd = focusedShip? ghost(focusedShip, it) : null; return (<ItemCard key={i} item={it} canAfford={canAfford} ghostDelta={gd} onBuy={()=>buyAndInstall(it)} />); })}
+              {shop.items.map((it:Part, i:number)=> {
+                const price = applyEconomyModifiers((it.cost||0), economyMods, 'credits');
+                const canAfford = resources.credits >= price;
+                const gd = focusedShip? ghost(focusedShip, it) : null;
+                return (<ItemCard key={i} item={it} price={price} canAfford={canAfford} ghostDelta={gd} onBuy={()=>buyAndInstall(it)} />);
+              })}
             </div>
           </div>
           {/* Tech Upgrades side */}
@@ -298,12 +307,21 @@ export function OutpostPage({
       <div className="fixed bottom-0 left-0 w-full z-10 p-3 bg-zinc-950/95 backdrop-blur border-t border-zinc-800">
       <div className="mx-auto max-w-5xl flex items-center gap-2">
           {(() => {
-            const amReady = Boolean(myReady);
-            const opponentReady = Boolean(oppReady);
+            const guards = mpGuards || undefined;
+            const amReady = guards ? Boolean(guards.myReady) : Boolean(myReady);
+            const opponentReady = guards ? Boolean(guards.oppReady) : Boolean(oppReady);
             const label = !amReady
               ? 'Start Combat'
               : (!opponentReady ? 'Waiting for opponent…' : 'Starting…');
-            const disabled = amReady ? true : !fleetValid;
+            // MP guard: disable unless localValid && (serverValid ?? true) && haveSnapshot, or if already ready
+            const disabled = amReady
+              ? true
+              : (guards
+                ? (!(guards.localValid && ((guards.serverValid ?? false)) && guards.haveSnapshot) || !fleetValid)
+                : !fleetValid);
+            if (guards) {
+              console.debug('[Outpost] MP guards', { ...guards, disabled, label });
+            }
             const cls = disabled ? 'bg-zinc-700 opacity-60' : 'bg-emerald-600';
             return (
               <button onClick={()=> (!disabled) && startCombat()} disabled={disabled} className={`flex-1 px-4 py-3 rounded-xl ${cls}`}>{label}</button>
@@ -330,4 +348,3 @@ export function OutpostPage({
 }
 
 export default OutpostPage
-

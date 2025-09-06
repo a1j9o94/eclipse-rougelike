@@ -1,5 +1,5 @@
-import { type Part, RIFT_FACES } from '../config/parts'
-import { type Ship, type InitiativeEntry } from '../config/types'
+import { type Part, RIFT_FACES } from '../../shared/parts'
+import { type Ship, type InitiativeEntry } from '../../shared/types'
 import { sizeRank } from './ship'
 
 export function successThreshold(aim:number, shieldTier:number) {
@@ -91,4 +91,3 @@ function assignRiftSelfDamage(friends:Ship[], side:'P'|'E', logArr:string[]){
   logArr.push(`${side==='P'?'🟦':'🟥'} ${target.frame.name} suffers 1 Rift backlash`)
   if(target.hull<=0){ target.alive=false; target.hull=0; logArr.push(`💥 ${target.frame.name} destroyed by Rift backlash!`) }
 }
-
