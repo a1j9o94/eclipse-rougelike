@@ -13,4 +13,3 @@ export function useMpTestTick(multi: MpBasics, applied: boolean, intervalMs = 25
   }, [multi?.isConvexAvailable, applied, intervalMs])
   return testTick
 }
-
