@@ -1,6 +1,6 @@
 import type { Part } from '../../shared/parts'
 import type { FrameId } from '../game'
-import type { OutpostCommand, BuyAndInstallCmd, SellPartCmd, BuildShipCmd, UpgradeShipCmd, UpgradeDockCmd, StartCombatCmd } from '../engine/commands'
+import type { OutpostCommand, BuyAndInstallCmd, SellPartCmd, BuildShipCmd, UpgradeShipCmd, UpgradeDockCmd, StartCombatCmd, RerollCmd, ResearchCmd } from '../engine/commands'
 
 export const OutpostIntents = {
   buyAndInstall(part: Part): BuyAndInstallCmd {
@@ -21,6 +21,12 @@ export const OutpostIntents = {
   startCombat(): StartCombatCmd {
     return { type: 'start_combat' }
   },
+  reroll(): RerollCmd {
+    return { type: 'reroll' }
+  },
+  research(track: 'Military'|'Grid'|'Nano'): ResearchCmd {
+    return { type: 'research', track }
+  },
 } as const
 
 export type OutpostIntentCommand = ReturnType<
@@ -30,7 +36,8 @@ export type OutpostIntentCommand = ReturnType<
   | typeof OutpostIntents.upgradeShip
   | typeof OutpostIntents.upgradeDock
   | typeof OutpostIntents.startCombat
+  | typeof OutpostIntents.reroll
+  | typeof OutpostIntents.research
 >
 
 export type AnyOutpostCommand = OutpostCommand | OutpostIntentCommand
-

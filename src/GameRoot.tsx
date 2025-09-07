@@ -7,7 +7,7 @@ import { type FrameId } from './game'
 import { ResourceBar } from './components/ui'
 import { RulesModal, TechListModal, WinModal, MatchOverModal } from './components/modals'
 import { setEconomyModifiers, type EconMods, getDefaultEconomyModifiers, getEconomyModifiers } from './game/economy'
-import { setRareTechChance, doRerollActionWithMods, researchActionWithMods } from './game/shop'
+import { setRareTechChance } from './game/shop'
 import { ECONOMY } from '../shared/economy'
 import { applyBlueprintHints, mapBlueprintIdsToParts, seedFleetFromBlueprints } from './multiplayer/blueprintHints'
 import StartPage from './pages/StartPage'
@@ -20,7 +20,7 @@ import { initNewRun, getOpponentFaction } from './game/setup'
 import { getStartingLives } from '../shared/difficulty'
 import { buildInitiative as buildInitiativeCore, targetIndex as targetIndexCore, volley as volleyCore } from './game/combat'
 import { generateEnemyFleetFor } from './game/enemy'
-import { doRerollAction, researchAction } from './game/shop'
+// shop reroll/research now routed via engine commands
 //
 import { selectTonnage, isFleetValid } from './selectors'
 import { canInstallOnClass as canInstallClassOp } from './controllers/outpostController'
@@ -241,7 +241,10 @@ export default function EclipseIntegrated(){
     setFleet(next.fleet as unknown as Ship[]);
     setCapacity(next.capacity);
     setFocused(next.focusedIndex);
+    if (typeof next.rerollCost === 'number') setRerollCost(next.rerollCost as number);
+    if (typeof next.shopVersion === 'number') setShopVersion(next.shopVersion as number);
     setLastEffects(effects);
+    return { next, effects };
   }
   function buyAndInstall(part:Part){ applyOutpost(OutpostIntents.buyAndInstall(part)); void playEffect('equip'); }
   function sellPart(frameId:FrameId, idx:number){
@@ -277,35 +280,19 @@ export default function EclipseIntegrated(){
 
   // ---------- Shop actions: reroll & research ----------
   function doReroll(){
-    const economyMods = getCurrentPlayerEconomyMods();
-    const res = gameMode === 'multiplayer' 
-      ? doRerollActionWithMods(resources, rerollCost, research as Research, economyMods)
-      : doRerollAction(resources, rerollCost, research as Research);
-    if(!res || !res.ok) return;
-    setResources(r=> ({...r, credits: r.credits + (res.delta.credits||0) }));
-    setShop({ items: res.items });
-    setRerollCost(x=> x + (res.nextRerollCostDelta||0));
-    setShopVersion(v=> v+1);
+    const r = applyOutpost(OutpostIntents.reroll());
+    if (!r) return;
     void playEffect('reroll');
   }
   async function researchTrack(track:'Military'|'Grid'|'Nano'){
-    const economyMods = getCurrentPlayerEconomyMods();
-    const res = gameMode === 'multiplayer'
-      ? researchActionWithMods(track, { credits: resources.credits, science: resources.science }, research as Research, economyMods)
-      : researchAction(track, { credits: resources.credits, science: resources.science }, research as Research);
-    if(!res || !res.ok) return;
-    const nextResearch = { ...(research as Research), [track]: res.nextTier } as Research;
-    setResearch(nextResearch);
-    setResources(r=>({ ...r, credits: r.credits + (res.delta.credits||0), science: r.science + (res.delta.science||0) }));
-    setShop({ items: res.items });
-    setRerollCost(x=> x + (res.nextRerollCostDelta||0));
-    setShopVersion(v=> v+1);
+    const r = applyOutpost(OutpostIntents.research(track));
+    if (!r) return;
     // MP: persist research/resources so they survive setup→combat→setup
     if (gameMode === 'multiplayer') {
       try {
         if ((multi as { updateGameState?: (updates: unknown)=>Promise<void> }).updateGameState) {
-          console.debug('[MP] persist research', { nextResearch, track, delta: res.delta });
-          const updates = { research: nextResearch, resources: { credits: resources.credits + (res.delta.credits||0), materials: resources.materials, science: resources.science + (res.delta.science||0) } };
+          const nextResearch = r.next.research as Research;
+          const updates = { research: nextResearch, resources: r.next.resources } as { research: Research; resources: { credits:number; materials:number; science:number } };
           await (multi as { updateGameState: (updates: { research: Research; resources: { credits:number; materials:number; science:number } })=>Promise<void> }).updateGameState(updates);
         }
       } catch {/* noop */}
@@ -387,6 +374,7 @@ export default function EclipseIntegrated(){
       }
     },
     startCombat,
+    shopItems: (items) => setShop({ items: items as unknown as Part[] }),
   } as EffectSink)
   function initRoundIfNeeded(){ if (turnPtr === -1 || turnPtr >= queue.length) { const q = buildInitiative(fleet, enemyFleet); setQueue(q); setTurnPtr(0); setLog(l => [...l, `— Round ${roundNum} —`]); return true; } return false; }
   function resolveCombat(pAlive:boolean){
