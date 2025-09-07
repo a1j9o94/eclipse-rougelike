@@ -59,7 +59,7 @@ Quick Start for New Agents
 - Run tests: `npm test` (or `npm run test:run`)
 - Lint: `npm run lint`
 - Build: `npm run build`
-- App.tsx baseline line count: 990 (use `npm run check:app-lines` to track; limit will be applied when nearing completion).
+- App.tsx line count: 1 (moved original implementation to `src/GameRoot.tsx`).
 - Touch points to modify next:
   - Add `Reroll` and `Research` commands (src/engine/commands.ts) and adapter creators.
   - Extend `outpost_command_mapping.spec.ts` with failing tests, then implement.
