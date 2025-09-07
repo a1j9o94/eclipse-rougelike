@@ -12,10 +12,11 @@ export type OutpostState = {
   capacity: CapacityState
   tonnageUsed: number
   focusedIndex: number
+  rerollCost?: number
+  shopVersion?: number
 }
 
 export type OutpostEnv = {
   gameMode: 'single' | 'multiplayer'
   economyMods?: EconMods
 }
-
