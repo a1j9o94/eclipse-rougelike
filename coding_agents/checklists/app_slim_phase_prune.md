@@ -1,6 +1,6 @@
 # App Slim Refactor — Prune Checklist (Phase 0 → 0B)
 
-Status: draft • Owner: coding agent • Branch: `feature/app-slim-phase0b`
+Status: active • Owner: coding agent • Branches: `feature/app-slim-phase0b`, `feature/app-slim-phase0c`
 
 Goal: Reduce `src/App.tsx` to ~50 lines where App acts only as a composition root and lightweight router. All game logic, effects, and MP sync live outside App behind typed boundaries. Keep SP/MP parity and current player experience. Commit frequently; each commit must pass lint and build. Intentional failing tests are allowed when explicitly noted in the commit message.
 
@@ -83,6 +83,20 @@ How to use: Treat each item as a mini-task with acceptance criteria. Check off o
 
 23) App file ≤ ~50 lines
 - [ ] Acceptance: `src/App.tsx` ≤ 60 lines hard cap (target ~50), measured by the guard script.
+
+### Phase 0C — GameRoot thinning
+- [x] Extract `useOutpostHandlers` and swap all inline handlers in `GameRoot.tsx`.
+- [x] Extract `useMpPhaseNav` and remove phase-navigation `useEffect` from `GameRoot.tsx`.
+- [x] Extract `useRunLifecycle` and wire it to replace `handleReturnFromCombat` in `GameRoot.tsx` (victory + defeat)
+- [ ] Add `selectors/guards.ts` and refactor fleet validity logic to use it (pure + unit-tested).
+  - Done via `selectors/guards.ts` and `selectors/mpGuards.ts`.
+- [ ] GameRoot LOC ≤ ~200 for this phase; add optional `check:gameroot-lines` script but do not gate CI yet.
+  - Note: `npm run check:gameroot-lines` available; not part of CI.
+
+Additions for 0C (done)
+- [x] Add `useResourceBarVm` to assemble SP/MP ResourceBar props.
+- [x] Add `useOutpostVm` to centralize MP guards, combined validity, start toggle, and restart logic.
+- [x] Normalize shop items after research/reroll to enforce current tier caps; simplify ItemCard tier label.
 
 ## Run Commands
 

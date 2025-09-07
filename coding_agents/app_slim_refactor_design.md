@@ -205,6 +205,44 @@ Specific existing tests to reference/update
 - Land this design doc on a branch via PR for review.
 - On approval, begin Phase 0 (Contracts + Engine Skeleton) and wire tests.
 
+## Decision Log
+- 2025-09-07 — Folder naming alignment: continue with `src/engine/*` + `src/adapters/*` (instead of `src/game/*`) to match landed code. Selectors/hooks live under `src/hooks/*` and `src/selectors/*`.
+- 2025-09-07 — GameRoot must be thin: do not migrate App logic verbatim into `GameRoot.tsx`. Extract business logic into engine-backed hooks/handlers; GameRoot becomes a shell.
+
+## Phase 0C — GameRoot → Shell + Handlers
+
+Goals
+- Reduce `src/GameRoot.tsx` (currently ~880 LOC) to ~200 LOC by extracting:
+  - Outpost action handlers (buy/sell/build/upgrade/dock/reroll/research/startCombat)
+  - MP phase navigation + snapshot adoption
+  - Post-combat return lifecycle and rewards
+  - Fleet validity/guards and economy-mod helpers
+  - Seed/submit logic for round 1 in MP
+
+Deliverables
+- `src/hooks/useOutpostHandlers.ts` — wraps `OutpostIntents` + `applyOutpostCommand`, returns `{ statePatch, effects }` and triggers `useEffectsRunner` via caller-supplied sink.
+- `src/hooks/useMpPhaseNav.ts` — consumes `multi` and routes mode/view changes (setup/combat/finished), snapshot→fleet mapping, logging.
+- `src/hooks/useRunLifecycle.ts` — encapsulates `handleReturnFromCombat` logic and reward application.
+- `src/selectors/guards.ts` — `selectFleetValidity({ localValid, serverValid, phase })` and related helpers.
+- Tests for each module with failing-first specs.
+
+Acceptance Criteria
+- GameRoot contains only composition, hook calls, and JSX for pages; no inline business logic or Convex calls.
+- All Outpost operations flow through engine intents; effects emitted are handled by `useEffectsRunner`.
+- MP parity verified by tests: phase nav, seed/submit, guards.
+- No `any` on exported types; public interfaces documented in this file.
+
+Test Plan (failing first)
+- `effects/start_combat.spec.ts` — `OutpostIntents.startCombat()` emits effect once; sink’s `startCombat()` called exactly once.
+- `selectors/fleet_validity.spec.ts` — guard logic for (setup vs combat), server flag missing/null, localValid-only scenarios.
+- `hooks/useOutpostHandlers.spec.ts` — reroll bumps version/cost; research persists via `multi.updateGameState` in MP.
+- `hooks/useMpPhaseNav.spec.tsx` — setup→game (ensure view), combat→mode + snapshot adoption, finished→winner modal/lobby.
+- `hooks/useRunLifecycle.spec.ts` — victory/defeat code paths maintain existing reward/reset semantics.
+
+Notes
+- Keep `useMpSetupSync` as the single source of truth for setup-phase reconciliation; `useMpPhaseNav` focuses on navigation and display state.
+- Consider a `tools/check-gameroot-lines.mjs` guard (script only; non-blocking this phase).
+
 ## Appendix: File-by-file initial scaffolding (Phase 0)
 - src/game/state.ts: export GameState, types, minimal helpers.
 - src/game/commands.ts: union + constructors for commands (tiny helpers for tests).

@@ -13,10 +13,12 @@
     "test:run": "vitest run --pool=forks --reporter=basic",
     "test:ui": "vitest --ui",
     "check:app-lines": "node tools/check-app-lines.mjs",
+    "check:gameroot-lines": "node tools/check-gameroot-lines.mjs",
     "typecheck": "tsc -p . --noEmit",
     "test:ci": "vitest run --pool=forks --reporter=dot",
     "ci": "npm run lint && npm run typecheck && npm run test:run && npm run build && npm run check:app-lines",
-    "orchestrator": "bash orchestrator.sh"
+    "orchestrator": "bash orchestrator.sh",
+    "agents": "bash scripts/agents.sh"
   },
   "dependencies": {
     "@vercel/analytics": "^1.5.0",

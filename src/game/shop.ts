@@ -48,6 +48,23 @@ export function rollInventory(research:{Military:number, Grid:number, Nano:numbe
   return items;
 }
 
+export function normalizeShopItems(items: Part[], research: { Military:number; Grid:number; Nano:number }, count: number = ECONOMY.shop.itemsBase){
+  const capByCat = tierCap(research);
+  const ok = items.filter(p => !p.rare && p.tier === capByCat[p.tech_category as 'Military'|'Grid'|'Nano']);
+  if (ok.length >= count) return ok.slice(0, count);
+  const pool = ALL_PARTS.filter((p:Part) =>
+    !p.rare && p.tier === capByCat[p.tech_category as 'Military'|'Grid'|'Nano']
+  );
+  const out = [...ok];
+  const avail = pool.filter(p=> !out.includes(p));
+  while (out.length < count && avail.length > 0) {
+    const idx = Math.floor(Math.random() * avail.length);
+    out.push(avail[idx]);
+    avail.splice(idx,1);
+  }
+  return out;
+}
+
 // Legacy version using global state (for single-player compatibility)
 export function doRerollAction(resources:{credits:number}, rerollCost:number, research:{Military:number, Grid:number, Nano:number}){
   if(resources.credits < rerollCost) return { ok:false as const };

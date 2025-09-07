@@ -1,7 +1,7 @@
 import { type Part, ALL_PARTS } from '../../shared/parts'
 import { ECONOMY } from '../../shared/economy'
-import { type FrameId, getFrame, getEconomyModifiers } from '../game'
-import { makeShip } from '../game'
+import { type FrameId, getEconomyModifiers } from '../game'
+import { getFrame, makeShip } from './ship'
 import type { Ship } from '../../shared/types'
 import { type EconMods, applyEconomyModifiers } from './economy'
 

@@ -1,6 +1,6 @@
 import { type Part } from '../../shared/parts'
-import { type FrameId, getFrame } from '../game'
-import { makeShip } from '../game'
+import { type FrameId } from '../game'
+import { getFrame, makeShip } from './ship'
 import type { Ship } from '../../shared/types'
 
 export function applyBlueprintToFleet(frameId:FrameId, parts:Part[], fleet:Ship[]): Ship[] {

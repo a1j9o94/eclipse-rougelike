@@ -178,7 +178,8 @@ export function ItemCard({ item, price, canAfford, onBuy, ghostDelta }:{item:Par
               const eff = partEffects(item).join(' • ');
               const slots = item.slots || 1;
               const slotLabel = `⬛ ${slots} slot${slots>1?'s':''}`;
-              return `${item.cat} • Tier ${item.tier} • ${slotLabel}${eff ? ' • ' + eff : ''}`;
+              // Omit explicit tier label to reduce clutter; effects and pricing imply progression
+              return `${item.cat} • ${slotLabel}${eff ? ' • ' + eff : ''}`;
             })()}</div>
             <div className="text-[11px] sm:text-xs mt-1">{partDescription(item)}</div>
         </div>
