@@ -23,6 +23,12 @@ What Landed
   - src/__tests__/outpost_command_mapping.spec.ts covers buy/sell/build/upgrade/dock via commands (MP env). All green.
   - Stabilized MP guards spec; removed a slow UI snapshot spec and replaced with a fast unit test for snapshot mapping.
 
+Pruning Progress (late 2025-09-07)
+- App.tsx reduced to 1-line re-export to `GameRoot.tsx`.
+- Reroll/Research now routed through engine (`OutpostIntents.reroll/research`) with EffectsRunner updating shop items.
+- EffectsRunner (`src/hooks/useEffectsRunner.ts`) wired for warnings + shop items.
+- MP test tick extracted to `useMpTestTick` (src/hooks/useMpSync.ts) to avoid re-render storms in tests.
+
 Design Notes / Invariants
 - MP/SP parity: env.gameMode + economyMods flow through engine to controllers; no logic fork in App.
 - Idempotent blueprint sync in App useEffects left intact; this change only touches Outpost action handlers.
@@ -54,6 +60,7 @@ Success Criteria
 Known Gaps / Flags
 - One React-hooks warning remains in App.tsx (missing dep ‘multi’); intentionally left to avoid changing effect behavior during Phase 0B.
 - ‘start_combat’ intent currently only signals `effects.startCombat`; App still uses existing startCombat path due to MP specifics.
+- MP sync extraction to a hook is staged; existing effects remain until parity tested.
 
 Quick Start for New Agents
 - Run tests: `npm test` (or `npm run test:run`)
