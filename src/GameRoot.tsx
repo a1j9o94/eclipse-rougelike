@@ -39,6 +39,7 @@ import { computePlaybackDelay } from './utils/playback'
 import { RoomLobby } from './components/RoomLobby'
 import type { Id } from '../convex/_generated/dataModel'
 import { useMultiplayerGame } from './hooks/useMultiplayerGame'
+import { useMpTestTick } from './hooks/useMpSync'
 import { useEffectsRunner, type EffectSink } from './hooks/useEffectsRunner'
 // Lives now integrated into ResourceBar; banner removed
 
@@ -143,15 +144,7 @@ export default function EclipseIntegrated(){
   // Multiplayer data (available when in a room)
   const multi = useMultiplayerGame(currentRoomId);
   // Test-only tick to pick up external mock mutations when Convex is not driving reactivity
-  const [testTick, setTestTick] = useState(0);
-  useEffect(() => {
-    // Only tick in tests and only while Convex is unavailable
-    if (!multi || multi.isConvexAvailable) return;
-    // Stop ticking once a server snapshot has been applied to avoid unnecessary renders
-    if (mpServerSnapshotApplied) return;
-    const id = setInterval(() => setTestTick((t) => t + 1), 25);
-    return () => clearInterval(id);
-  }, [multi?.isConvexAvailable, mpServerSnapshotApplied]);
+  const testTick = useMpTestTick(multi, mpServerSnapshotApplied)
 
   // ---------- Run management ----------
   function newRun(diff: DifficultyId, pick:FactionId){
