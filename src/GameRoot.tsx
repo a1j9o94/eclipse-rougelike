@@ -26,6 +26,7 @@ import { selectTonnage, isFleetValid } from './selectors'
 import { canInstallOnClass as canInstallClassOp } from './controllers/outpostController'
 import { OutpostIntents } from './adapters/outpostAdapter'
 import { applyOutpostCommand } from './engine/commands'
+import type { OutpostEffects as EngineOutpostEffects } from './engine/commands'
 import type { OutpostState, OutpostEnv } from './engine/state'
 import { fromSnapshotToShip } from './multiplayer/snapshot'
 import type { ShipSnapshot } from './multiplayer/snapshot'
@@ -38,6 +39,7 @@ import { computePlaybackDelay } from './utils/playback'
 import { RoomLobby } from './components/RoomLobby'
 import type { Id } from '../convex/_generated/dataModel'
 import { useMultiplayerGame } from './hooks/useMultiplayerGame'
+import { useEffectsRunner, type EffectSink } from './hooks/useEffectsRunner'
 // Lives now integrated into ResourceBar; banner removed
 
 /**
@@ -61,6 +63,7 @@ import { useMultiplayerGame } from './hooks/useMultiplayerGame'
 export default function EclipseIntegrated(){
   const saved = loadRunState();
   const [mode, setMode] = useState<'OUTPOST'|'COMBAT'>('OUTPOST');
+  const [lastEffects, setLastEffects] = useState<EngineOutpostEffects | undefined>(undefined);
   const [showRules, setShowRules] = useState(false);
   const [showTechs, setShowTechs] = useState(false);
   const [showWin, setShowWin] = useState(false);
@@ -245,9 +248,7 @@ export default function EclipseIntegrated(){
     setFleet(next.fleet as unknown as Ship[]);
     setCapacity(next.capacity);
     setFocused(next.focusedIndex);
-    if (effects?.warning) {
-      console.warn('Ship will not participate in combat until power and drive requirements are met.');
-    }
+    setLastEffects(effects);
   }
   function buyAndInstall(part:Part){ applyOutpost(OutpostIntents.buyAndInstall(part)); void playEffect('equip'); }
   function sellPart(frameId:FrameId, idx:number){
@@ -383,6 +384,17 @@ export default function EclipseIntegrated(){
     setLog([`Sector ${sector}: Skirmish — a lone Interceptor approaches.`]);
     setRoundNum(1); setQueue([]); setTurnPtr(-1); setCombatOver(false); setOutcome(''); setRewardPaid(false); void playEffect('page'); void playEffect('startCombat'); setMode('COMBAT');
   }
+  // Centralize engine/adapters effects handling
+  useEffectsRunner(lastEffects, {
+    warn: (code) => {
+      if (code === 'invalid-power-or-drive') {
+        console.warn('Ship will not participate in combat until power and drive requirements are met.');
+      } else {
+        console.warn(`[warning] ${code}`)
+      }
+    },
+    startCombat,
+  } as EffectSink)
   function initRoundIfNeeded(){ if (turnPtr === -1 || turnPtr >= queue.length) { const q = buildInitiative(fleet, enemyFleet); setQueue(q); setTurnPtr(0); setLog(l => [...l, `— Round ${roundNum} —`]); return true; } return false; }
   function resolveCombat(pAlive:boolean){
     if(pAlive){
