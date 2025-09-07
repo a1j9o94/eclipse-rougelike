@@ -1,10 +1,11 @@
 import { useEffect, useRef } from 'react'
 import type { OutpostEffects } from '../engine/commands'
+import type { Part } from '../../shared/parts'
 
 export type EffectSink = {
   warn: (code: string) => void
   startCombat: () => void
-  shopItems?: (items: unknown[]) => void
+  shopItems?: (items: Part[]) => void
   sound?: (key: string) => void
 }
 
@@ -20,7 +21,7 @@ export function useEffectsRunner(effects: OutpostEffects | undefined, sink: Effe
     lastRef.current = key
     if (effects.warning) sink.warn(effects.warning)
     if (effects.startCombat) sink.startCombat()
-    if (effects.shopItems && sink.shopItems) sink.shopItems(effects.shopItems as unknown[])
+    if (effects.shopItems && sink.shopItems) sink.shopItems(effects.shopItems)
     // Future: route sound/timer/dialog effects here
   }, [effects, sink])
 }

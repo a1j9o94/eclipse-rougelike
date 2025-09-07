@@ -56,8 +56,10 @@ describe('MP Reroll Spillover Reset', () => {
     const { default: App } = await import('../App')
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: /multiplayer/i }))
-    const btn = await screen.findByRole('button', { name: /Reroll \(0¢\)/i })
-    expect(btn).toBeTruthy()
+    // Assert directly on the reroll button's label via test id
+    const rerollBtn = await screen.findByTestId('reroll-button')
+    await vi.waitFor(() => {
+      expect(rerollBtn).toHaveTextContent(/Reroll \(0¢\)/i)
+    }, { timeout: 1000 })
   })
 })
-

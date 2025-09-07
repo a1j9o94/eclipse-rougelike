@@ -26,8 +26,13 @@ What Landed
 Pruning Progress (late 2025-09-07)
 - App.tsx reduced to 1-line re-export to `GameRoot.tsx`.
 - Reroll/Research now routed through engine (`OutpostIntents.reroll/research`) with EffectsRunner updating shop items.
-- EffectsRunner (`src/hooks/useEffectsRunner.ts`) wired for warnings + shop items.
+- EffectsRunner (`src/hooks/useEffectsRunner.ts`) wired for warnings + shop items + startCombat; effect sink now strongly typed (`Part[]`, no `unknown`).
 - MP test tick extracted to `useMpTestTick` (src/hooks/useMpSync.ts) to avoid re-render storms in tests.
+
+Incremental Changes (this pass)
+- Fixed MP research persistence call shape to match `useMultiplayerGame.updateGameState({ updates })`.
+- MP reroll base correction: during setup, honor per-player `economy.rerollBase` immediately and on round init (prevents Warmonger/Industrialist spillover).
+- Eliminated React-hooks deps warning in `useMpTestTick` by including `multi` in deps.
 
 Design Notes / Invariants
 - MP/SP parity: env.gameMode + economyMods flow through engine to controllers; no logic fork in App.
@@ -49,7 +54,7 @@ How To Continue (Phase 0 → 1 steps)
 3) Split remaining UI‑agnostic helper logic from App.tsx into engine/ or controllers/
    - Keep MP effects in App effects for now to avoid regressions.
 4) Wire tests
-   - Add failing-first specs for reroll/resources/research parity in MP.
+   - Add failing-first specs for reroll/resources/research parity in MP; stabilize `mp_research_persistence` by asserting on `updateGameState` calls and argument shape.
    - Maintain ready/validity guards coverage.
 
 Success Criteria
@@ -58,8 +63,8 @@ Success Criteria
 - New command tests cover core behaviors (credits/materials deltas, fleet/blueprints, focus, capacity).
 
 Known Gaps / Flags
-- One React-hooks warning remains in App.tsx (missing dep ‘multi’); intentionally left to avoid changing effect behavior during Phase 0B.
-- ‘start_combat’ intent currently only signals `effects.startCombat`; App still uses existing startCombat path due to MP specifics.
+- ‘start_combat’ intent signals `effects.startCombat` and is consumed via EffectsRunner; UI still exposes a local handler for MP ready-toggle semantics (kept intentionally).
+- `mp_research_persistence.spec.tsx` still red (spy not observed). Hypothesis: the test’s button matcher hits a non-action element or the click path is gated by disabled state. Next step: target the research button by full label and add a temporary console probe in handler.
 - MP sync extraction to a hook is staged; existing effects remain until parity tested.
 
 Quick Start for New Agents

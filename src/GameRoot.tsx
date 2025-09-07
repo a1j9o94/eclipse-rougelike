@@ -6,10 +6,9 @@ import { type CapacityState, type DifficultyId } from '../shared/types'
 import { type FrameId } from './game'
 import { ResourceBar } from './components/ui'
 import { RulesModal, TechListModal, WinModal, MatchOverModal } from './components/modals'
-import { setEconomyModifiers, type EconMods, getDefaultEconomyModifiers, getEconomyModifiers } from './game/economy'
-import { setRareTechChance } from './game/shop'
+import { type EconMods, getDefaultEconomyModifiers, getEconomyModifiers } from './game/economy'
 import { ECONOMY } from '../shared/economy'
-import { applyBlueprintHints, mapBlueprintIdsToParts, seedFleetFromBlueprints } from './multiplayer/blueprintHints'
+import { seedFleetFromBlueprints } from './multiplayer/blueprintHints'
 import StartPage from './pages/StartPage'
 import { type FactionId } from '../shared/factions'
 import OutpostPage from './pages/OutpostPage'
@@ -39,7 +38,7 @@ import { computePlaybackDelay } from './utils/playback'
 import { RoomLobby } from './components/RoomLobby'
 import type { Id } from '../convex/_generated/dataModel'
 import { useMultiplayerGame } from './hooks/useMultiplayerGame'
-import { useMpTestTick } from './hooks/useMpSync'
+import { useMpTestTick, useMpSetupSync } from './hooks/useMpSync'
 import { useEffectsRunner, type EffectSink } from './hooks/useEffectsRunner'
 // Lives now integrated into ResourceBar; banner removed
 
@@ -226,7 +225,7 @@ export default function EclipseIntegrated(){
   }
   function applyOutpost(cmd: ReturnType<typeof OutpostIntents[keyof typeof OutpostIntents]>){
     const st: OutpostState = {
-      resources,
+      resources: (gameMode==='multiplayer' ? getCurrentPlayerResources() : resources) as Resources,
       research: research as Research,
       blueprints: blueprints as Record<FrameId, Part[]>,
       fleet: fleet as unknown as Ship[],
@@ -278,6 +277,20 @@ export default function EclipseIntegrated(){
     }
   }
 
+  // Helper to get current player's resources (for canResearch gating)
+  function getCurrentPlayerResources(): Resources {
+    if (gameMode !== 'multiplayer') return resources as Resources;
+    try {
+      const myId = multi.getPlayerId?.() as string | null;
+      const pStates = multi.gameState?.playerStates as Record<string, PlayerState> | undefined;
+      const st = myId ? pStates?.[myId] : null;
+      const res = st?.resources as Resources | undefined;
+      return res ?? (resources as Resources);
+    } catch {
+      return resources as Resources;
+    }
+  }
+
   // ---------- Shop actions: reroll & research ----------
   function doReroll(){
     const r = applyOutpost(OutpostIntents.reroll());
@@ -290,11 +303,11 @@ export default function EclipseIntegrated(){
     // MP: persist research/resources so they survive setup→combat→setup
     if (gameMode === 'multiplayer') {
       try {
-        if ((multi as { updateGameState?: (updates: unknown)=>Promise<void> }).updateGameState) {
-          const nextResearch = r.next.research as Research;
-          const updates = { research: nextResearch, resources: r.next.resources } as { research: Research; resources: { credits:number; materials:number; science:number } };
-          await (multi as { updateGameState: (updates: { research: Research; resources: { credits:number; materials:number; science:number } })=>Promise<void> }).updateGameState(updates);
-        }
+        const nextResearch = r.next.research as Research;
+        const updates = { research: nextResearch, resources: r.next.resources } as { research: Research; resources: { credits:number; materials:number; science:number } };
+        try { console.debug('[MP] persist research/resources', { Nano: (nextResearch as Research).Nano, credits: updates.resources.credits }); } catch { /* noop */ }
+        (multi as { updateGameState?: (arg: { updates: { research: Research; resources: { credits:number; materials:number; science:number } } })=>unknown })
+          ?.updateGameState?.({ updates });
       } catch {/* noop */}
     }
     void playEffect('tech');
@@ -374,7 +387,7 @@ export default function EclipseIntegrated(){
       }
     },
     startCombat,
-    shopItems: (items) => setShop({ items: items as unknown as Part[] }),
+    shopItems: (items) => setShop({ items }),
   } as EffectSink)
   function initRoundIfNeeded(){ if (turnPtr === -1 || turnPtr >= queue.length) { const q = buildInitiative(fleet, enemyFleet); setQueue(q); setTurnPtr(0); setLog(l => [...l, `— Round ${roundNum} —`]); return true; } return false; }
   function resolveCombat(pAlive:boolean){
@@ -485,14 +498,21 @@ export default function EclipseIntegrated(){
           const pStates = multi.gameState?.playerStates as Record<string, PlayerState> | undefined;
           const st = myId ? pStates?.[myId] : null;
           const res = st?.resources;
+          const econ = st?.economy as { rerollBase?: number } | undefined;
           const mods = st?.modifiers;
           const bpIds = st?.blueprintIds;
+          const roundNum = (multi.gameState?.roundNum || 1) as number;
           if (res && typeof res.credits === 'number') setResources(r => ({ ...r, ...res }));
+          if (st?.research) setResearch({ ...(st.research as Research) });
+          if (typeof econ?.rerollBase === 'number') {
+            setBaseRerollCost(econ.rerollBase as number);
+            setRerollCost(econ.rerollBase as number);
+          }
           // All faction effect applications moved to sync effect to avoid race conditions
           // Blueprint application moved to sync effect to avoid race condition
           // Prefer server snapshot of my fleet for consistency across clients
           const serverFleet = Array.isArray(st?.fleet) ? (st.fleet as ShipSnapshot[]).map(fromSnapshotToShip) as unknown as Ship[] : [];
-          const roundNum = (multi.gameState?.roundNum || 1) as number;
+          // roundNum already computed above
           if (serverFleet.length > 0) {
             setFleet(serverFleet);
             setCapacity(c => ({ cap: Math.max(c.cap, serverFleet.length) }));
@@ -543,150 +563,25 @@ export default function EclipseIntegrated(){
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [multi?.gameState?.gamePhase, multi?.roomDetails?.room?.status, multi?.roomDetails?.room?.gameConfig?.startingShips, multi?.gameState?.playerStates]);
 
-  // Ensure client fleet stays in sync with server snapshot during setup even if mode is already OUTPOST
-  useEffect(() => {
-    if (gameMode !== 'multiplayer') return;
-    if (multi.gameState?.gamePhase !== 'setup') return;
-    try {
-      // Diagnostics: log incoming server snapshot frames
-      const st0 = (multi.getMyGameState?.() as PlayerState | null) ?? (() => {
-        const myId = multi.getPlayerId?.() as string | null;
-        return myId ? (multi.gameState?.playerStates as Record<string, PlayerState> | undefined)?.[myId] || null : null;
-      })();
-      const srv0 = Array.isArray(st0?.fleet) ? (st0!.fleet as ShipSnapshot[]) : [];
-      if (srv0.length) {
-        console.debug('[Sync] server snapshot frames', srv0.map(s => s?.frame?.id));
-      }
-      const st = (multi.getMyGameState?.() as PlayerState | null) ?? (() => {
-        const myId = multi.getPlayerId?.() as string | null;
-        return myId ? (multi.gameState?.playerStates as Record<string, PlayerState> | undefined)?.[myId] || null : null;
-      })();
-      const serverFleet = Array.isArray(st?.fleet) ? (st.fleet as ShipSnapshot[]) : [];
-      const roundNum = (multi.gameState?.roundNum || 1) as number;
-      // Apply all faction effects from server
-      const srvResearch = st?.research as Research | undefined;
-      const econ = st?.economy;
-      const mods = (st?.modifiers as { startingFrame?: 'interceptor'|'cruiser'|'dread'; rareChance?: number; capacityCap?: number; blueprintHints?: Record<string,string[]> } | undefined);
-      const bpIds = (st?.blueprintIds as Record<FrameId, string[]> | undefined);
-      
-      // Blueprint application (idempotent). Only update when content actually changes
-      const bpEquals = (a: Record<FrameId, Part[]>, b: Record<FrameId, Part[]>) => {
-        const frames: FrameId[] = ['interceptor','cruiser','dread'];
-        for (const f of frames) {
-          const aa = a[f] || [];
-          const bb = b[f] || [];
-          if (aa.length !== bb.length) return false;
-          for (let i=0; i<aa.length; i++) { if (aa[i]?.id !== bb[i]?.id) return false; }
-        }
-        return true;
-      };
-
-      // Track whether we considered blueprints (for navigation), without forcing state changes
-      let blueprintsApplied = false;
-      if (bpIds && (bpIds.interceptor.length || bpIds.cruiser.length || bpIds.dread.length)) {
-        const mapped = mapBlueprintIdsToParts(bpIds);
-        try { console.debug('[MP] apply class blueprints from ids', { interceptor: mapped.interceptor.length, cruiser: mapped.cruiser.length, dread: mapped.dread.length }); } catch { /* noop */ }
-        setBlueprints(prev => (bpEquals(prev as Record<FrameId, Part[]>, mapped) ? prev : (mapped as Record<FrameId, Part[]>)));
-        blueprintsApplied = true;
-      } else if (mods && mods.blueprintHints) {
-        setBlueprints(prev => {
-          const next = applyBlueprintHints(prev as Record<string, Part[]>, mods.blueprintHints as Record<string, string[]> ) as Record<FrameId, Part[]>;
-          return bpEquals(prev as Record<FrameId, Part[]>, next) ? (prev as Record<FrameId, Part[]>) : next;
-        });
-        blueprintsApplied = true;
-      } else {
-        // No server-provided blueprint info; avoid resetting to base repeatedly
-        blueprintsApplied = true;
-      }
-      
-      let factionsApplied = false;
-      
-      // Research state
-      if (srvResearch && typeof srvResearch.Military === 'number') {
-        setResearch({ ...srvResearch });
-        factionsApplied = true;
-      }
-      
-      // Economy effects
-      // Reroll base: for MP, always initialize reroll cost on round 1; if server supplies a value use it, else fall back to base (8)
-      // Initialize reroll base at the start of setup each round (per-player), preferring my economy.rerollBase when present
-      if (multi.gameState?.gamePhase === 'setup' && roundNum !== mpRerollInitRound) {
-        const fromEcon = (econ && typeof econ.rerollBase === 'number') ? econ.rerollBase : undefined;
-        const base = (fromEcon != null) ? fromEcon : ECONOMY.reroll.base;
-        setBaseRerollCost(base);
-        setRerollCost(base);
-        // (no-op) legacy flag removed
-        setMpRerollInitRound(roundNum);
-        try { console.debug('[MP] reroll base applied (my state)', { playerId: multi.getPlayerId?.(), base, round: roundNum }); } catch { /* noop */ }
-        factionsApplied = true;
-      }
-      if (econ && (typeof econ.creditMultiplier === 'number' || typeof econ.materialMultiplier === 'number')) {
-        // Only set global economy for single-player mode
-        if (gameMode !== 'multiplayer') {
-          setEconomyModifiers({ credits: econ.creditMultiplier ?? 1, materials: econ.materialMultiplier ?? 1 });
-        } else {
-          try { console.debug('[MP] using my economy multipliers (UI only)', { playerId: multi.getPlayerId?.(), credits: econ.creditMultiplier ?? 1, materials: econ.materialMultiplier ?? 1 }); } catch { /* noop */ }
-        }
-        factionsApplied = true;
-      }
-
-      // If my economy now provides a rerollBase different from current base during setup, correct it once (before any rerolls)
-      if (multi.gameState?.gamePhase === 'setup' && typeof econ?.rerollBase === 'number' && baseRerollCost !== econ.rerollBase) {
-        if (rerollCost === baseRerollCost) {
-          setBaseRerollCost(econ.rerollBase);
-          setRerollCost(econ.rerollBase);
-          try { console.debug('[MP] reroll base corrected from econ (my state)', { playerId: multi.getPlayerId?.(), base: econ.rerollBase, round: roundNum }); } catch { /* noop */ }
-        }
-      }
-      
-      // Modifier effects
-      if (mods && typeof mods.rareChance === 'number') {
-        setRareTechChance(mods.rareChance as number);
-        factionsApplied = true;
-      }
-      // Capacity cap is per-player. Apply only from my state. Do not read opponent's modifiers.
-      if (mods && typeof mods.capacityCap === 'number') {
-        setCapacity(c => {
-          const nextCap = Math.max(c.cap, mods.capacityCap as number);
-          if (c.cap === nextCap) return c; // idempotent
-          try { console.debug('[MP] capacity cap applied (my state)', { playerId: multi.getPlayerId?.(), prev: c.cap, next: nextCap }); } catch { /* noop */ }
-          return ({ cap: nextCap });
-        });
-        factionsApplied = true;
-      }
-      
-      // Switch to Outpost mode after faction effects are applied (only during setup)
-      const allFactionsApplied = blueprintsApplied || factionsApplied || (!bpIds && !mods?.blueprintHints && !srvResearch);
-      if (multi.gameState?.gamePhase === 'setup' && mode !== 'OUTPOST' && allFactionsApplied) {
-        setMode('OUTPOST');
-      }
-      if (serverFleet.length > 0) {
-        const mapped = serverFleet.map(fromSnapshotToShip) as unknown as Ship[];
-        // Adopt server snapshot if (a) new round, (b) server has more ships, or (c) frame ids differ
-        const framesOf = (arr: Ship[]) => arr.map(s => s.frame.id).sort().join(',');
-        const differentFrames = framesOf(mapped) !== framesOf(fleet);
-        if (roundNum !== mpLastServerApplyRound || mapped.length > fleet.length || differentFrames) {
-          console.debug('[Sync] Applying server fleet snapshot in setup', { roundNum, prevRound: mpLastServerApplyRound, serverCount: mapped.length, localCount: fleet.length });
-          setFleet(mapped);
-          // Capacity reset semantics at start of a new match (round 1):
-          // - If my modifiers provide capacityCap (e.g., Warmongers), honor it as the baseline cap.
-          // - Otherwise, reset to baseline (INITIAL_CAPACITY or fleet size), discarding any previous-match carryover.
-          if (roundNum === 1) {
-            const baseline = Math.max(INITIAL_CAPACITY.cap, mapped.length);
-            const capFromMods = (mods && typeof mods.capacityCap === 'number') ? (mods.capacityCap as number) : undefined;
-            const nextCap = capFromMods != null ? Math.max(baseline, capFromMods) : baseline;
-            setCapacity({ cap: nextCap });
-          } else {
-            setCapacity(c => ({ cap: Math.max(c.cap, mapped.length) }));
-          }
-          setFocused(0);
-          setMpLastServerApplyRound(roundNum);
-          setMpServerSnapshotApplied(true);
-        }
-      }
-    } catch { /* ignore */ }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameMode, multi?.gameState?.playerStates, multi?.gameState?.roundNum, testTick]);
+  // Multiplayer setup-phase sync (extracted hook)
+  useMpSetupSync({
+    gameMode,
+    multi,
+    deps: { testTick },
+    vars: { baseRerollCost, rerollCost, mpRerollInitRound, mpLastServerApplyRound, mode, blueprints, fleet },
+    setters: {
+      setMode,
+      setBlueprints: (bp) => setBlueprints(bp as Record<FrameId, Part[]>),
+      setResearch: (r) => setResearch(r as Research),
+      setBaseRerollCost,
+      setRerollCost,
+      setCapacity,
+      setFleet: (s) => setFleet(s as unknown as Ship[]),
+      setFocused,
+      setMpLastServerApplyRound,
+      setMpServerSnapshotApplied,
+    },
+  })
 
   // One-time seed submit if server snapshot missing on round 1
   useEffect(() => {
@@ -766,9 +661,10 @@ export default function EclipseIntegrated(){
   }
   function canResearch(track:'Military'|'Grid'|'Nano'){ 
     const economyMods = getCurrentPlayerEconomyMods();
+    const res = getCurrentPlayerResources();
     return gameMode === 'multiplayer'
-      ? canResearchWithMods(track, research as Research, resources, economyMods)
-      : canResearchCore(track, research as Research, resources); 
+      ? canResearchWithMods(track, research as Research, res, economyMods)
+      : canResearchCore(track, research as Research, res); 
   }
   function upgradeLockInfo(ship:Ship|null|undefined){ if(!ship) return null; if(ship.frame.id==='interceptor'){ return { need: 2, next:'Cruiser' }; } if(ship.frame.id==='cruiser'){ return { need: 3, next:'Dreadnought' }; } return null; }
 
@@ -918,7 +814,8 @@ export default function EclipseIntegrated(){
               }
               return;
             }
-            startCombat();
+            // Route SP start via engine to emit effects and centralize side-effects
+            applyOutpost(OutpostIntents.startCombat());
           }}
           onRestart={() => {
             if (gameMode === 'multiplayer') {

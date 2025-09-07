@@ -1,354 +1,253 @@
-Agents — Orchestrator & Sub-Agents
+# Agents (Codex CLI) — Orchestrator & Sub-Agents
 
-Mission
+## Mission
 
-Ship changes safely and fast. The Supervisor (orchestrator) coordinates Planning, Engine/Implementation, and Tests agents. It keeps CI green (tests/lint/build), spawns focused sub-agents for parallel tasks, and reaps completed work. Everything leaves a paper trail in coding_agents/.
-
-
----
-
-Ground Rules (non-negotiable)
-
-TDD: write a failing test → implement → make it pass. Never ship untested behavior.
-
-Hygiene: npm run lint && npm run test:run && npm run build must be green at the end of every loop.
-
-Types: no any/unknown on public boundaries. Define/extend domain types; introduce explicit interfaces for data crossing module boundaries.
-
-Player experience: every change must improve clarity or fun. Document the UX intent in the plan.
-
-Branches: for major work, branch from the parent’s branch. Name: feature/<short-kebab>.
-
-Write it down: plans, decisions, and status updates live under coding_agents/ (see structure below).
-
-
+All “agents” are **Codex CLI** processes. A **Supervisor** coordinates **Planning**, **Engine/Implementation**, and **Tests** sub-agents. The Supervisor keeps CI green (tests/lint/build), spawns focused Codex jobs, and reaps completed work. Every run leaves an auditable trail under `coding_agents/`.
 
 ---
 
-Directory structure
+## Ground Rules
 
+* **TDD**: write a failing test → implement → make it pass. No untested behavior.
+* **Hygiene every loop**:
+
+  ```bash
+  npm run lint && npm run test:run && npm run build
+  ```
+* **Types**: no `any`/`unknown` on public boundaries. Define explicit interfaces for data crossing module boundaries.
+* **Player experience first**: every plan states the user outcome and acceptance criteria.
+* **Branches**: major work on `feature/<kebab>`, inherited from the parent branch.
+* **Write it down**: plans, decisions, status updates live in `coding_agents/`.
+
+---
+
+## Directory Layout
+
+```
 coding_agents/
-  agents.md                     # this file
-  planning_agents.md            # plan templates & checklists
-  implementation_agents.md      # coding playbooks
-  research_agents.md            # research SOPs
+  agents.md
+  planning_agents.md
+  implementation_agents.md
+  research_agents.md
   subagents/
-    engine_agent.md
     planning_agent.md
+    engine_agent.md
     tests_agent.md
+  prompts/
+    planning.md
+    engine.md
+    tests.md
+  logs/            # runtime logs (*.out)
+  pids/            # pidfiles (*.pid)
   checklists/
     app_slim_phase0b_status.md
     app_slim_refactor_design.md
-  logs/                         # runtime logs (*.out)
-  pids/                         # pidfiles (*.pid)
-
+```
 
 ---
 
-Startup checklist (every session)
+## Startup (every session)
 
-1. Sync & branch
-
-
-
+```bash
 git fetch -p
 git switch <working-branch>
 git pull --rebase
-
-2. Safety net
-
-
 
 npm ci
 npm run lint
 npm run test:run
 npm run build
+```
 
-3. Plan stub
-Create/append a plan entry in coding_agents/subagents/planning_agent.md describing:
+Create/append a plan entry in `coding_agents/subagents/planning_agent.md`:
 
-
-
-Intent (user-visible outcome)
-
-Acceptance criteria
-
-Risks & rollback
-
-Test list (failing tests to write first)
-
-
+* **Outcome** (1 sentence)
+* **Acceptance criteria**
+* **Risks & rollback**
+* **Test list** (mark which must fail first)
 
 ---
 
-Supervisor responsibilities
+## Execution Policy (Codex flags)
 
-Plan: writes/updates coding_agents/<topic>_plan.md.
+All sub-agents are Codex processes launched with full tool access + web:
 
-Spawn: launches sub-agents for scoped tasks (planning/engine/tests).
+```
+--dangerously-bypass-approvals-and-sandbox --search
+```
 
-Observe: tails logs, tracks PIDs, and reaps finished work.
+These are injected automatically by `scripts/agents.sh` via the `CODEX_FLAGS` env var. Default:
 
-Gate: only merges changes when tests/lint/build are green and acceptance criteria are met.
+```bash
+export CODEX_FLAGS="--dangerously-bypass-approvals-and-sandbox --search -C . -p default"
+```
 
-Document: updates status docs and design notes as work completes.
+Override per session if needed (e.g., safer mode):
 
-
-
----
-
-Sub-agent roles (what each agent does & how to start it)
-
-Planning Agent
-
-Output: coding_agents/<feature>_design.md and a task breakdown.
-
-Must produce acceptance criteria + failing test list.
-
-Start:
-
-
-agents spawn planning "<feature>-planning" \
-  -- cmd="node scripts/agent_planning.js --feature <feature>"
-
-Engine/Implementation Agent
-
-Output: code + new/updated types; no side-effects in reducers.
-
-Must reference implementation_agents.md.
-
-Start:
-
-
-agents spawn engine "<feature>-engine" \
-  -- cmd="node scripts/agent_engine.js --feature <feature>"
-
-Tests Agent
-
-Output: failing tests first, then green.
-
-Owns coverage and regression harnesses.
-
-Start:
-
-
-agents spawn tests "<feature>-tests" \
-  -- cmd="node scripts/agent_tests.js --feature <feature>"
-
-> Implementation detail: agents spawn runs the command fully detached (setsid + nohup) and writes coding_agents/pids/<name>.pid and coding_agents/logs/<name>.out.
-
-
-
+```bash
+export CODEX_FLAGS="--full-auto -C . -p default"
+```
 
 ---
 
-Orchestrator loop (headless, non-blocking)
+## Running Agents = Running Codex
 
-Create orchestrator.sh at repo root:
+We use two Codex modes:
 
-#!/usr/bin/env bash
-set -euo pipefail
+1. **Non-interactive jobs (default)** — `codex exec "<prompt text>"`
+2. **Streaming/loop jobs** — `codex proto` (stdin/stdout protocol) for long-lived supervisors
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-AGENT="$ROOT/scripts/agents.sh"
+The process manager (`agents` alias for `bash scripts/agents.sh`) **detaches** each Codex run (`setsid` + `nohup`), captures logs, and writes a PID file.
 
-# 0) Pre-flight
-npm run lint
-npm run test:run
-npm run build
+---
 
-# 1) Draft/refresh plan (blocking — quick)
-node scripts/agent_supervisor_plan.js
+## Sub-Agent Roles
 
-# 2) Spawn focused sub-agents (non-blocking)
-$AGENT spawn planning "plan-$RANDOM"  -- cmd="node scripts/agent_planning.js"
-$AGENT spawn tests    "tests-$RANDOM" -- cmd="node scripts/agent_tests.js"
-$AGENT spawn engine   "engine-$RANDOM" -- cmd="node scripts/agent_engine.js"
+### Planning Agent (Codex)
 
-# 3) Supervisory loop
-while true; do
-  # Reap finished agents, mark status, and archive logs
-  $AGENT reap
-  $AGENT status
+**Goal**: produce/refresh the plan (`coding_agents/*_design.md`), acceptance criteria, and a failing-tests list.
+**Launch**:
 
-  # Health gate
-  npm run test:run || true
+```bash
+agents spawn planning "plan-$RANDOM" -- \
+  codex exec "$(cat coding_agents/prompts/planning.md)"
+```
 
-  # Optional: convergence check — break when no agents running
-  if [[ "$($AGENT running-count)" -eq 0 ]]; then
-    # Final gate before exit
-    npm run lint && npm run test:run && npm run build
-    break
-  fi
-  sleep 15
-done
+**Outputs**:
 
-Run it headless:
+* `coding_agents/<feature>_design.md`
+* updated `checklists/*` and `subagents/planning_agent.md`
 
+---
+
+### Engine/Implementation Agent (Codex)
+
+**Goal**: implement the next slice per plan; pure reducers/engine only; effects are declarative.
+**Launch**:
+
+```bash
+agents spawn engine "engine-$RANDOM" -- \
+  codex exec "$(cat coding_agents/prompts/engine.md)"
+```
+
+**Outputs**:
+
+* code + types; summary appended to `subagents/engine_agent.md`
+
+---
+
+### Tests Agent (Codex)
+
+**Goal**: write failing tests first, then drive green; maintain coverage and regression harnesses.
+**Launch**:
+
+```bash
+agents spawn tests "tests-$RANDOM" -- \
+  codex exec "$(cat coding_agents/prompts/tests.md)"
+```
+
+**Outputs**:
+
+* new/updated tests; status appended to `subagents/tests_agent.md`
+
+---
+
+## Supervisor / Orchestrator
+
+### Headless orchestrator (bash loop)
+
+`orchestrator.sh` runs the **gate → spawn → reap** loop:
+
+1. Pre-flight gate: `lint`, `test`, `build`
+2. Spawn Planning, Tests, and Engine agents (non-blocking)
+3. Loop:
+
+   * `agents reap` finished PIDs
+   * `agents status`
+   * soft health check: `npm run test:run || true`
+   * exit when `running-count == 0`
+4. Final gate: `lint`, `test`, `build`
+
+Run headless:
+
+```bash
 nohup bash orchestrator.sh > coding_agents/logs/orchestrator.out 2>&1 < /dev/null &
 echo $! > coding_agents/pids/orchestrator.pid
+```
 
+### Optional: streaming Supervisor (`codex proto`)
 
----
+For a single long-lived Codex controller that issues multiple steps without re-invocation:
 
-Process manager (scripts/agents.sh)
+```bash
+agents spawn supervisor "supervisor-$(date +%H%M%S)" -- \
+  codex proto
+```
 
-Create scripts/agents.sh:
-
-#!/usr/bin/env bash
-set -euo pipefail
-
-ROOT="$(git rev-parse --show-toplevel)"
-LOG_DIR="$ROOT/coding_agents/logs"
-PID_DIR="$ROOT/coding_agents/pids"
-mkdir -p "$LOG_DIR" "$PID_DIR"
-
-usage() {
-  echo "agents {spawn|stop|status|tail|reap|running-count} ..."
-}
-
-# spawn <role> <name> -- cmd="<command string>"
-spawn() {
-  local role="$1"; shift
-  local name="$1"; shift
-  [[ "$1" == "--" ]] || { echo "missing --"; exit 2; }
-  shift
-  local cmd
-  cmd="$(printf "%s" "$@" | sed -E 's/^cmd=//')"
-
-  local log="$LOG_DIR/${name}.out"
-  local pidf="$PID_DIR/${name}.pid"
-
-  # detach: new session, ignore HUP, no TTY
-  setsid nohup bash -lc "$cmd" >"$log" 2>&1 < /dev/null &
-  local pid=$!
-  echo "$pid" > "$pidf"
-  echo "spawned [$role] $name pid=$pid log=$log"
-}
-
-stop() {
-  local name="$1"
-  local pidf="$PID_DIR/${name}.pid"
-  [[ -f "$pidf" ]] || { echo "no pidfile for $name"; return 0; }
-  local pid
-  pid="$(cat "$pidf")"
-  if kill -0 "$pid" 2>/dev/null; then
-    kill -TERM "$pid" || true
-    # escalate after timeout
-    for _ in {1..20}; do
-      kill -0 "$pid" 2>/dev/null || { rm -f "$pidf"; echo "stopped $name"; return 0; }
-      sleep 0.5
-    done
-    kill -KILL "$pid" || true
-  fi
-  rm -f "$pidf"
-  echo "stopped $name"
-}
-
-status() {
-  shopt -s nullglob
-  for f in "$PID_DIR"/*.pid; do
-    local name; name="$(basename "$f" .pid)"
-    local pid; pid="$(cat "$f")"
-    if kill -0 "$pid" 2>/dev/null; then
-      echo "$name RUNNING (pid $pid)  log=$LOG_DIR/$name.out"
-    else
-      echo "$name EXITED   (stale pid $pid)  log=$LOG_DIR/$name.out"
-    fi
-  done
-}
-
-tail_logs() {
-  local name="$1"
-  tail -n 200 -f "$LOG_DIR/$name.out"
-}
-
-reap() {
-  shopt -s nullglob
-  for f in "$PID_DIR"/*.pid; do
-    local name; name="$(basename "$f" .pid)"
-    local pid; pid="$(cat "$f")"
-    if ! kill -0 "$pid" 2>/dev/null; then
-      # mark completion & archive
-      echo "$(date -Iseconds) :: $name finished (pid $pid)" >> "$LOG_DIR/_reap.log"
-      rm -f "$f"
-    fi
-  done
-}
-
-running_count() {
-  local c=0
-  shopt -s nullglob
-  for f in "$PID_DIR"/*.pid; do
-    local pid; pid="$(cat "$f")"
-    kill -0 "$pid" 2>/dev/null && ((c++)) || true
-  done
-  echo "$c"
-}
-
-case "${1:-}" in
-  spawn) shift; spawn "$@";;
-  stop) shift; stop "$@";;
-  status) shift || true; status;;
-  tail) shift; tail_logs "$@";;
-  reap) shift || true; reap;;
-  running-count) shift || true; running_count;;
-  *) usage; exit 2;;
-esac
-
-Make it available:
-
-chmod +x scripts/agents.sh orchestrator.sh
-echo 'alias agents="bash scripts/agents.sh"' >> ~/.bashrc
-
+A tiny driver can send protocol messages to stdin and read results from stdout (kept detached by the launcher).
 
 ---
 
-Logging & artifacts
+## Process Manager Commands
 
-Runtime logs: coding_agents/logs/<agent>.out
+(Provided by `scripts/agents.sh`; alias `agents="bash scripts/agents.sh"`)
 
-Reap events: coding_agents/logs/_reap.log
+```bash
+# Spawn agents (Codex flags injected automatically)
+agents spawn planning my-plan -- codex exec "$(cat coding_agents/prompts/planning.md)"
+agents spawn engine   my-engine -- codex exec "$(cat coding_agents/prompts/engine.md)"
+agents spawn tests    my-tests -- codex exec "$(cat coding_agents/prompts/tests.md)"
 
-PID files: coding_agents/pids/<agent>.pid
+# Observe / control
+agents status                    # list all with PIDs and log paths
+agents tail my-tests             # tail a specific agent log
+agents reap                      # remove stale pidfiles for exited agents
+agents stop my-engine            # graceful stop (TERM, then KILL after timeout)
+agents running-count             # number of live agents
+```
 
-Plans & design: coding_agents/*.md, coding_agents/subagents/*.md
-
-Every agent must write a brief “Result & Next Steps” footer into its log before exit.
-
-
-
----
-
-Signals & shutdown policy
-
-Graceful stop: TERM (agents should trap and finish the current step).
-
-Hard stop: KILL (used only after 10s grace).
-
-Orchestrator on exit must run the health gate:
-
-
-npm run lint && npm run test:run && npm run build
-
+**Detachment model**: `setsid` + `nohup` + `</dev/null` ensures agents outlive the launching shell and don’t block the main thread.
 
 ---
 
-Concurrency guard
+## Logging & Artifacts
 
-Default max concurrent sub-agents: 3. The orchestrator should check agents running-count and delay spawns if over budget to avoid local CPU thrash.
+* Runtime logs: `coding_agents/logs/<agent>.out`
+* Reap events: `coding_agents/logs/_reap.log`
+* PIDs: `coding_agents/pids/<agent>.pid`
+* Plans/designs: `coding_agents/*.md`, `coding_agents/subagents/*.md`
 
+Each agent appends a short **“Result & Next Steps”** section to its log before exit.
 
 ---
 
-Systemd (optional, if you want auto-restart)
+## Signals & Shutdown Policy
 
-You can run the orchestrator as a user service:
+* **Graceful**: `TERM` (agents should trap, finish current step, then exit)
+* **Hard**: `KILL` (only after 10s grace)
+* Orchestrator exit always runs the final health gate:
 
-~/.config/systemd/user/coding-orchestrator.service
+  ```bash
+  npm run lint && npm run test:run && npm run build
+  ```
 
+---
+
+## Concurrency Guard
+
+Default max concurrent sub-agents: **3**. Supervisors should check `agents running-count` and delay spawns if over budget to avoid local CPU thrash.
+
+---
+
+## Systemd (optional)
+
+Run the orchestrator as a user service that restarts on crash.
+
+`~/.config/systemd/user/coding-orchestrator.service`
+
+```ini
 [Unit]
-Description=Coding Orchestrator
+Description=Coding Orchestrator (Codex)
 After=default.target
 
 [Service]
@@ -362,73 +261,105 @@ StandardError=journal
 
 [Install]
 WantedBy=default.target
+```
 
+Enable:
+
+```bash
 systemctl --user daemon-reload
 systemctl --user enable --now coding-orchestrator
 journalctl --user -u coding-orchestrator -f
-
-
----
-
-Acceptance gates (what “done” means)
-
-All acceptance criteria in the plan satisfied.
-
-Lint/tests/build green.
-
-Player-visible behavior matches intent (or is explicitly flagged in the plan).
-
-Updated docs in coding_agents/:
-
-The plan has a “Decision Log” and “Follow-ups”.
-
-checklists/* updated if architecture changed.
-
-
-
+```
 
 ---
 
-Quick command cheatsheet
+## Prompt Stubs (placeholders)
 
-# Spawn agents
-agents spawn planning my-plan -- cmd="node scripts/agent_planning.js --feature app-slim"
-agents spawn engine   my-engine -- cmd="node scripts/agent_engine.js --feature app-slim"
-agents spawn tests    my-tests -- cmd="node scripts/agent_tests.js --feature app-slim"
+`coding_agents/prompts/planning.md`
 
-# Observe / control
+```
+You are the Planning Agent for the Eclipse roguelike repo.
+
+Goal: produce/refresh the plan for "App Slim Refactor — Phase 0b":
+- User-visible outcomes and acceptance criteria
+- Failing test list to drive implementation
+- Update coding_agents/checklists/app_slim_phase0b_status.md
+
+Constraints:
+- Keep lint/build green; failing tests allowed only if clearly intentional and documented.
+
+Deliverables:
+- Update coding_agents/app_slim_refactor_design.md (today’s scope)
+- Append a “Decision Log” with any interface/type changes
+```
+
+`coding_agents/prompts/engine.md`
+
+```
+You are the Engine Implementation Agent.
+
+Task:
+- Implement the next slice of Phase 0b per the design doc.
+- Pure reducers/engine only; emit declarative effects.
+- Update src/game/state.ts and commands.ts types as needed.
+
+Tests first:
+- Add/modify tests listed by Planning Agent; make them fail.
+Then implement until green.
+
+Output:
+- Short summary appended to coding_agents/subagents/engine_agent.md:
+  - Files touched
+  - Types added/changed
+  - Effects emitted
+```
+
+`coding_agents/prompts/tests.md`
+
+```
+You are the Tests Agent.
+
+Task:
+- Create failing tests that encode the acceptance criteria.
+- Drive them to green.
+- Prefer unit tests for selectors/engine; snapshot tests for labels/guards.
+
+Report:
+- Write a brief status to coding_agents/subagents/tests_agent.md:
+  - New tests
+  - Failures fixed
+  - Remaining gaps
+```
+
+---
+
+## Acceptance Gates
+
+* Acceptance criteria satisfied.
+* `npm run lint && npm run test:run && npm run build` all green.
+* Docs updated in `coding_agents/`:
+
+  * Plan includes **Decision Log** and **Follow-ups**
+  * Checklists/status reflect current state
+
+---
+
+## Quick Cheatsheet
+
+```bash
+# One-time setup
+echo 'alias agents="bash scripts/agents.sh"' >> ~/.bashrc
+export CODEX_FLAGS="--dangerously-bypass-approvals-and-sandbox --search -C . -p default"
+
+# Start orchestrator headless
+nohup bash orchestrator.sh > coding_agents/logs/orchestrator.out 2>&1 < /dev/null &
+echo $! > coding_agents/pids/orchestrator.pid
+
+# Day-to-day
 agents status
-agents tail my-tests
+agents tail planning-12345
 agents reap
-agents stop my-engine
-agents running-count
+agents stop engine-12345
+```
 
-
----
-
-Pointers for the Supervisor when writing/reading design docs
-
-When you open or create docs like:
-
-coding_agents/app_slim_refactor_design.md
-
-coding_agents/checklists/app_slim_phase0b_status.md
-
-coding_agents/subagents/*_agent.md
-
-
-Ensure each doc answers:
-
-1. User outcome in one sentence.
-
-
-2. Interfaces/types you’re adding or changing.
-
-
-3. Test inventory with links to files (tests/*.spec.ts), marking which are failing first.
-
-
-4. Risks/rollback path.
-
-
-5. Who owns it next (which agent picks it up).
+**Result:** a non-blocking, headless Codex setup where the Supervisor orchestrates sub-agents, every process is detached with PID/log bookkeeping, and quality gates stay enforced.

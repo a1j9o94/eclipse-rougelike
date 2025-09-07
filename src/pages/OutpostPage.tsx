@@ -244,7 +244,7 @@ export function OutpostPage({
           {/* Shop side */}
           <div className="lg:col-span-2">
             <div className="flex gap-2 items-center flex-wrap mb-2">
-              <button onClick={doReroll} disabled={resources.credits<rerollCost} className={`px-3 py-2 rounded-lg text-sm sm:text-base ${resources.credits>=rerollCost?'bg-purple-700 hover:bg-purple-600 active:scale-[.99]':'bg-zinc-700 opacity-60'}`}>Reroll ({rerollCost}¢)</button>
+              <button data-testid="reroll-button" onClick={doReroll} disabled={resources.credits<rerollCost} className={`px-3 py-2 rounded-lg text-sm sm:text-base ${resources.credits>=rerollCost?'bg-purple-700 hover:bg-purple-600 active:scale-[.99]':'bg-zinc-700 opacity-60'}`}>Reroll ({rerollCost}¢)</button>
               <div className="text-[11px] sm:text-xs opacity-70">Reroll +{rrInc} after each Reroll/Research</div>
             </div>
             <div className="text-lg font-semibold mb-2">Outpost Inventory</div>

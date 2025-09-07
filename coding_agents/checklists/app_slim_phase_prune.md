@@ -89,10 +89,11 @@ How to use: Treat each item as a mini-task with acceptance criteria. Check off o
 Common ones to keep things green:
 
 ```bash
-npm run lint
-npm run test:run
+npm run lint && npm run typecheck
+npm run test:run   # forks pool; basic reporter
 npm run build
 npm run check:app-lines
+npm run orchestrator  # spawns planning/tests/engine agents; logs under coding_agents/logs/
 ```
 
 ## Definition of Done
@@ -101,4 +102,3 @@ npm run check:app-lines
 - All handlers/effects/logic live outside App behind typed boundaries.
 - Lint, tsc, build are green; tests pass or intentionally failing tests are clearly marked in commits.
 - Docs in `coding_agents/*` reflect final architecture and provide a runbook for future contributors.
-
