@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:run": "vitest run --coverage",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "check:app-lines": "node tools/check-app-lines.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^1.5.0",
