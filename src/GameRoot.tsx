@@ -4,14 +4,12 @@ import { INITIAL_BLUEPRINTS, INITIAL_RESEARCH, INITIAL_RESOURCES, INITIAL_CAPACI
 // PlayerState imported where needed in selectors/hooks
 import { type CapacityState, type DifficultyId } from '../shared/types'
 import { type FrameId } from './game'
-import { ResourceBar } from './components/ui'
-import { RulesModal, TechListModal, WinModal, MatchOverModal } from './components/modals'
+import GameShell from './components/GameShell'
 import { getEconomyModifiers } from './game/economy'
 // blueprint seeding handled in hooks
 import StartPage from './pages/StartPage'
 import { type FactionId } from '../shared/factions'
-import OutpostPage from './pages/OutpostPage'
-import CombatPage from './pages/CombatPage'
+// Routed views are rendered inside GameShell
 import { type Part } from '../shared/parts'
 import { type Ship, type GhostDelta, type InitiativeEntry } from '../shared/types'
 // run init handled in useRunManagement
@@ -74,7 +72,7 @@ export default function EclipseIntegrated(){
   const [showRules, setShowRules] = useState(false);
   const [showTechs, setShowTechs] = useState(false);
   const [showWin, setShowWin] = useState(false);
-  const [showHelpMenu, setShowHelpMenu] = useState(false);
+  // help menu lives in GameShell
   const [endless, setEndless] = useState(false);
   // Lives system replaces old grace
   const inferStartingLives = (diff: DifficultyId | null, sv?: { livesRemaining?: number; graceUsed?: boolean }) => {
@@ -501,81 +499,23 @@ export default function EclipseIntegrated(){
   }
 
   return (
-    <div className={`bg-zinc-950 min-h-screen text-zinc-100`}>
-      {matchOver && (
-        <MatchOverModal
-          winnerName={matchOver.winnerName}
-          onClose={() => {
-            try { void (multi as { prepareRematch?: ()=>Promise<void> })?.prepareRematch?.(); } catch { /* noop */ }
-            setMatchOver(null);
-            // Reset local context so UI is clean when returning to lobby
-            setMode('OUTPOST');
-            setLog([]);
-            setRoundNum(1);
-            setTurnPtr(-1);
-            setQueue([]);
-            setCombatOver(false);
-            setOutcome('');
-            setMultiplayerPhase('lobby');
-          }}
-        />
-      )}
-      {/* Lives banner removed; lives integrated in ResourceBar below */}
-      {/* Rules Modal */}
-      {showRules && (
-        <RulesModal onDismiss={dismissRules} />
-      )}
-
-      {/* Tech List Modal */}
-      {showTechs && (
-        <TechListModal research={research as Research} onClose={()=>setShowTechs(false)} />
-      )}
-
-      {/* Win Modal */}
-      {showWin && (
-        <WinModal onRestart={()=>{ setShowWin(false); resetRun(); }} onEndless={()=>{ setShowWin(false); setEndless(true); }} />
-      )}
-
-      <ResourceBar {...rbVm} />
-
-      {mode==='OUTPOST' && (<OutpostPage {...outpostProps} />)}
-
-      {/* Multiplayer: Outpost uses Start Combat only; no extra readiness bar */}
-
-      {mode==='COMBAT' && (
-        <CombatPage
-          combatOver={combatOver}
-          outcome={outcome}
-          roundNum={roundNum}
-          queue={queue}
-          turnPtr={turnPtr}
-          fleet={fleet}
-          enemyFleet={enemyFleet}
-          log={log}
-          onReturn={handleReturnFromCombat}
-        />
-      )}
-
-      {/* Faction picking handled in RoomLobby before first shop */}
-
-      {/* Floating utility buttons */}
-      <div className="fixed bottom-3 right-3 z-40 flex flex-col gap-2">
-        <div className="hidden sm:flex flex-col gap-2">
-          <button onClick={()=>setShowTechs(true)} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">🔬 Tech</button>
-          <button onClick={()=>setShowRules(true)} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">❓ Rules</button>
-        </div>
-        <div className="sm:hidden">
-          {showHelpMenu ? (
-            <div className="flex flex-col gap-2">
-              <button onClick={()=>{ setShowTechs(true); setShowHelpMenu(false); }} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">🔬 Tech</button>
-              <button onClick={()=>{ setShowRules(true); setShowHelpMenu(false); }} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">❓ Rules</button>
-              <button onClick={()=>setShowHelpMenu(false)} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">✖</button>
-            </div>
-          ) : (
-            <button onClick={()=>setShowHelpMenu(true)} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">❓</button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+    <GameShell
+      showRules={showRules}
+      onDismissRules={dismissRules}
+      showTechs={showTechs}
+      onCloseTechs={()=>setShowTechs(true)}
+      showWin={showWin}
+      onRestartWin={()=>{ setShowWin(false); resetRun() }}
+      matchOver={matchOver}
+      onMatchOverClose={() => {
+        try { void (multi as { prepareRematch?: ()=>Promise<void> })?.prepareRematch?.(); } catch { /* noop */ }
+        setMatchOver(null);
+        setMode('OUTPOST'); setLog([]); setRoundNum(1); setTurnPtr(-1); setQueue([]); setCombatOver(false); setOutcome(''); setMultiplayerPhase('lobby');
+      }}
+      resourceBar={rbVm as any}
+      route={mode}
+      outpost={outpostProps as any}
+      combat={{ combatOver, outcome, roundNum, queue: queue as any, turnPtr, fleet, enemyFleet, log, onReturn: handleReturnFromCombat }}
+    />
+  )
 }
