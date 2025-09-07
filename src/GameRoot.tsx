@@ -28,6 +28,7 @@ import type { OutpostEffects as EngineOutpostEffects } from './engine/commands'
 // moved snapshot mapping into useMpPhaseNav
 // rewards handled by useRunLifecycle
 import { makeResearchLabel, makeCanResearch } from './selectors/researchUi'
+import { upgradeLockInfo as selectUpgradeLockInfo } from './selectors/upgrade'
 import { loadRunState, saveRunState, clearRunState, recordWin, restoreRunEnvironment, restoreOpponent, evaluateUnlocks } from './game/storage'
 import { playEffect, playMusic } from './game/sound'
 import MultiplayerStartPage from './pages/MultiplayerStartPage'
@@ -45,7 +46,7 @@ import { useMpPhaseNav } from './hooks/useMpPhaseNav'
 import { useRunLifecycle } from './hooks/useRunLifecycle'
 import { useCombatLoop } from './hooks/useCombatLoop'
 import { useResourceBarVm } from './hooks/useResourceBarVm'
-import { useOutpostVm } from './hooks/useOutpostVm'
+import { useOutpostPageProps } from './hooks/useOutpostPageProps'
 // Lives now integrated into ResourceBar; banner removed
 
 /**
@@ -417,11 +418,11 @@ export default function EclipseIntegrated(){
 
   const researchLabel = makeResearchLabel(gameMode, research as Research, multi)
   const canResearch = makeCanResearch(gameMode, research as Research, resources as Resources, multi)
-  function upgradeLockInfo(ship:Ship|null|undefined){ if(!ship) return null; if(ship.frame.id==='interceptor'){ return { need: 2, next:'Cruiser' }; } if(ship.frame.id==='cruiser'){ return { need: 3, next:'Dreadnought' }; } return null; }
+  const upgradeLockInfo = (ship:Ship|null|undefined) => selectUpgradeLockInfo(ship)
 
   // View Models (must be called before any conditional returns)
   const rbVm = useResourceBarVm({ resources: resources as Resources, tonnage, sector, onReset: resetRun, gameMode, singleLives: livesRemaining, multi })
-  const outpostVm = useOutpostVm({
+  const outpostProps = useOutpostPageProps({
     gameMode,
     resources: resources as Resources,
     research: research as Research,
@@ -439,7 +440,7 @@ export default function EclipseIntegrated(){
     buildShip,
     upgradeShip,
     upgradeDock,
-    ghost: ghost as (s: Ship, p: Part) => unknown,
+    ghost: ghost as unknown as (s: Ship, p: Part) => { use:number; prod:number; valid:boolean; slotsUsed:number; slotCap:number; slotOk:boolean; targetName:string; initBefore:number; initAfter:number; initDelta:number; hullBefore:number; hullAfter:number; hullDelta:number },
     sellPart: (fid: FrameId, idx: number) => sellPart(fid, idx),
     buyAndInstall,
     sector,
@@ -458,6 +459,8 @@ export default function EclipseIntegrated(){
     setMpServerSnapshotApplied,
     setMpLastServerApplyRound,
     setMpRerollInitRound,
+    doReroll,
+    upgradeLockInfo,
   })
 
   // Main routing logic
@@ -535,41 +538,7 @@ export default function EclipseIntegrated(){
 
       <ResourceBar {...rbVm} />
 
-      {mode==='OUTPOST' && (
-        <OutpostPage
-          resources={resources}
-          rerollCost={rerollCost}
-          doReroll={doReroll}
-          research={research}
-          researchLabel={researchLabel}
-          canResearch={canResearch}
-          researchTrack={researchTrack}
-          fleet={fleet}
-          focused={focused}
-          setFocused={setFocused}
-          buildShip={buildShip}
-          upgradeShip={upgradeShip}
-          upgradeDock={upgradeDock}
-          upgradeLockInfo={upgradeLockInfo}
-          blueprints={blueprints}
-          sellPart={sellPart}
-          shop={shop}
-          ghost={ghost}
-          buyAndInstall={buyAndInstall}
-          capacity={capacity}
-          tonnage={tonnage}
-          sector={sector}
-          endless={endless}
-          
-          myReady={outpostVm.myReady}
-          oppReady={outpostVm.oppReady}
-          mpGuards={outpostVm.mpGuards}
-          economyMods={outpostVm.economyMods}
-          startCombat={outpostVm.startCombat}
-          onRestart={outpostVm.onRestart}
-          fleetValid={outpostVm.fleetValid}
-        />
-      )}
+      {mode==='OUTPOST' && (<OutpostPage {...outpostProps} />)}
 
       {/* Multiplayer: Outpost uses Start Combat only; no extra readiness bar */}
 
