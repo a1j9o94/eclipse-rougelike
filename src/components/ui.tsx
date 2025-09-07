@@ -148,9 +148,11 @@ export function ShipFrameSlots({ ship, side, active }: { ship: Ship, side: 'P' |
               <div
                 key={i}
                 data-testid={label ? 'frame-slot-filled' : 'frame-slot-empty'}
-                className={`w-6 h-6 sm:w-7 sm:h-7 text-[11px] sm:text-xs grid place-items-center rounded ${glow} ${activeGlow}`}
+                className={`w-7 h-7 sm:w-8 sm:h-8 text-[10px] sm:text-[11px] md:text-xs leading-none grid place-items-center rounded ${glow} ${activeGlow}`}
               >
-                {label}
+                <span className={`${label.length > 3 ? 'scale-[.90] sm:scale-[.95]' : ''} inline-block`}>
+                  {label}
+                </span>
               </div>
             ))}
           </div>
