@@ -109,9 +109,9 @@ export function useCombatLoop(params: {
     try {
       const pFleetArr = getters.fleet()
       const eFleetArr = getters.enemyFleet()
-      const pAlive = pFleetArr.some(s => s.alive && s.stats.valid)
-      const eAlive = eFleetArr.some(s => s.alive && s.stats.valid)
-      dlog('stepTurn:enter', { round: getters.roundNum(), turnPtr: getters.turnPtr(), pAlive, eAlive, pCount: pFleetArr.length, eCount: eFleetArr.length })
+      const pAlive = pFleetArr.some(s => s.alive)
+      const eAlive = eFleetArr.some(s => s.alive)
+      dlog('stepTurn:enter', { round: getters.roundNum(), turnPtr: getters.turnPtr(), pAlive, eAlive, pAliveValid: pFleetArr.some(s=>s.alive && s.stats.valid), eAliveValid: eFleetArr.some(s=>s.alive && s.stats.valid), pCount: pFleetArr.length, eCount: eFleetArr.length })
       if (!pAlive || !eAlive) { resolveCombat(pAlive); return }
       if (initRoundIfNeeded()) return
       const qIdx = getters.turnPtr()
@@ -162,9 +162,9 @@ export function useCombatLoop(params: {
   function endRound(){
     const pFleetArr = getters.fleet()
     const eFleetArr = getters.enemyFleet()
-    const pAlive = pFleetArr.some(s => s.alive && s.stats.valid)
-    const eAlive = eFleetArr.some(s => s.alive && s.stats.valid)
-    if (!pAlive || !eAlive) { resolveCombat(pAlive); return }
+    const pAlive = pFleetArr.some(s => s.alive)
+    const eAlive = eFleetArr.some(s => s.alive)
+    if (!pAlive || !eAlive) { dlog('resolveCombat', { reason: !pAlive ? 'playerDead' : 'enemyDead', pAlive, eAlive }); resolveCombat(pAlive); return }
     setters.setRoundNum(n=>n+1)
     setters.setTurnPtr(-1)
     setters.setQueue([])
