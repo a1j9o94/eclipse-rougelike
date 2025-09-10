@@ -23,5 +23,7 @@ export function useEffectsRunner(effects: OutpostEffects | undefined, sink: Effe
     if (effects.startCombat) sink.startCombat()
     if (effects.shopItems && sink.shopItems) sink.shopItems(effects.shopItems)
     // Future: route sound/timer/dialog effects here
+    // Dedupe only within the same microtask: allow identical effects later.
+    Promise.resolve().then(() => { lastRef.current = '' })
   }, [effects, sink])
 }
