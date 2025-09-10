@@ -8,6 +8,7 @@ export type EffectSink = {
   startCombat: () => void
   shopItems?: (items: Part[]) => void
   sound?: (key: string) => void
+  clearEffects?: () => void
 }
 
 // Runs one-shot effects emitted by the engine/adapters.
@@ -25,7 +26,10 @@ export function useEffectsRunner(effects: OutpostEffects | undefined, sink: Effe
     if (effects.startCombat) sink.startCombat()
     if (effects.shopItems && sink.shopItems) sink.shopItems(effects.shopItems)
     // Future: route sound/timer/dialog effects here
-    // Dedupe only within the same microtask: allow identical effects later.
-    Promise.resolve().then(() => { lastRef.current = '' })
+    // Mark consumed: clear both the lastRef and upstream effect so it won't re-fire on the next render.
+    Promise.resolve().then(() => {
+      lastRef.current = ''
+      try { sink.clearEffects?.() } catch { /* ignore */ }
+    })
   }, [effects, sink])
 }

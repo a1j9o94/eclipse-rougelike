@@ -253,6 +253,7 @@ export default function EclipseIntegrated(){
     },
     startCombat: combat.startCombat,
     shopItems: (items) => setShop({ items }),
+    clearEffects: () => setLastEffects(undefined),
   } as EffectSink)
   async function stepTurn(){ await combat.stepTurn() }
   // Auto-step loop
