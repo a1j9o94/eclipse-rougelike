@@ -8,6 +8,8 @@ import { getMyPlayerState, type MpBasics } from '../adapters/mpSelectors'
 type UseOutpostVmArgs = Parameters<typeof useOutpostVm>[0]
 
 export type OutpostPageProps = {
+  gameMode: 'single'|'multiplayer'
+  multi?: MpBasics
   resources: Resources
   rerollCost: number
   doReroll: () => void
@@ -94,6 +96,8 @@ export function useOutpostPageProps(params: {
     } catch { /* ignore */ }
   }
   return useMemo(() => ({
+    gameMode: params.gameMode,
+    multi: params.multi,
     resources: params.resources,
     rerollCost: displayReroll,
     doReroll: params.doReroll,

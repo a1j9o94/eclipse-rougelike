@@ -2,6 +2,8 @@
 import { FACTIONS } from '../../shared/factions'
 import { SECTORS, getBossVariants, getBossFleetFor, getOpponentFaction, ALL_PARTS, makeShip, FRAMES, getSectorSpec } from '../game'
 import { getInitialCapacityForDifficulty } from '../../shared/difficulty'
+import { selectOpponentIntel } from '../selectors/opponentIntel'
+import type { MpBasics } from '../adapters/mpSelectors'
 import { BASE_CONFIG } from '../../shared/game'
 import { CompactShip } from './ui'
 import { type Ship } from '../../shared/types'
@@ -49,30 +51,58 @@ export function RulesModal({ onDismiss }:{ onDismiss:()=>void }){
   );
 }
 
-export function CombatPlanModal({ onClose, sector, endless }:{ onClose:()=>void, sector:number, endless:boolean }){
+export function CombatPlanModal({ onClose, sector, endless, gameMode, multi }:{ onClose:()=>void, sector:number, endless:boolean, gameMode:'single'|'multiplayer', multi?: MpBasics | null }){
   const plan = endless
     ? Array.from({length:5}, (_,i)=> getSectorSpec(sector + i))
     : SECTORS;
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 bg-black/70">
       <div className="w-full max-w-lg bg-zinc-900 border border-zinc-700 rounded-2xl p-4">
-        <div className="text-lg font-semibold mb-2">Combat Plan</div>
-        <div className="text-xs sm:text-sm space-y-1 max-h-[60vh] overflow-y-auto pr-1">
-          {plan.map(s=> (
-            <div key={s.sector} className="px-2 py-1 rounded bg-zinc-950 border border-zinc-800 flex items-start justify-between gap-2">
-              <div className="flex-1">
-                <div>Sector {s.sector}{s.boss? ' (Boss)':''}</div>
-                {s.boss && (
-                  <>
-                    <div className="opacity-70 mt-0.5">Variants: {getBossVariants(s.sector).map(v=>v.label).join(', ')}</div>
-                    <BossFleetPreview sector={s.sector as 5|10} />
-                  </>
-                )}
+        <div className="text-lg font-semibold mb-2">Enemy Intel</div>
+        {gameMode === 'multiplayer' ? (
+          <div className="text-xs sm:text-sm space-y-1 max-h-[60vh] overflow-y-auto pr-1">
+            {(() => {
+              const intel = selectOpponentIntel(gameMode, multi as never)
+              const fleet = intel.fleet
+              const round = intel.round || 1
+              const name = intel.opponentName || 'Opponent'
+              if (!fleet || fleet.length === 0) {
+                return (
+                  <div className="px-2 py-1 rounded bg-zinc-950 border border-zinc-800">
+                    <div className="font-medium">{name} — Round {round}</div>
+                    <div className="opacity-80 mt-0.5">No data yet — defaults shown</div>
+                  </div>
+                )
+              }
+              return (
+                <div className="px-2 py-1 rounded bg-zinc-950 border border-zinc-800">
+                  <div className="font-medium">{name} — Round {round}</div>
+                  <div className="opacity-70 mb-1">{intel.source === 'last_combat' ? 'Last faced fleet' : 'Current starting fleet'}</div>
+                  <div className="mt-1 flex gap-2 overflow-x-auto pb-1">
+                    {fleet.map((sh, i)=>(<CompactShip key={i} ship={sh} side='E' active={false} />))}
+                  </div>
+                </div>
+              )
+            })()}
+          </div>
+        ) : (
+          <div className="text-xs sm:text-sm space-y-1 max-h-[60vh] overflow-y-auto pr-1">
+            {plan.map(s=> (
+              <div key={s.sector} className="px-2 py-1 rounded bg-zinc-950 border border-zinc-800 flex items-start justify-between gap-2">
+                <div className="flex-1">
+                  <div>Sector {s.sector}{s.boss? ' (Boss)':''}</div>
+                  {s.boss && (
+                    <>
+                      <div className="opacity-70 mt-0.5">Variants: {getBossVariants(s.sector).map(v=>v.label).join(', ')}</div>
+                      <BossFleetPreview sector={s.sector as 5|10} />
+                    </>
+                  )}
+                </div>
+                <div className="opacity-80 text-right whitespace-nowrap">Enemy tonnage {s.enemyTonnage} • Science cap T{s.enemyScienceCap}</div>
               </div>
-              <div className="opacity-80 text-right whitespace-nowrap">Enemy tonnage {s.enemyTonnage} • Science cap T{s.enemyScienceCap}</div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
         <div className="mt-3"><button onClick={onClose} className="w-full px-4 py-2 rounded-xl bg-emerald-600">Close</button></div>
       </div>
     </div>

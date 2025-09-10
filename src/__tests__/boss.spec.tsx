@@ -20,16 +20,16 @@ describe('Boss variants and planning', () => {
     expect(v10Labels.join(', ')).toMatch(/Tier 3|T3/i)
   })
 
-  it('Combat Plan shows boss variant labels for sectors 5 and 10', async () => {
+  it('Enemy Intel (SP) shows boss variant labels for sectors 5 and 10', async () => {
     let seed = 1
     const rand = vi.spyOn(Math, 'random').mockImplementation(() => {
       seed = (seed * 16807) % 2147483647
       return (seed - 1) / 2147483646
     })
     renderOutpost()
-    // Open Combat Plan from Outpost
-    await screen.findByRole('button', { name: /Combat Plan/i })
-    fireEvent.click(screen.getByRole('button', { name: /Combat Plan/i }))
+    // Open Enemy Intel from Outpost
+    await screen.findByRole('button', { name: /Enemy Intel/i })
+    fireEvent.click(screen.getByRole('button', { name: /Enemy Intel/i }))
     rand.mockRestore()
 
     // Sector rows appear with variants summary for boss sectors
