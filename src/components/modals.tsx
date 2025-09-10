@@ -33,7 +33,7 @@ export function RulesModal({ onDismiss }:{ onDismiss:()=>void }){
   const dockStart = getInitialCapacityForDifficulty('easy', BASE_CONFIG.startingFrame);
   const dockCircles = '🟢'.repeat(dockStart);
   return (
-    <div className="fixed inset-0 z-40 flex items-end sm:items-center justify-center p-3 bg-black/60">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 bg-black/60">
       <div className="w-full max-w-lg bg-zinc-900 border border-zinc-700 rounded-2xl p-4 shadow-xl">
         <div className="text-lg font-semibold mb-2">How to Play</div>
         <div className="text-sm space-y-3 max-h-[60vh] overflow-y-auto pr-1">

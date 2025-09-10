@@ -386,7 +386,9 @@ export default function EclipseIntegrated(){
     <GameShell
       showRules={showRules}
       onDismissRules={dismissRules}
+      onOpenRules={()=>setShowRules(true)}
       showTechs={showTechs}
+      onOpenTechs={()=>setShowTechs(true)}
       onCloseTechs={()=>setShowTechs(false)}
       showWin={showWin}
       onRestartWin={()=>{ setShowWin(false); resetRun() }}
