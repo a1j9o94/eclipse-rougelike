@@ -14,7 +14,7 @@ html, body, #root { height: 100%; }
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: -1;
+  z-index: 0; /* sit above bg gradient, below content */
   background-image:
     radial-gradient(1200px 800px at 10% -10%, rgba(56,189,248,0.08), transparent 60%),
     radial-gradient(800px 600px at 90% 20%, rgba(99,102,241,0.06), transparent 60%),

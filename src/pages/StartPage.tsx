@@ -62,7 +62,7 @@ export default function StartPage({
       {starEnabled && (
         <div aria-hidden className={`starfield ${starDensity}`} />
       )}
-      <div className="w-full max-w-md mx-auto flex flex-col flex-1">
+      <div className="w-full max-w-md mx-auto flex flex-col flex-1 relative z-10">
         {/* Top Bar */}
         <div className="flex items-center justify-between h-10">
           <button aria-label="Settings" onClick={()=>setShowSettings(true)} className="px-3 py-2 rounded-full bg-white/5 border border-white/10">⚙</button>
