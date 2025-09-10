@@ -43,10 +43,11 @@ export function useRunLifecycle(params: {
     setShowWin: (v: boolean) => void
     setEndless: (v: boolean) => void
     setBaseRerollCost: (n: number) => void
+    setLivesRemaining?: (n: number) => void
   }
   multi?: MpLifecycle
 }){
-  const { outcome, combatOver, gameMode, endless, baseRerollCost, fns, sfx, getters, setters, multi } = params
+  const { outcome, combatOver, livesRemaining, gameMode, endless, baseRerollCost, fns, sfx, getters, setters, multi } = params
   return useCallback(async () => {
     if(!combatOver) return
     if(outcome==='Victory'){
@@ -86,11 +87,15 @@ export function useRunLifecycle(params: {
     if (gameMode==='multiplayer' && multi) {
       try { await multi.restartToSetup?.() } catch {/* ignore */}
     }
-    if(outcome==='Defeat — Run Over'){
+    // If caller marked the run over, honor it directly
+    if(outcome==='Defeat — Run Over' || (gameMode==='single' && (livesRemaining<=0))){
       await sfx.playEffect('page')
       fns.resetRun()
     } else {
-      // Life lost: grace recover and grant rewards
+      // Life lost (single-player): decrement lives, grace recover and grant rewards
+      if (gameMode==='single' && typeof setters.setLivesRemaining === 'function') {
+        try { setters.setLivesRemaining(Math.max(0, (livesRemaining||0) - 1)) } catch { /* ignore */ }
+      }
       const fleet = getters.fleet()
       const bp = getters.blueprints()
       const sector = getters.sector()
