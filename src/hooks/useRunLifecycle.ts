@@ -40,6 +40,7 @@ export function useRunLifecycle(params: {
     setRerollCost: (n: number) => void
     setSector?: (updater: (n: number) => number) => void
     setFleet: (f: Ship[]) => void
+    setFocused?: (n: number) => void
     setLog: (updater: (l: string[]) => string[]) => void
     setShowWin: (v: boolean) => void
     setEndless: (v: boolean) => void
@@ -59,6 +60,7 @@ export function useRunLifecycle(params: {
       // Cull and restore fleet
       const culled = fleet.filter(s => s.alive).map(s => ({ ...s, hull: s.stats.hullCap }))
       setters.setFleet(culled)
+      try { setters.setFocused?.(0) } catch { /* ignore */ }
       // Victory rewards for destroyed enemies
       try {
         const rw = calcRewards(enemyFleet, sector)
@@ -116,6 +118,7 @@ export function useRunLifecycle(params: {
       const enemyFleet = getters.enemyFleet()
       const recovered = graceRecoverFleet(fleet, bp)
       setters.setFleet(recovered)
+      try { setters.setFocused?.(0) } catch { /* ignore */ }
       const rw = calcRewards(enemyFleet, sector)
       setters.setResources(r => ensureGraceResources({
         credits: r.credits + rw.c,
