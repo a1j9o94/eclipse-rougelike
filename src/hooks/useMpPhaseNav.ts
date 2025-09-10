@@ -26,6 +26,13 @@ export function useMpPhaseNav(params: {
   useEffect(() => {
     if (gameMode !== 'multiplayer' || !multi) return
     const phase = multi.gameState?.gamePhase
+    let timeoutId: ReturnType<typeof setTimeout> | null = null
+    if (phase === 'setup') {
+      // Enter game view (Outpost) during setup
+      setters.setMultiplayerPhase('game')
+      setters.setMode('OUTPOST')
+      return () => { if (timeoutId) clearTimeout(timeoutId) }
+    }
     if (phase === 'combat') {
       setters.setMode('COMBAT')
       try {
@@ -40,10 +47,13 @@ export function useMpPhaseNav(params: {
       const lines = (multi.gameState?.roundLog as string[] | undefined) || ["Combat resolved."]
       setters.setLog(l => [...l, ...lines])
       const delay = computePlaybackDelay(lines as string[])
-      setTimeout(() => { try { void multi.ackRoundPlayed?.() } catch { /* noop */ } }, delay)
+      timeoutId = setTimeout(() => { try { void multi.ackRoundPlayed?.() } catch { /* noop */ } }, delay)
+      ;(timeoutId as unknown as { unref?: () => void })?.unref?.()
+      return () => { if (timeoutId) clearTimeout(timeoutId) }
     } else if (phase === 'finished') {
       // GameRoot handles UI for winner modal; no-op here
     }
+    return () => { if (timeoutId) clearTimeout(timeoutId) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameMode, multi?.gameState?.gamePhase, multi?.roomDetails?.room?.status, multi?.gameState?.playerStates])
 }

@@ -76,8 +76,7 @@ describe('MP Isolation — Warmongers do not inherit Industrialists economy', ()
     const { default: AppImpl } = await import('../App')
     render(<AppImpl />)
     fireEvent.click(screen.getByRole('button', { name: /multiplayer/i }))
-    await screen.findByText(/Mock Lobby/i)
-    fireEvent.click(screen.getByRole('button', { name: /Enter Game/i }))
+    // Room is already 'playing' in mock; Outpost should render directly
 
     // Reroll shows base 8¢ (no 0¢)
     await screen.findByText(/Reroll \(8¢\)/i)

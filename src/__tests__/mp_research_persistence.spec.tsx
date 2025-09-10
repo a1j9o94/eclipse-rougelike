@@ -61,8 +61,6 @@ describe('MP Research Persistence', () => {
     const { default: AppImpl } = await import('../App')
     render(<AppImpl />)
     fireEvent.click(screen.getByRole('button', { name: /multiplayer/i }))
-    await screen.findByText(/Mock Lobby/i)
-    fireEvent.click(screen.getByRole('button', { name: /Enter Game/i }))
 
     // Click the Nano upgrade button (we start at Nano: 2, so upgrade to 3)
     const nanoBtn = await screen.findByRole('button', { name: /Nano/i })

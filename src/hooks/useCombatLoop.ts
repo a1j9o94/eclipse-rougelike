@@ -1,8 +1,9 @@
 import { useMemo, useRef } from 'react'
 import type { Ship, InitiativeEntry } from '../../shared/types'
 import { getSectorSpec } from '../game'
-import { generateEnemyFleetFor } from '../game/enemy'
+import { buildEnemyFleet, generateEnemyFleetFor } from '../game/enemy'
 import { buildInitiative as buildInitiativeCore, targetIndex as targetIndexCore, volley as volleyCore } from '../game/combat'
+import type { Rng } from '../engine/rng'
 
 type EffectKey = 'shot'|'explosion'|'startCombat'|'page'
 
@@ -27,19 +28,20 @@ export function useCombatLoop(params: {
     setMode: (m: 'OUTPOST'|'COMBAT') => void
   }
   sfx: { playEffect: (k: EffectKey, duration?: number) => Promise<void> }
+  rng?: Rng
 }){
-  const { getters, setters, sfx } = params
+  const { getters, setters, sfx, rng } = params
   const stepLock = useRef(false)
   const rewardPaid = useRef(false)
 
-  const buildInitiative = useMemo(() => (pFleet:Ship[], eFleet:Ship[]) => buildInitiativeCore(pFleet, eFleet) as InitiativeEntry[], [])
+  const buildInitiative = useMemo(() => (pFleet:Ship[], eFleet:Ship[]) => buildInitiativeCore(pFleet, eFleet, rng) as InitiativeEntry[], [rng])
   const targetIndex = useMemo(() => (defFleet:Ship[], strategy:'kill'|'guns') => targetIndexCore(defFleet, strategy), [])
-  const volley = useMemo(() => (attacker:Ship, defender:Ship, side:'P'|'E', logArr:string[], friends:Ship[]) => volleyCore(attacker, defender, side, logArr, friends), [])
+  const volley = useMemo(() => (attacker:Ship, defender:Ship, side:'P'|'E', logArr:string[], friends:Ship[]) => volleyCore(attacker, defender, side, logArr, friends, rng), [rng])
 
   function startCombat(){
     const sector = getters.sector()
     const spec = getSectorSpec(sector)
-    const enemy = generateEnemyFleetFor(sector)
+    const enemy = rng ? buildEnemyFleet(sector, rng) : generateEnemyFleetFor(sector)
     setters.setEnemyFleet(enemy)
       setters.setLog(() => [`Sector ${sector}: Engagement begins — enemy tonnage ${spec.enemyTonnage}`])
     setters.setRoundNum(() => 1)
@@ -55,7 +57,7 @@ export function useCombatLoop(params: {
 
   function startFirstCombat(){
     const sector = getters.sector()
-    const enemy = [ { ...generateEnemyFleetFor(1)[0] } ] as unknown as Ship[]
+    const enemy = [ { ...(rng ? buildEnemyFleet(1, rng)[0] : generateEnemyFleetFor(1)[0]) } ] as unknown as Ship[]
     setters.setEnemyFleet(enemy)
     setters.setLog(() => [`Sector ${sector}: Skirmish — a lone Interceptor approaches.`])
     setters.setRoundNum(() => 1)

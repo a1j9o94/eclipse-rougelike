@@ -19,6 +19,8 @@ export function useMpTestTick(multi: MpBasics, applied: boolean, intervalMs = 25
     if (!multi || multi.isConvexAvailable) return
     if (applied) return
     const id = setInterval(() => setTestTick((t) => t + 1), intervalMs)
+    // In Node test env, do not keep the event loop alive
+    ;(id as unknown as { unref?: () => void })?.unref?.()
     return () => clearInterval(id)
   }, [multi, applied, intervalMs])
   return testTick

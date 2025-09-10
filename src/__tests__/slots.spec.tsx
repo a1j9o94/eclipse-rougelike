@@ -1,23 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { ItemCard } from '../components/ui';
 import { PARTS } from '../../shared/parts';
 import type { GhostDelta } from '../../shared/types';
-import App from '../App';
-
-async function toOutpost(faction?: RegExp) {
-  render(<App />);
-  if (faction) {
-    fireEvent.click(screen.getByRole('button', { name: faction }));
-  }
-  fireEvent.click(screen.getByRole('button', { name: /Easy/i }));
-  fireEvent.click(screen.getByRole('button', { name: /Let’s go/i }));
-  await screen.findByText(/^Victory$/i, undefined, { timeout: 10000 });
-  const ret = screen.getByRole('button', { name: /Return to Outpost/i });
-  await waitFor(() => expect(ret).not.toBeDisabled());
-  fireEvent.click(ret);
-  await screen.findByText(/Outpost Inventory/i);
-}
+import { renderOutpost } from '../test/harness/renderOutpost';
 
 describe('slot displays', () => {
   it('shows slot usage in ItemCard', () => {
@@ -27,7 +13,7 @@ describe('slot displays', () => {
   });
 
   it('shows slots in Class Blueprint header for Interceptor', async () => {
-    await toOutpost();
+    renderOutpost();
     const header = await screen.findByText(/Class Blueprint — Interceptor/i);
     expect(header.textContent).toMatch(/4\/6/);
   }, 20000);

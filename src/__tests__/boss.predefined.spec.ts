@@ -1,30 +1,21 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
-import React from 'react'
-import App from '../App'
-import { getOpponentFaction, getBossFleetFor, isValidShipBuild } from '../game'
+import { getBossFleetFor, isValidShipBuild } from '../game'
+import { setPlayerFaction, pickOpponentFaction, setOpponentFaction } from '../game/setup'
 import { generateEnemyFleetFor } from '../game/enemy'
 
 describe('Predefined boss fleets and opponent selection', () => {
   it('selects a random opponent faction different from the player on new run', () => {
-    render(React.createElement(App))
-    fireEvent.click(screen.getByRole('button', { name: /Consortium of Scholars/i }))
-    fireEvent.click(screen.getByRole('button', { name: /Easy/i }))
-    fireEvent.click(screen.getByRole('button', { name: /Let’s go/i }))
-
-    const opp = getOpponentFaction()
+    setPlayerFaction('scientists')
+    const opp = pickOpponentFaction()
     expect(opp).toBeDefined()
     expect(opp).not.toEqual('scientists')
   })
 
   it('uses predefined boss fleet for opponent faction at sector 5 and 10', () => {
     const rnd = vi.spyOn(Math, 'random').mockReturnValue(0.5)
-    render(React.createElement(App))
-    fireEvent.click(screen.getByRole('button', { name: /Crimson Vanguard/i }))
-    fireEvent.click(screen.getByRole('button', { name: /Easy/i }))
-    fireEvent.click(screen.getByRole('button', { name: /Let’s go/i }))
-
-    const opp = getOpponentFaction()
+    // Force opponent for determinism
+    setOpponentFaction('warmongers')
+    const opp = 'warmongers'
     // Sector 5
     const e5 = generateEnemyFleetFor(5)
     const spec5 = getBossFleetFor(opp, 5)
@@ -50,4 +41,3 @@ describe('Predefined boss fleets and opponent selection', () => {
     rnd.mockRestore()
   })
 })
-

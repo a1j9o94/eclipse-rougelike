@@ -1,26 +1,30 @@
 import { type Part, RIFT_FACES } from '../../shared/parts'
 import { type Ship, type InitiativeEntry } from '../../shared/types'
 import { sizeRank } from './ship'
+import type { Rng } from '../engine/rng'
+import { fromMathRandom } from '../engine/rng'
 
 export function successThreshold(aim:number, shieldTier:number) {
   // Clamp to 2..6 so 1s always miss and 6s always hit.
   return Math.min(6, Math.max(2, 6 - (aim - shieldTier)));
 }
-export function rollSuccesses(numDice:number, threshold:number) {
+export function rollSuccesses(numDice:number, threshold:number, rng?: Rng) {
+  const r: Rng = rng ?? fromMathRandom()
   let hits = 0;
   for (let i = 0; i < numDice; i++) {
-    const r = 1 + Math.floor(Math.random() * 6);
-    if (r >= threshold) hits++;
+    const rv = 1 + Math.floor(r.next() * 6);
+    if (rv >= threshold) hits++;
   }
   return hits;
 }
 
-export function buildInitiative(pFleet:Ship[], eFleet:Ship[]): InitiativeEntry[] {
+export function buildInitiative(pFleet:Ship[], eFleet:Ship[], rng?: Rng): InitiativeEntry[] {
+  const r: Rng = rng ?? fromMathRandom()
   const q:InitiativeEntry[] = []
   const regen = (s:Ship)=>{ if(s.alive && s.stats.regen>0 && s.hull>0){ s.hull = Math.min(s.stats.hullCap, s.hull + s.stats.regen) } }
   pFleet.forEach((s, i) => { regen(s); if (s.alive && s.stats.valid) q.push({ side: 'P', idx: i, init: s.stats.init, size: sizeRank(s.frame) }) })
   eFleet.forEach((s, i) => { regen(s); if (s.alive && s.stats.valid) q.push({ side: 'E', idx: i, init: s.stats.init, size: sizeRank(s.frame) }) })
-  q.sort((a, b) => (b.init - a.init) || (b.size - a.size) || (Math.random() - 0.5))
+  q.sort((a, b) => (b.init - a.init) || (b.size - a.size) || (r.next() - 0.5))
   return q as InitiativeEntry[]
 }
 
@@ -38,13 +42,14 @@ export function targetIndex(defFleet:Ship[], strategy:'kill'|'guns'){
   return defFleet.findIndex(s=>s.alive && s.stats.valid)
 }
 
-export function volley(attacker:Ship, defender:Ship, side:'P'|'E', logArr:string[], friends:Ship[]){
+export function volley(attacker:Ship, defender:Ship, side:'P'|'E', logArr:string[], friends:Ship[], rng?: Rng){
+  const r: Rng = rng ?? fromMathRandom()
   const thr = successThreshold(attacker.stats.aim, defender.stats.shieldTier)
   attacker.weapons.forEach((w:Part) => {
     if(w.riftDice) return
     for(let i=0;i<(w.dice||0);i++){
       const faces = w.faces||[]
-      const face = faces[Math.floor(Math.random()*faces.length)] || {}
+      const face = faces[Math.floor(r.next()*faces.length)] || {}
       if(face.dmg){
         const dmg = face.dmg
         defender.hull -= dmg
@@ -66,7 +71,7 @@ export function volley(attacker:Ship, defender:Ship, side:'P'|'E', logArr:string
   })
   if(attacker.riftDice>0){
     for(let i=0;i<attacker.riftDice;i++){
-      const roll = Math.floor(Math.random()*6)
+      const roll = Math.floor(r.next()*6)
       const face = RIFT_FACES[roll]
       if(face.dmg){
         defender.hull -= face.dmg

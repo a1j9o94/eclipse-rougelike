@@ -1,81 +1,20 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
-import type { FrameId } from '../../shared/factions'
-import type { PlayerState, GameState, ShipSnapshot } from '../../shared/mpTypes'
-
-// Silence audio
-vi.mock('../game/sound', () => ({ playEffect: vi.fn(), playMusic: vi.fn(), stopMusic: vi.fn() }))
-
-// Fast path through MP menu
-vi.mock('../pages/MultiplayerStartPage', async () => {
-  const React = await import('react')
-  function MockStart({ onRoomJoined }: { onRoomJoined: (roomId: string) => void }){
-    React.useEffect(()=>{ onRoomJoined('ROOM1') },[onRoomJoined])
-    return <div>Mock Multiplayer Start</div>
-  }
-  return { default: MockStart }
-})
-
-// Minimal lobby that lets us enter the game
-vi.mock('../components/RoomLobby', () => ({
-  RoomLobby: ({ onGameStart }: { onGameStart: () => void }) => (
-    <div>
-      <div>Mock Lobby</div>
-      <button onClick={onGameStart}>Enter Game</button>
-    </div>
-  )
-}))
+import { describe, it, expect } from 'vitest'
+import { screen } from '@testing-library/react'
+import { renderOutpost } from '../test/harness/renderOutpost'
+import { makeShip, getFrame, PARTS } from '../game'
 
 describe('Outpost — Warmongers first render', () => {
-  beforeEach(()=>{
-    localStorage.setItem('eclipse-player-id', 'A')
-  })
-
   it('shows Cruiser class blueprint and 3× Cruiser fleet with correct capacity used', async () => {
-    vi.mock('../hooks/useMultiplayerGame', () => {
-      const cruiserSnap: ShipSnapshot = {
-        frame: { id: 'cruiser', name: 'Cruiser' },
-        weapons: [], riftDice: 0,
-        stats: { init: 2, hullCap: 1, valid: true, aim: 0, shieldTier: 0, regen: 0 },
-        hull: 1, alive: true,
-        partIds: ['tachyon_source','tachyon_drive','plasma_array','positron','gauss','composite']
-      }
-      const players = [
-        { playerId: 'A', playerName: 'Alice', isHost: true, isReady: false, lives: 3, faction: 'warmongers' },
-        { playerId: 'B', playerName: 'Bob', isHost: false, isReady: false, lives: 3, faction: 'industrialists' },
-      ]
-      const gameState: GameState = {
-        currentTurn: 'A',
-        gamePhase: 'setup',
-        playerStates: {
-          A: {
-            resources: { credits: 20, materials: 5, science: 0 },
-            research: { Military: 2, Grid: 1, Nano: 1 },
-            modifiers: { startingFrame: 'cruiser' as FrameId, capacityCap: 14 },
-            blueprintIds: { interceptor: [], cruiser: ['tachyon_source','tachyon_drive','plasma_array','positron','gauss','composite'], dread: [] },
-            fleet: [ { ...cruiserSnap }, { ...cruiserSnap }, { ...cruiserSnap } ],
-            fleetValid: true,
-            lives: 3, faction: 'warmongers', isAlive: true,
-          } as PlayerState,
-          B: { lives: 3, fleetValid: true } as PlayerState,
-        },
-        roundNum: 1,
-      } as unknown as GameState
-
-      return { useMultiplayerGame: () => ({
-        roomDetails: { room: { status: 'playing', gameConfig: { startingShips: 3, livesPerPlayer: 3 } }, players },
-        gameState,
-        getPlayerId: () => 'A', getCurrentPlayer: () => players[0], getOpponent: () => players[1],
-        submitFleetSnapshot: vi.fn(), updateFleetValidity: vi.fn(), setReady: vi.fn(),
-        isConvexAvailable: false,
-      })}
-    })
-
-    const { default: AppImpl } = await import('../App')
-    render(<AppImpl />)
-    fireEvent.click(screen.getByRole('button', { name: /multiplayer/i }))
-    await screen.findByText(/Mock Lobby/i)
-    fireEvent.click(screen.getByRole('button', { name: /Enter Game/i }))
+    const parts = [
+      PARTS.sources.find(p=>p.id==='tachyon_source')!,
+      PARTS.drives.find(p=>p.id==='tachyon_drive')!,
+      PARTS.weapons.find(p=>p.id==='plasma_array')!,
+      PARTS.computers.find(p=>p.id==='positron')!,
+      PARTS.weapons.find(p=>p.id==='gauss')!,
+      PARTS.platings.find(p=>p.id==='composite')!,
+    ]
+    const cruiser = makeShip(getFrame('cruiser'), parts)
+    renderOutpost({ initial: { fleet: [cruiser, cruiser, cruiser], capacityCap: 14 } })
 
     // Header reflects Cruiser class blueprint
     await screen.findByText(/Class Blueprint — Cruiser/i)

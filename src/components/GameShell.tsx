@@ -7,7 +7,7 @@ import type { Research } from '../../shared/defaults'
 import type { Ship, InitiativeEntry } from '../../shared/types'
 import type { OutpostPageProps } from '../hooks/useOutpostPageProps'
 
-type RBProps = {
+export type RBProps = {
   credits: number
   materials: number
   science: number
@@ -22,7 +22,7 @@ type RBProps = {
   phase?: 'setup'|'combat'|'finished'
 }
 
-type CombatProps = {
+export type CombatProps = {
   combatOver: boolean
   outcome: string
   roundNum: number

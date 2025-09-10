@@ -93,6 +93,20 @@ How to use: Treat each item as a mini-task with acceptance criteria. Check off o
 - [ ] GameRoot LOC ≤ ~200 for this phase; add optional `check:gameroot-lines` script but do not gate CI yet.
   - Note: `npm run check:gameroot-lines` available; not part of CI.
 
+Additions for 0C (recent)
+- [x] Extract pre-game routing to `lib/renderPreGame.ts` (StartPage/MP menu/lobby).
+- [x] Add `controllers/useOutpostController` to assemble handlers + action map + labels and return `OutpostPageProps`.
+- [x] Replace GameRoot outpost assembly with `useOutpostController` and `useResourceBarVm`.
+- [x] Extract small helpers: `useMatchOverClose`, `useMusicRouting`, `usePersistRunState`, `useRestoreEnv`, `useAutoStepper`.
+- [x] Add `useOutpostActionMap` to flatten handler calls; remove inline delegates.
+- [x] Tests: add `shop_normalize_items.spec.ts` for `normalizeShopItems`.
+- [x] Add `hooks/usePreGameHandlers` and `utils/inferLives` to remove inline pregame logic and lives init.
+- [x] Add `controllers/useOutpostState` to encapsulate outpost state/init + tonnage.
+- [x] Add `controllers/useMultiplayerGlue` to compose MP phase nav + setup sync + seed submit in one call.
+
+Line budget snapshot (2025-09-07)
+- GameRoot.tsx: 375 LOC (target ≤200 for 0C; further extraction planned).
+
 Additions for 0C (done)
 - [x] Add `useResourceBarVm` to assemble SP/MP ResourceBar props.
 - [x] Add `useOutpostVm` to centralize MP guards, combined validity, start toggle, and restart logic.
