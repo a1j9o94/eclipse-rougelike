@@ -41,7 +41,8 @@ export default function Starfield({ enabled, density, reducedMotion }: Props) {
       canvas.width = w * dpr
       canvas.height = h * dpr
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-      draw(w, h)
+      seedStars(w, h)
+      draw(w, h, 0)
     }
 
     const densityFactor = density === 'high' ? 0.25 : density === 'medium' ? 0.16 : 0.1
