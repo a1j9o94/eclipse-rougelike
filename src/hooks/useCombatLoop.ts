@@ -35,6 +35,7 @@ export function useCombatLoop(params: {
   const { getters, setters, sfx, rng } = params
   const stepLock = useRef(false)
   const rewardPaid = useRef(false)
+  const shotsFiredThisRound = useRef(false)
 
   const buildInitiative = useMemo(() => (pFleet:Ship[], eFleet:Ship[]) => buildInitiativeCore(pFleet, eFleet, rng) as InitiativeEntry[], [rng])
   const targetIndex = useMemo(() => (defFleet:Ship[], strategy:'kill'|'guns') => targetIndexCore(defFleet, strategy), [])
@@ -50,6 +51,7 @@ export function useCombatLoop(params: {
     setters.setRoundNum(() => 1)
     setters.setQueue([])
     setters.setTurnPtr(-1)
+    shotsFiredThisRound.current = false
     setters.setCombatOver(false)
     setters.setOutcome('')
     rewardPaid.current = false
@@ -67,6 +69,7 @@ export function useCombatLoop(params: {
     setters.setRoundNum(() => 1)
     setters.setQueue([])
     setters.setTurnPtr(-1)
+    shotsFiredThisRound.current = false
     setters.setCombatOver(false)
     setters.setOutcome('')
     rewardPaid.current = false
@@ -81,6 +84,7 @@ export function useCombatLoop(params: {
     const eFleet = getters.enemyFleet()
     const roundNum = getters.roundNum()
     if (turnPtr === -1 || turnPtr >= (qFleet.length + eFleet.length)) {
+      if (turnPtr === -1) shotsFiredThisRound.current = false
       const q = buildInitiative(qFleet, eFleet)
       setters.setQueue(q)
       setters.setTurnPtr(0)
@@ -128,6 +132,7 @@ export function useCombatLoop(params: {
       const def = defFleet[defIdx]
       dlog('volley', { side: e.side, atkIdx: e.idx, defIdx, atkAlive: atk.alive, defAliveBefore: def.alive })
       volley(atk, def, e.side, lines, friends)
+      shotsFiredThisRound.current = true
       setters.setLog(prev=>[...prev, ...lines])
       if (isP) {
         // Player attacked enemy — defender is enemy fleet
@@ -165,6 +170,15 @@ export function useCombatLoop(params: {
     const pAlive = pFleetArr.some(s => s.alive)
     const eAlive = eFleetArr.some(s => s.alive)
     if (!pAlive || !eAlive) { dlog('resolveCombat', { reason: !pAlive ? 'playerDead' : 'enemyDead', pAlive, eAlive }); resolveCombat(pAlive); return }
+
+    // Stalemate guard: if no shots were fired this round, decide by 'valid' presence
+    if (!shotsFiredThisRound.current) {
+      const pValid = pFleetArr.some(s => s.alive && s.stats.valid)
+      const eValid = eFleetArr.some(s => s.alive && s.stats.valid)
+      if (pValid && !eValid) { dlog('resolveCombat', { reason: 'enemyInoperable' }); resolveCombat(true); return }
+      if (!pValid && eValid) { dlog('resolveCombat', { reason: 'playerInoperable' }); resolveCombat(false); return }
+      if (!pValid && !eValid) { dlog('resolveCombat', { reason: 'bothInoperable' }); resolveCombat(false); return }
+    }
     setters.setRoundNum(n=>n+1)
     setters.setTurnPtr(-1)
     setters.setQueue([])
