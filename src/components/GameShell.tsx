@@ -37,7 +37,9 @@ export type CombatProps = {
 export function GameShell({
   showRules,
   onDismissRules,
+  onOpenRules,
   showTechs,
+  onOpenTechs,
   onCloseTechs,
   showWin,
   onRestartWin,
@@ -50,7 +52,9 @@ export function GameShell({
 }: {
   showRules: boolean
   onDismissRules: () => void
+  onOpenRules: () => void
   showTechs: boolean
+  onOpenTechs: () => void
   onCloseTechs: () => void
   showWin: boolean
   onRestartWin: () => void
@@ -78,14 +82,14 @@ export function GameShell({
 
       <div className="fixed bottom-3 right-3 z-40 flex flex-col gap-2">
         <div className="hidden sm:flex flex-col gap-2">
-          <button onClick={onCloseTechs} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">🔬 Tech</button>
-          <button onClick={onDismissRules} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">❓ Rules</button>
+          <button onClick={onOpenTechs} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">🔬 Tech</button>
+          <button onClick={onOpenRules} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">❓ Rules</button>
         </div>
         <div className="sm:hidden">
           {showHelpMenu ? (
             <div className="flex flex-col gap-2">
-              <button onClick={()=>{ onCloseTechs(); setShowHelpMenu(false) }} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">🔬 Tech</button>
-              <button onClick={()=>{ onDismissRules(); setShowHelpMenu(false) }} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">❓ Rules</button>
+              <button onClick={()=>{ onOpenTechs(); setShowHelpMenu(false) }} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">🔬 Tech</button>
+              <button onClick={()=>{ onOpenRules(); setShowHelpMenu(false) }} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">❓ Rules</button>
               <button onClick={()=>setShowHelpMenu(false)} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">✖</button>
             </div>
           ) : (

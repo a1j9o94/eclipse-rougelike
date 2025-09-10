@@ -81,3 +81,38 @@
 ### Follow-ups
 - Consider small-history view (last 3 rounds) with tabs.
 - Optional toggle to show compact summary vs. ship grid.
+
+## Plan Entry — Help Menu Rules/Tech Modals
+
+- Outcome: Players can open the Rules and Tech List modals from the bottom-right help buttons on all screens; Rules modal layers above floating UI and allows text selection.
+
+- Acceptance criteria:
+  - Clicking the “❓ Rules” button opens the Rules modal (“How to Play”).
+  - Clicking the “🔬 Tech” button opens the Tech List modal.
+  - Both modals can be dismissed via their internal buttons and do not interfere with each other.
+  - The Rules modal overlays above floating help buttons (no overlap or click-through issues).
+  - Lint, targeted tests, and build remain green.
+
+- Risks & rollback:
+  - Risk: Prop API change on `GameShell` breaks call sites. Mitigation: update `GameRoot` at the same time; changes are localized.
+  - Rollback: Revert the `GameShell`/`GameRoot` prop changes and the test file.
+
+- Test list (must fail first):
+  1) UI: Clicking “❓ Rules” opens the Rules modal (help_menu_modals.spec.tsx).
+  2) UI: Clicking “🔬 Tech” opens the Tech List modal (same test file).
+
+---
+
+### Implementation Steps
+- Add `onOpenRules` and `onOpenTechs` props to `GameShell`.
+- Wire them in `GameRoot` to `setShowRules(true)` and `setShowTechs(true)`.
+- Update help buttons to call the open handlers (not the close handlers).
+- Bump `RulesModal` z-index from `z-40` to `z-50` to match other modals.
+- Add focused test: `src/__tests__/help_menu_modals.spec.tsx`.
+
+### Decision Log
+- Standardized modal layering at `z-50` to prevent overlap with floating help UI.
+- Kept existing close handlers for internal modal buttons; only the external help triggers were incorrect.
+
+### Follow-ups
+- Consider adding backdrop click-to-close behavior for consistency across modals.
