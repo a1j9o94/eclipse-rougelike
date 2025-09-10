@@ -315,14 +315,14 @@ export function OutpostPage({
             const label = !amReady
               ? 'Start Combat'
               : (!opponentReady ? 'Waiting for opponent…' : 'Starting…');
-            // MP guard: rely on overall fleetValid; avoid snapshot flakiness in tests
-            const disabled = amReady ? true : !fleetValid;
+            // Allow click even when already ready (toggles readiness in MP). Only block when fleet invalid.
+            const disabled = !fleetValid;
             if (guards) {
               console.debug('[Outpost] MP guards', { ...guards, disabled, label });
             }
             const cls = disabled ? 'bg-zinc-700 opacity-60' : 'bg-emerald-600';
             return (
-              <button onClick={()=> (!disabled) && startCombat()} disabled={disabled} className={`flex-1 px-4 py-3 rounded-xl ${cls}`}>{label}</button>
+              <button onClick={()=> startCombat()} disabled={disabled} className={`flex-1 px-4 py-3 rounded-xl ${cls}`}>{label}</button>
             );
           })()}
           {myReady ? (

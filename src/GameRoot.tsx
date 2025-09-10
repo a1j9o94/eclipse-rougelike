@@ -367,7 +367,7 @@ export default function EclipseIntegrated(){
       showRules={showRules}
       onDismissRules={dismissRules}
       showTechs={showTechs}
-      onCloseTechs={()=>setShowTechs(true)}
+      onCloseTechs={()=>setShowTechs(false)}
       showWin={showWin}
       onRestartWin={()=>{ setShowWin(false); resetRun() }}
       matchOver={matchOver}
