@@ -59,7 +59,7 @@ export default function StartPage({
   const versusEnabled = Boolean(import.meta.env.VITE_CONVEX_URL) && Boolean(onMultiplayer);
 
   return (
-    <div className="relative h-screen overflow-y-auto bg-black text-zinc-100 p-4 flex flex-col">
+    <div className="relative h-screen overflow-hidden bg-black text-zinc-100 p-4 flex flex-col">
       {starEnabled && (
         <Starfield enabled={starEnabled} density={starDensity} reducedMotion={userReducedMotion} />
       )}

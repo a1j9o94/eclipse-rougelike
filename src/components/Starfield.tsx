@@ -22,18 +22,18 @@ export default function Starfield({ enabled, density, reducedMotion }: Props) {
 
     const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1))
     const resize = () => {
-      const { clientWidth: w, clientHeight: h } = canvas
-      canvas.width = Math.max(1, Math.floor(w * dpr))
-      canvas.height = Math.max(1, Math.floor(h * dpr))
-      ctx.scale(dpr, dpr)
-      draw()
+      const rect = canvas.getBoundingClientRect()
+      const w = Math.max(1, Math.floor(rect.width))
+      const h = Math.max(1, Math.floor(rect.height))
+      canvas.width = w * dpr
+      canvas.height = h * dpr
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      draw(w, h)
     }
 
     const densityFactor = density === 'high' ? 0.22 : density === 'medium' ? 0.14 : 0.08
 
-    const draw = () => {
-      const w = canvas.clientWidth
-      const h = canvas.clientHeight
+    const draw = (w: number, h: number) => {
       ctx.clearRect(0, 0, w, h)
       // Background
       ctx.fillStyle = '#000'
@@ -80,7 +80,6 @@ export default function Starfield({ enabled, density, reducedMotion }: Props) {
   }, [enabled, density, reducedMotion])
 
   return (
-    <canvas ref={ref} className="absolute inset-0 z-0 block" aria-hidden />
+    <canvas ref={ref} className="fixed inset-0 z-0 block w-full h-full" aria-hidden />
   )
 }
-
