@@ -11,13 +11,26 @@ interface Props {
 // Lightweight, organic starfield drawn once to a canvas (no animation by default)
 export default function Starfield({ enabled, density, reducedMotion }: Props) {
   const ref = useRef<HTMLCanvasElement | null>(null)
+  const rafRef = useRef<number | null>(null)
+  const starsRef = useRef<Array<{
+    x: number
+    y: number
+    r: number
+    a: number
+    hue: number
+    speed: number
+    twinkle: number
+    phase: number
+    layer: 0|1
+  }>>([])
 
   useEffect(() => {
     if (!enabled) return
     const canvas = ref.current
     if (!canvas) return
 
-    const ctx = canvas.getContext('2d')
+    let ctx: CanvasRenderingContext2D | null = null
+    try { ctx = canvas.getContext('2d') } catch { return }
     if (!ctx) return
 
     const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1))
@@ -31,52 +44,78 @@ export default function Starfield({ enabled, density, reducedMotion }: Props) {
       draw(w, h)
     }
 
-    const densityFactor = density === 'high' ? 0.22 : density === 'medium' ? 0.14 : 0.08
+    const densityFactor = density === 'high' ? 0.25 : density === 'medium' ? 0.16 : 0.1
 
-    const draw = (w: number, h: number) => {
+    const seedStars = (w: number, h: number) => {
+      const area = w * h
+      const count = Math.min(400, Math.floor(area / 10000 * densityFactor * 180))
+      const arr: typeof starsRef.current = []
+      for (let i = 0; i < count; i++) {
+        const layer: 0|1 = Math.random() < 0.7 ? 0 : 1
+        const r = layer === 0 ? Math.random()*0.8 + 0.2 : Math.random()*1.2 + 0.6
+        const speed = layer === 0 ? (Math.random()*0.15 + 0.05) : (Math.random()*0.25 + 0.1)
+        const hue = 200 + Math.random()*40 // bluish-white
+        const a = Math.random()*0.5 + 0.3
+        const twinkle = Math.random()*1.5 + 0.5
+        arr.push({
+          x: Math.random()*w,
+          y: Math.random()*h,
+          r,
+          a,
+          hue,
+          speed,
+          twinkle,
+          phase: Math.random()*Math.PI*2,
+          layer,
+        })
+      }
+      starsRef.current = arr
+    }
+
+    const draw = (w: number, h: number, t: number) => {
       ctx.clearRect(0, 0, w, h)
-      // Background
       ctx.fillStyle = '#000'
       ctx.fillRect(0, 0, w, h)
 
-      // Subtle vignette/nebula
-      const grad = ctx.createRadialGradient(w*0.8, h*0.2, 0, w*0.8, h*0.2, Math.max(w,h))
-      grad.addColorStop(0, 'rgba(56,189,248,0.05)')
+      // very faint vignette
+      const grad = ctx.createRadialGradient(w*0.75, h*0.25, 0, w*0.75, h*0.25, Math.max(w,h))
+      grad.addColorStop(0, 'rgba(56,189,248,0.035)')
       grad.addColorStop(1, 'rgba(0,0,0,0)')
       ctx.fillStyle = grad
-      ctx.fillRect(0, 0, w, h)
+      ctx.fillRect(0,0,w,h)
 
-      const area = w * h
-      const count = Math.floor(area / 10000 * densityFactor) // ~ scaled by viewport
-
-      // Draw stars with random size and brightness
-      for (let i = 0; i < count; i++) {
-        const x = Math.random() * w
-        const y = Math.random() * h
-        const r = Math.random() * 0.9 + 0.4 // 0.4–1.3 px
-        const a = Math.random() * 0.6 + 0.3 // 0.3–0.9 alpha
+      for (const s of starsRef.current) {
+        // Drift to the right slightly; wrap around
+        if (!reducedMotion) {
+          s.x += s.speed
+          if (s.x > w) s.x = 0
+        }
+        // Twinkle using a sine wave
+        const tw = reducedMotion ? 1 : (0.75 + 0.25*Math.sin(t * 0.001 * s.twinkle + s.phase))
         ctx.beginPath()
-        ctx.fillStyle = `rgba(255,255,255,${a})`
-        ctx.arc(x, y, r, 0, Math.PI * 2)
-        ctx.fill()
-      }
-
-      // Occasional brighter stars
-      const bright = Math.max(2, Math.floor(count * 0.03))
-      for (let i = 0; i < bright; i++) {
-        const x = Math.random() * w
-        const y = Math.random() * h
-        const r = Math.random() * 1.6 + 0.8
-        ctx.beginPath()
-        ctx.fillStyle = 'rgba(255,255,255,0.95)'
-        ctx.arc(x, y, r, 0, Math.PI * 2)
+        ctx.fillStyle = `hsla(${s.hue}, 40%, 90%, ${s.a * tw})`
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI*2)
         ctx.fill()
       }
     }
 
+    const loop = (ts: number) => {
+      const rect = canvas.getBoundingClientRect()
+      // ensure stars exist and match current size
+      if (starsRef.current.length === 0) seedStars(Math.floor(rect.width), Math.floor(rect.height))
+      draw(Math.floor(rect.width), Math.floor(rect.height), ts)
+      rafRef.current = requestAnimationFrame(loop)
+    }
+
     resize()
     window.addEventListener('resize', resize)
-    return () => window.removeEventListener('resize', resize)
+    if (!reducedMotion) rafRef.current = requestAnimationFrame(loop)
+    else draw(canvas.getBoundingClientRect().width, canvas.getBoundingClientRect().height, 0)
+
+    return () => {
+      window.removeEventListener('resize', resize)
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+    }
   }, [enabled, density, reducedMotion])
 
   return (
