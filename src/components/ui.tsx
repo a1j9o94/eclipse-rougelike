@@ -94,14 +94,16 @@ export function ShipFrameSlots({ ship, side, active }: { ship: Ship, side: 'P' |
     ship.parts.forEach(p => {
       const slots = p.slots || 1;
       if (p.cat === 'Hull') {
-        const max = p.extraHull || 1;
-        const rem = Math.min(remainingHull, max);
-        remainingHull -= rem;
+        const max = p.extraHull || 0;
         let label = '';
-        if (max === 1) {
-          label = rem === 1 ? '❤️' : '🖤';
-        } else {
-          label = rem === 0 ? '🖤' : `${rem}❤️`;
+        if (max > 0) {
+          const rem = Math.min(remainingHull, max);
+          remainingHull -= rem;
+          if (max === 1) {
+            label = rem === 1 ? '❤️' : '🖤';
+          } else {
+            label = rem === 0 ? '🖤' : `${rem}❤️`;
+          }
         }
         const extra = effectLabels(p, CATEGORY_EFFECTS.Hull);
         cells.push({ slots, label: label + extra });
