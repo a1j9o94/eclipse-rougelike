@@ -99,7 +99,8 @@ export function useOutpostController(params: OutpostControllerParams){
 
   const outpost: OutpostPageProps = useOutpostPageProps({
     gameMode,
-    resources: state.resources,
+    // Display resources from server in MP so post-combat rewards appear without manual sync
+    resources: (gameMode==='multiplayer' ? getMyResources(multi, state.resources) : state.resources),
     research: state.research,
     blueprints: state.blueprints,
     fleet: state.fleet,

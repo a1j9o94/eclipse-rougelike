@@ -1,4 +1,5 @@
 import type { Resources } from '../../shared/defaults'
+import { getMyResources } from '../adapters/mpSelectors'
 
 type PlayerLite = { playerId?: string; playerName?: string; faction?: string } | null | undefined
 type RoomLite = { players?: Array<{ playerId: string; lives: number }>; status?: string } | null | undefined
@@ -21,6 +22,11 @@ export function useResourceBarVm(params: {
 }) {
   const { resources, tonnage, sector, onReset, gameMode, singleLives, multi } = params
 
+  // In multiplayer, prefer server-authoritative resources so rewards after combat are visible immediately
+  const viewResources: Resources = gameMode === 'multiplayer'
+    ? getMyResources(multi as unknown as Parameters<typeof getMyResources>[0], resources)
+    : resources
+
   const me = multi?.getCurrentPlayer?.() || null
   const opp = multi?.getOpponent?.() || null
   const phase = (multi?.gameState?.gamePhase as 'setup'|'combat'|'finished'|undefined)
@@ -35,9 +41,9 @@ export function useResourceBarVm(params: {
       })()
 
   return {
-    credits: resources.credits,
-    materials: resources.materials,
-    science: resources.science,
+    credits: viewResources.credits,
+    materials: viewResources.materials,
+    science: viewResources.science,
     tonnage,
     sector,
     onReset,
@@ -57,4 +63,3 @@ export function useResourceBarVm(params: {
 }
 
 export default useResourceBarVm
-
