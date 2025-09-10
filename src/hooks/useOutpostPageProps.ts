@@ -4,7 +4,7 @@ import type { Resources, Research } from '../../shared/defaults'
 import type { Ship, CapacityState } from '../../shared/types'
 import type { FrameId } from '../game'
 import useOutpostVm from './useOutpostVm'
-import { getMyPlayerState } from '../adapters/mpSelectors'
+import { getMyPlayerState, type MpBasics } from '../adapters/mpSelectors'
 type UseOutpostVmArgs = Parameters<typeof useOutpostVm>[0]
 
 export type OutpostPageProps = {
@@ -66,7 +66,7 @@ export function useOutpostPageProps(params: {
   sector: number
   endless: boolean
   // vm extras
-  multi?: unknown
+  multi?: MpBasics
   spStartCombat: () => void
   resetRun: () => void
   setBlueprints: (bp: Record<FrameId, Part[]>) => void
@@ -88,7 +88,7 @@ export function useOutpostPageProps(params: {
   let displayReroll = params.rerollCost
   if (params.gameMode === 'multiplayer') {
     try {
-      const st = getMyPlayerState(params.multi as { getPlayerId?: ()=>string|null; gameState?: { playerStates?: unknown } } | undefined)
+      const st = getMyPlayerState(params.multi)
       const econBase = (st as { economy?: { rerollBase?: number } } | null | undefined)?.economy?.rerollBase
       if (typeof econBase === 'number') displayReroll = econBase
     } catch { /* ignore */ }

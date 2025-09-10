@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
-    "test:run": "NODE_OPTIONS=--max-old-space-size=4096 vitest run --pool=forks --maxWorkers=2 --reporter=dot",
+    "test:run": "NODE_OPTIONS=--max-old-space-size=6144 vitest run --pool=threads --maxWorkers=1 --reporter=dot",
     "test:stable": "NODE_OPTIONS=--max-old-space-size=4096 vitest run --pool=threads --maxWorkers=1 --reporter=dot",
     "test:ui": "vitest --ui",
     "check:app-lines": "node tools/check-app-lines.mjs",

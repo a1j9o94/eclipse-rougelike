@@ -4,6 +4,8 @@ import StartPage from '../pages/StartPage'
 import MultiplayerStartPage from '../pages/MultiplayerStartPage'
 import { RoomLobby } from '../../components/RoomLobby'
 import type { Id } from '../../convex/_generated/dataModel'
+import type { DifficultyId } from '../../shared/types'
+import type { FactionId } from '../../shared/factions'
 
 export type PreGameRouterProps = {
   gameMode: 'single'|'multiplayer'
@@ -12,7 +14,7 @@ export type PreGameRouterProps = {
   multiplayerPhase: 'menu'|'lobby'|'game'
   currentRoomId: Id<'rooms'> | null
   // handlers
-  onNewRun: () => void
+  onNewRun: (diff: DifficultyId, faction: FactionId) => void
   onContinue: () => void
   onGoMultiplayer: () => void
   onRoomJoined: (roomId: string) => void
@@ -55,4 +57,3 @@ export function getPreGameElement(props: PreGameRouterProps): ReactElement | nul
 
   return null
 }
-

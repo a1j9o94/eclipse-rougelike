@@ -12,10 +12,12 @@ import { makeCanResearch, makeResearchLabel } from '../selectors/researchUi'
 import { upgradeLockInfo as selectUpgradeLockInfo } from '../selectors/upgrade'
 import { ghostClassDelta } from '../selectors/ghost'
 import type { EffectKey } from '../game/sound'
+import type { MpBasics } from '../adapters/mpSelectors'
+import type { OutpostEffects as EngineOutpostEffects } from '../engine/commands'
 
 export type OutpostControllerParams = {
   gameMode: 'single'|'multiplayer'
-  multi?: unknown
+  multi?: (MpBasics & { updateGameState?: (arg: { updates: { research: Research; resources: { credits:number; materials:number; science:number } } })=>unknown }) | undefined
   state: {
     resources: Resources
     research: Research
@@ -40,7 +42,7 @@ export type OutpostControllerParams = {
     setRerollCost: (n: number) => void
     setShopVersion: (n: number) => void
     setShop: (s: { items: Part[] }) => void
-    setLastEffects: (fx: unknown) => void
+    setLastEffects: (fx: EngineOutpostEffects | undefined) => void
     setBaseRerollCost: (n: number) => void
     // MP
     setMpSeeded: (v: boolean) => void
@@ -141,7 +143,7 @@ export function useOutpostController(params: OutpostControllerParams){
   useEffect(() => {
     if (gameMode !== 'multiplayer') return
     try {
-      const st = getMyPlayerState(multi as { getPlayerId?: () => string | null; gameState?: { playerStates?: unknown } } | undefined)
+      const st = getMyPlayerState(multi)
       const econBase = (st as { economy?: { rerollBase?: number } } | null | undefined)?.economy?.rerollBase
       if (typeof econBase === 'number') {
         setters.setBaseRerollCost(econBase)

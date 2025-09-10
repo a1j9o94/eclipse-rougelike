@@ -15,28 +15,25 @@ class SilentAudio {
 try { (process as unknown as { env: Record<string,string> }).env.DEBUG_PRINT_LIMIT = (process.env.DEBUG_PRINT_LIMIT || '1000') } catch { void 0 }
 
 // Track and clean up all timers to prevent late setState after teardown
-const _timeouts = new Set<ReturnType<typeof setTimeout>>()
-const _intervals = new Set<ReturnType<typeof setInterval>>()
-const _ot = global.setTimeout
-const _oi = global.setInterval
-const _ct = global.clearTimeout
-const _ci = global.clearInterval
-// @ts-expect-error override global for tests
+const _timeouts = new Set<ReturnType<typeof global.setTimeout>>()
+const _intervals = new Set<ReturnType<typeof global.setInterval>>()
+const _ot = global.setTimeout.bind(global) as typeof setTimeout
+const _oi = global.setInterval.bind(global) as typeof setInterval
+const _ct = global.clearTimeout.bind(global) as typeof clearTimeout
+const _ci = global.clearInterval.bind(global) as typeof clearInterval
+// Override globals; track ids using broad types to satisfy Node/browser
 global.setTimeout = ((fn: Parameters<typeof setTimeout>[0], ms?: number, ...args: unknown[]) => {
-  const id = _ot(fn as unknown as TimerHandler, ms as number, ...(args as unknown[]))
+  const id = _ot(fn as unknown as TimerHandler, ms as number, ...(args as unknown[])) as ReturnType<typeof global.setTimeout>
   _timeouts.add(id)
-  return id
+  return id as unknown as number
 }) as typeof setTimeout
-// @ts-expect-error override global for tests
 global.setInterval = ((fn: Parameters<typeof setInterval>[0], ms?: number, ...args: unknown[]) => {
-  const id = _oi(fn as unknown as TimerHandler, ms as number, ...(args as unknown[]))
+  const id = _oi(fn as unknown as TimerHandler, ms as number, ...(args as unknown[])) as ReturnType<typeof global.setInterval>
   _intervals.add(id)
-  return id
+  return id as unknown as number
 }) as typeof setInterval
-// @ts-expect-error override global for tests
-global.clearTimeout = ((id: ReturnType<typeof setTimeout>) => { _timeouts.delete(id); return _ct(id) }) as typeof clearTimeout
-// @ts-expect-error override global for tests
-global.clearInterval = ((id: ReturnType<typeof setInterval>) => { _intervals.delete(id); return _ci(id) }) as typeof clearInterval
+global.clearTimeout = ((id: ReturnType<typeof global.setTimeout>) => { _timeouts.delete(id); return _ct(id as any) }) as typeof clearTimeout
+global.clearInterval = ((id: ReturnType<typeof global.setInterval>) => { _intervals.delete(id); return _ci(id as any) }) as typeof clearInterval
 
 // Global testing-library cleanup to ensure unmount and effect cleanup
 afterEach(() => {

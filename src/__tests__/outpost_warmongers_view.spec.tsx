@@ -10,8 +10,8 @@ describe('Outpost — Warmongers first render', () => {
       PARTS.drives.find(p=>p.id==='tachyon_drive')!,
       PARTS.weapons.find(p=>p.id==='plasma_array')!,
       PARTS.computers.find(p=>p.id==='positron')!,
-      PARTS.weapons.find(p=>p.id==='gauss')!,
-      PARTS.platings.find(p=>p.id==='composite')!,
+      PARTS.shields.find(p=>p.id==='gauss')!,
+      PARTS.hull.find(p=>p.id==='composite')!,
     ]
     const cruiser = makeShip(getFrame('cruiser'), parts)
     renderOutpost({ initial: { fleet: [cruiser, cruiser, cruiser], capacityCap: 14 } })

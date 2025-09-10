@@ -1,16 +1,17 @@
-import { useCallback } from 'react'
+import { useCallback, type Dispatch, type SetStateAction } from 'react'
+import type { InitiativeEntry } from '../../shared/types'
 
 export function useMatchOverClose(params: {
   multi?: { prepareRematch?: ()=>Promise<void> } | null
   setters: {
     setMatchOver: (v: { winnerName:string } | null) => void
     setMode: (m: 'OUTPOST'|'COMBAT') => void
-    setLog: (v: string[]) => void
-    setRoundNum: (n: number) => void
-    setTurnPtr: (n: number) => void
-    setQueue: (v: unknown[]) => void
-    setCombatOver: (v: boolean) => void
-    setOutcome: (v: string) => void
+    setLog: Dispatch<SetStateAction<string[]>>
+    setRoundNum: Dispatch<SetStateAction<number>>
+    setTurnPtr: Dispatch<SetStateAction<number>>
+    setQueue: Dispatch<SetStateAction<InitiativeEntry[]>>
+    setCombatOver: Dispatch<SetStateAction<boolean>>
+    setOutcome: Dispatch<SetStateAction<string>>
     setMultiplayerPhase: (p: 'menu'|'lobby'|'game') => void
   }
 }){
@@ -30,4 +31,3 @@ export function useMatchOverClose(params: {
 }
 
 export default useMatchOverClose
-

@@ -12,8 +12,8 @@ describe('Outpost — Dreadnought header when startingFrame=dread', () => {
         PARTS.drives.find(p=>p.id==='warp_drive')!,
         PARTS.weapons.find(p=>p.id==='plasma_battery')!,
         PARTS.computers.find(p=>p.id==='neutrino')!,
-        PARTS.weapons.find(p=>p.id==='omega')!,
-        PARTS.platings.find(p=>p.id==='monolith_plating')!,
+        PARTS.shields.find(p=>p.id==='omega')!,
+        PARTS.hull.find(p=>p.id==='monolith_plating')!,
       ]
     )
     renderOutpost({ initial: { fleet: [dread], capacityCap: 10 } })

@@ -1,7 +1,8 @@
 import { useMpPhaseNav } from '../hooks/useMpPhaseNav'
 import { useMpSetupSync } from '../hooks/useMpSync'
+import type { Dispatch, SetStateAction } from 'react'
 import { useMpSeedSubmit } from '../hooks/useMpSeedSubmit'
-type MultiLike = Record<string, unknown>
+import type { MpClient as MultiLike } from '../hooks/useMpSync'
 import type { Research } from '../../shared/defaults'
 import type { Part } from '../../shared/parts'
 import type { FrameId } from '../game'
@@ -10,7 +11,7 @@ import type { Ship } from '../../shared/types'
 export function useMultiplayerGlue(params: {
   gameMode: 'single'|'multiplayer'
   multi: MultiLike
-  testTick: unknown
+  testTick: number
   // vars
   baseRerollCost: number
   rerollCost: number
@@ -27,12 +28,12 @@ export function useMultiplayerGlue(params: {
   setFleet: (s: Ship[]) => void
   setEnemyFleet: (s: Ship[]) => void
   setMultiplayerPhase: (p: 'menu'|'lobby'|'game') => void
-  setLog: (v: string[]) => void
+  setLog: Dispatch<SetStateAction<string[]>>
   setBlueprints: (bp: Record<FrameId, Part[]>) => void
   setResearch: (r: Research) => void
   setBaseRerollCost: (n: number) => void
   setRerollCost: (n: number) => void
-  setCapacity: (c: { cap: number }) => void
+  setCapacity: Dispatch<SetStateAction<{ cap: number }>>
   setFocused: (n: number) => void
   setMpLastServerApplyRound: (n: number) => void
   setMpServerSnapshotApplied: (v: boolean) => void
