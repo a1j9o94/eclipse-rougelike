@@ -120,7 +120,7 @@ export default function EclipseIntegrated(){
 
   // Multiplayer state
   const [gameMode, setGameMode] = useState<'single' | 'multiplayer'>('single');
-  const [multiplayerPhase, setMultiplayerPhase] = useState<'menu' | 'lobby' | 'game'>('menu');
+  const [multiplayerPhase, setMultiplayerPhase] = useState<'menu' | 'public' | 'lobby' | 'game'>('menu');
   const [currentRoomId, setCurrentRoomId] = useState<Id<"rooms"> | null>(null);
 
   // Multiplayer data (available when in a room)
