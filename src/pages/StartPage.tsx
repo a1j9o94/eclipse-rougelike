@@ -4,6 +4,7 @@ import { type DifficultyId } from '../../shared/types';
 import { getStartingShipCount } from '../../shared/difficulty';
 import { loadRunState, evaluateUnlocks, type Progress } from '../game/storage';
 import { playEffect } from '../game/sound';
+import Starfield from '../components/Starfield';
 
 export default function StartPage({
   onNewRun,
@@ -58,9 +59,9 @@ export default function StartPage({
   const versusEnabled = Boolean(import.meta.env.VITE_CONVEX_URL) && Boolean(onMultiplayer);
 
   return (
-    <div className="relative h-screen overflow-y-auto bg-gradient-to-b from-slate-950 via-indigo-950 to-black text-zinc-100 p-4 flex flex-col">
+    <div className="relative h-screen overflow-y-auto bg-black text-zinc-100 p-4 flex flex-col">
       {starEnabled && (
-        <div aria-hidden className={`starfield ${starDensity}`} />
+        <Starfield enabled={starEnabled} density={starDensity} reducedMotion={userReducedMotion} />
       )}
       <div className="w-full max-w-md mx-auto flex flex-col flex-1 relative z-10">
         {/* Top Bar */}
