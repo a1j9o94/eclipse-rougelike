@@ -209,7 +209,7 @@ export default function EclipseIntegrated(){
       faction: ()=>faction,
       difficulty: ()=> (difficulty as DifficultyId),
     },
-    setters: { setMode, setResources, setShop, setShopVersion, setRerollCost, setFleet, setLog: cv.setLog, setShowWin, setEndless, setBaseRerollCost, setLivesRemaining },
+    setters: { setMode, setResources, setShop, setShopVersion, setRerollCost, setSector: (fn)=> setSector(s=> fn(s)), setFleet, setLog: cv.setLog, setShowWin, setEndless, setBaseRerollCost, setLivesRemaining },
     multi,
   })
 

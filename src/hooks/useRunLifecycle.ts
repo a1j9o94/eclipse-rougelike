@@ -38,6 +38,7 @@ export function useRunLifecycle(params: {
     setShop: (s: { items: Part[] }) => void
     setShopVersion: (updater: (n: number) => number) => void
     setRerollCost: (n: number) => void
+    setSector?: (updater: (n: number) => number) => void
     setFleet: (f: Ship[]) => void
     setLog: (updater: (l: string[]) => string[]) => void
     setShowWin: (v: boolean) => void
@@ -57,7 +58,7 @@ export function useRunLifecycle(params: {
       // Cull and restore fleet
       const culled = fleet.filter(s => s.alive).map(s => ({ ...s, hull: s.stats.hullCap }))
       setters.setFleet(culled)
-      if (sector > 10) {
+      if (sector >= 10) {
         // Final victory
         const faction = getters.faction?.()
         const difficulty = getters.difficulty?.()
@@ -78,6 +79,8 @@ export function useRunLifecycle(params: {
         setters.setMode('OUTPOST')
         setters.setShop({ items: rollInventory(research) })
         setters.setShopVersion(v => v + 1)
+        // Advance to next sector after returning to outpost
+        try { setters.setSector?.((n)=> Math.max(n, sector) + 1) } catch { /* ignore */ }
       }
       setters.setRerollCost(baseRerollCost)
       return
