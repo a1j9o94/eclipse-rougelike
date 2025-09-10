@@ -30,16 +30,42 @@ export default function StartPage({
   const [showLaunch, setShowLaunch] = useState(false);
   const [launchTab, setLaunchTab] = useState<'solo'|'versus'>('solo');
   const [showLog, setShowLog] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [soloDiff, setSoloDiff] = useState<DifficultyId>('easy');
+
+  // Starfield settings (persisted)
+  const [starEnabled, setStarEnabled] = useState(true);
+  const [starDensity, setStarDensity] = useState<'low'|'medium'|'high'>('medium');
+  const [userReducedMotion, setUserReducedMotion] = useState(false);
+
+  // Load persisted UI prefs once
+  useMemo(() => {
+    try {
+      const en = localStorage.getItem('ui-starfield-enabled');
+      const den = localStorage.getItem('ui-starfield-density');
+      const rm = localStorage.getItem('ui-reduced-motion');
+      if (en != null) setStarEnabled(en === 'true');
+      if (den === 'low' || den === 'medium' || den === 'high') setStarDensity(den);
+      if (rm != null) setUserReducedMotion(rm === 'true');
+    } catch { void 0 }
+  }, []);
+
+  // Apply reduced motion toggle to <html> dataset
+  if (typeof document !== 'undefined') {
+    document.documentElement.dataset.userReducedMotion = userReducedMotion ? 'true' : 'false';
+  }
 
   const versusEnabled = Boolean(import.meta.env.VITE_CONVEX_URL) && Boolean(onMultiplayer);
 
   return (
-    <div className="h-screen overflow-y-auto bg-gradient-to-b from-slate-950 via-indigo-950 to-black text-zinc-100 p-4 flex flex-col">
+    <div className="relative h-screen overflow-y-auto bg-gradient-to-b from-slate-950 via-indigo-950 to-black text-zinc-100 p-4 flex flex-col">
+      {starEnabled && (
+        <div aria-hidden className={`starfield ${starDensity}`} />
+      )}
       <div className="w-full max-w-md mx-auto flex flex-col flex-1">
         {/* Top Bar */}
         <div className="flex items-center justify-between h-10">
-          <button aria-label="Settings" className="px-3 py-2 rounded-full bg-white/5 border border-white/10">⚙</button>
+          <button aria-label="Settings" onClick={()=>setShowSettings(true)} className="px-3 py-2 rounded-full bg-white/5 border border-white/10">⚙</button>
           <div />
           <button aria-label="Open Battle Log" onClick={()=>setShowLog(true)} className="px-3 py-2 rounded-full bg-white/5 border border-white/10">📜</button>
         </div>
@@ -144,6 +170,49 @@ export default function StartPage({
                 {progress.log.map((l,i)=>(<li key={i}>{l}</li>))}
               </ul>
               <div className="mt-3"><button className="px-3 py-2 rounded-xl bg-zinc-800" onClick={()=>setShowLog(false)}>Close</button></div>
+            </div>
+          </div>
+        )}
+
+        {/* Settings Modal */}
+        {showSettings && (
+          <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center">
+            <button aria-label="Close" onClick={()=>setShowSettings(false)} className="absolute inset-0 bg-black/50" />
+            <div className="relative w-full max-w-md mx-auto bg-zinc-950 border border-white/10 rounded-2xl p-4">
+              <div className="text-lg font-semibold">Settings</div>
+              <div className="mt-3 space-y-4 text-sm">
+                <div className="flex items-center justify-between">
+                  <span>Starfield</span>
+                  <button
+                    className={`px-3 py-1 rounded-full border ${starEnabled ? 'bg-emerald-700 border-emerald-500' : 'bg-zinc-800 border-white/10'}`}
+                    onClick={()=>{ const v = !starEnabled; setStarEnabled(v); try{ localStorage.setItem('ui-starfield-enabled', String(v)); }catch { void 0 } }}
+                    aria-pressed={starEnabled}
+                  >{starEnabled ? 'On' : 'Off'}</button>
+                </div>
+                <div>
+                  <div className="mb-2">Star Density</div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(['low','medium','high'] as const).map(d => (
+                      <button key={d}
+                        className={`px-3 py-2 rounded-xl border ${starDensity===d ? 'bg-white/10 border-emerald-500' : 'bg-zinc-900 border-white/10'}`}
+                        aria-pressed={starDensity===d}
+                        onClick={()=>{ setStarDensity(d); try{ localStorage.setItem('ui-starfield-density', d);}catch { void 0 } }}
+                      >{d[0].toUpperCase()+d.slice(1)}</button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Reduced Motion</span>
+                  <button
+                    className={`px-3 py-1 rounded-full border ${userReducedMotion ? 'bg-zinc-800 border-white/10' : 'bg-emerald-700 border-emerald-500'}`}
+                    onClick={()=>{ const v = !userReducedMotion; setUserReducedMotion(v); try{ localStorage.setItem('ui-reduced-motion', String(v)); }catch { void 0 } }}
+                    aria-pressed={userReducedMotion}
+                  >{userReducedMotion ? 'On' : 'Off'}</button>
+                </div>
+              </div>
+              <div className="mt-4 text-right">
+                <button className="px-3 py-2 rounded-xl bg-zinc-800" onClick={()=>setShowSettings(false)}>Close</button>
+              </div>
             </div>
           </div>
         )}
