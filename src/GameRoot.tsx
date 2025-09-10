@@ -120,7 +120,7 @@ export default function EclipseIntegrated(){
 
   // Multiplayer state
   const [gameMode, setGameMode] = useState<'single' | 'multiplayer'>('single');
-  const [multiplayerPhase, setMultiplayerPhase] = useState<'menu' | 'lobby' | 'game'>('menu');
+  const [multiplayerPhase, setMultiplayerPhase] = useState<'menu' | 'public' | 'lobby' | 'game'>('menu');
   const [currentRoomId, setCurrentRoomId] = useState<Id<"rooms"> | null>(null);
 
   // Multiplayer data (available when in a room)
@@ -143,6 +143,7 @@ export default function EclipseIntegrated(){
     handleBackToMainMenu,
     handleContinue,
     handleGoMultiplayer,
+    handleGoPublic,
   } = usePreGameHandlers({
     setCurrentRoomId: (id)=>setCurrentRoomId(id as Id<'rooms'> | null),
     setMultiplayerPhase,
@@ -373,6 +374,7 @@ export default function EclipseIntegrated(){
     onNewRun: newRun,
     onContinue: handleContinue,
     onGoMultiplayer: handleGoMultiplayer,
+    onGoPublic: () => handleGoPublic(),
     onRoomJoined: handleRoomJoined,
     onBack: handleBackToMainMenu,
     onGameStart: handleGameStart,

@@ -6,10 +6,11 @@ import { useMultiplayerGame } from '../hooks/useMultiplayerGame';
 interface MultiplayerStartPageProps {
   onRoomJoined: (roomId: string) => void;
   onBack: () => void;
+  onGoPublic: () => void;
   currentFaction?: string;
 }
 
-export default function MultiplayerStartPage({ onRoomJoined, onBack, currentFaction }: MultiplayerStartPageProps) {
+export default function MultiplayerStartPage({ onRoomJoined, onBack, onGoPublic, currentFaction }: MultiplayerStartPageProps) {
   const [mode, setMode] = useState<'menu' | 'create' | 'join' | 'public'>('menu');
   const [roomName, setRoomName] = useState(generateSpaceRoomName());
   const [playerName, setPlayerName] = useState('');
@@ -280,12 +281,11 @@ export default function MultiplayerStartPage({ onRoomJoined, onBack, currentFact
           </button>
 
           <button
-            onClick={() => setMode('public')}
-            className="w-full p-4 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium text-left opacity-50 cursor-not-allowed"
-            disabled
+            onClick={() => onGoPublic()}
+            className="w-full p-4 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium text-left"
           >
             <div className="font-bold">Public Matchmaking</div>
-            <div className="text-sm text-purple-200">Coming soon!</div>
+            <div className="text-sm text-purple-200">Browse and join public rooms</div>
           </button>
         </div>
       </div>

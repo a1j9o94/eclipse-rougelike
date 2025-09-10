@@ -139,6 +139,54 @@ export const getPublicRooms = query({
   },
 });
 
+// New detailed public room browser including host name and config snapshot
+export const getPublicRoomsDetailed = query({
+  args: {},
+  handler: async (ctx) => {
+    const rooms = await ctx.db
+      .query("rooms")
+      .withIndex("by_public", (q) => q.eq("isPublic", true).eq("status", "waiting"))
+      .collect();
+
+    const joinable = rooms.filter(r => r.currentPlayers < r.maxPlayers);
+    // Fetch host info per room (small N); optimize later if necessary
+    const results = [] as Array<{
+      roomId: string;
+      roomCode: string;
+      roomName: string;
+      currentPlayers: number;
+      maxPlayers: number;
+      startingShips: number;
+      livesPerPlayer: number;
+      hostName: string;
+      hostLives: number;
+      createdAt: number;
+    }>;
+    for (const room of joinable) {
+      const players = await ctx.db
+        .query("players")
+        .withIndex("by_room", (q) => q.eq("roomId", room._id))
+        .collect();
+      const host = players.find(p => p.isHost) ?? players[0];
+      results.push({
+        roomId: room._id as unknown as string,
+        roomCode: room.roomCode,
+        roomName: room.roomName,
+        currentPlayers: room.currentPlayers,
+        maxPlayers: room.maxPlayers,
+        startingShips: room.gameConfig.startingShips,
+        livesPerPlayer: room.gameConfig.livesPerPlayer,
+        hostName: host?.playerName ?? 'Host',
+        hostLives: host?.lives ?? room.gameConfig.livesPerPlayer,
+        createdAt: room.createdAt,
+      });
+    }
+    // Sort oldest first so new rooms float down slightly; can be adjusted later
+    results.sort((a, b) => a.createdAt - b.createdAt);
+    return results;
+  },
+});
+
 export const updatePlayerReady = mutation({
   args: {
     playerId: v.string(),

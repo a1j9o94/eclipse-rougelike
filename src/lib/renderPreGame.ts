@@ -2,6 +2,7 @@ import type { ReactElement } from 'react'
 import { createElement } from 'react'
 import StartPage from '../pages/StartPage'
 import MultiplayerStartPage from '../pages/MultiplayerStartPage'
+import PublicLobbyPage from '../pages/PublicLobbyPage'
 import { RoomLobby } from '../../components/RoomLobby'
 import type { Id } from '../../convex/_generated/dataModel'
 import type { DifficultyId } from '../../shared/types'
@@ -11,12 +12,13 @@ export type PreGameRouterProps = {
   gameMode: 'single'|'multiplayer'
   showNewRun: boolean
   faction: string
-  multiplayerPhase: 'menu'|'lobby'|'game'
+  multiplayerPhase: 'menu'|'public'|'lobby'|'game'
   currentRoomId: Id<'rooms'> | null
   // handlers
   onNewRun: (diff: DifficultyId, faction: FactionId) => void
   onContinue: () => void
   onGoMultiplayer: () => void
+  onGoPublic: () => void
   onRoomJoined: (roomId: string) => void
   onBack: () => void
   onGameStart: () => void
@@ -39,6 +41,13 @@ export function getPreGameElement(props: PreGameRouterProps): ReactElement | nul
         onRoomJoined: props.onRoomJoined,
         onBack: props.onBack,
         currentFaction: props.faction,
+        onGoPublic: props.onGoPublic,
+      })
+    }
+    if (multiplayerPhase === 'public') {
+      return createElement(PublicLobbyPage, {
+        onBack: props.onBack,
+        onRoomJoined: props.onRoomJoined,
       })
     }
     if (multiplayerPhase === 'lobby' && currentRoomId) {

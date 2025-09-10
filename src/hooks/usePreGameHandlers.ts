@@ -2,7 +2,7 @@ import type { Id } from '../../convex/_generated/dataModel'
 
 export function usePreGameHandlers(params: {
   setCurrentRoomId: (id: Id<'rooms'> | null) => void
-  setMultiplayerPhase: (p: 'menu'|'lobby'|'game') => void
+  setMultiplayerPhase: (p: 'menu'|'public'|'lobby'|'game') => void
   setGameMode: (m: 'single'|'multiplayer') => void
   setShowNewRun: (v: boolean) => void
   playEffect: (k: 'page') => void
@@ -45,6 +45,11 @@ export function usePreGameHandlers(params: {
     playEffect('page')
   }
 
+  function handleGoPublic() {
+    setMultiplayerPhase('public')
+    playEffect('page')
+  }
+
   return {
     handleRoomJoined,
     handleGameStart,
@@ -52,8 +57,8 @@ export function usePreGameHandlers(params: {
     handleBackToMainMenu,
     handleContinue,
     handleGoMultiplayer,
+    handleGoPublic,
   }
 }
 
 export default usePreGameHandlers
-
