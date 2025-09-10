@@ -130,13 +130,13 @@ export function useCombatLoop(params: {
       volley(atk, def, e.side, lines, friends)
       setters.setLog(prev=>[...prev, ...lines])
       if (isP) {
-        // Player attacked enemy — update enemy fleet
+        // Player attacked enemy — defender is enemy fleet
         setters.setEnemyFleet([...defFleet])
         dlog('updateFleet', { side: 'P', enemyCount: defFleet.length })
       } else {
-        // Enemy attacked player — update our fleet
-        setters.setFleet([...friends])
-        dlog('updateFleet', { side: 'E', playerCount: friends.length })
+        // Enemy attacked player — defender is our fleet
+        setters.setFleet([...defFleet])
+        dlog('updateFleet', { side: 'E', playerCount: defFleet.length })
       }
       if(atk.weapons.length>0 || atk.riftDice>0){
         const dur = import.meta.env.MODE==='test' ? 0 : Math.max(100, 1000 - (getters.roundNum() - 1) * 200)
