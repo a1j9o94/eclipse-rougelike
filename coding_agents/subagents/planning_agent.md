@@ -116,3 +116,47 @@
 
 ### Follow-ups
 - Consider adding backdrop click-to-close behavior for consistency across modals.
+
+## Plan Entry — Homepage UI Redesign (Space Mobile Menu)
+
+- Outcome: A mobile-first home screen with a single Launch CTA and a Battle Log modal; remove the game title and Single Player/Multiplayer headers; elevate a space-themed visual style.
+
+- Acceptance criteria:
+  - No game title or "Single Player / Multiplayer" headers on the home screen.
+  - Centered `Launch` opens a bottom sheet with `Solo | Versus` tabs; Versus disabled if `!VITE_CONVEX_URL`.
+  - `Continue` appears when a save exists, calls `onContinue`.
+  - Faction selection available via Hangar card and inside Launch sheet; stays in sync.
+  - Difficulty chips show counts and gating: Medium needs Easy win; Hard needs Medium win.
+  - Battle Log opens in a modal from the top bar; shows entries from `progress.log` or an empty state.
+  - Touch targets ≥ 44px; keyboard focus visible and trapped in modals; lint/tests/build green.
+
+- Risks & rollback:
+  - Risk: Layout change breaks tests; Mitigation: update targeted UI tests first.
+  - Risk: Performance of background; Mitigation: lightweight CSS animation, reduced-motion path.
+  - Rollback: Keep old structure behind a quick revert; props remain unchanged.
+
+- Test list (must fail first):
+  1) Start screen renders without title/SP-MP headers.
+  2) `Launch` opens a sheet with `Solo | Versus` (focus trapped).
+  3) Versus disabled when no server; enabled otherwise.
+  4) `Continue` shows only with save; calls `onContinue`.
+  5) Difficulty gating + counts.
+  6) Faction selection sync (Hangar ↔ Launch sheet).
+  7) Battle Log modal open/close + empty and non-empty states.
+
+---
+
+### Implementation Steps
+1) Replace header area with top bar + primary CTAs
+2) Add Launch Sheet (Solo), wire `onNewRun`
+3) Add Versus tab, gate by env + `onMultiplayer`
+4) Add Battle Log modal
+5) Add starfield + polish + a11y
+6) Add tests and update snapshots where appropriate
+
+### Decision Log
+- Preserve StartPage props; move complexity into new child components.
+- Use a single modal component with Solo/Versus tabs for clarity.
+
+### Follow-ups
+- Profile avatar stub on top bar; richer Battle Log entries with metadata.
