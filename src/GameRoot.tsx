@@ -228,6 +228,7 @@ export default function EclipseIntegrated(){
       showRules: ()=>showRules,
     },
     setters: {
+      setFleet: (f)=> setFleet(f as Ship[]),
       setEnemyFleet: (f)=>cv.setEnemyFleet(f),
       setLog: (fn)=>cv.setLog(fn as unknown as (string[]|((l:string[])=>string[]))),
       setRoundNum: (fn)=>cv.setRoundNum(fn as unknown as (number|((n:number)=>number))),

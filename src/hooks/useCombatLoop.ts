@@ -18,6 +18,7 @@ export function useCombatLoop(params: {
     showRules: () => boolean
   }
   setters: {
+    setFleet: (f: Ship[]) => void
     setEnemyFleet: (f: Ship[]) => void
     setLog: (fn: (l: string[]) => string[]) => void
     setRoundNum: (fn: (n: number) => number) => void
@@ -124,10 +125,11 @@ export function useCombatLoop(params: {
       volley(atk, def, e.side, lines, friends)
       setters.setLog(prev=>[...prev, ...lines])
       if (isP) {
-        setters.setEnemyFleet([...defFleet])
+        // Player attacked enemy — update enemy fleet
         setters.setEnemyFleet([...defFleet])
       } else {
-        setters.setEnemyFleet([...friends])
+        // Enemy attacked player — update our fleet
+        setters.setFleet([...friends])
       }
       if(atk.weapons.length>0 || atk.riftDice>0){
         const dur = import.meta.env.MODE==='test' ? 0 : Math.max(100, 1000 - (getters.roundNum() - 1) * 200)
