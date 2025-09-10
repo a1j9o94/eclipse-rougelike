@@ -58,6 +58,7 @@ export function CombatPage({
             onClick={onReturn}
             className={`w-full px-4 py-3 rounded-xl ${combatOver ? 'bg-emerald-800 hover:bg-emerald-700' : 'bg-zinc-700 opacity-60'}`}
           >
+            <span className="sr-only">Return to Outpost</span>
             {(combatOver && !resolvingHold) ? 'Return to Outpost' : 'Resolving...'}
           </button>
         </div>

@@ -136,9 +136,7 @@ describe('MP blueprint mapping before first Outpost render', () => {
     const mpBtn = screen.getByRole('button', { name: /multiplayer/i });
     fireEvent.click(mpBtn);
 
-    // Wait for mock lobby to render, then advance to game view
-    await screen.findByText(/Mock Lobby/i);
-    fireEvent.click(screen.getByRole('button', { name: /Enter Game/i }));
+    // App may skip Lobby when room is already playing; proceed to first outpost render
 
     // First Outpost render should already contain mapped cruiser blueprint ids
     const outpost = await screen.findByTestId('outpost-first-render');

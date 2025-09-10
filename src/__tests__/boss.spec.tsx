@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import App from '../App'
-import { getBossVariants, getOpponentFaction, getBossFleetFor } from '../game'
+import { screen, fireEvent } from '@testing-library/react'
+import { renderOutpost } from '../test/harness/renderOutpost'
+import { getBossVariants, getOpponentFaction, getBossFleetFor, setOpponentFaction } from '../game'
 import { generateEnemyFleetFor } from '../game/enemy'
 
 describe('Boss variants and planning', () => {
@@ -26,14 +26,8 @@ describe('Boss variants and planning', () => {
       seed = (seed * 16807) % 2147483647
       return (seed - 1) / 2147483646
     })
-    render(<App />)
-    fireEvent.click(screen.getByRole('button', { name: /Consortium of Scholars/i }))
-    fireEvent.click(screen.getByRole('button', { name: /Easy/i }))
-    fireEvent.click(screen.getByRole('button', { name: /Let’s go/i }))
-    await screen.findByText(/^Victory$/i, undefined, { timeout: 10000 })
-    const ret = screen.getByRole('button', { name: /Return to Outpost/i })
-    await waitFor(() => expect(ret).not.toBeDisabled())
-    fireEvent.click(ret)
+    renderOutpost()
+    // Open Combat Plan from Outpost
     await screen.findByRole('button', { name: /Combat Plan/i })
     fireEvent.click(screen.getByRole('button', { name: /Combat Plan/i }))
     rand.mockRestore()
@@ -55,16 +49,11 @@ describe('Boss variants and planning', () => {
   }, 20000)
 
   it('boss generation uses predefined opponent faction fleets at sector 5', () => {
-    render(<App />)
-    fireEvent.click(screen.getByRole('button', { name: /Consortium of Scholars/i }))
-    fireEvent.click(screen.getByRole('button', { name: /Easy/i }))
-    fireEvent.click(screen.getByRole('button', { name: /Let’s go/i }))
-
+    // Pick a known opponent explicitly
+    setOpponentFaction('warmongers')
     const opp = getOpponentFaction()
     const expected = getBossFleetFor(opp, 5)
     const eFleet = generateEnemyFleetFor(5)
     expect(eFleet.length).toBe(expected.ships.length)
   })
 })
-
-

@@ -1,0 +1,4148 @@
+
+> eclipse-rougelike@0.0.0 test:run
+> vitest run --pool=forks --reporter=basic
+
+
+ RUN  v3.2.4 /Users/oblet/Documents/GitHub/eclipse-rougelike
+
+ ✓ src/__tests__/combat_snapshot_render.spec.tsx (1 test) 13ms
+ ✓ src/__tests__/rewards.spec.ts (4 tests) 2ms
+ ✓ src/__tests__/frameSlots.spec.tsx (4 tests) 38ms
+ ✓ src/__tests__/dock.spec.tsx (6 tests) 152ms
+ ✓ src/__tests__/blueprints.spec.ts (2 tests) 6ms
+ ✓ src/__tests__/boss.predefined.spec.ts (2 tests) 230ms
+ ✓ src/__tests__/combatplan.endless.spec.tsx (1 test) 59ms
+ ✓ src/__tests__/convex_engine_combat.spec.ts (2 tests) 18ms
+ ✓ src/__tests__/combat.lock.spec.tsx (1 test) 378ms
+   ✓ combat auto resolution > keeps return button disabled until combat ends  377ms
+ ✓ src/__tests__/factions.spec.tsx (7 tests) 381ms
+ ✓ src/__tests__/app.integration.spec.tsx (1 test) 494ms
+   ✓ App integration > renders new run modal and starts a run  493ms
+ ✓ src/__tests__/slots.spec.tsx (4 tests) 539ms
+   ✓ slot displays > shows slots in Class Blueprint header for Interceptor  507ms
+ ✓ src/__tests__/auto.victory.spec.tsx (1 test) 373ms
+   ✓ auto combat > reaches victory without extra manual step  371ms
+ ✓ src/__tests__/rules.spec.tsx (2 tests) 601ms
+   ✓ rules modal > pauses combat until dismissed at battle start  581ms
+ ✓ src/__tests__/boss.spec.tsx (3 tests) 702ms
+   ✓ Boss variants and planning > Combat Plan shows boss variant labels for sectors 5 and 10  624ms
+ ✓ src/__tests__/core.spec.ts (10 tests) 7ms
+ ✓ src/__tests__/dice.spec.ts (2 tests) 2ms
+ ✓ src/__tests__/effects.spec.ts (2 tests) 4ms
+ ✓ src/__tests__/description.spec.tsx (3 tests) 39ms
+ ✓ src/__tests__/enemy.spec.ts (3 tests) 4ms
+ ✓ src/__tests__/engine_rng.spec.ts (3 tests) 2ms
+ ✓ src/__tests__/envCheck.spec.ts (3 tests) 2ms
+ ✓ src/__tests__/effects_runner_once.spec.tsx (1 test) 63ms
+ ✓ src/__tests__/faction_blueprint_hints.spec.ts (1 test) 1ms
+ ✓ src/__tests__/fleet.spec.ts (1 test) 8ms
+ ✓ src/__tests__/errorboundary.spec.tsx (1 test) 34ms
+ ✓ src/__tests__/fleetRow.spec.tsx (3 tests) 49ms
+ ✓ src/__tests__/hangar.spec.ts (6 tests) 7ms
+ ✓ src/__tests__/hooks_useMpPhaseNav.spec.tsx (2 tests) 14ms
+ ✓ src/__tests__/hooks_useOutpostVm.spec.ts (2 tests) 19ms
+ ✓ src/__tests__/hooks_useResourceBarVm.spec.ts (2 tests) 14ms
+ ✓ src/__tests__/hooks_useOutpostHandlers.spec.tsx (1 test) 40ms
+ ✓ src/__tests__/hooks_useRunLifecycle.spec.tsx (1 test) 64ms
+ ✓ src/__tests__/mp_blueprint_fallback_missing_frames.spec.ts (1 test) 1ms
+ ✓ src/__tests__/map_blueprint_ids_to_parts.spec.ts (3 tests) 2ms
+ ✓ src/__tests__/hooks_useRunLifecycle_victory.spec.tsx (2 tests) 119ms
+ ✓ src/__tests__/mp_blueprint_hints_apply.spec.ts (2 tests) 1ms
+ ✓ src/__tests__/mp_economy_hangar_isolation.spec.ts (2 tests) 3ms
+ ✓ src/__tests__/mp_economy_isolation.spec.ts (7 tests) 5ms
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base corrected from econ (direct) { base: [33m10[39m, round: [33m1[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+[MP] reroll base corrected from econ (my state) { base: [33m10[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+ ✓ src/__tests__/mp_faction_apply.spec.ts (1 test) 2ms
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+ ✓ src/__tests__/mp_faction_config_sync.spec.ts (1 test) 2ms
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+ ✓ src/__tests__/mp_faction_blueprint_alignment.spec.ts (2 tests) 5ms
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_opponent_isolation.spec.tsx > MP Isolation — opponent faction does not affect my shop/capacity > Industrialists vs Warmongers: A keeps discounted economy but does NOT receive 14 capacity from opponent
+[Sync] server snapshot frames [ [32m'interceptor'[39m, [32m'interceptor'[39m, [32m'interceptor'[39m ]
+[MP] reroll base corrected from econ (direct) { base: [33m0[39m, round: [33m1[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m0.75[39m, materials: [33m0.75[39m }
+[MP] reroll base corrected from econ (my state) { base: [33m0[39m, round: [33m1[39m }
+[Sync] Applying server fleet snapshot in setup { roundNum: [33m1[39m, serverCount: [33m3[39m, localCount: [33m1[39m }
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mtrue[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+ ✓ src/__tests__/mp_seeding_and_lives.spec.ts (2 tests) 77ms
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+ ✓ src/__tests__/mp_server_defaults.spec.ts (4 tests) 57ms
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Warmongers reset reroll to base (8¢) even if saved SP reroll=0
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m0[39m, round: [33m1[39m }
+[MP] capacity cap applied (my state) { prev: [33m3[39m, next: [33m14[39m }
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+ ✓ src/__tests__/mp_snapshot_mapping.spec.ts (1 test) 3ms
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+[MP] capacity cap applied (my state) { prev: [33m3[39m, next: [33m14[39m }
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+ ✓ src/__tests__/mp_typing_contract.spec.ts (5 tests) 4ms
+ ✓ src/__tests__/mp_transport.spec.ts (2 tests) 3ms
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_research_persistence.spec.tsx > MP Research Persistence > calls updateGameState with upgraded research after upgrading a track
+[Sync] server snapshot frames [ [32m'interceptor'[39m ]
+[MP] reroll base corrected from econ (direct) { base: [33m0[39m, round: [33m1[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m0.75[39m, materials: [33m0.75[39m }
+[MP] reroll base corrected from econ (my state) { base: [33m0[39m, round: [33m1[39m }
+[Sync] Applying server fleet snapshot in setup { roundNum: [33m1[39m, serverCount: [33m1[39m, localCount: [33m1[39m }
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mtrue[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_blueprint_first_render.spec.tsx > MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render)
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] using my economy multipliers (UI only) { credits: [33m1[39m, materials: [33m1[39m }
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+ ❯ src/__tests__/mp_blueprint_first_render.spec.tsx (1 test | 1 failed) 1119ms
+   × MP blueprint mapping before first Outpost render > maps server blueprintIds to parts before switching to OUTPOST (first render) 1118ms
+     → Unable to find an element with the text: /Mock Lobby/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-zinc-950 min-h-screen text-zinc-100"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"sticky top-0 z-10 bg-zinc-950/95 backdrop-blur border-b border-zinc-800"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"mx-auto max-w-5xl p-2 flex items-center gap-2 flex-wrap text-sm sm:text-base"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 flex-1 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m💰 [0m
+            [36m<b>[39m
+              [0m20[0m
+            [36m</b>[39m
+            [0m • 🧱 [0m
+            [36m<b>[39m
+              [0m5[0m
+            [36m</b>[39m
+            [0m • 🔬 [0m
+            [36m<b>[39m
+              [0m0[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg whitespace-nowrap bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20"[39m
+          [36m>[39m
+            [0m🟢[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m1[0m
+            [36m</b>[39m
+            [0m/[0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m🗺️ [0m
+            [36m<b>[39m
+              [0m1[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0mAlice (warmongers):[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+            [0m ❤[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0mvs [0m
+            [0mBob[0m
+            [0m (scientists)[0m
+            [0m: [0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+            [0m ❤[0m
+            [36m<span[39m
+              [33mclass[39m=[32m"ml-2 text-xs opacity-70"[39m
+            [36m>[39m
+              [0mPhase: [0m
+              [0msetup[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded bg-zinc-800 text-xs"[39m
+          [36m>[39m
+            [0mRestart[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mdata-cruiser-ids[39m=[32m"[\"tachyon_source\",\"tachyon_drive\",\"plasma_array\",\"positron\",\"gauss\",\"composite\"]"[39m
+        [33mdata-testid[39m=[32m"outpost-first-render"[39m
+      [36m>[39m
+        [0mOutpost Mock[0m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"fixed bottom-3 right-3 z-40 flex flex-col gap-2"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"hidden sm:flex flex-col gap-2"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs"[39m
+          [36m>[39m
+            [0m🔬 Tech[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs"[39m
+          [36m>[39m
+            [0m❓ Rules[0m
+          [36m</button>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"sm:hidden"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs"[39m
+          [36m>[39m
+            [0m❓[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-zinc-950 min-h-screen text-zinc-100"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"sticky top-0 z-10 bg-zinc-950/95 backdrop-blur border-b border-zinc-800"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"mx-auto max-w-5xl p-2 flex items-center gap-2 flex-wrap text-sm sm:text-base"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 flex-1 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m💰 [0m
+            [36m<b>[39m
+              [0m20[0m
+            [36m</b>[39m
+            [0m • 🧱 [0m
+            [36m<b>[39m
+              [0m5[0m
+            [36m</b>[39m
+            [0m • 🔬 [0m
+            [36m<b>[39m
+              [0m0[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg whitespace-nowrap bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20"[39m
+          [36m>[39m
+            [0m🟢[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m1[0m
+            [36m</b>[39m
+            [0m/[0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m🗺️ [0m
+            [36m<b>[39m
+              [0m1[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0mAlice (warmongers):[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+            [0m ❤[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0mvs [0m
+            [0mBob[0m
+            [0m (scientists)[0m
+            [0m: [0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+            [0m ❤[0m
+            [36m<span[39m
+              [33mclass[39m=[32m"ml-2 text-xs opacity-70"[39m
+            [36m>[39m
+              [0mPhase: [0m
+              [0msetup[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded bg-zinc-800 text-xs"[39m
+          [36m>[39m
+            [0mRestart[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mdata-cruiser-ids[39m=[32m"[\"tachyon_source\",\"tachyon_drive\",\"plasma_array\",\"positron\",\"gauss\",\"composite\"]"[39m
+        [33mdata-testid[39m=[32m"outpost-first-render"[39m
+      [36m>[39m
+        [0mOutpost Mock[0m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"fixed bottom-3 right-3 z-40 flex flex-col gap-2"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"hidden sm:flex flex-col gap-2"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs"[39m
+          [36m>[39m
+            [0m🔬 Tech[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs"[39m
+          [36m>[39m
+            [0m❓ Rules[0m
+          [36m</button>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"sm:hidden"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs"[39m
+          [36m>[39m
+            [0m❓[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+ ✓ src/__tests__/mp_upgrade.spec.ts (5 tests) 4ms
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+ ✓ src/__tests__/multiplayer.spec.ts (6 tests) 2ms
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/multiplayer_authoritative_flow.spec.ts > Multiplayer authoritative loop (server view + client logs) > walks two players through setup → combat → setup with logs
+[Init] phase=setup round=1 ready=[Host:❌ Guest:❌]
+[Client->Server] Snapshots submitted: A and B
+[Outpost] Ready up phase=setup round=1 ready=[Host:✅ Guest:✅]
+[Server] Combat resolved. Winner=A. Loser lives=1
+[Server] Round log:
+— Round 1 —
+🟦 A1 → B1 | Auto: auto 1
+🟥 B1 → A1 | Plasma: roll 6 ≥ 5 → 1
+— Round 2 —
+🟦 A1 → B1 | Auto: auto 1
+🟥 B1 → A1 | Plasma: roll 5 ≥ 5 → 1
+— Round 3 —
+🟦 A1 → B1 | Auto: auto 1
+💥 B1 destroyed!
+Winner: Player A
+[Client] A and B ack playback. acks={"A":true,"B":true}
+[Loop] phase=setup round=2 ready=[Host:❌ Guest:❌]
+[UI] Next shop is open for both players. They can re‑outfit and repeat.
+
+ ✓ src/__tests__/multiplayer_authoritative_flow.spec.ts (1 test) 5ms
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+ ✓ src/__tests__/newparts.spec.ts (3 tests) 2ms
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_persistence_hygiene.spec.tsx > MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+ ❯ src/__tests__/mp_persistence_hygiene.spec.tsx (1 test | 1 failed) 1317ms
+   × MP persistence hygiene > does not call saveRunState/evaluateUnlocks while in multiplayer 1315ms
+     → Unable to find an element with the text: /Mock Lobby/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-zinc-950 min-h-screen text-zinc-100"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"sticky top-0 z-10 bg-zinc-950/95 backdrop-blur border-b border-zinc-800"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"mx-auto max-w-5xl p-2 flex items-center gap-2 flex-wrap text-sm sm:text-base"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 flex-1 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m💰 [0m
+            [36m<b>[39m
+              [0m20[0m
+            [36m</b>[39m
+            [0m • 🧱 [0m
+            [36m<b>[39m
+              [0m5[0m
+            [36m</b>[39m
+            [0m • 🔬 [0m
+            [36m<b>[39m
+              [0m0[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg whitespace-nowrap bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20"[39m
+          [36m>[39m
+            [0m🟢[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m1[0m
+            [36m</b>[39m
+            [0m/[0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m🗺️ [0m
+            [36m<b>[39m
+              [0m1[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded bg-zinc-800 text-xs"[39m
+          [36m>[39m
+            [0mRestart[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mx-auto max-w-5xl pb-24"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-3"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-2 mb-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-lg font-semibold"[39m
+            [36m>[39m
+              [0mHangar (Class Blueprints)[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1"[39m
+            [36m/>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs"[39m
+            [36m>[39m
+              [0m📋 Combat Plan[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"relative w-full text-left p-3 rounded-xl border transition border-sky-400 bg-sky-400/10"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center justify-between"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"font-semibold text-sm sm:text-base"[39m
+                  [36m>[39m
+                    [0mInterceptor[0m
+                    [0m [0m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-xs opacity-70"[39m
+                    [36m>[39m
+                      [0m(t[0m
+                      [0m1[0m
+                      [0m)[0m
+                    [36m</span>[39m
+                  [36m</div>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"inline-flex items-center gap-1 font-medium font-mono px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs bg-emerald-600/20 text-emerald-200 ring-1 ring-emerald-600/30"[39m
+                  [36m>[39m
+                    [0m⚡ [0m
+                    [36m<span>[39m
+                      [0m3[0m
+                    [36m</span>[39m
+                    [0m/[0m
+                    [36m<span>[39m
+                      [0m3[0m
+                    [36m</span>[39m
+                  [36m</span>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"text-xs opacity-80 mt-1"[39m
+                [36m>[39m
+                  [0m🚀 [0m
+                  [0m1[0m
+                  [0m • 🎯 [0m
+                  [0m1[0m
+                  [0m • 🛡️ [0m
+                  [0m0[0m
+                  [0m • ⬛ [0m
+                  [0m4[0m
+                  [0m/[0m
+                  [0m6[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"mt-1"[39m
+                [36m>[39m
+                  [0m❤️ [0m
+                  [0m1[0m
+                  [0m/[0m
+                  [0m1[0m
+                [36m</div>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 grid grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-3 rounded-xl bg-zinc-700 opacity-60"[39m
+              [33mdisabled[39m=[32m""[39m
+            [36m>[39m
+              [0mBuild Interceptor — Need 3🧱 + 30¢[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-3 rounded-xl bg-zinc-700 opacity-60"[39m
+              [33mdisabled[39m=[32m""[39m
+            [36m>[39m
+              [0mUpgrade Interceptor — Requires Military ≥ 2[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-2 grid grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"inline-flex items-center gap-1"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mExpand Capacity[0m
+                [36m</span>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"inline-flex gap-0.5"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-2 h-2 rounded-full bg-zinc-700"[39m
+                  [36m/>[39m
+                [36m</span>[39m
+                [36m<span>[39m
+                  [0m([0m
+                  [0m3[0m
+                  [0m🧱 + [0m
+                  [0m15[0m
+                  [0m¢)[0m
+                [36m</span>[39m
+              [36m</span>[39m
+    ...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-zinc-950 min-h-screen text-zinc-100"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"sticky top-0 z-10 bg-zinc-950/95 backdrop-blur border-b border-zinc-800"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"mx-auto max-w-5xl p-2 flex items-center gap-2 flex-wrap text-sm sm:text-base"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 flex-1 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m💰 [0m
+            [36m<b>[39m
+              [0m20[0m
+            [36m</b>[39m
+            [0m • 🧱 [0m
+            [36m<b>[39m
+              [0m5[0m
+            [36m</b>[39m
+            [0m • 🔬 [0m
+            [36m<b>[39m
+              [0m0[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg whitespace-nowrap bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20"[39m
+          [36m>[39m
+            [0m🟢[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m1[0m
+            [36m</b>[39m
+            [0m/[0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m🗺️ [0m
+            [36m<b>[39m
+              [0m1[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded bg-zinc-800 text-xs"[39m
+          [36m>[39m
+            [0mRestart[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mx-auto max-w-5xl pb-24"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-3"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-2 mb-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-lg font-semibold"[39m
+            [36m>[39m
+              [0mHangar (Class Blueprints)[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1"[39m
+            [36m/>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs"[39m
+            [36m>[39m
+              [0m📋 Combat Plan[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"relative w-full text-left p-3 rounded-xl border transition border-sky-400 bg-sky-400/10"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center justify-between"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"font-semibold text-sm sm:text-base"[39m
+                  [36m>[39m
+                    [0mInterceptor[0m
+                    [0m [0m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-xs opacity-70"[39m
+                    [36m>[39m
+                      [0m(t[0m
+                      [0m1[0m
+                      [0m)[0m
+                    [36m</span>[39m
+                  [36m</div>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"inline-flex items-center gap-1 font-medium font-mono px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs bg-emerald-600/20 text-emerald-200 ring-1 ring-emerald-600/30"[39m
+                  [36m>[39m
+                    [0m⚡ [0m
+                    [36m<span>[39m
+                      [0m3[0m
+                    [36m</span>[39m
+                    [0m/[0m
+                    [36m<span>[39m
+                      [0m3[0m
+                    [36m</span>[39m
+                  [36m</span>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"text-xs opacity-80 mt-1"[39m
+                [36m>[39m
+                  [0m🚀 [0m
+                  [0m1[0m
+                  [0m • 🎯 [0m
+                  [0m1[0m
+                  [0m • 🛡️ [0m
+                  [0m0[0m
+                  [0m • ⬛ [0m
+                  [0m4[0m
+                  [0m/[0m
+                  [0m6[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"mt-1"[39m
+                [36m>[39m
+                  [0m❤️ [0m
+                  [0m1[0m
+                  [0m/[0m
+                  [0m1[0m
+                [36m</div>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 grid grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-3 rounded-xl bg-zinc-700 opacity-60"[39m
+              [33mdisabled[39m=[32m""[39m
+            [36m>[39m
+              [0mBuild Interceptor — Need 3🧱 + 30¢[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-3 rounded-xl bg-zinc-700 opacity-60"[39m
+              [33mdisabled[39m=[32m""[39m
+            [36m>[39m
+              [0mUpgrade Interceptor — Requires Military ≥ 2[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-2 grid grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"inline-flex items-center gap-1"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mExpand Capacity[0m
+                [36m</span>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"inline-flex gap-0.5"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-2 h-2 rounded-full bg-zinc-700"[39m
+                  [36m/>[39m
+                [36m</span>[39m
+                [36m<span>[39m
+                  [0m([0m
+                  [0m3[0m
+                  [0m🧱 + [0m
+                  [0m15[0m
+                  [0m¢)[0m
+                [36m</span>[39m
+              [36m</span>[39m
+    ...
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+ ❯ src/__tests__/mp_opponent_isolation.spec.tsx (1 test | 1 failed) 1321ms
+   × MP Isolation — opponent faction does not affect my shop/capacity > Industrialists vs Warmongers: A keeps discounted economy but does NOT receive 14 capacity from opponent 1320ms
+     → Unable to find an element with the text: /Mock Lobby/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-zinc-950 min-h-screen text-zinc-100"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"sticky top-0 z-10 bg-zinc-950/95 backdrop-blur border-b border-zinc-800"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"mx-auto max-w-5xl p-2 flex items-center gap-2 flex-wrap text-sm sm:text-base"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 flex-1 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m💰 [0m
+            [36m<b>[39m
+              [0m20[0m
+            [36m</b>[39m
+            [0m • 🧱 [0m
+            [36m<b>[39m
+              [0m5[0m
+            [36m</b>[39m
+            [0m • 🔬 [0m
+            [36m<b>[39m
+              [0m0[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg whitespace-nowrap bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20"[39m
+          [36m>[39m
+            [0m🟢[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+            [0m/[0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m🗺️ [0m
+            [36m<b>[39m
+              [0m1[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0mAlice (industrialists):[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m4[0m
+            [36m</b>[39m
+            [0m ❤[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0mvs [0m
+            [0mBob[0m
+            [0m (warmongers)[0m
+            [0m: [0m
+            [36m<b>[39m
+              [0m4[0m
+            [36m</b>[39m
+            [0m ❤[0m
+            [36m<span[39m
+              [33mclass[39m=[32m"ml-2 text-xs opacity-70"[39m
+            [36m>[39m
+              [0mPhase: [0m
+              [0msetup[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded bg-zinc-800 text-xs"[39m
+          [36m>[39m
+            [0mRestart[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mx-auto max-w-5xl pb-24"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-3"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-2 mb-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-lg font-semibold"[39m
+            [36m>[39m
+              [0mHangar (Class Blueprints)[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1"[39m
+            [36m/>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs"[39m
+            [36m>[39m
+              [0m📋 Combat Plan[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"pointer-events-none absolute inset-0 rounded-xl border border-sky-400 bg-zinc-900"[39m
+                [33mstyle[39m=[32m"transform: translate(4px, 4px);"[39m
+              [36m/>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"pointer-events-none absolute inset-0 rounded-xl border border-sky-400 bg-zinc-900"[39m
+                [33mstyle[39m=[32m"transform: translate(8px, 8px);"[39m
+              [36m/>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"relative w-full text-left p-3 rounded-xl border transition border-sky-400 bg-sky-400/10"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"absolute -top-2 -left-2 bg-zinc-800 px-1 rounded text-xs"[39m
+                [36m>[39m
+                  [0m×[0m
+                  [0m3[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center justify-between"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"font-semibold text-sm sm:text-base"[39m
+                  [36m>[39m
+                    [0mInterceptor[0m
+                    [0m [0m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-xs opacity-70"[39m
+                    [36m>[39m
+                      [0m(t[0m
+                      [0m1[0m
+                      [0m)[0m
+                    [36m</span>[39m
+                  [36m</div>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"inline-flex items-center gap-1 font-medium font-mono px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs bg-emerald-600/20 text-emerald-200 ring-1 ring-emerald-600/30"[39m
+                  [36m>[39m
+                    [0m⚡ [0m
+                    [36m<span>[39m
+                      [0m0[0m
+                    [36m</span>[39m
+                    [0m/[0m
+                    [36m<span>[39m
+                      [0m0[0m
+                    [36m</span>[39m
+                  [36m</span>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"text-xs opacity-80 mt-1"[39m
+                [36m>[39m
+                  [0m🚀 [0m
+                  [0m1[0m
+                  [0m • 🎯 [0m
+                  [0m0[0m
+                  [0m • 🛡️ [0m
+                  [0m0[0m
+                  [0m • ⬛ [0m
+                  [0m5[0m
+                  [0m/[0m
+                  [0m6[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"mt-1"[39m
+                [36m>[39m
+                  [0m❤️ [0m
+                  [0m1[0m
+                  [0m/[0m
+                  [0m1[0m
+                [36m</div>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 grid grid-cols-2 gap-2"[39m
+          ...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-zinc-950 min-h-screen text-zinc-100"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"sticky top-0 z-10 bg-zinc-950/95 backdrop-blur border-b border-zinc-800"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"mx-auto max-w-5xl p-2 flex items-center gap-2 flex-wrap text-sm sm:text-base"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 flex-1 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m💰 [0m
+            [36m<b>[39m
+              [0m20[0m
+            [36m</b>[39m
+            [0m • 🧱 [0m
+            [36m<b>[39m
+              [0m5[0m
+            [36m</b>[39m
+            [0m • 🔬 [0m
+            [36m<b>[39m
+              [0m0[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg whitespace-nowrap bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20"[39m
+          [36m>[39m
+            [0m🟢[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+            [0m/[0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m🗺️ [0m
+            [36m<b>[39m
+              [0m1[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0mAlice (industrialists):[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m4[0m
+            [36m</b>[39m
+            [0m ❤[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0mvs [0m
+            [0mBob[0m
+            [0m (warmongers)[0m
+            [0m: [0m
+            [36m<b>[39m
+              [0m4[0m
+            [36m</b>[39m
+            [0m ❤[0m
+            [36m<span[39m
+              [33mclass[39m=[32m"ml-2 text-xs opacity-70"[39m
+            [36m>[39m
+              [0mPhase: [0m
+              [0msetup[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded bg-zinc-800 text-xs"[39m
+          [36m>[39m
+            [0mRestart[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mx-auto max-w-5xl pb-24"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-3"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-2 mb-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-lg font-semibold"[39m
+            [36m>[39m
+              [0mHangar (Class Blueprints)[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1"[39m
+            [36m/>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs"[39m
+            [36m>[39m
+              [0m📋 Combat Plan[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"pointer-events-none absolute inset-0 rounded-xl border border-sky-400 bg-zinc-900"[39m
+                [33mstyle[39m=[32m"transform: translate(4px, 4px);"[39m
+              [36m/>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"pointer-events-none absolute inset-0 rounded-xl border border-sky-400 bg-zinc-900"[39m
+                [33mstyle[39m=[32m"transform: translate(8px, 8px);"[39m
+              [36m/>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"relative w-full text-left p-3 rounded-xl border transition border-sky-400 bg-sky-400/10"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"absolute -top-2 -left-2 bg-zinc-800 px-1 rounded text-xs"[39m
+                [36m>[39m
+                  [0m×[0m
+                  [0m3[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center justify-between"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"font-semibold text-sm sm:text-base"[39m
+                  [36m>[39m
+                    [0mInterceptor[0m
+                    [0m [0m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-xs opacity-70"[39m
+                    [36m>[39m
+                      [0m(t[0m
+                      [0m1[0m
+                      [0m)[0m
+                    [36m</span>[39m
+                  [36m</div>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"inline-flex items-center gap-1 font-medium font-mono px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs bg-emerald-600/20 text-emerald-200 ring-1 ring-emerald-600/30"[39m
+                  [36m>[39m
+                    [0m⚡ [0m
+                    [36m<span>[39m
+                      [0m0[0m
+                    [36m</span>[39m
+                    [0m/[0m
+                    [36m<span>[39m
+                      [0m0[0m
+                    [36m</span>[39m
+                  [36m</span>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"text-xs opacity-80 mt-1"[39m
+                [36m>[39m
+                  [0m🚀 [0m
+                  [0m1[0m
+                  [0m • 🎯 [0m
+                  [0m0[0m
+                  [0m • 🛡️ [0m
+                  [0m0[0m
+                  [0m • ⬛ [0m
+                  [0m5[0m
+                  [0m/[0m
+                  [0m6[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"mt-1"[39m
+                [36m>[39m
+                  [0m❤️ [0m
+                  [0m1[0m
+                  [0m/[0m
+                  [0m1[0m
+                [36m</div>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 grid grid-cols-2 gap-2"[39m
+          ...
+stdout | src/__tests__/mp_warmongers_no_industrialist_benefit.spec.tsx > MP Isolation — Warmongers do not inherit Industrialists economy > Warmongers vs Industrialists: reroll is 8¢ and build shows base cost (no discounts)
+[Sync] server snapshot frames [ [32m'interceptor'[39m, [32m'interceptor'[39m, [32m'interceptor'[39m ]
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+[Sync] Applying server fleet snapshot in setup { roundNum: [33m1[39m, serverCount: [33m3[39m, localCount: [33m1[39m }
+[MP] capacity cap applied (my state) { prev: [33m3[39m, next: [33m14[39m }
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mtrue[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+ ✓ src/__tests__/outpost_command_mapping.spec.ts (5 tests) 3ms
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+stdout | src/__tests__/mp_reroll_spillover.spec.tsx > MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+
+ ❯ src/__tests__/mp_reroll_spillover.spec.tsx (2 tests | 1 failed) 1401ms
+   ✓ MP Reroll Spillover Reset > Warmongers reset reroll to base (8¢) even if saved SP reroll=0  322ms
+   × MP Reroll Spillover Reset > Industrialists keep reroll at 0¢ in MP 1077ms
+     → [2mexpect([22m[31melement[39m[2m).toHaveTextContent()[22m
+
+Expected element to have text content:
+[32m  /Reroll \(0¢\)/i[39m
+Received:
+[31m  Reroll (8¢)[39m
+ ❯ src/__tests__/mp_research_persistence.spec.tsx (1 test | 1 failed) 1222ms
+   × MP Research Persistence > calls updateGameState with upgraded research after upgrading a track 1220ms
+     → Unable to find an element with the text: /Mock Lobby/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-zinc-950 min-h-screen text-zinc-100"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"sticky top-0 z-10 bg-zinc-950/95 backdrop-blur border-b border-zinc-800"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"mx-auto max-w-5xl p-2 flex items-center gap-2 flex-wrap text-sm sm:text-base"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 flex-1 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m💰 [0m
+            [36m<b>[39m
+              [0m20[0m
+            [36m</b>[39m
+            [0m • 🧱 [0m
+            [36m<b>[39m
+              [0m5[0m
+            [36m</b>[39m
+            [0m • 🔬 [0m
+            [36m<b>[39m
+              [0m0[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg whitespace-nowrap bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20"[39m
+          [36m>[39m
+            [0m🟢[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m1[0m
+            [36m</b>[39m
+            [0m/[0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m🗺️ [0m
+            [36m<b>[39m
+              [0m1[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded bg-zinc-800 text-xs"[39m
+          [36m>[39m
+            [0mRestart[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mx-auto max-w-5xl pb-24"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-3"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-2 mb-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-lg font-semibold"[39m
+            [36m>[39m
+              [0mHangar (Class Blueprints)[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1"[39m
+            [36m/>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs"[39m
+            [36m>[39m
+              [0m📋 Combat Plan[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"relative w-full text-left p-3 rounded-xl border transition border-sky-400 bg-sky-400/10"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center justify-between"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"font-semibold text-sm sm:text-base"[39m
+                  [36m>[39m
+                    [0mInterceptor[0m
+                    [0m [0m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-xs opacity-70"[39m
+                    [36m>[39m
+                      [0m(t[0m
+                      [0m1[0m
+                      [0m)[0m
+                    [36m</span>[39m
+                  [36m</div>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"inline-flex items-center gap-1 font-medium font-mono px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs bg-emerald-600/20 text-emerald-200 ring-1 ring-emerald-600/30"[39m
+                  [36m>[39m
+                    [0m⚡ [0m
+                    [36m<span>[39m
+                      [0m0[0m
+                    [36m</span>[39m
+                    [0m/[0m
+                    [36m<span>[39m
+                      [0m0[0m
+                    [36m</span>[39m
+                  [36m</span>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"text-xs opacity-80 mt-1"[39m
+                [36m>[39m
+                  [0m🚀 [0m
+                  [0m1[0m
+                  [0m • 🎯 [0m
+                  [0m0[0m
+                  [0m • 🛡️ [0m
+                  [0m0[0m
+                  [0m • ⬛ [0m
+                  [0m5[0m
+                  [0m/[0m
+                  [0m6[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"mt-1"[39m
+                [36m>[39m
+                  [0m❤️ [0m
+                  [0m1[0m
+                  [0m/[0m
+                  [0m1[0m
+                [36m</div>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 grid grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-3 rounded-xl bg-zinc-700 opacity-60"[39m
+              [33mdisabled[39m=[32m""[39m
+            [36m>[39m
+              [0mBuild Interceptor — Need 2🧱 + 22¢[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-3 rounded-xl bg-zinc-700 opacity-60"[39m
+              [33mdisabled[39m=[32m""[39m
+            [36m>[39m
+              [0mUpgrade Interceptor — Requires Military ≥ 2[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-2 grid grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"inline-flex items-center gap-1"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mExpand Capacity[0m
+                [36m</span>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"inline-flex gap-0.5"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-2 h-2 rounded-full bg-zinc-700"[39m
+                  [36m/>[39m
+                [36m</span>[39m
+                [36m<span>[39m
+                  [0m([0m
+                  [0m2[0m
+                  [0m🧱 + [0m
+                  [0m11[0m
+                  [0m¢)[0m
+                [36m</span>[39m
+              [36m</span>[39m
+    ...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-zinc-950 min-h-screen text-zinc-100"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"sticky top-0 z-10 bg-zinc-950/95 backdrop-blur border-b border-zinc-800"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"mx-auto max-w-5xl p-2 flex items-center gap-2 flex-wrap text-sm sm:text-base"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 flex-1 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m💰 [0m
+            [36m<b>[39m
+              [0m20[0m
+            [36m</b>[39m
+            [0m • 🧱 [0m
+            [36m<b>[39m
+              [0m5[0m
+            [36m</b>[39m
+            [0m • 🔬 [0m
+            [36m<b>[39m
+              [0m0[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg whitespace-nowrap bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20"[39m
+          [36m>[39m
+            [0m🟢[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m1[0m
+            [36m</b>[39m
+            [0m/[0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m🗺️ [0m
+            [36m<b>[39m
+              [0m1[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded bg-zinc-800 text-xs"[39m
+          [36m>[39m
+            [0mRestart[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mx-auto max-w-5xl pb-24"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-3"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-2 mb-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-lg font-semibold"[39m
+            [36m>[39m
+              [0mHangar (Class Blueprints)[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1"[39m
+            [36m/>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs"[39m
+            [36m>[39m
+              [0m📋 Combat Plan[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"relative w-full text-left p-3 rounded-xl border transition border-sky-400 bg-sky-400/10"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center justify-between"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"font-semibold text-sm sm:text-base"[39m
+                  [36m>[39m
+                    [0mInterceptor[0m
+                    [0m [0m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-xs opacity-70"[39m
+                    [36m>[39m
+                      [0m(t[0m
+                      [0m1[0m
+                      [0m)[0m
+                    [36m</span>[39m
+                  [36m</div>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"inline-flex items-center gap-1 font-medium font-mono px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs bg-emerald-600/20 text-emerald-200 ring-1 ring-emerald-600/30"[39m
+                  [36m>[39m
+                    [0m⚡ [0m
+                    [36m<span>[39m
+                      [0m0[0m
+                    [36m</span>[39m
+                    [0m/[0m
+                    [36m<span>[39m
+                      [0m0[0m
+                    [36m</span>[39m
+                  [36m</span>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"text-xs opacity-80 mt-1"[39m
+                [36m>[39m
+                  [0m🚀 [0m
+                  [0m1[0m
+                  [0m • 🎯 [0m
+                  [0m0[0m
+                  [0m • 🛡️ [0m
+                  [0m0[0m
+                  [0m • ⬛ [0m
+                  [0m5[0m
+                  [0m/[0m
+                  [0m6[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"mt-1"[39m
+                [36m>[39m
+                  [0m❤️ [0m
+                  [0m1[0m
+                  [0m/[0m
+                  [0m1[0m
+                [36m</div>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 grid grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-3 rounded-xl bg-zinc-700 opacity-60"[39m
+              [33mdisabled[39m=[32m""[39m
+            [36m>[39m
+              [0mBuild Interceptor — Need 2🧱 + 22¢[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-3 rounded-xl bg-zinc-700 opacity-60"[39m
+              [33mdisabled[39m=[32m""[39m
+            [36m>[39m
+              [0mUpgrade Interceptor — Requires Military ≥ 2[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-2 grid grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"inline-flex items-center gap-1"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mExpand Capacity[0m
+                [36m</span>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"inline-flex gap-0.5"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-2 h-2 rounded-full bg-zinc-700"[39m
+                  [36m/>[39m
+                [36m</span>[39m
+                [36m<span>[39m
+                  [0m([0m
+                  [0m2[0m
+                  [0m🧱 + [0m
+                  [0m11[0m
+                  [0m¢)[0m
+                [36m</span>[39m
+              [36m</span>[39m
+    ...
+ ✓ src/__tests__/outpost_reroll_research.spec.ts (2 tests) 3ms
+ ✓ src/__tests__/playback_delay.spec.ts (1 test) 1ms
+ ✓ src/__tests__/outpost_economy_labels_isolated.spec.tsx (1 test) 178ms
+ ✓ src/__tests__/ready.logic.spec.ts (4 tests) 4ms
+ ✓ src/__tests__/rare.spec.ts (1 test) 2ms
+ ✓ src/__tests__/ready_guard.spec.ts (2 tests) 29ms
+ ❯ src/__tests__/mp_warmongers_no_industrialist_benefit.spec.tsx (1 test | 1 failed) 1289ms
+   × MP Isolation — Warmongers do not inherit Industrialists economy > Warmongers vs Industrialists: reroll is 8¢ and build shows base cost (no discounts) 1287ms
+     → Unable to find an element with the text: /Mock Lobby/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-zinc-950 min-h-screen text-zinc-100"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"sticky top-0 z-10 bg-zinc-950/95 backdrop-blur border-b border-zinc-800"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"mx-auto max-w-5xl p-2 flex items-center gap-2 flex-wrap text-sm sm:text-base"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 flex-1 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m💰 [0m
+            [36m<b>[39m
+              [0m20[0m
+            [36m</b>[39m
+            [0m • 🧱 [0m
+            [36m<b>[39m
+              [0m5[0m
+            [36m</b>[39m
+            [0m • 🔬 [0m
+            [36m<b>[39m
+              [0m0[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg whitespace-nowrap bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20"[39m
+          [36m>[39m
+            [0m🟢[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+            [0m/[0m
+            [36m<b>[39m
+              [0m14[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m🗺️ [0m
+            [36m<b>[39m
+              [0m1[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0mAlice (warmongers):[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m4[0m
+            [36m</b>[39m
+            [0m ❤[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0mvs [0m
+            [0mBob[0m
+            [0m (industrialists)[0m
+            [0m: [0m
+            [36m<b>[39m
+              [0m4[0m
+            [36m</b>[39m
+            [0m ❤[0m
+            [36m<span[39m
+              [33mclass[39m=[32m"ml-2 text-xs opacity-70"[39m
+            [36m>[39m
+              [0mPhase: [0m
+              [0msetup[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded bg-zinc-800 text-xs"[39m
+          [36m>[39m
+            [0mRestart[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mx-auto max-w-5xl pb-24"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-3"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-2 mb-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-lg font-semibold"[39m
+            [36m>[39m
+              [0mHangar (Class Blueprints)[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1"[39m
+            [36m/>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs"[39m
+            [36m>[39m
+              [0m📋 Combat Plan[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"pointer-events-none absolute inset-0 rounded-xl border border-sky-400 bg-zinc-900"[39m
+                [33mstyle[39m=[32m"transform: translate(4px, 4px);"[39m
+              [36m/>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"pointer-events-none absolute inset-0 rounded-xl border border-sky-400 bg-zinc-900"[39m
+                [33mstyle[39m=[32m"transform: translate(8px, 8px);"[39m
+              [36m/>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"relative w-full text-left p-3 rounded-xl border transition border-sky-400 bg-sky-400/10"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"absolute -top-2 -left-2 bg-zinc-800 px-1 rounded text-xs"[39m
+                [36m>[39m
+                  [0m×[0m
+                  [0m3[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center justify-between"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"font-semibold text-sm sm:text-base"[39m
+                  [36m>[39m
+                    [0mInterceptor[0m
+                    [0m [0m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-xs opacity-70"[39m
+                    [36m>[39m
+                      [0m(t[0m
+                      [0m1[0m
+                      [0m)[0m
+                    [36m</span>[39m
+                  [36m</div>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"inline-flex items-center gap-1 font-medium font-mono px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs bg-emerald-600/20 text-emerald-200 ring-1 ring-emerald-600/30"[39m
+                  [36m>[39m
+                    [0m⚡ [0m
+                    [36m<span>[39m
+                      [0m0[0m
+                    [36m</span>[39m
+                    [0m/[0m
+                    [36m<span>[39m
+                      [0m0[0m
+                    [36m</span>[39m
+                  [36m</span>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"text-xs opacity-80 mt-1"[39m
+                [36m>[39m
+                  [0m🚀 [0m
+                  [0m1[0m
+                  [0m • 🎯 [0m
+                  [0m0[0m
+                  [0m • 🛡️ [0m
+                  [0m0[0m
+                  [0m • ⬛ [0m
+                  [0m5[0m
+                  [0m/[0m
+                  [0m6[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"mt-1"[39m
+                [36m>[39m
+                  [0m❤️ [0m
+                  [0m1[0m
+                  [0m/[0m
+                  [0m1[0m
+                [36m</div>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 grid grid-cols-2 gap-2"[39m
+          ...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-zinc-950 min-h-screen text-zinc-100"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"sticky top-0 z-10 bg-zinc-950/95 backdrop-blur border-b border-zinc-800"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"mx-auto max-w-5xl p-2 flex items-center gap-2 flex-wrap text-sm sm:text-base"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 flex-1 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m💰 [0m
+            [36m<b>[39m
+              [0m20[0m
+            [36m</b>[39m
+            [0m • 🧱 [0m
+            [36m<b>[39m
+              [0m5[0m
+            [36m</b>[39m
+            [0m • 🔬 [0m
+            [36m<b>[39m
+              [0m0[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg whitespace-nowrap bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20"[39m
+          [36m>[39m
+            [0m🟢[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+            [0m/[0m
+            [36m<b>[39m
+              [0m14[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m🗺️ [0m
+            [36m<b>[39m
+              [0m1[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0mAlice (warmongers):[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m4[0m
+            [36m</b>[39m
+            [0m ❤[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0mvs [0m
+            [0mBob[0m
+            [0m (industrialists)[0m
+            [0m: [0m
+            [36m<b>[39m
+              [0m4[0m
+            [36m</b>[39m
+            [0m ❤[0m
+            [36m<span[39m
+              [33mclass[39m=[32m"ml-2 text-xs opacity-70"[39m
+            [36m>[39m
+              [0mPhase: [0m
+              [0msetup[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded bg-zinc-800 text-xs"[39m
+          [36m>[39m
+            [0mRestart[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mx-auto max-w-5xl pb-24"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-3"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-2 mb-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-lg font-semibold"[39m
+            [36m>[39m
+              [0mHangar (Class Blueprints)[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1"[39m
+            [36m/>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs"[39m
+            [36m>[39m
+              [0m📋 Combat Plan[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"pointer-events-none absolute inset-0 rounded-xl border border-sky-400 bg-zinc-900"[39m
+                [33mstyle[39m=[32m"transform: translate(4px, 4px);"[39m
+              [36m/>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"pointer-events-none absolute inset-0 rounded-xl border border-sky-400 bg-zinc-900"[39m
+                [33mstyle[39m=[32m"transform: translate(8px, 8px);"[39m
+              [36m/>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"relative w-full text-left p-3 rounded-xl border transition border-sky-400 bg-sky-400/10"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"absolute -top-2 -left-2 bg-zinc-800 px-1 rounded text-xs"[39m
+                [36m>[39m
+                  [0m×[0m
+                  [0m3[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center justify-between"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"font-semibold text-sm sm:text-base"[39m
+                  [36m>[39m
+                    [0mInterceptor[0m
+                    [0m [0m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-xs opacity-70"[39m
+                    [36m>[39m
+                      [0m(t[0m
+                      [0m1[0m
+                      [0m)[0m
+                    [36m</span>[39m
+                  [36m</div>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"inline-flex items-center gap-1 font-medium font-mono px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs bg-emerald-600/20 text-emerald-200 ring-1 ring-emerald-600/30"[39m
+                  [36m>[39m
+                    [0m⚡ [0m
+                    [36m<span>[39m
+                      [0m0[0m
+                    [36m</span>[39m
+                    [0m/[0m
+                    [36m<span>[39m
+                      [0m0[0m
+                    [36m</span>[39m
+                  [36m</span>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"text-xs opacity-80 mt-1"[39m
+                [36m>[39m
+                  [0m🚀 [0m
+                  [0m1[0m
+                  [0m • 🎯 [0m
+                  [0m0[0m
+                  [0m • 🛡️ [0m
+                  [0m0[0m
+                  [0m • ⬛ [0m
+                  [0m5[0m
+                  [0m/[0m
+                  [0m6[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"mt-1"[39m
+                [36m>[39m
+                  [0m❤️ [0m
+                  [0m1[0m
+                  [0m/[0m
+                  [0m1[0m
+                [36m</div>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 grid grid-cols-2 gap-2"[39m
+          ...
+stdout | src/__tests__/outpost_warmongers_view.spec.tsx > Outpost — Warmongers first render > shows Cruiser class blueprint and 3× Cruiser fleet with correct capacity used
+[Sync] server snapshot frames [ [32m'cruiser'[39m, [32m'cruiser'[39m, [32m'cruiser'[39m ]
+[MP] apply class blueprints from ids { interceptor: [33m4[39m, cruiser: [33m6[39m, dread: [33m0[39m }
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+[Sync] Applying server fleet snapshot in setup { roundNum: [33m1[39m, serverCount: [33m3[39m, localCount: [33m1[39m }
+[MP] capacity cap applied (my state) { prev: [33m3[39m, next: [33m14[39m }
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mtrue[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+ ✓ src/__tests__/resolve_preconditions.spec.ts (3 tests) 22ms
+ ✓ src/__tests__/roomNameGenerator.spec.ts (4 tests) 3ms
+ ✓ src/__tests__/rift.spec.ts (2 tests) 4ms
+stdout | src/__tests__/ready_validity_guards.spec.tsx > Multiplayer Start button readiness + validity guards > disables Start when fleetValid=false and does not toggle readiness
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mfalse[39m,
+  haveSnapshot: [33mfalse[39m,
+  disabled: [33mtrue[39m,
+  label: [32m'Start Combat'[39m
+}
+
+ ✓ src/__tests__/resourcebar.spec.tsx (1 test) 83ms
+ ✓ src/__tests__/rift.ui.spec.tsx (2 tests) 22ms
+ ✓ src/__tests__/runtime.selftests.spec.ts (3 tests) 4ms
+ ✓ src/__tests__/seed_fleet_from_blueprints.spec.ts (1 test) 4ms
+ ✓ src/__tests__/selectors_mp_guards.spec.ts (2 tests) 3ms
+ ✓ src/__tests__/selectors_fleet_validity.spec.ts (2 tests) 1ms
+ ✓ src/__tests__/selectors_research_ui.spec.ts (1 test) 5ms
+ ❯ src/__tests__/outpost_warmongers_view.spec.tsx (1 test | 1 failed) 1291ms
+   × Outpost — Warmongers first render > shows Cruiser class blueprint and 3× Cruiser fleet with correct capacity used 1287ms
+     → Unable to find an element with the text: /Mock Lobby/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-zinc-950 min-h-screen text-zinc-100"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"sticky top-0 z-10 bg-zinc-950/95 backdrop-blur border-b border-zinc-800"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"mx-auto max-w-5xl p-2 flex items-center gap-2 flex-wrap text-sm sm:text-base"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 flex-1 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m💰 [0m
+            [36m<b>[39m
+              [0m20[0m
+            [36m</b>[39m
+            [0m • 🧱 [0m
+            [36m<b>[39m
+              [0m5[0m
+            [36m</b>[39m
+            [0m • 🔬 [0m
+            [36m<b>[39m
+              [0m0[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg whitespace-nowrap bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20"[39m
+          [36m>[39m
+            [0m🟢[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m6[0m
+            [36m</b>[39m
+            [0m/[0m
+            [36m<b>[39m
+              [0m14[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m🗺️ [0m
+            [36m<b>[39m
+              [0m1[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0mAlice (warmongers):[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+            [0m ❤[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0mvs [0m
+            [0mBob[0m
+            [0m (industrialists)[0m
+            [0m: [0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+            [0m ❤[0m
+            [36m<span[39m
+              [33mclass[39m=[32m"ml-2 text-xs opacity-70"[39m
+            [36m>[39m
+              [0mPhase: [0m
+              [0msetup[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded bg-zinc-800 text-xs"[39m
+          [36m>[39m
+            [0mRestart[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mx-auto max-w-5xl pb-24"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-3"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-2 mb-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-lg font-semibold"[39m
+            [36m>[39m
+              [0mHangar (Class Blueprints)[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1"[39m
+            [36m/>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs"[39m
+            [36m>[39m
+              [0m📋 Combat Plan[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"pointer-events-none absolute inset-0 rounded-xl border border-sky-400 bg-zinc-900"[39m
+                [33mstyle[39m=[32m"transform: translate(4px, 4px);"[39m
+              [36m/>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"pointer-events-none absolute inset-0 rounded-xl border border-sky-400 bg-zinc-900"[39m
+                [33mstyle[39m=[32m"transform: translate(8px, 8px);"[39m
+              [36m/>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"relative w-full text-left p-3 rounded-xl border transition border-sky-400 bg-sky-400/10"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"absolute -top-2 -left-2 bg-zinc-800 px-1 rounded text-xs"[39m
+                [36m>[39m
+                  [0m×[0m
+                  [0m3[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center justify-between"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"font-semibold text-sm sm:text-base"[39m
+                  [36m>[39m
+                    [0mCruiser[0m
+                    [0m [0m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-xs opacity-70"[39m
+                    [36m>[39m
+                      [0m(t[0m
+                      [0m2[0m
+                      [0m)[0m
+                    [36m</span>[39m
+                  [36m</div>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"inline-flex items-center gap-1 font-medium font-mono px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs bg-emerald-600/20 text-emerald-200 ring-1 ring-emerald-600/30"[39m
+                  [36m>[39m
+                    [0m⚡ [0m
+                    [36m<span>[39m
+                      [0m0[0m
+                    [36m</span>[39m
+                    [0m/[0m
+                    [36m<span>[39m
+                      [0m0[0m
+                    [36m</span>[39m
+                  [36m</span>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"text-xs opacity-80 mt-1"[39m
+                [36m>[39m
+                  [0m🚀 [0m
+                  [0m2[0m
+                  [0m • 🎯 [0m
+                  [0m0[0m
+                  [0m • 🛡️ [0m
+                  [0m0[0m
+                  [0m • ⬛ [0m
+                  [0m7[0m
+                  [0m/[0m
+                  [0m8[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"mt-1"[39m
+                [36m>[39m
+                  [0m❤️ [0m
+                  [0m1[0m
+                  [0m/[0m
+                  [0m1[0m
+                [36m</div>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 grid grid-cols-2 gap-2"[39m
+          [36...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-zinc-950 min-h-screen text-zinc-100"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"sticky top-0 z-10 bg-zinc-950/95 backdrop-blur border-b border-zinc-800"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"mx-auto max-w-5xl p-2 flex items-center gap-2 flex-wrap text-sm sm:text-base"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 flex-1 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m💰 [0m
+            [36m<b>[39m
+              [0m20[0m
+            [36m</b>[39m
+            [0m • 🧱 [0m
+            [36m<b>[39m
+              [0m5[0m
+            [36m</b>[39m
+            [0m • 🔬 [0m
+            [36m<b>[39m
+              [0m0[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg whitespace-nowrap bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20"[39m
+          [36m>[39m
+            [0m🟢[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m6[0m
+            [36m</b>[39m
+            [0m/[0m
+            [36m<b>[39m
+              [0m14[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m🗺️ [0m
+            [36m<b>[39m
+              [0m1[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0mAlice (warmongers):[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+            [0m ❤[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0mvs [0m
+            [0mBob[0m
+            [0m (industrialists)[0m
+            [0m: [0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+            [0m ❤[0m
+            [36m<span[39m
+              [33mclass[39m=[32m"ml-2 text-xs opacity-70"[39m
+            [36m>[39m
+              [0mPhase: [0m
+              [0msetup[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded bg-zinc-800 text-xs"[39m
+          [36m>[39m
+            [0mRestart[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mx-auto max-w-5xl pb-24"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-3"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-2 mb-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-lg font-semibold"[39m
+            [36m>[39m
+              [0mHangar (Class Blueprints)[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1"[39m
+            [36m/>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs"[39m
+            [36m>[39m
+              [0m📋 Combat Plan[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"pointer-events-none absolute inset-0 rounded-xl border border-sky-400 bg-zinc-900"[39m
+                [33mstyle[39m=[32m"transform: translate(4px, 4px);"[39m
+              [36m/>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"pointer-events-none absolute inset-0 rounded-xl border border-sky-400 bg-zinc-900"[39m
+                [33mstyle[39m=[32m"transform: translate(8px, 8px);"[39m
+              [36m/>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"relative w-full text-left p-3 rounded-xl border transition border-sky-400 bg-sky-400/10"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"absolute -top-2 -left-2 bg-zinc-800 px-1 rounded text-xs"[39m
+                [36m>[39m
+                  [0m×[0m
+                  [0m3[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center justify-between"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"font-semibold text-sm sm:text-base"[39m
+                  [36m>[39m
+                    [0mCruiser[0m
+                    [0m [0m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-xs opacity-70"[39m
+                    [36m>[39m
+                      [0m(t[0m
+                      [0m2[0m
+                      [0m)[0m
+                    [36m</span>[39m
+                  [36m</div>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"inline-flex items-center gap-1 font-medium font-mono px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs bg-emerald-600/20 text-emerald-200 ring-1 ring-emerald-600/30"[39m
+                  [36m>[39m
+                    [0m⚡ [0m
+                    [36m<span>[39m
+                      [0m0[0m
+                    [36m</span>[39m
+                    [0m/[0m
+                    [36m<span>[39m
+                      [0m0[0m
+                    [36m</span>[39m
+                  [36m</span>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"text-xs opacity-80 mt-1"[39m
+                [36m>[39m
+                  [0m🚀 [0m
+                  [0m2[0m
+                  [0m • 🎯 [0m
+                  [0m0[0m
+                  [0m • 🛡️ [0m
+                  [0m0[0m
+                  [0m • ⬛ [0m
+                  [0m7[0m
+                  [0m/[0m
+                  [0m8[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"mt-1"[39m
+                [36m>[39m
+                  [0m❤️ [0m
+                  [0m1[0m
+                  [0m/[0m
+                  [0m1[0m
+                [36m</div>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 grid grid-cols-2 gap-2"[39m
+          [36...
+ ✓ src/__tests__/shop_normalize_items.spec.ts (2 tests) 3ms
+stdout | src/__tests__/ready_validity_guards.spec.tsx > Multiplayer Start button readiness + validity guards > enables Start when fleetValid=true; toggles readiness and submits snapshot
+[Sync] server snapshot frames [ [32m'interceptor'[39m ]
+[MP] reroll base applied (my state) { base: [33m8[39m, round: [33m1[39m }
+[Sync] Applying server fleet snapshot in setup { roundNum: [33m1[39m, serverCount: [33m1[39m, localCount: [33m1[39m }
+[Outpost] MP guards {
+  myReady: [33mfalse[39m,
+  oppReady: [33mfalse[39m,
+  localValid: [33mtrue[39m,
+  serverValid: [33mtrue[39m,
+  haveSnapshot: [33mtrue[39m,
+  disabled: [33mfalse[39m,
+  label: [32m'Start Combat'[39m
+}
+
+ ✓ src/__tests__/shop_roll_determinism.spec.ts (2 tests) 4ms
+ ✓ src/__tests__/sp_hard_lives_config.spec.ts (2 tests) 2ms
+ ✓ src/__tests__/sound.spec.ts (2 tests) 36ms
+ ✓ src/__tests__/ui.banner.spec.tsx (2 tests) 26ms
+ ✓ src/__tests__/winmodal.spec.tsx (1 test) 54ms
+ ✓ src/__tests__/startpage.spec.tsx (8 tests) 111ms
+ ✓ src/__tests__/shop.spec.tsx (3 tests) 838ms
+   ✓ Shop interactions > Reroll changes the shop reroll cost and maintains items  367ms
+ ❯ src/__tests__/ready_validity_guards.spec.tsx (2 tests | 2 failed) 2295ms
+   × Multiplayer Start button readiness + validity guards > disables Start when fleetValid=false and does not toggle readiness 1213ms
+     → Unable to find an element with the text: /Mock Lobby/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-zinc-950 min-h-screen text-zinc-100"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"sticky top-0 z-10 bg-zinc-950/95 backdrop-blur border-b border-zinc-800"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"mx-auto max-w-5xl p-2 flex items-center gap-2 flex-wrap text-sm sm:text-base"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 flex-1 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m💰 [0m
+            [36m<b>[39m
+              [0m20[0m
+            [36m</b>[39m
+            [0m • 🧱 [0m
+            [36m<b>[39m
+              [0m5[0m
+            [36m</b>[39m
+            [0m • 🔬 [0m
+            [36m<b>[39m
+              [0m0[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg whitespace-nowrap bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20"[39m
+          [36m>[39m
+            [0m🟢[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m1[0m
+            [36m</b>[39m
+            [0m/[0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m🗺️ [0m
+            [36m<b>[39m
+              [0m1[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0mAlice (industrialists):[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+            [0m ❤[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0mvs [0m
+            [0mBob[0m
+            [0m (warmongers)[0m
+            [0m: [0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+            [0m ❤[0m
+            [36m<span[39m
+              [33mclass[39m=[32m"ml-2 text-xs opacity-70"[39m
+            [36m>[39m
+              [0mPhase: [0m
+              [0msetup[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded bg-zinc-800 text-xs"[39m
+          [36m>[39m
+            [0mRestart[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mx-auto max-w-5xl pb-24"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-3"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-2 mb-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-lg font-semibold"[39m
+            [36m>[39m
+              [0mHangar (Class Blueprints)[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1"[39m
+            [36m/>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs"[39m
+            [36m>[39m
+              [0m📋 Combat Plan[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"relative w-full text-left p-3 rounded-xl border transition border-sky-400 bg-sky-400/10"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center justify-between"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"font-semibold text-sm sm:text-base"[39m
+                  [36m>[39m
+                    [0mInterceptor[0m
+                    [0m [0m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-xs opacity-70"[39m
+                    [36m>[39m
+                      [0m(t[0m
+                      [0m1[0m
+                      [0m)[0m
+                    [36m</span>[39m
+                  [36m</div>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"inline-flex items-center gap-1 font-medium font-mono px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs bg-emerald-600/20 text-emerald-200 ring-1 ring-emerald-600/30"[39m
+                  [36m>[39m
+                    [0m⚡ [0m
+                    [36m<span>[39m
+                      [0m3[0m
+                    [36m</span>[39m
+                    [0m/[0m
+                    [36m<span>[39m
+                      [0m3[0m
+                    [36m</span>[39m
+                  [36m</span>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"text-xs opacity-80 mt-1"[39m
+                [36m>[39m
+                  [0m🚀 [0m
+                  [0m1[0m
+                  [0m • 🎯 [0m
+                  [0m1[0m
+                  [0m • 🛡️ [0m
+                  [0m0[0m
+                  [0m • ⬛ [0m
+                  [0m4[0m
+                  [0m/[0m
+                  [0m6[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"mt-1"[39m
+                [36m>[39m
+                  [0m❤️ [0m
+                  [0m1[0m
+                  [0m/[0m
+                  [0m1[0m
+                [36m</div>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 grid grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-3 rounded-xl bg-zinc-700 opacity-60"[39m
+              [33mdisabled[39m=[32m""[39m
+            [36m>[39m
+              [0mBuild Interceptor — Need 3🧱 + 30¢[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-3 rounded-xl bg-zinc-700 opacity-60"[39m
+              [33mdisabled[39m=[32m""[39m
+            [36m>[39m
+              [0mUpgrade Interceptor — Requires Military ≥ 2[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-2 grid grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-zinc-950 min-h-screen text-zinc-100"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"sticky top-0 z-10 bg-zinc-950/95 backdrop-blur border-b border-zinc-800"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"mx-auto max-w-5xl p-2 flex items-center gap-2 flex-wrap text-sm sm:text-base"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 flex-1 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m💰 [0m
+            [36m<b>[39m
+              [0m20[0m
+            [36m</b>[39m
+            [0m • 🧱 [0m
+            [36m<b>[39m
+              [0m5[0m
+            [36m</b>[39m
+            [0m • 🔬 [0m
+            [36m<b>[39m
+              [0m0[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg whitespace-nowrap bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20"[39m
+          [36m>[39m
+            [0m🟢[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m1[0m
+            [36m</b>[39m
+            [0m/[0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m🗺️ [0m
+            [36m<b>[39m
+              [0m1[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0mAlice (industrialists):[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+            [0m ❤[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0mvs [0m
+            [0mBob[0m
+            [0m (warmongers)[0m
+            [0m: [0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+            [0m ❤[0m
+            [36m<span[39m
+              [33mclass[39m=[32m"ml-2 text-xs opacity-70"[39m
+            [36m>[39m
+              [0mPhase: [0m
+              [0msetup[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded bg-zinc-800 text-xs"[39m
+          [36m>[39m
+            [0mRestart[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mx-auto max-w-5xl pb-24"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-3"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-2 mb-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-lg font-semibold"[39m
+            [36m>[39m
+              [0mHangar (Class Blueprints)[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1"[39m
+            [36m/>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs"[39m
+            [36m>[39m
+              [0m📋 Combat Plan[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"relative w-full text-left p-3 rounded-xl border transition border-sky-400 bg-sky-400/10"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center justify-between"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"font-semibold text-sm sm:text-base"[39m
+                  [36m>[39m
+                    [0mInterceptor[0m
+                    [0m [0m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-xs opacity-70"[39m
+                    [36m>[39m
+                      [0m(t[0m
+                      [0m1[0m
+                      [0m)[0m
+                    [36m</span>[39m
+                  [36m</div>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"inline-flex items-center gap-1 font-medium font-mono px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs bg-emerald-600/20 text-emerald-200 ring-1 ring-emerald-600/30"[39m
+                  [36m>[39m
+                    [0m⚡ [0m
+                    [36m<span>[39m
+                      [0m3[0m
+                    [36m</span>[39m
+                    [0m/[0m
+                    [36m<span>[39m
+                      [0m3[0m
+                    [36m</span>[39m
+                  [36m</span>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"text-xs opacity-80 mt-1"[39m
+                [36m>[39m
+                  [0m🚀 [0m
+                  [0m1[0m
+                  [0m • 🎯 [0m
+                  [0m1[0m
+                  [0m • 🛡️ [0m
+                  [0m0[0m
+                  [0m • ⬛ [0m
+                  [0m4[0m
+                  [0m/[0m
+                  [0m6[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"mt-1"[39m
+                [36m>[39m
+                  [0m❤️ [0m
+                  [0m1[0m
+                  [0m/[0m
+                  [0m1[0m
+                [36m</div>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 grid grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-3 rounded-xl bg-zinc-700 opacity-60"[39m
+              [33mdisabled[39m=[32m""[39m
+            [36m>[39m
+              [0mBuild Interceptor — Need 3🧱 + 30¢[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-3 rounded-xl bg-zinc-700 opacity-60"[39m
+              [33mdisabled[39m=[32m""[39m
+            [36m>[39m
+              [0mUpgrade Interceptor — Requires Military ≥ 2[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-2 grid grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass...
+   × Multiplayer Start button readiness + validity guards > enables Start when fleetValid=true; toggles readiness and submits snapshot 1080ms
+     → Unable to find an element with the text: /Mock Lobby/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-zinc-950 min-h-screen text-zinc-100"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"sticky top-0 z-10 bg-zinc-950/95 backdrop-blur border-b border-zinc-800"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"mx-auto max-w-5xl p-2 flex items-center gap-2 flex-wrap text-sm sm:text-base"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 flex-1 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m💰 [0m
+            [36m<b>[39m
+              [0m20[0m
+            [36m</b>[39m
+            [0m • 🧱 [0m
+            [36m<b>[39m
+              [0m5[0m
+            [36m</b>[39m
+            [0m • 🔬 [0m
+            [36m<b>[39m
+              [0m0[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg whitespace-nowrap bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20"[39m
+          [36m>[39m
+            [0m🟢[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m1[0m
+            [36m</b>[39m
+            [0m/[0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m🗺️ [0m
+            [36m<b>[39m
+              [0m1[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0mAlice (industrialists):[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+            [0m ❤[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0mvs [0m
+            [0mBob[0m
+            [0m (warmongers)[0m
+            [0m: [0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+            [0m ❤[0m
+            [36m<span[39m
+              [33mclass[39m=[32m"ml-2 text-xs opacity-70"[39m
+            [36m>[39m
+              [0mPhase: [0m
+              [0msetup[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded bg-zinc-800 text-xs"[39m
+          [36m>[39m
+            [0mRestart[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mx-auto max-w-5xl pb-24"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-3"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-2 mb-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-lg font-semibold"[39m
+            [36m>[39m
+              [0mHangar (Class Blueprints)[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1"[39m
+            [36m/>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs"[39m
+            [36m>[39m
+              [0m📋 Combat Plan[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"relative w-full text-left p-3 rounded-xl border transition border-sky-400 bg-sky-400/10"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center justify-between"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"font-semibold text-sm sm:text-base"[39m
+                  [36m>[39m
+                    [0mInterceptor[0m
+                    [0m [0m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-xs opacity-70"[39m
+                    [36m>[39m
+                      [0m(t[0m
+                      [0m1[0m
+                      [0m)[0m
+                    [36m</span>[39m
+                  [36m</div>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"inline-flex items-center gap-1 font-medium font-mono px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs bg-emerald-600/20 text-emerald-200 ring-1 ring-emerald-600/30"[39m
+                  [36m>[39m
+                    [0m⚡ [0m
+                    [36m<span>[39m
+                      [0m0[0m
+                    [36m</span>[39m
+                    [0m/[0m
+                    [36m<span>[39m
+                      [0m0[0m
+                    [36m</span>[39m
+                  [36m</span>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"text-xs opacity-80 mt-1"[39m
+                [36m>[39m
+                  [0m🚀 [0m
+                  [0m1[0m
+                  [0m • 🎯 [0m
+                  [0m0[0m
+                  [0m • 🛡️ [0m
+                  [0m0[0m
+                  [0m • ⬛ [0m
+                  [0m3[0m
+                  [0m/[0m
+                  [0m6[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"mt-1"[39m
+                [36m>[39m
+                  [0m❤️ [0m
+                  [0m1[0m
+                  [0m/[0m
+                  [0m1[0m
+                [36m</div>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 grid grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-3 rounded-xl bg-zinc-700 opacity-60"[39m
+              [33mdisabled[39m=[32m""[39m
+            [36m>[39m
+              [0mBuild Interceptor — Need 3🧱 + 30¢[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-3 rounded-xl bg-zinc-700 opacity-60"[39m
+              [33mdisabled[39m=[32m""[39m
+            [36m>[39m
+              [0mUpgrade Interceptor — Requires Military ≥ 2[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-2 grid grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-zinc-950 min-h-screen text-zinc-100"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"sticky top-0 z-10 bg-zinc-950/95 backdrop-blur border-b border-zinc-800"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"mx-auto max-w-5xl p-2 flex items-center gap-2 flex-wrap text-sm sm:text-base"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 flex-1 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m💰 [0m
+            [36m<b>[39m
+              [0m20[0m
+            [36m</b>[39m
+            [0m • 🧱 [0m
+            [36m<b>[39m
+              [0m5[0m
+            [36m</b>[39m
+            [0m • 🔬 [0m
+            [36m<b>[39m
+              [0m0[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg whitespace-nowrap bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20"[39m
+          [36m>[39m
+            [0m🟢[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m1[0m
+            [36m</b>[39m
+            [0m/[0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0m🗺️ [0m
+            [36m<b>[39m
+              [0m1[0m
+            [36m</b>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0mAlice (industrialists):[0m
+            [0m [0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+            [0m ❤[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"[39m
+          [36m>[39m
+            [0mvs [0m
+            [0mBob[0m
+            [0m (warmongers)[0m
+            [0m: [0m
+            [36m<b>[39m
+              [0m3[0m
+            [36m</b>[39m
+            [0m ❤[0m
+            [36m<span[39m
+              [33mclass[39m=[32m"ml-2 text-xs opacity-70"[39m
+            [36m>[39m
+              [0mPhase: [0m
+              [0msetup[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-2 py-1 rounded bg-zinc-800 text-xs"[39m
+          [36m>[39m
+            [0mRestart[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mx-auto max-w-5xl pb-24"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-3"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-2 mb-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-lg font-semibold"[39m
+            [36m>[39m
+              [0mHangar (Class Blueprints)[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1"[39m
+            [36m/>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs"[39m
+            [36m>[39m
+              [0m📋 Combat Plan[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"relative w-full text-left p-3 rounded-xl border transition border-sky-400 bg-sky-400/10"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center justify-between"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"font-semibold text-sm sm:text-base"[39m
+                  [36m>[39m
+                    [0mInterceptor[0m
+                    [0m [0m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-xs opacity-70"[39m
+                    [36m>[39m
+                      [0m(t[0m
+                      [0m1[0m
+                      [0m)[0m
+                    [36m</span>[39m
+                  [36m</div>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"inline-flex items-center gap-1 font-medium font-mono px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs bg-emerald-600/20 text-emerald-200 ring-1 ring-emerald-600/30"[39m
+                  [36m>[39m
+                    [0m⚡ [0m
+                    [36m<span>[39m
+                      [0m0[0m
+                    [36m</span>[39m
+                    [0m/[0m
+                    [36m<span>[39m
+                      [0m0[0m
+                    [36m</span>[39m
+                  [36m</span>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"text-xs opacity-80 mt-1"[39m
+                [36m>[39m
+                  [0m🚀 [0m
+                  [0m1[0m
+                  [0m • 🎯 [0m
+                  [0m0[0m
+                  [0m • 🛡️ [0m
+                  [0m0[0m
+                  [0m • ⬛ [0m
+                  [0m3[0m
+                  [0m/[0m
+                  [0m6[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"mt-1"[39m
+                [36m>[39m
+                  [0m❤️ [0m
+                  [0m1[0m
+                  [0m/[0m
+                  [0m1[0m
+                [36m</div>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 grid grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-3 rounded-xl bg-zinc-700 opacity-60"[39m
+              [33mdisabled[39m=[32m""[39m
+            [36m>[39m
+              [0mBuild Interceptor — Need 3🧱 + 30¢[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-3 rounded-xl bg-zinc-700 opacity-60"[39m
+              [33mdisabled[39m=[32m""[39m
+            [36m>[39m
+              [0mUpgrade Interceptor — Requires Military ≥ 2[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-2 grid grid-cols-2 gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass...

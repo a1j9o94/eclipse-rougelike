@@ -77,8 +77,6 @@ describe('MP Isolation — opponent faction does not affect my shop/capacity', (
     const { default: AppImpl } = await import('../App')
     render(<AppImpl />)
     fireEvent.click(screen.getByRole('button', { name: /multiplayer/i }))
-    await screen.findByText(/Mock Lobby/i)
-    fireEvent.click(screen.getByRole('button', { name: /Enter Game/i }))
 
     // My econ: reroll is 0¢ and build shows discounted cost
     await screen.findByText(/Reroll \(0¢\)/i)

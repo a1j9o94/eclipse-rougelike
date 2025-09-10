@@ -1,38 +1,26 @@
 import { describe, it, expect } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import App from '../App'
+// UI helpers not used in this file
 import { getFaction } from '../../shared/factions'
+import { initNewRun } from '../game/setup'
 
 describe('Factions', () => {
-  it('Scientists start at Tier 2 across all tracks', async () => {
-    render(<App />)
-    fireEvent.click(screen.getByRole('button', { name: /Consortium of Scholars/i }))
-    fireEvent.click(screen.getByRole('button', { name: /Easy/i }))
-    fireEvent.click(screen.getByRole('button', { name: /Let’s go/i }))
-    await screen.findByText(/^Victory$/i, undefined, { timeout: 10000 })
-    const ret = screen.getByRole('button', { name: /Return to Outpost/i })
-    await waitFor(() => expect(ret).not.toBeDisabled())
-    fireEvent.click(ret)
-    await screen.findByRole('button', { name: /Military 2→3/i })
-    expect(screen.getByRole('button', { name: /Grid 2→3/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Nano 2→3/i })).toBeInTheDocument()
-  }, 20000)
+  it('Scientists start at Tier 2 across all tracks', () => {
+    const run = initNewRun({ difficulty: 'easy', faction: 'scientists' })
+    expect(run.research.Military).toBe(2)
+    expect(run.research.Grid).toBe(2)
+    expect(run.research.Nano).toBe(2)
+  })
 
   it('Warmongers start with a Cruiser on the field', () => {
-    render(<App />)
-    fireEvent.click(screen.getByRole('button', { name: /Crimson Vanguard/i }))
-    fireEvent.click(screen.getByRole('button', { name: /Easy/i }))
-    expect(screen.getAllByTitle(/Cruiser/i).length).toBeGreaterThan(0)
+    const run = initNewRun({ difficulty: 'easy', faction: 'warmongers' })
+    expect(run.fleet.some(s => s.frame.id === 'cruiser')).toBe(true)
   })
 
   it('Raiders start with T2 weapon (Antimatter Cannon) on Interceptor', () => {
-    render(<App />)
-    fireEvent.click(screen.getByRole('button', { name: /Void Corsairs/i }))
-    fireEvent.click(screen.getByRole('button', { name: /Easy/i }))
-    fireEvent.click(screen.getByRole('button', { name: /Let’s go/i }))
-    const icons = screen.getAllByTestId('frame-slot-filled').map(el => el.textContent || '')
-    expect(icons.some(t => t.includes('🎲'))).toBe(true)
-
+    const run = initNewRun({ difficulty: 'easy', faction: 'raiders' })
+    const i = run.fleet.find(s => s.frame.id === 'interceptor')!
+    const ids = i.parts.map(p => p.id)
+    expect(ids).toContain('antimatter')
   })
 
   it('Industrialists start with free reroll and discounted build costs', () => {

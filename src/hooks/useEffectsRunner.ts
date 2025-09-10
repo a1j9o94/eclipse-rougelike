@@ -1,0 +1,35 @@
+import { useEffect, useRef } from 'react'
+import { dlog } from '../utils/debug'
+import type { OutpostEffects } from '../engine/commands'
+import type { Part } from '../../shared/parts'
+
+export type EffectSink = {
+  warn: (code: string) => void
+  startCombat: () => void
+  shopItems?: (items: Part[]) => void
+  sound?: (key: string) => void
+  clearEffects?: () => void
+}
+
+// Runs one-shot effects emitted by the engine/adapters.
+// Idempotence: collapses identical effect objects seen in the same microtask.
+export function useEffectsRunner(effects: OutpostEffects | undefined, sink: EffectSink) {
+  const lastRef = useRef<string>('')
+
+  useEffect(() => {
+    if (!effects) return
+    const key = JSON.stringify(effects)
+    if (key === lastRef.current) return
+    lastRef.current = key
+    dlog('effects', effects)
+    if (effects.warning) sink.warn(effects.warning)
+    if (effects.startCombat) sink.startCombat()
+    if (effects.shopItems && sink.shopItems) sink.shopItems(effects.shopItems)
+    // Future: route sound/timer/dialog effects here
+    // Mark consumed: clear both the lastRef and upstream effect so it won't re-fire on the next render.
+    Promise.resolve().then(() => {
+      lastRef.current = ''
+      try { sink.clearEffects?.() } catch { /* ignore */ }
+    })
+  }, [effects, sink])
+}

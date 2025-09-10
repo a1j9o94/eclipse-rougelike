@@ -1,6 +1,8 @@
 import { type Part, ALL_PARTS, RARE_PARTS } from '../../shared/parts'
 import { nextTierCost, ECONOMY } from '../../shared/economy'
 import { getEconomyModifiers, type EconMods, applyEconomyModifiers } from './economy'
+import type { Rng } from '../engine/rng'
+import { fromMathRandom } from '../engine/rng'
 
 let RARE_TECH_CHANCE = 0.1;
 export function setRareTechChance(ch:number){ RARE_TECH_CHANCE = ch; }
@@ -14,7 +16,8 @@ export function tierCap(research:{Military:number, Grid:number, Nano:number}): R
   };
 }
 
-export function rollInventory(research:{Military:number, Grid:number, Nano:number}, count: number = ECONOMY.shop.itemsBase){
+export function rollInventory(research:{Military:number, Grid:number, Nano:number}, count: number = ECONOMY.shop.itemsBase, rng?: Rng){
+  const rand: Rng = rng ?? fromMathRandom()
   const capByCat = tierCap(research);
 
   // Filter parts pool to only include parts within research tier limits and exclude rares
@@ -27,25 +30,42 @@ export function rollInventory(research:{Military:number, Grid:number, Nano:numbe
   const available = [...pool];
   const rareAvailable = [...RARE_PARTS];
   while(items.length < count){
-    const useRare = Math.random() < RARE_TECH_CHANCE;
+    const useRare = rand.next() < RARE_TECH_CHANCE;
     if(useRare && rareAvailable.length > 0){
-      const ridx = Math.floor(Math.random() * rareAvailable.length);
+      const ridx = Math.floor(rand.next() * rareAvailable.length);
       items.push(rareAvailable[ridx]);
       rareAvailable.splice(ridx,1);
       continue;
     }
     if(available.length > 0){
-      const idx = Math.floor(Math.random() * available.length);
+      const idx = Math.floor(rand.next() * available.length);
       const part = available[idx];
       items.push(part);
       available.splice(idx,1);
     } else if(pool.length > 0){
-      const idx = Math.floor(Math.random() * pool.length);
+      const idx = Math.floor(rand.next() * pool.length);
       const part = pool[idx];
       items.push(part);
     } else break;
   }
   return items;
+}
+
+export function normalizeShopItems(items: Part[], research: { Military:number; Grid:number; Nano:number }, count: number = ECONOMY.shop.itemsBase){
+  const capByCat = tierCap(research);
+  const ok = items.filter(p => !p.rare && p.tier === capByCat[p.tech_category as 'Military'|'Grid'|'Nano']);
+  if (ok.length >= count) return ok.slice(0, count);
+  const pool = ALL_PARTS.filter((p:Part) =>
+    !p.rare && p.tier === capByCat[p.tech_category as 'Military'|'Grid'|'Nano']
+  );
+  const out = [...ok];
+  const avail = pool.filter(p=> !out.includes(p));
+  while (out.length < count && avail.length > 0) {
+    const idx = Math.floor(Math.random() * avail.length);
+    out.push(avail[idx]);
+    avail.splice(idx,1);
+  }
+  return out;
 }
 
 // Legacy version using global state (for single-player compatibility)

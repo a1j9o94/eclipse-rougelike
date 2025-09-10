@@ -4,6 +4,8 @@ import { getBossFleetFor } from '../../shared/factions';
 import { getSectorSpec } from '../../shared/pacing';
 import type { Ship, BossVariant } from '../../shared/types';
 import { makeShip } from './ship';
+import type { Rng } from '../engine/rng'
+import { fromMathRandom } from '../engine/rng'
 import { getOpponentFaction } from './setup';
 
 const BOSS_VARIANTS: Record<number, BossVariant[]> = {
@@ -98,7 +100,7 @@ export function randomEnemyPartsFor(frame:Frame, scienceCap:number, boss:boolean
   return ship.parts;
 }
 
-export function generateEnemyFleetFor(sector:number): Ship[]{
+export function buildEnemyFleet(sector:number, rng?: Rng): Ship[]{
   const spec = getSectorSpec(sector);
   const boss = spec.boss;
   const bossFocus = boss ? getBossVariantFocus(sector) : undefined;
@@ -108,6 +110,7 @@ export function generateEnemyFleetFor(sector:number): Ship[]{
   const ships:Ship[] = [] as unknown as Ship[];
   let bossAssigned = false;
   const minTonnage = Math.min(...options.map(f=>f.tonnage));
+  const r: Rng = rng ?? fromMathRandom()
 
   if(boss){
     const opp = getOpponentFaction();
@@ -123,12 +126,17 @@ export function generateEnemyFleetFor(sector:number): Ship[]{
   while(remaining >= minTonnage){
     const viable = options.filter(f => f.tonnage <= remaining);
     if(viable.length === 0) break;
-    const pick = viable[Math.floor(Math.random()*viable.length)];
-    const focus = boss ? bossFocus : focuses[Math.floor(Math.random()*focuses.length)];
+    const pick = viable[Math.floor(r.next()*viable.length)];
+    const focus = boss ? bossFocus : focuses[Math.floor(r.next()*focuses.length)];
     const parts = randomEnemyPartsFor(pick, spec.enemyScienceCap, boss && !bossAssigned, focus);
     ships.push(makeShip(pick, parts) as unknown as Ship);
     if(boss && !bossAssigned && pick.id!=='interceptor') bossAssigned = true;
     remaining -= pick.tonnage;
   }
   return ships;
+}
+
+// Backward-compatible name (default randomness)
+export function generateEnemyFleetFor(sector:number): Ship[]{
+  return buildEnemyFleet(sector)
 }

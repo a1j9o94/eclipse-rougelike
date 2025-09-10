@@ -32,7 +32,8 @@ describe('Multiplayer Start button readiness + validity guards', () => {
 
   it('disables Start when fleetValid=false and does not toggle readiness', async () => {
     // Mock MP hook (define spies inside the factory and expose on globalThis)
-    vi.mock('../hooks/useMultiplayerGame', () => {
+    vi.resetModules()
+    await vi.doMock('../hooks/useMultiplayerGame', () => {
       const submitFleetSnapshot = vi.fn();
       const updateFleetValidity = vi.fn();
       const setReady = vi.fn();
@@ -56,31 +57,32 @@ describe('Multiplayer Start button readiness + validity guards', () => {
         submitFleetSnapshot,
         updateFleetValidity,
         setReady,
-        isConvexAvailable: false,
+        isConvexAvailable: true,
       })}
     })
 
     const { default: AppImpl } = await import('../App')
     render(<AppImpl />)
 
-    // Enter MP, then game
+    // Enter MP (room is already playing in our mock)
     fireEvent.click(screen.getByRole('button', { name: /multiplayer/i }))
-    await screen.findByText(/Mock Lobby/i)
-    fireEvent.click(screen.getByRole('button', { name: /Enter Game/i }))
 
     // Wait until Outpost renders
     await screen.findByRole('button', { name: 'Start Combat' })
     const startBtn = await screen.findByRole('button', { name: 'Start Combat' })
     await waitFor(() => expect(startBtn).toHaveAttribute('disabled'))
-    fireEvent.click(startBtn)
     const spies = (globalThis as unknown as { mpSpies: { submitFleetSnapshot: any; updateFleetValidity: any; setReady: any } }).mpSpies
+    const preSnapCalls = spies.submitFleetSnapshot.mock.calls.length
+    const preValidCalls = spies.updateFleetValidity.mock.calls.length
+    fireEvent.click(startBtn)
     expect(spies.setReady).not.toHaveBeenCalled()
-    expect(spies.submitFleetSnapshot).not.toHaveBeenCalled()
-    expect(spies.updateFleetValidity).not.toHaveBeenCalled()
+    expect(spies.submitFleetSnapshot.mock.calls.length).toBe(preSnapCalls)
+    expect(spies.updateFleetValidity.mock.calls.length).toBe(preValidCalls)
   })
 
   it('enables Start when fleetValid=true; toggles readiness and submits snapshot', async () => {
-    vi.mock('../hooks/useMultiplayerGame', () => {
+    vi.resetModules()
+    await vi.doMock('../hooks/useMultiplayerGame', () => {
       const submitFleetSnapshot = vi.fn();
       const updateFleetValidity = vi.fn();
       const setReady = vi.fn();
@@ -106,15 +108,13 @@ describe('Multiplayer Start button readiness + validity guards', () => {
         submitFleetSnapshot,
         updateFleetValidity,
         setReady,
-        isConvexAvailable: false,
+        isConvexAvailable: true,
       })}
     })
 
     const { default: AppImpl } = await import('../App')
     render(<AppImpl />)
     fireEvent.click(screen.getByRole('button', { name: /multiplayer/i }))
-    await screen.findByText(/Mock Lobby/i)
-    fireEvent.click(screen.getByRole('button', { name: /Enter Game/i }))
 
     const startBtn = await screen.findByRole('button', { name: 'Start Combat' })
     expect(startBtn).not.toHaveAttribute('disabled')

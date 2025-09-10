@@ -21,11 +21,11 @@ describe('rules modal', () => {
     localStorage.clear();
     render(<App />);
     fireEvent.click(screen.getByRole('button', { name: /Easy/i }));
-    await new Promise(r => setTimeout(r, 200));
+    // Rules modal appears and pauses auto-combat
+    const goBtn = await screen.findByRole('button', { name: /Let’s go/i });
     expect(screen.queryByText(/Victory/i)).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /Let’s go/i }));
+    fireEvent.click(goBtn);
     await screen.findAllByText(/Victory/i, undefined, { timeout: 10000 });
-    await new Promise(r => setTimeout(r, 200));
   }, 15000);
 
 });

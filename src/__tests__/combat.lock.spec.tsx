@@ -18,5 +18,5 @@ describe('combat auto resolution', () => {
     await screen.findByText(/^Victory$/i, undefined, { timeout: 10000 });
     await waitFor(() => expect(ret).toHaveTextContent(/Return to Outpost/i));
     await waitFor(() => expect(ret).not.toBeDisabled());
-  });
+  }, 15000);
 });

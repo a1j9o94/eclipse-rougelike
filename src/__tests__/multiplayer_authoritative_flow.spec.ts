@@ -13,7 +13,11 @@ type GameState = {
 
 function logPhase(prefix: string, gs: GameState, players: PlayerRow[]) {
   const ready = players.map(p => `${p.playerName}:${p.isReady ? '✅' : '❌'}`).join(' ');
-  console.log(`${prefix} phase=${gs.gamePhase} round=${gs.roundNum} ready=[${ready}]`);
+  if (process.env.VITEST_DEBUG_AUTH_FLOW) {
+    // Optional debug output; disabled by default to keep runner memory low
+    // eslint-disable-next-line no-console
+    console.log(`${prefix} phase=${gs.gamePhase} round=${gs.roundNum} ready=[${ready}]`);
+  }
 }
 
 function makeBasicShip(name: string, opts?: Partial<ShipSnap>): ShipSnap {
@@ -57,7 +61,7 @@ describe('Multiplayer authoritative loop (server view + client logs)', () => {
     ];
     gs.playerStates['A'] = { ...gs.playerStates['A'], fleet: fleetA, fleetValid: true };
     gs.playerStates['B'] = { ...gs.playerStates['B'], fleet: fleetB, fleetValid: true };
-    console.log('[Client->Server] Snapshots submitted: A and B');
+    if (process.env.VITEST_DEBUG_AUTH_FLOW) console.log('[Client->Server] Snapshots submitted: A and B');
 
     // Players mark ready in Outpost
     players.forEach(p => { p.isReady = true; });
@@ -71,14 +75,16 @@ describe('Multiplayer authoritative loop (server view + client logs)', () => {
     gs.gamePhase = loser.lives === 0 ? 'finished' : 'combat';
     gs.roundLog = roundLog;
     gs.acks = {};
-    console.log(`[Server] Combat resolved. Winner=${winnerPlayerId}. Loser lives=${loser.lives}`);
-    console.log('[Server] Round log:\n' + (roundLog || []).join('\n'));
+    if (process.env.VITEST_DEBUG_AUTH_FLOW) {
+      console.log(`[Server] Combat resolved. Winner=${winnerPlayerId}. Loser lives=${loser.lives}`);
+      console.log('[Server] Round log:\n' + (roundLog || []).join('\n'));
+    }
     expect(gs.gamePhase).toEqual('combat');
     expect(gs.roundLog && gs.roundLog.length).toBeGreaterThan(0);
 
     // Clients auto-ack after reading log
     gs.acks['A'] = true; gs.acks['B'] = true;
-    console.log(`[Client] A and B ack playback. acks=${JSON.stringify(gs.acks)}`);
+    if (process.env.VITEST_DEBUG_AUTH_FLOW) console.log(`[Client] A and B ack playback. acks=${JSON.stringify(gs.acks)}`);
 
     // Server observes all acks → reset to setup, increment round, reset readiness
     const allAck = players.every(p => gs.acks[p.playerId]);
@@ -89,7 +95,7 @@ describe('Multiplayer authoritative loop (server view + client logs)', () => {
     gs.roundLog = undefined;
     gs.acks = {};
     logPhase('[Loop]', gs, players);
-    console.log('[UI] Next shop is open for both players. They can re‑outfit and repeat.');
+    if (process.env.VITEST_DEBUG_AUTH_FLOW) console.log('[UI] Next shop is open for both players. They can re‑outfit and repeat.');
 
     expect(gs.gamePhase).toEqual('setup');
     expect(players.every(p => p.isReady === false)).toBe(true);

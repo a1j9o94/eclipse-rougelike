@@ -58,8 +58,6 @@ describe('Outpost — economy labels reflect faction (MP)', () => {
     const { default: AppImpl } = await import('../App')
     render(<AppImpl />)
     fireEvent.click(screen.getByRole('button', { name: /multiplayer/i }))
-    await screen.findByText(/Mock Lobby/i)
-    fireEvent.click(screen.getByRole('button', { name: /Enter Game/i }))
 
     // Industrialists: reroll shows 0¢ initially
     await screen.findByText(/Reroll \(0¢\)/i)
@@ -68,4 +66,3 @@ describe('Outpost — economy labels reflect faction (MP)', () => {
     expect(buildBtn.textContent).toMatch(/\(3🧱 \+ (22|23)¢\)/)
   })
 })
-

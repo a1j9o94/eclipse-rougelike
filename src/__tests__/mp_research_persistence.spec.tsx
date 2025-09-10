@@ -61,8 +61,6 @@ describe('MP Research Persistence', () => {
     const { default: AppImpl } = await import('../App')
     render(<AppImpl />)
     fireEvent.click(screen.getByRole('button', { name: /multiplayer/i }))
-    await screen.findByText(/Mock Lobby/i)
-    fireEvent.click(screen.getByRole('button', { name: /Enter Game/i }))
 
     // Click the Nano upgrade button (we start at Nano: 2, so upgrade to 3)
     const nanoBtn = await screen.findByRole('button', { name: /Nano/i })
@@ -74,6 +72,7 @@ describe('MP Research Persistence', () => {
     const spy = (globalThis as any).__spyUpdate
     expect(spy).toHaveBeenCalled()
     const args = spy.mock.calls.at(-1)?.[0]
-    expect(args?.updates?.research?.Nano).toBe(3)
+    // Client now calls updateGameState with a flat payload: { research, resources }
+    expect(args?.research?.Nano).toBe(3)
   })
 })

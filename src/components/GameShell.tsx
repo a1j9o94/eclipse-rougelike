@@ -1,0 +1,100 @@
+import { useState } from 'react'
+import { ResourceBar } from './ui'
+import { RulesModal, TechListModal, WinModal, MatchOverModal } from './modals'
+import OutpostPage from '../pages/OutpostPage'
+import CombatPage from '../pages/CombatPage'
+import type { Research } from '../../shared/defaults'
+import type { Ship, InitiativeEntry } from '../../shared/types'
+import type { OutpostPageProps } from '../hooks/useOutpostPageProps'
+
+export type RBProps = {
+  credits: number
+  materials: number
+  science: number
+  tonnage: { used: number; cap: number }
+  sector: number
+  onReset: () => void
+  lives?: number
+  meName?: string
+  meFaction?: string
+  opponent?: { name: string; lives: number } | null
+  opponentFaction?: string | null
+  phase?: 'setup'|'combat'|'finished'
+}
+
+export type CombatProps = {
+  combatOver: boolean
+  outcome: string
+  roundNum: number
+  queue: InitiativeEntry[]
+  turnPtr: number
+  fleet: Ship[]
+  enemyFleet: Ship[]
+  log: string[]
+  onReturn: () => void | Promise<void>
+}
+
+export function GameShell({
+  showRules,
+  onDismissRules,
+  showTechs,
+  onCloseTechs,
+  showWin,
+  onRestartWin,
+  matchOver,
+  onMatchOverClose,
+  resourceBar,
+  route,
+  outpost,
+  combat,
+}: {
+  showRules: boolean
+  onDismissRules: () => void
+  showTechs: boolean
+  onCloseTechs: () => void
+  showWin: boolean
+  onRestartWin: () => void
+  matchOver: { winnerName: string } | null
+  onMatchOverClose: () => void
+  resourceBar: RBProps
+  route: 'OUTPOST'|'COMBAT'
+  outpost: OutpostPageProps
+  combat: CombatProps
+}){
+  const [showHelpMenu, setShowHelpMenu] = useState(false)
+  return (
+    <div className="bg-zinc-950 min-h-screen text-zinc-100">
+      {matchOver && (
+        <MatchOverModal winnerName={matchOver.winnerName} onClose={onMatchOverClose} />
+      )}
+      {showRules && <RulesModal onDismiss={onDismissRules} />}
+      {showTechs && <TechListModal research={outpost.research as Research} onClose={onCloseTechs} />}
+      {showWin && <WinModal onRestart={onRestartWin} onEndless={onRestartWin} />}
+
+      <ResourceBar {...resourceBar} />
+
+      {route==='OUTPOST' && (<OutpostPage {...outpost} />)}
+      {route==='COMBAT' && (<CombatPage {...combat} />)}
+
+      <div className="fixed bottom-3 right-3 z-40 flex flex-col gap-2">
+        <div className="hidden sm:flex flex-col gap-2">
+          <button onClick={onCloseTechs} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">🔬 Tech</button>
+          <button onClick={onDismissRules} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">❓ Rules</button>
+        </div>
+        <div className="sm:hidden">
+          {showHelpMenu ? (
+            <div className="flex flex-col gap-2">
+              <button onClick={()=>{ onCloseTechs(); setShowHelpMenu(false) }} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">🔬 Tech</button>
+              <button onClick={()=>{ onDismissRules(); setShowHelpMenu(false) }} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">❓ Rules</button>
+              <button onClick={()=>setShowHelpMenu(false)} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">✖</button>
+            </div>
+          ) : (
+            <button onClick={()=>setShowHelpMenu(true)} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">❓</button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default GameShell

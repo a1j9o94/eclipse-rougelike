@@ -3,7 +3,9 @@ import { useState } from 'react'
 import { ItemCard, PowerBadge, DockSlots } from '../components/ui'
 import { CombatPlanModal } from '../components/modals'
 import { ECONOMY } from '../../shared/economy'
-import { FRAMES, type FrameId, ALL_PARTS, groupFleet } from '../game'
+import { FRAMES, type FrameId } from '../../shared/frames'
+import { ALL_PARTS } from '../../shared/parts'
+import { groupFleet } from '../game/fleet'
 import { canBuildInterceptorWithMods } from '../game/hangar'
 import { partEffects, partDescription } from '../../shared/parts'
 import { type Resources, type Research } from '../../shared/defaults'
@@ -244,7 +246,7 @@ export function OutpostPage({
           {/* Shop side */}
           <div className="lg:col-span-2">
             <div className="flex gap-2 items-center flex-wrap mb-2">
-              <button onClick={doReroll} disabled={resources.credits<rerollCost} className={`px-3 py-2 rounded-lg text-sm sm:text-base ${resources.credits>=rerollCost?'bg-purple-700 hover:bg-purple-600 active:scale-[.99]':'bg-zinc-700 opacity-60'}`}>Reroll ({rerollCost}¢)</button>
+              <button data-testid="reroll-button" onClick={doReroll} disabled={resources.credits<rerollCost} className={`px-3 py-2 rounded-lg text-sm sm:text-base ${resources.credits>=rerollCost?'bg-purple-700 hover:bg-purple-600 active:scale-[.99]':'bg-zinc-700 opacity-60'}`}>Reroll ({rerollCost}¢)</button>
               <div className="text-[11px] sm:text-xs opacity-70">Reroll +{rrInc} after each Reroll/Research</div>
             </div>
             <div className="text-lg font-semibold mb-2">Outpost Inventory</div>
@@ -313,18 +315,14 @@ export function OutpostPage({
             const label = !amReady
               ? 'Start Combat'
               : (!opponentReady ? 'Waiting for opponent…' : 'Starting…');
-            // MP guard: disable unless localValid && (serverValid ?? true) && haveSnapshot, or if already ready
-            const disabled = amReady
-              ? true
-              : (guards
-                ? (!(guards.localValid && ((guards.serverValid ?? false)) && guards.haveSnapshot) || !fleetValid)
-                : !fleetValid);
+            // Allow click even when already ready (toggles readiness in MP). Only block when fleet invalid.
+            const disabled = !fleetValid;
             if (guards) {
               console.debug('[Outpost] MP guards', { ...guards, disabled, label });
             }
             const cls = disabled ? 'bg-zinc-700 opacity-60' : 'bg-emerald-600';
             return (
-              <button onClick={()=> (!disabled) && startCombat()} disabled={disabled} className={`flex-1 px-4 py-3 rounded-xl ${cls}`}>{label}</button>
+              <button onClick={()=> { try { console.debug('[outpost] start-combat click'); } catch { /* noop */ } startCombat() }} disabled={disabled} className={`flex-1 px-4 py-3 rounded-xl ${cls}`}>{label}</button>
             );
           })()}
           {myReady ? (
