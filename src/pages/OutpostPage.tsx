@@ -322,7 +322,7 @@ export function OutpostPage({
             }
             const cls = disabled ? 'bg-zinc-700 opacity-60' : 'bg-emerald-600';
             return (
-              <button onClick={()=> startCombat()} disabled={disabled} className={`flex-1 px-4 py-3 rounded-xl ${cls}`}>{label}</button>
+              <button onClick={()=> { try { console.debug('[outpost] start-combat click'); } catch {} startCombat() }} disabled={disabled} className={`flex-1 px-4 py-3 rounded-xl ${cls}`}>{label}</button>
             );
           })()}
           {myReady ? (

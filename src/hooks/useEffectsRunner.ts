@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { dlog } from '../utils/debug'
 import type { OutpostEffects } from '../engine/commands'
 import type { Part } from '../../shared/parts'
 
@@ -19,6 +20,7 @@ export function useEffectsRunner(effects: OutpostEffects | undefined, sink: Effe
     const key = JSON.stringify(effects)
     if (key === lastRef.current) return
     lastRef.current = key
+    dlog('effects', effects)
     if (effects.warning) sink.warn(effects.warning)
     if (effects.startCombat) sink.startCombat()
     if (effects.shopItems && sink.shopItems) sink.shopItems(effects.shopItems)
