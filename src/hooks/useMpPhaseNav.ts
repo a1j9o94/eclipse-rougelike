@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { fromSnapshotToShip, type ShipSnapshot } from '../multiplayer/snapshot'
+import { setLastSeenFleet } from '../multiplayer/lastSeen'
 import type { PlayerState } from '../../shared/mpTypes'
 import { computePlaybackDelay } from '../utils/playback'
 
@@ -50,7 +51,12 @@ export function useMpPhaseNav(params: {
         const myFleet = myId ? pStates?.[myId]?.fleet : undefined
         const oppFleet = opp ? pStates?.[opp.playerId]?.fleet : undefined
         if (Array.isArray(myFleet)) setters.setFleet((myFleet as ShipSnapshot[]).map(fromSnapshotToShip) as unknown[])
-        if (Array.isArray(oppFleet)) setters.setEnemyFleet((oppFleet as ShipSnapshot[]).map(fromSnapshotToShip) as unknown[])
+        if (Array.isArray(oppFleet)) {
+          const oppShips = (oppFleet as ShipSnapshot[]).map(fromSnapshotToShip) as unknown[]
+          setters.setEnemyFleet(oppShips)
+          // Record as last-seen for use in Outpost Enemy Intel
+          if (opp?.playerId) setLastSeenFleet(opp.playerId, oppShips as never)
+        }
       } catch { /* ignore */ }
       const lines = (multi.gameState?.roundLog as string[] | undefined) || ["Combat resolved."]
       setters.setLog(l => [...l, ...lines])

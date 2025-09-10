@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { ItemCard, PowerBadge, DockSlots } from '../components/ui'
 import { CombatPlanModal } from '../components/modals'
+import type { MpBasics } from '../adapters/mpSelectors'
 import { ECONOMY } from '../../shared/economy'
 import { FRAMES, type FrameId } from '../../shared/frames'
 import { ALL_PARTS } from '../../shared/parts'
@@ -14,6 +15,8 @@ import { type Ship, type GhostDelta } from '../../shared/types'
 import { type EconMods, applyEconomyModifiers, getDefaultEconomyModifiers } from '../game/economy'
 
 export function OutpostPage({
+  gameMode,
+  multi,
   resources,
   rerollCost,
   doReroll,
@@ -45,6 +48,8 @@ export function OutpostPage({
   mpGuards,
   economyMods = getDefaultEconomyModifiers(),
 }:{
+  gameMode: 'single'|'multiplayer',
+  multi?: MpBasics,
   resources:Resources,
   rerollCost:number,
   doReroll:()=>void,
@@ -148,7 +153,7 @@ export function OutpostPage({
   }
   return (
     <>
-      {showPlan && <CombatPlanModal onClose={()=>setShowPlan(false)} sector={sector} endless={endless} />}
+      {showPlan && <CombatPlanModal onClose={()=>setShowPlan(false)} sector={sector} endless={endless} gameMode={gameMode} multi={multi as never} />}
 
       <div className="mx-auto max-w-5xl pb-24">
 
@@ -157,7 +162,7 @@ export function OutpostPage({
         <div className="flex items-center gap-2 mb-2">
           <div className="text-lg font-semibold">Hangar (Class Blueprints)</div>
           <div className="flex-1" />
-          <button onClick={()=>setShowPlan(true)} className="px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs">📋 Combat Plan</button>
+          <button onClick={()=>setShowPlan(true)} className="px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs">📋 Enemy Intel</button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {fleetGroups.map((g,i)=> { const s = g.ship; const active = g.indices.includes(focused); const stack = Math.min(g.count-1,2); return (
