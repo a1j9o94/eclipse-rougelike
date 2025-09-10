@@ -1,6 +1,8 @@
 import type { EffectKey, MusicKey } from './sound.types'
 
-const IS_TEST = Boolean((import.meta as any)?.vitest || import.meta.env?.MODE === 'test')
+type Meta = { vitest?: unknown; env?: { MODE?: string } }
+const meta = import.meta as unknown as Meta
+const IS_TEST = Boolean(meta?.vitest || meta?.env?.MODE === 'test')
 
 let implPromise: Promise<typeof import('./sound.impl')> | null = null
 function getImpl() {

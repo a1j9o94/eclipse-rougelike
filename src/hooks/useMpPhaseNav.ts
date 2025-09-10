@@ -28,12 +28,20 @@ export function useMpPhaseNav(params: {
     const phase = multi.gameState?.gamePhase
     let timeoutId: ReturnType<typeof setTimeout> | null = null
     if (phase === 'setup') {
-      // Enter game view (Outpost) during setup
-      setters.setMultiplayerPhase('game')
-      setters.setMode('OUTPOST')
+      // Only enter game view once the room is actually playing
+      const isPlaying = multi.roomDetails?.room?.status === 'playing'
+      if (isPlaying) {
+        setters.setMultiplayerPhase('game')
+        setters.setMode('OUTPOST')
+      } else {
+        try { console.debug('[MP] setup phase observed but room not playing; staying in lobby') } catch { /* noop */ }
+      }
       return () => { if (timeoutId) clearTimeout(timeoutId) }
     }
     if (phase === 'combat') {
+      // Optional: require playing status to be safe
+      const isPlaying = multi.roomDetails?.room?.status === 'playing'
+      if (!isPlaying) return () => { if (timeoutId) clearTimeout(timeoutId) }
       setters.setMode('COMBAT')
       try {
         const myId = multi.getPlayerId?.() as string | null

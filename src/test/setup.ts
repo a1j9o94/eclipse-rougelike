@@ -32,8 +32,14 @@ global.setInterval = ((fn: Parameters<typeof setInterval>[0], ms?: number, ...ar
   _intervals.add(id)
   return id as unknown as number
 }) as typeof setInterval
-global.clearTimeout = ((id: ReturnType<typeof global.setTimeout>) => { _timeouts.delete(id); return _ct(id as any) }) as typeof clearTimeout
-global.clearInterval = ((id: ReturnType<typeof global.setInterval>) => { _intervals.delete(id); return _ci(id as any) }) as typeof clearInterval
+global.clearTimeout = ((id: ReturnType<typeof global.setTimeout>) => {
+  _timeouts.delete(id)
+  return _ct(id as unknown as Parameters<typeof _ct>[0])
+}) as typeof clearTimeout
+global.clearInterval = ((id: ReturnType<typeof global.setInterval>) => {
+  _intervals.delete(id)
+  return _ci(id as unknown as Parameters<typeof _ci>[0])
+}) as typeof clearInterval
 
 // Global testing-library cleanup to ensure unmount and effect cleanup
 afterEach(() => {
@@ -52,8 +58,8 @@ afterEach(() => {
 beforeEach(() => {
   // Only mock if not already mocked by a specific test
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const isMocked = (console.debug as any)?.getMockName?.()
+    type Mockable = { getMockName?: () => string }
+    const isMocked = (console.debug as unknown as Mockable)?.getMockName?.()
     if (!isMocked) vi.spyOn(console, 'debug').mockImplementation(() => {})
   } catch { /* ignore */ void 0 }
   try {

@@ -45,4 +45,12 @@ describe('useMpPhaseNav', () => {
     const el = r.container.firstChild as HTMLElement
     expect(el.getAttribute('data-phase')).toBe('game')
   })
+
+  it('does not enter game when setup but room is waiting', async () => {
+    const multi = { gameState: { gamePhase: 'setup', playerStates: {} }, roomDetails: { room: { status: 'waiting' } } }
+    const r = render(<Harness multi={multi} />)
+    await act(async()=>{})
+    const el = r.container.firstChild as HTMLElement
+    expect(el.getAttribute('data-phase')).toBe('menu')
+  })
 })

@@ -208,13 +208,23 @@ export const getGameState = query({
 export const updatePlayerFleetValidity = mutation({
   args: { roomId: v.id("rooms"), playerId: v.string(), fleetValid: v.boolean() },
   handler: async (ctx, args) => {
+    // Guard: do not create a placeholder gameState during lobby (room not yet playing)
+    const room = await ctx.db.get(args.roomId);
+    if (!room) throw new Error("Room not found");
+
     let gameState = await ctx.db
       .query("gameState")
       .withIndex("by_room", (q) => q.eq("roomId", args.roomId))
       .first();
 
-    // Create a placeholder gameState during setup if missing
+    // Create a placeholder gameState during setup only if the match has already started
+    // (room.status === 'playing'). This avoids prematurely navigating clients out of the lobby
+    // when a player pre-emptively updates validity from the lobby faction picker.
     if (!gameState) {
+      if (room.status !== 'playing') {
+        logInfo('valid', 'ignored validity before start', { tag: roomTag(args.roomId as unknown as string), playerId: args.playerId });
+        return true;
+      }
       await ctx.db.insert("gameState", {
         roomId: args.roomId,
         currentTurn: args.playerId,

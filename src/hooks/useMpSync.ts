@@ -68,6 +68,9 @@ export function useMpSetupSync(params: {
   useEffect(() => {
     if (gameMode !== 'multiplayer') return
     if (multi.gameState?.gamePhase !== 'setup') return
+    // Avoid applying server snapshots/economy until the host has actually started the match
+    const isPlaying = multi.roomDetails?.room?.status === 'playing'
+    if (!isPlaying) return
     try {
       const st0 = multi.getMyGameState?.() ?? (() => {
         const myId = multi.getPlayerId?.() as string | null
