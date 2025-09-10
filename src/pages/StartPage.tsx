@@ -186,7 +186,7 @@ export default function StartPage({
                   <span>Starfield</span>
                   <button
                     className={`px-3 py-1 rounded-full border ${starEnabled ? 'bg-emerald-700 border-emerald-500' : 'bg-zinc-800 border-white/10'}`}
-                    onClick={()=>{ const v = !starEnabled; setStarEnabled(v); try{ localStorage.setItem('ui-starfield-enabled', String(v)); }catch { void 0 } }}
+                    onClick={()=>{ const v = !starEnabled; setStarEnabled(v); try{ localStorage.setItem('ui-starfield-enabled', String(v)); window.dispatchEvent(new Event('starfield-settings-changed')); }catch { void 0 } }}
                     aria-pressed={starEnabled}
                   >{starEnabled ? 'On' : 'Off'}</button>
                 </div>
@@ -197,7 +197,7 @@ export default function StartPage({
                       <button key={d}
                         className={`px-3 py-2 rounded-xl border ${starDensity===d ? 'bg-white/10 border-emerald-500' : 'bg-zinc-900 border-white/10'}`}
                         aria-pressed={starDensity===d}
-                        onClick={()=>{ setStarDensity(d); try{ localStorage.setItem('ui-starfield-density', d);}catch { void 0 } }}
+                        onClick={()=>{ setStarDensity(d); try{ localStorage.setItem('ui-starfield-density', d); window.dispatchEvent(new Event('starfield-settings-changed')); }catch { void 0 } }}
                       >{d[0].toUpperCase()+d.slice(1)}</button>
                     ))}
                   </div>
@@ -206,7 +206,7 @@ export default function StartPage({
                   <span>Reduced Motion</span>
                   <button
                     className={`px-3 py-1 rounded-full border ${userReducedMotion ? 'bg-zinc-800 border-white/10' : 'bg-emerald-700 border-emerald-500'}`}
-                    onClick={()=>{ const v = !userReducedMotion; setUserReducedMotion(v); try{ localStorage.setItem('ui-reduced-motion', String(v)); }catch { void 0 } }}
+                    onClick={()=>{ const v = !userReducedMotion; setUserReducedMotion(v); try{ localStorage.setItem('ui-reduced-motion', String(v)); window.dispatchEvent(new Event('starfield-settings-changed')); }catch { void 0 } }}
                     aria-pressed={userReducedMotion}
                   >{userReducedMotion ? 'On' : 'Off'}</button>
                 </div>
