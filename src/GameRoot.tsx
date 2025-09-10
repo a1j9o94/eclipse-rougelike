@@ -295,6 +295,22 @@ export default function EclipseIntegrated(){
     fleetValid: true,
   })
 
+  // MP: Show match-over modal when server marks game finished
+  useEffect(() => {
+    if (gameMode !== 'multiplayer') return
+    if (!multi?.gameState || multi.gameState.gamePhase !== 'finished') return
+    if (matchOver) return
+    try {
+      const winnerId = (multi.gameState as unknown as { matchResult?: { winnerPlayerId?: string } })?.matchResult?.winnerPlayerId
+      const players = (multi.roomDetails as { players?: Array<{ playerId:string; playerName?: string }> } | null | undefined)?.players || []
+      const name = winnerId ? (players.find(p => p.playerId === winnerId)?.playerName || 'Winner') : 'Winner'
+      setMatchOver({ winnerName: name })
+    } catch {
+      setMatchOver({ winnerName: 'Winner' })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameMode, multi?.gameState?.gamePhase])
+
   // Validity stream handled in Outpost VM; readiness submits snapshots explicitly
 
   // Multiplayer capacity is set by server modifiers when available
