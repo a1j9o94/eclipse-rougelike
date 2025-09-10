@@ -55,9 +55,20 @@ export function useRunLifecycle(params: {
       const sector = getters.sector()
       const research = getters.research()
       const fleet = getters.fleet()
+      const enemyFleet = getters.enemyFleet()
       // Cull and restore fleet
       const culled = fleet.filter(s => s.alive).map(s => ({ ...s, hull: s.stats.hullCap }))
       setters.setFleet(culled)
+      // Victory rewards for destroyed enemies
+      try {
+        const rw = calcRewards(enemyFleet, sector)
+        setters.setResources(r => ({
+          ...r,
+          credits: r.credits + rw.c,
+          materials: r.materials + rw.m,
+          science: r.science + rw.s,
+        }))
+      } catch { /* ignore */ }
       if (sector >= 10) {
         // Final victory
         const faction = getters.faction?.()
