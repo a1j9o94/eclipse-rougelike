@@ -143,6 +143,7 @@ export default function EclipseIntegrated(){
     handleBackToMainMenu,
     handleContinue,
     handleGoMultiplayer,
+    handleGoPublic,
   } = usePreGameHandlers({
     setCurrentRoomId: (id)=>setCurrentRoomId(id as Id<'rooms'> | null),
     setMultiplayerPhase,
@@ -373,6 +374,7 @@ export default function EclipseIntegrated(){
     onNewRun: newRun,
     onContinue: handleContinue,
     onGoMultiplayer: handleGoMultiplayer,
+    onGoPublic: () => handleGoPublic(),
     onRoomJoined: handleRoomJoined,
     onBack: handleBackToMainMenu,
     onGameStart: handleGameStart,
