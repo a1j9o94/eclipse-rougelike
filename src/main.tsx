@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import GlobalStarfield from './components/GlobalStarfield'
 import { Analytics } from '@vercel/analytics/react'
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { ErrorBoundary, ErrorFallback } from './components/ErrorBoundary';
@@ -48,7 +49,12 @@ try {
       <ErrorBoundary>
         {convex ? (
           <ConvexProvider client={convex}>
-            <App />
+            <div className="relative min-h-screen">
+              <GlobalStarfield />
+              <div className="relative z-10">
+                <App />
+              </div>
+            </div>
           </ConvexProvider>
         ) : (
           <ErrorFallback message="The application is missing required environment variables." />

@@ -12,8 +12,10 @@ All “agents” are **Codex CLI** processes. A **Supervisor** coordinates **Pla
 * **Hygiene every loop**:
 
   ```bash
-  npm run lint && npm run test:run && npm run build
+  npm run lint && npm run build
   ```
+
+  Run the tests that are relevevant to yur update. You can't run all the tests because it will exceed the memory limit.
 * **Types**: no `any`/`unknown` on public boundaries. Define explicit interfaces for data crossing module boundaries.
 * **Player experience first**: every plan states the user outcome and acceptance criteria.
 * **Branches**: major work on `feature/<kebab>`, inherited from the parent branch.

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, beforeEach } from 'vitest';
 import StartPage from '../pages/StartPage';
 import { type SavedRun, recordWin, evaluateUnlocks } from '../game/storage';
@@ -20,24 +20,27 @@ describe('StartPage', () => {
     }));
   });
 
-  it('shows battle log and default unlocks', () => {
+  it('shows default unlocks and opens battle log modal', () => {
     render(<StartPage onNewRun={() => {}} />);
     const factions = screen.getAllByTestId('faction-option');
     expect(factions).toHaveLength(1);
     expect(factions[0].textContent).toMatch(/Helios Cartel/);
-    expect(screen.getByRole('button', { name: /Easy/ })).toBeEnabled();
-    expect(screen.getByRole('button', { name: /Medium/ })).toBeDisabled();
-    expect(screen.getByRole('button', { name: /Hard/ })).toBeDisabled();
+    // Battle log is hidden until opened
+    expect(screen.queryByText('Battle Log')).toBeNull();
+    // Open via top-right button
+    fireEvent.click(screen.getByRole('button', { name: /Open Battle Log/i }));
     expect(screen.getByText('Battle Log')).toBeInTheDocument();
     expect(screen.getByText('No battles yet.')).toBeInTheDocument();
   });
 
-  it('enables multiplayer when Convex URL is configured', () => {
+  it('enables multiplayer tab when Convex URL is configured', () => {
     // Provide the env var used by StartPage
     vi.stubEnv('VITE_CONVEX_URL', 'https://example.convex.cloud');
     render(<StartPage onNewRun={() => {}} onMultiplayer={() => {}} />);
-    const btn = screen.getByRole('button', { name: /^Multiplayer$/ });
-    expect(btn).toBeEnabled();
+    // Open launch sheet, navigate to Versus
+    fireEvent.click(screen.getByRole('button', { name: /^Launch$/ }));
+    const versusTab = screen.getByRole('button', { name: /^Versus$/ });
+    expect(versusTab).toBeEnabled();
   });
 
   it('unlocks scientists when research tiers reach three', () => {
@@ -87,14 +90,26 @@ describe('StartPage', () => {
     expect(names.some(n => n?.includes('Regenerative Swarm'))).toBe(true);
   });
 
-  it('gates higher difficulties per faction', () => {
+  it('gates higher difficulties per faction inside the Launch sheet', () => {
     const research = { Military: 1, Grid: 1, Nano: 1 };
     recordWin('industrialists', 'easy', research, []);
     const { rerender } = render(<StartPage onNewRun={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: /^Launch$/ }));
     expect(screen.getByRole('button', { name: /Medium/ })).toBeEnabled();
     expect(screen.getByRole('button', { name: /Hard/ })).toBeDisabled();
     recordWin('industrialists', 'medium', research, []);
     rerender(<StartPage onNewRun={() => {}} />);
     expect(screen.getByRole('button', { name: /Hard/ })).toBeEnabled();
+  });
+
+  it('shows Continue only when a save exists', () => {
+    // no save initially
+    const { rerender } = render(<StartPage onNewRun={() => {}} onContinue={() => {}} />);
+    expect(screen.queryByRole('button', { name: /^Continue$/ })).toBeNull();
+    // add save
+    const run: Partial<SavedRun> = { research: { Military: 1, Grid: 1, Nano: 1 }, fleet: [] };
+    localStorage.setItem('eclipse-run', JSON.stringify(run));
+    rerender(<StartPage onNewRun={() => {}} onContinue={() => {}} />);
+    expect(screen.getByRole('button', { name: /^Continue$/ })).toBeInTheDocument();
   });
 });

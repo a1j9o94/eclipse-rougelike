@@ -6,3 +6,37 @@
 @source "./src/**/*.{ts,tsx}";
 
 html, body, #root { height: 100%; }
+
+/* Lightweight starfield background (CSS-only) */
+/* Simple, visible stars on pure black */
+.starfield {
+  --star-size: 50px;   /* spacing grid */
+  --star-speed: 80s;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0; /* above bg gradient, below content */
+  background-color: #000;
+  background-image:
+    radial-gradient(#ffffff 1px, transparent 1px),
+    radial-gradient(#ffffff 1px, transparent 1px);
+  background-size: var(--star-size) var(--star-size), var(--star-size) var(--star-size);
+  background-position: 0 0, calc(var(--star-size) / 2) calc(var(--star-size) / 2);
+  animation: starfield-drift var(--star-speed) linear infinite;
+}
+
+.starfield.low { --star-size: 60px; --star-speed: 90s; }
+.starfield.medium { --star-size: 40px; --star-speed: 80s; }
+.starfield.high { --star-size: 24px; --star-speed: 60s; }
+
+@keyframes starfield-drift {
+  0% { background-position: 0 0, calc(var(--star-size) / 2) calc(var(--star-size) / 2); }
+  100% { background-position: var(--star-size) var(--star-size), 0 0; }
+}
+
+/* Respect OS reduced motion, and optional user toggle via [data-user-reduced-motion] */
+@media (prefers-reduced-motion: reduce) {
+  .starfield { animation: none; }
+}
+
+[data-user-reduced-motion='true'] .starfield { animation: none !important; }

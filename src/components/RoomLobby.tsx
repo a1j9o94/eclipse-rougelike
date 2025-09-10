@@ -99,7 +99,7 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
 
   if (isLoading) {
     return (
-      <div className="bg-zinc-950 min-h-screen text-zinc-100 flex items-center justify-center">
+      <div className="min-h-screen text-zinc-100 flex items-center justify-center">
         <div className="text-center">
           <div className="text-2xl mb-2">Loading room...</div>
           <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto"></div>
@@ -110,7 +110,7 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
 
   if (!room || !currentPlayer) {
     return (
-      <div className="bg-zinc-950 min-h-screen text-zinc-100 flex items-center justify-center">
+      <div className="min-h-screen text-zinc-100 flex items-center justify-center">
         <div className="text-center">
           <div className="text-2xl mb-4 text-red-400">Room not found</div>
           <button
@@ -130,7 +130,7 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
   // Lives are shown in top bar elsewhere; keep local references minimal
 
   return (
-    <div className="bg-zinc-950 min-h-screen text-zinc-100 p-4">
+    <div className="min-h-screen text-zinc-100 p-4">
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">

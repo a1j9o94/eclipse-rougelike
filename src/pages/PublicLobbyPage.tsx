@@ -33,7 +33,7 @@ export default function PublicLobbyPage({ onBack, onRoomJoined, defaultName }: P
   };
 
   return (
-    <div className="bg-zinc-950 min-h-screen text-zinc-100 p-4">
+    <div className="min-h-screen text-zinc-100 p-4">
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Public Matchmaking</h1>
@@ -88,4 +88,3 @@ export default function PublicLobbyPage({ onBack, onRoomJoined, defaultName }: P
     </div>
   );
 }
-
