@@ -36,7 +36,7 @@ export type UseOutpostHandlersParams = {
     setShop?: (s: { items: Part[] }) => void
     setLastEffects?: (fx: OutpostEffects | undefined) => void
   }
-  multi?: { updateGameState?: (arg: { updates: { research: Research; resources: { credits:number; materials:number; science:number } } }) => unknown }
+  multi?: { updateGameState?: (updates: { research: Research; resources: { credits:number; materials:number; science:number } }) => unknown }
   sound?: (key: EffectKey) => void
 }
 
@@ -121,7 +121,7 @@ export function useOutpostHandlers(params: UseOutpostHandlersParams): OutpostHan
     if (gameMode === 'multiplayer' && multi?.updateGameState) {
       try {
         const updates = { research: r.next.research as Research, resources: r.next.resources } as { research: Research; resources: { credits:number; materials:number; science:number } }
-        multi.updateGameState({ updates })
+        multi.updateGameState(updates)
       } catch {/* noop */}
     }
     sound?.('tech')
