@@ -72,6 +72,7 @@ describe('MP Research Persistence', () => {
     const spy = (globalThis as any).__spyUpdate
     expect(spy).toHaveBeenCalled()
     const args = spy.mock.calls.at(-1)?.[0]
-    expect(args?.updates?.research?.Nano).toBe(3)
+    // Client now calls updateGameState with a flat payload: { research, resources }
+    expect(args?.research?.Nano).toBe(3)
   })
 })
