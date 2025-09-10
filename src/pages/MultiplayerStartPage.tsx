@@ -77,7 +77,7 @@ export default function MultiplayerStartPage({ onRoomJoined, onBack, onGoPublic,
 
   if (mode === 'create') {
     return (
-      <div className="bg-zinc-950 min-h-screen text-zinc-100 p-4">
+      <div className="min-h-screen text-zinc-100 p-4">
         <div className="max-w-md mx-auto space-y-6">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold">Create Room</h1>
@@ -189,7 +189,7 @@ export default function MultiplayerStartPage({ onRoomJoined, onBack, onGoPublic,
 
   if (mode === 'join') {
     return (
-      <div className="bg-zinc-950 min-h-screen text-zinc-100 p-4">
+      <div className="min-h-screen text-zinc-100 p-4">
         <div className="max-w-md mx-auto space-y-6">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold">Join Room</h1>
@@ -247,7 +247,7 @@ export default function MultiplayerStartPage({ onRoomJoined, onBack, onGoPublic,
 
   // Main menu
   return (
-    <div className="bg-zinc-950 min-h-screen text-zinc-100 p-4">
+    <div className="min-h-screen text-zinc-100 p-4">
       <div className="max-w-md mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Multiplayer</h1>

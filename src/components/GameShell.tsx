@@ -67,7 +67,7 @@ export function GameShell({
 }){
   const [showHelpMenu, setShowHelpMenu] = useState(false)
   return (
-    <div className="bg-zinc-950 min-h-screen text-zinc-100">
+    <div className="min-h-screen text-zinc-100">
       {matchOver && (
         <MatchOverModal winnerName={matchOver.winnerName} onClose={onMatchOverClose} />
       )}

@@ -58,7 +58,7 @@ export function getPreGameElement(props: PreGameRouterProps): ReactElement | nul
       })
     }
     if (multiplayerPhase !== 'game') {
-      return createElement('div', { className: 'bg-zinc-950 min-h-screen text-zinc-100 flex items-center justify-center' },
+      return createElement('div', { className: 'min-h-screen text-zinc-100 flex items-center justify-center' },
         createElement('div', { className: 'text-center text-zinc-400' }, 'Preparing multiplayer lobby…')
       )
     }
