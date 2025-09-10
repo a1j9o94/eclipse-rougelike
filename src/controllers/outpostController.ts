@@ -18,7 +18,8 @@ export type BuyContext = {
 }
 
 export function getEconomyForMode(ctx: { gameMode: 'single' | 'multiplayer'; economyMods?: EconMods }): EconMods {
-  return ctx.gameMode === 'multiplayer' ? (ctx.economyMods || getDefaultEconomyModifiers()) : getDefaultEconomyModifiers()
+  // Always prefer provided modifiers (set by faction or MP state). Fallback to defaults.
+  return ctx.economyMods || getDefaultEconomyModifiers()
 }
 
 export function canInstallOnClass(blueprints: Record<FrameId, Part[]>, frameId: FrameId, part: Part) {
