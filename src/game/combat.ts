@@ -31,15 +31,15 @@ export function buildInitiative(pFleet:Ship[], eFleet:Ship[], rng?: Rng): Initia
 export function targetIndex(defFleet:Ship[], strategy:'kill'|'guns'){
   if(strategy==='kill'){
     let best=-1, bestHull=1e9
-    for(let i=0;i<defFleet.length;i++){ const s=defFleet[i]; if(s && s.alive && s.stats.valid){ if(s.hull < bestHull){ bestHull=s.hull; best=i } } }
+    for(let i=0;i<defFleet.length;i++){ const s=defFleet[i]; if(s && s.alive){ if(s.hull < bestHull){ bestHull=s.hull; best=i } } }
     if(best!==-1) return best
   }
   if(strategy==='guns'){
     let best=-1, guns=-1
-    for(let i=0;i<defFleet.length;i++){ const s=defFleet[i]; if(s && s.alive && s.stats.valid){ const g=s.weapons.length; if(g>guns){ guns=g; best=i } } }
+    for(let i=0;i<defFleet.length;i++){ const s=defFleet[i]; if(s && s.alive){ const g=s.weapons.length; if(g>guns){ guns=g; best=i } } }
     if(best!==-1) return best
   }
-  return defFleet.findIndex(s=>s.alive && s.stats.valid)
+  return defFleet.findIndex(s=>s.alive)
 }
 
 export function volley(attacker:Ship, defender:Ship, side:'P'|'E', logArr:string[], friends:Ship[], rng?: Rng){

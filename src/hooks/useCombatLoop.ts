@@ -172,13 +172,12 @@ export function useCombatLoop(params: {
     const eAlive = eFleetArr.some(s => s.alive)
     if (!pAlive || !eAlive) { dlog('resolveCombat', { reason: !pAlive ? 'playerDead' : 'enemyDead', pAlive, eAlive }); resolveCombat(pAlive); return }
 
-    // Stalemate guard: if no shots were fired this round, decide by 'valid' presence
+    // Stalemate guard (revised): only end if neither side can attack at all
     if (!shotsFiredThisRound.current) {
-      const pValid = pFleetArr.some(s => s.alive && s.stats.valid)
-      const eValid = eFleetArr.some(s => s.alive && s.stats.valid)
-      if (pValid && !eValid) { dlog('resolveCombat', { reason: 'enemyInoperable' }); resolveCombat(true); return }
-      if (!pValid && eValid) { dlog('resolveCombat', { reason: 'playerInoperable' }); resolveCombat(false); return }
-      if (!pValid && !eValid) { dlog('resolveCombat', { reason: 'bothInoperable' }); resolveCombat(false); return }
+      const pCanAttack = pFleetArr.some(s => s.alive && s.stats.valid && (s.weapons.length>0 || s.riftDice>0))
+      const eCanAttack = eFleetArr.some(s => s.alive && s.stats.valid && (s.weapons.length>0 || s.riftDice>0))
+      if (!pCanAttack && !eCanAttack) { dlog('resolveCombat', { reason: 'bothCannotAttack' }); resolveCombat(false); return }
+      // Otherwise continue to next round; attackers will be able to target any alive ships
     }
     setters.setRoundNum(n=>n+1)
     setters.setTurnPtr(-1)
