@@ -12,12 +12,18 @@ export function useTutorial(){
 
   useEffect(()=>{
     const onStorage = (e: StorageEvent) => { if (e.key === 'eclipse-tutorial-v1') refresh() }
+    const onChanged = () => refresh()
     window.addEventListener('storage', onStorage)
-    return () => window.removeEventListener('storage', onStorage)
+    window.addEventListener('tutorial-changed', onChanged as EventListener)
+    // sync once on mount in case state was just updated this tick
+    refresh()
+    return () => {
+      window.removeEventListener('storage', onStorage)
+      window.removeEventListener('tutorial-changed', onChanged as EventListener)
+    }
   }, [refresh])
 
   return { enabled, step, next, skip }
 }
 
 export default useTutorial
-

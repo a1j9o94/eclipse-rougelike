@@ -37,7 +37,10 @@ function read(): TutorialState {
 
 function write(st: TutorialState) {
   if (typeof localStorage === 'undefined') return;
-  try { localStorage.setItem(KEY, JSON.stringify(st)); } catch {/* noop */}
+  try {
+    localStorage.setItem(KEY, JSON.stringify(st));
+    try { window.dispatchEvent(new Event('tutorial-changed')) } catch { /* noop */ }
+  } catch {/* noop */}
 }
 
 export function isEnabled(): boolean { return read().enabled && !read().completed }
