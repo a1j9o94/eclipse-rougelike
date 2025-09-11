@@ -33,6 +33,8 @@ export type CombatProps = {
   log: string[]
   onReturn: () => void | Promise<void>
   showRules?: boolean
+  introActive?: boolean
+  onIntroDone?: () => void
 }
 
 export function GameShell({

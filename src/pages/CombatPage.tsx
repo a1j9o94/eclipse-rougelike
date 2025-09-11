@@ -15,6 +15,8 @@ export function CombatPage({
   log,
   onReturn,
   showRules,
+  introActive,
+  onIntroDone,
 }:{
   combatOver:boolean,
   outcome:string,
@@ -26,10 +28,15 @@ export function CombatPage({
   log:string[],
   onReturn:()=>void,
   showRules?: boolean,
+  introActive?: boolean,
+  onIntroDone?: ()=>void,
 }){
   const [resolvingHold, setResolvingHold] = useState(true);
   useEffect(() => { const t = setTimeout(() => setResolvingHold(false), 25); return () => clearTimeout(t); }, []);
   const [playIntro] = useState(true)
+  const [introCount, setIntroCount] = useState(0)
+  useEffect(()=>{ setIntroCount(0) },[roundNum])
+  useEffect(()=>{ if (introCount>=2) onIntroDone?.() },[introCount, onIntroDone])
   return (
     <div className="p-3 mx-auto max-w-5xl">
       {combatOver && (
@@ -44,24 +51,24 @@ export function CombatPage({
           Round {roundNum}{queue[turnPtr]? ` • Next: ${(queue[turnPtr].side==='P'?'P':'E')} ${queue[turnPtr].side==='P'?fleet[queue[turnPtr].idx]?.frame.name:enemyFleet[queue[turnPtr].idx]?.frame.name}`: ''}
         </div>
       </div>
-      <FlyInOnMount direction="top" play={playIntro && !showRules} delayMs={0} testId="flyin-top">
+      <FlyInOnMount direction="top" play={!!introActive && playIntro && !showRules} delayMs={0} testId="flyin-top" onDone={()=>setIntroCount(c=>c+1)}>
         <FleetRow
           ships={enemyFleet}
           side='E'
           activeIdx={!combatOver && queue[turnPtr]?.side==='E' ? queue[turnPtr].idx : -1}
-          intro={{ play: !showRules, direction: 'top', totalMs: 3600, startDelayMs: 0 }}
+          intro={{ play: !!introActive && !showRules, direction: 'top', totalMs: 2000, startDelayMs: 0 }}
         />
       </FlyInOnMount>
       {/* Player row */}
       <div className="flex items-center justify-between mt-4 mb-2">
         <div className="text-sm font-semibold">Player</div>
       </div>
-      <FlyInOnMount direction="bottom" play={playIntro && !showRules} delayMs={120} testId="flyin-bottom">
+      <FlyInOnMount direction="bottom" play={!!introActive && playIntro && !showRules} delayMs={100} testId="flyin-bottom" onDone={()=>setIntroCount(c=>c+1)}>
         <FleetRow
           ships={fleet}
           side='P'
           activeIdx={!combatOver && queue[turnPtr]?.side==='P' ? queue[turnPtr].idx : -1}
-          intro={{ play: !showRules, direction: 'bottom', totalMs: 3600, startDelayMs: 200 }}
+          intro={{ play: !!introActive && !showRules, direction: 'bottom', totalMs: 2000, startDelayMs: 150 }}
         />
       </FlyInOnMount>
       {/* Mini Log */}
