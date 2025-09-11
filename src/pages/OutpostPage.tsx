@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { ItemCard, PowerBadge, DockSlots } from '../components/ui'
 import { CombatPlanModal } from '../components/modals'
-import { event as tutorialEvent, isEnabled as isTutorialEnabled } from '../tutorial/state'
+import { event as tutorialEvent, isEnabled as isTutorialEnabled, getStep as tutorialGetStep } from '../tutorial/state'
 import type { MpBasics } from '../adapters/mpSelectors'
 import { ECONOMY } from '../../shared/economy'
 import { FRAMES, type FrameId } from '../../shared/frames'
@@ -154,7 +154,7 @@ export function OutpostPage({
   }
   return (
     <>
-      {showPlan && <CombatPlanModal onClose={()=>{ setShowPlan(false); try { if (isTutorialEnabled()) tutorialEvent('viewed-intel') } catch { /* noop */ } }} sector={sector} endless={endless} gameMode={gameMode} multi={multi as never} />}
+      {showPlan && <CombatPlanModal onClose={()=>{ setShowPlan(false); try { if (isTutorialEnabled() && tutorialGetStep()==='intel-close') tutorialEvent('viewed-intel') } catch { /* noop */ } }} sector={sector} endless={endless} gameMode={gameMode} multi={multi as never} />}
 
       <div className="mx-auto max-w-5xl pb-24">
 
