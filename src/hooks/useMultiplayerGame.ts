@@ -77,6 +77,7 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
   const endCombatToSetup = useMutation(api.gameState.endCombatToSetup);
   const submitFleetSnapshot = useMutation(api.gameState.submitFleetSnapshot);
   const resolveCombatResult = useMutation(api.gameState.resolveCombatResult);
+  const resignMatch = useMutation(api.gameState.resignMatch);
   const switchTurn = useMutation(api.gameState.switchTurn);
   const updateGamePhase = useMutation(api.gameState.updateGamePhase);
   const initializeGameState = useMutation(api.gameState.initializeGameState);
@@ -147,7 +148,33 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
       throw new Error("Multiplayer features are not available. Please check your connection and try again.");
     }
     try {
-      const result = await joinRoom({ roomCode, playerName, playerFaction });
+      // Accept raw 6-char codes or full invite URLs with ?code=XYZ123
+      const extractCode = (input: string): string | null => {
+        if (!input) return null;
+        const raw = input.trim();
+        // Try URL parsing first
+        try {
+          const u = new URL(raw);
+          const c = u.searchParams.get('code');
+          if (c && /^[A-Za-z0-9]{6}$/.test(c)) return c.toUpperCase();
+        } catch { /* not a URL */ }
+        // Try query parsing on partial strings
+        try {
+          const i = raw.indexOf('?');
+          if (i >= 0) {
+            const qs = raw.slice(i + 1);
+            const p = new URLSearchParams(qs);
+            const c = p.get('code');
+            if (c && /^[A-Za-z0-9]{6}$/.test(c)) return c.toUpperCase();
+          }
+        } catch { /* ignore */ }
+        // Fallback: find a 6-char alphanumeric token anywhere
+        const m = raw.toUpperCase().match(/[A-Z0-9]{6}/);
+        return m ? m[0] : null;
+      };
+      const normalized = extractCode(roomCode);
+      if (!normalized) throw new Error('Invalid room code');
+      const result = await joinRoom({ roomCode: normalized, playerName, playerFaction });
       setPlayerId(result.playerId);
       return result;
     } catch (error) {
@@ -205,6 +232,18 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
     } catch (error) {
       console.error("Failed to restart to setup:", error);
       throw error;
+    }
+  };
+
+  const handleResignMatch = async () => {
+    if (!isConvexAvailable) return;
+    if (!roomId) return;
+    const me = getPlayerId();
+    if (!me) return;
+    try {
+      await resignMatch({ roomId, loserPlayerId: me });
+    } catch (err) {
+      console.error('Failed to resign match:', err);
     }
   };
 
@@ -406,6 +445,7 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
     updateGamePhase: handlePhaseChange,
     resolveCombatResult: handleResolveCombatResult,
     endCombatToSetup: handleEndCombatToSetup,
+    resignMatch: handleResignMatch,
     submitFleetSnapshot: handleSubmitFleetSnapshot,
     ackRoundPlayed: handleAckRoundPlayed,
     prepareRematch: handlePrepareRematch,

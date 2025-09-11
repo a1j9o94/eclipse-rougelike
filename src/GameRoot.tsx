@@ -107,6 +107,7 @@ export default function EclipseIntegrated(){
   const [stepLock] = useState(false);
   const [matchOver, setMatchOver] = useState<{ winnerName: string } | null>(null);
   const [combatIntroActive, setCombatIntroActive] = useState(mode==='COMBAT');
+  const [mpWinMessage, setMpWinMessage] = useState<string | null>(null)
   const [mpSeeded, setMpSeeded] = useState(false);
   const [mpSeedSubmitted, setMpSeedSubmitted] = useState(false);
   const [mpServerSnapshotApplied, setMpServerSnapshotApplied] = useState(false);
@@ -355,12 +356,50 @@ export default function EclipseIntegrated(){
   // Self-tests moved to src/__tests__/runtime.selftests.spec.ts
 
   // ---------- View ----------
-  const rbVm = useResourceBarVm({ resources: resources as Resources, tonnage, sector, onReset: resetRun, gameMode, singleLives: livesRemaining, multi })
+  const rbOnReset = () => {
+    if (gameMode === 'multiplayer') {
+      try {
+        // Concede the entire match
+        (multi as unknown as { resignMatch?: ()=>Promise<void> })?.resignMatch?.()
+      } catch { /* noop */ }
+      // Send user back to main menu after resign
+      handleBackToMainMenu()
+      return
+    }
+    resetRun()
+  }
+  const rbVm = useResourceBarVm({ resources: resources as Resources, tonnage, sector, onReset: rbOnReset, gameMode, singleLives: livesRemaining, multi })
 
   const handleMatchOverClose = useMatchOverClose({
     multi: (multi as { prepareRematch?: ()=>Promise<void> }) ?? null,
     setters: { setMatchOver, setMode, setLog: cv.setLog, setRoundNum: cv.setRoundNum, setTurnPtr: cv.setTurnPtr, setQueue: cv.setQueue, setCombatOver: cv.setCombatOver, setOutcome: cv.setOutcome, setMultiplayerPhase },
   })
+
+  // MP: when server marks the match finished, show Win modal to the winner; others see Match Over
+  useEffect(() => {
+    if (gameMode !== 'multiplayer') return
+    if (!multi?.gameState || multi.gameState.gamePhase !== 'finished') return
+    try {
+      const winnerId = (multi.gameState as unknown as { matchResult?: { winnerPlayerId?: string } })?.matchResult?.winnerPlayerId
+      const reason = (multi.gameState as unknown as { matchResult?: { reason?: string } })?.matchResult?.reason
+      const me = multi.getPlayerId?.()
+      if (winnerId && me && winnerId === me) {
+        if (reason === 'resign') {
+          setMpWinMessage('Your opponent resigned')
+        } else {
+          setMpWinMessage(null)
+        }
+        setShowWin(true)
+        setMatchOver(null)
+        return
+      }
+      const players = (multi.roomDetails as { players?: Array<{ playerId:string; playerName?: string }> } | null | undefined)?.players || []
+      const name = winnerId ? (players.find(p => p.playerId === winnerId)?.playerName || 'Winner') : 'Winner'
+      setMatchOver({ winnerName: name })
+    } catch {
+      setMatchOver({ winnerName: 'Winner' })
+    }
+  }, [gameMode, multi?.gameState?.gamePhase])
 
   // Pre-game routing (start, MP menu/lobby)
   const preGame = getPreGameElement({
@@ -389,7 +428,8 @@ export default function EclipseIntegrated(){
       onOpenTechs={()=>setShowTechs(true)}
       onCloseTechs={()=>setShowTechs(false)}
       showWin={showWin}
-      onRestartWin={()=>{ setShowWin(false); resetRun() }}
+      mpWinMessage={mpWinMessage}
+      onRestartWin={()=>{ setShowWin(false); setMpWinMessage(null); if (gameMode==='multiplayer') { handleBackToMainMenu() } else { resetRun() } }}
       matchOver={matchOver}
       onMatchOverClose={handleMatchOverClose}
       resourceBar={rbVm as RBProps}

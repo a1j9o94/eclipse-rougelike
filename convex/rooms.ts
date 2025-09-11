@@ -71,14 +71,35 @@ export const joinRoom = mutation({
     playerFaction: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const room = await ctx.db
+    // Normalize the code to guard against casing/whitespace issues in clients
+    const normalizedCode = (args.roomCode || '').trim().toUpperCase();
+    let room: Awaited<ReturnType<typeof ctx.db.get>> | null = await ctx.db
       .query("rooms")
-      .withIndex("by_room_code", (q) => q.eq("roomCode", args.roomCode))
+      .withIndex("by_room_code", (q) => q.eq("roomCode", normalizedCode))
       .first();
 
+    // Fallback: search across common statuses in case the index code changed casing
+    // or the room has already transitioned to another status (to return a better error)
     if (!room) {
-      throw new Error("Room not found");
+      const waiting = await ctx.db
+        .query("rooms")
+        .withIndex("by_status", (q) => q.eq("status", "waiting"))
+        .collect();
+      const match = waiting.find(r => (r.roomCode || '').toUpperCase() === normalizedCode);
+      room = match ?? null;
     }
+    if (!room) {
+      const playing = await ctx.db
+        .query("rooms")
+        .withIndex("by_status", (q) => q.eq("status", "playing"))
+        .collect();
+      const match2 = playing.find(r => (r.roomCode || '').toUpperCase() === normalizedCode);
+      if (match2) {
+        room = match2;
+        throw new Error("Game already in progress");
+      }
+    }
+    if (!room) throw new Error("Room not found");
     
     if (room.status !== "waiting") {
       throw new Error("Game already in progress");

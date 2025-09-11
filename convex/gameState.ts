@@ -461,6 +461,47 @@ export const resolveCombatResult = mutation({
   },
 });
 
+// Allow a player to resign the entire match during setup/outpost.
+// Marks the opponent as the winner and finishes the room immediately.
+export const resignMatch = mutation({
+  args: { roomId: v.id("rooms"), loserPlayerId: v.string() },
+  handler: async (ctx, args) => {
+    const gs = await ctx.db
+      .query("gameState")
+      .withIndex("by_room", (q) => q.eq("roomId", args.roomId))
+      .first();
+    if (!gs) throw new Error("Game state not found");
+
+    const players = await ctx.db
+      .query("players")
+      .withIndex("by_room", (q) => q.eq("roomId", args.roomId))
+      .collect();
+    if (players.length !== 2) throw new Error("Expected two players");
+
+    const loser = players.find(p => p.playerId === args.loserPlayerId);
+    if (!loser) throw new Error("Loser not found in room");
+    const winner = players.find(p => p.playerId !== args.loserPlayerId)!;
+
+    // Set loser lives to 0 and finish the match
+    await ctx.db.patch(loser._id, { lives: 0, isReady: false });
+    await ctx.db.patch(winner._id, { isReady: false });
+
+    // Persist winner to game state and finish
+    const states = { ...(gs.playerStates as Record<string, PlayerState>) };
+    states[loser.playerId] = { ...(states[loser.playerId] || {}), lives: 0 };
+
+    await ctx.db.patch(args.roomId, { status: "finished" });
+    await ctx.db.patch(gs._id, {
+      gamePhase: "finished",
+      playerStates: states,
+      matchResult: { winnerPlayerId: winner.playerId, reason: 'resign' },
+      lastUpdate: Date.now(),
+    });
+
+    return { finished: true, winnerPlayerId: winner.playerId } as const;
+  },
+});
+
 export const submitFleetSnapshot = mutation({
   args: { roomId: v.id("rooms"), playerId: v.string(), fleet: v.any(), fleetValid: v.boolean() },
   handler: async (ctx, args) => {

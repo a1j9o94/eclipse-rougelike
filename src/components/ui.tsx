@@ -218,7 +218,7 @@ export function ResourceBar({ credits, materials, science, tonnage, sector, onRe
         {opponent && (
           <div className="px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap">vs {opponent.name}{opponentFaction?` (${opponentFaction})`:''}: <b>{opponent.lives}</b> ❤{phase ? <span className="ml-2 text-xs opacity-70">Phase: {phase}</span> : null}</div>
         )}
-        <button onClick={onReset} className="px-2 py-1 rounded bg-zinc-800 text-xs">Restart</button>
+        <button onClick={onReset} className="px-2 py-1 rounded bg-zinc-800 text-xs">{opponent ? 'Resign' : 'Restart'}</button>
       </div>
     </div>
   );

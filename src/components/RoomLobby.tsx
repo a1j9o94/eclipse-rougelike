@@ -92,9 +92,9 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
   };
 
   const copyRoomCode = () => {
-    if (room?.roomCode) {
-      navigator.clipboard.writeText(room.roomCode);
-    }
+    if (!room?.roomCode) return;
+    // Copy just the 6-character room code
+    try { navigator.clipboard.writeText(room.roomCode); } catch { /* ignore */ }
   };
 
   if (isLoading) {

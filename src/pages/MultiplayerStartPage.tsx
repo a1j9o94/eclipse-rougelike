@@ -23,6 +23,19 @@ export default function MultiplayerStartPage({ onRoomJoined, onBack, onGoPublic,
 
   const { createRoom, joinRoom } = useMultiplayerGame(null);
 
+  // Pre-fill join code from query string (e.g., ?code=ABC123) when page opens
+  // This helps ensure guests land on the same deployment as the host via invite links
+  if (typeof window !== 'undefined') {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      if (code && !roomCode) {
+        setRoomCode(code.toUpperCase());
+        setMode('join');
+      }
+    } catch { /* ignore */ }
+  }
+
   const handleCreateRoom = async () => {
     if (!playerName.trim()) {
       setError('Player name is required');
