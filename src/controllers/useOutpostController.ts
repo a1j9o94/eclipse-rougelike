@@ -17,7 +17,7 @@ import type { OutpostEffects as EngineOutpostEffects } from '../engine/commands'
 
 export type OutpostControllerParams = {
   gameMode: 'single'|'multiplayer'
-  multi?: (MpBasics & { updateGameState?: (updates: any)=>unknown }) | undefined
+  multi?: (MpBasics & { updateGameState?: (updates: Record<string, unknown>)=>unknown }) | undefined
   state: {
     resources: Resources
     research: Research
@@ -109,7 +109,7 @@ export function useOutpostController(params: OutpostControllerParams){
     shop: state.shop,
     focused: state.focused,
     setFocused: setters.setFocused,
-    rerollCost: state.rerollCost,
+    rerollCost: (gameMode==='multiplayer' ? (getMyPlayerState(multi) as { rerollCost?: number } | null | undefined)?.rerollCost ?? state.rerollCost : state.rerollCost),
     researchLabel,
     canResearch,
     researchTrack: actions.researchTrack,
