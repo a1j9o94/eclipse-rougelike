@@ -485,12 +485,12 @@ export default function EclipseIntegrated(){
         if (mode==='COMBAT') return false
         // Outpost: show hints for actionable steps only
         const outpostSteps = new Set([
-          'intro-combat','outpost-ship','outpost-blueprint','shop-buy-composite','combat-2','tech-nano','tech-open','tech-close','sell-composite','buy-improved','combat-3','tech-military','dock-expand','upgrade-interceptor','shop-reroll','enemy-intel','rules-hint'
+          'intro-combat','outpost-ship','outpost-blueprint','shop-buy-composite','combat-2','tech-nano','tech-open','tech-close','sell-composite','buy-improved','combat-3','tech-military','capacity-info','dock-expand','upgrade-interceptor','shop-reroll','enemy-intel','rules-hint'
         ])
         return outpostSteps.has(id)
       })()
       if (!show) return null
-      const showNext = new Set(['outpost-blueprint','rules-hint']).has(id)
+      const showNext = new Set(['outpost-blueprint','capacity-info','rules-hint']).has(id)
       return (
         <CoachmarkOverlay
           key="tutorial-coach"

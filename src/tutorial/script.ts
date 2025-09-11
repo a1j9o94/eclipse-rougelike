@@ -28,6 +28,7 @@ export const STEPS: TutorialStep[] = [
   { id: 'combat-3', anchor: 'start-combat', copy: 'Press Start Combat to try your upgraded hull.', triggers: ['post-combat'] },
   // Military + then expand docks for Cruiser upgrade
   { id: 'tech-military', anchor: 'research-grid', copy: 'Upgrade Military to unlock frame upgrades (Interceptor → Cruiser).', triggers: ['researched-military'] },
+  { id: 'capacity-info', anchor: 'capacity-info', copy: 'Here you can see your dock capacity and how much your fleet uses. You need free capacity to field bigger ships.', triggers: ['next'] },
   { id: 'dock-expand', anchor: 'expand-dock', copy: 'Expand dock capacity so an Interceptor can upgrade into a Cruiser.', triggers: ['expanded-dock'] },
   { id: 'upgrade-interceptor', anchor: 'upgrade-ship', copy: 'Focus an Interceptor and upgrade it to a Cruiser.', triggers: ['upgraded-interceptor'] },
   // Reroll tutorial

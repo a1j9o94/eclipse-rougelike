@@ -223,7 +223,7 @@ export function OutpostPage({
               </span>
             )}
           </button>
-          <div className="px-3 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-sm">
+          <div data-tutorial="capacity-info" className="px-3 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-sm">
             <div>Capacity: <b>{capacity.cap}</b> • Used: <b>{tonnage.used}</b></div>
             <DockSlots used={tonnage.used} cap={capacity.cap} preview={dockPreview===null?undefined:dockPreview} />
           </div>
