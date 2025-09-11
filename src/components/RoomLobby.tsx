@@ -92,7 +92,14 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
   };
 
   const copyRoomCode = () => {
-    if (room?.roomCode) {
+    if (!room?.roomCode) return;
+    // Prefer sharing a full invite link so both players land on the same deployment
+    try {
+      const origin = window?.location?.origin || '';
+      const url = `${origin}?code=${encodeURIComponent(room.roomCode)}`;
+      navigator.clipboard.writeText(url);
+    } catch {
+      // Fallback to copying just the code
       navigator.clipboard.writeText(room.roomCode);
     }
   };
