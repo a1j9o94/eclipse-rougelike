@@ -455,18 +455,27 @@ export default function EclipseIntegrated(){
       outpost={outpost as OutpostPageProps}
       combat={{ combatOver: cv.combatOver, outcome: cv.outcome, roundNum: cv.roundNum, queue: cv.queue as InitiativeEntry[], turnPtr: cv.turnPtr, fleet, enemyFleet: cv.enemyFleet, log: cv.log, onReturn: handleReturnFromCombat, showRules, introActive: combatIntroActive, onIntroDone: ()=> setCombatIntroActive(false) } as CombatProps}
     />
-    {/* Tutorial overlay (first pass: simple copy panel) */}
+    {/* Tutorial overlay: non-blocking; visible only when relevant to current route */}
     {tut.enabled ? (()=>{
       const id = tut.step as string
       const step = (STEPS as { id:string; copy?:string }[]).find(s=>s.id===id)
       const text = step?.copy || ''
+      const show = (() => {
+        if (mode==='COMBAT') return id==='intro-combat' ? false : false
+        // Outpost: show hints for actionable steps only
+        const outpostSteps = new Set([
+          'intro-combat','outpost-ship','outpost-blueprint','shop-buy-composite','dock-expand','tech-nano','sell-composite','buy-improved','tech-military','upgrade-interceptor','enemy-intel'
+        ])
+        return outpostSteps.has(id)
+      })()
+      if (!show) return null
       return (
         <CoachmarkOverlay
           key="tutorial-coach"
           visible={true}
           title="Tutorial"
           text={text}
-          onNext={tut.next}
+          onNext={() => { if (id==='intro-combat') { try { startFirstCombatRef.current() } catch { /* noop */ } } tut.next() }}
           onSkip={tut.skip}
         />
       )

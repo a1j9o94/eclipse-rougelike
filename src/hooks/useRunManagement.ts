@@ -90,8 +90,7 @@ export function useRunManagement(params: {
     p.setFocused(0)
     // Initial tutorial shop will be set after first combat; keep current
     p.setShop({ items: st.shopItems })
-    // Start combat immediately (same as normal newRun), but do NOT pop Rules modal
-    p.startFirstCombat()
+    // Do not auto-start combat. Show tutorial intro first; GameRoot will start combat on Next.
     tutorialEnable(); tutorialSetStep('intro-combat')
   }
 

@@ -14,8 +14,8 @@ export default function CoachmarkOverlay({
 }){
   if (!visible) return null
   return (
-    <div role="dialog" aria-modal="true" className="fixed inset-0 z-[80] p-3 bg-black/70 backdrop-blur-sm">
-      <div className="mx-auto max-w-md bg-zinc-950/95 border border-zinc-700 rounded-2xl p-5 shadow-2xl text-zinc-100">
+    <div className="fixed inset-0 z-[80] p-3 bg-black/70 backdrop-blur-sm pointer-events-none">
+      <div className="mx-auto max-w-md bg-zinc-950/95 border border-zinc-700 rounded-2xl p-5 shadow-2xl text-zinc-100 pointer-events-auto">
         {title && <div className="text-lg font-semibold mb-2">{title}</div>}
         {text && <div className="text-sm leading-relaxed">{text}</div>}
         <div className="mt-4 flex gap-2 justify-end">
