@@ -11,6 +11,7 @@ export type TutorialStepId =
   | 'sell-composite'
   | 'buy-improved'
   | 'tech-military'
+  | 'combat-3'
   | 'upgrade-interceptor'
   | 'shop-reroll'
   | 'enemy-intel'

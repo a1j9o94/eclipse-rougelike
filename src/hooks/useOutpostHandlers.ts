@@ -204,6 +204,7 @@ export function useOutpostHandlers(params: UseOutpostHandlersParams): OutpostHan
   const startCombat = useCallback(() => {
     try { const gate = currentGate(); if (gate && !gate.canStartCombat) return } catch { /* noop */ }
     apply(OutpostIntents.startCombat())
+    if (isTutorialEnabled()) tutorialEvent('started-combat')
   }, [apply])
 
   return { buyAndInstall, sellPart, buildShip, upgradeShip, upgradeDock, reroll, research, startCombat, apply }
