@@ -267,6 +267,7 @@ export const updateGameState = mutation({
         Grid: v.number(),
         Nano: v.number(),
       })),
+      rerollCost: v.optional(v.number()),
       fleet: v.optional(v.any()),
       blueprints: v.optional(v.any()),
       sector: v.optional(v.number()),

@@ -39,6 +39,7 @@ export function useMultiplayerGlue(params: {
   setMpServerSnapshotApplied: (v: boolean) => void
   setMpSeedSubmitted: (v: boolean) => void
   setMpSeeded: (v: boolean) => void
+  setMpRerollInitRound: (n:number) => void
   // flags
   fleetValid: boolean
 }){
@@ -78,6 +79,7 @@ export function useMultiplayerGlue(params: {
       setFocused: params.setFocused,
       setMpLastServerApplyRound: params.setMpLastServerApplyRound,
       setMpServerSnapshotApplied: params.setMpServerSnapshotApplied,
+      setMpRerollInitRound: params.setMpRerollInitRound,
     },
   })
 

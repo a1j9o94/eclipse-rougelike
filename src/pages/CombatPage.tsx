@@ -13,6 +13,9 @@ export function CombatPage({
   enemyFleet,
   log,
   onReturn,
+  showRules,
+  introActive,
+  onIntroDone,
 }:{
   combatOver:boolean,
   outcome:string,
@@ -23,9 +26,16 @@ export function CombatPage({
   enemyFleet:Ship[],
   log:string[],
   onReturn:()=>void,
+  showRules?: boolean,
+  introActive?: boolean,
+  onIntroDone?: ()=>void,
 }){
   const [resolvingHold, setResolvingHold] = useState(true);
   useEffect(() => { const t = setTimeout(() => setResolvingHold(false), 25); return () => clearTimeout(t); }, []);
+  // reserved for potential future intro reruns
+  const [introCount, setIntroCount] = useState(0)
+  useEffect(()=>{ setIntroCount(0) },[roundNum])
+  useEffect(()=>{ if (introCount>=2) onIntroDone?.() },[introCount, onIntroDone])
   return (
     <div className="p-3 mx-auto max-w-5xl">
       {combatOver && (
@@ -40,12 +50,22 @@ export function CombatPage({
           Round {roundNum}{queue[turnPtr]? ` • Next: ${(queue[turnPtr].side==='P'?'P':'E')} ${queue[turnPtr].side==='P'?fleet[queue[turnPtr].idx]?.frame.name:enemyFleet[queue[turnPtr].idx]?.frame.name}`: ''}
         </div>
       </div>
-      <FleetRow ships={enemyFleet} side='E' activeIdx={!combatOver && queue[turnPtr]?.side==='E' ? queue[turnPtr].idx : -1} />
+      <FleetRow
+        ships={enemyFleet}
+        side='E'
+        activeIdx={!combatOver && queue[turnPtr]?.side==='E' ? queue[turnPtr].idx : -1}
+        intro={{ play: !!introActive && !showRules, direction: 'top', totalMs: 1400, startDelayMs: 0, onDone: ()=>setIntroCount(c=>c+1) }}
+      />
       {/* Player row */}
       <div className="flex items-center justify-between mt-4 mb-2">
         <div className="text-sm font-semibold">Player</div>
       </div>
-      <FleetRow ships={fleet} side='P' activeIdx={!combatOver && queue[turnPtr]?.side==='P' ? queue[turnPtr].idx : -1} />
+      <FleetRow
+        ships={fleet}
+        side='P'
+        activeIdx={!combatOver && queue[turnPtr]?.side==='P' ? queue[turnPtr].idx : -1}
+        intro={{ play: !!introActive && !showRules, direction: 'bottom', totalMs: 1400, startDelayMs: 120, onDone: ()=>setIntroCount(c=>c+1) }}
+      />
       {/* Mini Log */}
       <div className="mt-3 p-2 rounded bg-zinc-900 text-xs sm:text-sm min-h-[56px]">
         {log.slice(-5).map((ln,i)=>(<div key={i} className={i===log.length-1? 'font-medium' : 'opacity-80'}>{ln}</div>))}

@@ -17,7 +17,7 @@ import type { OutpostEffects as EngineOutpostEffects } from '../engine/commands'
 
 export type OutpostControllerParams = {
   gameMode: 'single'|'multiplayer'
-  multi?: (MpBasics & { updateGameState?: (updates: { research: Research; resources: { credits:number; materials:number; science:number } })=>unknown }) | undefined
+  multi?: (MpBasics & { updateGameState?: (updates: Record<string, unknown>)=>unknown }) | undefined
   state: {
     resources: Resources
     research: Research
@@ -85,7 +85,7 @@ export function useOutpostController(params: OutpostControllerParams){
       setShop: setters.setShop,
       setLastEffects: (fx) => setters.setLastEffects(fx),
     },
-    multi: gameMode==='multiplayer' ? (multi as { updateGameState?: (updates: { research: Research; resources: { credits:number; materials:number; science:number } })=>unknown }) : undefined,
+    multi: gameMode==='multiplayer' ? (multi as { updateGameState?: (updates: Record<string, unknown>)=>unknown }) : undefined,
     sound: (k)=> sfx.playEffect(k),
   }
   const outpostHandlers = useOutpostHandlers(handlerParams)
@@ -109,7 +109,7 @@ export function useOutpostController(params: OutpostControllerParams){
     shop: state.shop,
     focused: state.focused,
     setFocused: setters.setFocused,
-    rerollCost: state.rerollCost,
+    rerollCost: (gameMode==='multiplayer' ? (getMyPlayerState(multi) as { rerollCost?: number } | null | undefined)?.rerollCost ?? state.rerollCost : state.rerollCost),
     researchLabel,
     canResearch,
     researchTrack: actions.researchTrack,
@@ -148,7 +148,10 @@ export function useOutpostController(params: OutpostControllerParams){
       const econBase = (st as { economy?: { rerollBase?: number } } | null | undefined)?.economy?.rerollBase
       if (typeof econBase === 'number') {
         setters.setBaseRerollCost(econBase)
-        setters.setRerollCost(econBase)
+        // Only snap rerollCost to base if it hasn't diverged yet (i.e., no local rerolls applied)
+        if (state.rerollCost === econBase || typeof state.rerollCost !== 'number') {
+          setters.setRerollCost(econBase)
+        }
       }
     } catch { /* ignore */ }
     // Depend on playerStates identity; roundNum correction happens in useMpSetupSync

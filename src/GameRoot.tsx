@@ -106,6 +106,7 @@ export default function EclipseIntegrated(){
   const [sector, setSector] = useState(saved?.sector ?? 1); // difficulty progression
   const [stepLock] = useState(false);
   const [matchOver, setMatchOver] = useState<{ winnerName: string } | null>(null);
+  const [combatIntroActive, setCombatIntroActive] = useState(mode==='COMBAT');
   const [mpSeeded, setMpSeeded] = useState(false);
   const [mpSeedSubmitted, setMpSeedSubmitted] = useState(false);
   const [mpServerSnapshotApplied, setMpServerSnapshotApplied] = useState(false);
@@ -258,7 +259,7 @@ export default function EclipseIntegrated(){
   } as EffectSink)
   async function stepTurn(){ await combat.stepTurn() }
   // Auto-step loop
-  useAutoStepper({ enabled: mode==='COMBAT' && !cv.combatOver && !stepLock && !showRules, step: stepTurn, deps: [cv.queue, cv.turnPtr, fleet, cv.enemyFleet] })
+  useAutoStepper({ enabled: mode==='COMBAT' && !cv.combatOver && !stepLock && !showRules && !combatIntroActive, step: stepTurn, deps: [cv.queue, cv.turnPtr, fleet, cv.enemyFleet, combatIntroActive] })
 
   // Restore environment if loading from save
   useRestoreEnv(saved)
@@ -293,6 +294,7 @@ export default function EclipseIntegrated(){
     setMpServerSnapshotApplied,
     setMpSeedSubmitted,
     setMpSeeded,
+    setMpRerollInitRound,
     fleetValid: true,
   })
 
@@ -322,6 +324,12 @@ export default function EclipseIntegrated(){
   useEffect(()=>{
     if(difficulty==null) setShowNewRun(true);
   },[difficulty]);
+
+  // Start combat intro on entering combat view
+  useEffect(()=>{
+    if (mode==='COMBAT') setCombatIntroActive(true)
+    else setCombatIntroActive(false)
+  },[mode])
 
   useMusicRouting({ showNewRun, mode, combatOver: cv.combatOver, outcome: cv.outcome })
 
@@ -397,7 +405,7 @@ export default function EclipseIntegrated(){
       resourceBar={rbVm as RBProps}
       route={mode}
       outpost={outpost as OutpostPageProps}
-      combat={{ combatOver: cv.combatOver, outcome: cv.outcome, roundNum: cv.roundNum, queue: cv.queue as InitiativeEntry[], turnPtr: cv.turnPtr, fleet, enemyFleet: cv.enemyFleet, log: cv.log, onReturn: handleReturnFromCombat } as CombatProps}
+      combat={{ combatOver: cv.combatOver, outcome: cv.outcome, roundNum: cv.roundNum, queue: cv.queue as InitiativeEntry[], turnPtr: cv.turnPtr, fleet, enemyFleet: cv.enemyFleet, log: cv.log, onReturn: handleReturnFromCombat, showRules, introActive: combatIntroActive, onIntroDone: ()=> setCombatIntroActive(false) } as CombatProps}
     />
   )
 }
