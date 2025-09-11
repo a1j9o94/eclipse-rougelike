@@ -50,16 +50,18 @@ export function volley(attacker:Ship, defender:Ship, side:'P'|'E', logArr:string
     for(let i=0;i<(w.dice||0);i++){
       const faces = w.faces||[]
       const face = faces[Math.floor(r.next()*faces.length)] || {}
-      if(face.dmg){
+      if(typeof face.dmg === 'number'){
         const dmg = face.dmg
         defender.hull -= dmg
-        logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} → ${defender.frame.name} | ${w.name}: auto ${dmg}`)
+        const autoMsg = dmg>0 ? `auto ${dmg}` : 'auto'
+        logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} → ${defender.frame.name} | ${w.name}: ${autoMsg}`)
         if(defender.hull<=0){ defender.alive=false; defender.hull=0; logArr.push(`💥 ${defender.frame.name} destroyed!`) }
         if(w.initLoss){ defender.stats.init = Math.max(0, defender.stats.init - w.initLoss); logArr.push(`⌛ ${defender.frame.name} -${w.initLoss} INIT`)}
       } else if(typeof face.roll === 'number' && face.roll >= thr){
         const dmg = w.dmgPerHit||0
         defender.hull -= dmg
-        logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} → ${defender.frame.name} | ${w.name}: roll ${face.roll} ≥ ${thr} → ${dmg}`)
+        const rollMsg = dmg>0 ? `roll ${face.roll} ≥ ${thr} → ${dmg}` : `roll ${face.roll} ≥ ${thr}`
+        logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} → ${defender.frame.name} | ${w.name}: ${rollMsg}`)
         if(defender.hull<=0){ defender.alive=false; defender.hull=0; logArr.push(`💥 ${defender.frame.name} destroyed!`) }
         if(w.initLoss){ defender.stats.init = Math.max(0, defender.stats.init - w.initLoss); logArr.push(`⌛ ${defender.frame.name} -${w.initLoss} INIT`)}
       } else {

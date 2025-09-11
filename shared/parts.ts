@@ -57,7 +57,8 @@ export const RARE_PARTS: Part[] = [
   { id: "absorption", name: "Absorption Shield", shieldTier: 1, powerProd: 4, tier: 2, cost: 65, cat: "Shield", tech_category: "Nano", rare: true, desc: "Shield tier 1 that also generates 4 power."},
   { id: "quantum_cpu", name: "Quantum Computer", aim: 2, powerCost: 1, tier: 2, cost: 70, cat: "Computer", tech_category: "Grid", rare: true, desc: "Adds +2 Aim for only 1 power."},
   { id: "rift_conductor", name: "Rift Conductor", extraHull: 1, riftDice: 1, powerCost: 1, tier: 2, cost: 40, cat: "Hull", tech_category: "Nano", rare: true, desc: "Adds 1 hull and rolls a Rift die (1-3 damage; a 3 also hits you for 1). Aim and computers don't help."},
-  { id: "disruptor", name: "Disruptor Beam", dice: 1, dmgPerHit: 1, faces: [ { dmg: 1 } ], powerCost: 2, tier: 2, cost: 80, cat: "Weapon", tech_category: "Nano", initLoss: 1, desc: "Always hits for 1 damage and lowers enemy initiative by 1." },
+  { id: "disruptor", name: "Disruptor Beam", dice: 1, dmgPerHit: 0, faces: [ { roll: 6 } ], powerCost: 1, tier: 2, cost: 80, cat: "Weapon", tech_category: "Nano", initLoss: 1, rare: true, desc: "Always hits and lowers enemy initiative by 1 without dealing damage." },
+  { id: "disruptor_cannon", name: "Disruptor Cannon", dice: 1, dmgPerHit: 1, faces: [ { roll: 1 }, { roll: 2 }, { roll: 3 }, { roll: 4 }, { roll: 5 }, { dmg: 1 } ], powerCost: 2, tier: 2, cost: 90, cat: "Weapon", tech_category: "Nano", initLoss: 1, rare: true, desc: "Rolls 1 die; hits deal 1 damage and lower enemy initiative by 1." },
   { id: "auto_repair", name: "Auto-Repair Hull", extraHull: 2, regen: 1, powerCost: 1, tier: 2, cost: 80, cat: "Hull", tech_category: "Nano", rare: true, desc: "Adds 2 hull and regenerates 1 each round; uses 1 power." },
 ];
 

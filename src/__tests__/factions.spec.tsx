@@ -35,10 +35,12 @@ describe('Factions', () => {
     expect(warmongers.config.capacity).toBeGreaterThan(10)
   })
 
-  it('Timekeepers start with Disruptor Beam blueprint', () => {
+  it('Timekeepers start with Disruptor Beam and Plasma Cannon blueprints', () => {
     const f = getFaction('timekeepers')
     const ids = f.config.blueprints.interceptor.map(p=>p.id)
     expect(ids).toContain('disruptor')
+    expect(ids).toContain('plasma')
+    expect(ids).not.toContain('positron')
   })
 
   it('Collective begin with Auto-Repair Hull', () => {

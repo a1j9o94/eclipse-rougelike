@@ -9,7 +9,7 @@ describe('Build starting fleet from blueprint hints', () => {
     const rShip = makeShip(getFrame('interceptor'), bpRaid.interceptor);
     expect(rShip.weapons.length).toBeGreaterThan(0);
 
-    const bpTK = { interceptor: [PARTS.sources[0], PARTS.drives[1], PARTS.rare.find(p=>p.id==='disruptor')!, PARTS.computers[0]] };
+    const bpTK = { interceptor: [PARTS.sources[0], PARTS.drives[1], PARTS.rare.find(p=>p.id==='disruptor')!, PARTS.weapons[0]] };
     const tShip = makeShip(getFrame('interceptor'), bpTK.interceptor);
     expect(tShip.weapons.some(w => w.initLoss)).toBeTruthy();
 

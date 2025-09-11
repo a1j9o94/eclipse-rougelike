@@ -109,7 +109,10 @@ export const initializeGameState = mutation({
         {
           const snap = makeBasicInterceptorSnap();
           snap.stats.init = 2;
-          snap.weapons = [{ name: 'Disruptor', dice: 1, dmgPerHit: 1, initLoss: 1, faces: [{ dmg: 1 }] }];
+          snap.weapons = [
+            { name: 'Disruptor Beam', dice: 1, dmgPerHit: 0, initLoss: 1, faces: [{ roll: 6 }] },
+            { name: 'Plasma Cannon', dice: 1, dmgPerHit: 1, faces: [{ roll: 1 }, { roll: 2 }, { roll: 3 }, { roll: 4 }, { roll: 5 }, { dmg: 1 }] },
+          ];
           snap.partIds = [...blueprintIds.interceptor];
           fleetSnaps = Array.from({ length: Math.max(1, starting) }, () => ({ ...snap }));
         }
