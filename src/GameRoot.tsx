@@ -294,6 +294,7 @@ export default function EclipseIntegrated(){
     setMpServerSnapshotApplied,
     setMpSeedSubmitted,
     setMpSeeded,
+    setMpRerollInitRound,
     fleetValid: true,
   })
 

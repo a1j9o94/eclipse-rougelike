@@ -58,12 +58,13 @@ export function useMpSetupSync(params: {
     setFocused: (n: number) => void
     setMpLastServerApplyRound: (n:number) => void
     setMpServerSnapshotApplied: (b:boolean) => void
+    setMpRerollInitRound: (n:number) => void
   }
 }) {
   const { gameMode, multi, deps, vars, setters } = params
   const { testTick } = deps
   const { baseRerollCost, rerollCost, mpRerollInitRound, mpLastServerApplyRound, mode, blueprints, fleet } = vars
-  const { setMode, setBlueprints, setResearch, setBaseRerollCost, setRerollCost, setCapacity, setFleet, setFocused, setMpLastServerApplyRound, setMpServerSnapshotApplied } = setters
+  const { setMode, setBlueprints, setResearch, setBaseRerollCost, setRerollCost, setCapacity, setFleet, setFocused, setMpLastServerApplyRound, setMpServerSnapshotApplied, setMpRerollInitRound } = setters
 
   useEffect(() => {
     if (gameMode !== 'multiplayer') return
@@ -132,6 +133,7 @@ export function useMpSetupSync(params: {
           try { console.debug('[MP] reroll base corrected from econ (direct)', { base: econBase, round: roundNum }) } catch { /* noop */ }
         }
         handledRerollBase = true
+        setMpRerollInitRound(roundNum)
       }
       if (multi.gameState?.gamePhase === 'setup' && roundNum !== mpRerollInitRound && !handledRerollBase) {
         const fromEcon = (econ && typeof econ.rerollBase === 'number') ? econ.rerollBase : undefined
@@ -145,6 +147,7 @@ export function useMpSetupSync(params: {
         }
         try { console.debug('[MP] reroll base applied (my state)', { base: (fromEcon != null ? fromEcon : (baseRerollCost === ECONOMY.reroll.base && rerollCost === ECONOMY.reroll.base ? ECONOMY.reroll.base : baseRerollCost)), round: roundNum }) } catch { /* noop */ }
         factionsApplied = true
+        setMpRerollInitRound(roundNum)
       }
       if (econ && (typeof econ.creditMultiplier === 'number' || typeof econ.materialMultiplier === 'number')) {
         if (gameMode !== 'multiplayer') {
@@ -160,6 +163,7 @@ export function useMpSetupSync(params: {
           setRerollCost(econ.rerollBase)
           try { console.debug('[MP] reroll base corrected from econ (my state)', { base: econ.rerollBase, round: roundNum }) } catch { /* noop */ }
         }
+        setMpRerollInitRound(roundNum)
       }
 
       if (mods && typeof mods.rareChance === 'number') {

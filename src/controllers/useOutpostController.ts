@@ -148,7 +148,10 @@ export function useOutpostController(params: OutpostControllerParams){
       const econBase = (st as { economy?: { rerollBase?: number } } | null | undefined)?.economy?.rerollBase
       if (typeof econBase === 'number') {
         setters.setBaseRerollCost(econBase)
-        setters.setRerollCost(econBase)
+        // Only snap rerollCost to base if it hasn't diverged yet (i.e., no local rerolls applied)
+        if (state.rerollCost === econBase || typeof state.rerollCost !== 'number') {
+          setters.setRerollCost(econBase)
+        }
       }
     } catch { /* ignore */ }
     // Depend on playerStates identity; roundNum correction happens in useMpSetupSync
