@@ -412,6 +412,9 @@ export default function EclipseIntegrated(){
   }, [gameMode, multi?.gameState?.gamePhase])
 
   // Pre-game routing (start, MP menu/lobby)
+  // Tutorial hook must be declared before any early returns to keep hook order stable
+  const tut = useTutorial()
+
   const preGame = getPreGameElement({
     gameMode,
     showNewRun,
@@ -433,7 +436,6 @@ export default function EclipseIntegrated(){
   })
   if (preGame) return preGame
 
-  const tut = useTutorial()
   return (
     <>
     <GameShell
