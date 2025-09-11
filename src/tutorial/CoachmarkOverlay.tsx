@@ -8,15 +8,6 @@ type Placement = { top:number; left:number }
 
 function clamp(n:number, min:number, max:number){ return Math.min(Math.max(n, min), max) }
 
-function intersects(a:{top:number;left:number;width:number;height:number}, b:{top:number;left:number;width:number;height:number}){
-  return !(
-    a.left + a.width <= b.left ||
-    b.left + b.width <= a.left ||
-    a.top + a.height <= b.top ||
-    b.top + b.height <= a.top
-  )
-}
-
 export default function CoachmarkOverlay({ visible, title, text, anchor, onNext }: {
   visible: boolean
   title?: string

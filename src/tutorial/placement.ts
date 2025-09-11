@@ -24,7 +24,7 @@ export function computePlacement(params:{
   const pad = params.pad ?? 12
   const safeTop = viewport.top + pad
   const safeBottom = viewport.top + viewport.height - pad
-  let left = clamp((anchor.left + anchor.width/2) - panelW/2, viewport.left + 12, viewport.left + viewport.width - panelW - 12)
+  const left = clamp((anchor.left + anchor.width/2) - panelW/2, viewport.left + 12, viewport.left + viewport.width - panelW - 12)
   // Prefer the side with more available space
   const above = anchor.top - safeTop
   const below = safeBottom - (anchor.top + anchor.height)
@@ -54,4 +54,3 @@ export function computePlacement(params:{
 
   return { top, left }
 }
-
