@@ -88,24 +88,39 @@ export function useOutpostHandlers(params: UseOutpostHandlersParams): OutpostHan
   }, [gameMode, economyMods, state, setters])
 
   const buyAndInstall = useCallback((part: Part) => {
-    apply(OutpostIntents.buyAndInstall(part))
+    const r = apply(OutpostIntents.buyAndInstall(part))
+    if (r && gameMode === 'multiplayer' && multi?.updateGameState) {
+      try { multi.updateGameState({ resources: r.next.resources }) } catch { /* noop */ }
+    }
     sound?.('equip')
   }, [apply, sound])
 
   const sellPart = useCallback((frameId: FrameId, idx: number) => {
-    apply(OutpostIntents.sellPart(frameId, idx))
+    const r = apply(OutpostIntents.sellPart(frameId, idx))
+    if (r && gameMode === 'multiplayer' && multi?.updateGameState) {
+      try { multi.updateGameState({ resources: r.next.resources }) } catch { /* noop */ }
+    }
   }, [apply])
 
   const buildShip = useCallback(() => {
-    apply(OutpostIntents.buildShip())
+    const r = apply(OutpostIntents.buildShip())
+    if (r && gameMode === 'multiplayer' && multi?.updateGameState) {
+      try { multi.updateGameState({ resources: r.next.resources }) } catch { /* noop */ }
+    }
   }, [apply])
 
   const upgradeShip = useCallback((idx: number) => {
-    apply(OutpostIntents.upgradeShip(idx))
+    const r = apply(OutpostIntents.upgradeShip(idx))
+    if (r && gameMode === 'multiplayer' && multi?.updateGameState) {
+      try { multi.updateGameState({ resources: r.next.resources }) } catch { /* noop */ }
+    }
   }, [apply])
 
   const upgradeDock = useCallback(() => {
-    apply(OutpostIntents.upgradeDock())
+    const r = apply(OutpostIntents.upgradeDock())
+    if (r && gameMode === 'multiplayer' && multi?.updateGameState) {
+      try { multi.updateGameState({ resources: r.next.resources }) } catch { /* noop */ }
+    }
     sound?.('dock')
   }, [apply, sound])
 
