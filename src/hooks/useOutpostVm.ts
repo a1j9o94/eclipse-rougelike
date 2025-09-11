@@ -19,6 +19,7 @@ type MultiLike = {
   updateFleetValidity?: (valid: boolean) => void | Promise<void>
   setReady?: (ready: boolean) => void | Promise<void>
   prepareRematch?: () => Promise<void>
+  resolveCombatResult?: (winnerPlayerId: string) => Promise<unknown>
   gameState?: { gamePhase?: string; playerStates?: Record<string, { fleetValid?: boolean; fleet?: unknown[] }> } | null
 }
 
@@ -99,15 +100,17 @@ export function useOutpostVm(params: {
 
   const onRestart = useCallback(() => {
     if (p.gameMode === 'multiplayer') {
-      try { void p.multi?.prepareRematch?.() } catch { /* noop */ }
-      p.setBlueprints({ interceptor:[...INITIAL_BLUEPRINTS.interceptor], cruiser:[...INITIAL_BLUEPRINTS.cruiser], dread:[...INITIAL_BLUEPRINTS.dread] })
-      p.setResources({ ...INITIAL_RESOURCES })
-      p.setResearch({ ...INITIAL_RESEARCH })
-      p.setCapacity({ ...INITIAL_CAPACITY })
-      p.setRerollCost(ECONOMY.reroll.base)
-      p.setBaseRerollCost(ECONOMY.reroll.base)
-      p.setMpSeeded(false); p.setMpSeedSubmitted(false); p.setMpServerSnapshotApplied(false)
-      p.setMpLastServerApplyRound(0); p.setMpRerollInitRound(0)
+      // Treat as Resign: award win to opponent, let sync handle phase change
+      try {
+        const opp = p.multi?.getOpponent?.()
+        const oppId = (opp && typeof opp.playerId === 'string') ? opp.playerId : null
+        if (oppId && typeof p.multi?.resolveCombatResult === 'function') {
+          void p.multi.resolveCombatResult(oppId)
+        } else {
+          // Fallback: just mark player as not ready and reset local state
+          void p.multi?.setReady?.(false)
+        }
+      } catch { /* noop */ }
       return
     }
     p.resetRun()

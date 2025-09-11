@@ -336,7 +336,7 @@ export function OutpostPage({
           {(!fleetValid && resources.credits<=0) ? (
             <>
               <div className="text-xs text-rose-300">Fleet inoperable and no credits</div>
-              <button onClick={onRestart} className="px-2 py-1 rounded bg-rose-600 text-xs">Restart</button>
+              <button onClick={onRestart} className="px-2 py-1 rounded bg-rose-600 text-xs">{gameMode==='multiplayer' ? 'Resign' : 'Restart'}</button>
             </>
           ) : (
             <>
