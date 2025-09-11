@@ -109,7 +109,15 @@ export function useOutpostController(params: OutpostControllerParams){
     shop: state.shop,
     focused: state.focused,
     setFocused: setters.setFocused,
-    rerollCost: (gameMode==='multiplayer' ? (getMyPlayerState(multi) as { rerollCost?: number } | null | undefined)?.rerollCost ?? state.rerollCost : state.rerollCost),
+    // Reroll label/guard: use the greater of local and server to avoid regressing when server lags
+    rerollCost: (gameMode==='multiplayer'
+      ? (() => {
+          try {
+            const srv = (getMyPlayerState(multi) as { rerollCost?: number } | null | undefined)?.rerollCost
+            return typeof srv === 'number' ? Math.max(srv, state.rerollCost) : state.rerollCost
+          } catch { return state.rerollCost }
+        })()
+      : state.rerollCost),
     researchLabel,
     canResearch,
     researchTrack: actions.researchTrack,

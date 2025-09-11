@@ -19,3 +19,7 @@ Scaffold pure engine + controller + selectors with strong typing and zero busine
 - Context: Waiting on test runner verification and branch confirmation.
 - Next: Create files and run typecheck locally.
 - Decisions: Keep engine pure; return `[state, Effect[]]` from `apply`.
+## 2025-09-11 — MP/SP Reroll Unification
+- Files touched: `src/hooks/useOutpostPageProps.ts`, `src/engine/commands.ts`.
+- Change: Removed MP-only UI override of reroll label to `economy.rerollBase`; UI now uses authoritative `rerollCost` for both SP/MP. Unified engine to always use parameterized `*WithMods` paths with `economyMods || getDefaultEconomyModifiers()`.
+- Effects: Reroll button label/disable in MP reflect server-synced cost; increments consistent across modes.

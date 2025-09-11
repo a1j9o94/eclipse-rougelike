@@ -3,7 +3,8 @@ import type { FrameId } from '../game'
 import type { OutpostState, OutpostEnv } from './state'
 import type { Research } from '../../shared/defaults'
 import { buyAndInstall as buyAndInstallOp, sellPart as sellPartOp, buildShip as buildShipOp, upgradeShip as upgradeShipOp, upgradeDock as upgradeDockOp } from '../controllers/outpostController'
-import { doRerollActionWithMods, doRerollAction, researchActionWithMods, researchAction } from '../game/shop'
+import { doRerollActionWithMods, researchActionWithMods } from '../game/shop'
+import { getDefaultEconomyModifiers } from '../game/economy'
 
 export type BuyAndInstallCmd = { type: 'buy_and_install'; part: Part }
 export type SellPartCmd = { type: 'sell_part'; frameId: FrameId; idx: number }
@@ -77,10 +78,8 @@ export function applyOutpostCommand(state: OutpostState, env: OutpostEnv, cmd: O
       return { state, effects: { startCombat: true } }
     case 'reroll': {
       const rr = typeof state.rerollCost === 'number' ? state.rerollCost : 8
-      const useMods = env.gameMode === 'multiplayer'
-      const res = useMods
-        ? doRerollActionWithMods({ credits: state.resources.credits }, rr, state.research, env.economyMods!)
-        : doRerollAction({ credits: state.resources.credits }, rr, state.research)
+      const mods = env.economyMods || getDefaultEconomyModifiers()
+      const res = doRerollActionWithMods({ credits: state.resources.credits }, rr, state.research, mods)
       if (!res.ok) return { state }
       const next = { ...state }
       next.resources = { ...next.resources, credits: next.resources.credits + res.delta.credits }
@@ -89,10 +88,8 @@ export function applyOutpostCommand(state: OutpostState, env: OutpostEnv, cmd: O
       return { state: next, effects: { shopItems: res.items } }
     }
     case 'research': {
-      const useMods = env.gameMode === 'multiplayer'
-      const res = useMods
-        ? researchActionWithMods(cmd.track, { credits: state.resources.credits, science: state.resources.science }, state.research, env.economyMods!)
-        : researchAction(cmd.track, { credits: state.resources.credits, science: state.resources.science }, state.research)
+      const mods = env.economyMods || getDefaultEconomyModifiers()
+      const res = researchActionWithMods(cmd.track, { credits: state.resources.credits, science: state.resources.science }, state.research, mods)
       if (!res.ok) return { state }
       const next = { ...state }
       const nextResearch = { ...next.research, [cmd.track]: res.nextTier } as Research
