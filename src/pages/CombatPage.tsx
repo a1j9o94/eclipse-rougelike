@@ -51,7 +51,7 @@ export function CombatPage({
           Round {roundNum}{queue[turnPtr]? ` • Next: ${(queue[turnPtr].side==='P'?'P':'E')} ${queue[turnPtr].side==='P'?fleet[queue[turnPtr].idx]?.frame.name:enemyFleet[queue[turnPtr].idx]?.frame.name}`: ''}
         </div>
       </div>
-      <FlyInOnMount direction="top" play={!!introActive && playIntro && !showRules} delayMs={0} testId="flyin-top" onDone={()=>setIntroCount(c=>c+1)}>
+      <FlyInOnMount direction="top" play={!!introActive && playIntro && !showRules} delayMs={0} durationMs={2700} testId="flyin-top" onDone={()=>setIntroCount(c=>c+1)}>
         <FleetRow
           ships={enemyFleet}
           side='E'
@@ -63,7 +63,7 @@ export function CombatPage({
       <div className="flex items-center justify-between mt-4 mb-2">
         <div className="text-sm font-semibold">Player</div>
       </div>
-      <FlyInOnMount direction="bottom" play={!!introActive && playIntro && !showRules} delayMs={100} testId="flyin-bottom" onDone={()=>setIntroCount(c=>c+1)}>
+      <FlyInOnMount direction="bottom" play={!!introActive && playIntro && !showRules} delayMs={150} durationMs={2700} testId="flyin-bottom" onDone={()=>setIntroCount(c=>c+1)}>
         <FleetRow
           ships={fleet}
           side='P'

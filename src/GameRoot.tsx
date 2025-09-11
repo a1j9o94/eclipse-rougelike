@@ -106,7 +106,7 @@ export default function EclipseIntegrated(){
   const [sector, setSector] = useState(saved?.sector ?? 1); // difficulty progression
   const [stepLock] = useState(false);
   const [matchOver, setMatchOver] = useState<{ winnerName: string } | null>(null);
-  const [combatIntroActive, setCombatIntroActive] = useState(false);
+  const [combatIntroActive, setCombatIntroActive] = useState(mode==='COMBAT');
   const [mpSeeded, setMpSeeded] = useState(false);
   const [mpSeedSubmitted, setMpSeedSubmitted] = useState(false);
   const [mpServerSnapshotApplied, setMpServerSnapshotApplied] = useState(false);
@@ -327,6 +327,7 @@ export default function EclipseIntegrated(){
   // Start combat intro on entering combat view
   useEffect(()=>{
     if (mode==='COMBAT') setCombatIntroActive(true)
+    else setCombatIntroActive(false)
   },[mode])
 
   useMusicRouting({ showNewRun, mode, combatOver: cv.combatOver, outcome: cv.outcome })

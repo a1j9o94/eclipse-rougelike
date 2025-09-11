@@ -30,11 +30,12 @@ export default function FlyInOnMount({
 
   useEffect(() => {
     if (!play) return
+    // reset to hidden then run timeline
+    setOffset(true)
     const start = setTimeout(() => setOffset(false), Math.max(0, delayMs))
     const done = setTimeout(() => { onDone?.() }, Math.max(0, delayMs + durationMs))
     return () => { clearTimeout(start); clearTimeout(done) }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [play, delayMs, durationMs, onDone])
 
   const base = `transition-transform transition-opacity ease-out duration-[${durationMs}ms] will-change-transform`
   const hidden = direction === 'top'
