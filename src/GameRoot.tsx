@@ -358,10 +358,8 @@ export default function EclipseIntegrated(){
   const rbOnReset = () => {
     if (gameMode === 'multiplayer') {
       try {
-        const oppId = multi?.getOpponent?.()?.playerId as string | undefined
-        if (oppId && typeof multi?.resolveCombatResult === 'function') {
-          void multi.resolveCombatResult(oppId)
-        }
+        // Concede the entire match
+        (multi as unknown as { resignMatch?: ()=>Promise<void> })?.resignMatch?.()
       } catch { /* noop */ }
       // Send user back to main menu after resign
       handleBackToMainMenu()
@@ -375,6 +373,26 @@ export default function EclipseIntegrated(){
     multi: (multi as { prepareRematch?: ()=>Promise<void> }) ?? null,
     setters: { setMatchOver, setMode, setLog: cv.setLog, setRoundNum: cv.setRoundNum, setTurnPtr: cv.setTurnPtr, setQueue: cv.setQueue, setCombatOver: cv.setCombatOver, setOutcome: cv.setOutcome, setMultiplayerPhase },
   })
+
+  // MP: when server marks the match finished, show Win modal to the winner; others see Match Over
+  useEffect(() => {
+    if (gameMode !== 'multiplayer') return
+    if (!multi?.gameState || multi.gameState.gamePhase !== 'finished') return
+    try {
+      const winnerId = (multi.gameState as unknown as { matchResult?: { winnerPlayerId?: string } })?.matchResult?.winnerPlayerId
+      const me = multi.getPlayerId?.()
+      if (winnerId && me && winnerId === me) {
+        setShowWin(true)
+        setMatchOver(null)
+        return
+      }
+      const players = (multi.roomDetails as { players?: Array<{ playerId:string; playerName?: string }> } | null | undefined)?.players || []
+      const name = winnerId ? (players.find(p => p.playerId === winnerId)?.playerName || 'Winner') : 'Winner'
+      setMatchOver({ winnerName: name })
+    } catch {
+      setMatchOver({ winnerName: 'Winner' })
+    }
+  }, [gameMode, multi?.gameState?.gamePhase])
 
   // Pre-game routing (start, MP menu/lobby)
   const preGame = getPreGameElement({
@@ -403,7 +421,7 @@ export default function EclipseIntegrated(){
       onOpenTechs={()=>setShowTechs(true)}
       onCloseTechs={()=>setShowTechs(false)}
       showWin={showWin}
-      onRestartWin={()=>{ setShowWin(false); resetRun() }}
+      onRestartWin={()=>{ setShowWin(false); if (gameMode==='multiplayer') { handleBackToMainMenu() } else { resetRun() } }}
       matchOver={matchOver}
       onMatchOverClose={handleMatchOverClose}
       resourceBar={rbVm as RBProps}

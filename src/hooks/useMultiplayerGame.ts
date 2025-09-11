@@ -77,6 +77,7 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
   const endCombatToSetup = useMutation(api.gameState.endCombatToSetup);
   const submitFleetSnapshot = useMutation(api.gameState.submitFleetSnapshot);
   const resolveCombatResult = useMutation(api.gameState.resolveCombatResult);
+  const resignMatch = useMutation(api.gameState.resignMatch);
   const switchTurn = useMutation(api.gameState.switchTurn);
   const updateGamePhase = useMutation(api.gameState.updateGamePhase);
   const initializeGameState = useMutation(api.gameState.initializeGameState);
@@ -231,6 +232,18 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
     } catch (error) {
       console.error("Failed to restart to setup:", error);
       throw error;
+    }
+  };
+
+  const handleResignMatch = async () => {
+    if (!isConvexAvailable) return;
+    if (!roomId) return;
+    const me = getPlayerId();
+    if (!me) return;
+    try {
+      await resignMatch({ roomId, loserPlayerId: me });
+    } catch (err) {
+      console.error('Failed to resign match:', err);
     }
   };
 
@@ -432,6 +445,7 @@ export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
     updateGamePhase: handlePhaseChange,
     resolveCombatResult: handleResolveCombatResult,
     endCombatToSetup: handleEndCombatToSetup,
+    resignMatch: handleResignMatch,
     submitFleetSnapshot: handleSubmitFleetSnapshot,
     ackRoundPlayed: handleAckRoundPlayed,
     prepareRematch: handlePrepareRematch,
