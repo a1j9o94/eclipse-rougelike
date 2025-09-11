@@ -107,6 +107,7 @@ export default function EclipseIntegrated(){
   const [stepLock] = useState(false);
   const [matchOver, setMatchOver] = useState<{ winnerName: string } | null>(null);
   const [combatIntroActive, setCombatIntroActive] = useState(mode==='COMBAT');
+  const [mpWinMessage, setMpWinMessage] = useState<string | null>(null)
   const [mpSeeded, setMpSeeded] = useState(false);
   const [mpSeedSubmitted, setMpSeedSubmitted] = useState(false);
   const [mpServerSnapshotApplied, setMpServerSnapshotApplied] = useState(false);
@@ -380,8 +381,14 @@ export default function EclipseIntegrated(){
     if (!multi?.gameState || multi.gameState.gamePhase !== 'finished') return
     try {
       const winnerId = (multi.gameState as unknown as { matchResult?: { winnerPlayerId?: string } })?.matchResult?.winnerPlayerId
+      const reason = (multi.gameState as unknown as { matchResult?: { reason?: string } })?.matchResult?.reason
       const me = multi.getPlayerId?.()
       if (winnerId && me && winnerId === me) {
+        if (reason === 'resign') {
+          setMpWinMessage('Your opponent resigned')
+        } else {
+          setMpWinMessage(null)
+        }
         setShowWin(true)
         setMatchOver(null)
         return
@@ -421,7 +428,8 @@ export default function EclipseIntegrated(){
       onOpenTechs={()=>setShowTechs(true)}
       onCloseTechs={()=>setShowTechs(false)}
       showWin={showWin}
-      onRestartWin={()=>{ setShowWin(false); if (gameMode==='multiplayer') { handleBackToMainMenu() } else { resetRun() } }}
+      mpWinMessage={mpWinMessage}
+      onRestartWin={()=>{ setShowWin(false); setMpWinMessage(null); if (gameMode==='multiplayer') { handleBackToMainMenu() } else { resetRun() } }}
       matchOver={matchOver}
       onMatchOverClose={handleMatchOverClose}
       resourceBar={rbVm as RBProps}

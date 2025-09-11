@@ -494,7 +494,7 @@ export const resignMatch = mutation({
     await ctx.db.patch(gs._id, {
       gamePhase: "finished",
       playerStates: states,
-      matchResult: { winnerPlayerId: winner.playerId },
+      matchResult: { winnerPlayerId: winner.playerId, reason: 'resign' },
       lastUpdate: Date.now(),
     });
 

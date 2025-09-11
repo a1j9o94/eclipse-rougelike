@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ResourceBar } from './ui'
-import { RulesModal, TechListModal, WinModal, MatchOverModal } from './modals'
+import { RulesModal, TechListModal, WinModal, MatchOverModal, MPWinModal } from './modals'
 import OutpostPage from '../pages/OutpostPage'
 import CombatPage from '../pages/CombatPage'
 import type { Research } from '../../shared/defaults'
@@ -45,6 +45,7 @@ export function GameShell({
   onOpenTechs,
   onCloseTechs,
   showWin,
+  mpWinMessage,
   onRestartWin,
   matchOver,
   onMatchOverClose,
@@ -60,6 +61,7 @@ export function GameShell({
   onOpenTechs: () => void
   onCloseTechs: () => void
   showWin: boolean
+  mpWinMessage?: string | null
   onRestartWin: () => void
   matchOver: { winnerName: string } | null
   onMatchOverClose: () => void
@@ -76,7 +78,11 @@ export function GameShell({
       )}
       {showRules && <RulesModal onDismiss={onDismissRules} />}
       {showTechs && <TechListModal research={outpost.research as Research} onClose={onCloseTechs} />}
-      {showWin && <WinModal onRestart={onRestartWin} onEndless={onRestartWin} />}
+      {showWin && (mpWinMessage ? (
+        <MPWinModal message={mpWinMessage} onClose={onRestartWin} />
+      ) : (
+        <WinModal onRestart={onRestartWin} onEndless={onRestartWin} />
+      ))}
 
       <ResourceBar {...resourceBar} />
 
