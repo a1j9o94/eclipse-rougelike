@@ -397,7 +397,7 @@ export default function EclipseIntegrated(){
       resourceBar={rbVm as RBProps}
       route={mode}
       outpost={outpost as OutpostPageProps}
-      combat={{ combatOver: cv.combatOver, outcome: cv.outcome, roundNum: cv.roundNum, queue: cv.queue as InitiativeEntry[], turnPtr: cv.turnPtr, fleet, enemyFleet: cv.enemyFleet, log: cv.log, onReturn: handleReturnFromCombat } as CombatProps}
+      combat={{ combatOver: cv.combatOver, outcome: cv.outcome, roundNum: cv.roundNum, queue: cv.queue as InitiativeEntry[], turnPtr: cv.turnPtr, fleet, enemyFleet: cv.enemyFleet, log: cv.log, onReturn: handleReturnFromCombat, showRules } as CombatProps}
     />
   )
 }

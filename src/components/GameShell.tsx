@@ -32,6 +32,7 @@ export type CombatProps = {
   enemyFleet: Ship[]
   log: string[]
   onReturn: () => void | Promise<void>
+  showRules?: boolean
 }
 
 export function GameShell({

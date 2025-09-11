@@ -14,6 +14,7 @@ export function CombatPage({
   enemyFleet,
   log,
   onReturn,
+  showRules,
 }:{
   combatOver:boolean,
   outcome:string,
@@ -24,6 +25,7 @@ export function CombatPage({
   enemyFleet:Ship[],
   log:string[],
   onReturn:()=>void,
+  showRules?: boolean,
 }){
   const [resolvingHold, setResolvingHold] = useState(true);
   useEffect(() => { const t = setTimeout(() => setResolvingHold(false), 25); return () => clearTimeout(t); }, []);
@@ -42,15 +44,25 @@ export function CombatPage({
           Round {roundNum}{queue[turnPtr]? ` • Next: ${(queue[turnPtr].side==='P'?'P':'E')} ${queue[turnPtr].side==='P'?fleet[queue[turnPtr].idx]?.frame.name:enemyFleet[queue[turnPtr].idx]?.frame.name}`: ''}
         </div>
       </div>
-      <FlyInOnMount direction="top" play={playIntro} delayMs={0} testId="flyin-top">
-        <FleetRow ships={enemyFleet} side='E' activeIdx={!combatOver && queue[turnPtr]?.side==='E' ? queue[turnPtr].idx : -1} />
+      <FlyInOnMount direction="top" play={playIntro && !showRules} delayMs={0} testId="flyin-top">
+        <FleetRow
+          ships={enemyFleet}
+          side='E'
+          activeIdx={!combatOver && queue[turnPtr]?.side==='E' ? queue[turnPtr].idx : -1}
+          intro={{ play: !showRules, direction: 'top', totalMs: 3600, startDelayMs: 0 }}
+        />
       </FlyInOnMount>
       {/* Player row */}
       <div className="flex items-center justify-between mt-4 mb-2">
         <div className="text-sm font-semibold">Player</div>
       </div>
-      <FlyInOnMount direction="bottom" play={playIntro} delayMs={120} testId="flyin-bottom">
-        <FleetRow ships={fleet} side='P' activeIdx={!combatOver && queue[turnPtr]?.side==='P' ? queue[turnPtr].idx : -1} />
+      <FlyInOnMount direction="bottom" play={playIntro && !showRules} delayMs={120} testId="flyin-bottom">
+        <FleetRow
+          ships={fleet}
+          side='P'
+          activeIdx={!combatOver && queue[turnPtr]?.side==='P' ? queue[turnPtr].idx : -1}
+          intro={{ play: !showRules, direction: 'bottom', totalMs: 3600, startDelayMs: 200 }}
+        />
       </FlyInOnMount>
       {/* Mini Log */}
       <div className="mt-3 p-2 rounded bg-zinc-900 text-xs sm:text-sm min-h-[56px]">
