@@ -355,7 +355,21 @@ export default function EclipseIntegrated(){
   // Self-tests moved to src/__tests__/runtime.selftests.spec.ts
 
   // ---------- View ----------
-  const rbVm = useResourceBarVm({ resources: resources as Resources, tonnage, sector, onReset: resetRun, gameMode, singleLives: livesRemaining, multi })
+  const rbOnReset = () => {
+    if (gameMode === 'multiplayer') {
+      try {
+        const oppId = multi?.getOpponent?.()?.playerId as string | undefined
+        if (oppId && typeof multi?.resolveCombatResult === 'function') {
+          void multi.resolveCombatResult(oppId)
+        }
+      } catch { /* noop */ }
+      // Send user back to main menu after resign
+      handleBackToMainMenu()
+      return
+    }
+    resetRun()
+  }
+  const rbVm = useResourceBarVm({ resources: resources as Resources, tonnage, sector, onReset: rbOnReset, gameMode, singleLives: livesRemaining, multi })
 
   const handleMatchOverClose = useMatchOverClose({
     multi: (multi as { prepareRematch?: ()=>Promise<void> }) ?? null,
