@@ -57,6 +57,7 @@ export function CombatPage({
         activeIdx={!combatOver && queue[turnPtr]?.side==='E' ? queue[turnPtr].idx : -1}
         bounceMs={import.meta.env.MODE==='test' ? 0 : shotDurationMs(roundNum)}
         fireToken={!combatOver && queue[turnPtr]?.side==='E' ? turnPtr : undefined}
+        combatOver={combatOver}
         intro={{ play: !!introActive && !showRules, direction: 'top', totalMs: 1400, startDelayMs: 0, onDone: ()=>setIntroCount(c=>c+1) }}
       />
       {/* Player row */}
@@ -69,6 +70,7 @@ export function CombatPage({
         activeIdx={!combatOver && queue[turnPtr]?.side==='P' ? queue[turnPtr].idx : -1}
         bounceMs={import.meta.env.MODE==='test' ? 0 : shotDurationMs(roundNum)}
         fireToken={!combatOver && queue[turnPtr]?.side==='P' ? turnPtr : undefined}
+        combatOver={combatOver}
         intro={{ play: !!introActive && !showRules, direction: 'bottom', totalMs: 1400, startDelayMs: 120, onDone: ()=>setIntroCount(c=>c+1) }}
       />
       {/* Mini Log */}
