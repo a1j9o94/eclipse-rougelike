@@ -196,3 +196,38 @@
 
 ### Follow-ups
 - Consider surfacing both "current cost" and "base (for tooltips only)" in VM if design wants to explain faction perks.
+
+## Plan Entry — Combat Firing Bounce Cue
+
+- Outcome: During combat, the ship currently firing performs a small forward bounce in the direction of fire (player: up, enemy: down) synchronized with the shot SFX. This replaces the pulsing/glowing outline as the primary focus cue.
+
+- Acceptance criteria:
+  - Fleet rows still render unchanged otherwise (grouping/stacking preserved).
+  - When `activeIdx` points at a ship in `FleetRow`, that ship’s visual wrapper gets a bounce class (`fire-bounce-up` for P, `fire-bounce-down` for E) and animates once or twice during that turn.
+  - Reduced‑motion respected: no bounce when OS setting prefers reduced motion.
+  - Outpost/Modals do not show bounce (they pass `active={false}`).
+  - Lint/build stay green; only targeted tests run.
+
+- Risks & rollback:
+  - Risk: Added motion could be distracting. Mitigation: small amplitude, short duration, reduced‑motion guard.
+  - Rollback: Remove `fire-bounce-*` classes and keep existing static glow only.
+
+- Test list (must fail first):
+  1) `combat_bounce.spec.tsx`: Player side applies `fire-bounce-up` only to the active ship.
+  2) `combat_bounce.spec.tsx`: Enemy side applies `fire-bounce-down` only to the active ship.
+  3) (Optional) Smoke: existing `frameSlots` and `combat_intro` tests stay green.
+
+---
+
+### Implementation Steps
+1) Add CSS keyframes/classes in `src/index.css` with reduced‑motion guard.
+2) Wire classes in `CompactShip` based on `active` and `side`.
+3) Remove pulsing outline from `ShipFrameSlots` to avoid duel cues.
+4) Add tests `src/__tests__/combat_bounce.spec.tsx`.
+
+### Decision Log
+- Chose a vertical translateY bounce to communicate “forward” across rows without changing layout.
+- Bound the cue to FleetRow’s `activeIdx` (already synced with shot SFX timing via `useCombatLoop`).
+
+### Follow-ups
+- Consider a muzzle flash or projectile trail in a future pass for extra clarity.

@@ -84,7 +84,7 @@ function effectLabels(p: Part, fields: PartEffectField[]) {
   return labels.join('');
 }
 
-export function ShipFrameSlots({ ship, side, active }: { ship: Ship, side: 'P' | 'E', active?: boolean }) {
+export function ShipFrameSlots({ ship, side, active: _active }: { ship: Ship, side: 'P' | 'E', active?: boolean }) {
   const layout = FRAME_LAYOUTS[ship.frame.id as FrameId] || [ship.frame.tiles];
   const cells: { slots: number, label: string }[] = [];
   // Hull upgrades show hearts for remaining hull beyond the frame's base value,
@@ -133,7 +133,9 @@ export function ShipFrameSlots({ ship, side, active }: { ship: Ship, side: 'P' |
   const glow = side === 'P'
     ? 'ring-sky-400 shadow-[0_0_4px_#38bdf8]'
     : 'ring-pink-500 shadow-[0_0_4px_#ec4899]';
-  const activeGlow = active ? 'animate-pulse' : '';
+  // Replace pulsing outline with motion cue (handled in CompactShip)
+  // Keep a very subtle outline when active to aid focus in low-motion contexts
+  const activeGlow = _active ? 'outline outline-1 outline-white/10' : '';
   return (
     <div className="inline-block">
       {layout.map((count, r) => {
@@ -163,10 +165,19 @@ export function ShipFrameSlots({ ship, side, active }: { ship: Ship, side: 'P' |
     </div>
   );
 }
-export function CompactShip({ ship, side, active }:{ship:Ship, side:'P'|'E', active:boolean}){
+export function CompactShip({ ship, side, active, bounceMs }:{ship:Ship, side:'P'|'E', active:boolean, bounceMs?: number}){
   const dead = !ship.alive || ship.hull<=0;
+  const style = active && typeof bounceMs === 'number' && bounceMs > 0
+    ? ({ ['--fire-bounce-ms' as unknown as 'color']: `${bounceMs}ms` } as React.CSSProperties)
+    : undefined;
   return (
-    <div data-ship className="relative inline-block" title={ship.frame.name}>
+    <div
+      data-ship
+      data-testid={active ? 'ship-active' : undefined}
+      className={`relative inline-block ${active ? (side==='P' ? 'fire-bounce-up' : 'fire-bounce-down') : ''}`}
+      style={style}
+      title={ship.frame.name}
+    >
       <ShipFrameSlots ship={ship} side={side} active={active} />
       {dead && <div className="absolute inset-0 grid place-items-center text-2xl text-zinc-300">✖</div>}
     </div>

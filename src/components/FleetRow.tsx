@@ -5,7 +5,7 @@ import type { Ship } from '../../shared/types'
 import { groupFleet } from '../game'
 import FlyInOnMount from './animations/FlyInOnMount'
 
-export function FleetRow({ ships, side, activeIdx, intro }:{ ships:Ship[], side:'P'|'E', activeIdx:number, intro?: { play:boolean; direction:'top'|'bottom'; totalMs?:number; startDelayMs?:number; onDone?:()=>void } }){
+export function FleetRow({ ships, side, activeIdx, intro, bounceMs }:{ ships:Ship[], side:'P'|'E', activeIdx:number, intro?: { play:boolean; direction:'top'|'bottom'; totalMs?:number; startDelayMs?:number; onDone?:()=>void }, bounceMs?: number }){
   const ref = useRef<HTMLDivElement>(null)
   const [dims, setDims] = useState({ width: 0, card: 0 })
 
@@ -63,10 +63,10 @@ export function FleetRow({ ships, side, activeIdx, intro }:{ ships:Ship[], side:
             {g.count>1 && <div className="absolute -top-2 -left-2 bg-zinc-800 px-1 rounded text-xs">×{g.count}</div>}
             {intro?.play ? (
               <FlyInOnMount direction={intro.direction} delayMs={delayMs} durationMs={450}>
-                <CompactShip ship={g.ship} side={side} active={isActive} />
+                <CompactShip ship={g.ship} side={side} active={isActive} bounceMs={bounceMs} />
               </FlyInOnMount>
             ) : (
-              <CompactShip ship={g.ship} side={side} active={isActive} />
+              <CompactShip ship={g.ship} side={side} active={isActive} bounceMs={bounceMs} />
             )}
           </div>
         )
