@@ -13,7 +13,7 @@ export default function StartPage({
 }: {
   onNewRun: (diff: DifficultyId, faction: FactionId) => void;
   onContinue?: () => void;
-  onMultiplayer?: () => void;
+  onMultiplayer?: (mode?: 'menu' | 'create' | 'join' | 'public') => void;
 }) {
   const progress: Progress = evaluateUnlocks(loadRunState());
   const available = FACTIONS.filter(f => progress.factions[f.id]?.unlocked);
@@ -145,14 +145,31 @@ export default function StartPage({
                   </div>
                 </div>
               ) : (
-                <div>
+                <div className="space-y-2">
                   {!versusEnabled && (
                     <div className="text-xs opacity-80 mb-2">Requires server connection.</div>
                   )}
                   {versusEnabled && (
-                    <button className="w-full px-3 py-3 rounded-xl bg-sky-600 hover:bg-sky-500" onClick={()=>{ if (onMultiplayer) { onMultiplayer(); } setShowLaunch(false); }}>
-                      Find Match
-                    </button>
+                    <>
+                      <button
+                        className="w-full px-3 py-3 rounded-xl bg-sky-600 hover:bg-sky-500"
+                        onClick={()=>{ if (onMultiplayer) { onMultiplayer('create'); } setShowLaunch(false); }}
+                      >
+                        Create Match
+                      </button>
+                      <button
+                        className="w-full px-3 py-3 rounded-xl bg-blue-600 hover:bg-blue-500"
+                        onClick={()=>{ if (onMultiplayer) { onMultiplayer('join'); } setShowLaunch(false); }}
+                      >
+                        Join Match
+                      </button>
+                      <button
+                        className="w-full px-3 py-3 rounded-xl bg-purple-600 hover:bg-purple-500"
+                        onClick={()=>{ if (onMultiplayer) { onMultiplayer('public'); } setShowLaunch(false); }}
+                      >
+                        View Public Matches
+                      </button>
+                    </>
                   )}
                 </div>
               )}

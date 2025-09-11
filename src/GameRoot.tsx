@@ -84,6 +84,7 @@ export default function EclipseIntegrated(){
   const [faction, setFaction] = useState<FactionId>(saved?.faction ?? 'industrialists');
   const [opponent, setOpponent] = useState<FactionId>(saved?.opponent ?? 'warmongers');
   const [showNewRun, setShowNewRun] = useState(true);
+  const [multiplayerStartMode, setMultiplayerStartMode] = useState<'menu'|'create'|'join'>('menu');
 
   // Outpost state bundle
   const {
@@ -149,6 +150,7 @@ export default function EclipseIntegrated(){
   } = usePreGameHandlers({
     setCurrentRoomId: (id)=>setCurrentRoomId(id as Id<'rooms'> | null),
     setMultiplayerPhase,
+    setMultiplayerStartMode,
     setGameMode,
     setShowNewRun,
     playEffect: (k)=>{ void playEffect(k) },
@@ -407,6 +409,7 @@ export default function EclipseIntegrated(){
     showNewRun,
     faction: faction as string,
     multiplayerPhase,
+    multiplayerStartMode,
     currentRoomId,
     onNewRun: newRun,
     onContinue: handleContinue,

@@ -13,11 +13,12 @@ export type PreGameRouterProps = {
   showNewRun: boolean
   faction: string
   multiplayerPhase: 'menu'|'public'|'lobby'|'game'
+  multiplayerStartMode?: 'menu'|'create'|'join'
   currentRoomId: Id<'rooms'> | null
   // handlers
   onNewRun: (diff: DifficultyId, faction: FactionId) => void
   onContinue: () => void
-  onGoMultiplayer: () => void
+  onGoMultiplayer: (mode?: 'menu'|'create'|'join'|'public') => void
   onGoPublic: () => void
   onRoomJoined: (roomId: string) => void
   onBack: () => void
@@ -42,6 +43,7 @@ export function getPreGameElement(props: PreGameRouterProps): ReactElement | nul
         onBack: props.onBack,
         currentFaction: props.faction,
         onGoPublic: props.onGoPublic,
+        initialMode: props.multiplayerStartMode || 'menu',
       })
     }
     if (multiplayerPhase === 'public') {

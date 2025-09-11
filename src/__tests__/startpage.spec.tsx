@@ -7,6 +7,8 @@ import { makeShip, getFrame } from '../game';
 describe('StartPage', () => {
   beforeEach(() => {
     localStorage.clear();
+    // Disable starfield for jsdom (no canvas context)
+    localStorage.setItem('ui-starfield-enabled', 'false');
     localStorage.setItem('eclipse-progress', JSON.stringify({
       factions: {
         scientists: { unlocked: false, difficulties: [] },
@@ -33,7 +35,7 @@ describe('StartPage', () => {
     expect(screen.getByText('No battles yet.')).toBeInTheDocument();
   });
 
-  it('enables multiplayer tab when Convex URL is configured', () => {
+  it('shows multiplayer options when Convex URL is configured', () => {
     // Provide the env var used by StartPage
     vi.stubEnv('VITE_CONVEX_URL', 'https://example.convex.cloud');
     render(<StartPage onNewRun={() => {}} onMultiplayer={() => {}} />);
@@ -41,6 +43,11 @@ describe('StartPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Launch$/ }));
     const versusTab = screen.getByRole('button', { name: /^Versus$/ });
     expect(versusTab).toBeEnabled();
+    fireEvent.click(versusTab);
+    // Expect three options in Versus modal
+    expect(screen.getByRole('button', { name: /Create Match/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Join Match/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /View Public Matches/i })).toBeInTheDocument();
   });
 
   it('unlocks scientists when research tiers reach three', () => {

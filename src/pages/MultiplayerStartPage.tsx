@@ -8,10 +8,11 @@ interface MultiplayerStartPageProps {
   onBack: () => void;
   onGoPublic: () => void;
   currentFaction?: string;
+  initialMode?: 'menu' | 'create' | 'join';
 }
 
-export default function MultiplayerStartPage({ onRoomJoined, onBack, onGoPublic, currentFaction }: MultiplayerStartPageProps) {
-  const [mode, setMode] = useState<'menu' | 'create' | 'join' | 'public'>('menu');
+export default function MultiplayerStartPage({ onRoomJoined, onBack, onGoPublic, currentFaction, initialMode }: MultiplayerStartPageProps) {
+  const [mode, setMode] = useState<'menu' | 'create' | 'join' | 'public'>(initialMode || 'menu');
   const [roomName, setRoomName] = useState(generateSpaceRoomName());
   const [playerName, setPlayerName] = useState('');
   const [roomCode, setRoomCode] = useState('');
@@ -93,7 +94,7 @@ export default function MultiplayerStartPage({ onRoomJoined, onBack, onGoPublic,
       <div className="min-h-screen text-zinc-100 p-4">
         <div className="max-w-md mx-auto space-y-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">Create Room</h1>
+            <h1 className="text-2xl font-bold">Create Match</h1>
             <button
               onClick={() => setMode('menu')}
               className="px-3 py-1 text-sm bg-zinc-700 hover:bg-zinc-600 rounded"
@@ -192,7 +193,7 @@ export default function MultiplayerStartPage({ onRoomJoined, onBack, onGoPublic,
               disabled={isCreating || !playerName.trim() || !roomName.trim()}
               className="w-full p-4 bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-700 disabled:cursor-not-allowed rounded-lg font-medium"
             >
-              {isCreating ? 'Creating...' : 'Create Room'}
+              {isCreating ? 'Creating...' : 'Create Match'}
             </button>
           </div>
         </div>
@@ -205,7 +206,7 @@ export default function MultiplayerStartPage({ onRoomJoined, onBack, onGoPublic,
       <div className="min-h-screen text-zinc-100 p-4">
         <div className="max-w-md mx-auto space-y-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">Join Room</h1>
+            <h1 className="text-2xl font-bold">Join Match</h1>
             <button
               onClick={() => setMode('menu')}
               className="px-3 py-1 text-sm bg-zinc-700 hover:bg-zinc-600 rounded"
@@ -250,7 +251,7 @@ export default function MultiplayerStartPage({ onRoomJoined, onBack, onGoPublic,
               disabled={isJoining || !playerName.trim() || !roomCode.trim()}
               className="w-full p-4 bg-green-600 hover:bg-green-700 disabled:bg-zinc-700 disabled:cursor-not-allowed rounded-lg font-medium"
             >
-              {isJoining ? 'Joining...' : 'Join Room'}
+              {isJoining ? 'Joining...' : 'Join Match'}
             </button>
           </div>
         </div>
@@ -281,15 +282,15 @@ export default function MultiplayerStartPage({ onRoomJoined, onBack, onGoPublic,
             onClick={() => setMode('create')}
             className="w-full p-4 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium text-left"
           >
-            <div className="font-bold">Create Private Room</div>
-            <div className="text-sm text-blue-200">Share room code with a friend</div>
+            <div className="font-bold">Create Game</div>
+            <div className="text-sm text-blue-200">Share the 6-character code with a friend</div>
           </button>
 
           <button
             onClick={() => setMode('join')}
             className="w-full p-4 bg-green-600 hover:bg-green-700 rounded-lg font-medium text-left"
           >
-            <div className="font-bold">Join with Room Code</div>
+            <div className="font-bold">Join Match</div>
             <div className="text-sm text-green-200">Enter a 6-character room code</div>
           </button>
 
@@ -297,7 +298,7 @@ export default function MultiplayerStartPage({ onRoomJoined, onBack, onGoPublic,
             onClick={() => onGoPublic()}
             className="w-full p-4 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium text-left"
           >
-            <div className="font-bold">Public Matchmaking</div>
+            <div className="font-bold">View Public Matches</div>
             <div className="text-sm text-purple-200">Browse and join public rooms</div>
           </button>
         </div>
