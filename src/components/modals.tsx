@@ -123,7 +123,7 @@ export function TechListModal({ onClose, research }:{ onClose:()=>void, research
   const tracks = ['Military','Grid','Nano'] as const;
   const closeRef = useRef<HTMLButtonElement|null>(null)
   useEffect(()=>{
-    if (tutorialEnabled() && tutorialGetStep()==='tech-list') {
+    if (tutorialEnabled() && tutorialGetStep()==='tech-close') {
       setTimeout(()=>{ try { closeRef.current?.focus() } catch { /* noop */ } }, 0)
     }
   },[])
@@ -155,7 +155,7 @@ export function TechListModal({ onClose, research }:{ onClose:()=>void, research
             );
           })}
         </div>
-        <div className="mt-3"><button ref={closeRef as unknown as React.Ref<HTMLButtonElement>} onClick={onClose} className="w-full px-4 py-2 rounded-xl bg-emerald-600">Close</button></div>
+        <div className="mt-3"><button data-tutorial="tech-close" ref={closeRef as unknown as React.Ref<HTMLButtonElement>} onClick={onClose} className="w-full px-4 py-2 rounded-xl bg-emerald-600">Close</button></div>
       </div>
     </div>
   );

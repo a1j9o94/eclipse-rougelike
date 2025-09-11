@@ -20,7 +20,8 @@ export function gateFor(step: TutorialStepId): Gate {
     case 'combat-2':         return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true }
     case 'dock-expand':       return { canBuy: false, canReroll: false, canUpgradeDock: true,  canResearch: false, canUpgradeShip: false, canStartCombat: true }
     case 'tech-nano':         return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: true,  canUpgradeShip: false, canStartCombat: true, allowedResearchTracks: ['Nano'] }
-    case 'tech-list':         return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true }
+    case 'tech-open':         return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true }
+    case 'tech-close':        return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true }
     case 'sell-composite':    return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true, allowedSellIds: ['composite'] }
     case 'buy-improved':      return { canBuy: true,  canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true,  allowedBuyIds: ['improved'] }
     case 'combat-3':         return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true }

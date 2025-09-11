@@ -19,7 +19,8 @@ export const STEPS: TutorialStep[] = [
   { id: 'combat-2', anchor: 'start-combat', copy: 'Press Start Combat to test your new hull.', triggers: ['post-combat'] },
   // Research Nano to unlock Improved Hull
   { id: 'tech-nano', anchor: 'research-grid', copy: 'Upgrade Nano research (🔬). 🎯 Computers help you hit; 🛡️ Shields make you harder to hit. Reroll/Research raises reroll cost for this shop.', curatedShop: ['tachyon_drive','antimatter','improved'], triggers: ['researched-nano'] },
-  { id: 'tech-list', anchor: 'help-tech', copy: 'Tap Tech to open the list. Browse what each track unlocks, then close it to continue.', triggers: ['viewed-tech-list'] },
+  { id: 'tech-open', anchor: 'help-tech', copy: 'Tap Tech to open the list of all unlocks.', triggers: ['opened-tech-list'] },
+  { id: 'tech-close', anchor: 'tech-close', copy: 'Close the Tech List to continue.', triggers: ['viewed-tech-list'] },
   // Swap hulls: sell Composite, then buy Improved
   { id: 'sell-composite', anchor: 'blueprint-panel', copy: 'Sell the Composite Hull from your blueprint to make room.', triggers: ['sold-composite'] },
   { id: 'buy-improved', anchor: 'shop-grid', copy: 'Buy Improved Hull (T2). +2 ❤️ for 0⚡ — a straight upgrade.', curatedShop: ['improved','fusion_source','plasma'], triggers: ['bought-improved'] },
