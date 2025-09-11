@@ -16,7 +16,8 @@ export type TutorialStepId =
   | 'combat-3'
   | 'upgrade-interceptor'
   | 'shop-reroll'
-  | 'enemy-intel'
+  | 'intel-open'
+  | 'intel-close'
   | 'rules-hint'
   | 'wrap';
 

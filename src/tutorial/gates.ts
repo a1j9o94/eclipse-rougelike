@@ -29,7 +29,8 @@ export function gateFor(step: TutorialStepId): Gate {
     case 'capacity-info':     return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true }
     case 'upgrade-interceptor': return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: true,  canStartCombat: true, upgradeOnlyInterceptor: true }
     case 'shop-reroll':       return { canBuy: false, canReroll: true,  canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true }
-    case 'enemy-intel':       return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true }
+    case 'intel-open':        return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true }
+    case 'intel-close':       return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true }
     default:                  return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: false }
   }
 }

@@ -33,8 +33,9 @@ export const STEPS: TutorialStep[] = [
   { id: 'upgrade-interceptor', anchor: 'upgrade-ship', copy: 'Focus an Interceptor and upgrade it to a Cruiser.', triggers: ['upgraded-interceptor'] },
   // Reroll tutorial
   { id: 'shop-reroll', anchor: 'reroll-button', copy: 'Reroll the shop when nothing fits your plan. Cost rises with each Reroll/Research and resets after battle.', triggers: ['rerolled'] },
-  // Intel and wrap
-  { id: 'enemy-intel', anchor: 'enemy-intel-btn', copy: 'Open Enemy Intel to preview upcoming sectors and enemy minis.', triggers: ['viewed-intel'] },
+  // Intel
+  { id: 'intel-open', anchor: 'enemy-intel-btn', copy: 'Open Enemy Intel to preview upcoming sectors and enemy minis.', triggers: ['opened-intel'] },
+  { id: 'intel-close', anchor: 'intel-modal', copy: 'Close Enemy Intel to continue.', triggers: ['viewed-intel'] },
   { id: 'rules-hint', anchor: 'help-rules', copy: 'Any time, open Rules (❓) to review how everything works.', triggers: ['next'] },
   { id: 'wrap', copy: 'You’re ready. Tutorial complete.' },
 ]

@@ -63,7 +63,7 @@ export function CombatPlanModal({ onClose, sector, endless, gameMode, multi }:{ 
     : SECTORS;
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 bg-black/70">
-      <div className="w-full max-w-lg bg-zinc-800 border border-zinc-600 rounded-2xl p-4">
+      <div data-tutorial="intel-modal" className="w-full max-w-lg bg-zinc-800 border border-zinc-600 rounded-2xl p-4">
         <div className="text-lg font-semibold mb-2">Enemy Intel</div>
         {gameMode === 'multiplayer' ? (
           <div className="text-xs sm:text-sm space-y-1 max-h-[60vh] overflow-y-auto pr-1">
@@ -112,7 +112,7 @@ export function CombatPlanModal({ onClose, sector, endless, gameMode, multi }:{ 
             ))}
           </div>
         )}
-        <div className="mt-3"><button onClick={onClose} className="w-full px-4 py-2 rounded-xl bg-emerald-600">Close</button></div>
+        <div className="mt-3"><button data-tutorial="intel-close" onClick={onClose} className="w-full px-4 py-2 rounded-xl bg-emerald-600">Close</button></div>
       </div>
     </div>
   );
@@ -129,7 +129,7 @@ export function TechListModal({ onClose, research }:{ onClose:()=>void, research
   },[])
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 bg-black/70">
-      <div className="w-full max-w-md bg-zinc-800 border border-zinc-600 rounded-2xl p-4">
+      <div data-tutorial="tech-modal" className="w-full max-w-md bg-zinc-800 border border-zinc-600 rounded-2xl p-4">
         <div className="text-lg font-semibold mb-2">Tech List</div>
         <div className="max-h-[60vh] overflow-y-auto pr-1 text-xs sm:text-sm space-y-3">
           {tracks.map(t => {

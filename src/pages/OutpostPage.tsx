@@ -154,7 +154,7 @@ export function OutpostPage({
   }
   return (
     <>
-      {showPlan && <CombatPlanModal onClose={()=>setShowPlan(false)} sector={sector} endless={endless} gameMode={gameMode} multi={multi as never} />}
+      {showPlan && <CombatPlanModal onClose={()=>{ setShowPlan(false); try { if (isTutorialEnabled()) tutorialEvent('viewed-intel') } catch { /* noop */ } }} sector={sector} endless={endless} gameMode={gameMode} multi={multi as never} />}
 
       <div className="mx-auto max-w-5xl pb-24">
 
