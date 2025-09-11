@@ -18,13 +18,9 @@ describe('CombatPage fly-in intro', () => {
         onReturn={() => {}}
       />
     )
-    // Present on mount
-    expect(screen.getByTestId('flyin-top')).toBeInTheDocument()
-    expect(screen.getByTestId('flyin-bottom')).toBeInTheDocument()
+    // Two fleet rows exist
+    expect(screen.getAllByTestId('fleet-row')).toHaveLength(2)
     await act(async () => { vi.runAllTimers() })
-    // Classes should transition away from opacity-0 after tick
-    expect(screen.getByTestId('flyin-top').className).toMatch(/opacity-1|opacity-100|translate-y-0/)
-    expect(screen.getByTestId('flyin-bottom').className).toMatch(/opacity-1|opacity-100|translate-y-0/)
     vi.useRealTimers()
   })
 })

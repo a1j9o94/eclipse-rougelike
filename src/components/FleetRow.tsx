@@ -5,7 +5,7 @@ import type { Ship } from '../../shared/types'
 import { groupFleet } from '../game'
 import FlyInOnMount from './animations/FlyInOnMount'
 
-export function FleetRow({ ships, side, activeIdx, intro }:{ ships:Ship[], side:'P'|'E', activeIdx:number, intro?: { play:boolean; direction:'top'|'bottom'; totalMs?:number; startDelayMs?:number } }){
+export function FleetRow({ ships, side, activeIdx, intro }:{ ships:Ship[], side:'P'|'E', activeIdx:number, intro?: { play:boolean; direction:'top'|'bottom'; totalMs?:number; startDelayMs?:number; onDone?:()=>void } }){
   const ref = useRef<HTMLDivElement>(null)
   const [dims, setDims] = useState({ width: 0, card: 0 })
 
@@ -38,6 +38,16 @@ export function FleetRow({ ships, side, activeIdx, intro }:{ ships:Ship[], side:
 
   const n = groups.length
   const step = n>1 && dims.width ? Math.min(cardWidth + 8, (dims.width - cardWidth)/(n-1)) : cardWidth + 8
+  useEffect(()=>{
+    if (!intro?.play) return
+    const total = intro.totalMs ?? 1500
+    const start = intro.startDelayMs ?? 0
+    const duration = 600 // matches FlyInOnMount default
+    const endAt = start + total + duration
+    const t = setTimeout(()=> intro.onDone?.(), endAt)
+    return ()=> clearTimeout(t)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [intro?.play])
 
   return (
     <div ref={ref} data-testid="fleet-row" className="relative h-36 w-full">
@@ -52,7 +62,7 @@ export function FleetRow({ ships, side, activeIdx, intro }:{ ships:Ship[], side:
             ))}
             {g.count>1 && <div className="absolute -top-2 -left-2 bg-zinc-800 px-1 rounded text-xs">×{g.count}</div>}
             {intro?.play ? (
-              <FlyInOnMount direction={intro.direction} delayMs={delayMs} durationMs={600}>
+              <FlyInOnMount direction={intro.direction} delayMs={delayMs} durationMs={450}>
                 <CompactShip ship={g.ship} side={side} active={isActive} />
               </FlyInOnMount>
             ) : (

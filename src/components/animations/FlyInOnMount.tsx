@@ -35,7 +35,9 @@ export default function FlyInOnMount({
     const start = setTimeout(() => setOffset(false), Math.max(0, delayMs))
     const done = setTimeout(() => { onDone?.() }, Math.max(0, delayMs + durationMs))
     return () => { clearTimeout(start); clearTimeout(done) }
-  }, [play, delayMs, durationMs, onDone])
+  // Only react to play toggles; keep delay/duration stable to avoid flicker on rerenders
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [play])
 
   const base = `transition-transform transition-opacity ease-out duration-[${durationMs}ms] will-change-transform`
   const hidden = direction === 'top'
