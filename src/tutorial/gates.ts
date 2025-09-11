@@ -15,7 +15,7 @@ export type Gate = {
 
 export function gateFor(step: TutorialStepId): Gate {
   switch (step) {
-    case 'intro-combat':     return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: false }
+    case 'intro-combat':     return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true }
     case 'shop-buy-composite': return { canBuy: true,  canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true,  allowedBuyIds: ['composite'] }
     case 'combat-2':         return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true }
     case 'dock-expand':       return { canBuy: false, canReroll: false, canUpgradeDock: true,  canResearch: false, canUpgradeShip: false, canStartCombat: true }
