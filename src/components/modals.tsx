@@ -61,6 +61,12 @@ export function CombatPlanModal({ onClose, sector, endless, gameMode, multi }:{ 
   const plan = endless
     ? Array.from({length:5}, (_,i)=> getSectorSpec(sector + i))
     : SECTORS;
+  const intelCloseRef = useRef<HTMLButtonElement|null>(null)
+  useEffect(()=>{
+    if (tutorialEnabled() && tutorialGetStep()==='intel-close') {
+      setTimeout(()=>{ try { intelCloseRef.current?.focus() } catch { /* noop */ } }, 0)
+    }
+  },[])
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 bg-black/70">
       <div data-tutorial="intel-modal" className="w-full max-w-lg bg-zinc-800 border border-zinc-600 rounded-2xl p-4">
@@ -112,7 +118,7 @@ export function CombatPlanModal({ onClose, sector, endless, gameMode, multi }:{ 
             ))}
           </div>
         )}
-        <div className="mt-3"><button data-tutorial="intel-close" onClick={onClose} className="w-full px-4 py-2 rounded-xl bg-emerald-600">Close</button></div>
+        <div className="mt-3"><button ref={intelCloseRef as unknown as React.Ref<HTMLButtonElement>} data-tutorial="intel-close" onClick={onClose} className="w-full px-4 py-2 rounded-xl bg-emerald-600">Close</button></div>
       </div>
     </div>
   );
