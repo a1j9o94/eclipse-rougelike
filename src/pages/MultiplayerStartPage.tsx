@@ -9,14 +9,15 @@ interface MultiplayerStartPageProps {
   onGoPublic: () => void;
   currentFaction?: string;
   initialMode?: 'menu' | 'create' | 'join';
+  initialIsPublic?: boolean;
 }
 
-export default function MultiplayerStartPage({ onRoomJoined, onBack, onGoPublic, currentFaction, initialMode }: MultiplayerStartPageProps) {
+export default function MultiplayerStartPage({ onRoomJoined, onBack, onGoPublic, currentFaction, initialMode, initialIsPublic }: MultiplayerStartPageProps) {
   const [mode, setMode] = useState<'menu' | 'create' | 'join' | 'public'>(initialMode || 'menu');
   const [roomName, setRoomName] = useState(generateSpaceRoomName());
   const [playerName, setPlayerName] = useState('');
   const [roomCode, setRoomCode] = useState('');
-  const [isPublic, setIsPublic] = useState(false);
+  const [isPublic, setIsPublic] = useState(Boolean(initialIsPublic));
   const [gameConfig, setGameConfig] = useState(createDefaultMultiplayerGameConfig());
   const [isCreating, setIsCreating] = useState(false);
   const [isJoining, setIsJoining] = useState(false);

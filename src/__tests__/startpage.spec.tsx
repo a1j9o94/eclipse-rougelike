@@ -45,7 +45,7 @@ describe('StartPage', () => {
     expect(versusTab).toBeEnabled();
     fireEvent.click(versusTab);
     // Expect three options in Versus modal
-    expect(screen.getByRole('button', { name: /Create Match/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Create Game/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Join Match/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /View Public Matches/i })).toBeInTheDocument();
   });

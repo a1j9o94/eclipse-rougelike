@@ -14,11 +14,13 @@ export type PreGameRouterProps = {
   faction: string
   multiplayerPhase: 'menu'|'public'|'lobby'|'game'
   multiplayerStartMode?: 'menu'|'create'|'join'
+  multiplayerCreatePublic?: boolean
+  openVersusOnHome?: boolean
   currentRoomId: Id<'rooms'> | null
   // handlers
   onNewRun: (diff: DifficultyId, faction: FactionId) => void
   onContinue: () => void
-  onGoMultiplayer: (mode?: 'menu'|'create'|'join'|'public') => void
+  onGoMultiplayer: (mode?: 'menu'|'create'|'join'|'public', opts?: { public?: boolean }) => void
   onGoPublic: () => void
   onRoomJoined: (roomId: string) => void
   onBack: () => void
@@ -33,6 +35,8 @@ export function getPreGameElement(props: PreGameRouterProps): ReactElement | nul
       onNewRun: props.onNewRun,
       onContinue: props.onContinue,
       onMultiplayer: props.onGoMultiplayer,
+      initialShowLaunch: props.openVersusOnHome || false,
+      initialLaunchTab: 'versus',
     })
   }
 
@@ -44,12 +48,14 @@ export function getPreGameElement(props: PreGameRouterProps): ReactElement | nul
         currentFaction: props.faction,
         onGoPublic: props.onGoPublic,
         initialMode: props.multiplayerStartMode || 'menu',
+        initialIsPublic: props.multiplayerCreatePublic || false,
       })
     }
     if (multiplayerPhase === 'public') {
       return createElement(PublicLobbyPage, {
         onBack: props.onBack,
         onRoomJoined: props.onRoomJoined,
+        onCreatePublic: () => props.onGoMultiplayer('create', { public: true }),
       })
     }
     if (multiplayerPhase === 'lobby' && currentRoomId) {

@@ -5,10 +5,11 @@ import { useMultiplayerGame } from '../hooks/useMultiplayerGame';
 type Props = {
   onBack: () => void;
   onRoomJoined: (roomId: string) => void;
+  onCreatePublic: () => void;
   defaultName?: string;
 };
 
-export default function PublicLobbyPage({ onBack, onRoomJoined, defaultName }: Props) {
+export default function PublicLobbyPage({ onBack, onRoomJoined, onCreatePublic, defaultName }: Props) {
   const [playerName, setPlayerName] = useState(defaultName ?? '');
   const [error, setError] = useState('');
   const [joiningCode, setJoiningCode] = useState<string | null>(null);
@@ -35,9 +36,12 @@ export default function PublicLobbyPage({ onBack, onRoomJoined, defaultName }: P
   return (
     <div className="min-h-screen text-zinc-100 p-4">
       <div className="max-w-2xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <h1 className="text-2xl font-bold">Public Matchmaking</h1>
-          <button onClick={onBack} className="px-3 py-1 text-sm bg-zinc-700 hover:bg-zinc-600 rounded">Back</button>
+          <div className="flex items-center gap-2">
+            <button onClick={onCreatePublic} className="px-3 py-1 text-sm bg-purple-600 hover:bg-purple-700 rounded">Create Public Game</button>
+            <button onClick={onBack} className="px-3 py-1 text-sm bg-zinc-700 hover:bg-zinc-600 rounded">Back</button>
+          </div>
         </div>
 
         {error && (

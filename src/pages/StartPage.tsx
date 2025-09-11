@@ -10,10 +10,14 @@ export default function StartPage({
   onNewRun,
   onContinue,
   onMultiplayer,
+  initialShowLaunch,
+  initialLaunchTab,
 }: {
   onNewRun: (diff: DifficultyId, faction: FactionId) => void;
   onContinue?: () => void;
   onMultiplayer?: (mode?: 'menu' | 'create' | 'join' | 'public') => void;
+  initialShowLaunch?: boolean;
+  initialLaunchTab?: 'solo'|'versus';
 }) {
   const progress: Progress = evaluateUnlocks(loadRunState());
   const available = FACTIONS.filter(f => progress.factions[f.id]?.unlocked);
@@ -28,8 +32,8 @@ export default function StartPage({
   const canHard = wins.includes('medium');
   const save = loadRunState();
 
-  const [showLaunch, setShowLaunch] = useState(false);
-  const [launchTab, setLaunchTab] = useState<'solo'|'versus'>('solo');
+  const [showLaunch, setShowLaunch] = useState(Boolean(initialShowLaunch));
+  const [launchTab, setLaunchTab] = useState<'solo'|'versus'>(initialLaunchTab ?? 'solo');
   const [showLog, setShowLog] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [soloDiff, setSoloDiff] = useState<DifficultyId>('easy');
@@ -155,7 +159,7 @@ export default function StartPage({
                         className="w-full px-3 py-3 rounded-xl bg-sky-600 hover:bg-sky-500"
                         onClick={()=>{ if (onMultiplayer) { onMultiplayer('create'); } setShowLaunch(false); }}
                       >
-                        Create Match
+                        Create Game
                       </button>
                       <button
                         className="w-full px-3 py-3 rounded-xl bg-blue-600 hover:bg-blue-500"
