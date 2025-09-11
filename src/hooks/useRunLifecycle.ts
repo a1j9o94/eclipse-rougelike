@@ -96,7 +96,10 @@ export function useRunLifecycle(params: {
         // Tutorial: step advancement and curated shop when active
         if (isTutorialEnabled()) {
           try {
-            tutorialEvent('post-combat')
+            const stepId = getTutorialStep() as unknown as string
+            if (stepId === 'combat-2' || stepId === 'combat-3') {
+              tutorialEvent('post-combat')
+            }
             const ids = curatedShopFor(getTutorialStep() as never)
             if (ids && ids.length > 0) {
               const items = ids.map(id => (ALL_PARTS as PPart[]).find(p => p.id === id)).filter(Boolean) as PPart[]
