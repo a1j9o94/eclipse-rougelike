@@ -12,7 +12,7 @@ export type TutorialStep = {
 export const STEPS: TutorialStep[] = [
   { id: 'intro-combat', anchor: 'start-combat', copy: 'You are a mercenary captain hired to clear hostile sectors. Each battle, ships act from highest 🚀 Initiative to lowest. Weapons roll dice; 6 hits by default. 🎯 Computers lower the roll you need to hit; 🛡️ Shields make you harder to hit. Each hit removes 1 ❤️; at 0, a ship is destroyed. Press Start Combat to begin.', triggers: ['started-combat'] },
   { id: 'outpost-ship', anchor: 'ship-card', copy: 'Tap a ship to select it. Watch ❤️ hull, ⬛ slots, and ⚡ power (right of name). Keep power usage ≤ power produced.', triggers: ['focused-ship'] },
-  { id: 'outpost-blueprint', anchor: 'blueprint-panel', copy: 'Class blueprints apply to every ship of that class. Changing the blueprint changes new builds and upgrades.' },
+  { id: 'outpost-blueprint', anchor: 'blueprint-panel', copy: 'Class blueprints apply to every ship of that class. Changing the blueprint changes new builds and upgrades.', triggers: ['next'] },
   // Buy Composite Hull specifically
   { id: 'shop-buy-composite', anchor: 'shop-grid', copy: 'Buy a Composite Hull. More ❤️ means more hits you can take.', curatedShop: ['composite','fusion_source','plasma','positron'], triggers: ['bought-composite'] },
   // Fight and return

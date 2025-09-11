@@ -8,11 +8,13 @@ export default function CoachmarkOverlay({
   title,
   text,
   anchor,
+  onNext,
 }: {
   visible: boolean
   title?: string
   text?: string
   anchor?: string
+  onNext?: () => void
 }){
   if (!visible) return null
   const [rect, setRect] = useState<Rect | null>(null)
@@ -81,6 +83,11 @@ export default function CoachmarkOverlay({
            style={{ top: pos.top - window.scrollY, left: pos.left - window.scrollX }}>
         {title && <div className="text-lg font-semibold mb-2">{title}</div>}
         {text && <div className="text-sm leading-relaxed">{text}</div>}
+        {onNext && (
+          <div className="mt-3 text-right">
+            <button onClick={onNext} className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500">Next</button>
+          </div>
+        )}
       </div>
     </div>
   )

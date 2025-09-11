@@ -489,6 +489,7 @@ export default function EclipseIntegrated(){
         return outpostSteps.has(id)
       })()
       if (!show) return null
+      const showNext = new Set(['outpost-blueprint','rules-hint']).has(id)
       return (
         <CoachmarkOverlay
           key="tutorial-coach"
@@ -496,6 +497,7 @@ export default function EclipseIntegrated(){
           title="Tutorial"
           text={text}
           anchor={step?.anchor}
+          onNext={showNext ? ()=> { try { (require('./tutorial/state') as { event:(n:string)=>void }).event('next') } catch { /* noop */ } } : undefined}
         />
       )
     })() : null}
