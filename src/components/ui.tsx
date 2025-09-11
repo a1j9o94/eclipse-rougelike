@@ -202,7 +202,7 @@ export function ItemCard({ item, price, canAfford, onBuy, ghostDelta }:{item:Par
     </div>
   );
 }
-export function ResourceBar({ credits, materials, science, tonnage, sector, onReset, lives, meName, meFaction, opponent, opponentFaction, phase }:{credits:number, materials:number, science:number, tonnage:{used:number,cap:number}, sector:number, onReset:()=>void, lives?:number, meName?:string, meFaction?:string, opponent?:{ name:string; lives:number }|null, opponentFaction?:string|null, phase?: 'setup'|'combat'|'finished'}){
+export function ResourceBar({ credits, materials, science, tonnage, sector, onReset, lives, multiplayer }:{credits:number, materials:number, science:number, tonnage:{used:number,cap:number}, sector:number, onReset:()=>void, lives?:number, multiplayer?:boolean}){
   const used = tonnage.used, cap = tonnage.cap;
   const over = used>cap;
   const capIcon = over ? '🔴' : '🟢';
@@ -213,12 +213,9 @@ export function ResourceBar({ credits, materials, science, tonnage, sector, onRe
         <div className={`px-2 py-1 rounded-lg whitespace-nowrap ${over? 'bg-rose-950/50 text-rose-200 ring-1 ring-rose-700/30' : 'bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20'}`}>{capIcon} <b>{used}</b>/<b>{cap}</b></div>
         <div className="px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap">🗺️ <b>{sector}</b></div>
         {typeof lives === 'number' && (
-          <div className="px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap">{meName ? `${meName}${meFaction?` (${meFaction})`:''}:` : ''} <b>{lives}</b> ❤</div>
+          <div className="px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"><b>{lives}</b> ❤</div>
         )}
-        {opponent && (
-          <div className="px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap">vs {opponent.name}{opponentFaction?` (${opponentFaction})`:''}: <b>{opponent.lives}</b> ❤{phase ? <span className="ml-2 text-xs opacity-70">Phase: {phase}</span> : null}</div>
-        )}
-        <button onClick={onReset} className="px-2 py-1 rounded bg-zinc-800 text-xs">{opponent ? 'Resign' : 'Restart'}</button>
+        <button onClick={onReset} className="px-2 py-1 rounded bg-zinc-800 text-xs">{multiplayer ? 'Resign' : 'Restart'}</button>
       </div>
     </div>
   );

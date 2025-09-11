@@ -25,5 +25,6 @@ describe('Enemy Intel modal (renamed + MP content)', () => {
     expect(screen.queryByText(/Sector 5 \(Boss\)/i)).toBeNull()
     // Placeholder until last-faced intel is available
     expect(await screen.findByText(/No data yet — defaults shown/i)).toBeInTheDocument()
+    expect(await screen.findByText(/Lives: 0/i)).toBeInTheDocument()
   })
 })
