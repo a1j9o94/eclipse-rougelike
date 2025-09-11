@@ -1,25 +1,33 @@
 // React import not required with modern JSX transform
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { computePlacement } from './placement'
 
 type Rect = { top:number; left:number; width:number; height:number }
 
-export default function CoachmarkOverlay({
-  visible,
-  title,
-  text,
-  anchor,
-  onNext,
-}: {
+type Placement = { top:number; left:number }
+
+function clamp(n:number, min:number, max:number){ return Math.min(Math.max(n, min), max) }
+
+function intersects(a:{top:number;left:number;width:number;height:number}, b:{top:number;left:number;width:number;height:number}){
+  return !(
+    a.left + a.width <= b.left ||
+    b.left + b.width <= a.left ||
+    a.top + a.height <= b.top ||
+    b.top + b.height <= a.top
+  )
+}
+
+export default function CoachmarkOverlay({ visible, title, text, anchor, onNext }: {
   visible: boolean
   title?: string
   text?: string
   anchor?: string
   onNext?: () => void
 }){
-  if (!visible) return null
   const [rect, setRect] = useState<Rect | null>(null)
-  const [pos, setPos] = useState<{ top:number; left:number }>({ top: 24, left: 24 })
+  const [pos, setPos] = useState<Placement>({ top: 24, left: 24 })
   const panelRef = useRef<HTMLDivElement>(null)
+  const hiddenSizerRef = useRef<HTMLDivElement>(null)
 
   // Track anchor position
   useLayoutEffect(()=>{
@@ -31,8 +39,18 @@ export default function CoachmarkOverlay({
       setRect({ top: r.top + window.scrollY, left: r.left + window.scrollX, width: r.width, height: r.height })
       // Ensure visibility
       try {
-        const inView = r.top >= 64 && r.bottom <= (window.innerHeight - 100)
-        if (!inView) el.scrollIntoView({ block: 'center', behavior: 'smooth' })
+        // Keep the anchor comfortably visible with headroom to fit the panel
+        const panelH = (hiddenSizerRef.current?.getBoundingClientRect().height || 120)
+        const headroom = Math.min(220, Math.max(120, panelH + 24))
+        const inView = (r.top >= 64) && (r.bottom <= (window.innerHeight - headroom))
+        if (!inView) {
+          const targetY = clamp(
+            r.top + window.scrollY - Math.max(64, (window.innerHeight - r.height - headroom) / 2),
+            0,
+            document.documentElement.scrollHeight - window.innerHeight
+          )
+          window.scrollTo({ top: targetY, behavior: 'smooth' })
+        }
       } catch { /* noop */ }
     }
     measure()
@@ -48,38 +66,51 @@ export default function CoachmarkOverlay({
   useEffect(()=>{
     const panel = panelRef.current
     if (!panel) return
-    const panelW = Math.min(320, window.innerWidth - 24)
+    const panelW = Math.min(340, window.innerWidth - 24)
     const panelH = panel.getBoundingClientRect().height || 120
+
+    // Avoid rectangles (sticky Start Combat bar etc.)
+    const avoidRects: Rect[] = []
+    try {
+      const start = document.querySelector('[data-tutorial="start-combat"]') as HTMLElement | null
+      if (start) { const s = start.getBoundingClientRect(); avoidRects.push({ top: s.top + window.scrollY, left: s.left + window.scrollX, width: s.width, height: s.height + 32 }) }
+    } catch { /* noop */ }
+
     if (rect) {
-      // Preferred placement: right of anchor; fallback to left; then below
-      let tryLeft = rect.left + rect.width + 16
-      let tryTop = rect.top
-      if (tryLeft + panelW > window.scrollX + window.innerWidth - 12) {
-        tryLeft = rect.left - panelW - 16
-      }
-      if (tryLeft < 12) {
-        tryLeft = rect.left
-        tryTop = rect.top + rect.height + 12
-      }
-      const left = Math.min(Math.max(tryLeft, 12), window.scrollX + window.innerWidth - panelW - 12)
-      const top = Math.min(Math.max(tryTop, window.scrollY + 12), window.scrollY + window.innerHeight - panelH - 12)
-      setPos({ top, left })
+      setPos(
+        computePlacement({
+          anchor: rect,
+          panelW,
+          panelH,
+          viewport: { top: window.scrollY, left: window.scrollX, width: window.innerWidth, height: window.innerHeight },
+          avoid: avoidRects,
+          pad: 12,
+        })
+      )
     } else {
       setPos({ top: window.scrollY + 16, left: window.scrollX + 16 })
     }
   }, [rect])
 
+  if (!visible) return null
   return (
     <div className="fixed inset-0 z-[80] p-0 bg-transparent pointer-events-none">
       {/* Highlight box over anchor */}
       {rect && (
         <div
-          className="absolute border-2 border-emerald-400/80 rounded-xl shadow-[0_0_0_9999px_rgba(0,0,0,0.4)]"
+          className="absolute border-2 border-emerald-400/80 rounded-xl shadow-[0_0_0_9999px_rgba(0,0,0,0.32)]"
           style={{ top: rect.top - window.scrollY - 6, left: rect.left - window.scrollX - 6, width: rect.width + 12, height: rect.height + 12 }}
         />
       )}
       {/* Callout panel */}
-      <div ref={panelRef} className="absolute max-w-xs bg-zinc-800/95 border border-zinc-500 rounded-2xl p-4 shadow-2xl text-zinc-50 pointer-events-auto"
+      {/* Hidden sizer for pre-measuring panel height when computing scroll headroom */}
+      <div ref={hiddenSizerRef} className="absolute -top-[2000px] left-0 max-w-xs bg-transparent text-transparent">
+        <div className="p-4 text-sm">{text || ''}</div>
+        {onNext && <div className="mt-3"><button className="px-3 py-2">Next</button></div>}
+      </div>
+      <div
+        ref={panelRef}
+        className="absolute max-w-xs sm:max-w-sm bg-zinc-800/95 border border-zinc-500 rounded-2xl p-4 shadow-2xl text-zinc-50 pointer-events-auto touch-pan-y"
            style={{ top: pos.top - window.scrollY, left: pos.left - window.scrollX }}>
         {title && <div className="text-lg font-semibold mb-2">{title}</div>}
         {text && <div className="text-sm leading-relaxed">{text}</div>}
