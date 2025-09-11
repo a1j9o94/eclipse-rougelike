@@ -92,7 +92,7 @@ export function evaluateUnlocks(run: PartialRun | null, victory = false): Progre
     const pf = prog.factions[f.id];
     if (!pf.unlocked && f.unlock && f.unlock(ctx)) {
       pf.unlocked = true;
-      prog.log.push(`Unlocked ${f.id}`);
+      prog.log.push(`Your achievements have caught the attention of the ${f.name}. Their faction is now available.`);
     }
   }
   saveProgress(prog);
@@ -126,7 +126,9 @@ export function recordWin(fid: FactionId, diff: DifficultyId, research: Research
   if (pf && !pf.difficulties.includes(diff)) {
     pf.difficulties.push(diff);
   }
-  prog.log.push(`Won as ${fid} on ${diff}`);
+  const name = getFaction(fid).name;
+  const diffName = diff.charAt(0).toUpperCase() + diff.slice(1);
+  prog.log.push(`Victory for the ${name} on ${diffName} difficulty.`);
   saveProgress(prog);
   evaluateUnlocks({ research, fleet }, true);
 }
