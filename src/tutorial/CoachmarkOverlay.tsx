@@ -62,7 +62,7 @@ export default function CoachmarkOverlay({
   }, [rect])
 
   return (
-    <div className="fixed inset-0 z-[80] p-0 bg-black/60 backdrop-blur-sm pointer-events-none">
+    <div className="fixed inset-0 z-[80] p-0 bg-transparent pointer-events-none">
       {/* Highlight box over anchor */}
       {rect && (
         <div

@@ -6,6 +6,7 @@ import { type FrameId } from './game'
 import GameShell from './components/GameShell'
 import { getPreGameElement } from './lib/renderPreGame'
 import CoachmarkOverlay from './tutorial/CoachmarkOverlay'
+import { ALL_PARTS } from '../shared/parts'
 import { STEPS } from './tutorial/script'
 import useTutorial from './tutorial/useTutorial'
 // import { getEconomyModifiers } from './game/economy'
@@ -13,7 +14,7 @@ import useTutorial from './tutorial/useTutorial'
 // StartPage routed via PreGameRouter
 import { type FactionId } from '../shared/factions'
 // Routed views are rendered inside GameShell
-import { type Part } from '../shared/parts'
+import type { Part } from '../shared/parts'
 import { type Ship, type InitiativeEntry } from '../shared/types'
 // run init handled in useRunManagement
 // lives init handled by utils/inferLives
@@ -414,6 +415,23 @@ export default function EclipseIntegrated(){
   // Pre-game routing (start, MP menu/lobby)
   // Tutorial hook must be declared before any early returns to keep hook order stable
   const tut = useTutorial()
+  // Seed curated shop on step entry where needed
+  useEffect(()=>{
+    if (!tut.enabled) return
+    const id = tut.step as string
+    const idMap: Record<string, string[] | undefined> = {
+      'shop-buy-composite': ['composite','fusion_source','plasma','positron'],
+      'buy-improved': ['improved','fusion_source','plasma'],
+      'tech-nano': ['tachyon_drive','antimatter','improved'],
+    }
+    const wanted = idMap[id]
+    if (!wanted) return
+    try {
+      const items = wanted.map(pid => (ALL_PARTS as Part[]).find(p => p.id===pid)).filter(Boolean) as Part[]
+      setShop({ items })
+    } catch { /* noop */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tut.step])
 
   const preGame = getPreGameElement({
     gameMode,
