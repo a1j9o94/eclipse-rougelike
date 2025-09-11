@@ -8,6 +8,7 @@ import { getMyEconomyMods, getMyResources, getMyPlayerState } from '../adapters/
 import { useOutpostHandlers, type UseOutpostHandlersParams } from '../hooks/useOutpostHandlers'
 import { useOutpostActionMap } from '../hooks/useOutpostActionMap'
 import { useOutpostPageProps, type OutpostPageProps } from '../hooks/useOutpostPageProps'
+import { isEnabled as isTutorialEnabled, event as tutorialEvent } from '../tutorial/state'
 import { makeCanResearch, makeResearchLabel } from '../selectors/researchUi'
 import { upgradeLockInfo as selectUpgradeLockInfo } from '../selectors/upgrade'
 import { ghostClassDelta } from '../selectors/ghost'
@@ -108,7 +109,7 @@ export function useOutpostController(params: OutpostControllerParams){
     tonnage: state.tonnage,
     shop: state.shop,
     focused: state.focused,
-    setFocused: setters.setFocused,
+    setFocused: (n) => { try { if (isTutorialEnabled()) tutorialEvent('focused-ship') } catch { /* noop */ } setters.setFocused(n) },
     // Reroll label/guard: use the greater of local and server to avoid regressing when server lags
     rerollCost: (gameMode==='multiplayer'
       ? (() => {
