@@ -491,7 +491,7 @@ export default function EclipseIntegrated(){
         return outpostSteps.has(id)
       })()
       if (!show) return null
-      const showNext = new Set(['outpost-blueprint','capacity-info','rules-hint']).has(id)
+      const showNext = new Set(['outpost-blueprint','bar-resources','bar-capacity','bar-sector','bar-lives','capacity-info','rules-hint']).has(id)
       return (
         <CoachmarkOverlay
           key="tutorial-coach"
