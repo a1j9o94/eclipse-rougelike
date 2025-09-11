@@ -482,7 +482,7 @@ export default function EclipseIntegrated(){
         if (mode==='COMBAT') return id==='intro-combat' ? false : false
         // Outpost: show hints for actionable steps only
         const outpostSteps = new Set([
-          'intro-combat','outpost-ship','outpost-blueprint','shop-buy-composite','dock-expand','tech-nano','sell-composite','buy-improved','tech-military','upgrade-interceptor','enemy-intel'
+          'intro-combat','outpost-ship','outpost-blueprint','shop-buy-composite','combat-2','dock-expand','tech-nano','sell-composite','buy-improved','tech-military','upgrade-interceptor','enemy-intel'
         ])
         return outpostSteps.has(id)
       })()

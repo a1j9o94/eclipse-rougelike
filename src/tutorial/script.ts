@@ -16,7 +16,7 @@ export const STEPS: TutorialStep[] = [
   // Buy Composite Hull specifically
   { id: 'shop-buy-composite', anchor: 'shop-grid', copy: 'Buy a Composite Hull (adds ❤️) to your blueprint.', curatedShop: ['composite','fusion_source','plasma','positron'], triggers: ['bought-composite'] },
   // Fight and return
-  { id: 'combat-2', copy: 'Test your new hull in combat.', triggers: ['post-combat'] },
+  { id: 'combat-2', anchor: 'start-combat', copy: 'Press Start Combat to test your new hull.', triggers: ['post-combat'] },
   // Expand docks
   { id: 'dock-expand', anchor: 'expand-dock', copy: 'Expand dock capacity to field more ships.', triggers: ['expanded-dock'] },
   // Research Nano to unlock Improved Hull
