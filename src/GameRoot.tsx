@@ -9,6 +9,7 @@ import CoachmarkOverlay from './tutorial/CoachmarkOverlay'
 import { ALL_PARTS } from '../shared/parts'
 import { STEPS } from './tutorial/script'
 import useTutorial from './tutorial/useTutorial'
+import { event as tutorialEvent } from './tutorial/state'
 // import { getEconomyModifiers } from './game/economy'
 // blueprint seeding handled in hooks
 // StartPage routed via PreGameRouter
@@ -497,7 +498,7 @@ export default function EclipseIntegrated(){
           title="Tutorial"
           text={text}
           anchor={step?.anchor}
-          onNext={showNext ? ()=> { try { (require('./tutorial/state') as { event:(n:string)=>void }).event('next') } catch { /* noop */ } } : undefined}
+          onNext={showNext ? ()=> { try { tutorialEvent('next') } catch { /* noop */ } } : undefined}
         />
       )
     })() : null}
