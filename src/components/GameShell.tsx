@@ -15,11 +15,7 @@ export type RBProps = {
   sector: number
   onReset: () => void
   lives?: number
-  meName?: string
-  meFaction?: string
-  opponent?: { name: string; lives: number } | null
-  opponentFaction?: string | null
-  phase?: 'setup'|'combat'|'finished'
+  multiplayer?: boolean
 }
 
 export type CombatProps = {

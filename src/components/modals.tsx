@@ -66,10 +66,12 @@ export function CombatPlanModal({ onClose, sector, endless, gameMode, multi }:{ 
               const fleet = intel.fleet
               const round = intel.round || 1
               const name = intel.opponentName || 'Opponent'
+              const lives = intel.opponentLives ?? 0
               if (!fleet || fleet.length === 0) {
                 return (
                   <div className="px-2 py-1 rounded bg-zinc-950 border border-zinc-800">
                     <div className="font-medium">{name} — Round {round}</div>
+                    <div className="text-[11px] mb-1">Lives: {lives} ❤</div>
                     <div className="opacity-80 mt-0.5">No data yet — defaults shown</div>
                   </div>
                 )
@@ -77,6 +79,7 @@ export function CombatPlanModal({ onClose, sector, endless, gameMode, multi }:{ 
               return (
                 <div className="px-2 py-1 rounded bg-zinc-950 border border-zinc-800">
                   <div className="font-medium">{name} — Round {round}</div>
+                  <div className="text-[11px]">Lives: {lives} ❤</div>
                   <div className="opacity-70 mb-1">{intel.source === 'last_combat' ? 'Last faced fleet' : 'Current starting fleet'}</div>
                   <div className="mt-1 flex gap-2 overflow-x-auto pb-1">
                     {fleet.map((sh, i)=>(<CompactShip key={i} ship={sh} side='E' active={false} />))}

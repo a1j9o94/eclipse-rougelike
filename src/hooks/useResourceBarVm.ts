@@ -6,9 +6,7 @@ type RoomLite = { players?: Array<{ playerId: string; lives: number }>; status?:
 
 export type MpUiBasics = {
   getCurrentPlayer?: () => PlayerLite
-  getOpponent?: () => PlayerLite
   roomDetails?: { room?: RoomLite; players?: Array<{ playerId: string; lives: number }> } | null
-  gameState?: { gamePhase?: 'setup' | 'combat' | 'finished' } | null
 }
 
 export function useResourceBarVm(params: {
@@ -28,8 +26,6 @@ export function useResourceBarVm(params: {
     : resources
 
   const me = multi?.getCurrentPlayer?.() || null
-  const opp = multi?.getOpponent?.() || null
-  const phase = (multi?.gameState?.gamePhase as 'setup'|'combat'|'finished'|undefined)
   const lives = gameMode === 'single'
     ? singleLives
     : ((): number | undefined => {
@@ -48,17 +44,7 @@ export function useResourceBarVm(params: {
     sector,
     onReset,
     lives,
-    meName: gameMode === 'multiplayer' ? (me?.playerName || 'You') : undefined,
-    meFaction: gameMode === 'multiplayer' ? (me?.faction as string | undefined) : undefined,
-    opponent: gameMode === 'multiplayer' && opp ? { name: opp.playerName || 'Opponent', lives: ((): number => {
-      try {
-        const pid = (opp?.playerId || '') as string
-        const players = (multi?.roomDetails as { players?: Array<{ playerId: string; lives: number }> } | null | undefined)?.players || []
-        return players.find(p => p.playerId === pid)?.lives ?? 0
-      } catch { return 0 }
-    })() } : undefined,
-    opponentFaction: gameMode === 'multiplayer' ? (opp?.faction as string | undefined) : undefined,
-    phase,
+    multiplayer: gameMode === 'multiplayer',
   }
 }
 
