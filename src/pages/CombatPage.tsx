@@ -74,7 +74,7 @@ export function CombatPage({
         intro={{ play: !!introActive && !showRules, direction: 'bottom', totalMs: 1400, startDelayMs: 120, onDone: ()=>setIntroCount(c=>c+1) }}
       />
       {/* Mini Log */}
-      <div className="mt-3 p-2 rounded bg-zinc-900 text-xs sm:text-sm min-h-[56px]">
+      <div data-tutorial="log" className="mt-3 p-2 rounded bg-zinc-900 text-xs sm:text-sm min-h-[56px]">
         {log.slice(-5).map((ln,i)=>(<div key={i} className={i===log.length-1? 'font-medium' : 'opacity-80'}>{ln}</div>))}
       </div>
       {/* Controls */}

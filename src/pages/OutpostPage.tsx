@@ -162,7 +162,7 @@ export function OutpostPage({
         <div className="flex items-center gap-2 mb-2">
           <div className="text-lg font-semibold">Hangar (Class Blueprints)</div>
           <div className="flex-1" />
-          <button onClick={()=>setShowPlan(true)} className="px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs">📋 Enemy Intel</button>
+          <button data-tutorial="enemy-intel-btn" onClick={()=>setShowPlan(true)} className="px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs">📋 Enemy Intel</button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {fleetGroups.map((g,i)=> { const s = g.ship; const active = g.indices.includes(focused); const stack = Math.min(g.count-1,2); return (
@@ -170,7 +170,7 @@ export function OutpostPage({
                 {Array.from({length: stack}).map((_,j)=>(
                   <div key={j} className={`pointer-events-none absolute inset-0 rounded-xl border ${active?'border-sky-400':'border-zinc-700'} bg-zinc-900`} style={{transform:`translate(${(j+1)*4}px, ${(j+1)*4}px)`}} />
                 ))}
-                <button onClick={()=>setFocused(g.indices[0])} className={`relative w-full text-left p-3 rounded-xl border transition ${active?'border-sky-400 bg-sky-400/10':'border-zinc-700 bg-zinc-900 hover:border-zinc-600'}`}>
+                <button data-tutorial={active? 'ship-card': undefined} onClick={()=>setFocused(g.indices[0])} className={`relative w-full text-left p-3 rounded-xl border transition ${active?'border-sky-400 bg-sky-400/10':'border-zinc-700 bg-zinc-900 hover:border-zinc-600'}`}>
                   {g.count>1 && <div className="absolute -top-2 -left-2 bg-zinc-800 px-1 rounded text-xs">×{g.count}</div>}
                   <div className="flex items-center justify-between"><div className="font-semibold text-sm sm:text-base">{s.frame.name} <span className="text-xs opacity-70">(t{s.frame.tonnage})</span></div><PowerBadge use={s.stats.powerUse} prod={s.stats.powerProd} /></div>
                   <div className="text-xs opacity-80 mt-1">🚀 {s.stats.init} • 🎯 {s.stats.aim} • 🛡️ {s.stats.shieldTier} • ⬛ {s.parts.length}/{s.frame.tiles}</div>
@@ -190,7 +190,7 @@ export function OutpostPage({
           >
             {buildLabel}
           </button>
-          <button
+          <button data-tutorial="upgrade-ship"
             onClick={()=>upgradeShip(focused)}
             onMouseEnter={()=>setDockPreview(upgradeComputed.targetUsed)}
             onMouseLeave={()=>setDockPreview(null)}
@@ -201,7 +201,7 @@ export function OutpostPage({
           </button>
         </div>
         <div className="mt-2 grid grid-cols-2 gap-2">
-          <button
+          <button data-tutorial="expand-dock"
             onClick={upgradeDock}
             disabled={dockDisabled}
             className={`px-3 py-3 rounded-xl ${dockDisabled? 'bg-zinc-700 opacity-60' : 'bg-indigo-600 hover:bg-indigo-500 active:scale-95'}`}
@@ -230,7 +230,7 @@ export function OutpostPage({
           {/* Blueprint Manager with Sell */}
           <div className="mt-3">
             <div className="text-sm font-semibold mb-1">Class Blueprint — {focusedShip?.frame.name} ⬛ {bpSlotsUsed}/{focusedShip?.frame.tiles}</div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div data-tutorial="blueprint-panel" className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {currentBlueprint.map((p, idx)=> (
               <div key={idx} className="p-2 rounded border border-zinc-700 bg-zinc-900 text-xs">
                 <div className="font-medium text-sm">{p.name}</div>
@@ -255,7 +255,7 @@ export function OutpostPage({
               <div className="text-[11px] sm:text-xs opacity-70">Reroll +{rrInc} after each Reroll/Research</div>
             </div>
             <div className="text-lg font-semibold mb-2">Outpost Inventory</div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-2">
+            <div data-tutorial="shop-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-2">
               {shop.items.map((it:Part, i:number)=> {
                 const price = applyEconomyModifiers((it.cost||0), economyMods, 'credits');
                 const canAfford = resources.credits >= price;
@@ -267,7 +267,7 @@ export function OutpostPage({
           {/* Tech Upgrades side */}
           <div>
             <div className="text-lg font-semibold mb-2">Tech Upgrades</div>
-            <div className="grid grid-cols-3 gap-2 text-sm">
+            <div data-tutorial="research-grid" className="grid grid-cols-3 gap-2 text-sm">
               {tracks.map(t=> (
                 <button key={t} onClick={()=>researchTrack(t)} disabled={!canResearch(t)} className={`px-3 py-2 rounded-xl leading-tight ${canResearch(t)?'bg-zinc-900 border border-zinc-700 hover:border-zinc-500':'bg-zinc-800 opacity-60'}`}>{researchLabel(t)}</button>
               ))}
@@ -327,7 +327,7 @@ export function OutpostPage({
             }
             const cls = disabled ? 'bg-zinc-700 opacity-60' : 'bg-emerald-600';
             return (
-              <button onClick={()=> { try { console.debug('[outpost] start-combat click'); } catch { /* noop */ } startCombat() }} disabled={disabled} className={`flex-1 px-4 py-3 rounded-xl ${cls}`}>{label}</button>
+              <button data-tutorial="start-combat" onClick={()=> { try { console.debug('[outpost] start-combat click'); } catch { /* noop */ } startCombat() }} disabled={disabled} className={`flex-1 px-4 py-3 rounded-xl ${cls}`}>{label}</button>
             );
           })()}
           {myReady ? (
