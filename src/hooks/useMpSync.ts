@@ -127,8 +127,11 @@ export function useMpSetupSync(params: {
       let handledRerollBase = false
       if (multi.gameState?.gamePhase === 'setup' && typeof econ?.rerollBase === 'number') {
         const econBase = Number(econ.rerollBase)
-        if (baseRerollCost !== econBase || rerollCost !== econBase) {
+        // Always align baseRerollCost; only snap rerollCost if it hasn't diverged this round
+        if (baseRerollCost !== econBase) {
           setBaseRerollCost(econBase)
+        }
+        if (rerollCost === baseRerollCost) {
           setRerollCost(econBase)
           try { console.debug('[MP] reroll base corrected from econ (direct)', { base: econBase, round: roundNum }) } catch { /* noop */ }
         }

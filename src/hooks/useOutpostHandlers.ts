@@ -110,9 +110,14 @@ export function useOutpostHandlers(params: UseOutpostHandlersParams): OutpostHan
   }, [apply, sound])
 
   const reroll = useCallback(() => {
-    apply(OutpostIntents.reroll())
+    const r = apply(OutpostIntents.reroll())
+    if (!r) return
+    // In MP, persist resource deltas to server so both clients stay in sync
+    if (gameMode === 'multiplayer' && multi?.updateGameState) {
+      try { multi.updateGameState({ research: r.next.research as Research, resources: r.next.resources }) } catch { /* noop */ }
+    }
     sound?.('reroll')
-  }, [apply, sound])
+  }, [apply, gameMode, multi, sound])
 
   const research = useCallback((track: 'Military'|'Grid'|'Nano') => {
     const r = apply(OutpostIntents.research(track))
