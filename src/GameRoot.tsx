@@ -433,6 +433,14 @@ export default function EclipseIntegrated(){
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tut.step])
 
+  // Auto-open Tech List during that step so it works on mobile too
+  useEffect(()=>{
+    if (!tut.enabled) return
+    if ((tut.step as string) === 'tech-list') {
+      try { setShowTechs(true) } catch { /* noop */ }
+    }
+  }, [tut.enabled, tut.step])
+
   const preGame = getPreGameElement({
     gameMode,
     showNewRun,

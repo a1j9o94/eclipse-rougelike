@@ -174,6 +174,7 @@ export function useOutpostHandlers(params: UseOutpostHandlersParams): OutpostHan
       try { multi.updateGameState({ research: r.next.research as Research, resources: r.next.resources, rerollCost: (r.next.rerollCost as number | undefined) }) } catch { /* noop */ }
     }
     sound?.('reroll')
+    if (isTutorialEnabled()) tutorialEvent('rerolled')
   }, [apply, gameMode, multi, sound])
 
   const research = useCallback((track: 'Military'|'Grid'|'Nano') => {

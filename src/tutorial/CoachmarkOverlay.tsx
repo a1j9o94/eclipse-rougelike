@@ -53,8 +53,18 @@ export default function CoachmarkOverlay({
     const panelW = Math.min(320, window.innerWidth - 24)
     const panelH = panel.getBoundingClientRect().height || 120
     if (rect) {
-      const left = Math.min(Math.max(rect.left + rect.width + 16, 12), window.scrollX + window.innerWidth - panelW - 12)
-      const top = Math.min(Math.max(rect.top, window.scrollY + 12), window.scrollY + window.innerHeight - panelH - 12)
+      // Preferred placement: right of anchor; fallback to left; then below
+      let tryLeft = rect.left + rect.width + 16
+      let tryTop = rect.top
+      if (tryLeft + panelW > window.scrollX + window.innerWidth - 12) {
+        tryLeft = rect.left - panelW - 16
+      }
+      if (tryLeft < 12) {
+        tryLeft = rect.left
+        tryTop = rect.top + rect.height + 12
+      }
+      const left = Math.min(Math.max(tryLeft, 12), window.scrollX + window.innerWidth - panelW - 12)
+      const top = Math.min(Math.max(tryTop, window.scrollY + 12), window.scrollY + window.innerHeight - panelH - 12)
       setPos({ top, left })
     } else {
       setPos({ top: window.scrollY + 16, left: window.scrollX + 16 })

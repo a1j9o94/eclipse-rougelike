@@ -7,11 +7,14 @@ export type TutorialStepId =
   | 'combat-2'
   | 'dock-expand'
   | 'tech-nano'
+  | 'tech-list'
   | 'sell-composite'
   | 'buy-improved'
   | 'tech-military'
   | 'upgrade-interceptor'
+  | 'shop-reroll'
   | 'enemy-intel'
+  | 'rules-hint'
   | 'wrap';
 
 type TutorialState = {

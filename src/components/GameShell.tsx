@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ResourceBar } from './ui'
 import { RulesModal, TechListModal, WinModal, MatchOverModal, MPWinModal } from './modals'
+import { event as tutorialEvent } from '../tutorial/state'
 import OutpostPage from '../pages/OutpostPage'
 import CombatPage from '../pages/CombatPage'
 import type { Research } from '../../shared/defaults'
@@ -73,7 +74,7 @@ export function GameShell({
         <MatchOverModal winnerName={matchOver.winnerName} onClose={onMatchOverClose} />
       )}
       {showRules && <RulesModal onDismiss={onDismissRules} />}
-      {showTechs && <TechListModal research={outpost.research as Research} onClose={onCloseTechs} />}
+      {showTechs && <TechListModal research={outpost.research as Research} onClose={()=>{ try { tutorialEvent('viewed-tech-list') } catch { /* noop */ } onCloseTechs() }} />}
       {showWin && (mpWinMessage ? (
         <MPWinModal message={mpWinMessage} onClose={onRestartWin} />
       ) : (
@@ -87,8 +88,8 @@ export function GameShell({
 
       <div className="fixed bottom-3 right-3 z-40 flex flex-col gap-2">
         <div className="hidden sm:flex flex-col gap-2">
-          <button onClick={onOpenTechs} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">🔬 Tech</button>
-          <button onClick={onOpenRules} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">❓ Rules</button>
+          <button data-tutorial="help-tech" onClick={()=>{ try { tutorialEvent('opened-tech-list') } catch { /* noop */ } onOpenTechs() }} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">🔬 Tech</button>
+          <button data-tutorial="help-rules" onClick={onOpenRules} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">❓ Rules</button>
         </div>
         <div className="sm:hidden">
           {showHelpMenu ? (
