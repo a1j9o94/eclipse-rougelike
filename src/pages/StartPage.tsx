@@ -2,9 +2,10 @@ import { useMemo, useState } from 'react';
 import { FACTIONS, type FactionId } from '../../shared/factions';
 import { type DifficultyId } from '../../shared/types';
 import { getStartingShipCount } from '../../shared/difficulty';
-import { loadRunState, evaluateUnlocks, type Progress } from '../game/storage';
+import { loadRunState, evaluateUnlocks } from '../game/storage';
 import { playEffect } from '../game/sound';
 import Starfield from '../components/Starfield';
+import SettingsModal from '../components/SettingsModal';
 
 export default function StartPage({
   onNewRun,
@@ -19,7 +20,8 @@ export default function StartPage({
   initialShowLaunch?: boolean;
   initialLaunchTab?: 'continue'|'solo'|'versus';
 }) {
-  const progress: Progress = evaluateUnlocks(loadRunState());
+  const [, forceProgressRefresh] = useState(0);
+  const progress = evaluateUnlocks(loadRunState());
   const available = FACTIONS.filter(f => progress.factions[f.id]?.unlocked);
   const [faction, setFaction] = useState<FactionId>(available[0]?.id || 'industrialists');
   const shipCounts = useMemo(() => ({
@@ -214,45 +216,16 @@ export default function StartPage({
 
         {/* Settings Modal */}
         {showSettings && (
-          <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center">
-            <button aria-label="Close" onClick={()=>setShowSettings(false)} className="absolute inset-0 bg-black/50" />
-            <div className="relative w-full max-w-md mx-auto bg-zinc-950 border border-white/10 rounded-2xl p-4">
-              <div className="text-lg font-semibold">Settings</div>
-              <div className="mt-3 space-y-4 text-sm">
-                <div className="flex items-center justify-between">
-                  <span>Starfield</span>
-                  <button
-                    className={`px-3 py-1 rounded-full border ${starEnabled ? 'bg-emerald-700 border-emerald-500' : 'bg-zinc-800 border-white/10'}`}
-                    onClick={()=>{ const v = !starEnabled; setStarEnabled(v); try{ localStorage.setItem('ui-starfield-enabled', String(v)); window.dispatchEvent(new Event('starfield-settings-changed')); }catch { void 0 } }}
-                    aria-pressed={starEnabled}
-                  >{starEnabled ? 'On' : 'Off'}</button>
-                </div>
-                <div>
-                  <div className="mb-2">Star Density</div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {(['low','medium','high'] as const).map(d => (
-                      <button key={d}
-                        className={`px-3 py-2 rounded-xl border ${starDensity===d ? 'bg-white/10 border-emerald-500' : 'bg-zinc-900 border-white/10'}`}
-                        aria-pressed={starDensity===d}
-                        onClick={()=>{ setStarDensity(d); try{ localStorage.setItem('ui-starfield-density', d); window.dispatchEvent(new Event('starfield-settings-changed')); }catch { void 0 } }}
-                      >{d[0].toUpperCase()+d.slice(1)}</button>
-                    ))}
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Reduced Motion</span>
-                  <button
-                    className={`px-3 py-1 rounded-full border ${userReducedMotion ? 'bg-zinc-800 border-white/10' : 'bg-emerald-700 border-emerald-500'}`}
-                    onClick={()=>{ const v = !userReducedMotion; setUserReducedMotion(v); try{ localStorage.setItem('ui-reduced-motion', String(v)); window.dispatchEvent(new Event('starfield-settings-changed')); }catch { void 0 } }}
-                    aria-pressed={userReducedMotion}
-                  >{userReducedMotion ? 'On' : 'Off'}</button>
-                </div>
-              </div>
-              <div className="mt-4 text-right">
-                <button className="px-3 py-2 rounded-xl bg-zinc-800" onClick={()=>setShowSettings(false)}>Close</button>
-              </div>
-            </div>
-          </div>
+          <SettingsModal
+            starEnabled={starEnabled}
+            setStarEnabled={setStarEnabled}
+            starDensity={starDensity}
+            setStarDensity={setStarDensity}
+            userReducedMotion={userReducedMotion}
+            setUserReducedMotion={setUserReducedMotion}
+            onClose={() => setShowSettings(false)}
+            onCheatApplied={() => forceProgressRefresh(v => v + 1)}
+          />
         )}
       </div>
     </div>
