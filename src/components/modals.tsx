@@ -115,6 +115,16 @@ export function CombatPlanModal({ onClose, sector, endless, gameMode, multi }:{ 
 
 export function TechListModal({ onClose, research }:{ onClose:()=>void, research:Research }){
   const tracks = ['Military','Grid','Nano'] as const;
+  const closeRef = (typeof document !== 'undefined') ? (require('react').useRef as typeof import('react')['useRef'])<HTMLButtonElement|null>(null) : { current: null };
+  const useEffect = (typeof document !== 'undefined') ? (require('react').useEffect as typeof import('react')['useEffect']) : (()=>{}) as unknown as typeof import('react')['useEffect'];
+  useEffect(()=>{
+    try {
+      const { isEnabled, getStep } = require('../tutorial/state') as { isEnabled:()=>boolean; getStep:()=>string }
+      if (isEnabled() && getStep()==='tech-list') {
+        setTimeout(()=>{ try { closeRef.current?.focus() } catch { /* noop */ } }, 0)
+      }
+    } catch { /* noop */ }
+  },[])
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 bg-black/70">
       <div className="w-full max-w-md bg-zinc-900 border border-zinc-700 rounded-2xl p-4">
@@ -143,7 +153,7 @@ export function TechListModal({ onClose, research }:{ onClose:()=>void, research
             );
           })}
         </div>
-        <div className="mt-3"><button onClick={onClose} className="w-full px-4 py-2 rounded-xl bg-emerald-600">Close</button></div>
+        <div className="mt-3"><button ref={closeRef as unknown as React.Ref<HTMLButtonElement>} onClick={onClose} className="w-full px-4 py-2 rounded-xl bg-emerald-600">Close</button></div>
       </div>
     </div>
   );

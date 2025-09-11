@@ -9,8 +9,11 @@ import { applyOutpostCommand, type OutpostEffects } from '../engine/commands'
 import type { OutpostState, OutpostEnv } from '../engine/state'
 import { normalizeShopItems } from '../game/shop'
 import type { EffectKey } from '../game/sound'
+import { isEnabled as isTutorialEnabled, event as tutorialEvent } from '../tutorial/state'
+import { curatedShopFor } from '../tutorial/script'
+import { ALL_PARTS } from '../../shared/parts'
 import { currentGate } from '../tutorial/gates'
-import { event as tutorialEvent, isEnabled as isTutorialEnabled } from '../tutorial/state'
+// (duplicates removed)
 
 export type UseOutpostHandlersParams = {
   gameMode: 'single' | 'multiplayer'
@@ -196,7 +199,17 @@ export function useOutpostHandlers(params: UseOutpostHandlersParams): OutpostHan
     }
     sound?.('tech')
     if (isTutorialEnabled()) {
-      if (track==='Nano') tutorialEvent('researched-nano')
+      if (track==='Nano') {
+        tutorialEvent('researched-nano')
+        try {
+          const ids = curatedShopFor('buy-improved' as never)
+          if (ids && ids.length) {
+            const items = ids.map(id => (ALL_PARTS as Part[]).find(p => p.id===id)).filter(Boolean) as Part[]
+            // Override any research-driven shop update immediately
+            setters.setShop?.({ items })
+          }
+        } catch { /* noop */ }
+      }
       if (track==='Military') tutorialEvent('researched-military')
     }
   }, [apply, gameMode, multi, sound])
