@@ -4,7 +4,7 @@ import type { Resources, Research } from '../../shared/defaults'
 import type { Ship, CapacityState } from '../../shared/types'
 import type { FrameId } from '../game'
 import useOutpostVm from './useOutpostVm'
-import { getMyPlayerState, type MpBasics } from '../adapters/mpSelectors'
+import type { MpBasics } from '../adapters/mpSelectors'
 type UseOutpostVmArgs = Parameters<typeof useOutpostVm>[0]
 
 export type OutpostPageProps = {
@@ -86,20 +86,11 @@ export function useOutpostPageProps(params: {
   upgradeLockInfo: (s: Ship | null | undefined) => { need:number; next:string } | null
 }): OutpostPageProps {
   const vm = useOutpostVm(params as UseOutpostVmArgs)
-  // For MP, prefer the authoritative base reroll cost from my player state for display
-  let displayReroll = params.rerollCost
-  if (params.gameMode === 'multiplayer') {
-    try {
-      const st = getMyPlayerState(params.multi)
-      const econBase = (st as { economy?: { rerollBase?: number } } | null | undefined)?.economy?.rerollBase
-      if (typeof econBase === 'number') displayReroll = econBase
-    } catch { /* ignore */ }
-  }
   return useMemo(() => ({
     gameMode: params.gameMode,
     multi: params.multi,
     resources: params.resources,
-    rerollCost: displayReroll,
+    rerollCost: params.rerollCost,
     doReroll: params.doReroll,
     research: params.research,
     researchLabel: params.researchLabel,
@@ -128,7 +119,7 @@ export function useOutpostPageProps(params: {
     startCombat: vm.startCombat,
     onRestart: vm.onRestart,
     fleetValid: vm.fleetValid,
-  }), [params, vm, displayReroll])
+  }), [params, vm])
 }
 
 export default useOutpostPageProps

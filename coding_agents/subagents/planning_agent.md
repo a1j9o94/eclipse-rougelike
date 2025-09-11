@@ -160,3 +160,39 @@
 
 ### Follow-ups
 - Profile avatar stub on top bar; richer Battle Log entries with metadata.
+
+## Plan Entry — MP/SP Reroll Unification
+
+- Outcome: Reroll behavior and pricing are identical in Single Player and Multiplayer. MP no longer shows/uses faction base (e.g., Industrialists 0¢) for the button label or enable/disable logic; instead it uses the authoritative rerollCost from state (server-synced in MP). Engine uses a single code path for reroll/research cost deltas.
+
+- Acceptance criteria:
+  - MP (Industrialists): First shop shows "Reroll (3¢)"; pressing Reroll reduces credits by 3 and increases cost to 6, 9, …; button disables when credits < current cost.
+  - MP (Warmongers): First shop shows "Reroll (8¢)"; increments by 4 each action; behaviour matches SP.
+  - SP unchanged; Research also increases reroll cost identically in MP and SP.
+  - No UI path reads economy.rerollBase for the Reroll button cost or disable check.
+  - Lint, targeted tests, and build are green.
+
+- Risks & rollback:
+  - Risk: UI regressions in MP display. Rollback: revert `useOutpostPageProps` change to previous behavior.
+  - Risk: Engine refactor touches shop actions. Rollback: keep `doRerollAction` and `researchAction` as shims delegating to new unified functions.
+
+- Test list (must fail first):
+  1) UI (MP Industrialists): Outpost renders "Reroll (3¢)" when `playerState.economy.rerollBase=0` and `playerState.rerollCost=3`.
+  2) UI (MP Industrialists): Clicking Reroll with credits ≥ 3 calls handler, and follow-up render shows cost 6 and credits reduced by 3 (simulate via handler + state update).
+  3) Engine: `applyOutpostCommand({ type:'reroll' })` increments cost by 3 when econ mods `{ credits:0.75 }` provided; by 4 when `{ credits:1 }`.
+  4) Guard: `useOutpostPageProps` does not override `rerollCost` with `economy.rerollBase` in MP.
+
+---
+
+### Implementation Steps
+1) UI fix: remove MP-specific override in `src/hooks/useOutpostPageProps.ts` that set `displayReroll = economy.rerollBase`.
+2) Engine unification: in `src/engine/commands.ts`, always use the parameterized path for costs by calling the `*WithMods` variants with `economyMods || getEconomyModifiers()`; or introduce a single `rerollAction(resources, rr, research, mods)` and `researchAction(track, resources, research, mods)` and route both SP/MP through them.
+3) Tests: add targeted unit tests for `applyOutpostCommand` deltas and a lightweight UI test for the MP Industrialists cost label + button disable logic.
+4) Hygiene: run `npm run lint && npm run test:run && npm run build`.
+
+### Decision Log
+- UI should always show authoritative `rerollCost` (server-synced in MP), not `economy.rerollBase`.
+- Favor a single parameterized engine path; keep legacy exports as shims to minimize churn.
+
+### Follow-ups
+- Consider surfacing both "current cost" and "base (for tooltips only)" in VM if design wants to explain faction perks.
