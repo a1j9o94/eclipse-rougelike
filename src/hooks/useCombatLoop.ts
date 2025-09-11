@@ -4,6 +4,7 @@ import type { Ship, InitiativeEntry } from '../../shared/types'
 import { getSectorSpec } from '../game'
 import { buildEnemyFleet, generateEnemyFleetFor } from '../game/enemy'
 import { buildInitiative as buildInitiativeCore, targetIndex as targetIndexCore, volley as volleyCore } from '../game/combat'
+import { shotDurationMs } from '../game/timing'
 import type { Rng } from '../engine/rng'
 
 type EffectKey = 'shot'|'explosion'|'startCombat'|'page'
@@ -144,7 +145,7 @@ export function useCombatLoop(params: {
         dlog('updateFleet', { side: 'E', playerCount: defFleet.length })
       }
       if(atk.weapons.length>0 || atk.riftDice>0){
-        const dur = import.meta.env.MODE==='test' ? 0 : Math.max(100, 1000 - (getters.roundNum() - 1) * 200)
+        const dur = import.meta.env.MODE==='test' ? 0 : shotDurationMs(getters.roundNum())
         await sfx.playEffect('shot', dur)
         if(!def.alive){ await sfx.playEffect('explosion', dur) }
       }

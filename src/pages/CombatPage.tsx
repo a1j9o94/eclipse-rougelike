@@ -2,6 +2,7 @@
 import { type Ship, type InitiativeEntry } from '../../shared/types'
 import { useEffect, useState } from 'react'
 import { FleetRow } from '../components/FleetRow'
+import { shotDurationMs } from '../game/timing'
 
 export function CombatPage({
   combatOver,
@@ -54,6 +55,8 @@ export function CombatPage({
         ships={enemyFleet}
         side='E'
         activeIdx={!combatOver && queue[turnPtr]?.side==='E' ? queue[turnPtr].idx : -1}
+        bounceMs={import.meta.env.MODE==='test' ? 0 : shotDurationMs(roundNum)}
+        fireToken={!combatOver && queue[turnPtr]?.side==='E' ? turnPtr : undefined}
         intro={{ play: !!introActive && !showRules, direction: 'top', totalMs: 1400, startDelayMs: 0, onDone: ()=>setIntroCount(c=>c+1) }}
       />
       {/* Player row */}
@@ -64,6 +67,8 @@ export function CombatPage({
         ships={fleet}
         side='P'
         activeIdx={!combatOver && queue[turnPtr]?.side==='P' ? queue[turnPtr].idx : -1}
+        bounceMs={import.meta.env.MODE==='test' ? 0 : shotDurationMs(roundNum)}
+        fireToken={!combatOver && queue[turnPtr]?.side==='P' ? turnPtr : undefined}
         intro={{ play: !!introActive && !showRules, direction: 'bottom', totalMs: 1400, startDelayMs: 120, onDone: ()=>setIntroCount(c=>c+1) }}
       />
       {/* Mini Log */}

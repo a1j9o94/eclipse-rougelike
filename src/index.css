@@ -40,3 +40,24 @@ html, body, #root { height: 100%; }
 }
 
 [data-user-reduced-motion='true'] .starfield { animation: none !important; }
+
+/* --- Combat bounce animation for active firing ship --- */
+@keyframes fire-bounce-up {
+  0% { transform: translateY(0); }
+  25% { transform: translateY(-8px); }
+  50% { transform: translateY(0); }
+  75% { transform: translateY(-4px); }
+  100% { transform: translateY(0); }
+}
+@keyframes fire-bounce-down {
+  0% { transform: translateY(0); }
+  25% { transform: translateY(8px); }
+  50% { transform: translateY(0); }
+  75% { transform: translateY(4px); }
+  100% { transform: translateY(0); }
+}
+.fire-bounce-up { animation: fire-bounce-up var(--fire-bounce-ms, 420ms) cubic-bezier(.2,.9,.2,1) 1; }
+.fire-bounce-down { animation: fire-bounce-down var(--fire-bounce-ms, 420ms) cubic-bezier(.2,.9,.2,1) 1; }
+@media (prefers-reduced-motion: reduce) {
+  .fire-bounce-up, .fire-bounce-down { animation: none !important; }
+}
