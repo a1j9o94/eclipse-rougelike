@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { ItemCard, PowerBadge, DockSlots } from '../components/ui'
 import { CombatPlanModal } from '../components/modals'
+import { event as tutorialEvent, isEnabled as isTutorialEnabled } from '../tutorial/state'
 import type { MpBasics } from '../adapters/mpSelectors'
 import { ECONOMY } from '../../shared/economy'
 import { FRAMES, type FrameId } from '../../shared/frames'
@@ -162,7 +163,7 @@ export function OutpostPage({
         <div className="flex items-center gap-2 mb-2">
           <div className="text-lg font-semibold">Hangar (Class Blueprints)</div>
           <div className="flex-1" />
-          <button data-tutorial="enemy-intel-btn" onClick={()=>setShowPlan(true)} className="px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs">📋 Enemy Intel</button>
+          <button data-tutorial="enemy-intel-btn" onClick={()=>{ setShowPlan(true); if (isTutorialEnabled()) tutorialEvent('viewed-intel') }} className="px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs">📋 Enemy Intel</button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {fleetGroups.map((g,i)=> { const s = g.ship; const active = g.indices.includes(focused); const stack = Math.min(g.count-1,2); return (

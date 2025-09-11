@@ -19,6 +19,7 @@ export type PreGameRouterProps = {
   currentRoomId: Id<'rooms'> | null
   // handlers
   onNewRun: (diff: DifficultyId, faction: FactionId) => void
+  onStartTutorial?: (faction: FactionId) => void
   onContinue: () => void
   onGoMultiplayer: (mode?: 'menu'|'create'|'join'|'public', opts?: { public?: boolean }) => void
   onGoPublic: () => void
@@ -33,6 +34,7 @@ export function getPreGameElement(props: PreGameRouterProps): ReactElement | nul
   if (showNewRun && gameMode === 'single') {
     return createElement(StartPage, {
       onNewRun: props.onNewRun,
+      onStartTutorial: props.onStartTutorial,
       onContinue: props.onContinue,
       onMultiplayer: props.onGoMultiplayer,
       initialShowLaunch: props.openVersusOnHome || false,

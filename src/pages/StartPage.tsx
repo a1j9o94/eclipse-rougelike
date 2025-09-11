@@ -6,15 +6,18 @@ import { loadRunState, evaluateUnlocks } from '../game/storage';
 import { playEffect } from '../game/sound';
 import Starfield from '../components/Starfield';
 import SettingsModal from '../components/SettingsModal';
+import { hasCompleted as tutorialHasCompleted } from '../tutorial/state';
 
 export default function StartPage({
   onNewRun,
+  onStartTutorial,
   onContinue,
   onMultiplayer,
   initialShowLaunch,
   initialLaunchTab,
 }: {
   onNewRun: (diff: DifficultyId, faction: FactionId) => void;
+  onStartTutorial?: (faction: FactionId) => void;
   onContinue?: () => void;
   onMultiplayer?: (mode?: 'menu' | 'create' | 'join' | 'public') => void;
   initialShowLaunch?: boolean;
@@ -24,6 +27,7 @@ export default function StartPage({
   const progress = evaluateUnlocks(loadRunState());
   const available = FACTIONS.filter(f => progress.factions[f.id]?.unlocked);
   const [faction, setFaction] = useState<FactionId>(available[0]?.id || 'industrialists');
+  const [tutorialEligible] = useState<boolean>(() => !tutorialHasCompleted());
   const shipCounts = useMemo(() => ({
     easy: getStartingShipCount('easy'),
     medium: getStartingShipCount('medium'),
@@ -138,32 +142,47 @@ export default function StartPage({
                 </div>
               ) : launchTab==='solo' ? (
                 <div>
-                  <div className="text-xs opacity-80 mb-2">Easy/Medium: one grace respawn. Hard: full reset.</div>
-                  <div className="grid grid-cols-3 gap-2" role="group" aria-label="Difficulty">
-                    <button
-                      aria-pressed={soloDiff==='easy'}
-                      className={`px-3 py-2 rounded-xl ${soloDiff==='easy' ? 'bg-emerald-700' : 'bg-zinc-800'}`}
-                      onClick={()=>setSoloDiff('easy')}
-                    >Easy ({shipCounts.easy}✈)</button>
-                    <button
-                      disabled={!canMedium}
-                      aria-pressed={soloDiff==='medium'}
-                      className={`px-3 py-2 rounded-xl ${canMedium ? (soloDiff==='medium' ? 'bg-amber-700' : 'bg-zinc-800') : 'bg-zinc-800 opacity-50'}`}
-                      onClick={()=>canMedium && setSoloDiff('medium')}
-                    >Medium ({shipCounts.medium}✈)</button>
-                    <button
-                      disabled={!canHard}
-                      aria-pressed={soloDiff==='hard'}
-                      className={`px-3 py-2 rounded-xl ${canHard ? (soloDiff==='hard' ? 'bg-rose-700' : 'bg-zinc-800') : 'bg-zinc-800 opacity-50'}`}
-                      onClick={()=>canHard && setSoloDiff('hard')}
-                    >Hard ({shipCounts.hard}✈)</button>
-                  </div>
-                  <div className="mt-3 text-sm opacity-80">Faction: <span className="font-medium">{FACTIONS.find(f=>f.id===faction)?.name}</span></div>
-                  <div className="mt-3">
-                    <button className="w-full px-3 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500" onClick={()=>{ onNewRun(soloDiff, faction); setShowLaunch(false); }}>
-                      Launch
-                    </button>
-                  </div>
+                  {tutorialEligible && onStartTutorial ? (
+                    <div>
+                      <div className="text-sm opacity-80 mb-2">New? Start with a short guided tutorial.</div>
+                      <div className="mt-2 text-sm opacity-80">Faction: <span className="font-medium">{FACTIONS.find(f=>f.id===faction)?.name}</span></div>
+                      <div className="mt-3">
+                        <button className="w-full px-3 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500" onClick={()=>{ onStartTutorial(faction); setShowLaunch(false); }}>
+                          Start Tutorial
+                        </button>
+                      </div>
+                      <div className="mt-3 text-xs opacity-70">You can unlock standard modes after the tutorial (or reset from Settings).</div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="text-xs opacity-80 mb-2">Easy/Medium: one grace respawn. Hard: full reset.</div>
+                      <div className="grid grid-cols-3 gap-2" role="group" aria-label="Difficulty">
+                        <button
+                          aria-pressed={soloDiff==='easy'}
+                          className={`px-3 py-2 rounded-xl ${soloDiff==='easy' ? 'bg-emerald-700' : 'bg-zinc-800'}`}
+                          onClick={()=>setSoloDiff('easy')}
+                        >Easy ({shipCounts.easy}✈)</button>
+                        <button
+                          disabled={!canMedium}
+                          aria-pressed={soloDiff==='medium'}
+                          className={`px-3 py-2 rounded-xl ${canMedium ? (soloDiff==='medium' ? 'bg-amber-700' : 'bg-zinc-800') : 'bg-zinc-800 opacity-50'}`}
+                          onClick={()=>canMedium && setSoloDiff('medium')}
+                        >Medium ({shipCounts.medium}✈)</button>
+                        <button
+                          disabled={!canHard}
+                          aria-pressed={soloDiff==='hard'}
+                          className={`px-3 py-2 rounded-xl ${canHard ? (soloDiff==='hard' ? 'bg-rose-700' : 'bg-zinc-800') : 'bg-zinc-800 opacity-50'}`}
+                          onClick={()=>canHard && setSoloDiff('hard')}
+                        >Hard ({shipCounts.hard}✈)</button>
+                      </div>
+                      <div className="mt-3 text-sm opacity-80">Faction: <span className="font-medium">{FACTIONS.find(f=>f.id===faction)?.name}</span></div>
+                      <div className="mt-3">
+                        <button className="w-full px-3 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500" onClick={()=>{ onNewRun(soloDiff, faction); setShowLaunch(false); }}>
+                          Launch
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-2">

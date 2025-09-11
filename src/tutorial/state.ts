@@ -3,11 +3,14 @@ export type TutorialStepId =
   | 'intro-combat'
   | 'outpost-ship'
   | 'outpost-blueprint'
-  | 'shop-buy'
+  | 'shop-buy-composite'
   | 'combat-2'
   | 'dock-expand'
-  | 'tech-research'
-  | 'frame-upgrade'
+  | 'tech-nano'
+  | 'sell-composite'
+  | 'buy-improved'
+  | 'tech-military'
+  | 'upgrade-interceptor'
   | 'enemy-intel'
   | 'wrap';
 
@@ -44,9 +47,15 @@ export function reset(): void { write({ ...DEFAULT_STATE }); }
 export function complete(): void { const st = read(); write({ ...st, completed: true }); }
 export function getStep(): TutorialStepId { return read().step }
 export function setStep(step: TutorialStepId): void { const st = read(); write({ ...st, step }); }
+export function hasCompleted(): boolean { return read().completed === true }
 
 // Event ingress; mapping to step advancement will be implemented incrementally.
+import { nextAfter } from './script'
+
 export function event(name: string): void {
-  // Placeholder: kept so callers can begin wiring without changing behavior.
-  void name;
+  const st = read()
+  if (!st.enabled || st.completed) return
+  const next = nextAfter(st.step, name)
+  if (next !== st.step) write({ ...st, step: next })
+  if (next === 'wrap') write({ ...st, step: 'wrap', completed: true, enabled: false })
 }

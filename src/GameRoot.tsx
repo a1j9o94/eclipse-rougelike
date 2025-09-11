@@ -5,6 +5,9 @@ import { type DifficultyId } from '../shared/types'
 import { type FrameId } from './game'
 import GameShell from './components/GameShell'
 import { getPreGameElement } from './lib/renderPreGame'
+import CoachmarkOverlay from './tutorial/CoachmarkOverlay'
+import { isEnabled as isTutorialEnabled, getStep as getTutorialStep, disable as tutorialDisable, event as tutorialEvent } from './tutorial/state'
+import { STEPS } from './tutorial/script'
 // import { getEconomyModifiers } from './game/economy'
 // blueprint seeding handled in hooks
 // StartPage routed via PreGameRouter
@@ -136,10 +139,11 @@ export default function EclipseIntegrated(){
   // Bridge for passing startFirstCombat to useRunManagement before combat hook initializes
   const startFirstCombatRef = { current: (()=>{}) as () => void };
   // ---------- Run management ----------
-  const { newRun, resetRun } = useRunManagement({
+  const { newRun, newRunTutorial, resetRun } = useRunManagement({
     setDifficulty, setFaction, setOpponent: (f)=>setOpponent(f as FactionId), setShowNewRun, playEffect: (k)=>{ void playEffect(k as 'page'|'startCombat'|'equip'|'reroll'|'dock'|'faction'|'tech') }, setEndless, setLivesRemaining,
     setResources, setCapacity, setResearch, setRerollCost, setBaseRerollCost, setSector, setBlueprints: (bp)=>setBlueprints(bp as Record<FrameId, Part[]>), setFleet: (f)=>setFleet(f as unknown as Ship[]), setFocused, setShop, startFirstCombat: ()=> startFirstCombatRef.current(), clearRunState, setShowRules,
   })
+  // Tutorial start helper is provided by the same hook (newRunTutorial)
 
   const {
     handleRoomJoined,
@@ -418,6 +422,7 @@ export default function EclipseIntegrated(){
     openVersusOnHome,
     currentRoomId,
     onNewRun: newRun,
+    onStartTutorial: (f)=> newRunTutorial(f as FactionId),
     onContinue: handleContinue,
     onGoMultiplayer: handleGoMultiplayer,
     onGoPublic: () => handleGoPublic(),
@@ -429,6 +434,7 @@ export default function EclipseIntegrated(){
   if (preGame) return preGame
 
   return (
+    <>
     <GameShell
       showRules={showRules}
       onDismissRules={dismissRules}
@@ -446,5 +452,22 @@ export default function EclipseIntegrated(){
       outpost={outpost as OutpostPageProps}
       combat={{ combatOver: cv.combatOver, outcome: cv.outcome, roundNum: cv.roundNum, queue: cv.queue as InitiativeEntry[], turnPtr: cv.turnPtr, fleet, enemyFleet: cv.enemyFleet, log: cv.log, onReturn: handleReturnFromCombat, showRules, introActive: combatIntroActive, onIntroDone: ()=> setCombatIntroActive(false) } as CombatProps}
     />
+    {/* Tutorial overlay (first pass: simple copy panel) */}
+    {isTutorialEnabled() ? (()=>{
+      const id = getTutorialStep() as string
+      const step = (STEPS as { id:string; copy?:string }[]).find(s=>s.id===id)
+      const text = step?.copy || ''
+      return (
+        <CoachmarkOverlay
+          key="tutorial-coach"
+          visible={true}
+          title="Tutorial"
+          text={text}
+          onNext={()=> tutorialEvent('next')}
+          onSkip={()=> tutorialDisable()}
+        />
+      )
+    })() : null}
+    </>
   )
 }
