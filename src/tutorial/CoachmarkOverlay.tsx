@@ -8,15 +8,11 @@ export default function CoachmarkOverlay({
   title,
   text,
   anchor,
-  onNext,
-  onSkip,
 }: {
   visible: boolean
   title?: string
   text?: string
   anchor?: string
-  onNext?: () => void
-  onSkip?: () => void
 }){
   if (!visible) return null
   const [rect, setRect] = useState<Rect | null>(null)
@@ -85,10 +81,6 @@ export default function CoachmarkOverlay({
            style={{ top: pos.top - window.scrollY, left: pos.left - window.scrollX }}>
         {title && <div className="text-lg font-semibold mb-2">{title}</div>}
         {text && <div className="text-sm leading-relaxed">{text}</div>}
-        <div className="mt-4 flex gap-2 justify-end">
-          {onSkip && <button onClick={onSkip} className="px-3 py-2 rounded-xl bg-zinc-700 hover:bg-zinc-600">Skip</button>}
-          {onNext && <button onClick={onNext} className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500">Next</button>}
-        </div>
       </div>
     </div>
   )
