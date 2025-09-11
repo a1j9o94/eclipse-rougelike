@@ -273,15 +273,34 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
               <div className="mt-2 text-sm text-red-400">Your fleet is invalid.</div>
             )}
             
-            {allReady && isHost() && (
-              <div className="mt-2 text-sm text-green-400">
-                All players ready! Starting game...
-              </div>
-            )}
-            
             {allReady && !isHost() && (
               <div className="mt-2 text-sm text-yellow-400">
                 Waiting for host to start the game...
+              </div>
+            )}
+
+            {/* Manual Start for Host */}
+            {isHost() && (
+              <div className="mt-4">
+                <button
+                  onClick={async ()=>{
+                    try {
+                      setIsStarting(true);
+                      await startGame();
+                      onGameStart();
+                    } catch (err) {
+                      setError(err instanceof Error ? err.message : 'Failed to start');
+                      setIsStarting(false);
+                    }
+                  }}
+                  disabled={!allReady || isStarting}
+                  className={`px-6 py-2 rounded-lg text-sm font-medium ${(!allReady || isStarting) ? 'bg-zinc-700 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'}`}
+                >
+                  {isStarting ? 'Starting…' : 'Start Game'}
+                </button>
+                {!allReady && (
+                  <div className="mt-1 text-xs text-zinc-400">Both players must be ready.</div>
+                )}
               </div>
             )}
 

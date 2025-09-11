@@ -10,10 +10,14 @@ export default function StartPage({
   onNewRun,
   onContinue,
   onMultiplayer,
+  initialShowLaunch,
+  initialLaunchTab,
 }: {
   onNewRun: (diff: DifficultyId, faction: FactionId) => void;
   onContinue?: () => void;
-  onMultiplayer?: () => void;
+  onMultiplayer?: (mode?: 'menu' | 'create' | 'join' | 'public') => void;
+  initialShowLaunch?: boolean;
+  initialLaunchTab?: 'solo'|'versus';
 }) {
   const progress: Progress = evaluateUnlocks(loadRunState());
   const available = FACTIONS.filter(f => progress.factions[f.id]?.unlocked);
@@ -28,8 +32,8 @@ export default function StartPage({
   const canHard = wins.includes('medium');
   const save = loadRunState();
 
-  const [showLaunch, setShowLaunch] = useState(false);
-  const [launchTab, setLaunchTab] = useState<'solo'|'versus'>('solo');
+  const [showLaunch, setShowLaunch] = useState(Boolean(initialShowLaunch));
+  const [launchTab, setLaunchTab] = useState<'solo'|'versus'>(initialLaunchTab ?? 'solo');
   const [showLog, setShowLog] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [soloDiff, setSoloDiff] = useState<DifficultyId>('easy');
@@ -145,14 +149,31 @@ export default function StartPage({
                   </div>
                 </div>
               ) : (
-                <div>
+                <div className="space-y-2">
                   {!versusEnabled && (
                     <div className="text-xs opacity-80 mb-2">Requires server connection.</div>
                   )}
                   {versusEnabled && (
-                    <button className="w-full px-3 py-3 rounded-xl bg-sky-600 hover:bg-sky-500" onClick={()=>{ if (onMultiplayer) { onMultiplayer(); } setShowLaunch(false); }}>
-                      Find Match
-                    </button>
+                    <>
+                      <button
+                        className="w-full px-3 py-3 rounded-xl bg-sky-600 hover:bg-sky-500"
+                        onClick={()=>{ if (onMultiplayer) { onMultiplayer('create'); } setShowLaunch(false); }}
+                      >
+                        Create Game
+                      </button>
+                      <button
+                        className="w-full px-3 py-3 rounded-xl bg-blue-600 hover:bg-blue-500"
+                        onClick={()=>{ if (onMultiplayer) { onMultiplayer('join'); } setShowLaunch(false); }}
+                      >
+                        Join Match
+                      </button>
+                      <button
+                        className="w-full px-3 py-3 rounded-xl bg-purple-600 hover:bg-purple-500"
+                        onClick={()=>{ if (onMultiplayer) { onMultiplayer('public'); } setShowLaunch(false); }}
+                      >
+                        View Public Matches
+                      </button>
+                    </>
                   )}
                 </div>
               )}
