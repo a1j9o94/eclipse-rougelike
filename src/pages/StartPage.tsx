@@ -17,7 +17,7 @@ export default function StartPage({
   onContinue?: () => void;
   onMultiplayer?: (mode?: 'menu' | 'create' | 'join' | 'public') => void;
   initialShowLaunch?: boolean;
-  initialLaunchTab?: 'solo'|'versus';
+  initialLaunchTab?: 'continue'|'solo'|'versus';
 }) {
   const progress: Progress = evaluateUnlocks(loadRunState());
   const available = FACTIONS.filter(f => progress.factions[f.id]?.unlocked);
@@ -33,7 +33,9 @@ export default function StartPage({
   const save = loadRunState();
 
   const [showLaunch, setShowLaunch] = useState(Boolean(initialShowLaunch));
-  const [launchTab, setLaunchTab] = useState<'solo'|'versus'>(initialLaunchTab ?? 'solo');
+  const [launchTab, setLaunchTab] = useState<'continue'|'solo'|'versus'>(
+    initialLaunchTab ?? (save ? 'continue' : 'solo')
+  );
   const [showLog, setShowLog] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [soloDiff, setSoloDiff] = useState<DifficultyId>('easy');
@@ -90,14 +92,12 @@ export default function StartPage({
           ))}
         </div>
 
-        {/* Primary CTAs */}
+        {/* Primary CTA */}
         <div className="mt-3 space-y-2 pb-4">
-          {save && (
-            <button className="w-full px-3 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-white/10" onClick={onContinue}>
-              Continue
-            </button>
-          )}
-          <button className="w-full px-3 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500" onClick={()=>{ setShowLaunch(true); setLaunchTab('solo'); }}>
+          <button
+            className="w-full px-3 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500"
+            onClick={()=>{ setShowLaunch(true); setLaunchTab(save ? 'continue' : 'solo'); }}
+          >
             Launch
           </button>
         </div>
@@ -108,6 +108,12 @@ export default function StartPage({
             <button aria-label="Close" onClick={()=>setShowLaunch(false)} className="absolute inset-0 bg-black/50" />
             <div className="relative w-full max-w-md mx-auto bg-zinc-950 border border-white/10 rounded-t-2xl md:rounded-2xl p-4">
               <div className="flex items-center gap-2 mb-3">
+                {save && (
+                  <button
+                    className={`px-3 py-2 rounded-full ${launchTab==='continue' ? 'bg-emerald-600' : 'bg-white/5 border border-white/10'}`}
+                    onClick={()=>setLaunchTab('continue')}
+                  >Continue</button>
+                )}
                 <button
                   className={`px-3 py-2 rounded-full ${launchTab==='solo' ? 'bg-emerald-600' : 'bg-white/5 border border-white/10'}`}
                   onClick={()=>setLaunchTab('solo')}
@@ -119,7 +125,16 @@ export default function StartPage({
                 >Versus</button>
               </div>
 
-              {launchTab==='solo' ? (
+              {launchTab==='continue' ? (
+                <div>
+                  <button
+                    className="w-full px-3 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-white/10"
+                    onClick={()=>{ if (onContinue) { onContinue(); } setShowLaunch(false); }}
+                  >
+                    Continue Run
+                  </button>
+                </div>
+              ) : launchTab==='solo' ? (
                 <div>
                   <div className="text-xs opacity-80 mb-2">Easy/Medium: one grace respawn. Hard: full reset.</div>
                   <div className="grid grid-cols-3 gap-2" role="group" aria-label="Difficulty">

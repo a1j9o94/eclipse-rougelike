@@ -109,14 +109,21 @@ describe('StartPage', () => {
     expect(screen.getByRole('button', { name: /Hard/ })).toBeEnabled();
   });
 
-  it('shows Continue only when a save exists', () => {
-    // no save initially
+  it('shows a Continue tab inside the Launch sheet when a save exists', () => {
     const { rerender } = render(<StartPage onNewRun={() => {}} onContinue={() => {}} />);
+    // open Launch with no save – only Solo and Versus tabs
+    fireEvent.click(screen.getByRole('button', { name: /^Launch$/ }));
     expect(screen.queryByRole('button', { name: /^Continue$/ })).toBeNull();
-    // add save
+    fireEvent.click(screen.getByLabelText(/^Close$/));
+
+    // add save and rerender
     const run: Partial<SavedRun> = { research: { Military: 1, Grid: 1, Nano: 1 }, fleet: [] };
     localStorage.setItem('eclipse-run', JSON.stringify(run));
     rerender(<StartPage onNewRun={() => {}} onContinue={() => {}} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /^Launch$/ }));
+    // Continue tab appears and is selected by default
     expect(screen.getByRole('button', { name: /^Continue$/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Continue Run$/ })).toBeInTheDocument();
   });
 });
