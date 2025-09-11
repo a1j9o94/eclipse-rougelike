@@ -14,16 +14,15 @@ export default function CoachmarkOverlay({
 }){
   if (!visible) return null
   return (
-    <div className="fixed inset-0 z-[60] p-3 bg-black/60">
-      <div className="mx-auto max-w-md bg-zinc-900 border border-zinc-700 rounded-2xl p-4 shadow-2xl">
-        {title && <div className="text-lg font-semibold mb-1">{title}</div>}
-        {text && <div className="text-sm opacity-90">{text}</div>}
-        <div className="mt-3 flex gap-2 justify-end">
-          {onSkip && <button onClick={onSkip} className="px-3 py-2 rounded-xl bg-zinc-700">Skip</button>}
-          {onNext && <button onClick={onNext} className="px-3 py-2 rounded-xl bg-emerald-600">Next</button>}
+    <div role="dialog" aria-modal="true" className="fixed inset-0 z-[80] p-3 bg-black/70 backdrop-blur-sm">
+      <div className="mx-auto max-w-md bg-zinc-950/95 border border-zinc-700 rounded-2xl p-5 shadow-2xl text-zinc-100">
+        {title && <div className="text-lg font-semibold mb-2">{title}</div>}
+        {text && <div className="text-sm leading-relaxed">{text}</div>}
+        <div className="mt-4 flex gap-2 justify-end">
+          {onSkip && <button onClick={onSkip} className="px-3 py-2 rounded-xl bg-zinc-700 hover:bg-zinc-600">Skip</button>}
+          {onNext && <button onClick={onNext} className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500">Next</button>}
         </div>
       </div>
     </div>
   )
 }
-

@@ -10,7 +10,7 @@ export type TutorialStep = {
 
 // Scripted, specific path
 export const STEPS: TutorialStep[] = [
-  { id: 'intro-combat', copy: 'Your mercenary cruiser fires. Only a 6 hits with the Spike Launcher.' },
+  { id: 'intro-combat', copy: 'You are a mercenary captain. Factions hire your force to fight across sectors. This skirmish is live‑fire: your lead Cruiser mounts a Spike Launcher — only a 6 hits (computers won’t help). Watch the rolls, then we’ll head to the outpost.' },
   { id: 'outpost-ship', anchor: 'ship-card', copy: 'This is your ship. Stats, hull, ⬛ slots, and ⚡ power.' },
   { id: 'outpost-blueprint', anchor: 'blueprint-panel', copy: 'Class blueprints add parts to all ships of this class.' },
   // Buy Composite Hull specifically

@@ -6,8 +6,8 @@ import { type FrameId } from './game'
 import GameShell from './components/GameShell'
 import { getPreGameElement } from './lib/renderPreGame'
 import CoachmarkOverlay from './tutorial/CoachmarkOverlay'
-import { isEnabled as isTutorialEnabled, getStep as getTutorialStep, disable as tutorialDisable, event as tutorialEvent } from './tutorial/state'
 import { STEPS } from './tutorial/script'
+import useTutorial from './tutorial/useTutorial'
 // import { getEconomyModifiers } from './game/economy'
 // blueprint seeding handled in hooks
 // StartPage routed via PreGameRouter
@@ -433,6 +433,7 @@ export default function EclipseIntegrated(){
   })
   if (preGame) return preGame
 
+  const tut = useTutorial()
   return (
     <>
     <GameShell
@@ -453,8 +454,8 @@ export default function EclipseIntegrated(){
       combat={{ combatOver: cv.combatOver, outcome: cv.outcome, roundNum: cv.roundNum, queue: cv.queue as InitiativeEntry[], turnPtr: cv.turnPtr, fleet, enemyFleet: cv.enemyFleet, log: cv.log, onReturn: handleReturnFromCombat, showRules, introActive: combatIntroActive, onIntroDone: ()=> setCombatIntroActive(false) } as CombatProps}
     />
     {/* Tutorial overlay (first pass: simple copy panel) */}
-    {isTutorialEnabled() ? (()=>{
-      const id = getTutorialStep() as string
+    {tut.enabled ? (()=>{
+      const id = tut.step as string
       const step = (STEPS as { id:string; copy?:string }[]).find(s=>s.id===id)
       const text = step?.copy || ''
       return (
@@ -463,8 +464,8 @@ export default function EclipseIntegrated(){
           visible={true}
           title="Tutorial"
           text={text}
-          onNext={()=> tutorialEvent('next')}
-          onSkip={()=> tutorialDisable()}
+          onNext={tut.next}
+          onSkip={tut.skip}
         />
       )
     })() : null}
