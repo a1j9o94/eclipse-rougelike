@@ -1,4 +1,5 @@
 // React import not required with modern JSX transform
+import { useRef, useEffect } from 'react'
 import { FACTIONS } from '../../shared/factions'
 import { SECTORS, getBossVariants, getBossFleetFor, getOpponentFaction, ALL_PARTS, makeShip, FRAMES, getSectorSpec } from '../game'
 import { getInitialCapacityForDifficulty } from '../../shared/difficulty'
@@ -9,6 +10,7 @@ import { CompactShip } from './ui'
 import { type Ship } from '../../shared/types'
 import { partEffects } from '../../shared/parts'
 import { type Research } from '../../shared/defaults'
+import { isEnabled as tutorialEnabled, getStep as tutorialGetStep } from '../tutorial/state'
 
 function BossFleetPreview({ sector }:{ sector:5|10 }){
   const opp = getOpponentFaction();
@@ -115,15 +117,11 @@ export function CombatPlanModal({ onClose, sector, endless, gameMode, multi }:{ 
 
 export function TechListModal({ onClose, research }:{ onClose:()=>void, research:Research }){
   const tracks = ['Military','Grid','Nano'] as const;
-  const closeRef = (typeof document !== 'undefined') ? (require('react').useRef as typeof import('react')['useRef'])<HTMLButtonElement|null>(null) : { current: null };
-  const useEffect = (typeof document !== 'undefined') ? (require('react').useEffect as typeof import('react')['useEffect']) : (()=>{}) as unknown as typeof import('react')['useEffect'];
+  const closeRef = useRef<HTMLButtonElement|null>(null)
   useEffect(()=>{
-    try {
-      const { isEnabled, getStep } = require('../tutorial/state') as { isEnabled:()=>boolean; getStep:()=>string }
-      if (isEnabled() && getStep()==='tech-list') {
-        setTimeout(()=>{ try { closeRef.current?.focus() } catch { /* noop */ } }, 0)
-      }
-    } catch { /* noop */ }
+    if (tutorialEnabled() && tutorialGetStep()==='tech-list') {
+      setTimeout(()=>{ try { closeRef.current?.focus() } catch { /* noop */ } }, 0)
+    }
   },[])
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 bg-black/70">
