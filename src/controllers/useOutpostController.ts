@@ -17,7 +17,7 @@ import type { OutpostEffects as EngineOutpostEffects } from '../engine/commands'
 
 export type OutpostControllerParams = {
   gameMode: 'single'|'multiplayer'
-  multi?: (MpBasics & { updateGameState?: (updates: { research: Research; resources: { credits:number; materials:number; science:number } })=>unknown }) | undefined
+  multi?: (MpBasics & { updateGameState?: (updates: any)=>unknown }) | undefined
   state: {
     resources: Resources
     research: Research
@@ -85,7 +85,7 @@ export function useOutpostController(params: OutpostControllerParams){
       setShop: setters.setShop,
       setLastEffects: (fx) => setters.setLastEffects(fx),
     },
-    multi: gameMode==='multiplayer' ? (multi as { updateGameState?: (updates: { research: Research; resources: { credits:number; materials:number; science:number } })=>unknown }) : undefined,
+    multi: gameMode==='multiplayer' ? (multi as { updateGameState?: (updates: Record<string, unknown>)=>unknown }) : undefined,
     sound: (k)=> sfx.playEffect(k),
   }
   const outpostHandlers = useOutpostHandlers(handlerParams)

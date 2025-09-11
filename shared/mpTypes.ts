@@ -19,6 +19,8 @@ export type PlayerModifiers = {
 export type PlayerState = {
   resources?: Resources;
   research?: Research;
+  // Current reroll cost for this player in setup phase (persists across snapshots)
+  rerollCost?: number;
   economy?: {
     rerollBase?: number;
     creditMultiplier?: number;

@@ -89,6 +89,17 @@ export function useMpSetupSync(params: {
       const roundNum = (multi.gameState?.roundNum || 1) as number
       const srvResearch = st?.research as Research | undefined
       const econ = st?.economy
+      let handledRerollBase = false
+      // If server persisted current rerollCost, prefer it over any base correction
+      if (typeof (st as { rerollCost?: number } | null | undefined)?.rerollCost === 'number') {
+        const srvCost = Number((st as { rerollCost: number }).rerollCost)
+        if (srvCost !== rerollCost) {
+          setRerollCost(srvCost)
+          try { console.debug('[MP] applied server rerollCost', { srvCost, round: roundNum }) } catch { /* noop */ }
+        }
+        // Consider base handled for this round
+        handledRerollBase = true
+      }
       const mods = (st?.modifiers as { startingFrame?: FrameId; rareChance?: number; capacityCap?: number; blueprintHints?: Record<string,string[]> } | undefined)
       const bpIds = (st?.blueprintIds as Record<FrameId, string[]> | undefined)
 
@@ -124,7 +135,6 @@ export function useMpSetupSync(params: {
       }
 
       // Reroll base immediate correction
-      let handledRerollBase = false
       if (multi.gameState?.gamePhase === 'setup' && typeof econ?.rerollBase === 'number') {
         const econBase = Number(econ.rerollBase)
         // Always align baseRerollCost; only snap rerollCost if it hasn't diverged this round
