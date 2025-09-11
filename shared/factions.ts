@@ -117,19 +117,19 @@ export const SHARED_FACTIONS: Record<FactionId, SharedFactionConfig> = {
   timekeepers: {
     id: 'timekeepers',
     name: 'Temporal Vanguard',
-    description: 'Start with Disruptor Beam and advanced drives.',
+    description: 'Start with Disruptor Beam, Plasma Cannon, and advanced drives.',
     startingFrame: 'interceptor',
     capacity: 3,
     research: { Military: 1, Grid: 2, Nano: 1 },
     resources: { credits: 20, materials: 5, science: 0 },
     rareChance: 0.1,
     economy: {},
-    blueprintIds: { interceptor: ['tachyon_source','tachyon_drive','disruptor','positron'] },
+    blueprintIds: { interceptor: ['tachyon_source','tachyon_drive','disruptor','plasma'] },
     unlock: ({ research }) => research.Grid >= 3,
     bosses: {
       five: { sector:5, name:'Chrono Skirmish', ships:[
         { frame:'cruiser', parts:['tachyon_source','tachyon_drive','disruptor','gluon','phase','composite'] },
-        { frame:'interceptor', parts:['tachyon_source','tachyon_drive','disruptor','positron'] },
+        { frame:'interceptor', parts:['tachyon_source','tachyon_drive','disruptor','plasma'] },
       ]},
       ten: { sector:10, name:'Epoch Armada', ships:[
         { frame:'dread', parts:['zero_point','quantum_source','transition_drive','disruptor','neutrino','omega','monolith_plating'] },

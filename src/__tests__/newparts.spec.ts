@@ -4,7 +4,7 @@ import { PARTS, RARE_PARTS } from '../../shared/parts'
 import { volley, buildInitiative } from '../game/combat'
 
 describe('New part mechanics', () => {
-  it('Disruptor Beam reduces target initiative', () => {
+  it('Disruptor Beam only drains initiative', () => {
     const frame = getFrame('interceptor')
     const disruptor = RARE_PARTS.find(p=>p.id==='disruptor')!
     const src = PARTS.sources[0]
@@ -12,9 +12,27 @@ describe('New part mechanics', () => {
     const attacker = makeShip(frame, [src, drv, disruptor])
     const defender = makeShip(frame, [src, drv])
     const log: string[] = []
-    const before = defender.stats.init
+    const beforeInit = defender.stats.init
+    const beforeHull = defender.hull
     volley(attacker, defender, 'P', log, [attacker])
-    expect(defender.stats.init).toBe(before - 1)
+    expect(defender.stats.init).toBe(beforeInit - 1)
+    expect(defender.hull).toBe(beforeHull)
+  })
+
+  it('Disruptor Cannon deals damage and reduces target initiative', () => {
+    const frame = getFrame('interceptor')
+    const cannon = RARE_PARTS.find(p=>p.id==='disruptor_cannon')!
+    const src = PARTS.sources[0]
+    const drv = PARTS.drives[0]
+    const attacker = makeShip(frame, [src, drv, cannon])
+    const defender = makeShip(frame, [src, drv])
+    const log: string[] = []
+    const beforeInit = defender.stats.init
+    const beforeHull = defender.hull
+    const rng = { next: () => 0.99 }
+    volley(attacker, defender, 'P', log, [attacker], rng)
+    expect(defender.stats.init).toBe(beforeInit - 1)
+    expect(defender.hull).toBe(beforeHull - 1)
   })
 
   it('Auto-Repair Hull regenerates at round start', () => {
