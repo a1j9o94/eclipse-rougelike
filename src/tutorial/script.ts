@@ -10,8 +10,8 @@ export type TutorialStep = {
 
 // Scripted, specific path
 export const STEPS: TutorialStep[] = [
-  { id: 'intro-combat', copy: 'You are a mercenary captain. Factions hire your force to fight across sectors. This skirmish is live‑fire: your lead Cruiser mounts a Spike Launcher — only a 6 hits (computers won’t help). Watch the rolls, then we’ll head to the outpost.' },
-  { id: 'outpost-ship', anchor: 'ship-card', copy: 'This is your ship. Stats, hull, ⬛ slots, and ⚡ power.' },
+  { id: 'intro-combat', copy: 'You are a mercenary captain hired to clear hostile sectors. You command a wing of Interceptors with standard gear. In combat, each die hits on 6 (Aim lowers the needed roll; Shields raise it). Watch the rolls, then we’ll head to the outpost.' },
+  { id: 'outpost-ship', anchor: 'ship-card', copy: 'Your selected ship. Check ❤️ hull, ⬛ slots used, and ⚡ power (right of the name).' },
   { id: 'outpost-blueprint', anchor: 'blueprint-panel', copy: 'Class blueprints add parts to all ships of this class.' },
   // Buy Composite Hull specifically
   { id: 'shop-buy-composite', anchor: 'shop-grid', copy: 'Buy a Composite Hull (adds ❤️) to your blueprint.', curatedShop: ['composite','fusion_source','plasma','positron'], triggers: ['bought-composite'] },
