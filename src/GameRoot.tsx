@@ -349,17 +349,7 @@ export default function EclipseIntegrated(){
     shop,
     livesRemaining,
   })
-  // MP setup quality-of-life: ensure reroll cost matches base each setup
-  useEffect(() => {
-    try {
-      if (gameMode === 'multiplayer' && mode === 'OUTPOST' && multi?.gameState?.gamePhase === 'setup') {
-        if (typeof rerollCost === 'number' && typeof baseRerollCost === 'number' && rerollCost !== baseRerollCost) {
-          setRerollCost(baseRerollCost)
-        }
-      }
-    } catch { /* ignore */ }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameMode, mode, multi?.gameState?.gamePhase, baseRerollCost, rerollCost])
+  // Reroll base initialization handled in useMpSync; do not force local rerollCost to base here.
   function dismissRules(){ setShowRules(false); }
 
   // Self-tests moved to src/__tests__/runtime.selftests.spec.ts
