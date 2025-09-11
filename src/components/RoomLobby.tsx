@@ -127,7 +127,6 @@ export function RoomLobby({ roomId, onGameStart, onLeaveRoom }: RoomLobbyProps) 
   const players = roomDetails.players as RoomPlayer[];
   const waitingForPlayers = players.length < 2;
   const allReady = players.every(p => p.isReady);
-  const allReady = players.every(p => p.isReady);
   // Lives are shown in top bar elsewhere; keep local references minimal
 
   return (
