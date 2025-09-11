@@ -3,7 +3,8 @@ export type TutorialStepId =
   | 'intro-combat'
   | 'outpost-ship'
   | 'outpost-blueprint'
-  | 'shop-buy-composite'
+  | 'shop-buy-composite-1'
+  | 'shop-buy-composite-2'
   | 'combat-2'
   | 'dock-expand'
   | 'tech-nano'
@@ -18,6 +19,10 @@ export type TutorialStepId =
   | 'shop-reroll'
   | 'intel-open'
   | 'intel-close'
+  | 'bar-resources'
+  | 'bar-capacity'
+  | 'bar-sector'
+  | 'bar-lives'
   | 'rules-hint'
   | 'wrap';
 

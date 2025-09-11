@@ -421,7 +421,8 @@ export default function EclipseIntegrated(){
     if (!tut.enabled) return
     const id = tut.step as string
     const idMap: Record<string, string[] | undefined> = {
-      'shop-buy-composite': ['composite','fusion_source','plasma','positron'],
+      'shop-buy-composite-1': ['composite','fusion_source','plasma','positron'],
+      'shop-buy-composite-2': ['composite','fusion_source','plasma','positron'],
       'buy-improved': ['improved','fusion_source','plasma'],
       'tech-nano': ['tachyon_drive','antimatter','improved'],
     }
@@ -485,7 +486,7 @@ export default function EclipseIntegrated(){
         if (mode==='COMBAT') return false
         // Outpost: show hints for actionable steps only
         const outpostSteps = new Set([
-          'intro-combat','outpost-ship','outpost-blueprint','shop-buy-composite','combat-2','tech-nano','tech-open','tech-close','sell-composite','buy-improved','combat-3','tech-military','capacity-info','dock-expand','upgrade-interceptor','shop-reroll','intel-open','intel-close','rules-hint'
+          'intro-combat','outpost-ship','outpost-blueprint','bar-resources','bar-capacity','bar-sector','bar-lives','shop-buy-composite-1','shop-buy-composite-2','combat-2','tech-nano','tech-open','tech-close','sell-composite','buy-improved','combat-3','tech-military','capacity-info','dock-expand','upgrade-interceptor','shop-reroll','intel-open','intel-close','rules-hint'
         ])
         return outpostSteps.has(id)
       })()

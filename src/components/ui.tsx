@@ -220,11 +220,11 @@ export function ResourceBar({ credits, materials, science, tonnage, sector, onRe
   return (
     <div className="sticky top-0 z-10 bg-zinc-950/95 backdrop-blur border-b border-zinc-800">
       <div className="mx-auto max-w-5xl p-2 flex items-center gap-2 flex-wrap text-sm sm:text-base">
-        <div className="px-2 py-1 rounded-lg bg-zinc-900 flex-1 whitespace-nowrap">💰 <b>{credits}</b> • 🧱 <b>{materials}</b> • 🔬 <b>{science}</b></div>
-        <div className={`px-2 py-1 rounded-lg whitespace-nowrap ${over? 'bg-rose-950/50 text-rose-200 ring-1 ring-rose-700/30' : 'bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20'}`}>{capIcon} <b>{used}</b>/<b>{cap}</b></div>
-        <div className="px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap">🗺️ <b>{sector}</b></div>
+        <div data-tutorial="rb-resources" className="px-2 py-1 rounded-lg bg-zinc-900 flex-1 whitespace-nowrap">💰 <b>{credits}</b> • 🧱 <b>{materials}</b> • 🔬 <b>{science}</b></div>
+        <div data-tutorial="rb-capacity" className={`px-2 py-1 rounded-lg whitespace-nowrap ${over? 'bg-rose-950/50 text-rose-200 ring-1 ring-rose-700/30' : 'bg-emerald-950/50 text-emerald-200 ring-1 ring-emerald-700/20'}`}>{capIcon} <b>{used}</b>/<b>{cap}</b></div>
+        <div data-tutorial="rb-sector" className="px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap">🗺️ <b>{sector}</b></div>
         {typeof lives === 'number' && (
-          <div className="px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"><b>{lives}</b> ❤</div>
+          <div data-tutorial="rb-lives" className="px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"><b>{lives}</b> ❤</div>
         )}
         <button onClick={onReset} className="px-2 py-1 rounded bg-zinc-800 text-xs">{multiplayer ? 'Resign' : 'Restart'}</button>
       </div>

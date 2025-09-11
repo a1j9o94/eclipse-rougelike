@@ -13,8 +13,14 @@ export const STEPS: TutorialStep[] = [
   { id: 'intro-combat', anchor: 'start-combat', copy: 'You are a mercenary captain hired to clear hostile sectors. Each battle, ships act from highest 🚀 Initiative to lowest. Weapons roll dice; 6 hits by default. 🎯 Computers lower the roll you need to hit; 🛡️ Shields make you harder to hit. Each hit removes 1 ❤️; at 0, a ship is destroyed. Press Start Combat to begin.', triggers: ['started-combat'] },
   { id: 'outpost-ship', anchor: 'ship-card', copy: 'Tap a ship to select it. Watch ❤️ hull, ⬛ slots, and ⚡ power (right of name). Keep power usage ≤ power produced.', triggers: ['focused-ship'] },
   { id: 'outpost-blueprint', anchor: 'blueprint-panel', copy: 'Class blueprints apply to every ship of that class. Changing the blueprint changes new builds and upgrades.', triggers: ['next'] },
+  // Top bar overview
+  { id: 'bar-resources', anchor: 'rb-resources', copy: 'Resources — 💰 credits, 🧱 materials, 🔬 science. You earn rewards after each battle based on what enemy ships you destroy.', triggers: ['next'] },
+  { id: 'bar-capacity', anchor: 'rb-capacity', copy: 'Dock capacity — total slots for your fleet. Bigger ships use more tonnage.', triggers: ['next'] },
+  { id: 'bar-sector', anchor: 'rb-sector', copy: 'Sector — your progress through the campaign. Bosses at 5 and 10.', triggers: ['next'] },
+  { id: 'bar-lives', anchor: 'rb-lives', copy: 'Lives — how many defeats you can absorb before the run ends.', triggers: ['next'] },
   // Buy Composite Hull specifically
-  { id: 'shop-buy-composite', anchor: 'shop-grid', copy: 'Buy a Composite Hull. More ❤️ means more hits you can take.', curatedShop: ['composite','fusion_source','plasma','positron'], triggers: ['bought-composite'] },
+  { id: 'shop-buy-composite-1', anchor: 'shop-grid', copy: 'Buy a Composite Hull (1/2). More ❤️ means more hits you can take.', curatedShop: ['composite','fusion_source','plasma','positron'], triggers: ['bought-composite'] },
+  { id: 'shop-buy-composite-2', anchor: 'shop-grid', copy: 'Buy another Composite Hull (2/2).', curatedShop: ['composite','fusion_source','plasma','positron'], triggers: ['bought-composite'] },
   // Fight and return
   { id: 'combat-2', anchor: 'start-combat', copy: 'Press Start Combat to test your new hull.', triggers: ['post-combat'] },
   // Research Nano to unlock Improved Hull
