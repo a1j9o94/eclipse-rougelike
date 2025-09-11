@@ -6,13 +6,12 @@ import { useMultiplayerGame } from '../hooks/useMultiplayerGame';
 interface MultiplayerStartPageProps {
   onRoomJoined: (roomId: string) => void;
   onBack: () => void;
-  onGoPublic: () => void;
   currentFaction?: string;
   initialMode?: 'menu' | 'create' | 'join';
   initialIsPublic?: boolean;
 }
 
-export default function MultiplayerStartPage({ onRoomJoined, onBack, onGoPublic, currentFaction, initialMode, initialIsPublic }: MultiplayerStartPageProps) {
+export default function MultiplayerStartPage({ onRoomJoined, onBack, currentFaction, initialMode, initialIsPublic }: MultiplayerStartPageProps) {
   const [mode, setMode] = useState<'menu' | 'create' | 'join' | 'public'>(initialMode || 'create');
   const [roomName, setRoomName] = useState(generateSpaceRoomName());
   const [playerName, setPlayerName] = useState('');
