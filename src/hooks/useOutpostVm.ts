@@ -8,8 +8,7 @@ import { getMyEconomyMods } from '../adapters/mpSelectors'
 import { isFleetValid } from '../selectors'
 import { selectFleetValidity } from '../selectors/guards'
 import { buildMpGuards, type MpBasics as GuardMpBasics } from '../selectors/mpGuards'
-import { INITIAL_BLUEPRINTS, INITIAL_RESOURCES, INITIAL_RESEARCH, INITIAL_CAPACITY } from '../../shared/defaults'
-import { ECONOMY } from '../../shared/economy'
+// Removed unused defaults/ECONOMY after MP resign change
 
 type MultiLike = {
   getPlayerId?: () => string | null
