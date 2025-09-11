@@ -94,12 +94,12 @@ export function GameShell({
         <div className="sm:hidden">
           {showHelpMenu ? (
             <div className="flex flex-col gap-2">
-              <button onClick={()=>{ onOpenTechs(); setShowHelpMenu(false) }} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">🔬 Tech</button>
+              <button onClick={()=>{ try { tutorialEvent('opened-tech-list') } catch { /* noop */ } onOpenTechs(); setShowHelpMenu(false) }} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">🔬 Tech</button>
               <button onClick={()=>{ onOpenRules(); setShowHelpMenu(false) }} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">❓ Rules</button>
               <button onClick={()=>setShowHelpMenu(false)} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">✖</button>
             </div>
           ) : (
-            <button onClick={()=>setShowHelpMenu(true)} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">❓</button>
+            <button data-tutorial="help-tech" onClick={()=>setShowHelpMenu(true)} className="px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-xs">❓</button>
           )}
         </div>
       </div>
