@@ -1,5 +1,5 @@
 // React import not required with modern JSX transform
-import { useRef, useEffect } from 'react'
+
 import { FACTIONS } from '../../shared/factions'
 import { SECTORS, getBossVariants, getBossFleetFor, getOpponentFaction, ALL_PARTS, makeShip, FRAMES, getSectorSpec } from '../game'
 import { getInitialCapacityForDifficulty } from '../../shared/difficulty'
@@ -31,12 +31,16 @@ function BossFleetPreview({ sector }:{ sector:5|10 }){
   );
 }
 
+import { useRef, useEffect } from 'react'
+
 export function RulesModal({ onDismiss }:{ onDismiss:()=>void }){
   const dockStart = getInitialCapacityForDifficulty('easy', BASE_CONFIG.startingFrame);
   const dockCircles = '🟢'.repeat(dockStart);
+  const closeRef = useRef<HTMLButtonElement|null>(null)
+  useEffect(()=>{ try { closeRef.current?.focus() } catch { /* noop */ } }, [])
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 bg-black/60">
-      <div className="w-full max-w-lg bg-zinc-900 border border-zinc-700 rounded-2xl p-4 shadow-xl">
+      <div className="w-full max-w-lg bg-zinc-800 border border-zinc-600 rounded-2xl p-4 shadow-xl">
         <div className="text-lg font-semibold mb-2">How to Play</div>
         <div className="text-sm space-y-3 max-h-[60vh] overflow-y-auto pr-1">
           <div><b>Goal.</b> Clear 10 sectors with your fleet. If every ship is destroyed, the run ends.</div>
@@ -47,7 +51,7 @@ export function RulesModal({ onDismiss }:{ onDismiss:()=>void }){
           <div><b>Ships & Power.</b> Your dock starts with {dockCircles} capacity. Ships cost 🟢 by size and each needs a ⚡ Source and a Drive. Keep power use within supply.</div>
           <div><b>Progress.</b> Winning a battle advances you to the next sector and grants rewards. Bosses await at sectors 5 and 10.</div>
         </div>
-        <div className="mt-3"><button onClick={onDismiss} className="w-full px-4 py-2 rounded-xl bg-emerald-600">Let’s go</button></div>
+        <div className="mt-3"><button ref={closeRef} onClick={onDismiss} className="w-full px-4 py-2 rounded-xl bg-emerald-600">Let’s go</button></div>
       </div>
     </div>
   );
@@ -59,7 +63,7 @@ export function CombatPlanModal({ onClose, sector, endless, gameMode, multi }:{ 
     : SECTORS;
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 bg-black/70">
-      <div className="w-full max-w-lg bg-zinc-900 border border-zinc-700 rounded-2xl p-4">
+      <div className="w-full max-w-lg bg-zinc-800 border border-zinc-600 rounded-2xl p-4">
         <div className="text-lg font-semibold mb-2">Enemy Intel</div>
         {gameMode === 'multiplayer' ? (
           <div className="text-xs sm:text-sm space-y-1 max-h-[60vh] overflow-y-auto pr-1">
@@ -125,7 +129,7 @@ export function TechListModal({ onClose, research }:{ onClose:()=>void, research
   },[])
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 bg-black/70">
-      <div className="w-full max-w-md bg-zinc-900 border border-zinc-700 rounded-2xl p-4">
+      <div className="w-full max-w-md bg-zinc-800 border border-zinc-600 rounded-2xl p-4">
         <div className="text-lg font-semibold mb-2">Tech List</div>
         <div className="max-h-[60vh] overflow-y-auto pr-1 text-xs sm:text-sm space-y-3">
           {tracks.map(t => {
@@ -160,7 +164,7 @@ export function TechListModal({ onClose, research }:{ onClose:()=>void, research
 export function WinModal({ onRestart, onEndless }:{ onRestart:()=>void; onEndless:()=>void }){
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/70">
-      <div className="w-full max-w-md bg-zinc-900 border border-zinc-700 rounded-2xl p-6 text-center">
+      <div className="w-full max-w-md bg-zinc-800 border border-zinc-600 rounded-2xl p-6 text-center">
         <div className="text-2xl font-bold mb-2">You Win!</div>
         <div className="text-sm mb-4">Sector 10 cleared. Congratulations!</div>
         <div className="flex flex-col gap-2">
@@ -175,7 +179,7 @@ export function WinModal({ onRestart, onEndless }:{ onRestart:()=>void; onEndles
 export function MPWinModal({ message, onClose }:{ message:string; onClose:()=>void }){
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/70">
-      <div className="w-full max-w-md bg-zinc-900 border border-zinc-700 rounded-2xl p-6 text-center">
+      <div className="w-full max-w-md bg-zinc-800 border border-zinc-600 rounded-2xl p-6 text-center">
         <div className="text-2xl font-bold mb-2">You Win!</div>
         <div className="text-sm mb-4">{message}</div>
         <div className="flex flex-col gap-2">
@@ -189,7 +193,7 @@ export function MPWinModal({ message, onClose }:{ message:string; onClose:()=>vo
 export function MatchOverModal({ winnerName, onClose }:{ winnerName: string; onClose:()=>void }){
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/70">
-      <div className="w-full max-w-md bg-zinc-900 border border-zinc-700 rounded-2xl p-6 text-center">
+      <div className="w-full max-w-md bg-zinc-800 border border-zinc-600 rounded-2xl p-6 text-center">
         <div className="text-xl font-bold mb-2">Match Over</div>
         <div className="text-sm mb-4">Winner: <b>{winnerName}</b></div>
         <button onClick={onClose} className="px-4 py-2 rounded-xl bg-emerald-600 w-full">Return to Lobby</button>
@@ -202,7 +206,7 @@ export function FactionPickModal({ current, onPick, onClose }:{ current?: string
   const factions = FACTIONS;
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 bg-black/70">
-      <div className="w-full max-w-md bg-zinc-900 border border-zinc-700 rounded-2xl p-4">
+      <div className="w-full max-w-md bg-zinc-800 border border-zinc-600 rounded-2xl p-4">
         <div className="text-lg font-semibold mb-2">Choose Faction</div>
         <div className="max-h-[50vh] overflow-y-auto grid grid-cols-1 gap-2">
           {factions.map((f)=> (

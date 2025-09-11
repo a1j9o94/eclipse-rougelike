@@ -79,7 +79,7 @@ export default function CoachmarkOverlay({
         />
       )}
       {/* Callout panel */}
-      <div ref={panelRef} className="absolute max-w-xs bg-zinc-950/95 border border-zinc-700 rounded-2xl p-4 shadow-2xl text-zinc-100 pointer-events-auto"
+      <div ref={panelRef} className="absolute max-w-xs bg-zinc-800/95 border border-zinc-500 rounded-2xl p-4 shadow-2xl text-zinc-50 pointer-events-auto"
            style={{ top: pos.top - window.scrollY, left: pos.left - window.scrollX }}>
         {title && <div className="text-lg font-semibold mb-2">{title}</div>}
         {text && <div className="text-sm leading-relaxed">{text}</div>}
