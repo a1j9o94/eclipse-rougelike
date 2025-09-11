@@ -231,3 +231,43 @@
 
 ### Follow-ups
 - Consider a muzzle flash or projectile trail in a future pass for extra clarity.
+
+## Plan Entry — Tutorial Onboarding (Guided Run)
+
+- Outcome: First-time players complete a short, skippable tutorial that teaches core systems (combat basics, outpost blueprints, buying parts, dock capacity, tech tracks, Enemy Intel, and frame upgrades). Completion is remembered.
+
+- Acceptance criteria:
+  - Tutorial auto-starts on first run (or via StartPage button) and can be skipped or reset from Settings.
+  - Overlays appear in a fixed order and advance when the related action is performed (buy part, expand docks, research once, view Enemy Intel, etc.).
+  - Starting state (tutorial only): single Cruiser with Spike Launcher + Source/Drive; curated shop appears at key steps.
+  - No engine behavior changes; only UI overlays and small event taps in handlers.
+  - Disabled in multiplayer.
+  - Lint, targeted tests, and build stay green.
+
+- Risks & rollback:
+  - Risk: Players get stuck on a gated step due to resources. Mitigation: stipend on entry and “Skip step”.
+  - Risk: Anchors break after UI changes. Mitigation: use `data-tutorial` attributes with tests.
+  - Rollback: feature-flag the tutorial; overlays can be turned off.
+
+- Test list (must fail first):
+  1) `tutorial_state.spec`: `event('bought-part')` and `event('post-combat')` advance steps.
+  2) `tutorial_shop.spec`: curated shop seeding applied on step entry.
+  3) `outpost_handlers.spec`: buy/upgrade/dock/research call tutorial events.
+  4) `newrun_seed.spec`: tutorial start seeds Cruiser + Spike starting config.
+  5) `tutorial_overlay.spec` (smoke): overlay anchors render for `shop-grid` and `expand-dock` steps.
+
+---
+
+### Implementation Steps
+1) Add `src/tutorial/state.ts` + `script.ts`
+2) Add `CoachmarkOverlay` component and anchor attrs
+3) Tap events in `useRunManagement`, `useOutpostHandlers`, `useRunLifecycle`
+4) Seed shop per step; add stipend helper
+5) Add tests and Settings toggle/Reset
+
+### Decision Log
+- Chose overlay-first approach to avoid engine changes; only event taps and curated-shop injection on outpost return.
+- Starting with a Cruiser + Spike to support the requested “hits on 6” intro while keeping a valid, powered ship.
+
+### Follow-ups
+- Tooltips for Enemy Intel minis and a short glossary modal.
