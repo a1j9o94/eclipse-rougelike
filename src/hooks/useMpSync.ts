@@ -90,12 +90,14 @@ export function useMpSetupSync(params: {
       const srvResearch = st?.research as Research | undefined
       const econ = st?.economy
       let handledRerollBase = false
-      // If server persisted current rerollCost, prefer it over any base correction
+      // If server persisted current rerollCost, apply only if it is ahead of local (non-regressive)
       if (typeof (st as { rerollCost?: number } | null | undefined)?.rerollCost === 'number') {
         const srvCost = Number((st as { rerollCost: number }).rerollCost)
-        if (srvCost !== rerollCost) {
+        if (typeof rerollCost !== 'number' || srvCost > rerollCost) {
           setRerollCost(srvCost)
           try { console.debug('[MP] applied server rerollCost', { srvCost, round: roundNum }) } catch { /* noop */ }
+        } else if (srvCost < rerollCost) {
+          try { console.debug('[MP] ignored stale server rerollCost', { srvCost, local: rerollCost, round: roundNum }) } catch { /* noop */ }
         }
         // Consider base handled for this round
         handledRerollBase = true
