@@ -183,15 +183,16 @@ export default function StartPage({
 
         {/* Battle Log Modal */}
         {showLog && (
-          <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center">
+          <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <button aria-label="Close" onClick={()=>setShowLog(false)} className="absolute inset-0 bg-black/50" />
-            <div className="relative w-full max-w-md mx-auto bg-zinc-950 border border-white/10 rounded-2xl p-4">
-              <div className="text-lg font-semibold">Battle Log</div>
-              <ul className="text-sm mt-2 space-y-1">
-                {progress.log.length===0 && <li>No battles yet.</li>}
-                {progress.log.map((l,i)=>(<li key={i}>{l}</li>))}
+            <div className="relative w-full max-w-md mx-auto bg-zinc-950 border border-white/10 rounded-2xl p-4 max-h-[80vh] flex flex-col">
+              <button aria-label="Close Battle Log" onClick={()=>setShowLog(false)} className="absolute top-2 right-2 text-zinc-400 hover:text-zinc-200">✕</button>
+              <div className="text-lg font-semibold mb-2">Battle Log</div>
+              <ul className="flex-1 overflow-y-auto pr-2 text-sm font-mono space-y-2">
+                {progress.log.length===0 && <li className="text-zinc-400">No battles yet.</li>}
+                {progress.log.map((l,i)=>(<li key={i} className="border-l-2 border-emerald-600 pl-2">{l}</li>))}
               </ul>
-              <div className="mt-3"><button className="px-3 py-2 rounded-xl bg-zinc-800" onClick={()=>setShowLog(false)}>Close</button></div>
+              <div className="mt-3 text-right"><button className="px-3 py-2 rounded-xl bg-zinc-800" onClick={()=>setShowLog(false)}>Close</button></div>
             </div>
           </div>
         )}
