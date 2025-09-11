@@ -5,7 +5,7 @@ import type { Ship } from '../../shared/types'
 import { groupFleet } from '../game'
 import FlyInOnMount from './animations/FlyInOnMount'
 
-export function FleetRow({ ships, side, activeIdx, intro, bounceMs, fireToken }:{ ships:Ship[], side:'P'|'E', activeIdx:number, intro?: { play:boolean; direction:'top'|'bottom'; totalMs?:number; startDelayMs?:number; onDone?:()=>void }, bounceMs?: number, fireToken?: string | number }){
+export function FleetRow({ ships, side, activeIdx, intro, bounceMs, fireToken, combatOver }:{ ships:Ship[], side:'P'|'E', activeIdx:number, intro?: { play:boolean; direction:'top'|'bottom'; totalMs?:number; startDelayMs?:number; onDone?:()=>void }, bounceMs?: number, fireToken?: string | number, combatOver?: boolean }){
   const ref = useRef<HTMLDivElement>(null)
   const [dims, setDims] = useState({ width: 0, card: 0 })
 
@@ -22,7 +22,9 @@ export function FleetRow({ ships, side, activeIdx, intro, bounceMs, fireToken }:
   }, [ships])
 
   const cardWidth = dims.card || 80
-  const alive = ships.map((ship, idx) => ({ ship, idx })).filter(({ ship }) => ship.alive && ship.hull > 0)
+  const alive = ships
+    .map((ship, idx) => ({ ship, idx }))
+    .filter(({ ship }) => ship.alive && ship.hull > 0 && (!combatOver || ship.stats.valid))
   let groups = alive.map(({ ship, idx }) => ({ ship, count:1, indices:[idx] }))
 
   if (dims.width && alive.length > 1){
