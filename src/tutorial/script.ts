@@ -19,8 +19,8 @@ export const STEPS: TutorialStep[] = [
   { id: 'bar-sector', anchor: 'rb-sector', copy: 'Sector — your progress through the campaign. Bosses at 5 and 10.', triggers: ['next'] },
   { id: 'bar-lives', anchor: 'rb-lives', copy: 'Lives — how many defeats you can absorb before the run ends.', triggers: ['next'] },
   // Buy Composite Hull specifically
-  { id: 'shop-buy-composite-1', anchor: 'shop-grid', copy: 'Buy a Composite Hull (1/2). More ❤️ means more hits you can take.', curatedShop: ['composite','fusion_source','plasma','positron'], triggers: ['bought-composite'] },
-  { id: 'shop-buy-composite-2', anchor: 'shop-grid', copy: 'Buy another Composite Hull (2/2).', curatedShop: ['composite','fusion_source','plasma','positron'], triggers: ['bought-composite'] },
+  { id: 'shop-buy-composite-1', anchor: 'shop-item-composite', copy: 'Buy a Composite Hull (1/2). More ❤️ means more hits you can take.', curatedShop: ['composite','fusion_source','plasma','positron'], triggers: ['bought-composite'] },
+  { id: 'shop-buy-composite-2', anchor: 'shop-item-composite', copy: 'Buy another Composite Hull (2/2).', curatedShop: ['composite','fusion_source','plasma','positron'], triggers: ['bought-composite'] },
   // Fight and return
   { id: 'combat-2', anchor: 'start-combat', copy: 'Press Start Combat to test your new hull.', triggers: ['post-combat'] },
   // Research Nano to unlock Improved Hull
@@ -29,7 +29,7 @@ export const STEPS: TutorialStep[] = [
   { id: 'tech-close', anchor: 'tech-close', copy: 'Close the Tech List to continue.', triggers: ['viewed-tech-list'] },
   // Swap hulls: sell Composite, then buy Improved
   { id: 'sell-composite', anchor: 'blueprint-panel', copy: 'Sell the Composite Hull from your blueprint to make room.', triggers: ['sold-composite'] },
-  { id: 'buy-improved', anchor: 'shop-grid', copy: 'Buy Improved Hull (T2). +2 ❤️ for 0⚡ — a straight upgrade.', curatedShop: ['improved','fusion_source','plasma'], triggers: ['bought-improved'] },
+  { id: 'buy-improved', anchor: 'shop-item-improved', copy: 'Buy Improved Hull (T2). +2 ❤️ for 0⚡ — a straight upgrade.', curatedShop: ['improved','fusion_source','plasma'], triggers: ['bought-improved'] },
   // Fight and return again
   { id: 'combat-3', anchor: 'start-combat', copy: 'Press Start Combat to try your upgraded hull.', triggers: ['post-combat'] },
   // Military + then expand docks for Cruiser upgrade

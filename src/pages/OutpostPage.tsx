@@ -261,7 +261,11 @@ export function OutpostPage({
                 const price = applyEconomyModifiers((it.cost||0), economyMods, 'credits');
                 const canAfford = resources.credits >= price;
                 const gd = focusedShip? ghost(focusedShip, it) : null;
-                return (<ItemCard key={i} item={it} price={price} canAfford={canAfford} ghostDelta={gd} onBuy={()=>buyAndInstall(it)} />);
+                return (
+                  <div key={i} data-tutorial={`shop-item-${it.id}`}>
+                    <ItemCard item={it} price={price} canAfford={canAfford} ghostDelta={gd} onBuy={()=>buyAndInstall(it)} />
+                  </div>
+                );
               })}
             </div>
           </div>
