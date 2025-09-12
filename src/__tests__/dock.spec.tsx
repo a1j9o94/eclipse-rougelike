@@ -80,8 +80,10 @@ describe('dock and upgrade visuals', () => {
     const upM = applyEconomyModifiers(ECONOMY.upgradeCosts.interceptorToCruiser.materials, mods, 'materials');
     const upC = applyEconomyModifiers(ECONOMY.upgradeCosts.interceptorToCruiser.credits, mods, 'credits');
 
+    expect(within(buildBtn).getByText('Build Interceptor')).toBeInTheDocument();
     expect(within(buildBtn).getAllByTestId('frame-slot-empty')).toHaveLength(FRAMES.interceptor.tiles);
     expect(buildBtn).toHaveTextContent(`${buildM}🧱 + ${buildC}¢`);
+    expect(within(upgradeBtn).getByText(/Upgrade to Cruiser/)).toBeInTheDocument();
     expect(within(upgradeBtn).getAllByTestId('frame-slot-empty')).toHaveLength(FRAMES.cruiser.tiles);
     expect(upgradeBtn).toHaveTextContent(`${upM}🧱 + ${upC}¢`);
     fireEvent.mouseEnter(upgradeBtn);
@@ -136,6 +138,7 @@ describe('dock and upgrade visuals', () => {
     );
     const upgradeBtn = screen.getByRole('button', {name:/Requires Military ≥ 2/});
     expect(upgradeBtn).toBeDisabled();
+    expect(within(upgradeBtn).getByText(/Requires Military ≥ 2/)).toBeInTheDocument();
   });
 
   it('disables build button when unaffordable', () => {

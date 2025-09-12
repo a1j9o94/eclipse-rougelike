@@ -192,6 +192,7 @@ export function OutpostPage({
             disabled={buildDisabled}
             className={`px-3 py-3 rounded-xl flex flex-col items-center ${buildDisabled?'bg-zinc-700 opacity-60':'bg-sky-600 hover:bg-sky-500 active:scale-95'}`}
           >
+            <div className="text-xs sm:text-sm mb-1">Build Interceptor</div>
             <ShipFrameSlots ship={emptyShip('interceptor')} side='P' />
             <div className="mt-1 text-xs sm:text-sm">{`${buildCost.materials}🧱 + ${buildCost.credits}¢`}</div>
           </button>
@@ -203,8 +204,13 @@ export function OutpostPage({
             disabled={upgradeDisabled}
             className={`px-3 py-3 rounded-xl flex flex-col items-center ${upgradeDisabled?'bg-zinc-700 opacity-60':'bg-amber-600 hover:bg-amber-500 active:scale-95'}`}
           >
+            <div className="text-xs sm:text-sm mb-1">{upgradeComputed.nextId ? `Upgrade to ${FRAMES[upgradeComputed.nextId].name}` : 'Upgrade — Maxed'}</div>
             {upgradeComputed.nextId ? <ShipFrameSlots ship={emptyShip(upgradeComputed.nextId)} side='P' /> : <div className="text-xs">Maxed</div>}
-            {nextUpgrade && <div className="mt-1 text-xs sm:text-sm">{`${nextUpgrade.materials}🧱 + ${nextUpgrade.credits}¢`}</div>}
+            {upgradeUnlocked ? (
+              nextUpgrade && <div className="mt-1 text-xs sm:text-sm">{`${nextUpgrade.materials}🧱 + ${nextUpgrade.credits}¢`}</div>
+            ) : (
+              <div className="mt-1 text-xs sm:text-sm text-rose-300">Requires Military ≥ {upgradeLock?.need}</div>
+            )}
           </button>
         </div>
         <div className="mt-2 grid grid-cols-2 gap-2">
