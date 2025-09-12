@@ -9,6 +9,11 @@ import { applyOutpostCommand, type OutpostEffects } from '../engine/commands'
 import type { OutpostState, OutpostEnv } from '../engine/state'
 import { normalizeShopItems } from '../game/shop'
 import type { EffectKey } from '../game/sound'
+import { isEnabled as isTutorialEnabled, event as tutorialEvent } from '../tutorial/state'
+import { curatedShopFor } from '../tutorial/script'
+import { ALL_PARTS } from '../../shared/parts'
+import { currentGate } from '../tutorial/gates'
+// (duplicates removed)
 
 export type UseOutpostHandlersParams = {
   gameMode: 'single' | 'multiplayer'
@@ -88,21 +93,47 @@ export function useOutpostHandlers(params: UseOutpostHandlersParams): OutpostHan
   }, [gameMode, economyMods, state, setters])
 
   const buyAndInstall = useCallback((part: Part) => {
+    // Tutorial gate: allow only when permitted and, if specified, only certain part ids
+    try {
+      const gate = currentGate();
+      if (gate) {
+        if (!gate.canBuy) return;
+        if (gate.allowedBuyIds && !gate.allowedBuyIds.includes(part.id)) return;
+      }
+    } catch { /* noop */ }
     const r = apply(OutpostIntents.buyAndInstall(part))
     if (r && gameMode === 'multiplayer' && multi?.updateGameState) {
       try { multi.updateGameState({ resources: r.next.resources }) } catch { /* noop */ }
     }
     sound?.('equip')
+    if (isTutorialEnabled()) {
+      if (part.id === 'composite') tutorialEvent('bought-composite')
+      if (part.id === 'improved') tutorialEvent('bought-improved')
+    }
   }, [apply, sound])
 
   const sellPart = useCallback((frameId: FrameId, idx: number) => {
+    // Tutorial: allow specific sells when requested
+    try {
+      const gate = currentGate();
+      if (gate) {
+        if (!gate.allowedSellIds) return;
+        const p = state.blueprints[frameId]?.[idx];
+        if (!p || !gate.allowedSellIds.includes(p.id)) return;
+      }
+    } catch { /* noop */ }
     const r = apply(OutpostIntents.sellPart(frameId, idx))
     if (r && gameMode === 'multiplayer' && multi?.updateGameState) {
       try { multi.updateGameState({ resources: r.next.resources }) } catch { /* noop */ }
     }
+    if (isTutorialEnabled()) {
+      try { const p = state.blueprints[frameId]?.[idx]; if (p?.id==='composite') tutorialEvent('sold-composite') } catch { /* noop */ }
+    }
   }, [apply])
 
   const buildShip = useCallback(() => {
+    // Disallow building during tutorial (kept simple in first pass)
+    try { const gate = currentGate(); if (gate) return } catch { /* noop */ }
     const r = apply(OutpostIntents.buildShip())
     if (r && gameMode === 'multiplayer' && multi?.updateGameState) {
       try { multi.updateGameState({ resources: r.next.resources }) } catch { /* noop */ }
@@ -110,21 +141,35 @@ export function useOutpostHandlers(params: UseOutpostHandlersParams): OutpostHan
   }, [apply])
 
   const upgradeShip = useCallback((idx: number) => {
+    try {
+      const gate = currentGate();
+      if (gate) {
+        if (!gate.canUpgradeShip) return;
+        if (gate.upgradeOnlyInterceptor) {
+          const s = state.fleet?.[idx];
+          if (!s || (s.frame.id as FrameId) !== 'interceptor') return;
+        }
+      }
+    } catch { /* noop */ }
     const r = apply(OutpostIntents.upgradeShip(idx))
     if (r && gameMode === 'multiplayer' && multi?.updateGameState) {
       try { multi.updateGameState({ resources: r.next.resources }) } catch { /* noop */ }
     }
+    if (isTutorialEnabled()) tutorialEvent('upgraded-interceptor')
   }, [apply])
 
   const upgradeDock = useCallback(() => {
+    try { const gate = currentGate(); if (gate && !gate.canUpgradeDock) return } catch { /* noop */ }
     const r = apply(OutpostIntents.upgradeDock())
     if (r && gameMode === 'multiplayer' && multi?.updateGameState) {
       try { multi.updateGameState({ resources: r.next.resources }) } catch { /* noop */ }
     }
     sound?.('dock')
+    if (isTutorialEnabled()) tutorialEvent('expanded-dock')
   }, [apply, sound])
 
   const reroll = useCallback(() => {
+    try { const gate = currentGate(); if (gate && !gate.canReroll) return } catch { /* noop */ }
     const r = apply(OutpostIntents.reroll())
     if (!r) return
     // In MP, persist resource deltas to server so both clients stay in sync
@@ -132,9 +177,17 @@ export function useOutpostHandlers(params: UseOutpostHandlersParams): OutpostHan
       try { multi.updateGameState({ research: r.next.research as Research, resources: r.next.resources, rerollCost: (r.next.rerollCost as number | undefined) }) } catch { /* noop */ }
     }
     sound?.('reroll')
+    if (isTutorialEnabled()) tutorialEvent('rerolled')
   }, [apply, gameMode, multi, sound])
 
   const research = useCallback((track: 'Military'|'Grid'|'Nano') => {
+    try {
+      const gate = currentGate();
+      if (gate) {
+        if (!gate.canResearch) return;
+        if (gate.allowedResearchTracks && !gate.allowedResearchTracks.includes(track)) return;
+      }
+    } catch { /* noop */ }
     const r = apply(OutpostIntents.research(track))
     if (!r) return
     // MP: persist research/resources so they survive across phases
@@ -145,10 +198,26 @@ export function useOutpostHandlers(params: UseOutpostHandlersParams): OutpostHan
       } catch {/* noop */}
     }
     sound?.('tech')
+    if (isTutorialEnabled()) {
+      if (track==='Nano') {
+        tutorialEvent('researched-nano')
+        try {
+          const ids = curatedShopFor('buy-improved' as never)
+          if (ids && ids.length) {
+            const items = ids.map(id => (ALL_PARTS as Part[]).find(p => p.id===id)).filter(Boolean) as Part[]
+            // Override any research-driven shop update immediately
+            setters.setShop?.({ items })
+          }
+        } catch { /* noop */ }
+      }
+      if (track==='Military') tutorialEvent('researched-military')
+    }
   }, [apply, gameMode, multi, sound])
 
   const startCombat = useCallback(() => {
+    try { const gate = currentGate(); if (gate && !gate.canStartCombat) return } catch { /* noop */ }
     apply(OutpostIntents.startCombat())
+    if (isTutorialEnabled()) tutorialEvent('started-combat')
   }, [apply])
 
   return { buyAndInstall, sellPart, buildShip, upgradeShip, upgradeDock, reroll, research, startCombat, apply }

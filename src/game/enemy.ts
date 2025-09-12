@@ -7,6 +7,7 @@ import { makeShip } from './ship';
 import type { Rng } from '../engine/rng'
 import { fromMathRandom } from '../engine/rng'
 import { getOpponentFaction } from './setup';
+import { isEnabled as isTutorialEnabled } from '../tutorial/state'
 
 const BOSS_VARIANTS: Record<number, BossVariant[]> = {
   5: [
@@ -101,6 +102,13 @@ export function randomEnemyPartsFor(frame:Frame, scienceCap:number, boss:boolean
 }
 
 export function buildEnemyFleet(sector:number, rng?: Rng): Ship[]{
+  // Tutorial: always fight a basic Interceptor with no extra hull/specials
+  try {
+    if (isTutorialEnabled()) {
+      const parts = [PARTS.sources[0], PARTS.drives[0], PARTS.weapons[0]]
+      return [ makeShip(FRAMES.interceptor, parts) ] as unknown as Ship[]
+    }
+  } catch { /* ignore and fall through */ }
   const spec = getSectorSpec(sector);
   const boss = spec.boss;
   const bossFocus = boss ? getBossVariantFocus(sector) : undefined;

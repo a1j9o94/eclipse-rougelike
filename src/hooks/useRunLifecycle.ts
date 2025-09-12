@@ -5,6 +5,9 @@ import type { FrameId } from '../game'
 import type { Ship, DifficultyId } from '../../shared/types'
 import type { FactionId } from '../../shared/factions'
 import { rollInventory } from '../game/shop'
+import { isEnabled as isTutorialEnabled, getStep as getTutorialStep, event as tutorialEvent } from '../tutorial/state'
+import { curatedShopFor } from '../tutorial/script'
+import { ALL_PARTS, type Part as PPart } from '../../shared/parts'
 import { calcRewards, ensureGraceResources, graceRecoverFleet } from '../game/rewards'
 
 type MpLifecycle = { restartToSetup?: () => Promise<unknown> | void }
@@ -90,7 +93,26 @@ export function useRunLifecycle(params: {
       } else {
         await sfx.playEffect('page')
         setters.setMode('OUTPOST')
-        setters.setShop({ items: rollInventory(research) })
+        // Tutorial: step advancement and curated shop when active
+        if (isTutorialEnabled()) {
+          try {
+            const stepId = getTutorialStep() as unknown as string
+            if (stepId === 'combat-2' || stepId === 'combat-3') {
+              tutorialEvent('post-combat')
+            }
+            const ids = curatedShopFor(getTutorialStep() as never)
+            if (ids && ids.length > 0) {
+              const items = ids.map(id => (ALL_PARTS as PPart[]).find(p => p.id === id)).filter(Boolean) as PPart[]
+              setters.setShop({ items })
+            } else {
+              setters.setShop({ items: rollInventory(research) })
+            }
+          } catch {
+            setters.setShop({ items: rollInventory(research) })
+          }
+        } else {
+          setters.setShop({ items: rollInventory(research) })
+        }
         setters.setShopVersion(v => v + 1)
         // Advance to next sector after returning to outpost
         try { setters.setSector?.((n)=> Math.max(n, sector) + 1) } catch { /* ignore */ }

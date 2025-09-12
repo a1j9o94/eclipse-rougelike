@@ -5,12 +5,17 @@ import { type DifficultyId } from '../shared/types'
 import { type FrameId } from './game'
 import GameShell from './components/GameShell'
 import { getPreGameElement } from './lib/renderPreGame'
+import CoachmarkOverlay from './tutorial/CoachmarkOverlay'
+import { ALL_PARTS } from '../shared/parts'
+import { STEPS } from './tutorial/script'
+import useTutorial from './tutorial/useTutorial'
+import { event as tutorialEvent } from './tutorial/state'
 // import { getEconomyModifiers } from './game/economy'
 // blueprint seeding handled in hooks
 // StartPage routed via PreGameRouter
 import { type FactionId } from '../shared/factions'
 // Routed views are rendered inside GameShell
-import { type Part } from '../shared/parts'
+import type { Part } from '../shared/parts'
 import { type Ship, type InitiativeEntry } from '../shared/types'
 // run init handled in useRunManagement
 // lives init handled by utils/inferLives
@@ -136,10 +141,11 @@ export default function EclipseIntegrated(){
   // Bridge for passing startFirstCombat to useRunManagement before combat hook initializes
   const startFirstCombatRef = { current: (()=>{}) as () => void };
   // ---------- Run management ----------
-  const { newRun, resetRun } = useRunManagement({
+  const { newRun, newRunTutorial, resetRun } = useRunManagement({
     setDifficulty, setFaction, setOpponent: (f)=>setOpponent(f as FactionId), setShowNewRun, playEffect: (k)=>{ void playEffect(k as 'page'|'startCombat'|'equip'|'reroll'|'dock'|'faction'|'tech') }, setEndless, setLivesRemaining,
     setResources, setCapacity, setResearch, setRerollCost, setBaseRerollCost, setSector, setBlueprints: (bp)=>setBlueprints(bp as Record<FrameId, Part[]>), setFleet: (f)=>setFleet(f as unknown as Ship[]), setFocused, setShop, startFirstCombat: ()=> startFirstCombatRef.current(), clearRunState, setShowRules,
   })
+  // Tutorial start helper is provided by the same hook (newRunTutorial)
 
   const {
     handleRoomJoined,
@@ -408,6 +414,29 @@ export default function EclipseIntegrated(){
   }, [gameMode, multi?.gameState?.gamePhase])
 
   // Pre-game routing (start, MP menu/lobby)
+  // Tutorial hook must be declared before any early returns to keep hook order stable
+  const tut = useTutorial()
+  // Seed curated shop on step entry where needed
+  useEffect(()=>{
+    if (!tut.enabled) return
+    const id = tut.step as string
+    const idMap: Record<string, string[] | undefined> = {
+      'shop-buy-composite-1': ['composite','fusion_source','plasma','positron'],
+      'shop-buy-composite-2': ['composite','fusion_source','plasma','positron'],
+      'buy-improved': ['improved','fusion_source','plasma'],
+      'tech-nano': ['tachyon_drive','antimatter','improved'],
+    }
+    const wanted = idMap[id]
+    if (!wanted) return
+    try {
+      const items = wanted.map(pid => (ALL_PARTS as Part[]).find(p => p.id===pid)).filter(Boolean) as Part[]
+      setShop({ items })
+    } catch { /* noop */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tut.step])
+
+  // Do not auto-open Tech list; we prompt the user to tap it.
+
   const preGame = getPreGameElement({
     gameMode,
     showNewRun,
@@ -418,6 +447,7 @@ export default function EclipseIntegrated(){
     openVersusOnHome,
     currentRoomId,
     onNewRun: newRun,
+    onStartTutorial: (f)=> newRunTutorial(f as FactionId),
     onContinue: handleContinue,
     onGoMultiplayer: handleGoMultiplayer,
     onGoPublic: () => handleGoPublic(),
@@ -429,6 +459,7 @@ export default function EclipseIntegrated(){
   if (preGame) return preGame
 
   return (
+    <>
     <GameShell
       showRules={showRules}
       onDismissRules={dismissRules}
@@ -446,5 +477,32 @@ export default function EclipseIntegrated(){
       outpost={outpost as OutpostPageProps}
       combat={{ combatOver: cv.combatOver, outcome: cv.outcome, roundNum: cv.roundNum, queue: cv.queue as InitiativeEntry[], turnPtr: cv.turnPtr, fleet, enemyFleet: cv.enemyFleet, log: cv.log, onReturn: handleReturnFromCombat, showRules, introActive: combatIntroActive, onIntroDone: ()=> setCombatIntroActive(false) } as CombatProps}
     />
+    {/* Tutorial overlay: non-blocking; visible only when relevant to current route */}
+    {tut.enabled ? (()=>{
+      const id = tut.step as string
+      const step = (STEPS as { id:string; copy?:string; anchor?:string }[]).find(s=>s.id===id)
+      const text = step?.copy || ''
+      const show = (() => {
+        if (mode==='COMBAT') return false
+        // Outpost: show hints for actionable steps only
+        const outpostSteps = new Set([
+          'intro-combat','outpost-ship','outpost-blueprint','bar-resources','bar-capacity','bar-sector','bar-lives','shop-buy-composite-1','shop-buy-composite-2','combat-2','tech-nano','tech-open','tech-close','sell-composite','buy-improved','combat-3','tech-military','capacity-info','dock-expand','upgrade-interceptor','shop-reroll','intel-open','intel-close','rules-hint'
+        ])
+        return outpostSteps.has(id)
+      })()
+      if (!show) return null
+      const showNext = new Set(['outpost-blueprint','bar-resources','bar-capacity','bar-sector','bar-lives','capacity-info','rules-hint']).has(id)
+      return (
+        <CoachmarkOverlay
+          key="tutorial-coach"
+          visible={true}
+          title="Tutorial"
+          text={text}
+          anchor={step?.anchor}
+          onNext={showNext ? ()=> { try { tutorialEvent('next') } catch { /* noop */ } } : undefined}
+        />
+      )
+    })() : null}
+    </>
   )
 }
