@@ -1,10 +1,13 @@
 import { describe, it, expect } from 'vitest';
 
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { DockSlots } from '../components/ui';
 import OutpostPage from '../pages/OutpostPage';
 import { makeShip, getFrame, PARTS } from '../game';
 import type { ResearchState as Research, GhostDelta, Ship } from '../../shared/types';
+import { FRAMES } from '../../shared/frames';
+import { ECONOMY } from '../../shared/economy';
+import { applyEconomyModifiers, getDefaultEconomyModifiers } from '../game/economy';
 
 // React import not required
 
@@ -22,7 +25,7 @@ describe('dock and upgrade visuals', () => {
     expect(screen.getAllByTestId('dock-slot-over')).toHaveLength(1);
   });
 
-  it('shows slot increase and dock icon in upgrade and build buttons', () => {
+  it('shows empty frame and cost in upgrade and build buttons', () => {
     const ship: Ship = makeShip(getFrame('interceptor'), [PARTS.sources[0], PARTS.drives[0]]);
     render(
       <OutpostPage
@@ -68,13 +71,19 @@ describe('dock and upgrade visuals', () => {
         onRestart={()=>{}}
       />
     );
-    const slotText = screen.getByText(/⬛ 6→8 slots/);
-    expect(slotText).toBeInTheDocument();
     const upgradeBtn = screen.getByRole('button', {name:/Upgrade Interceptor to Cruiser/});
-    expect(upgradeBtn).toHaveTextContent('⬛ 6→8');
-    expect(upgradeBtn).toHaveTextContent('🟢');
     const buildBtn = screen.getByRole('button', {name:/Build Interceptor/});
-    expect(buildBtn).toHaveTextContent('🟢');
+
+    const mods = getDefaultEconomyModifiers();
+    const buildM = applyEconomyModifiers(ECONOMY.buildInterceptor.materials, mods, 'materials');
+    const buildC = applyEconomyModifiers(ECONOMY.buildInterceptor.credits, mods, 'credits');
+    const upM = applyEconomyModifiers(ECONOMY.upgradeCosts.interceptorToCruiser.materials, mods, 'materials');
+    const upC = applyEconomyModifiers(ECONOMY.upgradeCosts.interceptorToCruiser.credits, mods, 'credits');
+
+    expect(within(buildBtn).getAllByTestId('frame-slot-empty')).toHaveLength(FRAMES.interceptor.tiles);
+    expect(buildBtn).toHaveTextContent(`${buildM}🧱 + ${buildC}¢`);
+    expect(within(upgradeBtn).getAllByTestId('frame-slot-empty')).toHaveLength(FRAMES.cruiser.tiles);
+    expect(upgradeBtn).toHaveTextContent(`${upM}🧱 + ${upC}¢`);
     fireEvent.mouseEnter(upgradeBtn);
     expect(screen.getAllByTestId('dock-slot-preview').length).toBeGreaterThan(0);
   });

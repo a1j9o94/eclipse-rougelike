@@ -5,6 +5,8 @@ import { PARTS } from '../../shared/parts'
 import type { Part } from '../../shared/parts'
 import type { Ship } from '../../shared/types'
 import { getFrame, makeShip, type FrameId } from '../game'
+import { ECONOMY } from '../../shared/economy'
+import { applyEconomyModifiers } from '../game/economy'
 
 // Silence audio
 vi.mock('../game/sound', () => ({ playEffect: vi.fn(), playMusic: vi.fn() }))
@@ -48,6 +50,8 @@ describe('Outpost — economy labels (isolated)', () => {
       economyMods={economyMods}
     />)
     const buildBtn = await screen.findByRole('button', { name: /Build Interceptor/i })
-    expect(buildBtn.textContent).toMatch(/\(2🧱 \+ (22|23)¢\)/)
+    const buildM = applyEconomyModifiers(ECONOMY.buildInterceptor.materials, economyMods, 'materials')
+    const buildC = applyEconomyModifiers(ECONOMY.buildInterceptor.credits, economyMods, 'credits')
+    expect(buildBtn).toHaveTextContent(`${buildM}🧱 + ${buildC}¢`)
   })
 })

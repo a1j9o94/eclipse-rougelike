@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import type { PlayerState, GameState, ShipSnapshot } from '../../shared/mpTypes'
+import { ECONOMY } from '../../shared/economy'
+import { applyEconomyModifiers, getDefaultEconomyModifiers } from '../game/economy'
 
 // Silence audio
 vi.mock('../game/sound', () => ({ playEffect: vi.fn(), playMusic: vi.fn(), stopMusic: vi.fn() }))
@@ -81,8 +83,11 @@ describe('MP Isolation — Warmongers do not inherit Industrialists economy', ()
     // Reroll shows base 8¢ (no 0¢)
     await screen.findByText(/Reroll \(8¢\)/i)
 
-    // Build shows base cost (no discounts). It may be disabled if unaffordable; accept the Need variant.
+    // Build shows base cost (no discounts)
     const buildBtn = await screen.findByRole('button', { name: /Build Interceptor/i })
-    expect(buildBtn.textContent).toMatch(/(Need 3🧱 \+ 30¢|\(3🧱 \+ 30¢\))/)
+    const mods = getDefaultEconomyModifiers()
+    const buildM = applyEconomyModifiers(ECONOMY.buildInterceptor.materials, mods, 'materials')
+    const buildC = applyEconomyModifiers(ECONOMY.buildInterceptor.credits, mods, 'credits')
+    expect(buildBtn).toHaveTextContent(`${buildM}🧱 + ${buildC}¢`)
   })
 })

@@ -1,6 +1,8 @@
 // React import not required with modern JSX transform
 import { useState } from 'react'
 import { ItemCard, PowerBadge, DockSlots } from '../components/ui'
+import { ShipFrameSlots } from '../components/ShipFrameSlots'
+import { emptyShip } from '../game/emptyShip'
 import { CombatPlanModal } from '../components/modals'
 import { event as tutorialEvent, isEnabled as isTutorialEnabled, getStep as tutorialGetStep } from '../tutorial/state'
 import type { MpBasics } from '../adapters/mpSelectors'
@@ -118,15 +120,15 @@ export function OutpostPage({
     return null;
   })();
   const upgradeComputed = (()=>{
-    if(!focusedShip) return { label: 'Upgrade — Maxed', disabled: true, targetUsed: tonnage.used } as const;
+    if(!focusedShip) return { label: 'Upgrade — Maxed', disabled: true, targetUsed: tonnage.used, nextId: null as FrameId|null } as const;
     const currId = focusedShip.frame.id as FrameId;
-    const nextId = currId==='interceptor' ? 'cruiser' : currId==='cruiser' ? 'dread' : null as unknown as FrameId;
-    if(!nextId) return { label: 'Upgrade — Maxed', disabled: true, targetUsed: tonnage.used } as const;
+    const nextId = currId==='interceptor' ? 'cruiser' : currId==='cruiser' ? 'dread' : null;
+    if(!nextId) return { label: 'Upgrade — Maxed', disabled: true, targetUsed: tonnage.used, nextId } as const;
     const nextFrame = FRAMES[nextId];
     const targetUsed = tonnage.used + (nextFrame.tonnage - focusedShip.frame.tonnage);
     const lacksCapacity = targetUsed > capacity.cap;
     const label = `Upgrade ${focusedShip.frame.name} to ${nextFrame.name} — ⬛ ${focusedShip.frame.tiles}→${nextFrame.tiles} slots • 🟢 ${focusedShip.frame.tonnage}→${nextFrame.tonnage} dock`;
-    return { label, disabled: lacksCapacity, targetUsed } as const;
+    return { label, disabled: lacksCapacity, targetUsed, nextId } as const;
   })();
   const upgradeLock = upgradeLockInfo(focusedShip);
   const upgradeUnlocked = !upgradeLock || (research.Military||1) >= upgradeLock.need;
@@ -183,22 +185,26 @@ export function OutpostPage({
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
           <button
+            aria-label={buildLabel}
             onClick={buildShip}
             onMouseEnter={()=>setDockPreview(tonnage.used + FRAMES.interceptor.tonnage)}
             onMouseLeave={()=>setDockPreview(null)}
             disabled={buildDisabled}
-            className={`px-3 py-3 rounded-xl ${buildDisabled?'bg-zinc-700 opacity-60':'bg-sky-600 hover:bg-sky-500 active:scale-95'}`}
+            className={`px-3 py-3 rounded-xl flex flex-col items-center ${buildDisabled?'bg-zinc-700 opacity-60':'bg-sky-600 hover:bg-sky-500 active:scale-95'}`}
           >
-            {buildLabel}
+            <ShipFrameSlots ship={emptyShip('interceptor')} side='P' />
+            <div className="mt-1 text-xs sm:text-sm">{`${buildCost.materials}🧱 + ${buildCost.credits}¢`}</div>
           </button>
           <button data-tutorial="upgrade-ship"
+            aria-label={upgradeLabel}
             onClick={()=>upgradeShip(focused)}
             onMouseEnter={()=>setDockPreview(upgradeComputed.targetUsed)}
             onMouseLeave={()=>setDockPreview(null)}
             disabled={upgradeDisabled}
-            className={`px-3 py-3 rounded-xl ${upgradeDisabled?'bg-zinc-700 opacity-60':'bg-amber-600 hover:bg-amber-500 active:scale-95'}`}
+            className={`px-3 py-3 rounded-xl flex flex-col items-center ${upgradeDisabled?'bg-zinc-700 opacity-60':'bg-amber-600 hover:bg-amber-500 active:scale-95'}`}
           >
-            {upgradeLabel}
+            {upgradeComputed.nextId ? <ShipFrameSlots ship={emptyShip(upgradeComputed.nextId)} side='P' /> : <div className="text-xs">Maxed</div>}
+            {nextUpgrade && <div className="mt-1 text-xs sm:text-sm">{`${nextUpgrade.materials}🧱 + ${nextUpgrade.credits}¢`}</div>}
           </button>
         </div>
         <div className="mt-2 grid grid-cols-2 gap-2">

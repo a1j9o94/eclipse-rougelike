@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { CompactShip } from '../components/ui'
+import { CompactShip } from '../components/CompactShip'
 import { makeShip, getFrame, PARTS, RARE_PARTS, type Part } from '../game'
 
 describe('CompactShip rift dice display', () => {

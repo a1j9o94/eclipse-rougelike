@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { ShipFrameSlots } from '../components/ui';
+import { ShipFrameSlots } from '../components/ShipFrameSlots';
 import type { Ship } from '../../shared/types';
 
 const snapshotShip = {

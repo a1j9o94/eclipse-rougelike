@@ -1,6 +1,6 @@
 // React import not required with modern JSX transform
 import { useRef, useState, useEffect } from 'react'
-import { CompactShip } from './ui'
+import { CompactShip } from './CompactShip'
 import type { Ship } from '../../shared/types'
 import { groupFleet } from '../game'
 import FlyInOnMount from './animations/FlyInOnMount'

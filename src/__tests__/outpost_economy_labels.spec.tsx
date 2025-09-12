@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
+import { ECONOMY } from '../../shared/economy'
+import { applyEconomyModifiers } from '../game/economy'
 
 // Silence audio
 vi.mock('../game/sound', () => ({ playEffect: vi.fn(), playMusic: vi.fn(), stopMusic: vi.fn() }))
@@ -61,8 +63,10 @@ describe('Outpost — economy labels reflect faction (MP)', () => {
 
     // Industrialists: reroll shows 0¢ initially
     await screen.findByText(/Reroll \(0¢\)/i)
-    // Build cost shows discounted 0.75× (materials 3→3, credits 30→22 or 23 floor). Accept either 22 or 23 due to flooring.
     const buildBtn = await screen.findByRole('button', { name: /Build Interceptor/i })
-    expect(buildBtn.textContent).toMatch(/\(3🧱 \+ (22|23)¢\)/)
+    const econMods = { credits: 0.75, materials: 0.75 }
+    const buildM = applyEconomyModifiers(ECONOMY.buildInterceptor.materials, econMods, 'materials')
+    const buildC = applyEconomyModifiers(ECONOMY.buildInterceptor.credits, econMods, 'credits')
+    expect(buildBtn).toHaveTextContent(`${buildM}🧱 + ${buildC}¢`)
   })
 })
