@@ -25,7 +25,7 @@ describe('dock and upgrade visuals', () => {
     expect(screen.getAllByTestId('dock-slot-over')).toHaveLength(1);
   });
 
-  it('shows empty frame and cost in upgrade and build buttons', () => {
+  it('shows empty frame and cost in build tile, and in upgrade tile after switching tab', () => {
     const ship: Ship = makeShip(getFrame('interceptor'), [PARTS.sources[0], PARTS.drives[0]]);
     render(
       <OutpostPage
@@ -71,8 +71,8 @@ describe('dock and upgrade visuals', () => {
         onRestart={()=>{}}
       />
     );
-    const upgradeBtn = screen.getByRole('button', {name:/Upgrade Interceptor to Cruiser/});
-    const buildBtn = screen.getByRole('button', {name:/Build Interceptor/});
+    // Build tab is selected by default
+    const buildBtn = screen.getByRole('button', {name:/Build Interceptor/i});
 
     const mods = getDefaultEconomyModifiers();
     const buildM = applyEconomyModifiers(ECONOMY.buildInterceptor.materials, mods, 'materials');
@@ -83,14 +83,16 @@ describe('dock and upgrade visuals', () => {
     expect(within(buildBtn).getByText('Build Interceptor')).toBeInTheDocument();
     expect(within(buildBtn).getAllByTestId('frame-slot-empty')).toHaveLength(FRAMES.interceptor.tiles);
     expect(buildBtn).toHaveTextContent(`${buildM}🧱 + ${buildC}¢`);
-    expect(within(upgradeBtn).getByText(/Upgrade to Cruiser/)).toBeInTheDocument();
+    // Switch to Cruiser tab and verify upgrade content
+    fireEvent.click(screen.getByRole('button', { name: /Cruiser/i }))
+    const upgradeBtn = screen.getByRole('button', {name:/Upgrade Interceptor to Cruiser/i});
     expect(within(upgradeBtn).getAllByTestId('frame-slot-empty')).toHaveLength(FRAMES.cruiser.tiles);
     expect(upgradeBtn).toHaveTextContent(`${upM}🧱 + ${upC}¢`);
-    fireEvent.mouseEnter(upgradeBtn);
+    fireEvent.mouseEnter(upgradeBtn)
     expect(screen.getAllByTestId('dock-slot-preview').length).toBeGreaterThan(0);
   });
 
-  it('disables upgrade button when tech too low', () => {
+  it('disables upgrade button when tech too low (after switching tab)', () => {
     const ship: Ship = makeShip(getFrame('interceptor'), [PARTS.sources[0], PARTS.drives[0]]);
     render(
       <OutpostPage
@@ -136,7 +138,8 @@ describe('dock and upgrade visuals', () => {
         onRestart={()=>{}}
       />
     );
-    const upgradeBtn = screen.getByRole('button', {name:/Requires Military ≥ 2/});
+    fireEvent.click(screen.getByRole('button', { name: /Cruiser/i }))
+    const upgradeBtn = screen.getByRole('button', {name:/Requires Military ≥ 2/i});
     expect(upgradeBtn).toBeDisabled();
     expect(within(upgradeBtn).getByText(/Requires Military ≥ 2/)).toBeInTheDocument();
   });

@@ -87,11 +87,12 @@ export function OutpostPage({
   const focusedShip = fleet[focused];
   const fleetGroups = groupFleet(fleet);
   const hasInterceptor = fleet.some(s => s.frame.id === 'interceptor')
-  const hasCruiser = fleet.some(s => s.frame.id === 'cruiser')
+  // const hasCruiser = fleet.some(s => s.frame.id === 'cruiser')
   const firstIdx = (id: FrameId): number => fleet.findIndex(s => s.frame.id === id)
   const [showPlan, setShowPlan] = useState(false);
   const [dockPreview, setDockPreview] = useState<number|null>(null);
   const [showTech, setShowTech] = useState(false);
+  const [frameTab, setFrameTab] = useState<'interceptor'|'cruiser'|'dread'>('interceptor');
   const tracks = ['Military','Grid','Nano'] as const;
   const buildChk = canBuildInterceptorWithMods(resources, capacity, tonnage.used, economyMods);
   const buildCost = { materials: buildChk.cost.m, credits: buildChk.cost.c };
@@ -238,98 +239,89 @@ export function OutpostPage({
             </button>
           )})}
         </div>
-        {/* Frame tray: Build/Upgrade actions live inside these tiles */}
-        <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
-          {/* Interceptor — Build New */}
-          <button
-            aria-label={buildLabel}
-            onClick={buildShip}
-            onMouseEnter={()=>setDockPreview(tonnage.used + FRAMES.interceptor.tonnage)}
-            onMouseLeave={()=>setDockPreview(null)}
-            disabled={buildDisabled}
-            className={`px-3 py-3 rounded-xl flex flex-col items-center text-center ${buildDisabled?'bg-zinc-700 opacity-60':'bg-sky-600 hover:bg-sky-500 active:scale-95'}`}
-          >
-            <div className="text-xs sm:text-sm mb-1">Build Interceptor</div>
-            <ShipFrameSlots ship={emptyShip('interceptor')} side='P' />
-            <div className="mt-1 text-xs sm:text-sm">{`${buildCost.materials}🧱 + ${buildCost.credits}¢`}</div>
-          </button>
-
-          {/* Cruiser — Upgrade */}
-          <button data-tutorial="upgrade-ship"
-            aria-label={upgradeLabel}
-            onClick={()=>{
-              // Prefer focused interceptor; otherwise upgrade the first interceptor
-              const target = fleet[focused]?.frame.id === 'interceptor' ? focused : firstIdx('interceptor')
-              if (target >= 0) upgradeShip(target)
-            }}
-            onMouseEnter={()=>setDockPreview(upgradeComputed.targetUsed)}
-            onMouseLeave={()=>setDockPreview(null)}
-            disabled={upgradeDisabled || !hasInterceptor}
-            className={`px-3 py-3 rounded-xl flex flex-col items-center text-center ${upgradeDisabled?'bg-zinc-800 opacity-60':'bg-amber-600 hover:bg-amber-500 active:scale-95'}`}
-          >
-            <div className="text-xs sm:text-sm mb-1">{upgradeComputed.nextId ? `Upgrade to ${FRAMES[upgradeComputed.nextId].name}` : 'Upgrade — Maxed'}</div>
-            {upgradeComputed.nextId ? <ShipFrameSlots ship={emptyShip(upgradeComputed.nextId)} side='P' /> : <div className="text-xs">Maxed</div>}
-            {!hasInterceptor ? (
-              <div className="mt-1 text-xs sm:text-sm opacity-80">Need an Interceptor to upgrade</div>
-            ) : upgradeUnlocked ? (
-              nextUpgrade && <div className="mt-1 text-xs sm:text-sm">{`${nextUpgrade.materials}🧱 + ${nextUpgrade.credits}¢`}</div>
-            ) : (
-              <div className="mt-1 text-xs sm:text-sm text-rose-300">Requires Military ≥ {upgradeLock?.need}</div>
-            )}
-          </button>
-
-          {/* Dread — Upgrade first eligible Cruiser if available */}
+        {/* Single action panel with tabs */}
+        <div className="mt-3">
+          {/* Tabs */}
+          <div className="mb-2 inline-flex rounded-xl overflow-hidden ring-1 ring-white/10">
+            {(['interceptor','cruiser','dread'] as const).map(t => (
+              <button key={t} onClick={()=>setFrameTab(t)} className={`px-3 py-1.5 text-sm ${frameTab===t? 'bg-white/10' : 'bg-black/30 hover:bg-black/40'}`}>{t==='interceptor'?'Interceptor':t==='cruiser'?'Cruiser':'Dreadnought'}</button>
+            ))}
+          </div>
+          {/* Panel */}
           {(() => {
+            if (frameTab === 'interceptor') {
+              return (
+                <button
+                  aria-label={buildLabel}
+                  onClick={buildShip}
+                  onMouseEnter={()=>setDockPreview(tonnage.used + FRAMES.interceptor.tonnage)}
+                  onMouseLeave={()=>setDockPreview(null)}
+                  disabled={buildDisabled}
+                  className={`w-full px-3 py-3 rounded-2xl flex flex-col items-center text-center ${buildDisabled?'bg-zinc-700 opacity-60':'bg-sky-600 hover:bg-sky-500 active:scale-95'}`}
+                >
+                  <div className="text-base font-semibold mb-1">Build Interceptor</div>
+                  <ShipFrameSlots ship={emptyShip('interceptor')} side='P' />
+                  <div className="mt-2 text-sm">{`${buildCost.materials}🧱 + ${buildCost.credits}¢`}</div>
+                </button>
+              )
+            }
+            if (frameTab === 'cruiser') {
+              const target = fleet[focused]?.frame.id === 'interceptor' ? focused : firstIdx('interceptor')
+              const disabled = upgradeDisabled || !hasInterceptor
+              const help = !hasInterceptor ? 'Need an Interceptor to upgrade' : (!upgradeUnlocked ? `Requires Military ≥ ${upgradeLock?.need}` : (nextUpgrade? `${nextUpgrade.materials}🧱 + ${nextUpgrade.credits}¢` : 'Upgrade — Maxed'))
+              return (
+                <button
+                  aria-label={upgradeLabel}
+                  onClick={()=>{ if (target >= 0) upgradeShip(target) }}
+                  onMouseEnter={()=>setDockPreview(upgradeComputed.targetUsed)}
+                  onMouseLeave={()=>setDockPreview(null)}
+                  disabled={disabled}
+                  className={`w-full px-3 py-3 rounded-2xl flex flex-col items-center text-center ${disabled?'bg-zinc-800 opacity-60':'bg-amber-600 hover:bg-amber-500 active:scale-95'}`}
+                >
+                  <div className="text-base font-semibold mb-1">Upgrade to Cruiser</div>
+                  <ShipFrameSlots ship={emptyShip('cruiser')} side='P' />
+                  <div className={`mt-2 text-sm ${!hasInterceptor || !upgradeUnlocked? 'text-rose-200' : ''}`}>{help}</div>
+                </button>
+              )
+            }
+            // dread
             const dreadCost = {
               materials: applyEconomyModifiers(ECONOMY.upgradeCosts.cruiserToDread.materials, economyMods, 'materials'),
               credits: applyEconomyModifiers(ECONOMY.upgradeCosts.cruiserToDread.credits, economyMods, 'credits'),
             }
-            const haveCruiser = hasCruiser
+            const idx = firstIdx('cruiser')
+            const haveCruiser = idx >= 0
             const milOk = (research.Military||1) >= 3
-            // capacity preview for a hypothetical cruiser → dread upgrade
-            const targetUsed = (() => {
-              const idx = firstIdx('cruiser')
-              if (idx < 0) return tonnage.used
-              const s = fleet[idx]
-              return tonnage.used + (FRAMES.dread.tonnage - s.frame.tonnage)
-            })()
+            const targetUsed = haveCruiser ? (tonnage.used + (FRAMES.dread.tonnage - fleet[idx].frame.tonnage)) : tonnage.used
             const capOk = targetUsed <= capacity.cap
             const canAfford = resources.credits >= dreadCost.credits && resources.materials >= dreadCost.materials
             const disabled = !(haveCruiser && milOk && capOk && canAfford)
-            const label = (haveCruiser && milOk)
-              ? `${dreadCost.materials}🧱 + ${dreadCost.credits}¢`
-              : (milOk ? 'Need a Cruiser to upgrade' : 'Requires Military ≥ 3')
+            const help = (!milOk) ? 'Requires Military ≥ 3' : (!haveCruiser ? 'Need a Cruiser to upgrade' : `${dreadCost.materials}🧱 + ${dreadCost.credits}¢`)
             return (
               <button
                 aria-label="Upgrade Cruiser to Dreadnought"
-                onClick={()=>{ const idx = firstIdx('cruiser'); if (idx>=0) upgradeShip(idx) }}
+                onClick={()=>{ if (idx>=0) upgradeShip(idx) }}
                 onMouseEnter={()=> setDockPreview(targetUsed)}
                 onMouseLeave={()=> setDockPreview(null)}
                 disabled={disabled}
-                className={`px-3 py-3 rounded-xl flex flex-col items-center text-center ${disabled? 'bg-zinc-800 opacity-60' : 'bg-fuchsia-700 hover:bg-fuchsia-600 active:scale-95'}`}
+                className={`w-full px-3 py-3 rounded-2xl flex flex-col items-center text-center ${disabled? 'bg-zinc-800 opacity-60' : 'bg-fuchsia-700 hover:bg-fuchsia-600 active:scale-95'}`}
               >
-                <div className="text-xs sm:text-sm mb-1">Upgrade to Dreadnought</div>
+                <div className="text-base font-semibold mb-1">Upgrade to Dreadnought</div>
                 <ShipFrameSlots ship={emptyShip('dread')} side='P' />
-                <div className={`mt-1 text-xs sm:text-sm ${(!haveCruiser || !milOk) ? 'opacity-80' : ''}`}>{label}</div>
+                <div className={`mt-2 text-sm ${(!haveCruiser || !milOk) ? 'text-rose-200' : ''}`}>{help}</div>
               </button>
             )
           })()}
         </div>
-        {/* Single Capacity tile with Expand button */}
+        {/* Capacity tile is fully pressable */}
         <div className="mt-2 grid grid-cols-1 gap-2">
-          <div data-tutorial="capacity-info" className="px-3 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-sm">
-            <div className="flex items-center justify-between">
+          <button data-tutorial="expand-dock" onClick={upgradeDock} disabled={dockDisabled} className={`text-left px-3 py-3 rounded-xl border text-sm ${dockDisabled? 'bg-zinc-800 border-zinc-800 opacity-60' : 'bg-zinc-900 border-zinc-700 hover:border-zinc-500 active:scale-[.99]'}`} aria-label={`Expand Capacity — ${dockCost.materials}🧱 + ${dockCost.credits}¢`}>
+            <div className="flex items-center justify-between mb-1">
               <div>Capacity: <b>{capacity.cap}</b> • Used: <b>{tonnage.used}</b></div>
-              <button data-tutorial="expand-dock"
-                onClick={upgradeDock}
-                disabled={dockDisabled}
-                className={`px-3 py-1.5 rounded-lg text-sm ${dockDisabled? 'bg-zinc-700 opacity-60' : 'bg-indigo-600 hover:bg-indigo-500 active:scale-95'}`}
-              >
-                {dockDisabled ? (dockAtCap ? 'Capacity Maxed' : `Expand • ${dockCost.materials}🧱 + ${dockCost.credits}¢`) : `Expand • ${dockCost.materials}🧱 + ${dockCost.credits}¢`}
-              </button>
+              <div className="px-2 py-1 rounded-lg bg-indigo-600 text-white text-xs">Expand • {dockCost.materials}🧱 + {dockCost.credits}¢</div>
             </div>
             <DockSlots used={tonnage.used} cap={capacity.cap} preview={dockPreview===null?undefined:dockPreview} />
-          </div>
+          </button>
         </div>
           {/* Blueprint Manager with Sell */}
           <div className="mt-3">
