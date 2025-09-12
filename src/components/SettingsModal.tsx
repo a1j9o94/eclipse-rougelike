@@ -47,6 +47,7 @@ export default function SettingsModal({
                     tutorialReset();
                     tutorialEnable();
                     setTutorialActive(true);
+                    try { window.dispatchEvent(new Event('tutorial-activated')) } catch { /* noop */ }
                   }
                 } catch { /* noop */ }
               }}

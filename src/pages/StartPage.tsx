@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { FACTIONS, type FactionId } from '../../shared/factions';
 import { type DifficultyId } from '../../shared/types';
 import { getStartingShipCount } from '../../shared/difficulty';
@@ -27,7 +27,7 @@ export default function StartPage({
   const progress = evaluateUnlocks(loadRunState());
   const available = FACTIONS.filter(f => progress.factions[f.id]?.unlocked);
   const [faction, setFaction] = useState<FactionId>(available[0]?.id || 'industrialists');
-  const [tutorialEligible] = useState<boolean>(() => !tutorialHasCompleted());
+  const [tutorialEligible, setTutorialEligible] = useState<boolean>(() => !tutorialHasCompleted());
   const shipCounts = useMemo(() => ({
     easy: getStartingShipCount('easy'),
     medium: getStartingShipCount('medium'),
@@ -62,6 +62,24 @@ export default function StartPage({
       if (rm != null) setUserReducedMotion(rm === 'true');
     } catch { void 0 }
   }, []);
+
+  // React to tutorial setting changes from SettingsModal
+  useEffect(() => {
+    const onTutChanged = () => {
+      try { setTutorialEligible(!tutorialHasCompleted()) } catch { /* noop */ }
+    }
+    const onTutActivated = () => {
+      // Bring up Launch and switch to Solo so the Tutorial card is visible immediately
+      setShowLaunch(true)
+      setLaunchTab('solo')
+    }
+    window.addEventListener('tutorial-changed', onTutChanged as EventListener)
+    window.addEventListener('tutorial-activated', onTutActivated as EventListener)
+    return () => {
+      window.removeEventListener('tutorial-changed', onTutChanged as EventListener)
+      window.removeEventListener('tutorial-activated', onTutActivated as EventListener)
+    }
+  }, [])
 
   // Apply reduced motion toggle to <html> dataset
   if (typeof document !== 'undefined') {
