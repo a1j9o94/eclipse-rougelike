@@ -7,6 +7,7 @@ export type Gate = {
   canResearch: boolean
   canUpgradeShip: boolean
   canStartCombat: boolean
+  canBuild?: boolean
   allowedBuyIds?: string[]
   allowedSellIds?: string[]
   allowedResearchTracks?: Array<'Military'|'Grid'|'Nano'>
@@ -18,6 +19,7 @@ export function gateFor(step: TutorialStepId): Gate {
     case 'intro-combat':     return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true }
     case 'shop-buy-composite-1': return { canBuy: true,  canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true,  allowedBuyIds: ['composite'] }
     case 'shop-buy-composite-2': return { canBuy: true,  canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true,  allowedBuyIds: ['composite'] }
+    case 'build-interceptor': return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true, canBuild: true }
     case 'combat-2':         return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true }
     case 'dock-expand':       return { canBuy: false, canReroll: false, canUpgradeDock: true,  canResearch: false, canUpgradeShip: false, canStartCombat: true }
     case 'tech-nano':         return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: true,  canUpgradeShip: false, canStartCombat: true, allowedResearchTracks: ['Nano'] }
@@ -28,6 +30,7 @@ export function gateFor(step: TutorialStepId): Gate {
     case 'combat-3':         return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true }
     case 'tech-military':     return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: true,  canUpgradeShip: false, canStartCombat: true, allowedResearchTracks: ['Military'] }
     case 'capacity-info':     return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true }
+    case 'select-cruiser':    return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true }
     case 'upgrade-interceptor': return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: true,  canStartCombat: true, upgradeOnlyInterceptor: true }
     case 'bar-resources':     return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true }
     case 'bar-capacity':      return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true }

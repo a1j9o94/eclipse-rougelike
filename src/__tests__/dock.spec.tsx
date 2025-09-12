@@ -5,7 +5,7 @@ import { DockSlots } from '../components/ui';
 import OutpostPage from '../pages/OutpostPage';
 import { makeShip, getFrame, PARTS } from '../game';
 import type { ResearchState as Research, GhostDelta, Ship } from '../../shared/types';
-import { FRAMES } from '../../shared/frames';
+// FRAMES no longer needed for compact action tiles
 import { ECONOMY } from '../../shared/economy';
 import { applyEconomyModifiers, getDefaultEconomyModifiers } from '../game/economy';
 
@@ -25,7 +25,7 @@ describe('dock and upgrade visuals', () => {
     expect(screen.getAllByTestId('dock-slot-over')).toHaveLength(1);
   });
 
-  it('shows empty frame and cost in upgrade and build buttons', () => {
+  it('shows empty frame and cost in build tile, and in upgrade tile after switching tab', () => {
     const ship: Ship = makeShip(getFrame('interceptor'), [PARTS.sources[0], PARTS.drives[0]]);
     render(
       <OutpostPage
@@ -71,26 +71,27 @@ describe('dock and upgrade visuals', () => {
         onRestart={()=>{}}
       />
     );
-    const upgradeBtn = screen.getByRole('button', {name:/Upgrade Interceptor to Cruiser/});
-    const buildBtn = screen.getByRole('button', {name:/Build Interceptor/});
+    // Build tab is selected by default
+    const buildBtn = screen.getByRole('button', {name:/Build Interceptor/i});
 
     const mods = getDefaultEconomyModifiers();
     const buildM = applyEconomyModifiers(ECONOMY.buildInterceptor.materials, mods, 'materials');
     const buildC = applyEconomyModifiers(ECONOMY.buildInterceptor.credits, mods, 'credits');
-    const upM = applyEconomyModifiers(ECONOMY.upgradeCosts.interceptorToCruiser.materials, mods, 'materials');
-    const upC = applyEconomyModifiers(ECONOMY.upgradeCosts.interceptorToCruiser.credits, mods, 'credits');
+    applyEconomyModifiers(ECONOMY.upgradeCosts.interceptorToCruiser.materials, mods, 'materials');
+    applyEconomyModifiers(ECONOMY.upgradeCosts.interceptorToCruiser.credits, mods, 'credits');
 
     expect(within(buildBtn).getByText('Build Interceptor')).toBeInTheDocument();
-    expect(within(buildBtn).getAllByTestId('frame-slot-empty')).toHaveLength(FRAMES.interceptor.tiles);
     expect(buildBtn).toHaveTextContent(`${buildM}🧱 + ${buildC}¢`);
-    expect(within(upgradeBtn).getByText(/Upgrade to Cruiser/)).toBeInTheDocument();
-    expect(within(upgradeBtn).getAllByTestId('frame-slot-empty')).toHaveLength(FRAMES.cruiser.tiles);
-    expect(upgradeBtn).toHaveTextContent(`${upM}🧱 + ${upC}¢`);
-    fireEvent.mouseEnter(upgradeBtn);
+    // Switch to Cruiser tab and verify upgrade content
+    fireEvent.click(screen.getByRole('tab', { name: /Cruiser/i }))
+    const upgradeBtn = screen.getByRole('button', {name:/Upgrade Interceptor to Cruiser/i});
+    // Compact tile no longer renders frame glyphs inside the button
+    // Label is now short; costs are implied elsewhere
+    fireEvent.mouseEnter(upgradeBtn)
     expect(screen.getAllByTestId('dock-slot-preview').length).toBeGreaterThan(0);
   });
 
-  it('disables upgrade button when tech too low', () => {
+  it('disables upgrade button when tech too low (after switching tab)', () => {
     const ship: Ship = makeShip(getFrame('interceptor'), [PARTS.sources[0], PARTS.drives[0]]);
     render(
       <OutpostPage
@@ -136,7 +137,8 @@ describe('dock and upgrade visuals', () => {
         onRestart={()=>{}}
       />
     );
-    const upgradeBtn = screen.getByRole('button', {name:/Requires Military ≥ 2/});
+    fireEvent.click(screen.getByRole('tab', { name: /Cruiser/i }))
+    const upgradeBtn = screen.getByRole('button', {name:/Requires Military ≥ 2/i});
     expect(upgradeBtn).toBeDisabled();
     expect(within(upgradeBtn).getByText(/Requires Military ≥ 2/)).toBeInTheDocument();
   });

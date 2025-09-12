@@ -1,17 +1,18 @@
 // React import not required with modern JSX transform
 import { useState } from 'react'
-import { ItemCard, PowerBadge, DockSlots } from '../components/ui'
+import { ItemCard, DockSlots } from '../components/ui'
 import { ShipFrameSlots } from '../components/ShipFrameSlots'
+import BlueprintSummary from '../components/outpost/BlueprintSummary'
 import { emptyShip } from '../game/emptyShip'
-import { CombatPlanModal } from '../components/modals'
+import { CombatPlanModal, TechListModal } from '../components/modals'
 import { event as tutorialEvent, isEnabled as isTutorialEnabled, getStep as tutorialGetStep } from '../tutorial/state'
 import type { MpBasics } from '../adapters/mpSelectors'
 import { ECONOMY } from '../../shared/economy'
 import { FRAMES, type FrameId } from '../../shared/frames'
-import { ALL_PARTS } from '../../shared/parts'
-import { groupFleet } from '../game/fleet'
+// import { ALL_PARTS } from '../../shared/parts'
+// import { groupFleet } from '../game/fleet'
 import { canBuildInterceptorWithMods } from '../game/hangar'
-import { partEffects, partDescription } from '../../shared/parts'
+import { partEffects } from '../../shared/parts'
 import { type Resources, type Research } from '../../shared/defaults'
 import { type Part } from '../../shared/parts'
 import { type Ship, type GhostDelta } from '../../shared/types'
@@ -85,9 +86,19 @@ export function OutpostPage({
   economyMods?: EconMods,
 }){
   const focusedShip = fleet[focused];
-  const fleetGroups = groupFleet(fleet);
+  // groupFleet no longer used for roster; keep for potential counts later
+  // const fleetGroups = groupFleet(fleet);
+  // const hasInterceptor = fleet.some(s => s.frame.id === 'interceptor')
+  // const hasCruiser = fleet.some(s => s.frame.id === 'cruiser')
+  const firstIdx = (id: FrameId): number => fleet.findIndex(s => s.frame.id === id)
   const [showPlan, setShowPlan] = useState(false);
   const [dockPreview, setDockPreview] = useState<number|null>(null);
+  const [showTech, setShowTech] = useState(false);
+  // const [techFocus, setTechFocus] = useState<'Military'|'Grid'|'Nano'|undefined>(undefined);
+  const [frameTab, setFrameTab] = useState<'interceptor'|'cruiser'|'dread'>('interceptor');
+  const selectedId = frameTab as FrameId;
+  const selectedCount = fleet.filter(s=>s.frame.id===selectedId).length;
+  const hasSelected = selectedCount > 0;
   const tracks = ['Military','Grid','Nano'] as const;
   const buildChk = canBuildInterceptorWithMods(resources, capacity, tonnage.used, economyMods);
   const buildCost = { materials: buildChk.cost.m, credits: buildChk.cost.c };
@@ -105,8 +116,8 @@ export function OutpostPage({
   const dockAffordable = resources.credits >= dockCost.credits && resources.materials >= dockCost.materials;
   const dockDisabled = dockAtCap || !dockAffordable;
   const rrInc = applyEconomyModifiers(ECONOMY.reroll.increment, economyMods, 'credits');
-  const currentBlueprint = blueprints[focusedShip?.frame.id as FrameId] || [];
-  const bpSlotsUsed = currentBlueprint.reduce((a,p)=>a+(p.slots||1),0);
+  const currentClassId = hasSelected ? (focusedShip?.frame.id as FrameId) : selectedId;
+  const currentBlueprint = blueprints[currentClassId] || [];
   const nextUpgrade = (()=>{
     if(!focusedShip) return null;
     if(focusedShip.frame.id==='interceptor') return {
@@ -133,116 +144,125 @@ export function OutpostPage({
   const upgradeLock = upgradeLockInfo(focusedShip);
   const upgradeUnlocked = !upgradeLock || (research.Military||1) >= upgradeLock.need;
   const upgradeAffordable = nextUpgrade ? (resources.materials >= nextUpgrade.materials && resources.credits >= nextUpgrade.credits) : false;
-  const upgradeDisabled = upgradeComputed.disabled || !upgradeUnlocked || !upgradeAffordable;
   const upgradeLabel = (()=>{
     if(!focusedShip) return 'Upgrade — Maxed';
     if(!upgradeUnlocked) return `Upgrade ${focusedShip.frame.name} — Requires Military ≥ ${upgradeLock?.need}`;
     if(!upgradeAffordable && nextUpgrade) return `Upgrade ${focusedShip.frame.name} — Need ${nextUpgrade.materials}🧱 + ${nextUpgrade.credits}¢`;
     return `${upgradeComputed.label}${nextUpgrade ? ` (${nextUpgrade.materials}🧱 + ${nextUpgrade.credits}¢)` : ''}`;
   })();
-  function nextUnlocksFor(track:'Military'|'Grid'|'Nano'){
-    const curr = (research as Research)[track]||1;
-    const next = Math.min(3, curr+1);
-    const items = ALL_PARTS.filter(p=> !p.rare && p.tech_category===track && p.tier===next);
-    return items;
-  }
-  function militaryNextNote(){
-    const curr = (research as Research).Military||1;
-    if(curr>=3) return 'Maxed — no further ship tiers';
-    const next = curr+1;
-    if(next===2) return `Unlocks class upgrade: Interceptor → Cruiser — ⬛ ${FRAMES.interceptor.tiles}→${FRAMES.cruiser.tiles} slots`;
-    if(next===3) return `Unlocks class upgrade: Cruiser → Dreadnought — ⬛ ${FRAMES.cruiser.tiles}→${FRAMES.dread.tiles} slots`;
-    return '';
-  }
+  // helpers removed in favor of using unified TechListModal
   return (
     <>
       {showPlan && <CombatPlanModal onClose={()=>{ setShowPlan(false); try { if (isTutorialEnabled() && tutorialGetStep()==='intel-close') tutorialEvent('viewed-intel') } catch { /* noop */ } }} sector={sector} endless={endless} gameMode={gameMode} multi={multi as never} />}
+
+      {/* Tech List — reuse canonical modal */}
+      {showTech && (
+        <TechListModal
+          research={research as Research}
+          onClose={()=>{
+            setShowTech(false);
+            try {
+              if (isTutorialEnabled() && tutorialGetStep()==='tech-close') tutorialEvent('viewed-tech-list')
+            } catch { /* noop */ }
+          }}
+        />
+      )}
 
       <div className="mx-auto max-w-5xl pb-24">
 
       {/* Hangar */}
       <div className="p-3">
         <div className="flex items-center gap-2 mb-2">
-          <div className="text-lg font-semibold">Hangar (Class Blueprints)</div>
+          <div className="text-lg font-semibold">Hangar</div>
           <div className="flex-1" />
-          <button data-tutorial="enemy-intel-btn" onClick={()=>{ setShowPlan(true); if (isTutorialEnabled()) tutorialEvent('viewed-intel') }} className="px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs">📋 Enemy Intel</button>
+          <button data-tutorial="enemy-intel-btn" onClick={()=>{ setShowPlan(true); if (isTutorialEnabled()) tutorialEvent('opened-intel') }} className="px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs">📋 Enemy Intel</button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          {fleetGroups.map((g,i)=> { const s = g.ship; const active = g.indices.includes(focused); const stack = Math.min(g.count-1,2); return (
-              <div key={i} className="relative">
-                {Array.from({length: stack}).map((_,j)=>(
-                  <div key={j} className={`pointer-events-none absolute inset-0 rounded-xl border ${active?'border-sky-400':'border-zinc-700'} bg-zinc-900`} style={{transform:`translate(${(j+1)*4}px, ${(j+1)*4}px)`}} />
-                ))}
-                <button data-tutorial={active? 'ship-card': undefined} onClick={()=>setFocused(g.indices[0])} className={`relative w-full text-left p-3 rounded-xl border transition ${active?'border-sky-400 bg-sky-400/10':'border-zinc-700 bg-zinc-900 hover:border-zinc-600'}`}>
-                  {g.count>1 && <div className="absolute -top-2 -left-2 bg-zinc-800 px-1 rounded text-xs">×{g.count}</div>}
-                  <div className="flex items-center justify-between"><div className="font-semibold text-sm sm:text-base">{s.frame.name} <span className="text-xs opacity-70">(t{s.frame.tonnage})</span></div><PowerBadge use={s.stats.powerUse} prod={s.stats.powerProd} /></div>
-                  <div className="text-xs opacity-80 mt-1">🚀 {s.stats.init} • 🎯 {s.stats.aim} • 🛡️ {s.stats.shieldTier} • ⬛ {s.parts.length}/{s.frame.tiles}</div>
-                  <div className="mt-1">❤️ {s.hull}/{s.stats.hullCap}</div>
-                  {!s.stats.valid && <div className="text-xs text-rose-300 mt-1">Not deployable: needs Source + Drive and ⚡ OK</div>}
-                </button>
-              </div>
-            ); })}
-        </div>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <button
-            aria-label={buildLabel}
-            onClick={buildShip}
-            onMouseEnter={()=>setDockPreview(tonnage.used + FRAMES.interceptor.tonnage)}
-            onMouseLeave={()=>setDockPreview(null)}
-            disabled={buildDisabled}
-            className={`px-3 py-3 rounded-xl flex flex-col items-center ${buildDisabled?'bg-zinc-700 opacity-60':'bg-sky-600 hover:bg-sky-500 active:scale-95'}`}
-          >
-            <div className="text-xs sm:text-sm mb-1">Build Interceptor</div>
-            <ShipFrameSlots ship={emptyShip('interceptor')} side='P' />
-            <div className="mt-1 text-xs sm:text-sm">{`${buildCost.materials}🧱 + ${buildCost.credits}¢`}</div>
-          </button>
-          <button data-tutorial="upgrade-ship"
-            aria-label={upgradeLabel}
-            onClick={()=>upgradeShip(focused)}
-            onMouseEnter={()=>setDockPreview(upgradeComputed.targetUsed)}
-            onMouseLeave={()=>setDockPreview(null)}
-            disabled={upgradeDisabled}
-            className={`px-3 py-3 rounded-xl flex flex-col items-center ${upgradeDisabled?'bg-zinc-700 opacity-60':'bg-amber-600 hover:bg-amber-500 active:scale-95'}`}
-          >
-            <div className="text-xs sm:text-sm mb-1">{upgradeComputed.nextId ? `Upgrade to ${FRAMES[upgradeComputed.nextId].name}` : 'Upgrade — Maxed'}</div>
-            {upgradeComputed.nextId ? <ShipFrameSlots ship={emptyShip(upgradeComputed.nextId)} side='P' /> : <div className="text-xs">Maxed</div>}
-            {upgradeUnlocked ? (
-              nextUpgrade && <div className="mt-1 text-xs sm:text-sm">{`${nextUpgrade.materials}🧱 + ${nextUpgrade.credits}¢`}</div>
-            ) : (
-              <div className="mt-1 text-xs sm:text-sm text-rose-300">Requires Military ≥ {upgradeLock?.need}</div>
-            )}
-          </button>
-        </div>
-        <div className="mt-2 grid grid-cols-2 gap-2">
-          <button data-tutorial="expand-dock"
-            onClick={upgradeDock}
-            disabled={dockDisabled}
-            className={`px-3 py-3 rounded-xl ${dockDisabled? 'bg-zinc-700 opacity-60' : 'bg-indigo-600 hover:bg-indigo-500 active:scale-95'}`}
-          >
-            {dockDisabled ? (
-              dockAtCap ? 'Capacity Maxed' : `Expand Capacity — Need ${dockCost.materials}🧱 + ${dockCost.credits}¢`
-            ) : (
-              <span className="inline-flex items-center gap-1">
-                <span>Expand Capacity</span>
-                <span className="inline-flex gap-0.5">
-                  {Array.from({length: ECONOMY.dockUpgrade.capacityDelta}).map((_, i) => (
-                    <span key={i} className="w-2 h-2 rounded-full bg-zinc-700" />
-                  ))}
-                </span>
-                <span>
-                  ({dockCost.materials}🧱 + {dockCost.credits}¢)
-                </span>
-              </span>
-            )}
-          </button>
-          <div data-tutorial="capacity-info" className="px-3 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-sm">
-            <div>Capacity: <b>{capacity.cap}</b> • Used: <b>{tonnage.used}</b></div>
-            <DockSlots used={tonnage.used} cap={capacity.cap} preview={dockPreview===null?undefined:dockPreview} />
+
+        {/* Tabs control focus; counts per frame */}
+        <div className="mb-1" data-tutorial="frame-tabs">
+          <div className="inline-flex rounded-xl overflow-hidden ring-1 ring-white/10" role="tablist">
+            {(['interceptor','cruiser','dread'] as const).map(t => (
+              <button key={t} role="tab" aria-selected={frameTab===t} onClick={()=>{ setFrameTab(t); try { tutorialEvent(`tab-${t}`) } catch { /* noop */ } const idx = firstIdx(t as FrameId); if (idx>=0) setFocused(idx) }} className={`px-3 py-1.5 text-sm flex items-center gap-1 ${frameTab===t? 'bg-white/10' : 'bg-black/30 hover:bg-black/40'}`}>
+                <span>{t==='interceptor'?'Interceptor':t==='cruiser'?'Cruiser':'Dreadnought'}</span>
+                <span className="text-xs opacity-80">×{fleet.filter(s=>s.frame.id===t).length}</span>
+              </button>
+            ))}
           </div>
         </div>
-          {/* Blueprint Manager with Sell */}
+        {/* Single action panel (tabs above control the content) */}
+        <div className="mt-3">
+          {/* Panel (compact action button) */}
+          {(() => {
+            if (frameTab === 'interceptor') {
+              return (
+                <button data-tutorial="frame-action"
+                  aria-label={buildLabel}
+                  onClick={buildShip}
+                  onMouseEnter={()=>setDockPreview(tonnage.used + FRAMES.interceptor.tonnage)}
+                  onMouseLeave={()=>setDockPreview(null)}
+                  disabled={buildDisabled}
+                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${buildDisabled?'bg-zinc-700 opacity-60':'bg-sky-600 hover:bg-sky-500 active:scale-95'}`}
+                >
+                  <span>Build Interceptor</span>
+                  <span className="opacity-90">{`${buildCost.materials}🧱 + ${buildCost.credits}¢`}</span>
+                </button>
+              )
+            }
+            if (frameTab === 'cruiser') {
+              const target = fleet[focused]?.frame.id === 'interceptor' ? focused : firstIdx('interceptor')
+              const haveInterceptor = target >= 0
+              const milOk = (research.Military || 1) >= 2
+              const upMat = applyEconomyModifiers(ECONOMY.upgradeCosts.interceptorToCruiser.materials, economyMods, 'materials')
+              const upCred = applyEconomyModifiers(ECONOMY.upgradeCosts.interceptorToCruiser.credits, economyMods, 'credits')
+              const canAfford = resources.materials >= upMat && resources.credits >= upCred
+              const targetUsed = haveInterceptor ? (tonnage.used + (FRAMES.cruiser.tonnage - fleet[target].frame.tonnage)) : tonnage.used
+              const capOk = haveInterceptor && (targetUsed <= capacity.cap)
+              const baseText = !haveInterceptor ? 'Requires Interceptor' : (!milOk ? 'Requires Military ≥ 2' : (!capOk ? 'Increase Capacity' : 'Upgrade to Cruiser'))
+              const disabled = !haveInterceptor || !milOk || !capOk || !canAfford
+              return (
+                <button data-tutorial="frame-action" aria-label={upgradeLabel} onClick={()=>{ if (target>=0) upgradeShip(target) }} onMouseEnter={()=> setDockPreview(targetUsed)} onMouseLeave={()=> setDockPreview(null)} disabled={disabled} className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${disabled?'bg-zinc-800 opacity-60':'bg-amber-600 hover:bg-amber-500 active:scale-95'}`}>
+                  <span>{baseText}</span>
+                  <span className={`${disabled? 'opacity-70' : 'opacity-90'}`}>({upMat}🧱 + {upCred}¢)</span>
+                </button>
+              )
+            }
+            // dread
+            const dreadCost = {
+              materials: applyEconomyModifiers(ECONOMY.upgradeCosts.cruiserToDread.materials, economyMods, 'materials'),
+              credits: applyEconomyModifiers(ECONOMY.upgradeCosts.cruiserToDread.credits, economyMods, 'credits'),
+            }
+            const idx = firstIdx('cruiser')
+            const haveCruiser = idx >= 0
+            const milOk = (research.Military||1) >= 3
+            const targetUsed = haveCruiser ? (tonnage.used + (FRAMES.dread.tonnage - fleet[idx].frame.tonnage)) : tonnage.used
+            const capOk = targetUsed <= capacity.cap
+            const canAfford = resources.credits >= dreadCost.credits && resources.materials >= dreadCost.materials
+            const disabled = !(haveCruiser && milOk && capOk && canAfford)
+            const btnText = (!milOk) ? 'Requires Military ≥ 3' : (!haveCruiser ? 'Requires Cruiser' : (!capOk ? 'Increase Capacity' : 'Upgrade to Dreadnought'))
+            return (
+              <button data-tutorial="frame-action"
+                aria-label="Upgrade Cruiser to Dreadnought"
+                onClick={()=>{ if (idx>=0) upgradeShip(idx) }}
+                onMouseEnter={()=> setDockPreview(targetUsed)}
+                onMouseLeave={()=> setDockPreview(null)}
+                disabled={disabled}
+                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${disabled? 'bg-zinc-800 opacity-60' : 'bg-fuchsia-700 hover:bg-fuchsia-600 active:scale-95'}`}
+              >
+                <span>{btnText}</span>
+                <span className={`${disabled? 'opacity-70' : 'opacity-90'}`}>({dreadCost.materials}🧱 + {dreadCost.credits}¢)</span>
+              </button>
+            )
+          })()}
+        </div>
+          {/* Summary + blueprint + parts list. Capacity row follows this. */}
           <div className="mt-3">
-            <div className="text-sm font-semibold mb-1">Class Blueprint — {focusedShip?.frame.name} ⬛ {bpSlotsUsed}/{focusedShip?.frame.tiles}</div>
+            <BlueprintSummary ship={hasSelected ? focusedShip : emptyShip(selectedId)} />
+            <div className={`mb-2 relative ${hasSelected? '' : 'opacity-70'}`}>
+              {!hasSelected && (
+                <span className="absolute -top-3 right-0 text-[10px] px-2 py-0.5 rounded-full bg-white/10 border border-white/20">Preview</span>
+              )}
+              <ShipFrameSlots ship={hasSelected ? (focusedShip as Ship) : emptyShip(selectedId)} side='P' />
+            </div>
             <div data-tutorial="blueprint-panel" className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {currentBlueprint.map((p, idx)=> (
               <div key={idx} className="p-2 rounded border border-zinc-700 bg-zinc-900 text-xs">
@@ -254,6 +274,19 @@ export function OutpostPage({
                 </div>
               </div>
             ))}
+          </div>
+          {/* Capacity below blueprint */}
+          <div className="mt-2 grid grid-cols-1 gap-2">
+            <div data-tutorial="capacity-info" className="px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-sm">
+              <div className="flex items-center justify-between mb-1">
+                <div><b>{tonnage.used}</b>/<b>{capacity.cap}</b></div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs opacity-90">+ {dockCost.materials}🧱 {dockCost.credits}¢</span>
+                  <button data-tutorial="expand-dock" onClick={upgradeDock} disabled={dockDisabled} aria-label={`Expand Capacity — ${dockCost.materials}🧱 + ${dockCost.credits}¢`} className={`w-7 h-7 grid place-items-center rounded-full ${dockDisabled? 'bg-zinc-700 opacity-60' : 'bg-indigo-600 hover:bg-indigo-500'}`}>+</button>
+                </div>
+              </div>
+              <DockSlots used={tonnage.used} cap={capacity.cap} preview={dockPreview===null?undefined:dockPreview} />
+            </div>
           </div>
         </div>
       </div>
@@ -275,7 +308,7 @@ export function OutpostPage({
                 const gd = focusedShip? ghost(focusedShip, it) : null;
                 return (
                   <div key={i} data-tutorial={`shop-item-${it.id}`}>
-                    <ItemCard item={it} price={price} canAfford={canAfford} ghostDelta={gd} onBuy={()=>buyAndInstall(it)} />
+                    <ItemCard compact item={it} price={price} canAfford={canAfford} ghostDelta={gd} onBuy={()=>buyAndInstall(it)} />
                   </div>
                 );
               })}
@@ -283,43 +316,20 @@ export function OutpostPage({
           </div>
           {/* Tech Upgrades side */}
           <div>
-            <div className="text-lg font-semibold mb-2">Tech Upgrades</div>
+            <div className="text-lg font-semibold mb-2">Tech</div>
             <div data-tutorial="research-grid" className="grid grid-cols-3 gap-2 text-sm">
               {tracks.map(t=> (
                 <button key={t} onClick={()=>researchTrack(t)} disabled={!canResearch(t)} className={`px-3 py-2 rounded-xl leading-tight ${canResearch(t)?'bg-zinc-900 border border-zinc-700 hover:border-zinc-500':'bg-zinc-800 opacity-60'}`}>{researchLabel(t)}</button>
               ))}
             </div>
-            <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-2">
-              {tracks.map(t=> {
-                if(t==='Military'){
-                  const note = militaryNextNote();
-                  return (
-                    <div key={t} className="text-[11px] sm:text-xs px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800">
-                      <div className="font-medium mb-1">{t} — Next unlock</div>
-                      <div className="opacity-80">{note}</div>
-                    </div>
-                  );
-                }
-                const nxt = nextUnlocksFor(t); const preview = nxt.slice(0,3); const more = Math.max(0, nxt.length - preview.length);
-                return (
-                  <div key={t} className="text-[11px] sm:text-xs px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800">
-                    <div className="font-medium mb-1">{t} — Next unlocks</div>
-                      {nxt.length===0 ? (
-                        <div className="opacity-70">Maxed or no new parts at next tier</div>
-                      ) : (
-                        <div className="space-y-1">
-                          {preview.map((p, i)=> (
-                            <div key={i}>
-                              <div className="flex items-center justify-between"><span>{p.name}</span><span className="opacity-60">{partEffects(p).join(' ')}</span></div>
-                              <div className="opacity-80">{partDescription(p)}</div>
-                            </div>
-                          ))}
-                          {more>0 && <div className="opacity-60">+{more} more…</div>}
-                        </div>
-                      )}
-                  </div>
-                );
-              })}
+            <div className="mt-2">
+              <button
+                data-tutorial="help-tech"
+                onClick={()=>{ setShowTech(true); try { if (isTutorialEnabled()) tutorialEvent('opened-tech-list') } catch { /* noop */ } }}
+                className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-zinc-500 text-sm"
+              >
+                Open Tech List
+              </button>
             </div>
           </div>
         </div>
@@ -363,6 +373,7 @@ export function OutpostPage({
           )}
         </div>
       </div>
+      {/* No capacity modal; cost visible inline */}
     </>
   )
 }

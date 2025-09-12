@@ -488,12 +488,12 @@ export default function EclipseIntegrated(){
         if (mode==='COMBAT') return false
         // Outpost: show hints for actionable steps only
         const outpostSteps = new Set([
-          'intro-combat','outpost-ship','outpost-blueprint','bar-resources','bar-capacity','bar-sector','bar-lives','shop-buy-composite-1','shop-buy-composite-2','combat-2','tech-nano','tech-open','tech-close','sell-composite','buy-improved','combat-3','tech-military','capacity-info','dock-expand','upgrade-interceptor','shop-reroll','intel-open','intel-close','rules-hint'
+          'intro-combat','outpost-tabs','outpost-blueprint','bar-resources','bar-capacity','bar-sector','bar-lives','shop-buy-composite-1','shop-buy-composite-2','build-interceptor','combat-2','tech-nano','tech-open','tech-close','sell-composite','buy-improved','combat-3','tech-military','capacity-info','dock-expand','select-cruiser','upgrade-interceptor','shop-reroll','intel-open','intel-close','rules-hint'
         ])
         return outpostSteps.has(id)
       })()
       if (!show) return null
-      const showNext = new Set(['outpost-blueprint','bar-resources','bar-capacity','bar-sector','bar-lives','capacity-info','rules-hint']).has(id)
+      const showNext = new Set(['outpost-tabs','outpost-blueprint','bar-resources','bar-capacity','bar-sector','bar-lives','capacity-info']).has(id)
       return (
         <CoachmarkOverlay
           key="tutorial-coach"

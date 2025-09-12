@@ -125,14 +125,22 @@ export function CombatPlanModal({ onClose, sector, endless, gameMode, multi }:{ 
 }
 
 
-export function TechListModal({ onClose, research }:{ onClose:()=>void, research:Research }){
+export function TechListModal({ onClose, research, focus }:{ onClose:()=>void, research:Research, focus?: 'Military'|'Grid'|'Nano' }){
   const tracks = ['Military','Grid','Nano'] as const;
   const closeRef = useRef<HTMLButtonElement|null>(null)
   useEffect(()=>{
     if (tutorialEnabled() && tutorialGetStep()==='tech-close') {
       setTimeout(()=>{ try { closeRef.current?.focus() } catch { /* noop */ } }, 0)
     }
-  },[])
+    if (focus) {
+      setTimeout(()=>{
+        try {
+          const el = document.querySelector(`[data-tech-track="${focus}"]`)
+          if (el) (el as HTMLElement).scrollIntoView({ block: 'start' })
+        } catch { /* noop */ }
+      }, 0)
+    }
+  },[focus])
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 bg-black/70">
       <div data-tutorial="tech-modal" className="w-full max-w-md bg-zinc-800 border border-zinc-600 rounded-2xl p-4">
@@ -141,7 +149,7 @@ export function TechListModal({ onClose, research }:{ onClose:()=>void, research
           {tracks.map(t => {
             const parts = ALL_PARTS.filter(p=>p.tech_category===t && !p.rare).sort((a,b)=>a.tier-b.tier || a.cat.localeCompare(b.cat));
             return (
-              <div key={t}>
+              <div key={t} data-tech-track={t}>
                 <div className="font-medium mb-1">{t}</div>
                 <div className="space-y-1">
                   {parts.map(p => {
