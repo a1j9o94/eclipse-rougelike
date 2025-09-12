@@ -5,6 +5,7 @@ export type TutorialStepId =
   | 'outpost-blueprint'
   | 'shop-buy-composite-1'
   | 'shop-buy-composite-2'
+  | 'build-interceptor'
   | 'combat-2'
   | 'dock-expand'
   | 'select-cruiser'

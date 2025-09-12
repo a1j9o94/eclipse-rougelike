@@ -132,12 +132,13 @@ export function useOutpostHandlers(params: UseOutpostHandlersParams): OutpostHan
   }, [apply])
 
   const buildShip = useCallback(() => {
-    // Disallow building during tutorial (kept simple in first pass)
-    try { const gate = currentGate(); if (gate) return } catch { /* noop */ }
+    // Tutorial gate: allow only when expressly permitted
+    try { const gate = currentGate(); if (gate && !gate.canBuild) return } catch { /* noop */ }
     const r = apply(OutpostIntents.buildShip())
     if (r && gameMode === 'multiplayer' && multi?.updateGameState) {
       try { multi.updateGameState({ resources: r.next.resources }) } catch { /* noop */ }
     }
+    if (isTutorialEnabled()) { try { tutorialEvent('built-interceptor') } catch { /* noop */ } }
   }, [apply])
 
   const upgradeShip = useCallback((idx: number) => {

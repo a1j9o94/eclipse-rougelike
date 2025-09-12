@@ -21,6 +21,7 @@ export const STEPS: TutorialStep[] = [
   // Buy Composite Hull specifically
   { id: 'shop-buy-composite-1', anchor: 'shop-item-composite', copy: 'Buy a Composite Hull (1/2). More ❤️ means more hits you can take.', curatedShop: ['composite','fusion_source','plasma','positron'], triggers: ['bought-composite'] },
   { id: 'shop-buy-composite-2', anchor: 'shop-item-composite', copy: 'Buy another Composite Hull (2/2).', curatedShop: ['composite','fusion_source','plasma','positron'], triggers: ['bought-composite'] },
+  { id: 'build-interceptor', anchor: 'frame-action', copy: 'Build another Interceptor to fill your docks before the next fight.', triggers: ['built-interceptor'] },
   // Fight and return
   { id: 'combat-2', anchor: 'start-combat', copy: 'Press Start Combat to test your new hull.', triggers: ['post-combat'] },
   // Research Nano to unlock Improved Hull
