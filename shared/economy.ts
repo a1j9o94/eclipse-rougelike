@@ -12,7 +12,7 @@ export const ECONOMY = {
 } as const;
 
 export function nextTierCost(curr:number){
-  if(curr===1) return { c:20, s:3 } as const;
+  if(curr===1) return { c:20, s:2 } as const;
   if(curr===2) return { c:50, s:5 } as const;
   return null;
 }
