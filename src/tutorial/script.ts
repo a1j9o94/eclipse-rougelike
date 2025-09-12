@@ -11,7 +11,7 @@ export type TutorialStep = {
 // Scripted, specific path
 export const STEPS: TutorialStep[] = [
   { id: 'intro-combat', anchor: 'start-combat', copy: 'You are a mercenary captain on contract to clear hostile space. Battles resolve from highest 🚀 Initiative to lowest. Weapons roll dice (6 hits by default). 🎯 Computers reduce the roll you need; 🛡️ Shields make you harder to hit. Each hit deals 1 ❤️; at 0, a ship is destroyed. Tap Start Combat to begin your first skirmish.', triggers: ['started-combat'] },
-  { id: 'outpost-tabs', anchor: 'frame-tabs', copy: 'Use these tabs to focus each frame. Start on Interceptor; Cruiser/Dreadnought show a Preview until unlocked.', triggers: ['tab-interceptor','next'] },
+  { id: 'outpost-tabs', anchor: 'frame-tabs', copy: 'Use these tabs to focus each frame. Start on Interceptor; Cruiser/Dreadnought show a Preview until unlocked.', triggers: ['next'] },
   { id: 'outpost-blueprint', anchor: 'blueprint-panel', copy: 'This class blueprint applies to every ship of the selected class. Changes affect new builds and upgrades.', triggers: ['next'] },
   // Top bar overview
   { id: 'bar-resources', anchor: 'rb-resources', copy: 'Resources keep your fleet running: 💰 Credits to buy parts, 🧱 Materials for docks and frames, 🔬 Science for Tech. You earn rewards after each battle based on what you destroy.', triggers: ['next'] },
