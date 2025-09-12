@@ -310,3 +310,18 @@
 ### Follow-ups
 - Overflow/pause menu for Restart/Resign (separate slice).
 - Resource HUD compaction (separate slice).
+
+## Plan Entry — Outpost No-Slot Price Display
+
+- Outcome: Disabled shop buttons show the part cost even when no slot is available.
+- Acceptance criteria:
+  - ItemCard renders `No Slot (X¢)` when slotOk is false.
+  - A test fails first verifying price included in disabled button.
+  - Lint, targeted test, and build stay green.
+
+- Risks & rollback:
+  - Risk: longer button label may wrap. Mitigation: compact card still fits.
+  - Rollback: revert ItemCard label change.
+
+- Test list (must fail first):
+  1) `itemcard_no_slot_price.spec.tsx` ensures price is visible alongside `No Slot`.

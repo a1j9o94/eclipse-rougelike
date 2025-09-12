@@ -87,7 +87,13 @@ export function ItemCard({ item, price, canAfford, onBuy, ghostDelta, compact }:
         </div>
       )}
       <div className="mt-2 flex gap-2">
-        <button disabled={disabled} onClick={onBuy} className={`flex-1 px-3 py-2 rounded-lg text-sm sm:text-base ${!disabled? 'bg-emerald-600 hover:bg-emerald-500 active:scale-[.99]':'bg-zinc-700 opacity-60'}`}>{disabledForSlots? 'No Slot' : `Buy (${cost}¢)`}</button>
+        <button
+          disabled={disabled}
+          onClick={onBuy}
+          className={`flex-1 px-3 py-2 rounded-lg text-sm sm:text-base ${!disabled ? 'bg-emerald-600 hover:bg-emerald-500 active:scale-[.99]' : 'bg-zinc-700 opacity-60'}`}
+        >
+          {disabledForSlots ? `No Slot (${cost}¢)` : `Buy (${cost}¢)`}
+        </button>
         <button aria-label="Part info" onClick={()=>setShowInfo(v=>!v)} className="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700">?</button>
       </div>
       {showInfo && (
