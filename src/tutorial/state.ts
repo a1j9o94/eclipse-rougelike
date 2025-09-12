@@ -1,7 +1,7 @@
 // Tutorial state management (localStorage-backed, SP-only)
 export type TutorialStepId =
   | 'intro-combat'
-  | 'outpost-ship'
+  | 'outpost-tabs'
   | 'outpost-blueprint'
   | 'shop-buy-composite-1'
   | 'shop-buy-composite-2'

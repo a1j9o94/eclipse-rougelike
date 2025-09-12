@@ -169,10 +169,10 @@ export function OutpostPage({
         </div>
 
         {/* Tabs control focus; counts per frame */}
-        <div className="mb-1">
+        <div className="mb-1" data-tutorial="frame-tabs">
           <div className="inline-flex rounded-xl overflow-hidden ring-1 ring-white/10" role="tablist">
             {(['interceptor','cruiser','dread'] as const).map(t => (
-              <button key={t} role="tab" aria-selected={frameTab===t} onClick={()=>{ setFrameTab(t); const idx = firstIdx(t as FrameId); if (idx>=0) setFocused(idx) }} className={`px-3 py-1.5 text-sm flex items-center gap-1 ${frameTab===t? 'bg-white/10' : 'bg-black/30 hover:bg-black/40'}`}>
+              <button key={t} role="tab" aria-selected={frameTab===t} onClick={()=>{ setFrameTab(t); try { tutorialEvent(`tab-${t}`) } catch { /* noop */ } const idx = firstIdx(t as FrameId); if (idx>=0) setFocused(idx) }} className={`px-3 py-1.5 text-sm flex items-center gap-1 ${frameTab===t? 'bg-white/10' : 'bg-black/30 hover:bg-black/40'}`}>
                 <span>{t==='interceptor'?'Interceptor':t==='cruiser'?'Cruiser':'Dreadnought'}</span>
                 <span className="text-xs opacity-80">×{fleet.filter(s=>s.frame.id===t).length}</span>
               </button>
@@ -185,7 +185,7 @@ export function OutpostPage({
           {(() => {
             if (frameTab === 'interceptor') {
               return (
-                <button
+                <button data-tutorial="frame-action"
                   aria-label={buildLabel}
                   onClick={buildShip}
                   onMouseEnter={()=>setDockPreview(tonnage.used + FRAMES.interceptor.tonnage)}
@@ -210,7 +210,7 @@ export function OutpostPage({
               const baseText = !haveInterceptor ? 'Requires Interceptor' : (!milOk ? 'Requires Military ≥ 2' : (!capOk ? 'Increase Capacity' : 'Upgrade to Cruiser'))
               const disabled = !haveInterceptor || !milOk || !capOk || !canAfford
               return (
-                <button aria-label={upgradeLabel} onClick={()=>{ if (target>=0) upgradeShip(target) }} onMouseEnter={()=> setDockPreview(targetUsed)} onMouseLeave={()=> setDockPreview(null)} disabled={disabled} className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${disabled?'bg-zinc-800 opacity-60':'bg-amber-600 hover:bg-amber-500 active:scale-95'}`}>
+                <button data-tutorial="frame-action" aria-label={upgradeLabel} onClick={()=>{ if (target>=0) upgradeShip(target) }} onMouseEnter={()=> setDockPreview(targetUsed)} onMouseLeave={()=> setDockPreview(null)} disabled={disabled} className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${disabled?'bg-zinc-800 opacity-60':'bg-amber-600 hover:bg-amber-500 active:scale-95'}`}>
                   <span>{baseText}</span>
                   <span className={`${disabled? 'opacity-70' : 'opacity-90'}`}>({upMat}🧱 + {upCred}¢)</span>
                 </button>
@@ -230,7 +230,7 @@ export function OutpostPage({
             const disabled = !(haveCruiser && milOk && capOk && canAfford)
             const btnText = (!milOk) ? 'Requires Military ≥ 3' : (!haveCruiser ? 'Requires Cruiser' : (!capOk ? 'Increase Capacity' : 'Upgrade to Dreadnought'))
             return (
-              <button
+              <button data-tutorial="frame-action"
                 aria-label="Upgrade Cruiser to Dreadnought"
                 onClick={()=>{ if (idx>=0) upgradeShip(idx) }}
                 onMouseEnter={()=> setDockPreview(targetUsed)}

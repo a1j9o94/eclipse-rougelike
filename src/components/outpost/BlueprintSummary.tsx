@@ -10,7 +10,7 @@ export default function BlueprintSummary({ ship }:{ ship: Ship | undefined }){
       <span>🚀 {ship.stats.init}</span>
       <span>🎯 {ship.stats.aim}</span>
       <span>🛡️ {ship.stats.shieldTier}</span>
-      <span>❤️ {ship.hull}/{ship.stats.hullCap}</span>
+      <span>❤️ {ship.stats.hullCap}</span>
       <span>⬛ {ship.parts.length}/{ship.frame.tiles}</span>
     </div>
   )

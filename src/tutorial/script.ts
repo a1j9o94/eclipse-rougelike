@@ -11,11 +11,11 @@ export type TutorialStep = {
 // Scripted, specific path
 export const STEPS: TutorialStep[] = [
   { id: 'intro-combat', anchor: 'start-combat', copy: 'You are a mercenary captain on contract to clear hostile space. Battles resolve from highest 🚀 Initiative to lowest. Weapons roll dice (6 hits by default). 🎯 Computers reduce the roll you need; 🛡️ Shields make you harder to hit. Each hit deals 1 ❤️; at 0, a ship is destroyed. Tap Start Combat to begin your first skirmish.', triggers: ['started-combat'] },
-  { id: 'outpost-ship', anchor: 'dock-roster', copy: 'Tap a ship token in the Dock to select it. Watch ⚡ power (chip at right) and ⬛ slots in the blueprint below.', triggers: ['focused-ship'] },
-  { id: 'outpost-blueprint', anchor: 'blueprint-panel', copy: 'Class blueprints apply to every ship of that class. Changing the blueprint changes new builds and upgrades.', triggers: ['next'] },
+  { id: 'outpost-tabs', anchor: 'frame-tabs', copy: 'Use these tabs to focus each frame. Start on Interceptor; Cruiser/Dreadnought show a Preview until unlocked.', triggers: ['tab-interceptor','next'] },
+  { id: 'outpost-blueprint', anchor: 'blueprint-panel', copy: 'This class blueprint applies to every ship of the selected class. Changes affect new builds and upgrades.', triggers: ['next'] },
   // Top bar overview
   { id: 'bar-resources', anchor: 'rb-resources', copy: 'Resources keep your fleet running: 💰 Credits to buy parts, 🧱 Materials for docks and frames, 🔬 Science for Tech. You earn rewards after each battle based on what you destroy.', triggers: ['next'] },
-  { id: 'bar-capacity', anchor: 'rb-capacity', copy: 'Capacity limits how many ships you can field. Each frame has tonnage; bigger ships use more. Increase capacity to add ships or make room for upgrades.', triggers: ['next'] },
+  { id: 'bar-capacity', anchor: 'rb-capacity', copy: 'Capacity shows used/total (X/Y). Bigger frames use more tonnage. Increase capacity to add ships or make room for upgrades.', triggers: ['next'] },
   { id: 'bar-sector', anchor: 'rb-sector', copy: 'Missions: this contract runs for 10 sectors. Push forward through each mission; sector 5 and sector 10 are boss fights. Clear them all to retire with honors.', triggers: ['next'] },
   { id: 'bar-lives', anchor: 'rb-lives', copy: 'Lives: you start with 1 life on Easy. If you lose a battle, your fleet is recovered and you get one more chance to continue. At 0, the run ends.', triggers: ['next'] },
   // Buy Composite Hull specifically
@@ -33,10 +33,10 @@ export const STEPS: TutorialStep[] = [
   // Fight and return again
   { id: 'combat-3', anchor: 'start-combat', copy: 'Press Start Combat to try your upgraded hull.', triggers: ['post-combat'] },
   // Military + then expand docks for Cruiser upgrade
-  { id: 'tech-military', anchor: 'research-grid', copy: 'Upgrade Military to unlock frame upgrades (Interceptor → Cruiser). Bigger frames open more slots and higher ceilings for parts.', triggers: ['researched-military'] },
-  { id: 'capacity-info', anchor: 'capacity-info', copy: 'Dock status: see total capacity and what your fleet uses. Leave some free capacity if you plan to add ships or upgrade into bigger frames.', triggers: ['next'] },
-  { id: 'dock-expand', anchor: 'expand-dock', copy: 'Expand capacity to make room for a frame upgrade. You need the space before an Interceptor can become a Cruiser.', triggers: ['expanded-dock'] },
-  { id: 'upgrade-interceptor', anchor: 'upgrade-ship', copy: 'Select an Interceptor and upgrade it to a Cruiser. Watch slots and ⚡ power after the upgrade.', triggers: ['upgraded-interceptor'] },
+  { id: 'tech-military', anchor: 'research-grid', copy: 'Raise Military to unlock frame upgrades: Interceptor → Cruiser (requires Military ≥ 2).', triggers: ['researched-military'] },
+  { id: 'capacity-info', anchor: 'capacity-info', copy: 'Capacity row: X/Y shows used/total. Cost to expand is shown next to the +.', triggers: ['next'] },
+  { id: 'dock-expand', anchor: 'expand-dock', copy: 'Tap + to expand docks. You need space before an Interceptor can become a Cruiser.', triggers: ['expanded-dock'] },
+  { id: 'upgrade-interceptor', anchor: 'frame-action', copy: 'Upgrade to Cruiser. Watch ⬛ slots and ⚡ power after the upgrade.', triggers: ['upgraded-interceptor'] },
   // Reroll tutorial
   { id: 'shop-reroll', anchor: 'reroll-button', copy: 'Reroll shows a fresh set of parts when nothing fits. Reroll/Research increases the reroll cost this round; it resets after battle.', triggers: ['rerolled'] },
   // Intel
