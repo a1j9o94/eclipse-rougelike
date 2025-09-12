@@ -24,7 +24,13 @@ export default function CoachmarkOverlay({ visible, title, text, anchor, onNext 
   useLayoutEffect(()=>{
     function measure(){
       if (!anchor) { setRect(null); return }
-      const el = document.querySelector(`[data-tutorial="${anchor}"]`) as HTMLElement | null
+      const candidates = Array.from(document.querySelectorAll(`[data-tutorial="${anchor}"]`)) as HTMLElement[]
+      const el = candidates.find(e => {
+        const style = window.getComputedStyle(e)
+        if (style.display === 'none' || style.visibility === 'hidden' || parseFloat(style.opacity || '1') === 0) return false
+        const rr = e.getBoundingClientRect()
+        return rr.width > 0 && rr.height > 0
+      }) || candidates[0] || null
       if (!el) { setRect(null); return }
       const r = el.getBoundingClientRect()
       setRect({ top: r.top + window.scrollY, left: r.left + window.scrollX, width: r.width, height: r.height })
