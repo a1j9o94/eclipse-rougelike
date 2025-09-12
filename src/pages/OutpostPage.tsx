@@ -88,7 +88,7 @@ export function OutpostPage({
   const focusedShip = fleet[focused];
   // groupFleet no longer used for roster; keep for potential counts later
   // const fleetGroups = groupFleet(fleet);
-  const hasInterceptor = fleet.some(s => s.frame.id === 'interceptor')
+  // const hasInterceptor = fleet.some(s => s.frame.id === 'interceptor')
   // const hasCruiser = fleet.some(s => s.frame.id === 'cruiser')
   const firstIdx = (id: FrameId): number => fleet.findIndex(s => s.frame.id === id)
   const [showPlan, setShowPlan] = useState(false);
@@ -143,7 +143,6 @@ export function OutpostPage({
   const upgradeLock = upgradeLockInfo(focusedShip);
   const upgradeUnlocked = !upgradeLock || (research.Military||1) >= upgradeLock.need;
   const upgradeAffordable = nextUpgrade ? (resources.materials >= nextUpgrade.materials && resources.credits >= nextUpgrade.credits) : false;
-  const upgradeDisabled = upgradeComputed.disabled || !upgradeUnlocked || !upgradeAffordable;
   const upgradeLabel = (()=>{
     if(!focusedShip) return 'Upgrade — Maxed';
     if(!upgradeUnlocked) return `Upgrade ${focusedShip.frame.name} — Requires Military ≥ ${upgradeLock?.need}`;
@@ -200,19 +199,17 @@ export function OutpostPage({
             }
             if (frameTab === 'cruiser') {
               const target = fleet[focused]?.frame.id === 'interceptor' ? focused : firstIdx('interceptor')
-              const disabled = upgradeDisabled || !hasInterceptor
-              // capacity gate: if interceptor present and military OK but capacity short → Increase Capacity
-              const lacksCapacity = hasInterceptor && upgradeUnlocked && upgradeComputed.disabled
-              const btnText = !hasInterceptor ? 'Requires Interceptor' : (!upgradeUnlocked ? `Requires Military ≥ ${upgradeLock?.need}` : (lacksCapacity ? 'Increase Capacity' : 'Upgrade to Cruiser'))
+              const haveInterceptor = target >= 0
+              const milOk = (research.Military || 1) >= 2
+              const upMat = applyEconomyModifiers(ECONOMY.upgradeCosts.interceptorToCruiser.materials, economyMods, 'materials')
+              const upCred = applyEconomyModifiers(ECONOMY.upgradeCosts.interceptorToCruiser.credits, economyMods, 'credits')
+              const canAfford = resources.materials >= upMat && resources.credits >= upCred
+              const targetUsed = haveInterceptor ? (tonnage.used + (FRAMES.cruiser.tonnage - fleet[target].frame.tonnage)) : tonnage.used
+              const capOk = haveInterceptor && (targetUsed <= capacity.cap)
+              const btnText = !haveInterceptor ? 'Requires Interceptor' : (!milOk ? 'Requires Military ≥ 2' : (!capOk ? 'Increase Capacity' : 'Upgrade to Cruiser'))
+              const disabled = !haveInterceptor || !milOk || !capOk || !canAfford
               return (
-                <button
-                  aria-label={upgradeLabel}
-                  onClick={()=>{ if (target >= 0) upgradeShip(target) }}
-                  onMouseEnter={()=>setDockPreview(upgradeComputed.targetUsed)}
-                  onMouseLeave={()=>setDockPreview(null)}
-                  disabled={disabled}
-                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${disabled?'bg-zinc-800 opacity-60':'bg-amber-600 hover:bg-amber-500 active:scale-95'}`}
-                >
+                <button aria-label={upgradeLabel} onClick={()=>{ if (target>=0) upgradeShip(target) }} onMouseEnter={()=> setDockPreview(targetUsed)} onMouseLeave={()=> setDockPreview(null)} disabled={disabled} className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${disabled?'bg-zinc-800 opacity-60':'bg-amber-600 hover:bg-amber-500 active:scale-95'}`}>
                   <span>{btnText}</span>
                 </button>
               )
