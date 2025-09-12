@@ -28,6 +28,7 @@ import type { OutpostEffects as EngineOutpostEffects } from './engine/commands'
 // moved snapshot mapping into useMpPhaseNav
 // rewards handled by useRunLifecycle
 import { loadRunState, clearRunState, recordWin } from './game/storage'
+import { rollInventory } from './game/shop'
 import { playEffect } from './game/sound'
 // MultiplayerStartPage and RoomLobby routed via PreGameRouter
 // computePlaybackDelay used in useMpPhaseNav
@@ -470,6 +471,7 @@ export default function EclipseIntegrated(){
       showWin={showWin}
       mpWinMessage={mpWinMessage}
       onRestartWin={()=>{ setShowWin(false); setMpWinMessage(null); if (gameMode==='multiplayer') { handleBackToMainMenu() } else { resetRun() } }}
+      onEndlessWin={()=>{ setShowWin(false); setMpWinMessage(null); setEndless(true); try { setSector((n)=> Math.max(n, 10) + 1) } catch { /* noop */ } setShop({ items: rollInventory(research as Research) }); setShopVersion(v => v + 1); void playEffect('page') }}
       matchOver={matchOver}
       onMatchOverClose={handleMatchOverClose}
       resourceBar={rbVm as RBProps}

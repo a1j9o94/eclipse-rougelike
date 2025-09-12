@@ -44,6 +44,7 @@ export function GameShell({
   showWin,
   mpWinMessage,
   onRestartWin,
+  onEndlessWin,
   matchOver,
   onMatchOverClose,
   resourceBar,
@@ -60,6 +61,7 @@ export function GameShell({
   showWin: boolean
   mpWinMessage?: string | null
   onRestartWin: () => void
+  onEndlessWin: () => void
   matchOver: { winnerName: string } | null
   onMatchOverClose: () => void
   resourceBar: RBProps
@@ -78,7 +80,7 @@ export function GameShell({
       {showWin && (mpWinMessage ? (
         <MPWinModal message={mpWinMessage} onClose={onRestartWin} />
       ) : (
-        <WinModal onRestart={onRestartWin} onEndless={onRestartWin} />
+        <WinModal onRestart={onRestartWin} onEndless={onEndlessWin} />
       ))}
 
       <ResourceBar {...resourceBar} />
