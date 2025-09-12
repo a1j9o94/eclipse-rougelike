@@ -76,7 +76,6 @@ export function ItemCard({ item, price, canAfford, onBuy, ghostDelta, compact }:
               </>
             )}
         </div>
-        <div className="text-sm sm:text-base font-semibold whitespace-nowrap">{cost}¢</div>
       </div>
       {ghostDelta && (
         <div className={`mt-2 text-[11px] sm:text-xs grid grid-cols-2 gap-x-3 gap-y-1 ${compact?'opacity-80':''}`}>
@@ -86,7 +85,7 @@ export function ItemCard({ item, price, canAfford, onBuy, ghostDelta, compact }:
           {!compact && ghostDelta.hullDelta!==0 && <div>Hull {ghostDelta.hullBefore} → <b>{ghostDelta.hullAfter}</b></div>}
         </div>
       )}
-      <button disabled={disabled} onClick={onBuy} className={`mt-2 w-full px-3 py-2 rounded-lg text-sm sm:text-base ${!disabled? 'bg-emerald-600 hover:bg-emerald-500 active:scale-[.99]':'bg-zinc-700 opacity-60'}`}>{disabledForSlots? 'No Slot' : 'Buy & Install'}</button>
+      <button disabled={disabled} onClick={onBuy} className={`mt-2 w-full px-3 py-2 rounded-lg text-sm sm:text-base ${!disabled? 'bg-emerald-600 hover:bg-emerald-500 active:scale-[.99]':'bg-zinc-700 opacity-60'}`}>{disabledForSlots? 'No Slot' : `Buy (${cost}¢)`}</button>
     </div>
   );
 }

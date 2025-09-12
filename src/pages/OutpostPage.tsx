@@ -4,15 +4,15 @@ import { ItemCard, DockSlots } from '../components/ui'
 import { ShipFrameSlots } from '../components/ShipFrameSlots'
 import BlueprintSummary from '../components/outpost/BlueprintSummary'
 import { emptyShip } from '../game/emptyShip'
-import { CombatPlanModal } from '../components/modals'
+import { CombatPlanModal, TechListModal } from '../components/modals'
 import { event as tutorialEvent, isEnabled as isTutorialEnabled, getStep as tutorialGetStep } from '../tutorial/state'
 import type { MpBasics } from '../adapters/mpSelectors'
 import { ECONOMY } from '../../shared/economy'
 import { FRAMES, type FrameId } from '../../shared/frames'
-import { ALL_PARTS } from '../../shared/parts'
+// import { ALL_PARTS } from '../../shared/parts'
 // import { groupFleet } from '../game/fleet'
 import { canBuildInterceptorWithMods } from '../game/hangar'
-import { partEffects, partDescription } from '../../shared/parts'
+import { partEffects } from '../../shared/parts'
 import { type Resources, type Research } from '../../shared/defaults'
 import { type Part } from '../../shared/parts'
 import { type Ship, type GhostDelta } from '../../shared/types'
@@ -150,68 +150,13 @@ export function OutpostPage({
     if(!upgradeAffordable && nextUpgrade) return `Upgrade ${focusedShip.frame.name} — Need ${nextUpgrade.materials}🧱 + ${nextUpgrade.credits}¢`;
     return `${upgradeComputed.label}${nextUpgrade ? ` (${nextUpgrade.materials}🧱 + ${nextUpgrade.credits}¢)` : ''}`;
   })();
-  function nextUnlocksFor(track:'Military'|'Grid'|'Nano'){
-    const curr = (research as Research)[track]||1;
-    const next = Math.min(3, curr+1);
-    const items = ALL_PARTS.filter(p=> !p.rare && p.tech_category===track && p.tier===next);
-    return items;
-  }
-  function militaryNextNote(){
-    const curr = (research as Research).Military||1;
-    if(curr>=3) return 'Maxed — no further ship tiers';
-    const next = curr+1;
-    if(next===2) return `Unlocks class upgrade: Interceptor → Cruiser — ⬛ ${FRAMES.interceptor.tiles}→${FRAMES.cruiser.tiles} slots`;
-    if(next===3) return `Unlocks class upgrade: Cruiser → Dreadnought — ⬛ ${FRAMES.cruiser.tiles}→${FRAMES.dread.tiles} slots`;
-    return '';
-  }
+  // helpers removed in favor of using unified TechListModal
   return (
     <>
       {showPlan && <CombatPlanModal onClose={()=>{ setShowPlan(false); try { if (isTutorialEnabled() && tutorialGetStep()==='intel-close') tutorialEvent('viewed-intel') } catch { /* noop */ } }} sector={sector} endless={endless} gameMode={gameMode} multi={multi as never} />}
 
-      {/* Tech bottom sheet */}
-      {showTech && (
-        <div className="fixed inset-0 z-20 grid" aria-modal>
-          <div className="bg-black/60" onClick={()=>setShowTech(false)} />
-          <div className="fixed bottom-0 left-0 right-0 mx-auto max-w-5xl bg-zinc-900 border-t border-zinc-700 rounded-t-2xl p-3">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="text-lg font-semibold">Tech List</div>
-              <div className="flex-1" />
-              <button data-tutorial="tech-close" onClick={()=>setShowTech(false)} className="px-3 py-1 rounded bg-zinc-800">Close</button>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
-              {tracks.map(t=> {
-                if(t==='Military'){
-                  const note = militaryNextNote();
-                  return (
-                    <div key={t} className="px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800">
-                      <div className="font-medium mb-1">{t} — Next unlock</div>
-                      <div className="opacity-80">{note}</div>
-                    </div>
-                  );
-                }
-                const nxt = nextUnlocksFor(t); const preview = nxt;
-                return (
-                  <div key={t} className="px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800">
-                    <div className="font-medium mb-1">{t} — Next unlocks</div>
-                    {preview.length===0 ? (
-                      <div className="opacity-70">Maxed or no new parts at next tier</div>
-                    ) : (
-                      <div className="space-y-1">
-                        {preview.map((p, i)=> (
-                          <div key={i}>
-                            <div className="flex items-center justify-between"><span>{p.name}</span><span className="opacity-60">{partEffects(p).join(' ')}</span></div>
-                            <div className="opacity-80 text-xs">{partDescription(p)}</div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Tech List — reuse canonical modal */}
+      {showTech && <TechListModal research={research as Research} onClose={()=>setShowTech(false)} />}
 
       <div className="mx-auto max-w-5xl pb-24">
 
