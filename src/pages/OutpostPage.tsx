@@ -88,6 +88,7 @@ export function OutpostPage({
   const fleetGroups = groupFleet(fleet);
   const [showPlan, setShowPlan] = useState(false);
   const [dockPreview, setDockPreview] = useState<number|null>(null);
+  const [showTech, setShowTech] = useState(false);
   const tracks = ['Military','Grid','Nano'] as const;
   const buildChk = canBuildInterceptorWithMods(resources, capacity, tonnage.used, economyMods);
   const buildCost = { materials: buildChk.cost.m, credits: buildChk.cost.c };
@@ -158,30 +159,81 @@ export function OutpostPage({
     <>
       {showPlan && <CombatPlanModal onClose={()=>{ setShowPlan(false); try { if (isTutorialEnabled() && tutorialGetStep()==='intel-close') tutorialEvent('viewed-intel') } catch { /* noop */ } }} sector={sector} endless={endless} gameMode={gameMode} multi={multi as never} />}
 
+      {/* Tech bottom sheet */}
+      {showTech && (
+        <div className="fixed inset-0 z-20 grid" aria-modal>
+          <div className="bg-black/60" onClick={()=>setShowTech(false)} />
+          <div className="fixed bottom-0 left-0 right-0 mx-auto max-w-5xl bg-zinc-900 border-t border-zinc-700 rounded-t-2xl p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="text-lg font-semibold">Tech List</div>
+              <div className="flex-1" />
+              <button data-tutorial="tech-close" onClick={()=>setShowTech(false)} className="px-3 py-1 rounded bg-zinc-800">Close</button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
+              {tracks.map(t=> {
+                if(t==='Military'){
+                  const note = militaryNextNote();
+                  return (
+                    <div key={t} className="px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800">
+                      <div className="font-medium mb-1">{t} — Next unlock</div>
+                      <div className="opacity-80">{note}</div>
+                    </div>
+                  );
+                }
+                const nxt = nextUnlocksFor(t); const preview = nxt;
+                return (
+                  <div key={t} className="px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800">
+                    <div className="font-medium mb-1">{t} — Next unlocks</div>
+                    {preview.length===0 ? (
+                      <div className="opacity-70">Maxed or no new parts at next tier</div>
+                    ) : (
+                      <div className="space-y-1">
+                        {preview.map((p, i)=> (
+                          <div key={i}>
+                            <div className="flex items-center justify-between"><span>{p.name}</span><span className="opacity-60">{partEffects(p).join(' ')}</span></div>
+                            <div className="opacity-80 text-xs">{partDescription(p)}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="mx-auto max-w-5xl pb-24">
 
       {/* Hangar */}
       <div className="p-3">
         <div className="flex items-center gap-2 mb-2">
-          <div className="text-lg font-semibold">Hangar (Class Blueprints)</div>
+          <div className="text-lg font-semibold">Hangar</div>
           <div className="flex-1" />
           <button data-tutorial="enemy-intel-btn" onClick={()=>{ setShowPlan(true); if (isTutorialEnabled()) tutorialEvent('viewed-intel') }} className="px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs">📋 Enemy Intel</button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          {fleetGroups.map((g,i)=> { const s = g.ship; const active = g.indices.includes(focused); const stack = Math.min(g.count-1,2); return (
-              <div key={i} className="relative">
-                {Array.from({length: stack}).map((_,j)=>(
-                  <div key={j} className={`pointer-events-none absolute inset-0 rounded-xl border ${active?'border-sky-400':'border-zinc-700'} bg-zinc-900`} style={{transform:`translate(${(j+1)*4}px, ${(j+1)*4}px)`}} />
-                ))}
-                <button data-tutorial={active? 'ship-card': undefined} onClick={()=>setFocused(g.indices[0])} className={`relative w-full text-left p-3 rounded-xl border transition ${active?'border-sky-400 bg-sky-400/10':'border-zinc-700 bg-zinc-900 hover:border-zinc-600'}`}>
-                  {g.count>1 && <div className="absolute -top-2 -left-2 bg-zinc-800 px-1 rounded text-xs">×{g.count}</div>}
-                  <div className="flex items-center justify-between"><div className="font-semibold text-sm sm:text-base">{s.frame.name} <span className="text-xs opacity-70">(t{s.frame.tonnage})</span></div><PowerBadge use={s.stats.powerUse} prod={s.stats.powerProd} /></div>
-                  <div className="text-xs opacity-80 mt-1">🚀 {s.stats.init} • 🎯 {s.stats.aim} • 🛡️ {s.stats.shieldTier} • ⬛ {s.parts.length}/{s.frame.tiles}</div>
-                  <div className="mt-1">❤️ {s.hull}/{s.stats.hullCap}</div>
-                  {!s.stats.valid && <div className="text-xs text-rose-300 mt-1">Not deployable: needs Source + Drive and ⚡ OK</div>}
-                </button>
+
+        {/* Dock roster tokens */}
+        <div data-tutorial="dock-roster" className="flex items-center gap-2 overflow-x-auto pb-1">
+          {fleetGroups.map((g,i)=> { const s = g.ship; const active = g.indices.includes(focused); return (
+            <button key={i} aria-label={`${s.frame.name} group`} onClick={()=>setFocused(g.indices[0])}
+              className={`relative shrink-0 px-2 py-1 rounded-xl border text-left ${active? 'border-sky-400 bg-sky-400/10' : 'border-zinc-700 bg-zinc-900 hover:border-zinc-600'}`}>
+              {g.count>1 && <span className="absolute -top-2 -right-2 text-[10px] bg-zinc-800 rounded px-1">×{g.count}</span>}
+              <div className="flex items-center gap-2">
+                <div className="grid place-items-center w-12 h-12 rounded-lg bg-black/30 ring-1 ring-white/10">
+                  <div className="scale-75" aria-hidden>
+                    <ShipFrameSlots ship={emptyShip(s.frame.id as FrameId)} side='P' />
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs sm:text-sm font-medium leading-tight">{s.frame.name}</div>
+                  <div className="text-[11px] opacity-70">t{s.frame.tonnage}</div>
+                </div>
+                <div className="ml-1"><PowerBadge use={s.stats.powerUse} prod={s.stats.powerProd} /></div>
               </div>
-            ); })}
+            </button>
+          )})}
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
           <button
@@ -275,7 +327,7 @@ export function OutpostPage({
                 const gd = focusedShip? ghost(focusedShip, it) : null;
                 return (
                   <div key={i} data-tutorial={`shop-item-${it.id}`}>
-                    <ItemCard item={it} price={price} canAfford={canAfford} ghostDelta={gd} onBuy={()=>buyAndInstall(it)} />
+                    <ItemCard compact item={it} price={price} canAfford={canAfford} ghostDelta={gd} onBuy={()=>buyAndInstall(it)} />
                   </div>
                 );
               })}
@@ -283,43 +335,14 @@ export function OutpostPage({
           </div>
           {/* Tech Upgrades side */}
           <div>
-            <div className="text-lg font-semibold mb-2">Tech Upgrades</div>
+            <div className="text-lg font-semibold mb-2">Tech</div>
             <div data-tutorial="research-grid" className="grid grid-cols-3 gap-2 text-sm">
               {tracks.map(t=> (
                 <button key={t} onClick={()=>researchTrack(t)} disabled={!canResearch(t)} className={`px-3 py-2 rounded-xl leading-tight ${canResearch(t)?'bg-zinc-900 border border-zinc-700 hover:border-zinc-500':'bg-zinc-800 opacity-60'}`}>{researchLabel(t)}</button>
               ))}
             </div>
-            <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-2">
-              {tracks.map(t=> {
-                if(t==='Military'){
-                  const note = militaryNextNote();
-                  return (
-                    <div key={t} className="text-[11px] sm:text-xs px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800">
-                      <div className="font-medium mb-1">{t} — Next unlock</div>
-                      <div className="opacity-80">{note}</div>
-                    </div>
-                  );
-                }
-                const nxt = nextUnlocksFor(t); const preview = nxt.slice(0,3); const more = Math.max(0, nxt.length - preview.length);
-                return (
-                  <div key={t} className="text-[11px] sm:text-xs px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800">
-                    <div className="font-medium mb-1">{t} — Next unlocks</div>
-                      {nxt.length===0 ? (
-                        <div className="opacity-70">Maxed or no new parts at next tier</div>
-                      ) : (
-                        <div className="space-y-1">
-                          {preview.map((p, i)=> (
-                            <div key={i}>
-                              <div className="flex items-center justify-between"><span>{p.name}</span><span className="opacity-60">{partEffects(p).join(' ')}</span></div>
-                              <div className="opacity-80">{partDescription(p)}</div>
-                            </div>
-                          ))}
-                          {more>0 && <div className="opacity-60">+{more} more…</div>}
-                        </div>
-                      )}
-                  </div>
-                );
-              })}
+            <div className="mt-2">
+              <button data-tutorial="help-tech" onClick={()=>setShowTech(true)} className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-zinc-500 text-sm">Open Tech List</button>
             </div>
           </div>
         </div>

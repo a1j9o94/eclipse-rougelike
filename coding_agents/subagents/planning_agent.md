@@ -271,3 +271,42 @@
 
 ### Follow-ups
 - Tooltips for Enemy Intel minis and a short glossary modal.
+## Plan Entry — Outpost Redesign (Phase 0b)
+
+- Outcome: A cleaner Outpost page that prioritizes decisions over data. Replace the card grid of ships with a compact Dock roster, make the Class Blueprint the single edit surface, convert long research text to a tech bottom sheet, and keep a single clear CTA.
+
+- Acceptance criteria:
+  - Dock roster shows one token per ship group with count badges and power status; tapping selects the group and opens the blueprint panel below.
+  - No individual “ship cards” grid is shown; blueprint is the only place to add/sell parts.
+  - Reroll button remains visible with cost, and increases label after research/reroll.
+  - Research area shows three track chips + a “Tech” bottom sheet with full details; no persistent multi‑sentence paragraphs on the main view.
+  - Start Combat bar unchanged functionally; Restart/Resign unchanged for this slice.
+  - Tutorial anchors updated (ship-card → dock-roster, plus tech open/close).
+  - Targeted Outpost tests green; lint/build green.
+
+- Risks & rollback:
+  - Risk: Tutorial or tests reference removed anchors. Mitigation: update `src/tutorial/script.ts` and keep IDs stable via `data-tutorial`.
+  - Risk: Accessibility regressions from new tokens. Mitigation: 44px targets, ARIA labels carried over.
+  - Rollback: feature branch; revert OutpostPage changes to prior layout.
+
+- Test list (fail first where changed):
+  1) `dock.spec.tsx` updated to not depend on ship cards; still validates build/upgrade/dock visuals.
+  2) `outpost_economy_labels_isolated.spec.tsx` stays green (discount labels).
+  3) New smoke: rendering Outpost with Dock roster exposes `data-tutorial="dock-roster"` and blueprint header.
+
+---
+
+### Implementation Steps
+1) Add Dock roster tokens section; remove ship-card grid.
+2) Keep build/upgrade/dock controls; maintain accessible names/labels used by tests.
+3) Add Tech bottom sheet (open/close buttons with `data-tutorial` hooks).
+4) Update tutorial script anchors and copy for the ship selection step.
+5) Run targeted tests and lint/build.
+
+### Decision Log
+- Chose a single blueprint edit surface to reduce redundancy.
+- Bottom sheet for tech details preserves context and reduces on‑page text.
+
+### Follow-ups
+- Overflow/pause menu for Restart/Resign (separate slice).
+- Resource HUD compaction (separate slice).
