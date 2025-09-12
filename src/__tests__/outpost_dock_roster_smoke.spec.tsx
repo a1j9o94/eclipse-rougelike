@@ -7,7 +7,7 @@ import type { Ship } from '../../shared/types'
 import { getFrame, makeShip, type FrameId } from '../game'
 
 describe('Outpost — dock roster smoke', () => {
-  it('renders dock roster and blueprint header', async () => {
+  it('renders frame tabs and blueprint grid', async () => {
     const blueprints: Record<FrameId, Part[]> = {
       interceptor: [PARTS.sources[0], PARTS.drives[0]],
       cruiser: [], dread: []
@@ -44,8 +44,9 @@ describe('Outpost — dock roster smoke', () => {
       />
     )
     expect(screen.getByTestId('reroll-button')).toBeInTheDocument()
-    expect(document.querySelector('[data-tutorial="dock-roster"]')).toBeTruthy()
-    expect(screen.getByText(/Class Blueprint —/)).toBeInTheDocument()
+    // Tab buttons present
+    expect(screen.getByRole('tab', { name: /Interceptor/i })).toBeInTheDocument()
+    // Blueprint parts grid still rendered
+    expect(document.querySelector('[data-tutorial="blueprint-panel"]')).toBeTruthy()
   })
 })
-

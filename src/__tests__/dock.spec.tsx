@@ -5,7 +5,7 @@ import { DockSlots } from '../components/ui';
 import OutpostPage from '../pages/OutpostPage';
 import { makeShip, getFrame, PARTS } from '../game';
 import type { ResearchState as Research, GhostDelta, Ship } from '../../shared/types';
-import { FRAMES } from '../../shared/frames';
+// FRAMES no longer needed for compact action tiles
 import { ECONOMY } from '../../shared/economy';
 import { applyEconomyModifiers, getDefaultEconomyModifiers } from '../game/economy';
 
@@ -81,12 +81,11 @@ describe('dock and upgrade visuals', () => {
     const upC = applyEconomyModifiers(ECONOMY.upgradeCosts.interceptorToCruiser.credits, mods, 'credits');
 
     expect(within(buildBtn).getByText('Build Interceptor')).toBeInTheDocument();
-    expect(within(buildBtn).getAllByTestId('frame-slot-empty')).toHaveLength(FRAMES.interceptor.tiles);
     expect(buildBtn).toHaveTextContent(`${buildM}🧱 + ${buildC}¢`);
     // Switch to Cruiser tab and verify upgrade content
     fireEvent.click(screen.getByRole('button', { name: /Cruiser/i }))
     const upgradeBtn = screen.getByRole('button', {name:/Upgrade Interceptor to Cruiser/i});
-    expect(within(upgradeBtn).getAllByTestId('frame-slot-empty')).toHaveLength(FRAMES.cruiser.tiles);
+    // Compact tile no longer renders frame glyphs inside the button
     expect(upgradeBtn).toHaveTextContent(`${upM}🧱 + ${upC}¢`);
     fireEvent.mouseEnter(upgradeBtn)
     expect(screen.getAllByTestId('dock-slot-preview').length).toBeGreaterThan(0);

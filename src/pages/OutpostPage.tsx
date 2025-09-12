@@ -1,6 +1,6 @@
 // React import not required with modern JSX transform
 import { useState } from 'react'
-import { ItemCard, PowerBadge, DockSlots } from '../components/ui'
+import { ItemCard, DockSlots } from '../components/ui'
 import { ShipFrameSlots } from '../components/ShipFrameSlots'
 import { emptyShip } from '../game/emptyShip'
 import { CombatPlanModal } from '../components/modals'
@@ -9,7 +9,7 @@ import type { MpBasics } from '../adapters/mpSelectors'
 import { ECONOMY } from '../../shared/economy'
 import { FRAMES, type FrameId } from '../../shared/frames'
 import { ALL_PARTS } from '../../shared/parts'
-import { groupFleet } from '../game/fleet'
+// import { groupFleet } from '../game/fleet'
 import { canBuildInterceptorWithMods } from '../game/hangar'
 import { partEffects, partDescription } from '../../shared/parts'
 import { type Resources, type Research } from '../../shared/defaults'
@@ -85,7 +85,8 @@ export function OutpostPage({
   economyMods?: EconMods,
 }){
   const focusedShip = fleet[focused];
-  const fleetGroups = groupFleet(fleet);
+  // groupFleet no longer used for roster; keep for potential counts later
+  // const fleetGroups = groupFleet(fleet);
   const hasInterceptor = fleet.some(s => s.frame.id === 'interceptor')
   // const hasCruiser = fleet.some(s => s.frame.id === 'cruiser')
   const firstIdx = (id: FrameId): number => fleet.findIndex(s => s.frame.id === id)
@@ -111,7 +112,6 @@ export function OutpostPage({
   const dockDisabled = dockAtCap || !dockAffordable;
   const rrInc = applyEconomyModifiers(ECONOMY.reroll.increment, economyMods, 'credits');
   const currentBlueprint = blueprints[focusedShip?.frame.id as FrameId] || [];
-  const bpSlotsUsed = currentBlueprint.reduce((a,p)=>a+(p.slots||1),0);
   const nextUpgrade = (()=>{
     if(!focusedShip) return null;
     if(focusedShip.frame.id==='interceptor') return {
@@ -218,26 +218,16 @@ export function OutpostPage({
           <button data-tutorial="enemy-intel-btn" onClick={()=>{ setShowPlan(true); if (isTutorialEnabled()) tutorialEvent('viewed-intel') }} className="px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs">📋 Enemy Intel</button>
         </div>
 
-        {/* Dock roster tokens */}
-        <div data-tutorial="dock-roster" className="flex items-center gap-2 overflow-x-auto pb-1">
-          {fleetGroups.map((g,i)=> { const s = g.ship; const active = g.indices.includes(focused); return (
-            <button key={i} aria-label={`${s.frame.name} group`} onClick={()=>setFocused(g.indices[0])}
-              className={`relative shrink-0 px-2 py-1 rounded-xl border text-left ${active? 'border-sky-400 bg-sky-400/10' : 'border-zinc-700 bg-zinc-900 hover:border-zinc-600'}`}>
-              {g.count>1 && <span className="absolute -top-2 -right-2 text-[10px] bg-zinc-800 rounded px-1">×{g.count}</span>}
-              <div className="flex items-center gap-2">
-                <div className="grid place-items-center w-12 h-12 rounded-lg bg-black/30 ring-1 ring-white/10">
-                  <div className="scale-75" aria-hidden>
-                    <ShipFrameSlots ship={emptyShip(s.frame.id as FrameId)} side='P' />
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xs sm:text-sm font-medium leading-tight">{s.frame.name}</div>
-                  <div className="text-[11px] opacity-70">t{s.frame.tonnage}</div>
-                </div>
-                <div className="ml-1"><PowerBadge use={s.stats.powerUse} prod={s.stats.powerProd} /></div>
-              </div>
-            </button>
-          )})}
+        {/* Tabs control focus; counts per frame */}
+        <div className="mb-1">
+          <div className="inline-flex rounded-xl overflow-hidden ring-1 ring-white/10" role="tablist">
+            {(['interceptor','cruiser','dread'] as const).map(t => (
+              <button key={t} role="tab" aria-selected={frameTab===t} onClick={()=>{ setFrameTab(t); const idx = firstIdx(t as FrameId); if (idx>=0) setFocused(idx) }} className={`px-3 py-1.5 text-sm flex items-center gap-1 ${frameTab===t? 'bg-white/10' : 'bg-black/30 hover:bg-black/40'}`}>
+                <span>{t==='interceptor'?'Interceptor':t==='cruiser'?'Cruiser':'Dreadnought'}</span>
+                <span className="text-xs opacity-80">×{fleet.filter(s=>s.frame.id===t).length}</span>
+              </button>
+            ))}
+          </div>
         </div>
         {/* Single action panel with tabs */}
         <div className="mt-3">
@@ -247,7 +237,7 @@ export function OutpostPage({
               <button key={t} onClick={()=>setFrameTab(t)} className={`px-3 py-1.5 text-sm ${frameTab===t? 'bg-white/10' : 'bg-black/30 hover:bg-black/40'}`}>{t==='interceptor'?'Interceptor':t==='cruiser'?'Cruiser':'Dreadnought'}</button>
             ))}
           </div>
-          {/* Panel */}
+          {/* Panel (compact action button) */}
           {(() => {
             if (frameTab === 'interceptor') {
               return (
@@ -257,11 +247,10 @@ export function OutpostPage({
                   onMouseEnter={()=>setDockPreview(tonnage.used + FRAMES.interceptor.tonnage)}
                   onMouseLeave={()=>setDockPreview(null)}
                   disabled={buildDisabled}
-                  className={`w-full px-3 py-3 rounded-2xl flex flex-col items-center text-center ${buildDisabled?'bg-zinc-700 opacity-60':'bg-sky-600 hover:bg-sky-500 active:scale-95'}`}
+                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${buildDisabled?'bg-zinc-700 opacity-60':'bg-sky-600 hover:bg-sky-500 active:scale-95'}`}
                 >
-                  <div className="text-base font-semibold mb-1">Build Interceptor</div>
-                  <ShipFrameSlots ship={emptyShip('interceptor')} side='P' />
-                  <div className="mt-2 text-sm">{`${buildCost.materials}🧱 + ${buildCost.credits}¢`}</div>
+                  <span>Build Interceptor</span>
+                  <span className="opacity-90">{`${buildCost.materials}🧱 + ${buildCost.credits}¢`}</span>
                 </button>
               )
             }
@@ -276,11 +265,10 @@ export function OutpostPage({
                   onMouseEnter={()=>setDockPreview(upgradeComputed.targetUsed)}
                   onMouseLeave={()=>setDockPreview(null)}
                   disabled={disabled}
-                  className={`w-full px-3 py-3 rounded-2xl flex flex-col items-center text-center ${disabled?'bg-zinc-800 opacity-60':'bg-amber-600 hover:bg-amber-500 active:scale-95'}`}
+                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${disabled?'bg-zinc-800 opacity-60':'bg-amber-600 hover:bg-amber-500 active:scale-95'}`}
                 >
-                  <div className="text-base font-semibold mb-1">Upgrade to Cruiser</div>
-                  <ShipFrameSlots ship={emptyShip('cruiser')} side='P' />
-                  <div className={`mt-2 text-sm ${!hasInterceptor || !upgradeUnlocked? 'text-rose-200' : ''}`}>{help}</div>
+                  <span>Upgrade Interceptor to Cruiser</span>
+                  <span className={`${!hasInterceptor || !upgradeUnlocked? 'text-rose-200' : 'opacity-90'}`}>{help}</span>
                 </button>
               )
             }
@@ -304,28 +292,17 @@ export function OutpostPage({
                 onMouseEnter={()=> setDockPreview(targetUsed)}
                 onMouseLeave={()=> setDockPreview(null)}
                 disabled={disabled}
-                className={`w-full px-3 py-3 rounded-2xl flex flex-col items-center text-center ${disabled? 'bg-zinc-800 opacity-60' : 'bg-fuchsia-700 hover:bg-fuchsia-600 active:scale-95'}`}
+                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${disabled? 'bg-zinc-800 opacity-60' : 'bg-fuchsia-700 hover:bg-fuchsia-600 active:scale-95'}`}
               >
-                <div className="text-base font-semibold mb-1">Upgrade to Dreadnought</div>
-                <ShipFrameSlots ship={emptyShip('dread')} side='P' />
-                <div className={`mt-2 text-sm ${(!haveCruiser || !milOk) ? 'text-rose-200' : ''}`}>{help}</div>
+                <span>Upgrade Cruiser to Dreadnought</span>
+                <span className={`${(!haveCruiser || !milOk) ? 'text-rose-200' : 'opacity-90'}`}>{help}</span>
               </button>
             )
           })()}
         </div>
-        {/* Capacity tile is fully pressable */}
-        <div className="mt-2 grid grid-cols-1 gap-2">
-          <button data-tutorial="expand-dock" onClick={upgradeDock} disabled={dockDisabled} className={`text-left px-3 py-3 rounded-xl border text-sm ${dockDisabled? 'bg-zinc-800 border-zinc-800 opacity-60' : 'bg-zinc-900 border-zinc-700 hover:border-zinc-500 active:scale-[.99]'}`} aria-label={`Expand Capacity — ${dockCost.materials}🧱 + ${dockCost.credits}¢`}>
-            <div className="flex items-center justify-between mb-1">
-              <div>Capacity: <b>{capacity.cap}</b> • Used: <b>{tonnage.used}</b></div>
-              <div className="px-2 py-1 rounded-lg bg-indigo-600 text-white text-xs">Expand • {dockCost.materials}🧱 + {dockCost.credits}¢</div>
-            </div>
-            <DockSlots used={tonnage.used} cap={capacity.cap} preview={dockPreview===null?undefined:dockPreview} />
-          </button>
-        </div>
-          {/* Blueprint Manager with Sell */}
+          {/* Blueprint + parts list (no header label). Capacity row follows this. */}
           <div className="mt-3">
-            <div className="text-sm font-semibold mb-1">Class Blueprint — {focusedShip?.frame.name} ⬛ {bpSlotsUsed}/{focusedShip?.frame.tiles}</div>
+            <div className="mb-2"><ShipFrameSlots ship={focusedShip || emptyShip('interceptor')} side='P' /></div>
             <div data-tutorial="blueprint-panel" className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {currentBlueprint.map((p, idx)=> (
               <div key={idx} className="p-2 rounded border border-zinc-700 bg-zinc-900 text-xs">
@@ -337,6 +314,17 @@ export function OutpostPage({
                 </div>
               </div>
             ))}
+          </div>
+          {/* Capacity below blueprint */}
+          <div className="mt-2 grid grid-cols-1 gap-2">
+            <div data-tutorial="capacity-info" className="px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-sm">
+              <div className="flex items-center justify-between mb-1">
+                <div>Capacity: <b>{capacity.cap}</b> • Used: <b>{tonnage.used}</b></div>
+                {/* + opens a minimal modal; for now, call upgradeDock directly to keep tests green */}
+                <button data-tutorial="expand-dock" onClick={upgradeDock} disabled={dockDisabled} aria-label={`Expand Capacity — ${dockCost.materials}🧱 + ${dockCost.credits}¢`} className={`w-7 h-7 grid place-items-center rounded-full ${dockDisabled? 'bg-zinc-700 opacity-60' : 'bg-indigo-600 hover:bg-indigo-500'}`}>+</button>
+              </div>
+              <DockSlots used={tonnage.used} cap={capacity.cap} preview={dockPreview===null?undefined:dockPreview} />
+            </div>
           </div>
         </div>
       </div>
