@@ -175,7 +175,7 @@ export function OutpostPage({
         <div className="flex items-center gap-2 mb-2">
           <div className="text-lg font-semibold">Hangar</div>
           <div className="flex-1" />
-          <button data-tutorial="enemy-intel-btn" onClick={()=>{ setShowPlan(true); if (isTutorialEnabled()) tutorialEvent('viewed-intel') }} className="px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs">📋 Enemy Intel</button>
+          <button data-tutorial="enemy-intel-btn" onClick={()=>{ setShowPlan(true); if (isTutorialEnabled()) tutorialEvent('opened-intel') }} className="px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-xs">📋 Enemy Intel</button>
         </div>
 
         {/* Tabs control focus; counts per frame */}
