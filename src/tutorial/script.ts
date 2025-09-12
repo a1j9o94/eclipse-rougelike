@@ -36,6 +36,7 @@ export const STEPS: TutorialStep[] = [
   { id: 'tech-military', anchor: 'research-grid', copy: 'Raise Military to unlock frame upgrades: Interceptor → Cruiser (requires Military ≥ 2).', triggers: ['researched-military'] },
   { id: 'capacity-info', anchor: 'capacity-info', copy: 'Capacity row: X/Y shows used/total. Cost to expand is shown next to the +.', triggers: ['next'] },
   { id: 'dock-expand', anchor: 'expand-dock', copy: 'Tap + to expand docks. You need space before an Interceptor can become a Cruiser.', triggers: ['expanded-dock'] },
+  { id: 'select-cruiser', anchor: 'frame-tabs', copy: 'Select the Cruiser tab to prepare the upgrade.', triggers: ['tab-cruiser','next'] },
   { id: 'upgrade-interceptor', anchor: 'frame-action', copy: 'Upgrade to Cruiser. Watch ⬛ slots and ⚡ power after the upgrade.', triggers: ['upgraded-interceptor'] },
   // Reroll tutorial
   { id: 'shop-reroll', anchor: 'reroll-button', copy: 'Reroll shows a fresh set of parts when nothing fits. Reroll/Research increases the reroll cost this round; it resets after battle.', triggers: ['rerolled'] },

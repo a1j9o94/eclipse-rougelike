@@ -28,6 +28,7 @@ export function gateFor(step: TutorialStepId): Gate {
     case 'combat-3':         return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true }
     case 'tech-military':     return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: true,  canUpgradeShip: false, canStartCombat: true, allowedResearchTracks: ['Military'] }
     case 'capacity-info':     return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true }
+    case 'select-cruiser':    return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true }
     case 'upgrade-interceptor': return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: true,  canStartCombat: true, upgradeOnlyInterceptor: true }
     case 'bar-resources':     return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true }
     case 'bar-capacity':      return { canBuy: false, canReroll: false, canUpgradeDock: false, canResearch: false, canUpgradeShip: false, canStartCombat: true }

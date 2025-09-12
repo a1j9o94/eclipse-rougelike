@@ -7,6 +7,7 @@ export type TutorialStepId =
   | 'shop-buy-composite-2'
   | 'combat-2'
   | 'dock-expand'
+  | 'select-cruiser'
   | 'tech-nano'
   | 'tech-open'
   | 'tech-close'
