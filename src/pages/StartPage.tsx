@@ -6,7 +6,7 @@ import { loadRunState, evaluateUnlocks } from '../game/storage';
 import { playEffect } from '../game/sound';
 import Starfield from '../components/Starfield';
 import SettingsModal from '../components/SettingsModal';
-import { hasCompleted as tutorialHasCompleted } from '../tutorial/state';
+import { isEnabled as tutorialIsEnabled } from '../tutorial/state';
 
 export default function StartPage({
   onNewRun,
@@ -27,7 +27,7 @@ export default function StartPage({
   const progress = evaluateUnlocks(loadRunState());
   const available = FACTIONS.filter(f => progress.factions[f.id]?.unlocked);
   const [faction, setFaction] = useState<FactionId>(available[0]?.id || 'industrialists');
-  const [tutorialEligible, setTutorialEligible] = useState<boolean>(() => !tutorialHasCompleted());
+  const [tutorialEligible, setTutorialEligible] = useState<boolean>(() => tutorialIsEnabled());
   const shipCounts = useMemo(() => ({
     easy: getStartingShipCount('easy'),
     medium: getStartingShipCount('medium'),
@@ -66,7 +66,7 @@ export default function StartPage({
   // React to tutorial setting changes from SettingsModal
   useEffect(() => {
     const onTutChanged = () => {
-      try { setTutorialEligible(!tutorialHasCompleted()) } catch { /* noop */ }
+      try { setTutorialEligible(tutorialIsEnabled()) } catch { /* noop */ }
     }
     const onTutActivated = () => {
       // Bring up Launch and switch to Solo so the Tutorial card is visible immediately
