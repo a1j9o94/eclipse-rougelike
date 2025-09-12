@@ -19,7 +19,7 @@ export type PreGameRouterProps = {
   currentRoomId: Id<'rooms'> | null
   // handlers
   onNewRun: (diff: DifficultyId, faction: FactionId) => void
-  onStartTutorial?: (faction: FactionId) => void
+  onStartTutorial?: () => void
   onContinue: () => void
   onGoMultiplayer: (mode?: 'menu'|'create'|'join'|'public', opts?: { public?: boolean }) => void
   onGoPublic: () => void
