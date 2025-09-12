@@ -212,8 +212,8 @@ export function OutpostPage({
               return (
                 <button aria-label={upgradeLabel} onClick={()=>{ if (target>=0) upgradeShip(target) }} onMouseEnter={()=> setDockPreview(targetUsed)} onMouseLeave={()=> setDockPreview(null)} disabled={disabled} className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${disabled?'bg-zinc-800 opacity-60':'bg-amber-600 hover:bg-amber-500 active:scale-95'}`}>
                   <span>{baseText}</span>
-                  {haveInterceptor && milOk && capOk && (
-                    <span className="opacity-90">({upMat}🧱 + {upCred}¢)</span>
+                  {milOk && (
+                    <span className={`${disabled? 'opacity-70' : 'opacity-90'}`}>({upMat}🧱 + {upCred}¢)</span>
                   )}
                 </button>
               )
@@ -241,8 +241,8 @@ export function OutpostPage({
                 className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${disabled? 'bg-zinc-800 opacity-60' : 'bg-fuchsia-700 hover:bg-fuchsia-600 active:scale-95'}`}
               >
                 <span>{btnText}</span>
-                {haveCruiser && milOk && capOk && (
-                  <span className="opacity-90">({dreadCost.materials}🧱 + {dreadCost.credits}¢)</span>
+                {milOk && (
+                  <span className={`${disabled? 'opacity-70' : 'opacity-90'}`}>({dreadCost.materials}🧱 + {dreadCost.credits}¢)</span>
                 )}
               </button>
             )
