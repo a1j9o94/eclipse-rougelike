@@ -94,7 +94,6 @@ export function OutpostPage({
   const [showPlan, setShowPlan] = useState(false);
   const [dockPreview, setDockPreview] = useState<number|null>(null);
   const [showTech, setShowTech] = useState(false);
-  const [showCapModal, setShowCapModal] = useState(false);
   const [frameTab, setFrameTab] = useState<'interceptor'|'cruiser'|'dread'>('interceptor');
   const selectedId = frameTab as FrameId;
   const selectedCount = fleet.filter(s=>s.frame.id===selectedId).length;
@@ -273,9 +272,11 @@ export function OutpostPage({
           <div className="mt-2 grid grid-cols-1 gap-2">
             <div data-tutorial="capacity-info" className="px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-sm">
               <div className="flex items-center justify-between mb-1">
-                <div>Capacity: <b>{capacity.cap}</b> • Used: <b>{tonnage.used}</b></div>
-                {/* + opens a minimal confirmation modal */}
-                <button data-tutorial="expand-dock" onClick={()=>setShowCapModal(true)} disabled={dockDisabled} aria-label={`Expand Capacity — ${dockCost.materials}🧱 + ${dockCost.credits}¢`} className={`w-7 h-7 grid place-items-center rounded-full ${dockDisabled? 'bg-zinc-700 opacity-60' : 'bg-indigo-600 hover:bg-indigo-500'}`}>+</button>
+                <div><b>{tonnage.used}</b>/<b>{capacity.cap}</b></div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs opacity-90">+ {dockCost.materials}🧱 {dockCost.credits}¢</span>
+                  <button data-tutorial="expand-dock" onClick={upgradeDock} disabled={dockDisabled} aria-label={`Expand Capacity — ${dockCost.materials}🧱 + ${dockCost.credits}¢`} className={`w-7 h-7 grid place-items-center rounded-full ${dockDisabled? 'bg-zinc-700 opacity-60' : 'bg-indigo-600 hover:bg-indigo-500'}`}>+</button>
+                </div>
               </div>
               <DockSlots used={tonnage.used} cap={capacity.cap} preview={dockPreview===null?undefined:dockPreview} />
             </div>
@@ -359,20 +360,7 @@ export function OutpostPage({
           )}
         </div>
       </div>
-      {/* Capacity confirm modal */}
-      {showCapModal && (
-        <div className="fixed inset-0 z-40 grid">
-          <div className="bg-black/60" onClick={()=>setShowCapModal(false)} />
-          <div className="fixed bottom-0 left-0 right-0 mx-auto max-w-md bg-zinc-900 border-t border-zinc-700 rounded-t-2xl p-3">
-            <div className="text-sm mb-2">Expand capacity?</div>
-            <div className="flex items-center gap-2 mb-3 text-sm opacity-90">+ {dockCost.materials}🧱 {dockCost.credits}¢</div>
-            <div className="flex gap-2">
-              <button onClick={()=>setShowCapModal(false)} className="flex-1 px-3 py-2 rounded-lg bg-zinc-800">Cancel</button>
-              <button disabled={dockDisabled} onClick={()=>{ setShowCapModal(false); upgradeDock() }} className={`flex-1 px-3 py-2 rounded-lg ${dockDisabled? 'bg-zinc-700 opacity-60' : 'bg-indigo-600 hover:bg-indigo-500'}`}>Expand (+ {dockCost.materials}🧱 {dockCost.credits}¢)</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* No capacity modal; cost visible inline */}
     </>
   )
 }
