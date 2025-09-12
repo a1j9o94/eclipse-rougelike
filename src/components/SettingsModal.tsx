@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { applyCheatCode } from '../game/cheats';
+import { isEnabled as tutorialIsEnabled, enable as tutorialEnable, disable as tutorialDisable, reset as tutorialReset } from '../tutorial/state';
 
 export default function SettingsModal({
   starEnabled,
@@ -21,6 +22,9 @@ export default function SettingsModal({
   onCheatApplied: () => void;
 }) {
   const [cheat, setCheat] = useState('');
+  const [tutorialActive, setTutorialActive] = useState<boolean>(() => {
+    try { return tutorialIsEnabled() } catch { return false }
+  });
 
   return (
     <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center">
@@ -28,6 +32,29 @@ export default function SettingsModal({
       <div className="relative w-full max-w-md mx-auto bg-zinc-950 border border-white/10 rounded-2xl p-4">
         <div className="text-lg font-semibold">Settings</div>
         <div className="mt-3 space-y-4 text-sm">
+          {/* Tutorial Toggle */}
+          <div className="flex items-center justify-between">
+            <span>Tutorial</span>
+            <button
+              className={`px-3 py-1 rounded-full border ${tutorialActive ? 'bg-emerald-700 border-emerald-500' : 'bg-zinc-800 border-white/10'}`}
+              onClick={() => {
+                try {
+                  if (tutorialActive) {
+                    tutorialDisable();
+                    setTutorialActive(false);
+                  } else {
+                    // Reactivate from the beginning
+                    tutorialReset();
+                    tutorialEnable();
+                    setTutorialActive(true);
+                  }
+                } catch { /* noop */ }
+              }}
+              aria-pressed={tutorialActive}
+            >
+              {tutorialActive ? 'On' : 'Off'}
+            </button>
+          </div>
           <div className="flex items-center justify-between">
             <span>Starfield</span>
             <button
@@ -123,4 +150,3 @@ export default function SettingsModal({
     </div>
   );
 }
-
