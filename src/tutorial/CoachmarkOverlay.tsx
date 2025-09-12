@@ -23,7 +23,7 @@ export default function CoachmarkOverlay({ visible, title, text, anchor, onNext 
   // Track anchor position
   useLayoutEffect(()=>{
     function measure(){
-      if (!anchor) { setRect(null); return }
+      if (!anchor) { return }
       const candidates = Array.from(document.querySelectorAll(`[data-tutorial="${anchor}"]`)) as HTMLElement[]
       const el = candidates.find(e => {
         const style = window.getComputedStyle(e)
@@ -31,7 +31,7 @@ export default function CoachmarkOverlay({ visible, title, text, anchor, onNext 
         const rr = e.getBoundingClientRect()
         return rr.width > 0 && rr.height > 0
       }) || candidates[0] || null
-      if (!el) { setRect(null); return }
+      if (!el) { return }
       const r = el.getBoundingClientRect()
       setRect({ top: r.top + window.scrollY, left: r.left + window.scrollX, width: r.width, height: r.height })
       // Ensure visibility
