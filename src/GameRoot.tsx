@@ -448,7 +448,7 @@ export default function EclipseIntegrated(){
     openVersusOnHome,
     currentRoomId,
     onNewRun: newRun,
-    onStartTutorial: (f)=> newRunTutorial(f as FactionId),
+            onStartTutorial: () => newRunTutorial(),
     onContinue: handleContinue,
     onGoMultiplayer: handleGoMultiplayer,
     onGoPublic: () => handleGoPublic(),

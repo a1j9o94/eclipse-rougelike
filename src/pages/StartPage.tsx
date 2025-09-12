@@ -17,7 +17,7 @@ export default function StartPage({
   initialLaunchTab,
 }: {
   onNewRun: (diff: DifficultyId, faction: FactionId) => void;
-  onStartTutorial?: (faction: FactionId) => void;
+  onStartTutorial?: () => void;
   onContinue?: () => void;
   onMultiplayer?: (mode?: 'menu' | 'create' | 'join' | 'public') => void;
   initialShowLaunch?: boolean;
@@ -163,9 +163,9 @@ export default function StartPage({
                   {tutorialEligible && onStartTutorial ? (
                     <div>
                       <div className="text-sm opacity-80 mb-2">New? Start with a short guided tutorial.</div>
-                      <div className="mt-2 text-sm opacity-80">Faction: <span className="font-medium">{FACTIONS.find(f=>f.id===faction)?.name}</span></div>
+                      <div className="mt-2 text-sm opacity-80">Faction: <span className="font-medium">{FACTIONS.find(f=>f.id==='industrialists')?.name}</span></div>
                       <div className="mt-3">
-                        <button className="w-full px-3 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500" onClick={()=>{ onStartTutorial(faction); setShowLaunch(false); }}>
+                        <button className="w-full px-3 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500" onClick={()=>{ onStartTutorial(); setShowLaunch(false); }}>
                           Start Tutorial
                         </button>
                       </div>

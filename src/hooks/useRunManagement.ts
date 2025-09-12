@@ -57,9 +57,10 @@ export function useRunManagement(params: {
     params.setShowRules?.(true)
   }
 
-  function newRunTutorial(pick: FactionId){
-    // Start tutorial on Easy
+  function newRunTutorial(){
+    // Start tutorial on Easy with the Helios Cartel to ensure economy matches guidance
     const diff: DifficultyId = 'easy'
+    const pick: FactionId = 'industrialists'
     p.clearRunState()
     p.setDifficulty(diff)
     p.setFaction(pick)
