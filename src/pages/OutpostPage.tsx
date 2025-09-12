@@ -156,7 +156,17 @@ export function OutpostPage({
       {showPlan && <CombatPlanModal onClose={()=>{ setShowPlan(false); try { if (isTutorialEnabled() && tutorialGetStep()==='intel-close') tutorialEvent('viewed-intel') } catch { /* noop */ } }} sector={sector} endless={endless} gameMode={gameMode} multi={multi as never} />}
 
       {/* Tech List — reuse canonical modal */}
-      {showTech && <TechListModal research={research as Research} onClose={()=>setShowTech(false)} />}
+      {showTech && (
+        <TechListModal
+          research={research as Research}
+          onClose={()=>{
+            setShowTech(false);
+            try {
+              if (isTutorialEnabled() && tutorialGetStep()==='tech-close') tutorialEvent('viewed-tech-list')
+            } catch { /* noop */ }
+          }}
+        />
+      )}
 
       <div className="mx-auto max-w-5xl pb-24">
 
@@ -313,7 +323,13 @@ export function OutpostPage({
               ))}
             </div>
             <div className="mt-2">
-              <button data-tutorial="help-tech" onClick={()=>setShowTech(true)} className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-zinc-500 text-sm">Open Tech List</button>
+              <button
+                data-tutorial="help-tech"
+                onClick={()=>{ setShowTech(true); try { if (isTutorialEnabled()) tutorialEvent('opened-tech-list') } catch { /* noop */ } }}
+                className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-zinc-500 text-sm"
+              >
+                Open Tech List
+              </button>
             </div>
           </div>
         </div>
