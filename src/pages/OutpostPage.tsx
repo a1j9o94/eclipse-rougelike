@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { ItemCard, DockSlots } from '../components/ui'
 import { ShipFrameSlots } from '../components/ShipFrameSlots'
+import BlueprintSummary from '../components/outpost/BlueprintSummary'
 import { emptyShip } from '../game/emptyShip'
 import { CombatPlanModal } from '../components/modals'
 import { event as tutorialEvent, isEnabled as isTutorialEnabled, getStep as tutorialGetStep } from '../tutorial/state'
@@ -229,14 +230,8 @@ export function OutpostPage({
             ))}
           </div>
         </div>
-        {/* Single action panel with tabs */}
+        {/* Single action panel (tabs above control the content) */}
         <div className="mt-3">
-          {/* Tabs */}
-          <div className="mb-2 inline-flex rounded-xl overflow-hidden ring-1 ring-white/10">
-            {(['interceptor','cruiser','dread'] as const).map(t => (
-              <button key={t} onClick={()=>setFrameTab(t)} className={`px-3 py-1.5 text-sm ${frameTab===t? 'bg-white/10' : 'bg-black/30 hover:bg-black/40'}`}>{t==='interceptor'?'Interceptor':t==='cruiser'?'Cruiser':'Dreadnought'}</button>
-            ))}
-          </div>
           {/* Panel (compact action button) */}
           {(() => {
             if (frameTab === 'interceptor') {
@@ -257,7 +252,7 @@ export function OutpostPage({
             if (frameTab === 'cruiser') {
               const target = fleet[focused]?.frame.id === 'interceptor' ? focused : firstIdx('interceptor')
               const disabled = upgradeDisabled || !hasInterceptor
-              const help = !hasInterceptor ? 'Need an Interceptor to upgrade' : (!upgradeUnlocked ? `Requires Military ≥ ${upgradeLock?.need}` : (nextUpgrade? `${nextUpgrade.materials}🧱 + ${nextUpgrade.credits}¢` : 'Upgrade — Maxed'))
+              const btnText = !hasInterceptor ? 'Requires Interceptor' : (!upgradeUnlocked ? `Requires Military ≥ ${upgradeLock?.need}` : 'Upgrade to Cruiser')
               return (
                 <button
                   aria-label={upgradeLabel}
@@ -267,8 +262,7 @@ export function OutpostPage({
                   disabled={disabled}
                   className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${disabled?'bg-zinc-800 opacity-60':'bg-amber-600 hover:bg-amber-500 active:scale-95'}`}
                 >
-                  <span>Upgrade Interceptor to Cruiser</span>
-                  <span className={`${!hasInterceptor || !upgradeUnlocked? 'text-rose-200' : 'opacity-90'}`}>{help}</span>
+                  <span>{btnText}</span>
                 </button>
               )
             }
@@ -284,7 +278,7 @@ export function OutpostPage({
             const capOk = targetUsed <= capacity.cap
             const canAfford = resources.credits >= dreadCost.credits && resources.materials >= dreadCost.materials
             const disabled = !(haveCruiser && milOk && capOk && canAfford)
-            const help = (!milOk) ? 'Requires Military ≥ 3' : (!haveCruiser ? 'Need a Cruiser to upgrade' : `${dreadCost.materials}🧱 + ${dreadCost.credits}¢`)
+            const btnText = (!milOk) ? 'Requires Military ≥ 3' : (!haveCruiser ? 'Requires Cruiser' : 'Upgrade to Dreadnought')
             return (
               <button
                 aria-label="Upgrade Cruiser to Dreadnought"
@@ -294,14 +288,14 @@ export function OutpostPage({
                 disabled={disabled}
                 className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${disabled? 'bg-zinc-800 opacity-60' : 'bg-fuchsia-700 hover:bg-fuchsia-600 active:scale-95'}`}
               >
-                <span>Upgrade Cruiser to Dreadnought</span>
-                <span className={`${(!haveCruiser || !milOk) ? 'text-rose-200' : 'opacity-90'}`}>{help}</span>
+                <span>{btnText}</span>
               </button>
             )
           })()}
         </div>
-          {/* Blueprint + parts list (no header label). Capacity row follows this. */}
+          {/* Summary + blueprint + parts list. Capacity row follows this. */}
           <div className="mt-3">
+            <BlueprintSummary ship={focusedShip} />
             <div className="mb-2"><ShipFrameSlots ship={focusedShip || emptyShip('interceptor')} side='P' /></div>
             <div data-tutorial="blueprint-panel" className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {currentBlueprint.map((p, idx)=> (

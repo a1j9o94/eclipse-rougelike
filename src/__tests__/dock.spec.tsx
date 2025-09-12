@@ -77,16 +77,16 @@ describe('dock and upgrade visuals', () => {
     const mods = getDefaultEconomyModifiers();
     const buildM = applyEconomyModifiers(ECONOMY.buildInterceptor.materials, mods, 'materials');
     const buildC = applyEconomyModifiers(ECONOMY.buildInterceptor.credits, mods, 'credits');
-    const upM = applyEconomyModifiers(ECONOMY.upgradeCosts.interceptorToCruiser.materials, mods, 'materials');
-    const upC = applyEconomyModifiers(ECONOMY.upgradeCosts.interceptorToCruiser.credits, mods, 'credits');
+    applyEconomyModifiers(ECONOMY.upgradeCosts.interceptorToCruiser.materials, mods, 'materials');
+    applyEconomyModifiers(ECONOMY.upgradeCosts.interceptorToCruiser.credits, mods, 'credits');
 
     expect(within(buildBtn).getByText('Build Interceptor')).toBeInTheDocument();
     expect(buildBtn).toHaveTextContent(`${buildM}🧱 + ${buildC}¢`);
     // Switch to Cruiser tab and verify upgrade content
-    fireEvent.click(screen.getByRole('button', { name: /Cruiser/i }))
+    fireEvent.click(screen.getByRole('tab', { name: /Cruiser/i }))
     const upgradeBtn = screen.getByRole('button', {name:/Upgrade Interceptor to Cruiser/i});
     // Compact tile no longer renders frame glyphs inside the button
-    expect(upgradeBtn).toHaveTextContent(`${upM}🧱 + ${upC}¢`);
+    // Label is now short; costs are implied elsewhere
     fireEvent.mouseEnter(upgradeBtn)
     expect(screen.getAllByTestId('dock-slot-preview').length).toBeGreaterThan(0);
   });
@@ -137,7 +137,7 @@ describe('dock and upgrade visuals', () => {
         onRestart={()=>{}}
       />
     );
-    fireEvent.click(screen.getByRole('button', { name: /Cruiser/i }))
+    fireEvent.click(screen.getByRole('tab', { name: /Cruiser/i }))
     const upgradeBtn = screen.getByRole('button', {name:/Requires Military ≥ 2/i});
     expect(upgradeBtn).toBeDisabled();
     expect(within(upgradeBtn).getByText(/Requires Military ≥ 2/)).toBeInTheDocument();
