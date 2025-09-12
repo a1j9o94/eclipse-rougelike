@@ -95,6 +95,9 @@ export function OutpostPage({
   const [dockPreview, setDockPreview] = useState<number|null>(null);
   const [showTech, setShowTech] = useState(false);
   const [frameTab, setFrameTab] = useState<'interceptor'|'cruiser'|'dread'>('interceptor');
+  const selectedId = frameTab as FrameId;
+  const selectedCount = fleet.filter(s=>s.frame.id===selectedId).length;
+  const hasSelected = selectedCount > 0;
   const tracks = ['Military','Grid','Nano'] as const;
   const buildChk = canBuildInterceptorWithMods(resources, capacity, tonnage.used, economyMods);
   const buildCost = { materials: buildChk.cost.m, credits: buildChk.cost.c };
@@ -112,7 +115,8 @@ export function OutpostPage({
   const dockAffordable = resources.credits >= dockCost.credits && resources.materials >= dockCost.materials;
   const dockDisabled = dockAtCap || !dockAffordable;
   const rrInc = applyEconomyModifiers(ECONOMY.reroll.increment, economyMods, 'credits');
-  const currentBlueprint = blueprints[focusedShip?.frame.id as FrameId] || [];
+  const currentClassId = hasSelected ? (focusedShip?.frame.id as FrameId) : selectedId;
+  const currentBlueprint = blueprints[currentClassId] || [];
   const nextUpgrade = (()=>{
     if(!focusedShip) return null;
     if(focusedShip.frame.id==='interceptor') return {
@@ -252,7 +256,9 @@ export function OutpostPage({
             if (frameTab === 'cruiser') {
               const target = fleet[focused]?.frame.id === 'interceptor' ? focused : firstIdx('interceptor')
               const disabled = upgradeDisabled || !hasInterceptor
-              const btnText = !hasInterceptor ? 'Requires Interceptor' : (!upgradeUnlocked ? `Requires Military ≥ ${upgradeLock?.need}` : 'Upgrade to Cruiser')
+              // capacity gate: if interceptor present and military OK but capacity short → Increase Capacity
+              const lacksCapacity = hasInterceptor && upgradeUnlocked && upgradeComputed.disabled
+              const btnText = !hasInterceptor ? 'Requires Interceptor' : (!upgradeUnlocked ? `Requires Military ≥ ${upgradeLock?.need}` : (lacksCapacity ? 'Increase Capacity' : 'Upgrade to Cruiser'))
               return (
                 <button
                   aria-label={upgradeLabel}
@@ -278,7 +284,7 @@ export function OutpostPage({
             const capOk = targetUsed <= capacity.cap
             const canAfford = resources.credits >= dreadCost.credits && resources.materials >= dreadCost.materials
             const disabled = !(haveCruiser && milOk && capOk && canAfford)
-            const btnText = (!milOk) ? 'Requires Military ≥ 3' : (!haveCruiser ? 'Requires Cruiser' : 'Upgrade to Dreadnought')
+            const btnText = (!milOk) ? 'Requires Military ≥ 3' : (!haveCruiser ? 'Requires Cruiser' : (!capOk ? 'Increase Capacity' : 'Upgrade to Dreadnought'))
             return (
               <button
                 aria-label="Upgrade Cruiser to Dreadnought"
@@ -295,8 +301,13 @@ export function OutpostPage({
         </div>
           {/* Summary + blueprint + parts list. Capacity row follows this. */}
           <div className="mt-3">
-            <BlueprintSummary ship={focusedShip} />
-            <div className="mb-2"><ShipFrameSlots ship={focusedShip || emptyShip('interceptor')} side='P' /></div>
+            <BlueprintSummary ship={hasSelected ? focusedShip : emptyShip(selectedId)} />
+            <div className={`mb-2 relative ${hasSelected? '' : 'opacity-70'}`}>
+              {!hasSelected && (
+                <span className="absolute -top-3 right-0 text-[10px] px-2 py-0.5 rounded-full bg-white/10 border border-white/20">Preview</span>
+              )}
+              <ShipFrameSlots ship={hasSelected ? (focusedShip as Ship) : emptyShip(selectedId)} side='P' />
+            </div>
             <div data-tutorial="blueprint-panel" className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {currentBlueprint.map((p, idx)=> (
               <div key={idx} className="p-2 rounded border border-zinc-700 bg-zinc-900 text-xs">
