@@ -94,7 +94,7 @@ export function OutpostPage({
   const [showPlan, setShowPlan] = useState(false);
   const [dockPreview, setDockPreview] = useState<number|null>(null);
   const [showTech, setShowTech] = useState(false);
-  const [techFocus, setTechFocus] = useState<'Military'|'Grid'|'Nano'|undefined>(undefined);
+  // const [techFocus, setTechFocus] = useState<'Military'|'Grid'|'Nano'|undefined>(undefined);
   const [frameTab, setFrameTab] = useState<'interceptor'|'cruiser'|'dread'>('interceptor');
   const selectedId = frameTab as FrameId;
   const selectedCount = fleet.filter(s=>s.frame.id===selectedId).length;
@@ -156,7 +156,7 @@ export function OutpostPage({
       {showPlan && <CombatPlanModal onClose={()=>{ setShowPlan(false); try { if (isTutorialEnabled() && tutorialGetStep()==='intel-close') tutorialEvent('viewed-intel') } catch { /* noop */ } }} sector={sector} endless={endless} gameMode={gameMode} multi={multi as never} />}
 
       {/* Tech List — reuse canonical modal */}
-      {showTech && <TechListModal research={research as Research} focus={techFocus} onClose={()=>setShowTech(false)} />}
+      {showTech && <TechListModal research={research as Research} onClose={()=>setShowTech(false)} />}
 
       <div className="mx-auto max-w-5xl pb-24">
 
@@ -309,10 +309,7 @@ export function OutpostPage({
             <div className="text-lg font-semibold mb-2">Tech</div>
             <div data-tutorial="research-grid" className="grid grid-cols-3 gap-2 text-sm">
               {tracks.map(t=> (
-                <div key={t} className="flex items-center gap-1">
-                  <button onClick={()=>researchTrack(t)} disabled={!canResearch(t)} className={`flex-1 px-3 py-2 rounded-xl leading-tight ${canResearch(t)?'bg-zinc-900 border border-zinc-700 hover:border-zinc-500':'bg-zinc-800 opacity-60'}`}>{researchLabel(t)}</button>
-                  <button aria-label={`Info ${t}`} onClick={()=>{ setTechFocus(t); setShowTech(true) }} className="px-2 py-2 rounded-full bg-zinc-900 border border-zinc-700">?</button>
-                </div>
+                <button key={t} onClick={()=>researchTrack(t)} disabled={!canResearch(t)} className={`px-3 py-2 rounded-xl leading-tight ${canResearch(t)?'bg-zinc-900 border border-zinc-700 hover:border-zinc-500':'bg-zinc-800 opacity-60'}`}>{researchLabel(t)}</button>
               ))}
             </div>
             <div className="mt-2">

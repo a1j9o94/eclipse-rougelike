@@ -59,6 +59,7 @@ export function ItemCard({ item, price, canAfford, onBuy, ghostDelta, compact }:
   const slotLabel = `⬛ ${slots} slot${slots>1?'s':''}`
   const disabledForSlots = Boolean(ghostDelta && !ghostDelta.slotOk)
   const disabled = !canAfford || disabledForSlots
+  const [showInfo, setShowInfo] = useState(false)
   return (
     <div className={`p-3 rounded-xl border bg-zinc-900 transition ${!disabled? 'border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800/70' : 'border-zinc-800 opacity-90'}`}>
       <div className="flex items-start justify-between gap-2">
@@ -85,7 +86,15 @@ export function ItemCard({ item, price, canAfford, onBuy, ghostDelta, compact }:
           {!compact && ghostDelta.hullDelta!==0 && <div>Hull {ghostDelta.hullBefore} → <b>{ghostDelta.hullAfter}</b></div>}
         </div>
       )}
-      <button disabled={disabled} onClick={onBuy} className={`mt-2 w-full px-3 py-2 rounded-lg text-sm sm:text-base ${!disabled? 'bg-emerald-600 hover:bg-emerald-500 active:scale-[.99]':'bg-zinc-700 opacity-60'}`}>{disabledForSlots? 'No Slot' : `Buy (${cost}¢)`}</button>
+      <div className="mt-2 flex gap-2">
+        <button disabled={disabled} onClick={onBuy} className={`flex-1 px-3 py-2 rounded-lg text-sm sm:text-base ${!disabled? 'bg-emerald-600 hover:bg-emerald-500 active:scale-[.99]':'bg-zinc-700 opacity-60'}`}>{disabledForSlots? 'No Slot' : `Buy (${cost}¢)`}</button>
+        <button aria-label="Part info" onClick={()=>setShowInfo(v=>!v)} className="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700">?</button>
+      </div>
+      {showInfo && (
+        <div className="mt-2 text-[11px] sm:text-xs opacity-90">
+          {partDescription(item)}
+        </div>
+      )}
     </div>
   );
 }
