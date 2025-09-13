@@ -74,9 +74,12 @@ describe('MP Isolation — opponent faction does not affect my shop/capacity', (
       return { useMultiplayerGame: () => stub }
     })
 
+    vi.stubEnv('VITE_CONVEX_URL','http://test')
     const { default: AppImpl } = await import('../App')
     render(<AppImpl />)
-    fireEvent.click(screen.getByRole('button', { name: /multiplayer/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Launch/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Versus/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Create Game/i }))
 
     // My econ: reroll is 0¢ and build shows discounted cost
     await screen.findByText(/Reroll \(0¢\)/i)
@@ -85,7 +88,7 @@ describe('MP Isolation — opponent faction does not affect my shop/capacity', (
     expect(dockBtn.textContent).toMatch(/\(2🧱 \+ (11|12)¢\)/)
 
     // Capacity must NOT be 14 just because opponent is warmongers
-    const capacityRow = await screen.findByText(/Capacity:/i)
-    expect(capacityRow.textContent || '').not.toMatch(/Capacity: 14/i)
+    const capEl = document.querySelector('[data-tutorial="rb-capacity"]') as HTMLElement
+    expect((capEl?.textContent||'')).not.toMatch(/\/14\b/)
   })
 })

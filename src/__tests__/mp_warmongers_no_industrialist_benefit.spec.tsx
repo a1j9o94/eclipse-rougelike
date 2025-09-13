@@ -75,9 +75,12 @@ describe('MP Isolation — Warmongers do not inherit Industrialists economy', ()
       return { useMultiplayerGame: () => stub }
     })
 
+    vi.stubEnv('VITE_CONVEX_URL','http://test')
     const { default: AppImpl } = await import('../App')
     render(<AppImpl />)
-    fireEvent.click(screen.getByRole('button', { name: /multiplayer/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Launch/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Versus/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Create Game/i }))
     // Room is already 'playing' in mock; Outpost should render directly
 
     // Reroll shows base 8¢ (no 0¢)

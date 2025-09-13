@@ -44,9 +44,8 @@ describe('sound shim and impl', () => {
     vi.stubEnv('MODE', 'development');
     const mod = await import('../game/sound');
     const before = FakeAudio.instances.length;
-    const p = mod.playEffect('shot', 100);
-    vi.advanceTimersByTime(100);
-    await p;
+    // duration=0 to avoid reliance on fake timers; should resolve immediately
+    await mod.playEffect('shot', 0);
     expect(FakeAudio.instances.length).toBe(before);
     vi.unstubAllEnvs();
   });

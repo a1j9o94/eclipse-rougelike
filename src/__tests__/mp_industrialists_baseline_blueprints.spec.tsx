@@ -22,15 +22,19 @@ describe('MP Industrialists baseline class blueprint', () => {
         isConvexAvailable: false,
       })
     }))
+    vi.stubEnv('VITE_CONVEX_URL','http://test')
     const { default: App } = await import('../App')
     render(<App />)
-    fireEvent.click(screen.getByRole('button', { name: /multiplayer/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Launch/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Versus/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Create Game/i }))
     const lobby = screen.queryByText(/Mock Lobby/)
     if (lobby) fireEvent.click(screen.getByRole('button', { name: /Enter Game/i }))
 
     // Assert Class Blueprint — Interceptor shows non-zero slots used (baseline parts)
-    const header = await screen.findByText(/Class Blueprint — Interceptor/i)
-    expect((header.textContent||'')).not.toMatch(/0\/6/)
+    const chip = await screen.findByText(/⬛\s*(\d+)\/6/)
+    expect(chip).toBeInTheDocument()
+    const m = /\b(\d+)\/6\b/.exec(chip.textContent || '')
+    expect(m && Number(m[1]) > 0).toBe(true)
   })
 })
-
