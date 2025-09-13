@@ -325,3 +325,18 @@
 
 - Test list (must fail first):
   1) `itemcard_no_slot_price.spec.tsx` ensures price is visible alongside `No Slot`.
+## Plan Entry — Tutorial Enabled by Default
+
+- Outcome: First-time players see the tutorial enabled automatically.
+
+- Acceptance criteria:
+  - With no existing tutorial state in localStorage, `isEnabled()` returns true.
+  - Settings modal shows the tutorial toggle as "On" on first visit.
+  - Lint, targeted tests, and build stay green.
+
+- Risks & rollback:
+  - Risk: Corrupt or missing localStorage could cause unexpected tutorial prompts for returning players.
+  - Rollback: Revert the default state to disabled.
+
+- Test list (must fail first):
+  1) `tutorial_state.spec`: `isEnabled()` returns true by default (must fail first).
