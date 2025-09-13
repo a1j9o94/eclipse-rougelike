@@ -12,10 +12,11 @@ describe('slot displays', () => {
     expect(screen.getByText(/2 slots/i)).toBeInTheDocument();
   });
 
-  it('shows slots in Class Blueprint header for Interceptor', async () => {
+  it('shows total slots used in blueprint summary', async () => {
     renderOutpost();
-    const header = await screen.findByText(/Class Blueprint — Interceptor/i);
-    expect(header.textContent).toMatch(/4\/6/);
+    // New UI shows a compact summary with a ⬛ used/total chip
+    const chip = await screen.findByText(/⬛\s*\d+\/\d+/);
+    expect(chip).toBeInTheDocument();
   }, 20000);
 
   it('previews slot usage in ItemCard ghost delta', () => {

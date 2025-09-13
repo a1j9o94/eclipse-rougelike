@@ -38,7 +38,7 @@ describe('useOutpostHandlers — research persistence (MP, global spy)', () => {
     const spy = (globalThis as any).__spyUpdate
     expect(spy).toHaveBeenCalled()
     const args = spy.mock.calls.at(-1)?.[0]
-    expect(args?.updates?.research?.Nano).toBe(3)
-    expect(typeof args?.updates?.resources?.credits).toBe('number')
+    expect(args?.research?.Nano).toBe(3)
+    expect(typeof args?.resources?.credits).toBe('number')
   })
 })

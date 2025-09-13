@@ -11,6 +11,20 @@ class SilentAudio {
 }
 ;(globalThis as unknown as { Audio: typeof Audio }).Audio = SilentAudio as unknown as typeof Audio
 
+// jsdom doesn't implement canvas; stub getContext so components using <canvas> mount
+try {
+  const anyWindow = globalThis as unknown as { HTMLCanvasElement?: { prototype?: { getContext?: unknown } } }
+  if (anyWindow?.HTMLCanvasElement) {
+    anyWindow.HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({
+      fillRect: () => {}, clearRect: () => {}, getImageData: () => ({ data: [] }), putImageData: () => {}, createImageData: () => [],
+      setTransform: () => {}, drawImage: () => {}, save: () => {}, fillText: () => {}, restore: () => {}, beginPath: () => {}, moveTo: () => {},
+      lineTo: () => {}, closePath: () => {}, stroke: () => {}, translate: () => {}, scale: () => {}, rotate: () => {}, arc: () => {}, fill: () => {},
+      measureText: () => ({ width: 0 }), transform: () => {}, rect: () => {}, clip: () => {}, canvas: {},
+      createRadialGradient: () => ({ addColorStop: () => {} }),
+    }) as unknown as (type: string) => unknown
+  }
+} catch { /* noop */ }
+
 // Limit pretty DOM output on failures to avoid huge memory spikes
 try { (process as unknown as { env: Record<string,string> }).env.DEBUG_PRINT_LIMIT = (process.env.DEBUG_PRINT_LIMIT || '1000') } catch { void 0 }
 

@@ -61,11 +61,12 @@ describe('Multiplayer Start button readiness + validity guards', () => {
       })}
     })
 
+    vi.stubEnv('VITE_CONVEX_URL','http://test')
     const { default: AppImpl } = await import('../App')
     render(<AppImpl />)
-
-    // Enter MP (room is already playing in our mock)
-    fireEvent.click(screen.getByRole('button', { name: /multiplayer/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Launch/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Versus/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Create Game/i }))
 
     // Wait until Outpost renders
     await screen.findByRole('button', { name: 'Start Combat' })
@@ -114,7 +115,9 @@ describe('Multiplayer Start button readiness + validity guards', () => {
 
     const { default: AppImpl } = await import('../App')
     render(<AppImpl />)
-    fireEvent.click(screen.getByRole('button', { name: /multiplayer/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Launch/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Versus/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Create Game/i }))
 
     const startBtn = await screen.findByRole('button', { name: 'Start Combat' })
     expect(startBtn).not.toHaveAttribute('disabled')

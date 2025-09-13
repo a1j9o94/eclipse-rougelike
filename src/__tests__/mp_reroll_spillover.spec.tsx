@@ -33,9 +33,12 @@ describe('MP Reroll Spillover Reset', () => {
         submitFleetSnapshot: vi.fn(), updateFleetValidity: vi.fn(), setReady: vi.fn(), isConvexAvailable: false,
       })
     }))
+    vi.stubEnv('VITE_CONVEX_URL','http://test')
     const { default: App } = await import('../App')
     render(<App />)
-    fireEvent.click(screen.getByRole('button', { name: /multiplayer/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Launch/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Versus/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Create Game/i }))
     const btn = await screen.findByRole('button', { name: /Reroll \(8¢\)/i })
     expect(btn).toBeTruthy()
   })
@@ -62,9 +65,12 @@ describe('MP Reroll Spillover Reset', () => {
         submitFleetSnapshot: vi.fn(), updateFleetValidity: vi.fn(), setReady: vi.fn(), isConvexAvailable: false,
       })
     }))
+    vi.stubEnv('VITE_CONVEX_URL','http://test')
     const { default: App } = await import('../App')
     render(<App />)
-    fireEvent.click(screen.getByRole('button', { name: /multiplayer/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Launch/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Versus/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Create Game/i }))
     // Assert on the reroll button label via test id
     const rerollBtn = await screen.findByTestId('reroll-button')
     await vi.waitFor(() => {

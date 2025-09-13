@@ -58,9 +58,12 @@ describe('MP Research Persistence', () => {
       }
     })
 
+    vi.stubEnv('VITE_CONVEX_URL','http://test')
     const { default: AppImpl } = await import('../App')
     render(<AppImpl />)
-    fireEvent.click(screen.getByRole('button', { name: /multiplayer/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Launch/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Versus/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Create Game/i }))
 
     // Click the Nano upgrade button (we start at Nano: 2, so upgrade to 3)
     const nanoBtn = await screen.findByRole('button', { name: /Nano/i })

@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config'
+import os from 'node:os'
 import react from '@vitejs/plugin-react'
 import { assertEnv } from './tools/envCheck'
 
@@ -18,19 +19,12 @@ export default defineConfig(({ mode }) => {
       setupFiles: ['./src/test/setup.ts'],
       css: true,
       globals: true,
-      // OOM mitigation defaults — can be overridden by CLI flags in CI
-      // Use vmThreads so each worker has an isolated JS context and can be recycled on memory pressure.
-      pool: 'vmThreads',
+      // OOM mitigation defaults — prefer process forks for isolation
+      pool: 'forks',
       // Keep concurrency modest by default; override with --maxWorkers in CI if desired.
-      maxWorkers: Math.max(1, Math.floor((Number(process.env.VITEST_WORKERS || 0) || require('os').cpus().length) * 0.5)),
-      // Recycle a worker before it balloons too far; requires vmThreads/vmForks
-      poolOptions: {
-        vmThreads: {
-          memoryLimit: '512MB',
-          maxThreads: Math.max(1, Math.min(4, (Number(process.env.VITEST_WORKERS || 0) || require('os').cpus().length))),
-          minThreads: 1,
-        },
-      },
+      maxWorkers: Math.max(1, Math.floor((Number(process.env.VITEST_WORKERS || 0) || os.cpus().length) * 0.5)),
+      // Keep worker count small by default; override per-run with --maxWorkers or VITEST_WORKERS
+      poolOptions: undefined,
       // Disable running multiple files in parallel within one worker to reduce peak heap
       fileParallelism: false,
       coverage: {

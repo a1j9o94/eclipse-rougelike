@@ -130,11 +130,12 @@ describe('MP blueprint mapping before first Outpost render', () => {
   });
 
   it('maps server blueprintIds to parts before switching to OUTPOST (first render)', async () => {
+    vi.stubEnv('VITE_CONVEX_URL', 'http://test');
     render(<App />);
-
-    // Enter Multiplayer from the start screen
-    const mpBtn = screen.getByRole('button', { name: /multiplayer/i });
-    fireEvent.click(mpBtn);
+    // Open Launch → Versus → Create Game
+    fireEvent.click(screen.getByRole('button', { name: /Launch/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Versus/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Create Game/i }));
 
     // App may skip Lobby when room is already playing; proceed to first outpost render
 
