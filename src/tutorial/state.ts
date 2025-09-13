@@ -35,7 +35,7 @@ type TutorialState = {
 };
 
 const KEY = 'eclipse-tutorial-v1';
-const DEFAULT_STATE: TutorialState = { enabled: false, completed: false, step: 'intro-combat' };
+const DEFAULT_STATE: TutorialState = { enabled: true, completed: false, step: 'intro-combat' };
 
 function read(): TutorialState {
   if (typeof localStorage === 'undefined') return { ...DEFAULT_STATE };
