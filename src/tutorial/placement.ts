@@ -25,13 +25,22 @@ export function computePlacement(params:{
   const safeTop = viewport.top + pad
   const safeBottom = viewport.top + viewport.height - pad
   const left = clamp((anchor.left + anchor.width/2) - panelW/2, viewport.left + 12, viewport.left + viewport.width - panelW - 12)
-  // Prefer the side with more available space
+  // Prefer the side with more available space, but fall back if the chosen side
+  // doesn't have enough headroom for the panel. This prevents the coachmark from
+  // sitting directly on top of the anchor when space below is tight (e.g. tech
+  // grid near screen bottom).
   const above = anchor.top - safeTop
   const below = safeBottom - (anchor.top + anchor.height)
-  let top = below >= panelH + 8 || below >= above
-    ? (anchor.top + anchor.height + 12)
-    : (anchor.top - panelH - 12)
-  top = clamp(top, safeTop, safeBottom - panelH)
+  const preferBelow = below >= panelH + 8 || below >= above
+  let topCandidate = preferBelow ? (anchor.top + anchor.height + 12) : (anchor.top - panelH - 12)
+  if (preferBelow && (topCandidate + panelH > safeBottom)) {
+    // Not enough room below; flip above
+    topCandidate = anchor.top - panelH - 12
+  } else if (!preferBelow && topCandidate < safeTop) {
+    // Not enough room above; flip below
+    topCandidate = anchor.top + anchor.height + 12
+  }
+  let top = clamp(topCandidate, safeTop, safeBottom - panelH)
 
   // Prevent intersecting the anchor
   const panelRect: Rect = { top, left, width: panelW, height: panelH }

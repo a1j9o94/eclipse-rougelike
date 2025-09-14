@@ -15,6 +15,14 @@ describe('tutorial computePlacement (mobile-ish)', () => {
     expect(pos.top).toBeGreaterThanOrEqual(anchor.top + anchor.height) // below
   })
 
+  it('falls back to above if below placement would overflow', () => {
+    // Below has slightly more space than above, but not enough for the panel.
+    // The panel should flip above to avoid covering the anchor.
+    const anchor = { top: 622, left: 16, width: 358, height: 60 }
+    const pos = computePlacement({ anchor, panelW: 320, panelH: 140, viewport })
+    expect(pos.top).toBeLessThan(anchor.top)
+  })
+
   it('avoids overlapping a sticky bar', () => {
     const anchor = { top: 640, left: 16, width: 358, height: 160 } // tall list
     const sticky = { top: 740, left: 0, width: 390, height: 80 }
