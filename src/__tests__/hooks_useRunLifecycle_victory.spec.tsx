@@ -1,15 +1,21 @@
 import { describe, it, expect, vi } from 'vitest'
+import type { Mock } from 'vitest'
 // React import not required with modern JSX; removed to satisfy TS unused check
-import { render, fireEvent, screen } from '@testing-library/react'
+import { render, fireEvent, screen, waitFor } from '@testing-library/react'
 import { useRunLifecycle } from '../hooks/useRunLifecycle'
 
-function VictoryHarness({ sector, endless = false }: { sector: number; endless?: boolean }){
+function VictoryHarness({ sector, endless = false, onSetSector, recordWinMock }: { sector: number; endless?: boolean; onSetSector?: (n: number) => void; recordWinMock?: Mock }){
   const setMode = vi.fn()
   const setShopVersion = vi.fn((fn: (n:number)=>number)=>fn(0))
   const setRerollCost = vi.fn()
   const setShowWin = vi.fn()
-  const recordWin = vi.fn()
+  const recordWin = recordWinMock ?? vi.fn()
   const clearRunState = vi.fn()
+  let currentSector = sector
+  const setSector = (fn: (n: number) => number) => {
+    currentSector = fn(currentSector)
+    onSetSector?.(currentSector)
+  }
 
   const handler = useRunLifecycle({
     outcome: 'Victory',
@@ -30,11 +36,11 @@ function VictoryHarness({ sector, endless = false }: { sector: number; endless?:
       faction: ()=>'industrialists' as any,
       difficulty: ()=>'easy' as any,
     },
-    setters: { setMode, setResources: (fn:any)=>fn({ credits:0, materials:0, science:0 }), setShop: vi.fn(), setShopVersion, setRerollCost, setFleet: vi.fn(), setLog: vi.fn(), setShowWin, setEndless: vi.fn(), setBaseRerollCost: vi.fn() },
+    setters: { setMode, setResources: (fn:any)=>fn({ credits:0, materials:0, science:0 }), setShop: vi.fn(), setShopVersion, setRerollCost, setSector, setFleet: vi.fn(), setLog: vi.fn(), setShowWin, setEndless: vi.fn(), setBaseRerollCost: vi.fn() },
     multi: undefined,
   })
 
-  return <button onClick={()=>handler()}>Return</button>
+  return <button onClick={()=>{ void handler() }}>Return</button>
 }
 
 describe('useRunLifecycle — victory flows', () => {
@@ -45,9 +51,26 @@ describe('useRunLifecycle — victory flows', () => {
     expect(true).toBe(true)
   })
 
-  it('final victory: calls recordWin and shows win modal when not endless', async () => {
-    render(<VictoryHarness sector={11} />)
+  it('final victory: records progress before prompting for endless', async () => {
+    const recordWin = vi.fn()
+    render(<VictoryHarness sector={11} recordWinMock={recordWin} />)
     fireEvent.click(screen.getByRole('button', { name: /Return/i }))
-    expect(true).toBe(true)
+    await waitFor(() => expect(recordWin).toHaveBeenCalledTimes(1))
+  })
+
+  it('endless final victory: advances sector for next combat', async () => {
+    const onSetSector = vi.fn()
+    render(<VictoryHarness sector={11} endless onSetSector={onSetSector} />)
+    fireEvent.click(screen.getByRole('button', { name: /Return/i }))
+    await waitFor(() => expect(onSetSector).toHaveBeenCalledWith(12))
+  })
+
+  it('endless final victory: does not re-record win in battle log', async () => {
+    const onSetSector = vi.fn()
+    const recordWin = vi.fn()
+    render(<VictoryHarness sector={12} endless onSetSector={onSetSector} recordWinMock={recordWin} />)
+    fireEvent.click(screen.getByRole('button', { name: /Return/i }))
+    await waitFor(() => expect(onSetSector).toHaveBeenCalledWith(13))
+    expect(recordWin).not.toHaveBeenCalled()
   })
 })
