@@ -135,7 +135,9 @@ export function TechListModal({ onClose, research, focus }:{ onClose:()=>void, r
     if (focus) {
       setTimeout(()=>{
         try {
-          const el = document.querySelector(`[data-tech-track="${focus}"]`)
+          let el = document.querySelector(`[data-tech-track="${focus}"]`)
+          // If Military track is filtered, fall back to the explainer card
+          if (!el && focus === 'Military') el = document.getElementById('tech-military-explainer')
           if (el) (el as HTMLElement).scrollIntoView({ block: 'start' })
         } catch { /* noop */ }
       }, 0)
@@ -178,6 +180,7 @@ export function TechListModal({ onClose, research, focus }:{ onClose:()=>void, r
             </div>
           </div>
           {tracks.map(t => {
+            if (t === 'Military') return null; // Avoid duplicate empty section; covered by explainer above
             const parts = ALL_PARTS.filter(p=>p.tech_category===t && !p.rare).sort((a,b)=>a.tier-b.tier || a.cat.localeCompare(b.cat));
             return (
               <div key={t} data-tech-track={t}>
