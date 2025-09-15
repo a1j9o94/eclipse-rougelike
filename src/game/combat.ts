@@ -31,19 +31,17 @@ export function buildInitiative(pFleet:Ship[], eFleet:Ship[], rng?: Rng): Initia
 }
 
 export function targetIndex(defFleet:Ship[], strategy:'kill'|'guns'){
-  const magnetIdx = defFleet.findIndex(s => s.alive && (s.stats as { magnet?: boolean }).magnet)
-  if(magnetIdx !== -1) return magnetIdx
+  const alive = defFleet.map((s,i)=>({s,i})).filter(x=>x.s && x.s.alive)
+  const magnets = alive.filter(x=> (x.s.stats as { magnet?: boolean }).magnet)
+  const pool = magnets.length>0 ? magnets : alive
+  if(pool.length===0) return -1
   if(strategy==='kill'){
-    let best=-1, bestHull=1e9
-    for(let i=0;i<defFleet.length;i++){ const s=defFleet[i]; if(s && s.alive){ if(s.hull < bestHull){ bestHull=s.hull; best=i } } }
-    if(best!==-1) return best
+    return pool.reduce((b,c)=> c.s.hull < b.s.hull ? c : b).i
   }
   if(strategy==='guns'){
-    let best=-1, guns=-1
-    for(let i=0;i<defFleet.length;i++){ const s=defFleet[i]; if(s && s.alive){ const g=s.weapons.length; if(g>guns){ guns=g; best=i } } }
-    if(best!==-1) return best
+    return pool.reduce((b,c)=> c.s.weapons.length > b.s.weapons.length ? c : b).i
   }
-  return defFleet.findIndex(s=>s.alive)
+  return pool[0].i
 }
 
 export function volley(attacker:Ship, defender:Ship, side:'P'|'E', logArr:string[], friends:Ship[], rng?: Rng){
@@ -64,13 +62,37 @@ export function volley(attacker:Ship, defender:Ship, side:'P'|'E', logArr:string
     for(let i=0;i<diceToRoll;i++){
       const faces = w.faces||[]
       const face = faces[Math.floor(r.next()*faces.length)] || {}
-      const rollWeapon = (damage:number, faceRoll:number|undefined, isAuto:boolean) => {
-        defender.hull -= damage
-        const msg = isAuto ? `auto ${damage}` : (damage>0 ? `roll ${faceRoll} ≥ ${thr} → ${damage}` : `roll ${faceRoll} ≥ ${thr}`)
+      const rollWeapon = (damage:number, faceRoll:number|undefined, isAuto:boolean, isChain=false) => {
+        const painter = g.battleCtx?.status.painter
+        const bonus = painter && painter.rounds>0 && painter.target===defender ? painter.bonus : 0
+        const total = damage + bonus
+        defender.hull -= total
+        const msg = isAuto ? `auto ${total}` : (total>0 ? `roll ${faceRoll} ≥ ${thr} → ${total}` : `roll ${faceRoll} ≥ ${thr}`)
         logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} → ${defender.frame.name} | ${w.name}: ${msg}`)
         if(defender.hull<=0){ defender.alive=false; defender.hull=0; logArr.push(`💥 ${defender.frame.name} destroyed!`) }
         if(w.initLoss){ defender.stats.init = Math.max(0, defender.stats.init - w.initLoss); logArr.push(`⌛ ${defender.frame.name} -${w.initLoss} INIT`); }
         if (g.battleCtx) triggerHook([w], 'onHit', attacker, defender, fleets, g.battleCtx, side)
+        if(!isChain){
+          const chainHooks = (w.effects ?? []).filter(
+            (e): e is { hook: 'onHit'; effect: { kind: 'chainOnHit'; decay: number; minDmg: number } } =>
+              e.hook==='onHit' && e.effect.kind==='chainOnHit'
+          )
+          const ch = chainHooks[0]
+          if(ch){
+            let extra = (w.dmgPerHit || 0) - ch.effect.decay
+            while(extra >= ch.effect.minDmg && defender.alive){
+              const chainRoll = 1 + Math.floor(r.next()*6)
+              if(chainRoll >= thr){
+                rollWeapon(extra, chainRoll, false, true)
+                extra -= ch.effect.decay
+              } else {
+                logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} misses with ${w.name} (chain roll ${chainRoll} < ${thr})`)
+                if (g.battleCtx) triggerHook([w], 'onMiss', attacker, defender, fleets, g.battleCtx, side)
+                break
+              }
+            }
+          }
+        }
       }
       if(typeof face.dmg === 'number'){
         rollWeapon(face.dmg, undefined, true)

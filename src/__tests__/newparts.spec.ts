@@ -113,4 +113,45 @@ describe('New part mechanics', () => {
     precomputeDynamicStats([ship], [], ctx)
     expect((ship.weapons[0] as any)._dynDice).toBe((hex.dice || 0) + 1)
   })
+
+  it('Recursive Array chains additional hits with decay', () => {
+    const frame = getFrame('interceptor')
+    const base = PARTS.weapons.find(p=>p.id==='recursive_array_mk1')!
+    const chainWeapon = { ...base, dmgPerHit: 2 } as any
+    const src = PARTS.sources[0]
+    const drv = PARTS.drives[0]
+    const attacker = makeShip(frame, [src, drv, chainWeapon])
+    const defender = makeShip(frame, [src, drv])
+    defender.hull = 5
+    const log: string[] = []
+    const rng = { vals: [0.99, 0.99], idx: 0, next(){ return this.vals[this.idx++] ?? 0 } }
+    const before = defender.hull
+    ;(globalThis as any).battleCtx = { rng: () => 0, rerollsThisRun: 0, status: { corrosion: new WeakMap(), painter: null, fleetTempShield: { P: null, E: null }, tempShield: new WeakMap() } }
+    volley(attacker, defender, 'P', log, [attacker], rng as any)
+    delete (globalThis as any).battleCtx
+    expect(defender.hull).toBe(before - 2)
+  })
+
+  it('Target Painter grants bonus damage to designated target', () => {
+    const frame = getFrame('interceptor')
+    const src = PARTS.sources[0]
+    const drv = PARTS.drives[0]
+    const painter = {
+      id: 'test_painter', name: 'Test Painter', dice: 1, dmgPerHit: 0,
+      faces: [{ roll: 1 }, { roll: 2 }, { roll: 3 }, { roll: 4 }, { roll: 5 }, { roll: 6 }],
+      tier: 1, cost: 0, cat: 'Weapon', tech_category: 'Nano', powerCost: 0,
+      effects: [{ hook: 'onHit', effect: { kind: 'designateBonusDamage', amount: 1, rounds: 1 } }]
+    } as any
+    const laser = PARTS.weapons.find(p=>p.id==='plasma')!
+    const attacker = makeShip(frame, [src, drv, painter, laser])
+    const defender = makeShip(frame, [src, drv])
+    defender.hull = 5
+    const log: string[] = []
+    const rng = { vals: [0.99, 0.99], idx: 0, next(){ return this.vals[this.idx++] ?? 0 } }
+    const before = defender.hull
+    ;(globalThis as any).battleCtx = { rng: () => 0, rerollsThisRun: 0, status: { corrosion: new WeakMap(), painter: null, fleetTempShield: { P: null, E: null }, tempShield: new WeakMap() } }
+    volley(attacker, defender, 'P', log, [attacker], rng as any)
+    delete (globalThis as any).battleCtx
+    expect(defender.hull).toBe(before - 2)
+  })
 })

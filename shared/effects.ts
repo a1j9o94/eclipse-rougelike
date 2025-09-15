@@ -46,7 +46,7 @@ export type BattleCtx = {
     corrosion: WeakMap<import('./types').Ship, number>;
     painter: { target: import('./types').Ship | null; rounds: number; bonus: number } | null;
     fleetTempShield: { P: { tier: number; rounds: number } | null; E: { tier: number; rounds: number } | null };
-    tempShield: WeakMap<import('./types').Ship, number>;
+    tempShield: WeakMap<import('./types').Ship, number>; // additive shield delta per ship
   };
 };
 

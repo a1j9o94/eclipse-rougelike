@@ -23,15 +23,16 @@ function applyEffect(
   _part: EffectfulPart,
   host: Ship | null,
   target: Ship | null,
-  fleets: { allies: Ship[]; enemies: Ship[] },
+  _fleets: { allies: Ship[]; enemies: Ship[] },
   ctx: BattleCtx,
   hostSide: 'P' | 'E' | null
 ) {
-  void fleets; // placeholder until fleet-targeting effects implemented
+  void _fleets;
   switch (eff.kind) {
     case 'lowerShieldThisRound':
       if (target) {
         const curr = ctx.status.tempShield.get(target) ?? 0;
+        // tempShield stores additive deltas; negative values lower shields
         ctx.status.tempShield.set(target, curr - eff.amount);
       }
       break;
@@ -125,7 +126,7 @@ export function precomputeDynamicStats(fleet: Ship[], _enemyFleet: Ship[], ctx: 
   }
 }
 
-export function startRoundTick(allies: Ship[], enemies: Ship[], ctx: BattleCtx) {
+export function startRoundTick(allies: Ship[], enemies: Ship[], ctx: BattleCtx, log?: string[]) {
   // reset per-round shield deltas
   ctx.status.tempShield = new WeakMap();
   // painter decay
@@ -147,7 +148,11 @@ export function startRoundTick(allies: Ship[], enemies: Ship[], ctx: BattleCtx) 
       const stacks = ctx.status.corrosion.get(s) || 0;
       if (stacks > 0) {
         s.hull -= stacks;
-        if (s.hull <= 0) { s.hull = 0; s.alive = false; }
+        log?.push(`☣️ ${s.frame.name} takes ${stacks} corrosion`);
+        if (s.hull <= 0) {
+          s.hull = 0; s.alive = false;
+          log?.push(`💥 ${s.frame.name} destroyed by corrosion!`);
+        }
       }
     }
   };
@@ -156,7 +161,7 @@ export function startRoundTick(allies: Ship[], enemies: Ship[], ctx: BattleCtx) 
 
 export function effectiveShieldTier(ship: Ship, side: 'P' | 'E', ctx: BattleCtx) {
   const base = ship.stats.shieldTier || 0;
-  const delta = ctx.status.tempShield.get(ship) || 0;
+  const delta = ctx.status.tempShield.get(ship) || 0; // additive delta (negatives lower, positives raise)
   const fleet = ctx.status.fleetTempShield[side];
   return Math.max(0, base + delta + (fleet ? fleet.tier : 0));
 }
