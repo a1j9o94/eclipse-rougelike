@@ -13,7 +13,7 @@ describe('CompactShip rift dice display', () => {
     expect(screen.queryByText(/No weapons/i)).toBeNull()
     const icons = screen.getAllByTestId('frame-slot-filled').map(el => el.textContent || '')
     expect(icons.some(t => t.includes('❤️'))).toBe(true)
-    expect(icons.some(t => t.includes('🕳️'))).toBe(true)
+    expect(icons.some(t => t.includes('🎲'))).toBe(true)
   })
 
   it('shows dice on non-weapon parts with dice', () => {

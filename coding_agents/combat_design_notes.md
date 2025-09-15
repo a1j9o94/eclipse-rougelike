@@ -259,7 +259,7 @@ export const PART_EFFECT_FIELDS = [
 ] as const;
 export type PartEffectField = typeof PART_EFFECT_FIELDS[number];
 export const PART_EFFECT_SYMBOLS: Record<PartEffectField, string> = {
-  powerProd: '⚡+', powerCost: '⚡-', init: '🚀', dice: '🎲', dmgPerHit: '💥', riftDice: '🕳️', shieldTier: '🛡️', extraHull: '❤️', aim: '🎯', initLoss: '🚀-', regen: '❤️+',
+  powerProd: '⚡+', powerCost: '⚡-', init: '🚀', dice: '🎲', dmgPerHit: '💥', riftDice: '🎲', shieldTier: '🛡️', extraHull: '❤️', aim: '🎯', initLoss: '🚀-', regen: '❤️+',
 } as const;
 
 export function partEffects(p: Part) {

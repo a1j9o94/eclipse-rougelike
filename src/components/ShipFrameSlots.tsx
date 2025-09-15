@@ -98,7 +98,7 @@ export function ShipFrameSlots({ ship, side, active: _active }: { ship: Ship, si
     for (let i = 0; i < Math.min(aim, 3); i++) tokens.push('🎯');
     for (let i = 0; i < Math.min(shields, 3); i++) tokens.push('🛡️');
     for (let i = 0; i < Math.min(Math.ceil(init/2), 3); i++) tokens.push('🚀');
-    for (let i = 0; i < Math.min(rift, 2); i++) tokens.push('🕳️');
+    for (let i = 0; i < Math.min(rift, 2); i++) tokens.push('🎲');
     while (tokens.length < (ship.frame.tiles || 3)) tokens.push('');
     tokens.slice(0, ship.frame.tiles).forEach(lbl => cells.push({ slots: 1, label: lbl }));
   }

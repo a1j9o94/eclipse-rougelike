@@ -32,7 +32,7 @@
 - Step 6 (Upgrades): if Military=3 and Cruiser focused, bias economy toward upgrade affordability by including a discount-friendly mix.
 
 ## Copy Notes (concise, action-first)
-- Explain icons once: ⚡ Power • 🚀 Init • 🎯 Aim • 🛡️ Shields • ❤️ Hull • ⬛ Slot • 🎲 Hit die • 🕳️ Rift die.
+- Explain icons once: ⚡ Power • 🚀 Init • 🎯 Aim • 🛡️ Shields • ❤️ Hull • ⬛ Slot • 🎲 Hit/Rift die.
 - Spike Launcher note: “Only a 6 hits; computers don’t help.”
 - Capacity: “Docks hold tonnage. Expand to field more hulls.”
 - Tech: “Tier unlocks raise what you can buy and which upgrades are available.”

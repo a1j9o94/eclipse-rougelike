@@ -44,7 +44,7 @@ export function RulesModal({ onDismiss }:{ onDismiss:()=>void }){
         <div className="text-lg font-semibold mb-2">How to Play</div>
         <div className="text-sm space-y-3 max-h-[60vh] overflow-y-auto pr-1">
           <div><b>Goal.</b> Clear 10 sectors with your fleet. If every ship is destroyed, the run ends.</div>
-          <div><b>Symbols.</b> ⚡ Power • 🚀 Initiative • 🎯 Aim • 🛡️ Shields • ❤️ Hull • 🎲 Weapon die • 🕳️ Rift die • ⬛ Slot</div>
+          <div><b>Symbols.</b> ⚡ Power • 🚀 Initiative • 🎯 Aim • 🛡️ Shields • ❤️ Hull • 🎲 Weapon/Rift die • ⬛ Slot</div>
           <div><b>Combat.</b> Ships act from highest 🚀 to lowest. Weapons roll 🎲; 1 misses and 6 hits. 🎯 lowers the roll needed while 🛡️ raises it.</div>
           <div><b>Outpost.</b> Between battles spend 💰 credits and 🧱 materials to buy parts, build ships, and reroll the shop. Each reroll costs more.</div>
           <div><b>Research.</b> Use 🔬 science on Military, Grid, and Nano to unlock higher-tier parts and ship upgrades.</div>
