@@ -78,7 +78,7 @@ export function useRunLifecycle(params: {
         // Final victory
         const faction = getters.faction?.()
         const difficulty = getters.difficulty?.()
-        if (faction && difficulty) {
+        if (!endless && faction && difficulty) {
           try { fns.recordWin(faction, difficulty, research, culled) } catch { /* ignore */ }
         }
         try { fns.clearRunState() } catch { /* ignore */ }
@@ -87,6 +87,7 @@ export function useRunLifecycle(params: {
         if (!endless) {
           setters.setShowWin(true)
         } else {
+          try { setters.setSector?.((n)=> Math.max(n, sector) + 1) } catch { /* ignore */ }
           setters.setShop({ items: rollInventory(research) })
           setters.setShopVersion(v => v + 1)
         }
