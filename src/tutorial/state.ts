@@ -26,6 +26,7 @@ export type TutorialStepId =
   | 'bar-sector'
   | 'bar-lives'
   | 'rules-hint'
+  | 'rules-open'
   | 'wrap';
 
 type TutorialState = {

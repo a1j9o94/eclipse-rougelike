@@ -466,7 +466,6 @@ export default function EclipseIntegrated(){
       onDismissRules={dismissRules}
       onOpenRules={()=>setShowRules(true)}
       showTechs={showTechs}
-      onOpenTechs={()=>setShowTechs(true)}
       onCloseTechs={()=>setShowTechs(false)}
       showWin={showWin}
       mpWinMessage={mpWinMessage}
@@ -482,13 +481,13 @@ export default function EclipseIntegrated(){
     {/* Tutorial overlay: non-blocking; visible only when relevant to current route */}
     {tut.enabled ? (()=>{
       const id = tut.step as string
-      const step = (STEPS as { id:string; copy?:string; anchor?:string }[]).find(s=>s.id===id)
+      const step = (STEPS as { id:string; copy?:string; anchor?:string; preferSide?: 'top'|'bottom' }[]).find(s=>s.id===id)
       const text = step?.copy || ''
       const show = (() => {
         if (mode==='COMBAT') return false
         // Outpost: show hints for actionable steps only
         const outpostSteps = new Set([
-          'intro-combat','outpost-tabs','outpost-blueprint','bar-resources','bar-capacity','bar-sector','bar-lives','shop-buy-composite-1','shop-buy-composite-2','build-interceptor','combat-2','tech-nano','tech-open','tech-close','sell-composite','buy-improved','combat-3','tech-military','capacity-info','dock-expand','select-cruiser','upgrade-interceptor','shop-reroll','intel-open','intel-close','rules-hint'
+          'intro-combat','outpost-tabs','outpost-blueprint','bar-resources','bar-capacity','bar-sector','bar-lives','shop-buy-composite-1','shop-buy-composite-2','build-interceptor','combat-2','tech-nano','tech-open','tech-close','sell-composite','buy-improved','combat-3','tech-military','capacity-info','dock-expand','select-cruiser','upgrade-interceptor','shop-reroll','intel-open','intel-close','rules-hint','rules-open'
         ])
         return outpostSteps.has(id)
       })()
@@ -501,6 +500,7 @@ export default function EclipseIntegrated(){
           title="Tutorial"
           text={text}
           anchor={step?.anchor}
+          preferSide={step?.preferSide}
           onNext={showNext ? ()=> { try { tutorialEvent('next') } catch { /* noop */ } } : undefined}
         />
       )

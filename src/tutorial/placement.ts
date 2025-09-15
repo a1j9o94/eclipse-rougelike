@@ -18,6 +18,7 @@ export function computePlacement(params:{
   viewport:{ top:number; left:number; width:number; height:number },
   avoid?: Rect[],
   pad?: number,
+  preferSide?: 'top' | 'bottom',
 }): { top:number; left:number }{
   const { anchor, panelW, panelH, viewport } = params
   const avoid = params.avoid || []
@@ -28,9 +29,17 @@ export function computePlacement(params:{
   // Prefer the side with more available space
   const above = anchor.top - safeTop
   const below = safeBottom - (anchor.top + anchor.height)
-  let top = below >= panelH + 8 || below >= above
-    ? (anchor.top + anchor.height + 12)
-    : (anchor.top - panelH - 12)
+  // Start with explicit preference if provided and feasible
+  let top: number
+  if (params.preferSide === 'top') {
+    top = anchor.top - panelH - 12
+  } else if (params.preferSide === 'bottom') {
+    top = anchor.top + anchor.height + 12
+  } else {
+    top = below >= panelH + 8 || below >= above
+      ? (anchor.top + anchor.height + 12)
+      : (anchor.top - panelH - 12)
+  }
   top = clamp(top, safeTop, safeBottom - panelH)
 
   // Prevent intersecting the anchor

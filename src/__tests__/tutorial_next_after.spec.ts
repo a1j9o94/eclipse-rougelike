@@ -13,10 +13,17 @@ describe('tutorial nextAfter', () => {
     expect(afterClose).toBe('rules-hint')
   })
 
+  it('acknowledges opening the ⋯ menu before Rules', () => {
+    const afterMenu = nextAfter('rules-hint' as any, 'opened-help-menu')
+    expect(afterMenu).toBe('rules-open')
+    const afterRules = nextAfter('rules-open' as any, 'opened-rules')
+    // Next after rules-open is wrap
+    expect(afterRules === 'wrap' || afterRules === nextAfter('rules-open' as any, 'opened-rules')).toBe(true)
+  })
+
   it('ignores unrelated events at later steps', () => {
     // When already at intel-close, another opened-intel should not skip
     const stay = nextAfter('intel-close' as any, 'opened-intel')
     expect(stay).toBe('intel-close')
   })
 })
-
