@@ -45,7 +45,8 @@ export const STEPS: TutorialStep[] = [
   // Intel
   { id: 'intel-open', anchor: 'enemy-intel-btn', copy: 'Open Enemy Intel to preview upcoming missions and the enemy lineup. Plan your builds with a peek ahead.', triggers: ['opened-intel'] },
   { id: 'intel-close', anchor: 'intel-modal', copy: 'Close Enemy Intel to continue with outfitting.', triggers: ['viewed-intel'] },
-  { id: 'rules-hint', anchor: 'help-menu', copy: 'Need a refresher? Open ⋯ and choose Rules for a quick overview.', triggers: ['opened-rules'] },
+  { id: 'rules-hint', anchor: 'help-menu', copy: 'Need a refresher? Tap ⋯ to open the menu.', triggers: ['opened-help-menu'] },
+  { id: 'rules-open', anchor: 'help-rules', copy: 'Now choose Rules for a quick overview.', triggers: ['opened-rules'] },
   { id: 'wrap', copy: 'You’re ready. Clear 10 missions to complete your contract — or keep pushing in Endless War.' },
 ]
 

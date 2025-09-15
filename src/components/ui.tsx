@@ -1,4 +1,5 @@
 // React import not required with modern JSX transform
+import { event as tutorialEvent } from '../tutorial/state'
 import { useState } from 'react'
 
 import { type Part, partEffects, partDescription } from "../../shared/parts";
@@ -119,7 +120,14 @@ export function ResourceBar({ credits, materials, science, tonnage, sector, onRe
           <div data-tutorial="rb-lives" className="px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"><b>{lives}</b> ❤</div>
         )}
         <div className="relative">
-          <button data-tutorial="help-menu" aria-label="Menu" onClick={()=>setMenu(v=>!v)} className="px-2 py-1 rounded bg-zinc-800 text-xs">⋯</button>
+          <button
+            data-tutorial="help-menu"
+            aria-label="Menu"
+            onClick={()=>setMenu(v=>{ const next = !v; try { if (next) tutorialEvent('opened-help-menu') } catch { /* noop */ } return next })}
+            className="px-2 py-1 rounded bg-zinc-800 text-xs"
+          >
+            ⋯
+          </button>
           {menu && (
             <div className="absolute right-0 mt-1 w-32 rounded-xl border border-zinc-700 bg-zinc-900 shadow-lg overflow-hidden">
               {onOpenRules && (
