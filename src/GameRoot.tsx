@@ -482,7 +482,7 @@ export default function EclipseIntegrated(){
     {/* Tutorial overlay: non-blocking; visible only when relevant to current route */}
     {tut.enabled ? (()=>{
       const id = tut.step as string
-      const step = (STEPS as { id:string; copy?:string; anchor?:string }[]).find(s=>s.id===id)
+      const step = (STEPS as { id:string; copy?:string; anchor?:string; preferSide?: 'top'|'bottom' }[]).find(s=>s.id===id)
       const text = step?.copy || ''
       const show = (() => {
         if (mode==='COMBAT') return false
@@ -501,6 +501,7 @@ export default function EclipseIntegrated(){
           title="Tutorial"
           text={text}
           anchor={step?.anchor}
+          preferSide={step?.preferSide}
           onNext={showNext ? ()=> { try { tutorialEvent('next') } catch { /* noop */ } } : undefined}
         />
       )

@@ -6,6 +6,7 @@ export type TutorialStep = {
   copy?: string
   curatedShop?: string[]
   triggers?: string[] // event names that advance this step
+  preferSide?: 'top' | 'bottom'
 }
 
 // Scripted, specific path
@@ -25,7 +26,7 @@ export const STEPS: TutorialStep[] = [
   // Fight and return
   { id: 'combat-2', anchor: 'start-combat', copy: 'Press Start Combat to test your new hull.', triggers: ['post-combat'] },
   // Research Nano to unlock Improved Hull
-  { id: 'tech-nano', anchor: 'research-grid', copy: 'Research: spend 🔬 to unlock stronger parts. Try Nano next — it leads to better hulls and advanced weapons. Note: each Reroll/Research makes the next reroll this round cost more.', curatedShop: ['tachyon_drive','antimatter','improved'], triggers: ['researched-nano'] },
+  { id: 'tech-nano', anchor: 'research-grid', preferSide: 'top', copy: 'Research: spend 🔬 to unlock stronger parts. Try Nano next — it leads to better hulls and advanced weapons. Note: each Reroll/Research makes the next reroll this round cost more.', curatedShop: ['tachyon_drive','antimatter','improved'], triggers: ['researched-nano'] },
   { id: 'tech-open', anchor: 'help-tech', copy: 'Tap Tech to open the list of all unlocks.', triggers: ['opened-tech-list'] },
   { id: 'tech-close', anchor: 'tech-close', copy: 'Close the Tech List to continue.', triggers: ['viewed-tech-list'] },
   // Swap hulls: sell Composite, then buy Improved
@@ -34,7 +35,7 @@ export const STEPS: TutorialStep[] = [
   // Fight and return again
   { id: 'combat-3', anchor: 'start-combat', copy: 'Press Start Combat to try your upgraded hull.', triggers: ['post-combat'] },
   // Military + then expand docks for Cruiser upgrade
-  { id: 'tech-military', anchor: 'research-grid', copy: 'Raise Military to unlock frame upgrades: Interceptor → Cruiser (requires Military ≥ 2).', triggers: ['researched-military'] },
+  { id: 'tech-military', anchor: 'research-grid', preferSide: 'top', copy: 'Raise Military to unlock frame upgrades: Interceptor → Cruiser (requires Military ≥ 2).', triggers: ['researched-military'] },
   { id: 'capacity-info', anchor: 'capacity-info', copy: 'Capacity row: X/Y shows used/total. Cost to expand is shown next to the +.', triggers: ['next'] },
   { id: 'dock-expand', anchor: 'expand-dock', copy: 'Tap + to expand docks. You need space before an Interceptor can become a Cruiser.', triggers: ['expanded-dock'] },
   { id: 'select-cruiser', anchor: 'frame-tabs', copy: 'Select the Cruiser tab to prepare the upgrade.', triggers: ['tab-cruiser','next'] },

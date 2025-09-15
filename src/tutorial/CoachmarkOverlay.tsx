@@ -8,11 +8,12 @@ type Placement = { top:number; left:number }
 
 function clamp(n:number, min:number, max:number){ return Math.min(Math.max(n, min), max) }
 
-export default function CoachmarkOverlay({ visible, title, text, anchor, onNext }: {
+export default function CoachmarkOverlay({ visible, title, text, anchor, preferSide, onNext }: {
   visible: boolean
   title?: string
   text?: string
   anchor?: string
+  preferSide?: 'top' | 'bottom'
   onNext?: () => void
 }){
   const [rect, setRect] = useState<Rect | null>(null)
@@ -82,12 +83,13 @@ export default function CoachmarkOverlay({ visible, title, text, anchor, onNext 
           viewport: { top: window.scrollY, left: window.scrollX, width: window.innerWidth, height: window.innerHeight },
           avoid: avoidRects,
           pad: 12,
+          preferSide,
         })
       )
     } else {
       setPos({ top: window.scrollY + 16, left: window.scrollX + 16 })
     }
-  }, [rect])
+  }, [rect, preferSide])
 
   if (!visible) return null
   return (
