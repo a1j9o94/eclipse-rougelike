@@ -25,7 +25,8 @@ describe('partEffects display', () => {
   it('shows retaliation icon for spite plating', () => {
     const spite = PARTS.hull.find(p=>p.id==='spite_plating')!
     const eff = partEffects(spite)
-    expect(eff).toContain('❤️💥')
+    expect(eff).toContain('❤️1')
+    expect(eff).toContain('💥')
   })
 
   it('shows beam and shield icon for entropy beam', () => {

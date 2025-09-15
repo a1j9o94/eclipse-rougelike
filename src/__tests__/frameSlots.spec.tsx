@@ -50,4 +50,20 @@ describe('CompactShip frame slot display', () => {
     expect(icon.includes('🛡️')).toBe(true)
     expect(icon.match(/\d?⚡/)).not.toBeNull()
   })
+
+  it('shows magnet icon for magnet hull', () => {
+    const hull = PARTS.hull.find(p => p.id === 'magnet_hull')!
+    const ship = makeShip(getFrame('interceptor'), [hull])
+    render(<CompactShip ship={ship} side="P" active={false} />)
+    const icon = screen.getByTestId('frame-slot-filled').textContent || ''
+    expect(icon.includes('🧲')).toBe(true)
+  })
+
+  it('shows single heart with explosion for retaliatory hull', () => {
+    const hull = PARTS.hull.find(p => p.id === 'spite_plating')!
+    const ship = makeShip(getFrame('interceptor'), [hull])
+    render(<CompactShip ship={ship} side="P" active={false} />)
+    const icon = screen.getByTestId('frame-slot-filled').textContent || ''
+    expect(icon).toBe('❤️💥')
+  })
 })

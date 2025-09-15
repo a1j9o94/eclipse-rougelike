@@ -157,7 +157,7 @@ export function partEffects(p: Part) {
           break;
         case 'retaliateOnDeathDamage':
         case 'retaliateOnBlockDamage':
-          effects.push('❤️💥');
+          effects.push('💥');
           break;
         case 'lowerShieldThisRound':
           effects.push(`🔆${PART_EFFECT_SYMBOLS.shieldTier}-${effect.amount}`);
