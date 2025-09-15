@@ -75,6 +75,7 @@ export type SavedRun = {
   blueprints: Record<FrameId, Part[]>;
   fleet: Ship[];
   shop: { items: Part[] };
+  rerollsThisRun: number;
   // Deprecated: graceUsed; kept for backward compatibility
   graceUsed?: boolean;
   // New unified lives counter (replaces grace)

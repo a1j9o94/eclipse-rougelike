@@ -21,6 +21,7 @@ export function usePersistRunState(params: {
   fleet: Ship[]
   shop: { items: Part[] }
   livesRemaining: number
+  rerollsThisRun: number
 }){
   useEffect(() => {
     if (!params.difficulty) return
@@ -38,6 +39,7 @@ export function usePersistRunState(params: {
       fleet: params.fleet,
       shop: params.shop,
       livesRemaining: params.livesRemaining,
+      rerollsThisRun: params.rerollsThisRun,
     }
     saveRunState(st as SavedRun)
     evaluateUnlocks(st as Partial<SavedRun>)

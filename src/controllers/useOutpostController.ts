@@ -3,7 +3,7 @@ import type { Resources, Research } from '../../shared/defaults'
 import type { CapacityState, Ship } from '../../shared/types'
 import type { Part } from '../../shared/parts'
 import type { FrameId } from '../game'
-import { getEconomyModifiers } from '../game/economy'
+import { getEconomyModifiers, applyFleetDiscounts } from '../game/economy'
 import { getMyEconomyMods, getMyResources, getMyPlayerState } from '../adapters/mpSelectors'
 import { useOutpostHandlers, type UseOutpostHandlersParams } from '../hooks/useOutpostHandlers'
 import { useOutpostActionMap } from '../hooks/useOutpostActionMap'
@@ -29,6 +29,7 @@ export type OutpostControllerParams = {
     shop: { items: Part[] }
     focused: number
     rerollCost: number
+    rerollsThisRun: number
     shopVersion: number
     sector: number
     endless: boolean
@@ -45,6 +46,7 @@ export type OutpostControllerParams = {
     setShop: (s: { items: Part[] }) => void
     setLastEffects: (fx: EngineOutpostEffects | undefined) => void
     setBaseRerollCost: (n: number) => void
+    setRerollsThisRun: (n: number) => void
     // MP
     setMpSeeded: (v: boolean) => void
     setMpSeedSubmitted: (v: boolean) => void
@@ -60,9 +62,14 @@ export function useOutpostController(params: OutpostControllerParams){
   const { gameMode, multi, state, setters, sfx, resetRun } = params
 
   // Handlers (engine-backed)
+  const baseEconomyMods = gameMode==='multiplayer'
+    ? (getMyEconomyMods(multi) || getEconomyModifiers())
+    : getEconomyModifiers()
+  const economyMods = applyFleetDiscounts(baseEconomyMods, state.fleet)
+
   const handlerParams: UseOutpostHandlersParams = {
     gameMode,
-    economyMods: gameMode==='multiplayer' ? getMyEconomyMods(multi) : getEconomyModifiers(),
+    economyMods,
     state: {
       resources: (gameMode==='multiplayer' ? getMyResources(multi, state.resources) : state.resources),
       research: state.research,
@@ -72,6 +79,7 @@ export function useOutpostController(params: OutpostControllerParams){
       tonnageUsed: state.tonnage.used,
       focusedIndex: state.focused,
       rerollCost: state.rerollCost,
+      rerollsThisRun: state.rerollsThisRun,
       shopVersion: state.shopVersion,
     },
     setters: {
@@ -85,6 +93,7 @@ export function useOutpostController(params: OutpostControllerParams){
       setShopVersion: setters.setShopVersion,
       setShop: setters.setShop,
       setLastEffects: (fx) => setters.setLastEffects(fx),
+      setRerollsThisRun: setters.setRerollsThisRun,
     },
     multi: gameMode==='multiplayer' ? (multi as { updateGameState?: (updates: Record<string, unknown>)=>unknown }) : undefined,
     sound: (k)=> sfx.playEffect(k),

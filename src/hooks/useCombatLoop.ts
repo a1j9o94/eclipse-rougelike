@@ -5,7 +5,9 @@ import { getSectorSpec } from '../game'
 import { buildEnemyFleet, generateEnemyFleetFor } from '../game/enemy'
 import { buildInitiative as buildInitiativeCore, targetIndex as targetIndexCore, volley as volleyCore } from '../game/combat'
 import { shotDurationMs } from '../game/timing'
-import type { Rng } from '../engine/rng'
+import { fromMathRandom, type Rng } from '../engine/rng'
+import { precomputeDynamicStats, startRoundTick, triggerHook } from '../../shared/effectsEngine'
+import type { BattleCtx, EffectfulPart } from '../../shared/effects'
 
 type EffectKey = 'shot'|'explosion'|'startCombat'|'page'
 
@@ -18,6 +20,7 @@ export function useCombatLoop(params: {
     turnPtr: () => number
     combatOver: () => boolean
     showRules: () => boolean
+    rerollsThisRun: () => number
   }
   setters: {
     setFleet: (f: Ship[]) => void
@@ -37,10 +40,39 @@ export function useCombatLoop(params: {
   const stepLock = useRef(false)
   const rewardPaid = useRef(false)
   const shotsFiredThisRound = useRef(false)
+  const battleCtxRef = useRef<BattleCtx | null>(null)
 
   const buildInitiative = useMemo(() => (pFleet:Ship[], eFleet:Ship[]) => buildInitiativeCore(pFleet, eFleet, rng) as InitiativeEntry[], [rng])
   const targetIndex = useMemo(() => (defFleet:Ship[], strategy:'kill'|'guns') => targetIndexCore(defFleet, strategy), [])
   const volley = useMemo(() => (attacker:Ship, defender:Ship, side:'P'|'E', logArr:string[], friends:Ship[]) => volleyCore(attacker, defender, side, logArr, friends, rng), [rng])
+
+  function setupBattleContext(playerFleet: Ship[], enemyFleet: Ship[]) {
+    const ctxRng = rng ?? fromMathRandom()
+    const ctx: BattleCtx = {
+      rng: () => ctxRng.next(),
+      rerollsThisRun: getters.rerollsThisRun(),
+      status: {
+        corrosion: new WeakMap(),
+        painter: null,
+        fleetTempShield: { P: null, E: null },
+        tempShield: new WeakMap(),
+      },
+    }
+    battleCtxRef.current = ctx
+    ;(globalThis as { battleCtx?: BattleCtx }).battleCtx = ctx
+    precomputeDynamicStats(playerFleet, enemyFleet, ctx)
+    precomputeDynamicStats(enemyFleet, playerFleet, ctx)
+    const playerScope = { allies: playerFleet, enemies: enemyFleet }
+    const enemyScope = { allies: enemyFleet, enemies: playerFleet }
+    for (const ship of playerFleet) {
+      if (ship?.stats) delete (ship.stats as { magnet?: boolean }).magnet
+      triggerHook((ship?.parts as EffectfulPart[]) ?? [], 'onPreCombat', ship, null, playerScope, ctx, 'P')
+    }
+    for (const ship of enemyFleet) {
+      if (ship?.stats) delete (ship.stats as { magnet?: boolean }).magnet
+      triggerHook((ship?.parts as EffectfulPart[]) ?? [], 'onPreCombat', ship, null, enemyScope, ctx, 'E')
+    }
+  }
 
   function startCombat(){
     const sector = getters.sector()
@@ -58,6 +90,7 @@ export function useCombatLoop(params: {
     rewardPaid.current = false
     void sfx.playEffect('page')
     void sfx.playEffect('startCombat')
+    setupBattleContext(getters.fleet(), enemy)
     setters.setMode('COMBAT')
   }
 
@@ -76,6 +109,7 @@ export function useCombatLoop(params: {
     rewardPaid.current = false
     void sfx.playEffect('page')
     void sfx.playEffect('startCombat')
+    setupBattleContext(getters.fleet(), enemy)
     setters.setMode('COMBAT')
   }
 
@@ -89,13 +123,32 @@ export function useCombatLoop(params: {
       const q = buildInitiative(qFleet, eFleet)
       setters.setQueue(q)
       setters.setTurnPtr(0)
-      setters.setLog(l => [...l, `— Round ${roundNum} —`])
+      const ctx = battleCtxRef.current
+      if (ctx) {
+        const tickLog: string[] = []
+        startRoundTick(qFleet, eFleet, ctx, tickLog)
+        const header = `— Round ${roundNum} —`
+        const payload = tickLog.length > 0 ? [header, ...tickLog] : [header]
+        setters.setLog(l => [...l, ...payload])
+        const playerScope = { allies: qFleet, enemies: eFleet }
+        const enemyScope = { allies: eFleet, enemies: qFleet }
+        for (const ship of qFleet) {
+          triggerHook((ship?.parts as EffectfulPart[]) ?? [], 'onStartRound', ship, null, playerScope, ctx, 'P')
+        }
+        for (const ship of eFleet) {
+          triggerHook((ship?.parts as EffectfulPart[]) ?? [], 'onStartRound', ship, null, enemyScope, ctx, 'E')
+        }
+      } else {
+        setters.setLog(l => [...l, `— Round ${roundNum} —`])
+      }
       return true
     }
     return false
   }
 
   function resolveCombat(pAlive:boolean){
+    battleCtxRef.current = null
+    try { delete (globalThis as { battleCtx?: BattleCtx }).battleCtx } catch { /* noop */ }
     setters.setCombatOver(true)
     if(pAlive){
       if(!rewardPaid.current){
@@ -131,6 +184,11 @@ export function useCombatLoop(params: {
       if (!atk || !atk.alive || !atk.stats.valid || defIdx === -1) { advancePtr(); return }
       const lines:string[] = []
       const def = defFleet[defIdx]
+      const enemiesForFriends = isP ? eFleetArr : pFleetArr
+      ;(friends as unknown as { _enemies?: Ship[] })._enemies = enemiesForFriends
+      ;(friends as unknown as { _allies?: Ship[] })._allies = friends
+      ;(enemiesForFriends as unknown as { _allies?: Ship[] })._allies = enemiesForFriends
+      ;(enemiesForFriends as unknown as { _enemies?: Ship[] })._enemies = friends
       dlog('volley', { side: e.side, atkIdx: e.idx, defIdx, atkAlive: atk.alive, defAliveBefore: def.alive })
       volley(atk, def, e.side, lines, friends)
       shotsFiredThisRound.current = true

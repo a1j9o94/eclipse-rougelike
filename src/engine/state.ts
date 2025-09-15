@@ -13,6 +13,7 @@ export type OutpostState = {
   tonnageUsed: number
   focusedIndex: number
   rerollCost?: number
+  rerollsThisRun?: number
   shopVersion?: number
 }
 

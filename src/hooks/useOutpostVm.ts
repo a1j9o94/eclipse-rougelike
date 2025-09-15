@@ -3,7 +3,7 @@ import type { Part } from '../../shared/parts'
 import type { Resources, Research } from '../../shared/defaults'
 import type { Ship, CapacityState } from '../../shared/types'
 import type { FrameId } from '../game'
-import { getEconomyModifiers } from '../game/economy'
+import { getEconomyModifiers, applyFleetDiscounts } from '../game/economy'
 import { getMyEconomyMods } from '../adapters/mpSelectors'
 import { isFleetValid } from '../selectors'
 import { selectFleetValidity } from '../selectors/guards'
@@ -64,7 +64,10 @@ export function useOutpostVm(params: {
   setMpRerollInitRound: (n: number) => void
 }){
   const p = params
-  const economyMods = p.gameMode==='multiplayer' ? getMyEconomyMods(p.multi) : getEconomyModifiers()
+  const baseMods = p.gameMode==='multiplayer'
+    ? (getMyEconomyMods(p.multi) || getEconomyModifiers())
+    : getEconomyModifiers()
+  const economyMods = applyFleetDiscounts(baseMods, p.fleet)
 
   const localFleetValid = p.localFleetValidOverride ?? isFleetValid(p.fleet, p.capacity)
   const serverFleetValid: boolean | null = useMemo(() => {

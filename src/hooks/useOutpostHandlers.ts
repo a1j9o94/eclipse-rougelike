@@ -27,6 +27,7 @@ export type UseOutpostHandlersParams = {
     tonnageUsed: number
     focusedIndex: number
     rerollCost?: number
+    rerollsThisRun?: number
     shopVersion?: number
   }
   setters: {
@@ -40,6 +41,7 @@ export type UseOutpostHandlersParams = {
     setShopVersion?: (n: number) => void
     setShop?: (s: { items: Part[] }) => void
     setLastEffects?: (fx: OutpostEffects | undefined) => void
+    setRerollsThisRun?: (n: number) => void
   }
   multi?: { updateGameState?: (updates: Record<string, unknown>) => unknown }
   sound?: (key: EffectKey) => void
@@ -70,6 +72,7 @@ export function useOutpostHandlers(params: UseOutpostHandlersParams): OutpostHan
       tonnageUsed: state.tonnageUsed,
       focusedIndex: state.focusedIndex,
       rerollCost: state.rerollCost,
+      rerollsThisRun: state.rerollsThisRun,
       shopVersion: state.shopVersion,
     }
     const env: OutpostEnv = { gameMode, economyMods }
@@ -89,6 +92,9 @@ export function useOutpostHandlers(params: UseOutpostHandlersParams): OutpostHan
       } catch { setters.setShop({ items: effects.shopItems }) }
     }
     setters.setLastEffects?.(effects)
+    if (typeof next.rerollsThisRun === 'number' && setters.setRerollsThisRun) {
+      setters.setRerollsThisRun(next.rerollsThisRun as number)
+    }
     return { next, effects }
   }, [gameMode, economyMods, state, setters])
 
