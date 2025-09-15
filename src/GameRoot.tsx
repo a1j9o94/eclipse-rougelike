@@ -466,7 +466,6 @@ export default function EclipseIntegrated(){
       onDismissRules={dismissRules}
       onOpenRules={()=>setShowRules(true)}
       showTechs={showTechs}
-      onOpenTechs={()=>setShowTechs(true)}
       onCloseTechs={()=>setShowTechs(false)}
       showWin={showWin}
       mpWinMessage={mpWinMessage}

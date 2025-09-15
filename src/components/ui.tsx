@@ -104,7 +104,7 @@ export function ItemCard({ item, price, canAfford, onBuy, ghostDelta, compact }:
     </div>
   );
 }
-export function ResourceBar({ credits, materials, science, tonnage, sector, onReset, lives, multiplayer }:{credits:number, materials:number, science:number, tonnage:{used:number,cap:number}, sector:number, onReset:()=>void, lives?:number, multiplayer?:boolean}){
+export function ResourceBar({ credits, materials, science, tonnage, sector, onReset, lives, multiplayer, onOpenRules, onOpenTechs }:{credits:number, materials:number, science:number, tonnage:{used:number,cap:number}, sector:number, onReset:()=>void, lives?:number, multiplayer?:boolean, onOpenRules?:()=>void, onOpenTechs?:()=>void}){
   const used = tonnage.used, cap = tonnage.cap;
   const over = used>cap;
   const capIcon = over ? '🔴' : '🟢';
@@ -119,9 +119,15 @@ export function ResourceBar({ credits, materials, science, tonnage, sector, onRe
           <div data-tutorial="rb-lives" className="px-2 py-1 rounded-lg bg-zinc-900 whitespace-nowrap"><b>{lives}</b> ❤</div>
         )}
         <div className="relative">
-          <button aria-label="Menu" onClick={()=>setMenu(v=>!v)} className="px-2 py-1 rounded bg-zinc-800 text-xs">⋯</button>
+          <button data-tutorial="help-menu" aria-label="Menu" onClick={()=>setMenu(v=>!v)} className="px-2 py-1 rounded bg-zinc-800 text-xs">⋯</button>
           {menu && (
             <div className="absolute right-0 mt-1 w-32 rounded-xl border border-zinc-700 bg-zinc-900 shadow-lg overflow-hidden">
+              {onOpenRules && (
+                <button data-tutorial="help-rules" onClick={()=>{ setMenu(false); onOpenRules?.() }} className="w-full text-left px-3 py-2 hover:bg-zinc-800">Rules</button>
+              )}
+              {onOpenTechs && (
+                <button onClick={()=>{ setMenu(false); onOpenTechs?.() }} className="w-full text-left px-3 py-2 hover:bg-zinc-800">View Techs</button>
+              )}
               <button onClick={()=>{ setMenu(false); onReset() }} className="w-full text-left px-3 py-2 hover:bg-zinc-800">{multiplayer ? 'Resign' : 'Restart'}</button>
             </div>
           )}
