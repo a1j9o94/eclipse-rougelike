@@ -1,5 +1,5 @@
 import { RIFT_FACES } from '../../shared/parts'
-import { triggerHook } from '../../shared/effectsEngine'
+import { triggerHook, effectiveShieldTier } from '../../shared/effectsEngine'
 import type { EffectfulPart, BattleCtx } from '../../shared/effects'
 import { type Ship, type InitiativeEntry } from '../../shared/types'
 import { sizeRank } from './ship'
@@ -48,7 +48,6 @@ export function targetIndex(defFleet:Ship[], strategy:'kill'|'guns'){
 
 export function volley(attacker:Ship, defender:Ship, side:'P'|'E', logArr:string[], friends:Ship[], rng?: Rng){
   const r: Rng = rng ?? fromMathRandom()
-  const thr = successThreshold(attacker.stats.aim, defender.stats.shieldTier)
   const fleets = {
     allies: friends,
     enemies: side==='P'
@@ -56,6 +55,8 @@ export function volley(attacker:Ship, defender:Ship, side:'P'|'E', logArr:string
       : ((friends as unknown as { _allies?: Ship[] })._allies ?? [])
   }
   const g = globalThis as unknown as { battleCtx?: BattleCtx }
+  const shield = g.battleCtx ? effectiveShieldTier(defender, side === 'P' ? 'E' : 'P', g.battleCtx) : defender.stats.shieldTier
+  const thr = successThreshold(attacker.stats.aim, shield)
   attacker.weapons.forEach((wRaw) => {
     const w = wRaw as EffectfulPart & { _dynDice?: number }
     if(w.riftDice) return
@@ -69,7 +70,7 @@ export function volley(attacker:Ship, defender:Ship, side:'P'|'E', logArr:string
         logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} → ${defender.frame.name} | ${w.name}: ${msg}`)
         if(defender.hull<=0){ defender.alive=false; defender.hull=0; logArr.push(`💥 ${defender.frame.name} destroyed!`) }
         if(w.initLoss){ defender.stats.init = Math.max(0, defender.stats.init - w.initLoss); logArr.push(`⌛ ${defender.frame.name} -${w.initLoss} INIT`); }
-        if (g.battleCtx) triggerHook([w], 'onHit', attacker, defender, fleets, g.battleCtx)
+        if (g.battleCtx) triggerHook([w], 'onHit', attacker, defender, fleets, g.battleCtx, side)
       }
       if(typeof face.dmg === 'number'){
         rollWeapon(face.dmg, undefined, true)
@@ -78,7 +79,7 @@ export function volley(attacker:Ship, defender:Ship, side:'P'|'E', logArr:string
       } else {
         const rolled = typeof face.roll === 'number' ? face.roll : 'miss'
         logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} misses with ${w.name} (roll ${rolled} < ${thr})`)
-        if (g.battleCtx) triggerHook([w], 'onMiss', attacker, defender, fleets, g.battleCtx)
+        if (g.battleCtx) triggerHook([w], 'onMiss', attacker, defender, fleets, g.battleCtx, side)
         const missHooks = (w.effects ?? []).filter(
           (e): e is { hook: 'onMiss'; effect: { kind: 'rerollOnMiss'; chancePct: number } } =>
             e.hook==='onMiss' && e.effect.kind==='rerollOnMiss'
@@ -93,7 +94,7 @@ export function volley(attacker:Ship, defender:Ship, side:'P'|'E', logArr:string
       }
       if(face.self){
         assignRiftSelfDamage(friends, side, logArr)
-        if (g.battleCtx) triggerHook([w], 'onSelfHit', attacker, defender, fleets, g.battleCtx)
+        if (g.battleCtx) triggerHook([w], 'onSelfHit', attacker, defender, fleets, g.battleCtx, side)
       }
     }
   })

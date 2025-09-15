@@ -43,9 +43,10 @@ export type BattleCtx = {
   rng: () => number;
   rerollsThisRun: number;
   status: {
-    corrosion: Map<number, number>;
-    painter: { targetIdx: number | null; rounds: number; bonus: number } | null;
-    fleetTempShield: { tier: number; rounds: number } | null;
+    corrosion: WeakMap<import('./types').Ship, number>;
+    painter: { target: import('./types').Ship | null; rounds: number; bonus: number } | null;
+    fleetTempShield: { P: { tier: number; rounds: number } | null; E: { tier: number; rounds: number } | null };
+    tempShield: WeakMap<import('./types').Ship, number>;
   };
 };
 

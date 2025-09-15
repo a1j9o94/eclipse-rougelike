@@ -6,13 +6,14 @@ export function triggerHook(
   hook: Hook,
   host: Ship | null,
   target: Ship | null,
-  _fleets: { allies: Ship[]; enemies: Ship[] },
-  ctx: BattleCtx
+  fleets: { allies: Ship[]; enemies: Ship[] },
+  ctx: BattleCtx,
+  hostSide: 'P' | 'E' | null = null
 ) {
   for (const p of parts) {
     const hooks = p.effects?.filter(e => e.hook === hook) ?? [];
     for (const h of hooks) {
-      applyEffect(h.effect, p, host, target, ctx);
+      applyEffect(h.effect, p, host, target, fleets, ctx, hostSide);
     }
   }
 }
@@ -22,23 +23,28 @@ function applyEffect(
   _part: EffectfulPart,
   host: Ship | null,
   target: Ship | null,
-  ctx: BattleCtx
+  fleets: { allies: Ship[]; enemies: Ship[] },
+  ctx: BattleCtx,
+  hostSide: 'P' | 'E' | null
 ) {
+  void fleets; // placeholder until fleet-targeting effects implemented
   switch (eff.kind) {
     case 'lowerShieldThisRound':
-      if (target) target.stats.shieldTier = Math.max(0, (target.stats.shieldTier || 0) - eff.amount);
+      if (target) {
+        const curr = ctx.status.tempShield.get(target) ?? 0;
+        ctx.status.tempShield.set(target, curr - eff.amount);
+      }
       break;
     case 'reduceInit':
       if (target) target.stats.init = Math.max(0, (target.stats.init || 0) - eff.amount);
       break;
     case 'grantFleetShields':
-      ctx.status.fleetTempShield = { tier: eff.tier, rounds: eff.rounds };
+      if (hostSide) ctx.status.fleetTempShield[hostSide] = { tier: eff.tier, rounds: eff.rounds };
       break;
     case 'corrosionApply':
       if (target?.alive) {
-        const idx = (target as { _idx?: number })._idx ?? -1;
-        const curr = ctx.status.corrosion.get(idx) || 0;
-        ctx.status.corrosion.set(idx, curr + 1);
+        const curr = ctx.status.corrosion.get(target) || 0;
+        ctx.status.corrosion.set(target, curr + 1);
       }
       break;
     case 'retaliateOnBlockDamage': {
@@ -60,7 +66,7 @@ function applyEffect(
       break;
     }
     case 'designateBonusDamage':
-      ctx.status.painter = { targetIdx: (target as { _idx?: number })?._idx ?? -1, rounds: eff.rounds, bonus: eff.amount };
+      ctx.status.painter = { target: target ?? null, rounds: eff.rounds, bonus: eff.amount };
       break;
     case 'magnetize':
       if (host) (host.stats as { magnet?: boolean }).magnet = true;
@@ -120,15 +126,25 @@ export function precomputeDynamicStats(fleet: Ship[], _enemyFleet: Ship[], ctx: 
 }
 
 export function startRoundTick(allies: Ship[], enemies: Ship[], ctx: BattleCtx) {
+  // reset per-round shield deltas
+  ctx.status.tempShield = new WeakMap();
+  // painter decay
   if (ctx.status.painter && ctx.status.painter.rounds > 0) {
     ctx.status.painter.rounds--;
     if (ctx.status.painter.rounds <= 0) ctx.status.painter = null;
   }
+  // fleet temp shield decay
+  (['P','E'] as const).forEach(side => {
+    const buff = ctx.status.fleetTempShield[side];
+    if (buff) {
+      buff.rounds--;
+      if (buff.rounds <= 0) ctx.status.fleetTempShield[side] = null;
+    }
+  });
   const tick = (fleet: Ship[]) => {
     for (const s of fleet) {
       if (!s.alive) continue;
-        const idx = (s as { _idx?: number })._idx ?? -1;
-      const stacks = ctx.status.corrosion.get(idx) || 0;
+      const stacks = ctx.status.corrosion.get(s) || 0;
       if (stacks > 0) {
         s.hull -= stacks;
         if (s.hull <= 0) { s.hull = 0; s.alive = false; }
@@ -136,5 +152,12 @@ export function startRoundTick(allies: Ship[], enemies: Ship[], ctx: BattleCtx) 
     }
   };
   tick(allies); tick(enemies);
+}
+
+export function effectiveShieldTier(ship: Ship, side: 'P' | 'E', ctx: BattleCtx) {
+  const base = ship.stats.shieldTier || 0;
+  const delta = ctx.status.tempShield.get(ship) || 0;
+  const fleet = ctx.status.fleetTempShield[side];
+  return Math.max(0, base + delta + (fleet ? fleet.tier : 0));
 }
 
