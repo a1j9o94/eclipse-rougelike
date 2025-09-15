@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest'
 import { makeShip, getFrame } from '../game'
 import { PARTS, RARE_PARTS } from '../../shared/parts'
 import { volley, buildInitiative } from '../game/combat'
+import { precomputeDynamicStats } from '../../shared/effectsEngine'
+import type { BattleCtx } from '../../shared/effects'
 
 describe('New part mechanics', () => {
   it('Disruptor Beam only drains initiative', () => {
@@ -53,5 +55,45 @@ describe('New part mechanics', () => {
     const plasma = PARTS.weapons.find(p=>p.id==='plasma_battery')!
     const ship = makeShip(frame, [src, drv, plasma, plasma, PARTS.hull[0]])
     expect(ship.stats.valid).toBe(false)
+  })
+
+  it('Rebound Blaster can reroll on a miss', () => {
+    const frame = getFrame('interceptor')
+    const rebound = PARTS.weapons.find(p=>p.id==='rebound_blaster')!
+    const src = PARTS.sources[0]
+    const drv = PARTS.drives[0]
+    const attacker = makeShip(frame, [src, drv, rebound])
+    const defender = makeShip(frame, [src, drv])
+    const log: string[] = []
+    const rng = { vals: [0, 0, 0.9], idx: 0, next(){ return this.vals[this.idx++] } }
+    const beforeHull = defender.hull
+    ;(globalThis as any).battleCtx = { rng: () => 0, rerollsThisRun: 0, status: { corrosion: new Map(), painter: null, fleetTempShield: null } }
+    volley(attacker, defender, 'P', log, [attacker], rng as any)
+    delete (globalThis as any).battleCtx
+    expect(defender.hull).toBe(beforeHull - 1)
+  })
+
+  it('Fleetfire Array gains dice per ally ship', () => {
+    const frame = getFrame('interceptor')
+    const fleetfire = PARTS.weapons.find(p=>p.id==='fleetfire_array')!
+    const src = PARTS.sources[0]
+    const drv = PARTS.drives[0]
+    const leader = makeShip(frame, [src, drv, fleetfire])
+    const ally = makeShip(frame, [src, drv])
+    const ctx: BattleCtx = { rng: () => 0, rerollsThisRun: 0, status: { corrosion: new Map(), painter: null, fleetTempShield: null } }
+    precomputeDynamicStats([leader, ally], [], ctx)
+    expect((leader.weapons[0] as any)._dynDice).toBe((fleetfire.dice || 0) + 1)
+  })
+
+  it('Hexfire Projector gains dice per unique weapon type', () => {
+    const frame = getFrame('interceptor')
+    const hex = PARTS.weapons.find(p=>p.id==='hexfire_projector')!
+    const plasma = PARTS.weapons.find(p=>p.id==='plasma')!
+    const src = PARTS.sources[0]
+    const drv = PARTS.drives[0]
+    const ship = makeShip(frame, [src, drv, hex, plasma])
+    const ctx: BattleCtx = { rng: () => 0, rerollsThisRun: 0, status: { corrosion: new Map(), painter: null, fleetTempShield: null } }
+    precomputeDynamicStats([ship], [], ctx)
+    expect((ship.weapons[0] as any)._dynDice).toBe((hex.dice || 0) + 1)
   })
 })
