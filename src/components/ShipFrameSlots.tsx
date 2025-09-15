@@ -1,5 +1,6 @@
 // React import not required with modern JSX transform
 import { type Part, PART_EFFECT_SYMBOLS, type PartEffectField } from "../../shared/parts";
+import type { EffectfulPart } from "../../shared/effects";
 import type { Ship } from "../../shared/types";
 import type { FrameId } from "../../shared/frames";
 
@@ -17,19 +18,45 @@ const CATEGORY_EFFECTS: Record<Part['cat'], PartEffectField[]> = {
   Weapon: ['dice', 'riftDice', 'dmgPerHit'],
   Computer: ['aim'],
   Shield: ['shieldTier', 'powerProd', 'dice', 'riftDice', 'dmgPerHit'],
-  Hull: ['extraHull', 'powerProd', 'init', 'aim', 'dice', 'riftDice', 'dmgPerHit', 'shieldTier', 'regen', 'initLoss'],
+  Hull: ['extraHull', 'powerProd', 'init', 'aim', 'dice', 'riftDice', 'dmgPerHit', 'shieldTier', 'regen'],
 };
 
 function effectLabels(p: Part, fields: PartEffectField[]) {
   const labels: string[] = [];
+  const isBeam = p.name.toLowerCase().includes('beam');
   fields.forEach(f => {
     if (f === 'extraHull') return;
+    if (isBeam && f === 'dice') return;
     const val = (p as Record<PartEffectField, number | undefined>)[f];
     if (typeof val === 'number' && val !== 0) {
       const sym = PART_EFFECT_SYMBOLS[f].replace(/[+-]$/, '');
       labels.push(val > 1 ? `${val}${sym}` : sym);
     }
   });
+  const ePart = p as EffectfulPart;
+  if (ePart.effects) {
+    for (const { effect } of ePart.effects) {
+      switch (effect.kind) {
+        case 'magnetize':
+          labels.push('🧲');
+          break;
+        case 'retaliateOnDeathDamage':
+        case 'retaliateOnBlockDamage':
+          labels.push('💥');
+          break;
+        case 'lowerShieldThisRound':
+          labels.push(`🔆${PART_EFFECT_SYMBOLS.shieldTier}-${effect.amount}`);
+          break;
+        case 'reduceInit':
+          labels.push(`🔆${PART_EFFECT_SYMBOLS.initLoss}${effect.amount}`);
+          break;
+      }
+    }
+  }
+  if (p.initLoss) {
+    labels.push(`${isBeam ? '🔆' : ''}${PART_EFFECT_SYMBOLS.initLoss}${p.initLoss}`);
+  }
+  if (isBeam && !labels.some(l => l.includes('🔆'))) labels.push('🔆');
   return labels.join('');
 }
 

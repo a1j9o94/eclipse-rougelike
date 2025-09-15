@@ -50,4 +50,31 @@ describe('CompactShip frame slot display', () => {
     expect(icon.includes('🛡️')).toBe(true)
     expect(icon.match(/\d?⚡/)).not.toBeNull()
   })
+
+  it('shows magnet icon for magnet hull', () => {
+    const hull = PARTS.hull.find(p => p.id === 'magnet_hull')!
+    const ship = makeShip(getFrame('interceptor'), [hull])
+    render(<CompactShip ship={ship} side="P" active={false} />)
+    const icon = screen.getByTestId('frame-slot-filled').textContent || ''
+    expect(icon.includes('🧲')).toBe(true)
+  })
+
+  it('renders beam icon without dice for beam weapons', () => {
+    const src = PARTS.sources[0]
+    const drv = PARTS.drives[0]
+    const beam = PARTS.weapons.find(p => p.id === 'entropy_beam')!
+    const ship = makeShip(getFrame('interceptor'), [src, drv, beam])
+    render(<CompactShip ship={ship} side="P" active={false} />)
+    const icons = screen.getAllByTestId('frame-slot-filled').map(el => el.textContent || '')
+    const beamIcon = icons.find(t => t.includes('🔆'))!
+    expect(beamIcon.includes('🎲')).toBe(false)
+  })
+
+  it('shows single heart with explosion for retaliatory hull', () => {
+    const hull = PARTS.hull.find(p => p.id === 'spite_plating')!
+    const ship = makeShip(getFrame('interceptor'), [hull])
+    render(<CompactShip ship={ship} side="P" active={false} />)
+    const icon = screen.getByTestId('frame-slot-filled').textContent || ''
+    expect(icon).toBe('❤️💥')
+  })
 })

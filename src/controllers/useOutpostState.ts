@@ -20,6 +20,7 @@ export function useOutpostState(saved: SavedRun | null){
 
   const [rerollCost, setRerollCost] = useState(() => saved?.rerollCost ?? 8)
   const [baseRerollCost, setBaseRerollCost] = useState(() => saved?.baseRerollCost ?? 8)
+  const [rerollsThisRun, setRerollsThisRun] = useState(() => saved?.rerollsThisRun ?? 0)
 
   const [capacity, setCapacity] = useState<CapacityState>(saved?.capacity ?? { cap: INITIAL_CAPACITY.cap })
 
@@ -35,6 +36,7 @@ export function useOutpostState(saved: SavedRun | null){
     resources, setResources,
     research, setResearch,
     rerollCost, setRerollCost,
+    rerollsThisRun, setRerollsThisRun,
     baseRerollCost, setBaseRerollCost,
     capacity, setCapacity,
     fleet, setFleet,

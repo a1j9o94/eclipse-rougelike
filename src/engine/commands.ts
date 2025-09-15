@@ -84,6 +84,7 @@ export function applyOutpostCommand(state: OutpostState, env: OutpostEnv, cmd: O
       const next = { ...state }
       next.resources = { ...next.resources, credits: next.resources.credits + res.delta.credits }
       next.rerollCost = rr + res.nextRerollCostDelta
+      next.rerollsThisRun = (next.rerollsThisRun || 0) + 1
       next.shopVersion = (next.shopVersion || 0) + 1
       return { state: next, effects: { shopItems: res.items } }
     }

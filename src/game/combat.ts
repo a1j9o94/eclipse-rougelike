@@ -1,4 +1,6 @@
-import { type Part, RIFT_FACES } from '../../shared/parts'
+import { RIFT_FACES } from '../../shared/parts'
+import { triggerHook, effectiveShieldTier } from '../../shared/effectsEngine'
+import type { EffectfulPart, BattleCtx } from '../../shared/effects'
 import { type Ship, type InitiativeEntry } from '../../shared/types'
 import { sizeRank } from './ship'
 import type { Rng } from '../engine/rng'
@@ -29,46 +31,93 @@ export function buildInitiative(pFleet:Ship[], eFleet:Ship[], rng?: Rng): Initia
 }
 
 export function targetIndex(defFleet:Ship[], strategy:'kill'|'guns'){
+  const alive = defFleet.map((s,i)=>({s,i})).filter(x=>x.s && x.s.alive)
+  const magnets = alive.filter(x=> (x.s.stats as { magnet?: boolean }).magnet)
+  const pool = magnets.length>0 ? magnets : alive
+  if(pool.length===0) return -1
   if(strategy==='kill'){
-    let best=-1, bestHull=1e9
-    for(let i=0;i<defFleet.length;i++){ const s=defFleet[i]; if(s && s.alive){ if(s.hull < bestHull){ bestHull=s.hull; best=i } } }
-    if(best!==-1) return best
+    return pool.reduce((b,c)=> c.s.hull < b.s.hull ? c : b).i
   }
   if(strategy==='guns'){
-    let best=-1, guns=-1
-    for(let i=0;i<defFleet.length;i++){ const s=defFleet[i]; if(s && s.alive){ const g=s.weapons.length; if(g>guns){ guns=g; best=i } } }
-    if(best!==-1) return best
+    return pool.reduce((b,c)=> c.s.weapons.length > b.s.weapons.length ? c : b).i
   }
-  return defFleet.findIndex(s=>s.alive)
+  return pool[0].i
 }
 
 export function volley(attacker:Ship, defender:Ship, side:'P'|'E', logArr:string[], friends:Ship[], rng?: Rng){
   const r: Rng = rng ?? fromMathRandom()
-  const thr = successThreshold(attacker.stats.aim, defender.stats.shieldTier)
-  attacker.weapons.forEach((w:Part) => {
+  const fleets = {
+    allies: friends,
+    enemies: side==='P'
+      ? ((friends as unknown as { _enemies?: Ship[] })._enemies ?? [])
+      : ((friends as unknown as { _allies?: Ship[] })._allies ?? [])
+  }
+  const g = globalThis as unknown as { battleCtx?: BattleCtx }
+  const shield = g.battleCtx ? effectiveShieldTier(defender, side === 'P' ? 'E' : 'P', g.battleCtx) : defender.stats.shieldTier
+  const thr = successThreshold(attacker.stats.aim, shield)
+  attacker.weapons.forEach((wRaw) => {
+    const w = wRaw as EffectfulPart & { _dynDice?: number }
     if(w.riftDice) return
-    for(let i=0;i<(w.dice||0);i++){
+    const diceToRoll = w._dynDice ?? w.dice ?? 0
+    for(let i=0;i<diceToRoll;i++){
       const faces = w.faces||[]
       const face = faces[Math.floor(r.next()*faces.length)] || {}
+      const rollWeapon = (damage:number, faceRoll:number|undefined, isAuto:boolean, isChain=false) => {
+        const painter = g.battleCtx?.status.painter
+        const bonus = painter && painter.rounds>0 && painter.target===defender ? painter.bonus : 0
+        const total = damage + bonus
+        defender.hull -= total
+        const msg = isAuto ? `auto ${total}` : (total>0 ? `roll ${faceRoll} ≥ ${thr} → ${total}` : `roll ${faceRoll} ≥ ${thr}`)
+        logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} → ${defender.frame.name} | ${w.name}: ${msg}`)
+        if(defender.hull<=0){ defender.alive=false; defender.hull=0; logArr.push(`💥 ${defender.frame.name} destroyed!`) }
+        if(w.initLoss){ defender.stats.init = Math.max(0, defender.stats.init - w.initLoss); logArr.push(`⌛ ${defender.frame.name} -${w.initLoss} INIT`); }
+        if (g.battleCtx) triggerHook([w], 'onHit', attacker, defender, fleets, g.battleCtx, side)
+        if(!isChain){
+          const chainHooks = (w.effects ?? []).filter(
+            (e): e is { hook: 'onHit'; effect: { kind: 'chainOnHit'; decay: number; minDmg: number } } =>
+              e.hook==='onHit' && e.effect.kind==='chainOnHit'
+          )
+          const ch = chainHooks[0]
+          if(ch){
+            let extra = (w.dmgPerHit || 0) - ch.effect.decay
+            while(extra >= ch.effect.minDmg && defender.alive){
+              const chainRoll = 1 + Math.floor(r.next()*6)
+              if(chainRoll >= thr){
+                rollWeapon(extra, chainRoll, false, true)
+                extra -= ch.effect.decay
+              } else {
+                logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} misses with ${w.name} (chain roll ${chainRoll} < ${thr})`)
+                if (g.battleCtx) triggerHook([w], 'onMiss', attacker, defender, fleets, g.battleCtx, side)
+                break
+              }
+            }
+          }
+        }
+      }
       if(typeof face.dmg === 'number'){
-        const dmg = face.dmg
-        defender.hull -= dmg
-        const autoMsg = dmg>0 ? `auto ${dmg}` : 'auto'
-        logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} → ${defender.frame.name} | ${w.name}: ${autoMsg}`)
-        if(defender.hull<=0){ defender.alive=false; defender.hull=0; logArr.push(`💥 ${defender.frame.name} destroyed!`) }
-        if(w.initLoss){ defender.stats.init = Math.max(0, defender.stats.init - w.initLoss); logArr.push(`⌛ ${defender.frame.name} -${w.initLoss} INIT`)}
+        rollWeapon(face.dmg, undefined, true)
       } else if(typeof face.roll === 'number' && face.roll >= thr){
-        const dmg = w.dmgPerHit||0
-        defender.hull -= dmg
-        const rollMsg = dmg>0 ? `roll ${face.roll} ≥ ${thr} → ${dmg}` : `roll ${face.roll} ≥ ${thr}`
-        logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} → ${defender.frame.name} | ${w.name}: ${rollMsg}`)
-        if(defender.hull<=0){ defender.alive=false; defender.hull=0; logArr.push(`💥 ${defender.frame.name} destroyed!`) }
-        if(w.initLoss){ defender.stats.init = Math.max(0, defender.stats.init - w.initLoss); logArr.push(`⌛ ${defender.frame.name} -${w.initLoss} INIT`)}
+        rollWeapon(w.dmgPerHit||0, face.roll, false)
       } else {
         const rolled = typeof face.roll === 'number' ? face.roll : 'miss'
         logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} misses with ${w.name} (roll ${rolled} < ${thr})`)
+        if (g.battleCtx) triggerHook([w], 'onMiss', attacker, defender, fleets, g.battleCtx, side)
+        const missHooks = (w.effects ?? []).filter(
+          (e): e is { hook: 'onMiss'; effect: { kind: 'rerollOnMiss'; chancePct: number } } =>
+            e.hook==='onMiss' && e.effect.kind==='rerollOnMiss'
+        )
+        for(const mh of missHooks){
+          if(r.next()*100 < mh.effect.chancePct){
+            const rerFace = faces[Math.floor(r.next()*faces.length)] || {}
+            if(typeof rerFace.dmg === 'number') rollWeapon(rerFace.dmg, undefined, true)
+            else if(typeof rerFace.roll === 'number' && rerFace.roll >= thr) rollWeapon(w.dmgPerHit||0, rerFace.roll, false)
+          }
+        }
       }
-      if(face.self){ assignRiftSelfDamage(friends, side, logArr) }
+      if(face.self){
+        assignRiftSelfDamage(friends, side, logArr)
+        if (g.battleCtx) triggerHook([w], 'onSelfHit', attacker, defender, fleets, g.battleCtx, side)
+      }
     }
   })
   if(attacker.riftDice>0){

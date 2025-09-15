@@ -30,6 +30,7 @@ export function useRunManagement(params: {
   startFirstCombat: () => void
   clearRunState: () => void
   setShowRules?: (v: boolean) => void
+  setRerollsThisRun: (n: number) => void
 }){
   const p = params
   function newRun(diff: DifficultyId, pick: FactionId){
@@ -53,6 +54,7 @@ export function useRunManagement(params: {
     p.setFleet(st.fleet as unknown as Ship[])
     p.setFocused(0)
     p.setShop({ items: st.shopItems })
+    p.setRerollsThisRun(0)
     p.startFirstCombat()
     params.setShowRules?.(true)
   }
@@ -87,6 +89,7 @@ export function useRunManagement(params: {
     p.setFocused(0)
     // Initial tutorial shop will be set after first combat; keep current
     p.setShop({ items: st.shopItems })
+    p.setRerollsThisRun(0)
     // Do not auto-start combat. Show tutorial intro first; GameRoot will start combat on Next.
     tutorialEnable(); tutorialSetStep('intro-combat')
   }
@@ -97,6 +100,7 @@ export function useRunManagement(params: {
     p.setShowNewRun(true)
     p.setEndless(false)
     p.setLivesRemaining(0)
+    p.setRerollsThisRun(0)
   }
 
   return { newRun, newRunTutorial, resetRun }

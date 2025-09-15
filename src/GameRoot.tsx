@@ -100,6 +100,7 @@ export default function EclipseIntegrated(){
     resources, setResources,
     research, setResearch,
     rerollCost, setRerollCost,
+    rerollsThisRun, setRerollsThisRun,
     baseRerollCost, setBaseRerollCost,
     capacity, setCapacity,
     fleet, setFleet,
@@ -144,7 +145,7 @@ export default function EclipseIntegrated(){
   // ---------- Run management ----------
   const { newRun, newRunTutorial, resetRun } = useRunManagement({
     setDifficulty, setFaction, setOpponent: (f)=>setOpponent(f as FactionId), setShowNewRun, playEffect: (k)=>{ void playEffect(k as 'page'|'startCombat'|'equip'|'reroll'|'dock'|'faction'|'tech') }, setEndless, setLivesRemaining,
-    setResources, setCapacity, setResearch, setRerollCost, setBaseRerollCost, setSector, setBlueprints: (bp)=>setBlueprints(bp as Record<FrameId, Part[]>), setFleet: (f)=>setFleet(f as unknown as Ship[]), setFocused, setShop, startFirstCombat: ()=> startFirstCombatRef.current(), clearRunState, setShowRules,
+    setResources, setCapacity, setResearch, setRerollCost, setBaseRerollCost, setSector, setBlueprints: (bp)=>setBlueprints(bp as Record<FrameId, Part[]>), setFleet: (f)=>setFleet(f as unknown as Ship[]), setFocused, setShop, setRerollsThisRun, startFirstCombat: ()=> startFirstCombatRef.current(), clearRunState, setShowRules,
   })
   // Tutorial start helper is provided by the same hook (newRunTutorial)
 
@@ -181,6 +182,7 @@ export default function EclipseIntegrated(){
       shop,
       focused,
       rerollCost,
+      rerollsThisRun,
       shopVersion,
       sector,
       endless,
@@ -193,6 +195,7 @@ export default function EclipseIntegrated(){
       setCapacity,
       setFocused,
       setRerollCost,
+      setRerollsThisRun,
       setShopVersion,
       setShop,
       setLastEffects,
@@ -242,6 +245,7 @@ export default function EclipseIntegrated(){
       turnPtr: ()=>cv.turnPtr,
       combatOver: ()=>cv.combatOver,
       showRules: ()=>showRules,
+      rerollsThisRun: ()=>rerollsThisRun,
     },
     setters: {
       setFleet: (f)=> setFleet(f as Ship[]),
@@ -362,6 +366,7 @@ export default function EclipseIntegrated(){
     fleet: fleet as Ship[],
     shop,
     livesRemaining,
+    rerollsThisRun,
   })
   // Reroll base initialization handled in useMpSync; do not force local rerollCost to base here.
   function dismissRules(){ setShowRules(false); }
