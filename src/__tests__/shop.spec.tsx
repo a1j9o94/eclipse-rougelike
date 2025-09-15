@@ -14,7 +14,7 @@ describe('Shop interactions', () => {
 
   it('Shop shows exactly 4 items by default', async () => {
     renderOutpost()
-    const buyButtons = screen.getAllByRole('button', { name: /^Buy & Install$/i })
+    const buyButtons = screen.getAllByRole('button', { name: /^Buy \(\d+¢\)$/i })
     expect(buyButtons.length).toBe(4)
   }, 20000)
 
@@ -22,7 +22,7 @@ describe('Shop interactions', () => {
     renderOutpost()
     const gridBtn = screen.getByRole('button', { name: /Grid 1→2/i })
     fireEvent.click(gridBtn)
-    const buyButtons = screen.getAllByRole('button', { name: /^Buy & Install$/i })
+    const buyButtons = screen.getAllByRole('button', { name: /^Buy \(\d+¢\)$/i })
     expect(buyButtons.length).toBe(4)
     const shopHeading = screen.getByText(/Outpost Inventory/i)
     const shopRegion = shopHeading.parentElement?.parentElement as HTMLElement
@@ -30,4 +30,3 @@ describe('Shop interactions', () => {
     expect(forbidden.length).toBe(0)
   }, 20000)
 })
-
