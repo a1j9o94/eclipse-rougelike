@@ -13,8 +13,9 @@ describe('part descriptions', () => {
   it('explains rift cannon behavior', () => {
     const rift = RARE_PARTS.find(p => p.id === 'rift_cannon')!;
     const desc = partDescription(rift);
-    expect(desc).toMatch(/1-3 damage/);
-    expect(desc).toMatch(/damage to you/i);
+    expect(desc).toMatch(/results: 1=1 damage/i);
+    expect(desc).toMatch(/hits you for 1/i);
+    expect(desc).toMatch(/two faces miss/i);
     expect(desc).toMatch(/aim and computers don't help/i);
   });
 

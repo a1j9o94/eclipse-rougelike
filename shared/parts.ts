@@ -52,13 +52,17 @@ export const RIFT_FACES: DieFace[] = [
   {},
 ] as const;
 
+const RIFT_DIE_OUTCOMES =
+  'Results: 1=1 damage, 2=2 damage, 3=3 damage and 1 to you; one face only hits you for 1; two faces miss.';
+const RIFT_DIE_AIM_NOTE = "Aim and computers don't help.";
+
 export const RARE_PARTS: EffectfulPart[] = [
   { id: "spike_launcher", name: "Spike Launcher", dice: 1, dmgPerHit: 3, faces: [ { roll: 0 }, { roll: 0 }, { roll: 0 }, { roll: 0 }, { roll: 0 }, { dmg: 3 } ], powerCost: 1, tier: 1, cost: 30, cat: "Weapon", tech_category: "Nano", rare: true, desc: "One die: only a 6 hits for 3 damage. Aim and computers don't help." },
-  { id: "rift_cannon", name: "Rift Cannon", riftDice: 1, faces: RIFT_FACES, powerCost: 2, tier: 2, cost: 65, cat: "Weapon", tech_category: "Nano", rare: true, desc: "Rolls one Rift die for 1-3 damage. A 3 also deals 1 damage to you. Aim and computers don't help." },
+  { id: "rift_cannon", name: "Rift Cannon", riftDice: 1, faces: RIFT_FACES, powerCost: 2, tier: 2, cost: 65, cat: "Weapon", tech_category: "Nano", rare: true, desc: `Rolls one Rift die. ${RIFT_DIE_OUTCOMES} ${RIFT_DIE_AIM_NOTE}` },
   { id: "sentient_hull", name: "Sentient Hull", extraHull: 1, aim: 1, powerCost: 0, tier: 2, cost: 50, cat: "Computer", tech_category: "Nano", rare: true, desc: "Adds 1 hull and +1 Aim with no power cost." },
   { id: "absorption", name: "Absorption Shield", shieldTier: 1, powerProd: 4, tier: 2, cost: 65, cat: "Shield", tech_category: "Nano", rare: true, desc: "Shield tier 1 that also generates 4 power."},
   { id: "quantum_cpu", name: "Quantum Computer", aim: 2, powerCost: 1, tier: 2, cost: 70, cat: "Computer", tech_category: "Grid", rare: true, desc: "Adds +2 Aim for only 1 power."},
-  { id: "rift_conductor", name: "Rift Conductor", extraHull: 1, riftDice: 1, powerCost: 1, tier: 2, cost: 40, cat: "Hull", tech_category: "Nano", rare: true, desc: "Adds 1 hull and rolls a Rift die (1-3 damage; a 3 also hits you for 1). Aim and computers don't help."},
+  { id: "rift_conductor", name: "Rift Conductor", extraHull: 1, riftDice: 1, powerCost: 1, tier: 2, cost: 40, cat: "Hull", tech_category: "Nano", rare: true, desc: `Adds 1 hull and rolls a Rift die (1=1 damage, 2=2 damage, 3=3 damage and 1 to you; one face only hits you for 1; two faces miss). ${RIFT_DIE_AIM_NOTE}`},
   { id: "disruptor", name: "Disruptor Beam", dice: 1, dmgPerHit: 0, faces: [ { roll: 6 } ], powerCost: 1, tier: 2, cost: 80, cat: "Weapon", tech_category: "Nano", initLoss: 1, rare: true, desc: "Always hits and lowers enemy initiative by 1 without dealing damage." },
   { id: "disruptor_cannon", name: "Disruptor Cannon", dice: 1, dmgPerHit: 1, faces: [ { roll: 1 }, { roll: 2 }, { roll: 3 }, { roll: 4 }, { roll: 5 }, { dmg: 1 } ], powerCost: 2, tier: 2, cost: 90, cat: "Weapon", tech_category: "Nano", initLoss: 1, rare: true, desc: "Rolls 1 die; hits deal 1 damage and lower enemy initiative by 1." },
   { id: "reflective_armor", name: "Reflective Armor", extraHull: 1, shieldTier: 1, powerCost: 0, tier: 2, cost: 45, cat: "Hull", tech_category: "Nano", rare: true, desc: "+1 hull and shield tier 1. When this ship blocks with shields, roll a die; on 6, deal 1 damage back.", effects: [{ hook: 'onBlock', effect: { kind: 'retaliateOnBlockDamage', dieThreshold: 6, dmg: 1 } }] },
@@ -91,7 +95,7 @@ export const PARTS: PartCatalog = {
     { id: "antimatter_array", name: "Antimatter Array", dice: 2, dmgPerHit: 2, faces: [ { roll: 1 }, { roll: 2 }, { roll: 3 }, { roll: 4 }, { roll: 5 }, { dmg: 2 } ], powerCost: 4, tier: 3, cost: 150, cat: "Weapon", tech_category: "Nano", desc: "Rolls 2 dice; each hit deals 2 damage." },
     { id: "bargain_plasma", name: "Bargain Plasma", dice: 1, dmgPerHit: 1, faces: [ { roll: 1 }, { roll: 2 }, { roll: 3 }, { roll: 4 }, { roll: 5 }, { dmg: 1 } ], powerCost: 1, tier: 1, cost: 20, cat: "Weapon", tech_category: "Nano", desc: "Baseline plasma. While installed, shop prices are 10% lower.", effects: [{ hook: 'onShopPurchase', effect: { kind: 'econDiscount', percent: 10 } }] },
     { id: "rebound_blaster", name: "Rebound Blaster", dice: 1, dmgPerHit: 1, faces: [ { roll: 1 }, { roll: 2 }, { roll: 3 }, { roll: 4 }, { roll: 5 }, { dmg: 1 } ], powerCost: 1, tier: 1, cost: 35, cat: "Weapon", tech_category: "Nano", desc: "On miss: 25% chance to reroll.", effects: [{ hook: 'onMiss', effect: { kind: 'rerollOnMiss', chancePct: 25 } }] },
-    { id: "volatile_cannon", name: "Volatile Cannon", riftDice: 1, faces: RIFT_FACES, powerCost: 2, tier: 2, cost: 55, cat: "Weapon", tech_category: "Nano", desc: "Rolls a Rift die. If it self-hits, all allies gain +1 Aim next round.", effects: [{ hook: 'onSelfHit', effect: { kind: 'aimBuffNextRoundFleet', amount: 1 } }] },
+    { id: "volatile_cannon", name: "Volatile Cannon", riftDice: 1, faces: RIFT_FACES, powerCost: 2, tier: 2, cost: 55, cat: "Weapon", tech_category: "Nano", desc: `Rolls a Rift die. ${RIFT_DIE_OUTCOMES} ${RIFT_DIE_AIM_NOTE} If it self-hits, all allies gain +1 Aim next round.`, effects: [{ hook: 'onSelfHit', effect: { kind: 'aimBuffNextRoundFleet', amount: 1 } }] },
     { id: "fleetfire_array", name: "Fleetfire Array", dice: 1, dmgPerHit: 1, faces: [ { roll: 1 }, { roll: 2 }, { roll: 3 }, { roll: 4 }, { roll: 5 }, { dmg: 1 } ], powerCost: 2, tier: 2, cost: 70, cat: "Weapon", tech_category: "Nano", desc: "Gains +1 die per other ship in your fleet at the start of combat.", effects: [{ hook: 'onPreCombat', effect: { kind: 'gainDicePerShip', amount: 1 } }] },
     { id: "hexfire_projector", name: "Hexfire Projector", dice: 1, dmgPerHit: 1, faces: [ { roll: 1 }, { roll: 2 }, { roll: 3 }, { roll: 4 }, { roll: 5 }, { dmg: 1 } ], powerCost: 2, tier: 2, cost: 75, cat: "Weapon", tech_category: "Nano", desc: "Gains +1 die per different weapon type on this ship.", effects: [{ hook: 'onPreCombat', effect: { kind: 'gainDicePerUniqueWeapon', amount: 1 } }] },
     { id: "entropy_beam", name: "Entropy Beam", dice: 1, dmgPerHit: 0, faces: [ { roll: 6 } ], powerCost: 1, tier: 2, cost: 60, cat: "Weapon", tech_category: "Nano", desc: "Utility beam. Always hits; lowers enemy shield tier by 1 this round.", effects: [{ hook: 'onHit', effect: { kind: 'lowerShieldThisRound', amount: 1 } }] },
@@ -138,7 +142,7 @@ export const PART_EFFECT_FIELDS = [
 ] as const;
 export type PartEffectField = typeof PART_EFFECT_FIELDS[number];
 export const PART_EFFECT_SYMBOLS: Record<PartEffectField, string> = {
-  powerProd: '⚡+', powerCost: '⚡-', init: '🚀', dice: '🎲', dmgPerHit: '💥', riftDice: '🕳️', shieldTier: '🛡️', extraHull: '❤️', aim: '🎯', initLoss: '🚀-', regen: '❤️+',
+  powerProd: '⚡+', powerCost: '⚡-', init: '🚀', dice: '🎲', dmgPerHit: '💥', riftDice: '🎲', shieldTier: '🛡️', extraHull: '❤️', aim: '🎯', initLoss: '🚀-', regen: '❤️+',
 } as const;
 
 export function partEffects(p: Part) {
@@ -198,7 +202,7 @@ export function partDescription(p: Part): string {
     case 'Hull': return `+${p.extraHull || 0} hull${p.regen ? `; regenerates ${p.regen} each round` : ''}.`;
     case 'Weapon':
     default:
-      if (p.riftDice) return `Rolls ${p.riftDice} Rift die${p.riftDice > 1 ? 's' : ''}.`;
+      if (p.riftDice) return `Rolls ${p.riftDice} Rift die${p.riftDice > 1 ? 's' : ''}. ${RIFT_DIE_OUTCOMES} ${RIFT_DIE_AIM_NOTE}`;
       return `Rolls ${p.dice || 0} die for ${p.dmgPerHit || 0} damage each.`;
   }
 }
