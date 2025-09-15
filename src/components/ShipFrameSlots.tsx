@@ -23,8 +23,10 @@ const CATEGORY_EFFECTS: Record<Part['cat'], PartEffectField[]> = {
 
 function effectLabels(p: Part, fields: PartEffectField[]) {
   const labels: string[] = [];
+  const isBeam = p.name.toLowerCase().includes('beam');
   fields.forEach(f => {
     if (f === 'extraHull') return;
+    if (isBeam && f === 'dice') return;
     const val = (p as Record<PartEffectField, number | undefined>)[f];
     if (typeof val === 'number' && val !== 0) {
       const sym = PART_EFFECT_SYMBOLS[f].replace(/[+-]$/, '');
@@ -52,9 +54,9 @@ function effectLabels(p: Part, fields: PartEffectField[]) {
     }
   }
   if (p.initLoss) {
-    const isBeam = p.name.toLowerCase().includes('beam');
     labels.push(`${isBeam ? '🔆' : ''}${PART_EFFECT_SYMBOLS.initLoss}${p.initLoss}`);
   }
+  if (isBeam && !labels.some(l => l.includes('🔆'))) labels.push('🔆');
   return labels.join('');
 }
 

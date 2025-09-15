@@ -61,6 +61,7 @@ export const RARE_PARTS: EffectfulPart[] = [
   { id: "rift_conductor", name: "Rift Conductor", extraHull: 1, riftDice: 1, powerCost: 1, tier: 2, cost: 40, cat: "Hull", tech_category: "Nano", rare: true, desc: "Adds 1 hull and rolls a Rift die (1-3 damage; a 3 also hits you for 1). Aim and computers don't help."},
   { id: "disruptor", name: "Disruptor Beam", dice: 1, dmgPerHit: 0, faces: [ { roll: 6 } ], powerCost: 1, tier: 2, cost: 80, cat: "Weapon", tech_category: "Nano", initLoss: 1, rare: true, desc: "Always hits and lowers enemy initiative by 1 without dealing damage." },
   { id: "disruptor_cannon", name: "Disruptor Cannon", dice: 1, dmgPerHit: 1, faces: [ { roll: 1 }, { roll: 2 }, { roll: 3 }, { roll: 4 }, { roll: 5 }, { dmg: 1 } ], powerCost: 2, tier: 2, cost: 90, cat: "Weapon", tech_category: "Nano", initLoss: 1, rare: true, desc: "Rolls 1 die; hits deal 1 damage and lower enemy initiative by 1." },
+  { id: "reflective_armor", name: "Reflective Armor", extraHull: 1, shieldTier: 1, powerCost: 0, tier: 2, cost: 45, cat: "Hull", tech_category: "Nano", rare: true, desc: "+1 hull and shield tier 1. When this ship blocks with shields, roll a die; on 6, deal 1 damage back.", effects: [{ hook: 'onBlock', effect: { kind: 'retaliateOnBlockDamage', dieThreshold: 6, dmg: 1 } }] },
   { id: "auto_repair", name: "Auto-Repair Hull", extraHull: 2, regen: 1, powerCost: 1, tier: 2, cost: 80, cat: "Hull", tech_category: "Nano", rare: true, desc: "Adds 2 hull and regenerates 1 each round; uses 1 power." },
 ];
 
@@ -116,8 +117,7 @@ export const PARTS: PartCatalog = {
     { id: "composite", name: "Composite Hull", extraHull: 1, powerCost: 0, tier: 1, cost: 15, cat: "Hull", tech_category: "Nano", desc: "Adds 1 hull." },
     { id: "monolith_plating", name: "Monolith Plating", extraHull: 4, powerCost: 2, tier: 3, cost: 160, cat: "Hull", tech_category: "Nano", desc: "Adds 4 hull; uses 2 power." },
     { id: "magnet_hull", name: "Magnet Hull", extraHull: 2, tier: 2, cost: 55, cat: "Hull", tech_category: "Nano", desc: "+2 hull. Aggro: enemies must target this ship if possible.", effects: [{ hook: 'onPreCombat', effect: { kind: 'magnetize' } }] },
-    { id: "spite_plating", name: "Spite Plating", extraHull: 1, powerCost: 0, tier: 1, cost: 28, cat: "Hull", tech_category: "Nano", desc: "+1 hull. On destruction: roll a die; on 5–6, deal 1 damage to the attacker.", effects: [{ hook: 'onShipDeath', effect: { kind: 'retaliateOnDeathDamage', dieThreshold: 5, dmg: 1 } }] },
-    { id: "reflective_armor", name: "Reflective Armor", extraHull: 1, powerCost: 0, tier: 2, cost: 45, cat: "Hull", tech_category: "Nano", desc: "+1 hull. When this ship blocks with shields, roll a die; on 6, deal 1 damage back.", effects: [{ hook: 'onBlock', effect: { kind: 'retaliateOnBlockDamage', dieThreshold: 6, dmg: 1 } }] },
+    { id: "spite_plating", name: "Spite Plating", extraHull: 1, powerCost: 1, tier: 2, cost: 28, cat: "Hull", tech_category: "Nano", desc: "+1 hull. On destruction: roll a die; on 5–6, deal 1 damage to the attacker.", effects: [{ hook: 'onShipDeath', effect: { kind: 'retaliateOnDeathDamage', dieThreshold: 5, dmg: 1 } }] },
     { id: "reckless_hull", name: "Reckless Hull", extraHull: 3, powerCost: 0, tier: 2, cost: 60, cat: "Hull", tech_category: "Nano", desc: "+3 hull for 0 power. 15% chance to vanish on each shop reroll.", effects: [{ hook: 'onShopReroll', effect: { kind: 'destroyOnShopReroll', chancePct: 15 } }] },
   ],
   rare: RARE_PARTS,
@@ -143,8 +143,10 @@ export const PART_EFFECT_SYMBOLS: Record<PartEffectField, string> = {
 
 export function partEffects(p: Part) {
   const effects: string[] = [];
+  const isBeam = p.name.toLowerCase().includes('beam');
   for (const key of PART_EFFECT_FIELDS) {
     if (key === 'dmgPerHit' || key === 'initLoss') continue;
+    if (isBeam && key === 'dice') continue;
     const val = p[key as keyof Part];
     if (typeof val === 'number' && val !== 0) effects.push(`${PART_EFFECT_SYMBOLS[key]}${val}`);
   }
@@ -169,9 +171,9 @@ export function partEffects(p: Part) {
     }
   }
   if (p.initLoss) {
-    const isBeam = p.name.toLowerCase().includes('beam');
     effects.push(`${isBeam ? '🔆' : ''}${PART_EFFECT_SYMBOLS.initLoss}${p.initLoss}`);
   }
+  if (isBeam && !effects.some(e => e.includes('🔆'))) effects.push('🔆');
   if (p.cat === 'Weapon') {
     const faces = p.faces || [];
     const maxDmg = Math.max(p.dmgPerHit || 0, ...faces.map(f => f.dmg || 0));
