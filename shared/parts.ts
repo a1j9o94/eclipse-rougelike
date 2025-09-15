@@ -144,9 +144,33 @@ export const PART_EFFECT_SYMBOLS: Record<PartEffectField, string> = {
 export function partEffects(p: Part) {
   const effects: string[] = [];
   for (const key of PART_EFFECT_FIELDS) {
-    if (key === 'dmgPerHit') continue;
+    if (key === 'dmgPerHit' || key === 'initLoss') continue;
     const val = p[key as keyof Part];
     if (typeof val === 'number' && val !== 0) effects.push(`${PART_EFFECT_SYMBOLS[key]}${val}`);
+  }
+  const ePart = p as EffectfulPart;
+  if (ePart.effects) {
+    for (const { effect } of ePart.effects) {
+      switch (effect.kind) {
+        case 'magnetize':
+          effects.push('🧲');
+          break;
+        case 'retaliateOnDeathDamage':
+        case 'retaliateOnBlockDamage':
+          effects.push('❤️💥');
+          break;
+        case 'lowerShieldThisRound':
+          effects.push(`🔆${PART_EFFECT_SYMBOLS.shieldTier}-${effect.amount}`);
+          break;
+        case 'reduceInit':
+          effects.push(`🔆${PART_EFFECT_SYMBOLS.initLoss}${effect.amount}`);
+          break;
+      }
+    }
+  }
+  if (p.initLoss) {
+    const isBeam = p.name.toLowerCase().includes('beam');
+    effects.push(`${isBeam ? '🔆' : ''}${PART_EFFECT_SYMBOLS.initLoss}${p.initLoss}`);
   }
   if (p.cat === 'Weapon') {
     const faces = p.faces || [];

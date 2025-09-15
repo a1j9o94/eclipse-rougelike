@@ -15,4 +15,35 @@ describe('partEffects display', () => {
     expect(eff).toContain('💥1')
     expect(eff).toContain('🎯17%')
   })
+
+  it('shows magnet icon for magnet hull', () => {
+    const magnet = PARTS.hull.find(p=>p.id==='magnet_hull')!
+    const eff = partEffects(magnet)
+    expect(eff).toContain('🧲')
+  })
+
+  it('shows retaliation icon for spite plating', () => {
+    const spite = PARTS.hull.find(p=>p.id==='spite_plating')!
+    const eff = partEffects(spite)
+    expect(eff).toContain('❤️💥')
+  })
+
+  it('shows beam and shield icon for entropy beam', () => {
+    const beam = PARTS.weapons.find(p=>p.id==='entropy_beam')!
+    const eff = partEffects(beam)
+    expect(eff).toContain('🔆🛡️-1')
+  })
+
+  it('shows beam and init icon for disruptor beam', () => {
+    const dis = RARE_PARTS.find(p=>p.id==='disruptor')!
+    const eff = partEffects(dis)
+    expect(eff).toContain('🔆🚀-1')
+  })
+
+  it('shows hull and aim icons for sentient hull', () => {
+    const sent = RARE_PARTS.find(p=>p.id==='sentient_hull')!
+    const eff = partEffects(sent)
+    expect(eff).toContain('❤️1')
+    expect(eff).toContain('🎯1')
+  })
 })
