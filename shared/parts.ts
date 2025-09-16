@@ -67,6 +67,10 @@ export const RARE_PARTS: EffectfulPart[] = [
   { id: "disruptor_cannon", name: "Disruptor Cannon", dice: 1, dmgPerHit: 1, faces: [ { roll: 1 }, { roll: 2 }, { roll: 3 }, { roll: 4 }, { roll: 5 }, { dmg: 1 } ], powerCost: 2, tier: 2, cost: 90, cat: "Weapon", tech_category: "Nano", initLoss: 1, rare: true, desc: "Rolls 1 die; hits deal 1 damage and lower enemy initiative by 1." },
   { id: "reflective_armor", name: "Reflective Armor", extraHull: 1, shieldTier: 1, powerCost: 0, tier: 2, cost: 45, cat: "Hull", tech_category: "Nano", rare: true, desc: "+1 hull and shield tier 1. When this ship blocks with shields, roll a die; on 6, deal 1 damage back.", effects: [{ hook: 'onBlock', effect: { kind: 'retaliateOnBlockDamage', dieThreshold: 6, dmg: 1 } }] },
   { id: "auto_repair", name: "Auto-Repair Hull", extraHull: 2, regen: 1, powerCost: 1, tier: 2, cost: 80, cat: "Hull", tech_category: "Nano", rare: true, desc: "Adds 2 hull and regenerates 1 each round; uses 1 power." },
+  { id: "guardian_shield", name: "Guardian Shield", shieldTier: 1, powerCost: 1, tier: 2, cost: 85, cat: "Shield", tech_category: "Nano", rare: true, desc: "Shield tier 1. On death: all allies gain shield tier 1 for 2 rounds.", effects: [{ hook: 'onShipDeath', effect: { kind: 'grantFleetShields', tier: 1, rounds: 2 } }] },
+  { id: "target_painter_beam", name: "Target Painter Beam", dice: 1, dmgPerHit: 0, faces: [ { roll: 6 } ], powerCost: 1, tier: 2, cost: 95, cat: "Weapon", tech_category: "Nano", rare: true, desc: "Once per combat: designate the target; all hits against it this round deal +1 damage.", effects: [{ hook: 'onHit', effect: { kind: 'designateBonusDamage', amount: 1, rounds: 1 } }] },
+  { id: "recursive_array_mk2", name: "Recursive Array Mk II", dice: 1, dmgPerHit: 2, faces: [ { roll: 1 }, { roll: 2 }, { roll: 3 }, { roll: 4 }, { roll: 5 }, { dmg: 2 } ], powerCost: 2, tier: 3, cost: 140, cat: "Weapon", tech_category: "Nano", rare: true, slots: 2, desc: "On hit, roll again; each chained hit deals -1 damage (min 1).", effects: [{ hook: 'onHit', effect: { kind: 'chainOnHit', decay: 1, minDmg: 1 } }] },
+  { id: "unity_hull", name: "Unity Hull", extraHull: 2, powerCost: 0, tier: 2, cost: 85, cat: "Hull", tech_category: "Nano", rare: true, desc: "+2 hull. Once per combat when another ally dies, gain +1 hull.", effects: [{ hook: 'onAllyDeath', effect: { kind: 'gainHullOnAllyDeath', amount: 1, oncePerCombat: true } }] },
 ];
 
 export const PARTS: PartCatalog = {
@@ -76,6 +80,7 @@ export const PARTS: PartCatalog = {
     { id: "quantum_source", name: "Quantum Source", powerProd: 9, tier: 3, cost: 120, cat: "Source", tech_category: "Grid", desc: "Generates 9 power." },
     { id: "micro_fusion", name: "Micro Fusion", powerProd: 2, tier: 1, cost: 12, cat: "Source", tech_category: "Grid", desc: "Small reactor that makes 2 power." },
     { id: "zero_point", name: "Zero-Point Source", powerProd: 12, tier: 3, cost: 150, cat: "Source", tech_category: "Grid", desc: "Generates 12 power." },
+    { id: "discount_source", name: "Discount Source", powerProd: 4, tier: 2, cost: 35, cat: "Source", tech_category: "Grid", desc: "Generates 4 power at a bargain. 15% chance to vanish when you reroll the shop.", effects: [{ hook: 'onShopReroll', effect: { kind: 'destroyOnShopReroll', chancePct: 15 } }] },
   ],
   drives: [
     { id: "fusion_drive", name: "Fusion Drive", init: 1, powerCost: 1, tier: 1, cost: 18, cat: "Drive", tech_category: "Grid", desc: "Adds +1 initiative; uses 1 power." },

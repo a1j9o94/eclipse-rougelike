@@ -18,16 +18,35 @@ export function triggerHook(
   }
 }
 
+export function handleShipDeath(
+  dead: Ship,
+  killer: Ship | null,
+  fleets: { allies: Ship[]; enemies: Ship[] },
+  ctx: BattleCtx,
+  deadSide: 'P' | 'E'
+) {
+  triggerHook((dead.parts as EffectfulPart[]) ?? [], 'onShipDeath', dead, killer, fleets, ctx, deadSide);
+  for (const ally of fleets.allies) {
+    if (!ally || ally === dead || !ally.alive) continue;
+    triggerHook((ally.parts as EffectfulPart[]) ?? [], 'onAllyDeath', ally, dead, fleets, ctx, deadSide);
+  }
+  const enemySide = deadSide === 'P' ? 'E' : 'P';
+  const enemyScope = { allies: fleets.enemies, enemies: fleets.allies };
+  for (const enemy of fleets.enemies) {
+    if (!enemy.alive) continue;
+    triggerHook((enemy.parts as EffectfulPart[]) ?? [], 'onEnemyDeath', enemy, dead, enemyScope, ctx, enemySide);
+  }
+}
+
 function applyEffect(
   eff: Effect,
-  _part: EffectfulPart,
+  part: EffectfulPart,
   host: Ship | null,
   target: Ship | null,
-  _fleets: { allies: Ship[]; enemies: Ship[] },
+  fleets: { allies: Ship[]; enemies: Ship[] },
   ctx: BattleCtx,
   hostSide: 'P' | 'E' | null
 ) {
-  void _fleets;
   switch (eff.kind) {
     case 'lowerShieldThisRound':
       if (target) {
@@ -42,6 +61,21 @@ function applyEffect(
     case 'grantFleetShields':
       if (hostSide) ctx.status.fleetTempShield[hostSide] = { tier: eff.tier, rounds: eff.rounds };
       break;
+    case 'gainHullOnAllyDeath': {
+      if (!host) break;
+      if (eff.oncePerCombat) {
+        let flags = ctx.status.oncePerCombat.get(host);
+        if (!flags) {
+          flags = new Set<string>();
+          ctx.status.oncePerCombat.set(host, flags);
+        }
+        if (flags.has(part.id)) break;
+        flags.add(part.id);
+      }
+      const cap = host.stats?.hullCap ?? host.hull;
+      host.hull = Math.min(cap, host.hull + eff.amount);
+      break;
+    }
     case 'corrosionApply':
       if (target?.alive) {
         const curr = ctx.status.corrosion.get(target) || 0;
@@ -52,8 +86,20 @@ function applyEffect(
       if (!host || !target) return;
       const roll = Math.floor(ctx.rng() * 6) + 1;
       if (roll >= eff.dieThreshold) {
+        const wasAlive = target.alive;
         target.hull -= eff.dmg;
-        if (target.hull <= 0) { target.hull = 0; target.alive = false; }
+        if (target.hull <= 0) {
+          target.hull = 0;
+          if (wasAlive) {
+            target.alive = false;
+            const targetSide = hostSide === 'P' ? 'E' : hostSide === 'E' ? 'P' : null;
+            if (targetSide) {
+              handleShipDeath(target, host, { allies: fleets.enemies, enemies: fleets.allies }, ctx, targetSide);
+            }
+          } else {
+            target.alive = false;
+          }
+        }
       }
       break;
     }
@@ -61,8 +107,20 @@ function applyEffect(
       if (!host || !target) return;
       const roll = Math.floor(ctx.rng() * 6) + 1;
       if (roll >= eff.dieThreshold) {
+        const wasAlive = target.alive;
         target.hull -= eff.dmg;
-        if (target.hull <= 0) { target.hull = 0; target.alive = false; }
+        if (target.hull <= 0) {
+          target.hull = 0;
+          if (wasAlive) {
+            target.alive = false;
+            const targetSide = hostSide === 'P' ? 'E' : hostSide === 'E' ? 'P' : null;
+            if (targetSide) {
+              handleShipDeath(target, host, { allies: fleets.enemies, enemies: fleets.allies }, ctx, targetSide);
+            }
+          } else {
+            target.alive = false;
+          }
+        }
       }
       break;
     }
@@ -142,7 +200,7 @@ export function startRoundTick(allies: Ship[], enemies: Ship[], ctx: BattleCtx, 
       if (buff.rounds <= 0) ctx.status.fleetTempShield[side] = null;
     }
   });
-  const tick = (fleet: Ship[]) => {
+  const tick = (fleet: Ship[], side: 'P' | 'E', opponents: Ship[]) => {
     for (const s of fleet) {
       if (!s.alive) continue;
       const stacks = ctx.status.corrosion.get(s) || 0;
@@ -152,11 +210,13 @@ export function startRoundTick(allies: Ship[], enemies: Ship[], ctx: BattleCtx, 
         if (s.hull <= 0) {
           s.hull = 0; s.alive = false;
           log?.push(`💥 ${s.frame.name} destroyed by corrosion!`);
+          handleShipDeath(s, null, { allies: fleet, enemies: opponents }, ctx, side);
         }
       }
     }
   };
-  tick(allies); tick(enemies);
+  tick(allies, 'P', enemies);
+  tick(enemies, 'E', allies);
 }
 
 export function effectiveShieldTier(ship: Ship, side: 'P' | 'E', ctx: BattleCtx) {

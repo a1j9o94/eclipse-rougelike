@@ -20,6 +20,7 @@ export type Effect =
   | { kind: 'lowerShieldThisRound'; amount: number }
   | { kind: 'reduceInit'; amount: number }
   | { kind: 'grantFleetShields'; tier: number; rounds: number }
+  | { kind: 'gainHullOnAllyDeath'; amount: number; oncePerCombat?: boolean }
   | { kind: 'corrosionApply'; perStackDamage: number }
   | { kind: 'retaliateOnBlockDamage'; dieThreshold: number; dmg: number }
   | { kind: 'retaliateOnDeathDamage'; dieThreshold: number; dmg: number }
@@ -47,6 +48,7 @@ export type BattleCtx = {
     painter: { target: import('./types').Ship | null; rounds: number; bonus: number } | null;
     fleetTempShield: { P: { tier: number; rounds: number } | null; E: { tier: number; rounds: number } | null };
     tempShield: WeakMap<import('./types').Ship, number>; // additive shield delta per ship
+    oncePerCombat: WeakMap<import('./types').Ship, Set<string>>;
   };
 };
 

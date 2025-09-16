@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { getBossFleetFor, isValidShipBuild } from '../game'
 import { setPlayerFaction, pickOpponentFaction, setOpponentFaction } from '../game/setup'
 import { generateEnemyFleetFor } from '../game/enemy'
+import { disable as disableTutorial } from '../tutorial/state'
 
 describe('Predefined boss fleets and opponent selection', () => {
   it('selects a random opponent faction different from the player on new run', () => {
@@ -16,6 +17,7 @@ describe('Predefined boss fleets and opponent selection', () => {
     // Force opponent for determinism
     setOpponentFaction('warmongers')
     const opp = 'warmongers'
+    disableTutorial()
     // Sector 5
     const e5 = generateEnemyFleetFor(5)
     const spec5 = getBossFleetFor(opp, 5)

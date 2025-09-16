@@ -1,5 +1,5 @@
 import { RIFT_FACES } from '../../shared/parts'
-import { triggerHook, effectiveShieldTier } from '../../shared/effectsEngine'
+import { triggerHook, effectiveShieldTier, handleShipDeath } from '../../shared/effectsEngine'
 import type { EffectfulPart, BattleCtx } from '../../shared/effects'
 import { type Ship, type InitiativeEntry } from '../../shared/types'
 import { sizeRank } from './ship'
@@ -52,6 +52,9 @@ export function volley(attacker:Ship, defender:Ship, side:'P'|'E', logArr:string
       ? ((friends as unknown as { _enemies?: Ship[] })._enemies ?? [])
       : ((friends as unknown as { _allies?: Ship[] })._allies ?? [])
   }
+  const defFleet = fleets.enemies
+  const defScope = { allies: defFleet, enemies: friends }
+  const defSide: 'P' | 'E' = side === 'P' ? 'E' : 'P'
   const g = globalThis as unknown as { battleCtx?: BattleCtx }
   const shield = g.battleCtx ? effectiveShieldTier(defender, side === 'P' ? 'E' : 'P', g.battleCtx) : defender.stats.shieldTier
   const thr = successThreshold(attacker.stats.aim, shield)
@@ -66,10 +69,20 @@ export function volley(attacker:Ship, defender:Ship, side:'P'|'E', logArr:string
         const painter = g.battleCtx?.status.painter
         const bonus = painter && painter.rounds>0 && painter.target===defender ? painter.bonus : 0
         const total = damage + bonus
+        const wasAlive = defender.alive
         defender.hull -= total
         const msg = isAuto ? `auto ${total}` : (total>0 ? `roll ${faceRoll} ≥ ${thr} → ${total}` : `roll ${faceRoll} ≥ ${thr}`)
         logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} → ${defender.frame.name} | ${w.name}: ${msg}`)
-        if(defender.hull<=0){ defender.alive=false; defender.hull=0; logArr.push(`💥 ${defender.frame.name} destroyed!`) }
+        if(defender.hull<=0){
+          if(wasAlive){
+            defender.alive=false
+            defender.hull=0
+            logArr.push(`💥 ${defender.frame.name} destroyed!`)
+            if (g.battleCtx) handleShipDeath(defender, attacker, defScope, g.battleCtx, defSide)
+          } else {
+            defender.hull = 0
+          }
+        }
         if(w.initLoss){ defender.stats.init = Math.max(0, defender.stats.init - w.initLoss); logArr.push(`⌛ ${defender.frame.name} -${w.initLoss} INIT`); }
         if (g.battleCtx) triggerHook([w], 'onHit', attacker, defender, fleets, g.battleCtx, side)
         if(!isChain){
@@ -115,7 +128,7 @@ export function volley(attacker:Ship, defender:Ship, side:'P'|'E', logArr:string
         }
       }
       if(face.self){
-        assignRiftSelfDamage(friends, side, logArr)
+        assignRiftSelfDamage(friends, defFleet, side, logArr, g.battleCtx)
         if (g.battleCtx) triggerHook([w], 'onSelfHit', attacker, defender, fleets, g.battleCtx, side)
       }
     }
@@ -125,25 +138,38 @@ export function volley(attacker:Ship, defender:Ship, side:'P'|'E', logArr:string
       const roll = Math.floor(r.next()*6)
       const face = RIFT_FACES[roll]
       if(face.dmg){
+        const wasAlive = defender.alive
         defender.hull -= face.dmg
         logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} Rift die hits for ${face.dmg}`)
-        if(defender.hull<=0){ defender.alive=false; defender.hull=0; logArr.push(`💥 ${defender.frame.name} destroyed!`) }
+        if(defender.hull<=0){
+          if(wasAlive){
+            defender.alive=false
+            defender.hull=0
+            logArr.push(`💥 ${defender.frame.name} destroyed!`)
+            if (g.battleCtx) handleShipDeath(defender, attacker, defScope, g.battleCtx, defSide)
+          } else {
+            defender.hull = 0
+          }
+        }
       } else {
         logArr.push(`${side==='P'?'🟦':'🟥'} ${attacker.frame.name} Rift die misses`)
       }
       if(face.self){
-        assignRiftSelfDamage(friends, side, logArr)
+        assignRiftSelfDamage(friends, defFleet, side, logArr, g.battleCtx)
       }
     }
   }
 }
 
-function assignRiftSelfDamage(friends:Ship[], side:'P'|'E', logArr:string[]){
+function assignRiftSelfDamage(friends:Ship[], enemies:Ship[], side:'P'|'E', logArr:string[], ctx?: BattleCtx){
   const riftShips = friends.filter(s=>s.alive && s.riftDice>0)
   if(riftShips.length===0) return
   const sorted = [...riftShips].sort((a,b)=> (sizeRank(b.frame)-sizeRank(a.frame)) || (b.hull - a.hull))
   const target = sorted.find(s=>s.hull<=1) || sorted[0]
   target.hull -= 1
   logArr.push(`${side==='P'?'🟦':'🟥'} ${target.frame.name} suffers 1 Rift backlash`)
-  if(target.hull<=0){ target.alive=false; target.hull=0; logArr.push(`💥 ${target.frame.name} destroyed by Rift backlash!`) }
+  if(target.hull<=0){
+    target.alive=false; target.hull=0; logArr.push(`💥 ${target.frame.name} destroyed by Rift backlash!`)
+    if(ctx) handleShipDeath(target, null, { allies: friends, enemies }, ctx, side)
+  }
 }
