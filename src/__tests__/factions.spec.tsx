@@ -1,7 +1,15 @@
 import { describe, it, expect } from 'vitest'
 // UI helpers not used in this file
-import { getFaction } from '../../shared/factions'
+import { FACTIONS, getFaction } from '../../shared/factions'
+import type { Part } from '../../shared/parts'
 import { initNewRun } from '../game/setup'
+
+const partDealsDamage = (part: Part) => {
+  if (part.cat !== 'Weapon') return false
+  if ((part.dmgPerHit ?? 0) > 0) return true
+  if ((part.riftDice ?? 0) > 0) return true
+  return part.faces?.some(face => (face.dmg ?? 0) > 0) ?? false
+}
 
 describe('Factions', () => {
   it('Scientists start at Tier 2 across all tracks', () => {
@@ -47,5 +55,14 @@ describe('Factions', () => {
     const f = getFaction('collective')
     const ids = f.config.blueprints.interceptor.map(p=>p.id)
     expect(ids).toContain('auto_repair')
+  })
+
+  it('Each faction starting blueprint includes a damaging weapon', () => {
+    for (const faction of FACTIONS) {
+      const frame = faction.config.startingFrame
+      const bp = faction.config.blueprints[frame]
+      const hasDamage = bp.some(partDealsDamage)
+      expect(hasDamage).toBe(true)
+    }
   })
 })

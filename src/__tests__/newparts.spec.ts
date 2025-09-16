@@ -2,8 +2,22 @@ import { describe, it, expect } from 'vitest'
 import { makeShip, getFrame } from '../game'
 import { PARTS, RARE_PARTS } from '../../shared/parts'
 import { volley, buildInitiative } from '../game/combat'
-import { precomputeDynamicStats, startRoundTick, effectiveShieldTier } from '../../shared/effectsEngine'
+import { precomputeDynamicStats, startRoundTick, effectiveShieldTier, handleShipDeath } from '../../shared/effectsEngine'
 import type { BattleCtx } from '../../shared/effects'
+
+function makeCtx(): BattleCtx {
+  return {
+    rng: () => 0,
+    rerollsThisRun: 0,
+    status: {
+      corrosion: new WeakMap(),
+      painter: null,
+      fleetTempShield: { P: null, E: null },
+      tempShield: new WeakMap(),
+      oncePerCombat: new WeakMap(),
+    },
+  }
+}
 
 describe('New part mechanics', () => {
   it('Disruptor Beam only drains initiative', () => {
@@ -67,7 +81,7 @@ describe('New part mechanics', () => {
     const log: string[] = []
     const rng = { vals: [0, 0, 0.9], idx: 0, next(){ return this.vals[this.idx++] } }
     const beforeHull = defender.hull
-    ;(globalThis as any).battleCtx = { rng: () => 0, rerollsThisRun: 0, status: { corrosion: new WeakMap(), painter: null, fleetTempShield: { P: null, E: null }, tempShield: new WeakMap() } }
+    ;(globalThis as any).battleCtx = makeCtx()
     volley(attacker, defender, 'P', log, [attacker], rng as any)
     delete (globalThis as any).battleCtx
     expect(defender.hull).toBe(beforeHull - 1)
@@ -80,7 +94,7 @@ describe('New part mechanics', () => {
     const drv = PARTS.drives[0]
     const attacker = makeShip(frame, [src, drv, beam])
     const defender = makeShip(frame, [src, drv, PARTS.shields[1]])
-    const ctx: BattleCtx = { rng: () => 0, rerollsThisRun: 0, status: { corrosion: new WeakMap(), painter: null, fleetTempShield: { P: null, E: null }, tempShield: new WeakMap() } }
+    const ctx = makeCtx()
     ;(globalThis as any).battleCtx = ctx
     const log: string[] = []
     volley(attacker, defender, 'P', log, [attacker])
@@ -97,7 +111,7 @@ describe('New part mechanics', () => {
     const drv = PARTS.drives[0]
     const leader = makeShip(frame, [src, drv, fleetfire])
     const ally = makeShip(frame, [src, drv])
-    const ctx: BattleCtx = { rng: () => 0, rerollsThisRun: 0, status: { corrosion: new WeakMap(), painter: null, fleetTempShield: { P: null, E: null }, tempShield: new WeakMap() } }
+    const ctx = makeCtx()
     precomputeDynamicStats([leader, ally], [], ctx)
     expect((leader.weapons[0] as any)._dynDice).toBe((fleetfire.dice || 0) + 1)
   })
@@ -109,7 +123,7 @@ describe('New part mechanics', () => {
     const src = PARTS.sources[0]
     const drv = PARTS.drives[0]
     const ship = makeShip(frame, [src, drv, hex, plasma])
-    const ctx: BattleCtx = { rng: () => 0, rerollsThisRun: 0, status: { corrosion: new WeakMap(), painter: null, fleetTempShield: { P: null, E: null }, tempShield: new WeakMap() } }
+    const ctx = makeCtx()
     precomputeDynamicStats([ship], [], ctx)
     expect((ship.weapons[0] as any)._dynDice).toBe((hex.dice || 0) + 1)
   })
@@ -126,7 +140,7 @@ describe('New part mechanics', () => {
     const log: string[] = []
     const rng = { vals: [0.99, 0.99], idx: 0, next(){ return this.vals[this.idx++] ?? 0 } }
     const before = defender.hull
-    ;(globalThis as any).battleCtx = { rng: () => 0, rerollsThisRun: 0, status: { corrosion: new WeakMap(), painter: null, fleetTempShield: { P: null, E: null }, tempShield: new WeakMap() } }
+    ;(globalThis as any).battleCtx = makeCtx()
     volley(attacker, defender, 'P', log, [attacker], rng as any)
     delete (globalThis as any).battleCtx
     expect(defender.hull).toBe(before - 2)
@@ -149,9 +163,32 @@ describe('New part mechanics', () => {
     const log: string[] = []
     const rng = { vals: [0.99, 0.99], idx: 0, next(){ return this.vals[this.idx++] ?? 0 } }
     const before = defender.hull
-    ;(globalThis as any).battleCtx = { rng: () => 0, rerollsThisRun: 0, status: { corrosion: new WeakMap(), painter: null, fleetTempShield: { P: null, E: null }, tempShield: new WeakMap() } }
+    ;(globalThis as any).battleCtx = makeCtx()
     volley(attacker, defender, 'P', log, [attacker], rng as any)
     delete (globalThis as any).battleCtx
     expect(defender.hull).toBe(before - 2)
+  })
+
+  it('Unity Hull restores hull once per combat when allies fall', () => {
+    const frame = getFrame('interceptor')
+    const unity = RARE_PARTS.find(p=>p.id==='unity_hull')!
+    const src = PARTS.sources[0]
+    const drv = PARTS.drives[0]
+    const carrier = makeShip(frame, [src, drv, unity])
+    const cap = carrier.stats.hullCap
+    carrier.hull = cap - 2
+    const ctx = makeCtx()
+    const firstAlly = makeShip(frame, [src, drv])
+    firstAlly.alive = false
+    firstAlly.hull = 0
+    handleShipDeath(firstAlly, null, { allies: [carrier, firstAlly], enemies: [] }, ctx, 'P')
+    expect(carrier.hull).toBe(cap - 1)
+    carrier.hull -= 1
+    expect(carrier.hull).toBe(cap - 2)
+    const secondAlly = makeShip(frame, [src, drv])
+    secondAlly.alive = false
+    secondAlly.hull = 0
+    handleShipDeath(secondAlly, null, { allies: [carrier, secondAlly], enemies: [] }, ctx, 'P')
+    expect(carrier.hull).toBe(cap - 2)
   })
 })

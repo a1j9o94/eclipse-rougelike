@@ -56,6 +56,7 @@ export function useCombatLoop(params: {
         painter: null,
         fleetTempShield: { P: null, E: null },
         tempShield: new WeakMap(),
+        oncePerCombat: new WeakMap(),
       },
     }
     battleCtxRef.current = ctx

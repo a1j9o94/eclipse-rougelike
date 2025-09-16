@@ -5,7 +5,7 @@ import { triggerHook } from '../../shared/effectsEngine'
 import type { BattleCtx } from '../../shared/effects'
 
 function ctx(): BattleCtx {
-  return { rng: () => 0, rerollsThisRun: 0, status: { corrosion: new WeakMap(), painter: null, fleetTempShield: { P: null, E: null }, tempShield: new WeakMap() } }
+  return { rng: () => 0, rerollsThisRun: 0, status: { corrosion: new WeakMap(), painter: null, fleetTempShield: { P: null, E: null }, tempShield: new WeakMap(), oncePerCombat: new WeakMap() } }
 }
 
 describe('magnet parts draw fire', () => {
