@@ -33,7 +33,7 @@ export const SHARED_FACTIONS: Record<FactionId, SharedFactionConfig> = {
     resources: { credits: 20, materials: 5, science: 0 },
     rareChance: 0.2,
     economy: {},
-    blueprintIds: { interceptor: ['tachyon_source','ion_thruster','positron','entropy_beam'] },
+    blueprintIds: { interceptor: ['tachyon_source','ion_thruster','positron','plasma','entropy_beam'] },
     unlock: ({ research }) => research.Military >= 3 && research.Grid >= 3 && research.Nano >= 3,
     bosses: {
       five: { sector:5, name:'Scholars Tactics', ships:[
