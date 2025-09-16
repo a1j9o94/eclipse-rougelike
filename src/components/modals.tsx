@@ -24,7 +24,7 @@ function BossFleetPreview({ sector }:{ sector:5|10 }){
   return (
     <div className="mt-1">
       <div className="text-[11px] opacity-80">Opponent: {oppName} — "{spec.name}"</div>
-      <div className="mt-1 flex gap-2 overflow-x-auto pb-1">
+      <div className="mt-1 flex flex-wrap gap-2 pb-1">
         {ships.map((sh, i)=>(<CompactShip key={i} ship={sh} side='E' active={false} />))}
       </div>
     </div>
@@ -103,7 +103,7 @@ export function CombatPlanModal({ onClose, sector, endless, gameMode, multi }:{ 
         ) : (
           <div className="text-xs sm:text-sm space-y-1 max-h-[60vh] overflow-y-auto pr-1">
             {plan.map(s=> (
-              <div key={s.sector} className="px-2 py-1 rounded bg-zinc-950 border border-zinc-800 flex items-start justify-between gap-2">
+              <div key={s.sector} className="px-2 py-1 rounded bg-zinc-950 border border-zinc-800 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex-1">
                   <div>Sector {s.sector}{s.boss? ' (Boss)':''}</div>
                   {s.boss && (
@@ -113,7 +113,7 @@ export function CombatPlanModal({ onClose, sector, endless, gameMode, multi }:{ 
                     </>
                   )}
                 </div>
-                <div className="opacity-80 text-right whitespace-nowrap">Enemy tonnage {s.enemyTonnage} • Science cap T{s.enemyScienceCap}</div>
+                <div className="opacity-80 sm:text-right">Enemy tonnage {s.enemyTonnage} • Science cap T{s.enemyScienceCap}</div>
               </div>
             ))}
           </div>

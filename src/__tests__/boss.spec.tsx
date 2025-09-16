@@ -46,6 +46,14 @@ describe('Boss variants and planning', () => {
     const texts = variantLines.map(el => el.parentElement?.textContent || '')
     expect(texts.join(' | ')).toMatch(/High Aim/i)
     expect(texts.join(' | ')).toMatch(/High Shields|Tanky/i)
+
+    // Boss rows should stack tonnage info beneath the fleet preview (no nowrap / flex-column layout)
+    const tonnageLabels = screen.getAllByText(/Enemy tonnage/i)
+    const bossLabel = tonnageLabels.find(el => el.parentElement?.textContent?.includes('(Boss)'))
+    expect(bossLabel).toBeTruthy()
+    expect(bossLabel?.className).not.toMatch(/whitespace-nowrap/)
+    const bossRow = bossLabel?.parentElement
+    expect(bossRow?.className || '').toMatch(/flex-col/)
   }, 20000)
 
   it('boss generation uses predefined opponent faction fleets at sector 5', () => {
