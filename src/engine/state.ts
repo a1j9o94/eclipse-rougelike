@@ -20,4 +20,5 @@ export type OutpostState = {
 export type OutpostEnv = {
   gameMode: 'single' | 'multiplayer'
   economyMods?: EconMods
+  shopRng?: () => number
 }
