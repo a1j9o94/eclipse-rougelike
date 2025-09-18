@@ -5,6 +5,7 @@ import type { Research } from '../../shared/defaults'
 import { buyAndInstall as buyAndInstallOp, sellPart as sellPartOp, buildShip as buildShipOp, upgradeShip as upgradeShipOp, upgradeDock as upgradeDockOp } from '../controllers/outpostController'
 import { doRerollActionWithMods, researchActionWithMods } from '../game/shop'
 import { getDefaultEconomyModifiers } from '../game/economy'
+import { applyShopEffects } from './shopEffects'
 
 export type BuyAndInstallCmd = { type: 'buy_and_install'; part: Part }
 export type SellPartCmd = { type: 'sell_part'; frameId: FrameId; idx: number }
@@ -43,13 +44,16 @@ export function applyOutpostCommand(state: OutpostState, env: OutpostEnv, cmd: O
         economyMods: env.economyMods,
       })
       if (!res) return { state }
+      const rng = env.shopRng ?? Math.random
+      const applied = applyShopEffects({ blueprints: res.blueprints, fleet: res.fleet }, 'onShopPurchase', rng)
+      const nextState = {
+        ...state,
+        resources: res.resources,
+        blueprints: applied.blueprints,
+        fleet: applied.fleet,
+      }
       return {
-        state: {
-          ...state,
-          resources: res.resources,
-          blueprints: res.blueprints,
-          fleet: res.fleet,
-        },
+        state: nextState,
         effects: res.warning ? { warning: res.warning } : undefined,
       }
     }
@@ -86,6 +90,10 @@ export function applyOutpostCommand(state: OutpostState, env: OutpostEnv, cmd: O
       next.rerollCost = rr + res.nextRerollCostDelta
       next.rerollsThisRun = (next.rerollsThisRun || 0) + 1
       next.shopVersion = (next.shopVersion || 0) + 1
+      const rng = env.shopRng ?? Math.random
+      const applied = applyShopEffects({ blueprints: next.blueprints, fleet: next.fleet }, 'onShopReroll', rng)
+      next.blueprints = applied.blueprints
+      next.fleet = applied.fleet
       return { state: next, effects: { shopItems: res.items } }
     }
     case 'research': {
