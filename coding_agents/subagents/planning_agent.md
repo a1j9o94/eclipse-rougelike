@@ -1,3 +1,47 @@
+## Plan Entry — Outpost Blueprint Panel Extraction
+
+- Outcome: Refactor the Outpost blueprint grid into a dedicated component with reusable card rendering so the page stays readable while preserving the info toggle UX.
+
+- Acceptance criteria:
+  - `OutpostPage` renders a new `<BlueprintPanel>` (or similarly named) component instead of inline blueprint markup.
+  - The panel owns a blueprint card subcomponent that handles the question-mark info toggle and Sell button.
+  - Toggling info still reveals the part description and resets when switching frames.
+  - Lint, targeted tests that import the new component, and build all pass.
+
+- Risks & rollback:
+  - Risk: Prop threading mistakes break blueprint info toggles. Mitigation: unit-style render via existing Outpost smoke tests.
+  - Risk: Missing exports/import loops. Mitigation: co-locate the card inside the new component file.
+  - Rollback: Revert the new component file and restore the previous inline markup in `OutpostPage`.
+
+- Test list (must fail first):
+  1. `outpost_dock_roster_smoke.spec.tsx` covers rendering the blueprint grid.
+  2. `dock.spec.tsx` exercises Outpost interactions and ensures blueprint actions mount.
+  3. `mp_blueprint_first_render.spec.tsx` ensures blueprint ids map correctly before Outpost mounts.
+
+---
+
+## Plan Entry — Outpost Tech Modal Overlay Fix
+
+- Outcome: Restore vertical spacing so the Outpost Start Combat bar no longer covers the Tech list modal or the Tech section content on small screens.
+
+- Acceptance criteria:
+  - The Outpost content has sufficient bottom padding to scroll past the fixed Start Combat controls.
+  - Opening the Tech list modal positions it fully above the Start Combat bar on mobile-sized viewports.
+  - No regressions to existing Outpost interactions (research buttons, blueprint panel, etc.).
+  - Lint and build stay green.
+
+- Risks & rollback:
+  - Risk: Over-correcting spacing adds too much empty area on desktop. Mitigation: use responsive padding/margins.
+  - Risk: Modal offset tweaks break centered layout on wide screens. Mitigation: gate offsets behind mobile breakpoints.
+  - Rollback: Revert the padding/margin tweaks in `OutpostPage` and `TechListModal`.
+
+- Test list (must fail first):
+  1. Manual QA: open the Tech list modal on a narrow viewport and ensure the Start Combat bar does not overlap.
+  2. `npm run lint` (must stay green).
+  3. `npm run build` (must stay green).
+
+---
+
 ## Plan Entry — Public Multiplayer Lobby
 
 - Outcome: Players can browse and join public multiplayer rooms; list shows host name, lives remaining, and starting ships; joining navigates to the room and removes it from the public list.

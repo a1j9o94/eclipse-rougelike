@@ -145,7 +145,7 @@ export function TechListModal({ onClose, research, focus }:{ onClose:()=>void, r
   },[focus])
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 bg-black/70">
-      <div data-tutorial="tech-modal" className="w-full max-w-md bg-zinc-800 border border-zinc-600 rounded-2xl p-4">
+      <div data-tutorial="tech-modal" className="w-full max-w-md bg-zinc-800 border border-zinc-600 rounded-2xl p-4 mb-[calc(7rem+env(safe-area-inset-bottom))] sm:mb-0">
         <div className="text-lg font-semibold mb-2">Tech List</div>
         <div className="max-h-[60vh] overflow-y-auto pr-1 text-xs sm:text-sm space-y-3">
           {/* Military explainer with level unlocks */}
