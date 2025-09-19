@@ -102,9 +102,15 @@ export function ShipFrameSlots({ ship, side, active: _active }: { ship: Ship, si
     while (tokens.length < (ship.frame.tiles || 3)) tokens.push('');
     tokens.slice(0, ship.frame.tiles).forEach(lbl => cells.push({ slots: 1, label: lbl }));
   }
-  const used = cells.reduce((a, p) => a + p.slots, 0);
+  const filledLabels = cells.flatMap(({ slots, label }) => {
+    const count = Math.max(1, slots || 1);
+    if (count === 1) return [label];
+    const extras = Array(count - 1).fill('❌');
+    return [label, ...extras];
+  });
+  const used = filledLabels.length;
   const empties = Math.max(0, ship.frame.tiles - used);
-  const labels = cells.map(p => p.label).concat(Array(empties).fill(''));
+  const labels = filledLabels.concat(Array(empties).fill(''));
   let idx = 0;
   const glow = side === 'P'
     ? 'ring-sky-400 shadow-[0_0_4px_#38bdf8]'

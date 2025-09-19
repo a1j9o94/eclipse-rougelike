@@ -4,6 +4,7 @@ import type { Ship } from '../../../shared/types'
 
 export default function BlueprintSummary({ ship }:{ ship: Ship | undefined }){
   if (!ship) return null
+  const slotsUsed = ship.parts.reduce((total, part) => total + (part.slots || 1), 0)
   return (
     <div className="flex items-center gap-2 text-xs sm:text-sm mb-2">
       <PowerBadge use={ship.stats.powerUse} prod={ship.stats.powerProd} />
@@ -11,7 +12,7 @@ export default function BlueprintSummary({ ship }:{ ship: Ship | undefined }){
       <span>🎯 {ship.stats.aim}</span>
       <span>🛡️ {ship.stats.shieldTier}</span>
       <span>❤️ {ship.stats.hullCap}</span>
-      <span>⬛ {ship.parts.length}/{ship.frame.tiles}</span>
+      <span>⬛ {slotsUsed}/{ship.frame.tiles}</span>
     </div>
   )
 }
