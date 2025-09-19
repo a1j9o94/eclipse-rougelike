@@ -1,3 +1,25 @@
+## Plan Entry — Outpost Blueprint Panel Extraction
+
+- Outcome: Refactor the Outpost blueprint grid into a dedicated component with reusable card rendering so the page stays readable while preserving the info toggle UX.
+
+- Acceptance criteria:
+  - `OutpostPage` renders a new `<BlueprintPanel>` (or similarly named) component instead of inline blueprint markup.
+  - The panel owns a blueprint card subcomponent that handles the question-mark info toggle and Sell button.
+  - Toggling info still reveals the part description and resets when switching frames.
+  - Lint, targeted tests that import the new component, and build all pass.
+
+- Risks & rollback:
+  - Risk: Prop threading mistakes break blueprint info toggles. Mitigation: unit-style render via existing Outpost smoke tests.
+  - Risk: Missing exports/import loops. Mitigation: co-locate the card inside the new component file.
+  - Rollback: Revert the new component file and restore the previous inline markup in `OutpostPage`.
+
+- Test list (must fail first):
+  1. `outpost_dock_roster_smoke.spec.tsx` covers rendering the blueprint grid.
+  2. `dock.spec.tsx` exercises Outpost interactions and ensures blueprint actions mount.
+  3. `mp_blueprint_first_render.spec.tsx` ensures blueprint ids map correctly before Outpost mounts.
+
+---
+
 ## Plan Entry — Public Multiplayer Lobby
 
 - Outcome: Players can browse and join public multiplayer rooms; list shows host name, lives remaining, and starting ships; joining navigates to the room and removes it from the public list.

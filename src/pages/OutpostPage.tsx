@@ -12,7 +12,7 @@ import { FRAMES, type FrameId } from '../../shared/frames'
 // import { ALL_PARTS } from '../../shared/parts'
 // import { groupFleet } from '../game/fleet'
 import { canBuildInterceptorWithMods } from '../game/hangar'
-import { partEffects } from '../../shared/parts'
+import BlueprintPanel from '../components/outpost/BlueprintPanel'
 import { type Resources, type Research } from '../../shared/defaults'
 import { type Part } from '../../shared/parts'
 import { type Ship, type GhostDelta } from '../../shared/types'
@@ -118,6 +118,7 @@ export function OutpostPage({
   const rrInc = applyEconomyModifiers(ECONOMY.reroll.increment, economyMods, 'credits');
   const currentClassId = hasSelected ? (focusedShip?.frame.id as FrameId) : selectedId;
   const currentBlueprint = blueprints[currentClassId] || [];
+  const sellFrameId = hasSelected && focusedShip ? (focusedShip.frame.id as FrameId) : null;
   const nextUpgrade = (()=>{
     if(!focusedShip) return null;
     if(focusedShip.frame.id==='interceptor') return {
@@ -150,6 +151,7 @@ export function OutpostPage({
     if(!upgradeAffordable && nextUpgrade) return `Upgrade ${focusedShip.frame.name} — Need ${nextUpgrade.materials}🧱 + ${nextUpgrade.credits}¢`;
     return `${upgradeComputed.label}${nextUpgrade ? ` (${nextUpgrade.materials}🧱 + ${nextUpgrade.credits}¢)` : ''}`;
   })();
+  const overlayActive = showPlan || showTech;
   // helpers removed in favor of using unified TechListModal
   return (
     <>
@@ -263,17 +265,12 @@ export function OutpostPage({
               )}
               <ShipFrameSlots ship={hasSelected ? (focusedShip as Ship) : emptyShip(selectedId)} side='P' />
             </div>
-            <div data-tutorial="blueprint-panel" className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {currentBlueprint.map((p, idx)=> (
-              <div key={idx} className="p-2 rounded border border-zinc-700 bg-zinc-900 text-xs">
-                <div className="font-medium text-sm">{p.name}</div>
-                <div className="opacity-70">{(() => { const eff = partEffects(p).join(' • '); return `${p.cat} • Tier ${p.tier}${eff ? ' • ' + eff : ''}`; })()}</div>
-                <div className="mt-1 flex justify-between items-center">
-                  <span className="opacity-70">Refund {Math.floor((p.cost||0)*0.25)}¢</span>
-                  <button onClick={()=> sellPart(focusedShip.frame.id as FrameId, idx)} className="px-2 py-1 rounded bg-rose-600">Sell</button>
-                </div>
-              </div>
-            ))}
+            <BlueprintPanel
+              frameId={currentClassId}
+              parts={currentBlueprint}
+              sellFrameId={sellFrameId}
+              onSell={(frameId, idx) => sellPart(frameId, idx)}
+            />
           </div>
           {/* Capacity below blueprint */}
           <div className="mt-2 grid grid-cols-1 gap-2">
@@ -334,12 +331,12 @@ export function OutpostPage({
           </div>
         </div>
       </div>
-      </div>
-
-
       {/* Start Combat */}
-      <div className="fixed bottom-0 left-0 w-full z-10 p-3 bg-zinc-950/95 backdrop-blur border-t border-zinc-800">
-      <div className="mx-auto max-w-5xl flex items-center gap-2">
+      <div
+        className={`fixed bottom-0 left-0 w-full z-10 p-3 bg-zinc-950/95 backdrop-blur border-t border-zinc-800 transition-opacity ${overlayActive ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+        aria-hidden={overlayActive}
+      >
+        <div className="mx-auto max-w-5xl flex items-center gap-2">
           {(() => {
             const guards = mpGuards || undefined;
             const amReady = guards ? Boolean(guards.myReady) : Boolean(myReady);
