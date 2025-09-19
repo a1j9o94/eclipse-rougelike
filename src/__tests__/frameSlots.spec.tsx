@@ -8,17 +8,18 @@ describe('CompactShip frame slot display', () => {
   it('fills slots according to part slot usage', () => {
     const src = PARTS.sources[0]
     const comp = PARTS.computers.find(p => p.id === 'gluon')!
-    const weapon = PARTS.weapons.find(p => p.id === 'antimatter_array')!
+    const weapon = PARTS.weapons.find(p => p.slots === 2)!
     const ship = makeShip(getFrame('interceptor'), [src, comp, weapon])
     render(<CompactShip ship={ship} side="P" active={false} />)
     const used = ship.parts.reduce((a, p) => a + (p.slots || 1), 0)
     const filled = screen.getAllByTestId('frame-slot-filled')
-    expect(filled.length).toBe(ship.parts.length)
+    expect(filled.length).toBe(used)
     expect(screen.getAllByTestId('frame-slot-empty').length).toBe(Math.max(0, ship.frame.tiles - used))
     const icons = filled.map(el => el.textContent || '')
     expect(icons.some(t => t.includes('3⚡'))).toBe(true)
     expect(icons.some(t => t.includes('2🎯'))).toBe(true)
-    expect(icons.some(t => t.includes('2🎲2💥'))).toBe(true)
+    expect(icons.some(t => t.includes('3🎲') && t.includes('💥'))).toBe(true)
+    expect(icons.filter(t => t === '❌').length).toBe((weapon.slots || 1) - 1)
 
   })
 
