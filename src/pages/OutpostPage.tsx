@@ -169,7 +169,7 @@ export function OutpostPage({
         />
       )}
 
-      <div className="mx-auto max-w-5xl pb-24">
+      <div className="mx-auto max-w-5xl">
 
       {/* Hangar */}
       <div className="p-3">
@@ -331,7 +331,7 @@ export function OutpostPage({
         </div>
       </div>
       {/* Start Combat */}
-      <div className="fixed bottom-0 left-0 w-full z-10 p-3 bg-zinc-950/95 backdrop-blur border-t border-zinc-800">
+      <div className="sticky bottom-0 left-0 w-full z-10 p-3 bg-zinc-950/95 backdrop-blur border-t border-zinc-800">
         <div className="mx-auto max-w-5xl flex items-center gap-2">
           {(() => {
             const guards = mpGuards || undefined;
