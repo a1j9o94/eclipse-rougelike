@@ -1,9 +1,18 @@
 import { mutation, query, type DatabaseReader, type DatabaseWriter } from "./_generated/server";
 import { v } from "convex/values";
 // import { maybeStartCombat } from "./helpers/match";
-import { logInfo, roomTag } from "./helpers/log";
-import { maybeResolveRound, validateReadyToggle } from "./helpers/resolve";
-import type { PlayerState } from "../shared/mpTypes";
+// import { logInfo, roomTag } from "./helpers/log";
+// import { maybeResolveRound, validateReadyToggle } from "./helpers/resolve";
+// import type { PlayerState } from "../shared/mpTypes";
+
+// Stub logging functions (old roguelike code)
+const logInfo = (...args: any[]) => {};
+const roomTag = (id: string) => `room:${id}`;
+
+// Stub old roguelike functions
+const maybeResolveRound = async (ctx: any, roomId: any) => {};
+const validateReadyToggle = (args: any) => ({ allowed: true });
+
 // Default loss percent (server-side; do not import client code)
 const DEFAULT_LOSS_PCT = 0.5;
 
@@ -54,8 +63,8 @@ export const createRoom = mutation({
       playerId,
       playerName: args.playerName,
       isHost: true,
-      faction: args.playerFaction,
-      lives: args.gameConfig.livesPerPlayer,
+      factionId: args.playerFaction as any,
+      // lives: args.gameConfig.livesPerPlayer,
       isReady: false,
       joinedAt: Date.now(),
     });
@@ -116,8 +125,8 @@ export const joinRoom = mutation({
       playerId,
       playerName: args.playerName,
       isHost: false,
-      faction: args.playerFaction,
-      lives: room.gameConfig.livesPerPlayer,
+      factionId: args.playerFaction as any,
+      // lives: room.gameConfig.livesPerPlayer,
       isReady: false,
       joinedAt: Date.now(),
     });

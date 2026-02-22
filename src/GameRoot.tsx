@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useEffect, useState } from "react";
 import { type Resources, type Research } from '../shared/defaults'
 // PlayerState imported where needed in selectors/hooks

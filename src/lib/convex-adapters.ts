@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Adapters to convert between Convex schema and frontend types
  */

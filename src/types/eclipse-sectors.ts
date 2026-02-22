@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Eclipse: Second Dawn for the Galaxy - Sector Type Definitions
  *

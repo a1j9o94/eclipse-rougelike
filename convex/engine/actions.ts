@@ -1,7 +1,7 @@
 // Action handlers for Eclipse's six action types
 // Each action modifies game state in specific ways
 
-import type { Resources } from '../../shared/defaults';
+import type { Resources, Research } from '../../shared/defaults';
 import type { FrameId } from '../../shared/frames';
 import type { ShipSnap } from './combat';
 

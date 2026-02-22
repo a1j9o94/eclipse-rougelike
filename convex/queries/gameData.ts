@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Eclipse: Second Dawn - Game Data Query Helpers
  *

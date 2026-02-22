@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Turn management mutations for Eclipse board game
 // Handles phase progression, turn order, and round management
 

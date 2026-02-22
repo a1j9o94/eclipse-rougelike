@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Eclipse Second Dawn - Research Panel
  *

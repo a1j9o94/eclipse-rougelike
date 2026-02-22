@@ -996,28 +996,28 @@ src/
 
 **Technology Tracks:** 4 tracks (Nano, Grid, Military, Rare)
 
-**Total Technologies:** ~40 technologies
+**Total Technologies:** 41 technologies (verified against Eclipse wiki)
 
-### Technology Tracks (4 total)
+### Technology Track Breakdown
 
-**1. Nano Track:**
+**1. Nano Track:** 9 technologies
 - Weapons, shields, hull enhancements
 - Special abilities: Nanorobots, Advanced Labs
 - Structures: Orbital, Monolith
 - Movement: Wormhole Generator
 
-**2. Grid Track:**
+**2. Grid Track:** 8 technologies
 - Power Sources: Fusion Source, Tachyon Source, Quantum Source
 - Drives: Fusion Drive, Tachyon Drive, Transition Drive
 - Computers: Positron Computer, Gluon Computer, Neutrino Computer
 - Infrastructure improvements
 
-**3. Military Track:**
+**3. Military Track:** 8 technologies
 - Combat-focused technologies
 - Weapons and defensive systems
 - Battle optimizations
 
-**4. Rare Track:**
+**4. Rare Track:** 16 technologies
 - Unique, powerful technologies
 - Limited availability (one of each per game)
 

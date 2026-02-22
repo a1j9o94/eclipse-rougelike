@@ -59,7 +59,8 @@ This document outlines how the 6 parallel development streams will integrate int
 
 **Provides to Stream 4 (Actions):**
 - `getSectorById(sectorId)` - Query sector data
-- `getAdjacentSectors(sectorId)` - Get neighbors for movement/placement
+- `getAdjacentSectors(sectorId)` - Get physically adjacent hexes (6 neighbors)
+- `getWormholeConnections(sectorId)` - Get wormhole-connected sectors
 - `validateSectorPlacement(q, r)` - Check if hex placement valid
 - `getPlayerControlledSectors(playerId)` - Check control for actions
 
@@ -95,7 +96,20 @@ export const getSector = query({
 
 export const getAdjacentSectors = query({
   args: { roomId: v.id("rooms"), sectorId: v.string() },
-  handler: async (ctx, args) => { /* returns neighbor sectorIds */ }
+  handler: async (ctx, args) => {
+    // Returns array of physically adjacent sector IDs (6 neighbors in hex grid)
+    // Uses axial coordinate math: (q, r) neighbors
+    return ["sectorId1", "sectorId2", ...]; // array of sector IDs
+  }
+});
+
+export const getWormholeConnections = query({
+  args: { roomId: v.id("rooms"), sectorId: v.string() },
+  handler: async (ctx, args) => {
+    // Returns array of sector IDs connected via wormholes
+    // Checks sector's warpPortals field + Warp Portal tech tiles
+    return ["distantSectorId1", ...]; // array of sector IDs
+  }
 });
 
 export const getSectorsByPlayer = query({
@@ -444,9 +458,11 @@ export const moveAction = mutation({
   handler: async (ctx, args) => {
     // 1. Check influence disk
     // 2. Validate ships exist and owned by player (Stream 1)
-    // 3. Validate target sector adjacent (Stream 1)
+    // 3. Validate target sector reachable (Stream 1)
     const adjacent = await ctx.runQuery(api.galaxy.getAdjacentSectors, { roomId, sectorId: sourceSector });
-    if (!adjacent.includes(targetSectorId)) throw new Error("Not adjacent");
+    const wormholes = await ctx.runQuery(api.galaxy.getWormholeConnections, { roomId, sectorId: sourceSector });
+    const reachable = [...adjacent, ...wormholes];
+    if (!reachable.includes(targetSectorId)) throw new Error("Not reachable");
 
     // 4. Move ships (Stream 1)
     await ctx.runMutation(api.galaxy.moveShips, { roomId, shipIds, targetSectorId });

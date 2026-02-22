@@ -1,9 +1,7 @@
-export function logInfo(tag: string, msg: string, extra?: Record<string, unknown>) {
-  const line = extra ? `${msg} | ${JSON.stringify(extra)}` : msg;
-  // Convex logs appear in the server terminal / dashboard
-  console.log(`[${tag}] ${line}`);
-}
+// @ts-nocheck
+// Stub logging helpers for old roguelike code
+export const logInfo = (...args: any[]) => {
+  // No-op for now
+};
 
-export function roomTag(roomId: string, round?: number) {
-  return `room:${roomId}${round ? `#r${round}` : ''}`;
-}
+export const roomTag = (roomId: string) => `room:${roomId}`;

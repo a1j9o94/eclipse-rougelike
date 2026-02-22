@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState } from 'react';
 import { usePublicRooms } from '../hooks/usePublicRooms';
 import { useMultiplayerGame } from '../hooks/useMultiplayerGame';

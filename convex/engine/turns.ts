@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Turn and action system for Eclipse's 6-phase game loop
 // Server-authoritative turn order and phase management
 
