@@ -278,10 +278,10 @@ Use reviewable commits within each slice; do not hold every system for one giant
 | --- | --- | --- | --- | --- |
 | P0 | Code audit complete; human baseline pending | [PR #87](https://github.com/a1j9o94/eclipse-rougelike/pull/87), implementation `8c46c74` | [Code baseline and independent review](ux_p0_baseline.md); existing draft/receipt contracts reused | Observe unfamiliar and experienced players; broader cross-workflow inspection lifecycle remains to be implemented/verified |
 | P1 | First implementation ready for review; experience validation pending | [PR #87](https://github.com/a1j9o94/eclipse-rougelike/pull/87), implementation `8c46c74` | [Execution and validation](ux_p1_execution.md): 84 tests across 15 suites; full build and changed-file lint pass | Browser/physical-device and human playtests; wider funding/end-action consistency remains; continue P2 after review |
-| P2 | Implemented and cross-reviewed | PR #87; planner checkpoint `4ea488f` | [Build](ux_p2_build.md), [movement](ux_p2_movement.md), [integrated review](ux_integrated_release.md) | Production browser checks and human playtest |
-| P3 | Implemented and cross-reviewed | PR #87; integrated release pending | [Fitting](ux_p3_fitting.md), [inspection and colony review](ux_integrated_release.md) | Production browser checks and human playtest |
+| P2 | Implemented and cross-reviewed | PR #87; planner checkpoint `4ea488f` | [Build](ux_p2_build.md), [movement](ux_p2_movement.md), [integrated review](ux_integrated_release.md) | Live fixture checks recorded; human/physical-device playtest pending |
+| P3 | Implemented and cross-reviewed | PR #87; implementation `50a76be`, merge `f2869d0` | [Fitting](ux_p3_fitting.md), [inspection and colony review](ux_integrated_release.md) | Live fixture checks recorded; human/physical-device playtest pending |
 | P4 | Implemented; backend rollout required for rich live replay | PR #87; additive metadata | [Combat evidence and compatibility](ux_p4_combat.md), [rollout boundary](ux_integrated_release.md) | Publish compatible Convex backend; verify live provenance/impact replay |
-| P5 | Implemented and cross-reviewed | PR #87; integrated release pending | [Contextual actions](ux_p5_context.md), [history/scoring](ux_p5_history_scoring.md) | Production browser checks and human playtest |
+| P5 | Implemented and cross-reviewed | PR #87; implementation `50a76be`, merge `f2869d0` | [Contextual actions](ux_p5_context.md), [history/scoring](ux_p5_history_scoring.md) | Live fixture checks recorded; human/physical-device playtest pending |
 
 ## 7. Engineering seams and verification
 
