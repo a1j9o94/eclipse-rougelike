@@ -1,0 +1,22 @@
+[
+  {
+    "text": "Rotate right",
+    "name": "Rotate clockwise",
+    "outline": "rgb(168, 220, 232) solid 3px"
+  },
+  {
+    "text": "Planets & sector features",
+    "name": null,
+    "outline": "rgb(168, 220, 232) solid 3px"
+  },
+  {
+    "text": "Place sector",
+    "name": null,
+    "outline": "rgb(168, 220, 232) solid 3px"
+  },
+  {
+    "text": "Discard sector",
+    "name": null,
+    "outline": "rgb(168, 220, 232) solid 3px"
+  }
+]

@@ -1,0 +1,53 @@
+{
+  "evidence": "Agent browser automation; no human playtest. Isolated recorded GameStates submit through real processGameCommand; no Convex persistence tested. Selectors informed by source inspection; elapsed times are automation execution only, not human search time.",
+  "results": [
+    {
+      "name": "Find legal exploration target",
+      "elapsedSeconds": 0.246,
+      "result": "success",
+      "wrongTurns": 0
+    },
+    {
+      "name": "Predict upkeep shortfall",
+      "elapsedSeconds": 30.049,
+      "result": "TimeoutError: locator.innerText: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.sd-upkeep')\u001b[22m\n",
+      "wrongTurns": 1
+    },
+    {
+      "name": "Compare enemy with own blueprint",
+      "elapsedSeconds": 0.111,
+      "result": "success",
+      "wrongTurns": 0
+    },
+    {
+      "name": "Complete legal upgrade",
+      "elapsedSeconds": 8.611,
+      "result": "Error: locator.click: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Slot 4: Empty slot', exact: true })\u001b[22m\n",
+      "wrongTurns": 1
+    },
+    {
+      "name": "Allocate combat hit",
+      "elapsedSeconds": 0,
+      "result": "Error: locator.selectOption: Target page, context or browser has been closed",
+      "wrongTurns": 1
+    },
+    {
+      "name": "Choose retreat",
+      "elapsedSeconds": 0,
+      "result": "Error: locator.selectOption: Target page, context or browser has been closed",
+      "wrongTurns": 1
+    },
+    {
+      "name": "Explain blocked movement",
+      "elapsedSeconds": 0.001,
+      "result": "Error: locator.selectOption: Target page, context or browser has been closed",
+      "wrongTurns": 1
+    },
+    {
+      "name": "Find final scoring breakdown",
+      "elapsedSeconds": 0,
+      "result": "Error: locator.selectOption: Target page, context or browser has been closed",
+      "wrongTurns": 1
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "review": "Agent browser automation, not a human playtest",
+  "backend": "http://127.0.0.1:3210",
+  "savedMatchId": "nd71nyg6n5z9h8kze8dbvjc9eh8e0chz",
+  "sameRoundAfterReload": true,
+  "offlineSubmissionDisabled": true,
+  "reconnectedCommandAccepted": true,
+  "explorationDecisionSurvivedReload": true,
+  "pageErrors": []
+}

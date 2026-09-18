@@ -1,0 +1,31 @@
+import {chromium} from 'playwright';
+import {ConvexHttpClient} from 'convex/browser';
+import {makeFunctionReference} from 'convex/server';
+import {writeFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const site=process.env.SECOND_DAWN_SITE_URL;if(!site)throw Error('Set SECOND_DAWN_SITE_URL');
+const b=await chromium.launch(),p=await b.newPage({viewport:{width:1366,height:768}}),errors=[];p.on('pageerror',e=>errors.push(e.message));
+const client=new ConvexHttpClient('https://ideal-nightingale-55.convex.cloud');
+try{
+ await p.goto(site);await p.getByRole('button',{name:'New game',exact:true}).click();await p.getByRole('button',{name:'Eridani Empire, Red board',exact:true}).click();await p.getByRole('button',{name:'Start game',exact:true}).click();await p.getByRole('button',{name:'Game menu',exact:true}).waitFor();
+ const identity=await p.evaluate(()=>({credential:localStorage.getItem('eclipse.second-dawn.guest.v1'),matchId:localStorage.getItem('eclipse.second-dawn.match.v1')}));
+ const getView=()=>client.query(makeFunctionReference('eclipseMatches:getMatchView'),identity);
+ const before=await getView(),seat=before.seats.find(s=>s.id===before.viewerSeatId);
+ await p.getByRole('button',{name:'Build',exact:true}).click();await p.getByRole('button',{name:'Add dreadnought',exact:true}).click();
+ await p.getByText('Conversion required',{exact:true}).waitFor();
+ await p.screenshot({path:'coding_agents/second_dawn_deployment_live/funded-build.png'});
+ await p.getByRole('button',{name:'Convert & build',exact:true}).click();
+ await p.getByText('Saved · revision 1',{exact:true}).first().waitFor();
+ const after=await getView(),own=after.seats.find(s=>s.id===after.viewerSeatId);
+ assert.equal(after.revision,before.revision+1);
+ assert.equal(after.ships.filter(s=>s.owner===own.id&&s.type==='dreadnought').length,before.ships.filter(s=>s.owner===own.id&&s.type==='dreadnought').length+1);
+ assert.ok(own.resources.money<seat.resources.money);assert.equal(own.resources.materials,0);
+ await p.getByRole('button',{name:'History',exact:true}).click();await p.getByRole('log',{name:'Match actions'}).getByText('Details',{exact:true}).first().click();assert.match(await p.getByRole('log',{name:'Match actions'}).innerText(),/dreadnought/i);
+ await p.reload();await p.getByRole('button',{name:/Continue · round/}).first().click();await p.getByRole('button',{name:'Game menu',exact:true}).waitFor();
+ assert.equal((await getView()).revision,after.revision);
+ await p.getByRole('button',{name:'End action',exact:true}).click();
+ await p.waitForFunction(()=>!document.querySelector('.sd-note')?.textContent.includes('Build ·'));
+ assert.deepEqual(errors,[]);
+ await writeFile('coding_agents/second_dawn_deployment_live/funded-build.json',JSON.stringify({site,checkedAt:new Date().toISOString(),atomicBuildAccepted:true,revision:after.revision,beforeResources:seat.resources,afterResources:own.resources,dreadnoughtAdded:true,publicHistory:true,resumed:true,endActionOneClick:true,pageErrors:errors},null,2));
+ console.log('Live atomic converted build, public history, resume and one-click End action passed.');
+}finally{await b.close();}

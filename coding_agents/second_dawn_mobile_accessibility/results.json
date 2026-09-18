@@ -1,0 +1,42 @@
+[
+  {
+    "screen": "research",
+    "width": 390,
+    "height": 844,
+    "enlarged": true,
+    "docWidth": 390,
+    "footerHeight": 166.390625,
+    "measuredInset": 167,
+    "mainHeight": 386
+  },
+  {
+    "screen": "trade",
+    "width": 390,
+    "height": 844,
+    "enlarged": true,
+    "docWidth": 390,
+    "footerHeight": 166.390625,
+    "measuredInset": 167,
+    "mainHeight": 386
+  },
+  {
+    "screen": "research",
+    "width": 844,
+    "height": 390,
+    "enlarged": false,
+    "docWidth": 844,
+    "footerHeight": 72,
+    "measuredInset": 72,
+    "mainHeight": 167
+  },
+  {
+    "screen": "trade",
+    "width": 844,
+    "height": 390,
+    "enlarged": false,
+    "docWidth": 844,
+    "footerHeight": 72,
+    "measuredInset": 72,
+    "mainHeight": 167
+  }
+]

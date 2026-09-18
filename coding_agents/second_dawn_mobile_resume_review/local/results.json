@@ -1,0 +1,9 @@
+{
+  "site": "http://127.0.0.1:5175",
+  "crossDeviceLogin": true,
+  "catchUpVisible": true,
+  "explicitAcknowledgmentSharedAcrossDevices": true,
+  "acknowledgedRevision": 3,
+  "publicOnly": true,
+  "pageErrors": []
+}

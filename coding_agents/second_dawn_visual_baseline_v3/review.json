@@ -1,0 +1,31 @@
+{
+  "version": 3,
+  "date": "2026-09-07",
+  "files": [
+    "1366x768-opening.png",
+    "1366x768-midgame.png",
+    "1366x768-late.png",
+    "1366x768-research.png",
+    "1366x768-blueprints.png",
+    "1366x768-combat.png",
+    "1366x768-scoring.png",
+    "1440x900-opening.png",
+    "1440x900-midgame.png",
+    "1440x900-late.png",
+    "1440x900-research.png",
+    "1440x900-blueprints.png",
+    "1440x900-combat.png",
+    "1440x900-scoring.png",
+    "1920x1080-opening.png",
+    "1920x1080-midgame.png",
+    "1920x1080-late.png",
+    "1920x1080-research.png",
+    "1920x1080-blueprints.png",
+    "1920x1080-combat.png",
+    "1920x1080-scoring.png"
+  ],
+  "review": "Board agent inspected all 21 actual rendered images after combat/planet clipping fixes; root inspected changed components and verified pixel differences. No unreviewed automatic snapshot update.",
+  "changes": "30px stage-shortcut bar in all screens; actual main-area changes limited to midgame fleet inspector and combat at all sizes. Other 15 main areas pixel-identical below the header.",
+  "evidence": "coding_agents/second_dawn_board_revision/stage-baseline-differences.json; battle-sector-fixed-checks.json; gameplay_screenshots/review-results.json",
+  "humanEvidence": "User feedback drove revisions; this baseline review is agent-operated, not a claimed human playtest."
+}

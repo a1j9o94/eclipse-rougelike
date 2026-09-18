@@ -1,0 +1,36 @@
+{
+  "site": "https://eclipse-rougelike.vercel.app",
+  "evidence": "Agent browser automation, not human playtest",
+  "results": [
+    {
+      "width": 1366,
+      "height": 768,
+      "statsVisible": true,
+      "keyboardSelection": true,
+      "confirmationFits": true,
+      "useOpensPartPlacement": true,
+      "keepAddsTwoPublicVP": true,
+      "pageErrors": []
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "statsVisible": true,
+      "keyboardSelection": true,
+      "confirmationFits": true,
+      "useOpensPartPlacement": true,
+      "keepAddsTwoPublicVP": true,
+      "pageErrors": []
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "statsVisible": true,
+      "keyboardSelection": true,
+      "confirmationFits": true,
+      "useOpensPartPlacement": true,
+      "keepAddsTwoPublicVP": true,
+      "pageErrors": []
+    }
+  ]
+}

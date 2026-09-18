@@ -1,0 +1,125 @@
+{
+  "checkedAt": "2026-09-08T23:21:56.280Z",
+  "site": "https://eclipse-rougelike.vercel.app",
+  "browser": "Playwright WebKit 26.6",
+  "evidence": "Safari-engine desktop automation with mobile viewport/touch emulation; not physical iPhone/iPad or installed Safari testing. Native touch taps/navigation and mouse pan; touch-pointer pan is synthetic because Playwright WebKit has no public native swipe/pinch API. No cloud writes: isolated review fixtures only.",
+  "nativeTouchTap": true,
+  "nativeTouchList": true,
+  "nativeTouchNavigation": true,
+  "syntheticTouchPointerPan": true,
+  "nativeMousePan": true,
+  "cameraNavigation": true,
+  "errors": [],
+  "results": [
+    {
+      "width": 390,
+      "height": 844,
+      "mode": "opening",
+      "viewportWidth": 390,
+      "documentWidth": 390,
+      "viewportHeight": 844,
+      "documentHeight": 844,
+      "mainHeight": 581,
+      "mainScrollHeight": 581
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "mode": "research",
+      "viewportWidth": 390,
+      "documentWidth": 390,
+      "viewportHeight": 844,
+      "documentHeight": 844,
+      "mainHeight": 581,
+      "mainScrollHeight": 3531
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "mode": "blueprints",
+      "viewportWidth": 390,
+      "documentWidth": 390,
+      "viewportHeight": 844,
+      "documentHeight": 844,
+      "mainHeight": 581,
+      "mainScrollHeight": 3331
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "mode": "combat",
+      "viewportWidth": 390,
+      "documentWidth": 390,
+      "viewportHeight": 844,
+      "documentHeight": 844,
+      "mainHeight": 594,
+      "mainScrollHeight": 675
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "mode": "scoring",
+      "viewportWidth": 390,
+      "documentWidth": 390,
+      "viewportHeight": 844,
+      "documentHeight": 844,
+      "mainHeight": 590,
+      "mainScrollHeight": 590
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "mode": "opening",
+      "viewportWidth": 844,
+      "documentWidth": 844,
+      "viewportHeight": 390,
+      "documentHeight": 390,
+      "mainHeight": 167,
+      "mainScrollHeight": 260
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "mode": "research",
+      "viewportWidth": 844,
+      "documentWidth": 844,
+      "viewportHeight": 390,
+      "documentHeight": 390,
+      "mainHeight": 167,
+      "mainScrollHeight": 3056
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "mode": "blueprints",
+      "viewportWidth": 844,
+      "documentWidth": 844,
+      "viewportHeight": 390,
+      "documentHeight": 390,
+      "mainHeight": 167,
+      "mainScrollHeight": 3313
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "mode": "combat",
+      "viewportWidth": 844,
+      "documentWidth": 844,
+      "viewportHeight": 390,
+      "documentHeight": 390,
+      "mainHeight": 180,
+      "mainScrollHeight": 622
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "mode": "scoring",
+      "viewportWidth": 844,
+      "documentWidth": 844,
+      "viewportHeight": 390,
+      "documentHeight": 390,
+      "mainHeight": 176,
+      "mainScrollHeight": 441
+    }
+  ]
+}

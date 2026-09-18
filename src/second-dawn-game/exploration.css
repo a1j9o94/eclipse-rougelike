@@ -1,0 +1,72 @@
+.dg-exploration-decision { max-width: 1080px; margin: 0 auto; }
+.dg-explore-heading { display: flex; justify-content: space-between; align-items: start; gap: 14px; margin-bottom: 14px; }
+.dg-explore-heading h2 { font-family: Georgia,serif; font-size: 27px; color: #eed8ad; }
+.dg-explore-heading p { font-size: 13px; color: #c8c3b8; margin-top: 4px; }
+.dg-explore-heading > span { font-size: 12px; color: #c3b799; border: 1px solid #76613d; padding: 8px 12px; }
+.dg-explore-heading > span strong { color: #edcf90; }
+.dg-explore-layout { display: grid; grid-template-columns: minmax(0,1fr) 225px; gap: 20px; }
+.dg-placement-stage { background: linear-gradient(#09121ad9,#09121ae8),url('/second-dawn/galaxy-atmosphere.png') center/cover; border: 1px solid #5c503b; min-width: 0; }
+.dg-placement-stage > svg { display: block; width: 100%; height: min(39vh,360px); min-height: 240px; }
+.dg-placement-sector-name { fill: #ebdabb; font-size: 15px; font-weight: 700; }
+.dg-placement-owner { fill: #c7d0d4; font-size: 11px; }
+.dg-placement-source { fill: #a5d2b8; font-size: 9px; }
+.dg-placement-empty { fill: #87989e; font-size: 11px; }
+.dg-placement-new { fill: #d9c18d; font-size: 8px; letter-spacing: 1px; }
+.dg-placement-vp { fill: #dbe4e6; font-size: 11px; }
+.dg-rotation-controls { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 9px; border-top: 1px solid #514734; }
+.dg-rotation-controls button { display: flex; align-items: center; gap: 7px; padding: 7px 11px; font-size: 12px; }
+.dg-rotation-controls button svg { width: 21px; height: 21px; }
+.dg-rotation-controls > span { display: flex; gap: 4px; }
+.dg-rotation-controls i { width: 5px; height: 5px; border: 1px solid #8d8a7c; border-radius: 50%; }
+.dg-rotation-controls i.active { background: #f3ce85; border-color: #f3ce85; }
+.dg-placement-notes h3 { margin: 0 0 10px; color: #edce91; font-size: 15px; }
+.dg-placement-notes ul { list-style: none; margin: 0; padding: 0; }
+.dg-placement-notes > ul li { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid #444739; }
+.dg-placement-notes > ul li > span { font-size: 24px; line-height: 1.1; }
+.dg-placement-notes li.connected { color: #a0dfbe; }
+.dg-placement-notes li.closed { color: #e5a398; }
+.dg-placement-notes li strong { color: #ddd9ca; font-size: 13px; }
+.dg-placement-notes small { display: block; font-size: 12px; line-height: 1.5; margin-top: 3px; }
+.dg-placement-notes p { font-size: 12px; line-height: 1.65; color: #bbbdb4; }
+.dg-placement-notes details { margin-top: 14px; font-size: 12px; }
+.dg-placement-notes details ul { margin-top: 8px; color: #c6cbca; font-size: 12px; }
+.dg-placement-verdict { display: flex; flex-direction: column; gap: 3px; padding: 11px 14px; margin: 14px 0; border: 1px solid; border-left-width: 4px; background: #13251e; color: #a8e6bf; font-size: 13px; }
+.dg-placement-verdict.illegal { background: #2a1919; color: #f0b1a5; }
+.dg-placement-verdict span { color: #d2d7cf; font-size: 12px; }
+.dg-placement-actions { display: flex; gap: 8px; }
+.dg-exploration-save-note { font-size: 11px; color: #b5b2a6; }
+.dg-drawn-choices { display: flex; gap: 8px; margin-bottom: 12px; }
+.dg-drawn-choices small { display: block; font-size: 11px; }
+@media (max-height:820px) { .dg-explore-heading { margin-bottom: 10px; } .dg-placement-stage > svg { height: 260px; } .dg-placement-verdict { margin: 10px 0; padding: 8px 12px; } .dg-explore-heading h2 { font-size: 23px; } }
+
+/* The diagram and commitment stay together inside the available game workspace. */
+.dg-tabletop .sd-workspace:has(.dg-exploration-decision) { height: 100%; box-sizing: border-box; padding: 16px 22px; }
+.dg-exploration-decision { height: 100%; display: flex; flex-direction: column; }
+.dg-explore-heading { flex: 0 0 auto; }
+.dg-explore-layout { flex: 1; min-height: 0; grid-template-columns: minmax(0,1fr) 275px; }
+.dg-placement-stage { display: flex; flex-direction: column; min-height: 0; }
+.dg-placement-stage > svg { flex: 1; height: 0; min-height: 0; }
+.dg-rotation-controls { flex: 0 0 auto; }
+.dg-placement-notes { display: flex; flex-direction: column; min-height: 0; }
+.dg-placement-verdict { flex: 0 0 auto; margin: 0 0 10px; }
+.dg-placement-actions { flex: 0 0 auto; flex-wrap: wrap; }
+.dg-placement-actions button { padding: 8px 10px; font-size: 12px; }
+.dg-connections-scroll { overflow-y: auto; min-height: 0; padding-right: 4px; }
+.dg-connections-scroll > ul li { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid #444739; }
+.dg-connections-scroll > ul li > span { font-size: 24px; line-height: 1.1; }
+.dg-placement-notes .dg-exploration-save-note { flex: 0 0 auto; font-size: 11px; margin: 8px 0 14px; line-height: 1.5; }
+
+.dg-explore-ancients { display: flex; align-items: center; gap: 9px; padding: 8px; border: 1px solid #aa7850; margin: 0 0 14px; background: #3c2a2190; color: #eac38d; }
+.dg-explore-ancients > svg { width: 42px; height: 42px; flex: 0 0 42px; }
+.dg-explore-ancients strong { font-size: 12px; }
+
+/* On a phone the full connection diagram and notes scroll as one task screen. */
+.dg-mobile-board.dg-tabletop .sd-workspace:has(.dg-exploration-decision) { height:auto; min-height:100%; padding:16px 12px 24px; }
+.dg-mobile-board .dg-exploration-decision { height:auto; }
+.dg-mobile-board .dg-explore-layout { display:flex; flex-direction:column; flex:none; gap:16px; }
+.dg-mobile-board .dg-placement-stage > svg { flex:none; height:auto; aspect-ratio:344 / 310; min-height:260px; }
+.dg-mobile-board .dg-connections-scroll { overflow:visible; min-height:auto; padding-right:0; }
+.dg-mobile-board .dg-placement-notes { min-height:auto; }
+.dg-mobile-board .dg-placement-notes h3 { margin-top:12px; }
+.dg-mobile-board .dg-placement-actions { position:sticky; bottom:0; z-index:3; padding:8px 0; background:#101c27f5; }
+.dg-mobile-board .dg-placement-actions button { min-height:44px; }

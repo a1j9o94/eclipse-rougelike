@@ -1,0 +1,28 @@
+{
+  "files": [
+    "1366x768-opening.png",
+    "1366x768-midgame.png",
+    "1366x768-late.png",
+    "1366x768-research.png",
+    "1366x768-blueprints.png",
+    "1366x768-combat.png",
+    "1366x768-scoring.png",
+    "1440x900-opening.png",
+    "1440x900-midgame.png",
+    "1440x900-late.png",
+    "1440x900-research.png",
+    "1440x900-blueprints.png",
+    "1440x900-combat.png",
+    "1440x900-scoring.png",
+    "1920x1080-opening.png",
+    "1920x1080-midgame.png",
+    "1920x1080-late.png",
+    "1920x1080-research.png",
+    "1920x1080-blueprints.png",
+    "1920x1080-combat.png",
+    "1920x1080-scoring.png"
+  ],
+  "review": "coding_agents/second_dawn_visual_release_review.md",
+  "evidence": "Agent visual inspection of rendered images; no new human task walkthrough evidence.",
+  "reason": "Reviewed visual action controls replace dropdowns, with compact layouts."
+}

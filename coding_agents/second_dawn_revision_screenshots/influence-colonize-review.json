@@ -1,0 +1,86 @@
+[
+  {
+    "name": "influence",
+    "width": 1366,
+    "height": 768,
+    "confirm": {
+      "x": 1079,
+      "y": 623.5625,
+      "width": 146.203125,
+      "height": 41
+    },
+    "confirmVisible": true,
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "name": "influence",
+    "width": 1440,
+    "height": 900,
+    "confirm": {
+      "x": 1153,
+      "y": 755.5625,
+      "width": 146.203125,
+      "height": 41
+    },
+    "confirmVisible": true,
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "name": "influence",
+    "width": 1920,
+    "height": 1080,
+    "confirm": {
+      "x": 1603,
+      "y": 935.6875,
+      "width": 146.203125,
+      "height": 41
+    },
+    "confirmVisible": true,
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "name": "colonize",
+    "width": 1366,
+    "height": 768,
+    "confirm": {
+      "x": 1079,
+      "y": 623.5625,
+      "width": 166.015625,
+      "height": 41
+    },
+    "confirmVisible": true,
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "name": "colonize",
+    "width": 1440,
+    "height": 900,
+    "confirm": {
+      "x": 1153,
+      "y": 755.5625,
+      "width": 166.015625,
+      "height": 41
+    },
+    "confirmVisible": true,
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "name": "colonize",
+    "width": 1920,
+    "height": 1080,
+    "confirm": {
+      "x": 1603,
+      "y": 936.125,
+      "width": 166.015625,
+      "height": 41
+    },
+    "confirmVisible": true,
+    "overflow": false,
+    "errors": []
+  }
+]

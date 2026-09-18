@@ -1,0 +1,25 @@
+{
+  "seeds": [
+    7,
+    29,
+    61,
+    113
+  ],
+  "pairedSeatSwap": true,
+  "matches": 8,
+  "wins": 8,
+  "ties": 0,
+  "losses": 0,
+  "vpMargins": [
+    16,
+    13,
+    24,
+    20,
+    15,
+    11,
+    20,
+    17
+  ],
+  "baseline": "Uniform random legal main action; colonize when possible; finish one activation; random persisted choices",
+  "limitations": "Small fixed benchmark, not general strength certification"
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "width": 1366,
+    "height": 768,
+    "horizontalOverflow": false,
+    "cards": 20,
+    "emblems": 38,
+    "maximumVisibleCards": 2
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "horizontalOverflow": false,
+    "cards": 20,
+    "emblems": 38,
+    "maximumVisibleCards": 2
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "horizontalOverflow": false,
+    "cards": 20,
+    "emblems": 38,
+    "maximumVisibleCards": 2
+  }
+]

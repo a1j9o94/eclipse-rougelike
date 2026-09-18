@@ -1,0 +1,7 @@
+{
+  "site": "https://eclipse-rougelike.vercel.app",
+  "checkedAt": "2026-09-08T21:35:58.547Z",
+  "navigatorReportsOffline": true,
+  "realSocketOpened": true,
+  "failure": "A working game server connection must enable room creation even when navigator.onLine is false."
+}

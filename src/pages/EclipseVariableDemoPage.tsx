@@ -73,9 +73,14 @@ export default function EclipseVariableDemoPage() {
           🌌 Eclipse: Second Dawn - Variable Galaxy
         </h1>
         <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.875rem', color: '#94a3b8' }}>
-          Galaxy size adjusts based on player count
+          Board preview — complete matches are not available yet. Galaxy size adjusts based on player count.
         </p>
       </div>
+
+      <nav aria-label="Local versions" style={{ display: 'flex', gap: '1.5rem', padding: '0.75rem 1rem' }}>
+        <a href="/#legacy">Original roguelike</a>
+        <a href="/eclipse-demo.html">Two-player board demo</a>
+      </nav>
 
       {/* Controls */}
       <div style={{

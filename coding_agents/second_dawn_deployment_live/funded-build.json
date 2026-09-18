@@ -1,0 +1,21 @@
+{
+  "site": "https://eclipse-rougelike.vercel.app",
+  "checkedAt": "2026-09-08T00:18:03.556Z",
+  "atomicBuildAccepted": true,
+  "revision": 1,
+  "beforeResources": {
+    "materials": 4,
+    "money": 26,
+    "science": 2
+  },
+  "afterResources": {
+    "materials": 0,
+    "money": 14,
+    "science": 2
+  },
+  "dreadnoughtAdded": true,
+  "publicHistory": true,
+  "resumed": true,
+  "endActionOneClick": true,
+  "pageErrors": []
+}

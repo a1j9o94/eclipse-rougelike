@@ -1,0 +1,33 @@
+{
+  "checks": [
+    {
+      "width": 1366,
+      "height": 768,
+      "rows": 100,
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "rows": 100,
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "rows": 100,
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    }
+  ],
+  "realGame": {
+    "humanAndAi": true,
+    "scrollAnchorDelta": 0.4375,
+    "recordedBefore": 11,
+    "recordedAfter": 11,
+    "resumePreserved": true,
+    "errors": []
+  }
+}

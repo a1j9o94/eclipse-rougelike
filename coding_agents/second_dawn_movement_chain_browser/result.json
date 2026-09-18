@@ -1,0 +1,20 @@
+{
+  "checkedAt": "2026-09-08T22:02:04.610Z",
+  "accepted": true,
+  "submissions": 1,
+  "activations": 2,
+  "sameShipTwice": true,
+  "route": [
+    "001",
+    "224"
+  ],
+  "reachedTarget": true,
+  "influenceSpent": 1,
+  "activationsRemaining": 1,
+  "inputStateUnchanged": true,
+  "routeLabel": "1 → 101 → 103",
+  "inspectorWidth": 340,
+  "confirmationFullyVisible": true,
+  "pageErrors": [],
+  "evidence": "Actual browser rendering of the production MovementPlanner with the deterministic chainFixture and pure authoritative engine. No cloud state injected; this is not a cloud persistence test."
+}

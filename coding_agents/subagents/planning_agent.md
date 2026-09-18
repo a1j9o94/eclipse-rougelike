@@ -362,3 +362,108 @@
 
 - Test list (must fail first):
   1) `tutorial_state.spec`: `isEnabled()` returns true by default (must fail first).
+# 2026-09-06 — Resume local demo
+
+- Outcome: local solo play and Eclipse board previews load while retaining the configured Convex connection.
+- Acceptance: configured provider remains enabled; isolated renders without a provider do not crash; demos render and controls work; local Vite server remains available.
+- Tests first: reproduce startup regression, add entrypoint and provider availability coverage, repair browser API test setup and reproduce variable galaxy module failure.
+- Risks & rollback: preserve saves and game rules; revert this slice to undo startup gating. No backend deployment or seeding.
+- Decision log: reuse the existing feature/local-playtest branch; targeted single-worker tests only; record existing lint/build failures separately. Delegate variable demo repair while supervisor handles startup and verification.
+- Follow-ups: verify local URLs and document commands and any remaining limitations.
+
+## 2026-09-07 — Full Second Dawn
+Outcome: complete base game with authoritative guest saves and fair AI. Acceptance criteria, failing-first test list, risks/rollback, decisions and follow-ups: `coding_agents/second_dawn_implementation.md`. Preserve pre-existing local-playtest changes. Fresh branch `feature/second-dawn-full-game`. Initial parallel work: verified catalog and interactive fixture prototype; supervisor handles engine/persistence and gates.
+
+## 2026-09-07 — Continue complete Second Dawn
+Outcome: carry the existing foundation through a real setup-to-scoring human/AI game. Acceptance remains the full original plan, not a prototype checkpoint. Parallel bounded work: sector faces, ship/blueprint catalog, and Convex match transactions. Root owns setup, dispatcher, round/decision state and integration. Failing-first tests: deterministic setup/conservation, real six-action state transitions, durable choices, exact transactions and seeded full-match completion. Preserve all existing work; remain on feature/second-dawn-full-game. Risks: source-backed component transcription and compatibility of the provisional contracts. Rollback: isolated new full-game modules/tables; legacy saved data unchanged.
+
+## Continuation decision log — complete game integration
+
+Outcome: the default desktop entry now creates and resumes a full Second Dawn match against fair AI; legacy roguelike saves remain separate.
+
+Implemented the action dispatcher, persisted choices, complete combat/round flow, live Convex saves and AI scheduling. Independent rules review and seeded full-game conservation/replay tests guide corrections. Build passes; the inherited lint baseline remains 88 errors/12 warnings. Cloud dev CLI authentication was unavailable, so real integration uses an isolated anonymous local Convex backend, preserving existing environment files and deployment data.
+
+Acceptance still requires resolving actual rendered UI review findings and completing browser workflow/scoring evidence. Prototype screenshots are not counted as proof of integrated gameplay. Rollback remains isolated new modules/tables and the default route; no destructive schema migration was performed.
+
+## Delivery result
+
+Full local implementation and verification are recorded in `coding_agents/second_dawn_status.md`. All four implementation checkpoints progressed through integrated gameplay and reviewed visual corrections. Local play starts with `npm run second-dawn:local`; complete server restart restores guest saves and pending decisions. Reviewed baselines are protected from automatic updates. Cloud authentication and human playtesting are separate external follow-ups, not claimed as performed.
+
+## 2026-09-07 — Exploration, population, and discovery choices
+
+Outcome: players can judge a sector placement, read population spaces visually, and understand a discovery reward before accepting it.
+
+Acceptance: actual neighboring tiles and rotating wormholes show each connection; placement legality matches the persisted decision; population cubes/open slots and advanced stars replace repeated status prose; discovery shows its catalog name and effect beside the 2 VP alternative. The live preview uses the same components and engine states as real matches.
+
+Tests first: exploration rotation/legality/submission and disconnected controls (red then green); planet accessibility and absence of repeated status prose; discovery effects and legal choices. Validate at all three desktop sizes, targeted memory-bounded game tests, changed-code lint and production build. Keep inherited lint debt separate.
+
+Decision log: reuse public rule helpers and persisted options; no backend schema or engine rule changes. Capture exploration/discovery positions from the existing deterministic engine playthrough. Delegate planet rendering and discovery component while root integrates and verifies exploration, browser workflows, and deployment.
+
+Risks & rollback: choices must retain their original persisted IDs and legality. Revert only these view components to roll back; guest saves remain compatible. Follow-up: publish verified changes to the existing Vercel public preview using the Convex development environment.
+
+## 2026-09-07 — Game stages, Ancient encounters, and visual part installation
+
+Outcome: the public preview visibly demonstrates opening, developed and final-round galaxies, active combat and Ancient encounters; installing a discovered ship part shows the blueprint and replacement before confirmation.
+
+Acceptance: obvious stage shortcuts and direct links open real engine fixtures; Ancient examples include an actual drawn defended sector and surviving neutral fleet/combat; battle fleets show recognizable ships and public stats; part installation selects an actual legal blueprint/slot, previews replacement and resulting stats, and retains store/offline behavior. Existing live and preview views stay unified.
+
+Tests first: direct preview link/stage shortcuts; battle public stats; visual part installation replacement/legality. Review actual desktop screenshots and run targeted tests, changed lint, production build, public deployment smoke. Root owns stage navigation/integration, effects agent captures exact engine fixtures then implements part placement, board agent implements compact fleet battle overview. Risks: preview shortcuts must never modify guest saves and part placement must submit authoritative candidates. Rollback limited to components/fixtures; no schema changes.
+
+## 2026-09-07 — Owned research, history, and understandable action economy
+
+Outcome: players see their researched tiles on Research, can review fast AI actions at their own pace, and understand current/next-action round-end costs before committing.
+
+Acceptance: owned technologies grouped by actual tracks with inspectable effects; a single visual science price per market tile plus science budget; a scrollable saved public history that survives refresh and loads older entries without exposing private reputation/discoveries; header shows actual upkeep and next-disc forecast, action drafts show the income/cash/upkeep equation and immediate costs. The screenshot's 2 cash +3 income −1 bill leaves4; next disc makesbill2 andleaves3, which the UI must explain correctly.
+
+TDD: new owned-tech/cost components, history projection/ownership/pagination, history panel, upkeep summary and reconnect cache tests fail first. Reuse pure command preview and authoritative persisted journal. Root handles UI integration/economy; effects agent handles research components/review; board agent handles public journal query, exact fixture histories and cache recovery. Risks: journal privacy, legacy rows lackinground, and live query gaps during fast AI turns. Rollback: optionalround metadata and additive query are backward-compatible; UI can revert independently, preserve saves. Deploy backend explicitly to requested development environment before shipping the querying frontend.
+
+### Continued player feedback — economy, quick turns, and direct board actions
+Outcome: players see owned research and AI history, understand their next action's upkeep, and purchase, build, and move through visual decisions.
+Acceptance: single science price with icon; owned track tiles inspectable; persistent public history; visual trades; atomic warned research/build conversions; one-click ordinary End action/Pass/Finish upkeep; subdued sector IDs and stronger owner fills; visual sector Build order with quantities; fleet selection followed by highlighted Move destination.
+Tests must fail first: funded UI requires explicit atomic confirmation, source mix changes do not submit, illegal funded candidates excluded; quick turn one command and betrayal warning retained; visual build quantities/conservation/affordability; movement range/pinning/path/group limits. Relevant bounded suite, changed-file lint, production build, browser workflows, reviewed screenshots at three desktop sizes follow.
+Risks/rollback: new wrapper command is additive to versioned tables; backend deploy precedes UI. All drafts remain local until commit; no existing saves deleted. AI still uses the same authoritative commands, without added budget or hidden information.
+Decision log: funded candidates derive affordable ceilings from the public view and pass ordinary action legality before deriving actual exact conversions. All conversion plus purchase commands validate and commit atomically. User requested Build popup and direct galaxy Move controls while earlier refinements were being verified; included in this release.
+
+Result: all acceptance criteria for this feedback release implemented and published to the existing live/preview alias. Final one-worker Second Dawn batch: 353/353 tests, 69/69 files. Changed-code lint and production build pass; repository baseline remains 88 errors/12 warnings. Explicitly reviewed v4 baseline 21/21 matches. Eleven actual-engine workflows pass; live converted build, atomic research preview, public human/AI history, save/resume, offline/reconnect, pending exploration recovery, and one-click End action pass. No follow-ups remain for this feedback slice. Human playtest evidence remains the user's feedback, separately from agent browser review.
+
+## 2026-09-07 — Visual action-choice assessment (plan only)
+
+Outcome: remove native selects as the primary UI for every consequential action and persisted decision, using the visual language already established for sectors, ships, technology, resources, and population.
+
+Scope and acceptance: audited all action-related selects; prioritized Influence, Colonize, combat allocation/retreat, blueprint parts, diplomacy, and persisted sector/resource choices. The complete staged plan, interaction contracts, tests, screenshot review, risks, and exclusions are in `coding_agents/second_dawn_visual_action_choices_plan.md`. No game code, commands, Convex schema, saves, or deployed behavior changed for this assessment.
+### 2026-09-07 — Visual actions followed by multiplayer
+
+Outcome: players choose actions through the actual board/components, then invite friends through shareable rooms with visual faction effects and temporary AI timeout control.
+
+Acceptance: visual action plan published first; 2–6 room seats, ready/host start, guest ownership/privacy, persistent 30-second–48-hour clock, same-owner deadline preservation, and full-game completion retained. Plans: `second_dawn_visual_action_choices_plan.md`, `second_dawn_multiplayer_plan.md`.
+
+Risk/rollback: additive room/timer tables; legacy and solo snapshots preserved. Independent agents reviewed rendered controls, faction details, and multiplayer behavior. Timeout/public history metadata never reveals private tiles.
+
+Tests: failing behavioral tests preceded the visual planners, economy decisions, room contracts, ownership, and timer changes. Final bounded suite: 398 tests across 79 files; scoped lint/TypeScript/build green. Existing repository lint: 88 errors, 12 warnings.
+
+## 2026-09-08 — Recoverable players and solo rooms result
+Outcome delivered: one-human rooms wait indefinitely; persistent profiles restore original guest saves and multiplayer ownership across devices. Plan/release: `coding_agents/second_dawn_player_identity_plan.md`, `coding_agents/second_dawn_player_identity_release.md`. Additive schema rollback must retain recovered-session resolver for already-issued device credentials. TDD, 427 bounded tests, scoped lint, TypeScript/build, deployed three-browser recovery and multiplayer timeout checks passed. Repository lint debt remains 88 errors/12 warnings. Vercel Ready; approved development Convex backend retained.
+
+## 2026-09-08 — False offline browser flag
+Outcome: working Convex connections enable play even with navigator.onLine=false; actual socket loss still disables commands. Failing unit and actual browser reproduction recorded before fix. Plan, source rationale, rollback and verification: `coding_agents/second_dawn_false_offline_fix.md`. Frontend only; saved credentials/state unchanged. Relevant 11 tests, lint and build passed. Vercel rollout underway.
+
+## Fleet readability and AI map activity
+Outcome: distinguish each ship class and faction at a glance while seeing where AI activity occurred.
+Acceptance: map cards group owner/type and show matching hull + ×count; civilization emblems distinguish all six colors and their Terran variants; crowded stacks expose additional groups through one sector selection; activity highlights/move trails respect reduced motion. Inspector retains every group and damage facts.
+Risks & rollback: map density at fit zoom; constrain cards to four slots and show explicit overflow. Changes are presentation-only and reversible.
+Tests (fail first): separate classes/counts, bounded overflow, faction symbol parity, optional activity pulse/path, inspector owner symbols.
+
+## 2026-09-08 — Fleet cards, AI action following and movement shortcut
+Outcome implemented: per-class fleet cards and shared faction emblems; paced AI with visible public action interfaces, map feedback and explicit human return; two-sector speed-one movement using two activations in one confirmation. Plan `second_dawn_fleet_ai_presentation_plan.md`; release/decisions `second_dawn_fleet_ai_release.md`. 463 bounded tests pass, changed lint/typecheck/build clean, inherited lint 88 errors/12 warnings unchanged. Independent browser reviews found and fixed nested SVG hit areas, effect lifetime on status refresh, offscreen AI feedback via Watch AI, and short-screen blueprint/combat visibility. Development backend updated; Vercel rollout and live walkthrough finishing.
+
+## Portrait-first mobile implementation
+Outcome: play the complete shared game upright, with resumable action drafts, touch galaxy controls and cross-device catch-up.
+Acceptance criteria and decisions: see `coding_agents/second_dawn_mobile_plan.md`. Root coordinates shell, touch-map and draft agents; root owns authenticated activity markers, foreground recovery and launcher integration. Branch `feature/second-dawn-mobile` inherited existing full-game work; preserve all prior dirty/untracked files and data.
+Tests failing first: seen-marker Convex tests (missing metadata), activity recap tests (missing hook/component), foreground recovery tests (missing hook). These now pass locally. Risks/rollback: optional metadata outside GameState; compact UI isolated; no migration/destructive reset. Physical Android/iPhone evidence remains separate from emulated browser review.
+
+## 2026-09-18 — Commit approved work and restore main-only releases
+- Outcome: all approved Second Dawn work is committed on main; GitHub pushes to main deploy the existing Vercel site.
+- Acceptance: clean working tree, remote main equals local main, production deployment identifies the new main commit, non-main automatic deployments disabled, existing development Convex endpoint retained.
+- Risks/rollback: preserve current deployment until new build is ready; use Vercel rollback if verification fails. Do not commit local credentials or transient runtime logs.
+- Validation: bounded Second Dawn tests, full build, lint debt comparison, secret/artifact audit, Git and Vercel deployment metadata.
+- Decision: no gameplay changes. Configure deploymentEnabled for main only and a project-level non-main ignored-build guard; align dashboard build settings with the already deployed vercel.json.

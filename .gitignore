@@ -23,3 +23,15 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+
+# Isolated anonymous Second Dawn backend configuration
+.second-dawn/
+.vercel/
+.vercel
+.env*
+!.env.example
+
+# Agent runtime state and private browser evidence
+coding_agents/pids/*.pid
+coding_agents/**/*-lobby-host.png
+coding_agents/second_dawn_solo_room_review/*-solo-room.png

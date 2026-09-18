@@ -1,0 +1,58 @@
+{
+  "evidence": "Agent-operated two-browser authoritative multiplayer check. No guest credentials, room token, or match id are recorded.",
+  "site": "https://eclipse-rougelike.vercel.app",
+  "backend": "https://ideal-nightingale-55.convex.cloud",
+  "checkedAt": "2026-09-08T12:46:57.886Z",
+  "captures": [
+    {
+      "width": 1366,
+      "height": 768,
+      "label": "lobby-host",
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "label": "lobby-host",
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "label": "lobby-host",
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "label": "playing-host",
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "label": "playing-host",
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "label": "playing-host",
+      "horizontalOverflow": false
+    }
+  ],
+  "roomCreated": true,
+  "distinctGuests": true,
+  "distinctFactions": true,
+  "readyAndHostStart": true,
+  "sameMatchForBothSeats": true,
+  "privateViewOwnership": true,
+  "unauthorizedViewDenied": true,
+  "correctSeatActionAccepted": true,
+  "wrongSeatCommandDenied": true,
+  "offlineSubmissionDisabled": true,
+  "roomReloadResumed": true,
+  "timeoutAiReturnedHumanSeat": true,
+  "timeoutAiHistoryVisible": true,
+  "pageErrors": []
+}

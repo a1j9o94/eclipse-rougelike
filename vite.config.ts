@@ -13,7 +13,12 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
-    build: { sourcemap: true },
+    build: {
+      sourcemap: true,
+      rollupOptions: {
+        input: ['index.html', 'eclipse-demo.html', 'eclipse-variable-demo.html', 'galaxy-demo.html'],
+      },
+    },
     test: {
       environment: 'jsdom',
       setupFiles: ['./src/test/setup.ts'],

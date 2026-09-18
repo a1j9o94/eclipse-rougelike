@@ -1,0 +1,16 @@
+.dg-sector-fleet { display: flex; flex-direction: column; gap: 7px; margin: 9px 0 17px; }
+.dg-fleet-group { border: 1px solid #555344; background: linear-gradient(120deg,#24313a99,#111a22bb); }
+.dg-fleet-group-main { display: flex; align-items: center; gap: 9px; min-height: 52px; padding: 3px 9px 3px 3px; }
+.dg-fleet-figure { display: flex; flex: 0 0 46px; align-items: center; justify-content: center; color: #d8c398; }
+.dg-fleet-figure > svg { width: 46px; height: 46px; }
+.dg-fleet-group-main > div { min-width: 0; }
+.dg-fleet-group-main strong { color: #e9d6b1; font-size: 13px; }
+.dg-fleet-group-main small { display: block; color: #bcc9ce; font-size: 11px; line-height: 1.5; }
+.dg-fleet-count { margin-left: auto; flex: 0 0 auto; font-size: 23px; color: #ebcf91; font-variant-numeric: tabular-nums; }
+.dg-fleet-group details { border-top: 1px solid #454b4e; padding: 4px 9px; color: #d6c19b; font-size: 11px; }
+.dg-fleet-group details p { margin: 5px 0; font-size: 11px; }
+.dg-fleet-group { background: linear-gradient(120deg, color-mix(in srgb,currentColor 14%,#0d1720),#111a22); }
+.dg-fleet-group-main small { display: flex; align-items: center; gap: 5px; color: inherit; }
+.dg-fleet-group-main small .dg-faction-symbol { width: 16px; height: 16px; }
+.dg-fleet-figure, .dg-fleet-count { color: inherit; }
+.dg-fleet-figure .dg-ship-hull, .dg-fleet-figure .dg-neutral-hull { fill: currentColor; stroke: none; }

@@ -1,0 +1,86 @@
+[
+  {
+    "file": "1366x768-opening.png",
+    "mainPixelsChanged": 0
+  },
+  {
+    "file": "1366x768-midgame.png",
+    "mainPixelsChanged": 41596
+  },
+  {
+    "file": "1366x768-late.png",
+    "mainPixelsChanged": 0
+  },
+  {
+    "file": "1366x768-research.png",
+    "mainPixelsChanged": 0
+  },
+  {
+    "file": "1366x768-blueprints.png",
+    "mainPixelsChanged": 0
+  },
+  {
+    "file": "1366x768-combat.png",
+    "mainPixelsChanged": 406426
+  },
+  {
+    "file": "1366x768-scoring.png",
+    "mainPixelsChanged": 0
+  },
+  {
+    "file": "1440x900-opening.png",
+    "mainPixelsChanged": 0
+  },
+  {
+    "file": "1440x900-midgame.png",
+    "mainPixelsChanged": 51235
+  },
+  {
+    "file": "1440x900-late.png",
+    "mainPixelsChanged": 0
+  },
+  {
+    "file": "1440x900-research.png",
+    "mainPixelsChanged": 0
+  },
+  {
+    "file": "1440x900-blueprints.png",
+    "mainPixelsChanged": 0
+  },
+  {
+    "file": "1440x900-combat.png",
+    "mainPixelsChanged": 559283
+  },
+  {
+    "file": "1440x900-scoring.png",
+    "mainPixelsChanged": 0
+  },
+  {
+    "file": "1920x1080-opening.png",
+    "mainPixelsChanged": 0
+  },
+  {
+    "file": "1920x1080-midgame.png",
+    "mainPixelsChanged": 55053
+  },
+  {
+    "file": "1920x1080-late.png",
+    "mainPixelsChanged": 0
+  },
+  {
+    "file": "1920x1080-research.png",
+    "mainPixelsChanged": 0
+  },
+  {
+    "file": "1920x1080-blueprints.png",
+    "mainPixelsChanged": 0
+  },
+  {
+    "file": "1920x1080-combat.png",
+    "mainPixelsChanged": 473270
+  },
+  {
+    "file": "1920x1080-scoring.png",
+    "mainPixelsChanged": 0
+  }
+]

@@ -1,0 +1,168 @@
+.dg-app .dg-galaxy {
+  padding-top: 70px;
+  padding-bottom: 80px;
+  background: radial-gradient(ellipse at center, #132230, #09121c 75%);
+}
+.dg-galaxy > svg {
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+}
+.dg-galaxy > svg:active {
+  cursor: grabbing;
+}
+.dg-tile {
+  cursor: pointer;
+}
+.dg-tile:hover .dg-tile-face,
+.dg-tile:focus .dg-tile-face {
+  stroke: #fff1c8;
+  stroke-width: 3;
+}
+.dg-sector-id {
+  fill: #a0aeb9;
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: .3px;
+  opacity: .72;
+}
+.dg-owner-number {
+  fill: #101b25;
+  font-size: 11px;
+  font-weight: 800;
+}
+.dg-sector-vp {
+  fill: #e4cea0;
+  font-size: 11px;
+  font-weight: 700;
+}
+.dg-fleet-label {
+  font-size: 10px;
+  font-weight: 600;
+}
+.dg-map-key {
+  position: absolute;
+  bottom: 48px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px 16px;
+  font-size: 10px;
+  color: #bbcad4;
+}
+.dg-map-key span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.dg-key-wormhole {
+  width: 13px;
+  height: 4px;
+  background: #e8c881;
+}
+.dg-key-portal {
+  width: 9px;
+  height: 9px;
+  border: 2px solid #96dfef;
+  border-radius: 50%;
+}
+.dg-app .dg-galaxy {
+  background: transparent;
+  padding-top: 60px;
+  padding-bottom: 65px;
+}
+.dg-tile-overview .dg-sector-id {
+  font-size: 9px;
+  letter-spacing: 0;
+}
+.dg-tile-overview .dg-owner-number {
+  font-size: 14px;
+}
+.dg-tile-overview .dg-fleet-label {
+  font-size: 14px;
+}
+.dg-tile-detailed .dg-sector-id {
+  font-size: 9px;
+}
+.dg-tile-overview .dg-sector-vp {
+  pointer-events: none;
+}
+.dg-map-key {
+  font-size: 11px;
+  padding: 5px 9px;
+  background: #09121bd9;
+  border-radius: 4px;
+  width: fit-content;
+  margin: auto;
+}
+@media (max-height: 800px) {
+  .dg-app .dg-galaxy {
+    padding-top: 30px;
+    padding-bottom: 60px;
+  }
+}
+.dg-galaxy-overview {
+  position: absolute;
+  bottom: 83px;
+  right: 14px;
+  width: 110px;
+  padding: 8px;
+  border: 1px solid #9d865b66;
+  border-radius: 4px;
+  background: #08121ddd;
+  color: #d0c7b3;
+  font-size: 10px;
+  text-align: center;
+  pointer-events: none;
+}
+.dg-galaxy-overview svg {
+  width: 100%;
+  height: 82px;
+  display: block;
+  margin: 4px 0;
+}
+/* The map legend explains tokens without intercepting tile selection beneath it. */
+.dg-map-key { pointer-events: none; }
+.dg-map-fleet-card .dg-ship-radar,
+.dg-map-fleet-card .dg-ship-axis,
+.dg-map-fleet-card .dg-ship-cockpit,
+.dg-map-fleet-card .dg-ship-engine,
+.dg-map-fleet-card .dg-neutral-radar,
+.dg-map-fleet-card .dg-neutral-core,
+.dg-map-fleet-card .dg-neutral-lines { display: none; }
+.dg-map-fleet-card svg { width: 100%; height: 100%; overflow: visible; }
+.dg-map-fleet-card > svg { width: 22px; height: 18px; }
+.dg-map-fleet-card .dg-ship-hull,
+.dg-map-fleet-card .dg-neutral-hull { fill: currentColor; stroke: none; }
+.dg-tile-overview .dg-fleet-label,
+.dg-map-fleet-card .dg-fleet-label { font-size: 10px; font-weight: 700; }
+.dg-tile-activity .dg-tile-face { animation: dg-sector-activity 1.6s ease-in-out infinite; }
+.dg-activity-move { animation: dg-move-trail 1.6s linear infinite; }
+@keyframes dg-sector-activity { 0%,100% { stroke-width: 2.5; } 50% { stroke: #fff3c9; stroke-width: 5; } }
+@keyframes dg-move-trail { to { stroke-dashoffset: -26; } }
+@media (prefers-reduced-motion: reduce) {
+ .dg-tile-activity .dg-tile-face { animation: none; stroke: #fff3c9; stroke-width: 4; }
+ .dg-activity-move { animation: none; }
+}
+.dg-sector-list-toggle{display:none}
+.dg-map-sector-list{position:absolute;z-index:8;inset:12px 12px 65px;background:#101b26;border:1px solid #a38a55;border-radius:8px;display:flex;flex-direction:column;color:#e6e8ea;box-shadow:0 12px 40px #0009;outline:none}
+.dg-map-sector-list>header{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px;border-bottom:1px solid #56606b}
+.dg-map-sector-list>div{display:grid;align-content:start;gap:7px;overflow:auto;overscroll-behavior:contain;touch-action:pan-y;padding:10px}
+.dg-map-sector-list button{min-height:44px;border:1px solid #566777;border-radius:5px;background:#1a2a38;color:#e5e9ed;padding:8px 11px;font:inherit;text-align:left}
+.dg-map-sector-list>div button{display:grid;gap:3px}
+.dg-map-sector-list button[aria-pressed=true]{border-color:#efd188;background:#383528}
+.dg-map-sector-list button span{font-size:12px;color:#c3ced6}
+.dg-map-sector-list button:focus-visible,.dg-galaxy-compact .sd-map-controls button:focus-visible{outline:3px solid #a7dcf0;outline-offset:2px}
+.dg-app .dg-galaxy.dg-galaxy-compact{padding:12px 0 66px;min-height:260px}
+.dg-galaxy-compact .sd-map-controls{left:8px;right:8px;bottom:8px;display:flex;justify-content:center;align-items:center;gap:4px;padding:4px;background:#09131eea;max-width:100%;width:fit-content;margin:auto}
+.dg-app .dg-galaxy-compact .sd-map-controls button{min-width:44px;min-height:44px;padding:8px;font-size:16px}
+.dg-galaxy-compact .sd-map-controls>span{font-size:12px;min-width:36px;text-align:center}
+.dg-galaxy-compact .sd-map-controls .dg-sector-list-toggle{display:block;font-size:13px}
+.dg-galaxy-compact .sd-map-controls .dg-pan-button{display:none}
+.dg-galaxy-compact .dg-galaxy-overview{display:none}
+.dg-galaxy-compact .dg-map-key{bottom:62px;left:4px;right:4px;font-size:9px;gap:8px;padding:3px 5px}
+.dg-galaxy-compact .dg-map-key span:nth-child(n+3){display:none}
+.dg-mobile-overview .dg-sector-id,.dg-mobile-overview .dg-sector-world{display:none}
+.dg-galaxy-compact>.dg-map-sector-list{inset:4px 6px 65px}

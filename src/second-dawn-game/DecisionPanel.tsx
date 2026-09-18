@@ -1,0 +1,208 @@
+import { useState } from "react";
+import type { ReactElement } from "react";
+import type { LegalCommandCandidate } from "../../shared/eclipse/legal";
+import type {
+  PlayerView,
+  DecisionChoice,
+  GameCommand,
+  PendingDecision,
+} from "../../shared/eclipse/types";
+import ExplorationDecision from "./ExplorationDecision";
+import DiscoveryDecision from "./DiscoveryDecision";
+import AncientPartDecision from "./AncientPartDecision";
+import EconomyDecision from "./EconomyDecision";
+import ColonizationPlanner from "./ColonizationPlanner";
+import {
+  BombardmentTargets,
+  CombatTargetCards,
+  InitiativeQueue,
+  RetreatCards,
+  SplitDamageCards,
+} from "./CombatDecisionVisuals";
+interface Props {
+  view?: PlayerView;
+  targetLabels?: Record<string, string>;
+  candidates?: LegalCommandCandidate[];
+  decision: PendingDecision;
+  reputation: number[];
+  disabled: boolean;
+  onSubmit: (command: GameCommand) => void;
+}
+/** Local state is an editable draft only. The outstanding decision lives in the authoritative view. */
+export default function DecisionPanel({
+  decision,
+  view,
+  reputation,
+  disabled,
+  onSubmit,
+  candidates = [],
+  targetLabels = {},
+}: Props) {
+  const [values, setValues] = useState<Record<string, string>>({});
+  const [selected, setSelected] = useState<string[]>([]);
+  const value = (key: string, fallback = "") => values[key] ?? fallback;
+  const set = (key: string, next: string) =>
+    setValues((v) => ({ ...v, [key]: next }));
+  const toggle = (key: string) =>
+    setSelected((s) =>
+      s.includes(key) ? s.filter((k) => k !== key) : [...s, key],
+    );
+  let choice: DecisionChoice;
+  let valid = true;
+  let fields: ReactElement;
+  switch (decision.kind) {
+    case "exploration":
+      return view ? <ExplorationDecision key={decision.id} view={view} decision={decision} disabled={disabled} onSubmit={onSubmit}/> : <p role="alert">The galaxy view is needed to preview this exploration. Reconnect to restore it.</p>;
+    case "discovery":
+      return <DiscoveryDecision key={decision.id} view={view} decision={decision} disabled={disabled} onSubmit={onSubmit}/>;
+    case "ancient-part":
+      return view ? <AncientPartDecision key={decision.id} view={view} decision={decision} candidates={candidates} disabled={disabled} onSubmit={onSubmit}/> : <p role="alert">Reconnect to restore your ship blueprints for this installation.</p>;
+    case "control":
+    case "bankruptcy":
+    case "portal-placement":
+    case "free-technology":
+    case "population-return":
+    case "resource-reward":
+    case "diplomacy":
+    case "diplomacy-window":
+    case "reputation":
+      return <EconomyDecision decision={decision} view={view} candidates={candidates} reputation={reputation} disabled={disabled} onSubmit={onSubmit} />;
+    case "combat-allocation": {
+      const dice = decision.dice.filter((d) => d.targets.length);
+      valid = dice.every((d) =>
+        d.hitTargets?.length === 0
+          ? true
+          : d.split
+            ? d.targets.every(
+                (target) =>
+                  Number.isInteger(Number(value(`${d.id}/${target}`, "0"))) &&
+                  Number(value(`${d.id}/${target}`, "0")) >= 0,
+              ) &&
+              d.targets.reduce(
+                (sum, target) => sum + Number(value(`${d.id}/${target}`, "0")),
+                0,
+              ) === d.damage
+            : d.targets.includes(value(d.id)),
+      );
+      choice = {
+        kind: "combat-allocation",
+        allocations: dice.flatMap((d) =>
+          d.hitTargets?.length === 0
+            ? [
+                {
+                  dieId: d.id,
+                  targetId: d.targets[0],
+                  ...(d.split ? { damage: d.damage } : {}),
+                },
+              ]
+            : d.split
+              ? d.targets
+                  .filter(
+                    (target) => Number(value(`${d.id}/${target}`, "0")) > 0,
+                  )
+                  .map((target) => ({
+                    dieId: d.id,
+                    targetId: target,
+                    damage: Number(value(`${d.id}/${target}`, "0")),
+                  }))
+              : value(d.id)
+                ? [{ dieId: d.id, targetId: value(d.id) }]
+                : [],
+        ),
+      };
+      fields = (
+        <div className="dg-die-grid">
+          {decision.dice.map((d) => (
+            <div className="dg-die" key={d.id}>
+              <strong>
+                Roll {d.face} ·{" "}
+                {d.hitTargets?.length === 0
+                  ? "no hit"
+                  : `${d.damage} potential damage`}
+              </strong>
+              {d.hitTargets?.length === 0 ? (
+                <p>
+                  This roll misses every opposing ship. No allocation is needed.
+                </p>
+              ) : d.split ? (
+                <SplitDamageCards
+                  view={view}
+                  targetLabels={targetLabels}
+                  dieNumber={decision.dice.findIndex((die) => die.id === d.id) + 1}
+                  targets={d.targets}
+                  damage={d.damage}
+                  values={Object.fromEntries(d.targets.map((target) => [target, Number(value(`${d.id}/${target}`, "0"))]))}
+                  onChange={(target, next) => set(`${d.id}/${target}`, String(next))}
+                />
+              ) : d.targets.length ? (
+                <CombatTargetCards
+                  view={view}
+                  targetLabels={targetLabels}
+                  targets={d.targets}
+                  hitTargets={d.hitTargets}
+                  selected={value(d.id)}
+                  onSelect={(target) => set(d.id, target)}
+                />
+              ) : (
+                <p>No legal target for this die.</p>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+      break;
+    }
+    case "retreat":
+      choice = {
+        kind: "retreat",
+        destinationId:
+          value("destination", "stay") === "stay" ? null : value("destination"),
+      };
+      fields = <RetreatCards view={view} destinationIds={decision.destinationIds} value={choice.destinationId} includeFight onSelect={(destination) => set("destination", destination ?? "stay")} />;
+      break;
+    case "combat-turn":
+      {
+      const fallback = decision.forcedRetreat ? decision.destinationIds[0] ?? "" : "fight";
+      const destination = value("destination", fallback);
+      choice = {
+        kind: "combat-turn",
+        retreatTo: destination === "fight" ? null : destination || null,
+      };
+      valid = !decision.forcedRetreat || (choice.retreatTo !== null && decision.destinationIds.includes(choice.retreatTo));
+      fields = <RetreatCards view={view} destinationIds={decision.destinationIds} value={choice.retreatTo} includeFight={!decision.forcedRetreat} forced={decision.forcedRetreat} onSelect={(destination) => set("destination", destination ?? "fight")} />;
+      break;
+      }
+    case "bombardment":
+      valid = selected.length <= decision.hits;
+      choice = { kind: "bombardment", squareIds: selected };
+      fields = <BombardmentTargets view={view} sectorId={decision.sectorId} squareIds={decision.squareIds} selected={selected} hits={decision.hits} onToggle={toggle} />;
+      break;
+    case "initiative-order":
+      valid = selected.length === decision.groupIds.length;
+      choice = { kind: "initiative-order", groupIds: selected };
+      fields = <InitiativeQueue view={view} groupIds={decision.groupIds} selected={selected} onToggle={toggle} />;
+      break;
+    case "colonization":
+      return view ? <ColonizationPlanner view={view} candidates={candidates} disabled={disabled} decision={decision} onSubmit={onSubmit} /> : <p role="alert">Reconnect to restore the planet board for this colonization decision.</p>;
+  }
+  return (
+    <section className={`dg-decision ${decision.kind === "combat-allocation" ? "dg-combat-allocation" : ""}`}>
+      <p className="sd-eyebrow">YOUR DECISION</p>
+      <h2>{decision.kind.replaceAll("-", " ")}</h2>
+      {fields}
+      <button
+        className="sd-primary"
+        disabled={disabled || !valid}
+        onClick={() =>
+          onSubmit({ type: "resolve", decisionId: decision.id, choice })
+        }
+      >
+        Confirm choice
+      </button>
+      <p className="sd-muted">
+        You may edit this choice until confirmation. Draws and rolls already
+        committed cannot be undone.
+      </p>
+    </section>
+  );
+}

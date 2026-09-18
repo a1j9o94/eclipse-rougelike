@@ -1,0 +1,63 @@
+{
+  "reviewedAt": "2026-09-07T22:23:51.674Z",
+  "reason": "Explicit player-feedback revision after independent image review and correction of four reported defects.",
+  "review": "coding_agents/second_dawn_revision_visual_review.md",
+  "humanEvidence": "Player critique informed revision; no claim of subsequent human acceptance.",
+  "policy": "Compare only. Test runs must not overwrite baselines. Original baseline retained separately.",
+  "files": [
+    "1366x768-opening.png",
+    "1366x768-midgame.png",
+    "1366x768-late.png",
+    "1366x768-research.png",
+    "1366x768-blueprints.png",
+    "1366x768-combat.png",
+    "1366x768-scoring.png",
+    "1440x900-opening.png",
+    "1440x900-midgame.png",
+    "1440x900-late.png",
+    "1440x900-research.png",
+    "1440x900-blueprints.png",
+    "1440x900-combat.png",
+    "1440x900-scoring.png",
+    "1920x1080-opening.png",
+    "1920x1080-midgame.png",
+    "1920x1080-late.png",
+    "1920x1080-research.png",
+    "1920x1080-blueprints.png",
+    "1920x1080-combat.png",
+    "1920x1080-scoring.png"
+  ],
+  "sha256": {
+    "1366x768-opening.png": "f5edac5ec223352de46234d7444447100f9aca9fe3f4dfc678fb2a29b51f504a",
+    "1366x768-midgame.png": "d1b8c064256d67a4156d9bc5865dea39728f9db24031a395198804c73b571220",
+    "1366x768-late.png": "d5ff6c900bb1464c83d8040521ad2968e033d85cf085dc77b304d603832c119b",
+    "1366x768-research.png": "c27853c43cf43497d32129b59053cc8361d2c4df5b853e40d68d6b16d13d8749",
+    "1366x768-blueprints.png": "172ac797e6dd59e79c27310d42dedf90ea5852185531fed093929198eececdb0",
+    "1366x768-combat.png": "4b064370985f7710d078ac511cb25a9a58879860b55acf9fd9c8e567b3b8d456",
+    "1366x768-scoring.png": "862661db837914290ec81f96ac37f847941ec8fb92ac951df1fc6285f5aeeb1b",
+    "1440x900-opening.png": "7bf24935fc10a15d8a5eb4f802e75bc9ac0978965040c09e3465de11a830b1f5",
+    "1440x900-midgame.png": "2adf06c7c39f776cade18ee8b95a8c40f2b71d1f9201a742ce53b612ef422b65",
+    "1440x900-late.png": "5ef7e4f59a9e905c1e5c8af36a32ddf638bd788f5b996afc9acb3ad6482d96b1",
+    "1440x900-research.png": "3b0d3d650e64e18bc7afd22e1b61b9979001344a277b474931cb9fe5343ce3e3",
+    "1440x900-blueprints.png": "422d5d9ebccd4c04b70ce7e7118dcabe68a90cf9a9cf17a1668ec6697e87c009",
+    "1440x900-combat.png": "43f97cbe2187a4588817f11110d8f37c1581a169fed1f2f248d892aba781cf7b",
+    "1440x900-scoring.png": "a3ac2709b03ae1a5473196cbbb01cf83910cc65e091e6a29c0288729b1da8d5b",
+    "1920x1080-opening.png": "1d8b2ebba2f4f8a2961fdbea85e8188391dee7300ecfde81f474f2d8dc84054c",
+    "1920x1080-midgame.png": "83d163033dc71835538cd5b65dfec694738f6a569accc3d495e51822cf715dda",
+    "1920x1080-late.png": "a447089b7415126009ab1a363709f5725aa01ea23267819bbfcee0470ef135bf",
+    "1920x1080-research.png": "675de3c4f84f7ec89f5fbd9c49cac838b91a638f0a146aa2e522dcd283b668c1",
+    "1920x1080-blueprints.png": "7cc0bdc852bab736ad4d0b2f180aaa3c956fe25e355a33c8699170440893bf4e",
+    "1920x1080-combat.png": "2d3b8e9be48fa10ee963be2a28a1ba012c4f6863a9f67bd674bc34f9848dbbc4",
+    "1920x1080-scoring.png": "01d0bd6e06bd2e8d8d71a3916e1c48969e3a2e7481c9bdee11a70177035df2c1"
+  },
+  "populationRevisionReview": {
+    "date": "2026-09-07",
+    "reviewer": "root rendered-image inspection; board agent independent 1366 planet inspection",
+    "changedFiles": [
+      "1366x768-midgame.png",
+      "1440x900-midgame.png",
+      "1920x1080-midgame.png"
+    ],
+    "findings": "Changes confined to population inspector: cube/empty slot symbols and advanced stars with shared legend. All six spaces and legend visible at 1366; no overlap. Remaining 18 screens match unchanged."
+  }
+}

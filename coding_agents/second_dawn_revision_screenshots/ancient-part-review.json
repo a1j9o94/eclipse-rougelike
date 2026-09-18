@@ -1,0 +1,102 @@
+[
+  {
+    "width": 1366,
+    "height": 768,
+    "classes": [
+      {
+        "shipClass": "Interceptor",
+        "slots": 4,
+        "legalSlots": 3
+      },
+      {
+        "shipClass": "Cruiser",
+        "slots": 6,
+        "legalSlots": 5
+      },
+      {
+        "shipClass": "Dreadnought",
+        "slots": 8,
+        "legalSlots": 3
+      },
+      {
+        "shipClass": "Starbase",
+        "slots": 5,
+        "legalSlots": 0
+      }
+    ],
+    "unsafeDisabled": true,
+    "replacement": "Nuclear Drive → Conformal Drive",
+    "allSlotsVisible": true,
+    "confirmationVisible": true,
+    "installed": true,
+    "horizontalOverflow": false
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "classes": [
+      {
+        "shipClass": "Interceptor",
+        "slots": 4,
+        "legalSlots": 3
+      },
+      {
+        "shipClass": "Cruiser",
+        "slots": 6,
+        "legalSlots": 5
+      },
+      {
+        "shipClass": "Dreadnought",
+        "slots": 8,
+        "legalSlots": 3
+      },
+      {
+        "shipClass": "Starbase",
+        "slots": 5,
+        "legalSlots": 0
+      }
+    ],
+    "unsafeDisabled": true,
+    "replacement": "Nuclear Drive → Conformal Drive",
+    "allSlotsVisible": true,
+    "confirmationVisible": true,
+    "installed": true,
+    "horizontalOverflow": false
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "classes": [
+      {
+        "shipClass": "Interceptor",
+        "slots": 4,
+        "legalSlots": 3
+      },
+      {
+        "shipClass": "Cruiser",
+        "slots": 6,
+        "legalSlots": 5
+      },
+      {
+        "shipClass": "Dreadnought",
+        "slots": 8,
+        "legalSlots": 3
+      },
+      {
+        "shipClass": "Starbase",
+        "slots": 5,
+        "legalSlots": 0
+      }
+    ],
+    "unsafeDisabled": true,
+    "replacement": "Nuclear Drive → Conformal Drive",
+    "allSlotsVisible": true,
+    "confirmationVisible": true,
+    "installed": true,
+    "horizontalOverflow": false
+  },
+  {
+    "workflow": "storage",
+    "completed": true
+  }
+]

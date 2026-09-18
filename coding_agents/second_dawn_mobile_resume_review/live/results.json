@@ -1,0 +1,9 @@
+{
+  "site": "https://eclipse-rougelike.vercel.app",
+  "crossDeviceLogin": true,
+  "catchUpVisible": true,
+  "explicitAcknowledgmentSharedAcrossDevices": true,
+  "acknowledgedRevision": 4,
+  "publicOnly": true,
+  "pageErrors": []
+}

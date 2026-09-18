@@ -1,0 +1,90 @@
+[
+  {
+    "width": 1366,
+    "height": 768,
+    "kind": "research",
+    "panelWidth": 265,
+    "scrollWidth": 265,
+    "scrollContainerHeight": 424,
+    "scrollContainerContentHeight": 424,
+    "buttons": []
+  },
+  {
+    "width": 1366,
+    "height": 768,
+    "kind": "upgrade",
+    "panelWidth": 265,
+    "scrollWidth": 265,
+    "scrollContainerHeight": 424,
+    "scrollContainerContentHeight": 1279,
+    "buttons": []
+  },
+  {
+    "width": 1366,
+    "height": 768,
+    "kind": "build",
+    "panelWidth": 265,
+    "scrollWidth": 265,
+    "scrollContainerHeight": 424,
+    "scrollContainerContentHeight": 424,
+    "buttons": [
+      "Inspect sector 224"
+    ]
+  },
+  {
+    "width": 1366,
+    "height": 768,
+    "kind": "move",
+    "panelWidth": 265,
+    "scrollWidth": 265,
+    "scrollContainerHeight": 424,
+    "scrollContainerContentHeight": 434,
+    "buttons": [
+      "Inspect sector 224"
+    ]
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "kind": "research",
+    "panelWidth": 265,
+    "scrollWidth": 265,
+    "scrollContainerHeight": 556,
+    "scrollContainerContentHeight": 556,
+    "buttons": []
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "kind": "upgrade",
+    "panelWidth": 265,
+    "scrollWidth": 265,
+    "scrollContainerHeight": 556,
+    "scrollContainerContentHeight": 1279,
+    "buttons": []
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "kind": "build",
+    "panelWidth": 265,
+    "scrollWidth": 265,
+    "scrollContainerHeight": 556,
+    "scrollContainerContentHeight": 556,
+    "buttons": [
+      "Inspect sector 224"
+    ]
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "kind": "move",
+    "panelWidth": 265,
+    "scrollWidth": 265,
+    "scrollContainerHeight": 556,
+    "scrollContainerContentHeight": 556,
+    "buttons": [
+      "Inspect sector 224"
+    ]
+  }
+]

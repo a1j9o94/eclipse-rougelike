@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useQuery } from 'convex/react';
+import { useQuery, useConvex } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 
 export type PublicRoomItem = {
@@ -16,10 +16,11 @@ export type PublicRoomItem = {
 };
 
 export function usePublicRooms() {
+  const convex = useConvex();
   const isTestEnv = Boolean((import.meta as unknown as { vitest?: unknown }).vitest) || import.meta.env.MODE === 'test';
-  const isConvexAvailable = !!import.meta.env.VITE_CONVEX_URL && !isTestEnv;
+  const isConvexAvailable = Boolean(convex) && !isTestEnv;
 
-  // In tests or without Convex URL, return a stable stub
+  // In tests or without a Convex provider, return a stable stub
   if (!isConvexAvailable) {
     return {
       rooms: [] as PublicRoomItem[],
@@ -33,4 +34,3 @@ export function usePublicRooms() {
     isLoading: rooms === undefined,
   } as const;
 }
-

@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-09-08T22:52:52.607Z",
+  "evidence": "Actual Chromium touch events on the production GalaxyBoard with deterministic public fixtures; no cloud mutations. This is not a physical-device Safari test.",
+  "pan": true,
+  "anchoredPinch": true,
+  "noDragPinchCancelSelection": true,
+  "singleTapExactlyOnce": true,
+  "cameraSurvivesRotationRemount": true,
+  "frontierList": true,
+  "mouseDrag": true,
+  "keyboardSelection": true,
+  "touchTargets44": true,
+  "captures": [
+    "coding_agents/second_dawn_mobile_galaxy_browser/360x800-opening.png",
+    "coding_agents/second_dawn_mobile_galaxy_browser/360x800-midgame.png",
+    "coding_agents/second_dawn_mobile_galaxy_browser/360x800-late.png",
+    "coding_agents/second_dawn_mobile_galaxy_browser/390x844-opening.png",
+    "coding_agents/second_dawn_mobile_galaxy_browser/390x844-midgame.png",
+    "coding_agents/second_dawn_mobile_galaxy_browser/390x844-late.png",
+    "coding_agents/second_dawn_mobile_galaxy_browser/430x932-opening.png",
+    "coding_agents/second_dawn_mobile_galaxy_browser/430x932-midgame.png",
+    "coding_agents/second_dawn_mobile_galaxy_browser/430x932-late.png",
+    "coding_agents/second_dawn_mobile_galaxy_browser/844x390-opening.png",
+    "coding_agents/second_dawn_mobile_galaxy_browser/844x390-midgame.png",
+    "coding_agents/second_dawn_mobile_galaxy_browser/844x390-late.png"
+  ],
+  "pageErrors": []
+}

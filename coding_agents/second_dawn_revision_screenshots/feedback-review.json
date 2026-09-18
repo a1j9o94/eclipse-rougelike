@@ -1,0 +1,113 @@
+{
+  "evidence": "Automated review of real engine fixtures; not a human usability acceptance",
+  "results": [
+    {
+      "width": 1366,
+      "height": 768,
+      "screen": "planets",
+      "pageErrors": []
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "screen": "cruiser",
+      "pageErrors": []
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "screen": "research-icons",
+      "pageErrors": []
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "screen": "opponent",
+      "pageErrors": []
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "screen": "diplomacy",
+      "pageErrors": []
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "screen": "public-score",
+      "pageErrors": []
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "screen": "planets",
+      "pageErrors": []
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "screen": "cruiser",
+      "pageErrors": []
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "screen": "research-icons",
+      "pageErrors": []
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "screen": "opponent",
+      "pageErrors": []
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "screen": "diplomacy",
+      "pageErrors": []
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "screen": "public-score",
+      "pageErrors": []
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "screen": "planets",
+      "pageErrors": []
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "screen": "cruiser",
+      "pageErrors": []
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "screen": "research-icons",
+      "pageErrors": []
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "screen": "opponent",
+      "pageErrors": []
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "screen": "diplomacy",
+      "pageErrors": []
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "screen": "public-score",
+      "pageErrors": []
+    }
+  ]
+}

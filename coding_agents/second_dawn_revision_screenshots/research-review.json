@@ -1,0 +1,98 @@
+[
+  {
+    "width": 1366,
+    "height": 768,
+    "ownedVisible": true,
+    "firstRow": [
+      {
+        "name": "Gluon Computer ×1",
+        "bottom": 673.21875,
+        "visible": true
+      },
+      {
+        "name": "Improved Hull ×3",
+        "bottom": 673.21875,
+        "visible": true
+      },
+      {
+        "name": "Monolith ×3",
+        "bottom": 673.21875,
+        "visible": true
+      },
+      {
+        "name": "Warp Portal ×1",
+        "bottom": 673.21875,
+        "visible": true
+      }
+    ],
+    "singlePrices": true,
+    "priceFont": "22.4px",
+    "horizontalOverflow": false,
+    "ownedInspectAtTop": true,
+    "selectedAtTop": true
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "ownedVisible": true,
+    "firstRow": [
+      {
+        "name": "Gluon Computer ×1",
+        "bottom": 744.34375,
+        "visible": true
+      },
+      {
+        "name": "Improved Hull ×3",
+        "bottom": 744.34375,
+        "visible": true
+      },
+      {
+        "name": "Monolith ×3",
+        "bottom": 744.34375,
+        "visible": true
+      },
+      {
+        "name": "Warp Portal ×1",
+        "bottom": 744.34375,
+        "visible": true
+      }
+    ],
+    "singlePrices": true,
+    "priceFont": "22.4px",
+    "horizontalOverflow": false,
+    "ownedInspectAtTop": true,
+    "selectedAtTop": true
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "ownedVisible": true,
+    "firstRow": [
+      {
+        "name": "Gluon Computer ×1",
+        "bottom": 747.34375,
+        "visible": true
+      },
+      {
+        "name": "Improved Hull ×3",
+        "bottom": 747.34375,
+        "visible": true
+      },
+      {
+        "name": "Monolith ×3",
+        "bottom": 747.34375,
+        "visible": true
+      },
+      {
+        "name": "Warp Portal ×1",
+        "bottom": 747.34375,
+        "visible": true
+      }
+    ],
+    "singlePrices": true,
+    "priceFont": "22.4px",
+    "horizontalOverflow": false,
+    "ownedInspectAtTop": true,
+    "selectedAtTop": true
+  }
+]

@@ -1,0 +1,503 @@
+[
+  {
+    "width": 1366,
+    "height": 768,
+    "rotations": [
+      {
+        "rotation": "0",
+        "legal": true,
+        "verdict": {
+          "top": 644,
+          "bottom": 702,
+          "left": 22,
+          "right": 1034,
+          "visible": true
+        },
+        "actions": {
+          "top": 712,
+          "bottom": 753,
+          "left": 22,
+          "right": 1034,
+          "visible": true
+        },
+        "stage": {
+          "top": 312,
+          "bottom": 634,
+          "left": 22,
+          "right": 789,
+          "visible": true
+        },
+        "pageOverflow": false
+      },
+      {
+        "rotation": "5",
+        "legal": false,
+        "verdict": {
+          "top": 644,
+          "bottom": 720,
+          "left": 22,
+          "right": 1034,
+          "visible": true
+        },
+        "actions": {
+          "top": 730,
+          "bottom": 771,
+          "left": 22,
+          "right": 1034,
+          "visible": false
+        },
+        "stage": {
+          "top": 312,
+          "bottom": 634,
+          "left": 22,
+          "right": 789,
+          "visible": true
+        },
+        "pageOverflow": false
+      },
+      {
+        "rotation": "4",
+        "legal": false,
+        "verdict": {
+          "top": 644,
+          "bottom": 720,
+          "left": 22,
+          "right": 1034,
+          "visible": true
+        },
+        "actions": {
+          "top": 730,
+          "bottom": 771,
+          "left": 22,
+          "right": 1034,
+          "visible": false
+        },
+        "stage": {
+          "top": 312,
+          "bottom": 634,
+          "left": 22,
+          "right": 789,
+          "visible": true
+        },
+        "pageOverflow": false
+      },
+      {
+        "rotation": "3",
+        "legal": true,
+        "verdict": {
+          "top": 644,
+          "bottom": 702,
+          "left": 22,
+          "right": 1034,
+          "visible": true
+        },
+        "actions": {
+          "top": 712,
+          "bottom": 753,
+          "left": 22,
+          "right": 1034,
+          "visible": true
+        },
+        "stage": {
+          "top": 312,
+          "bottom": 634,
+          "left": 22,
+          "right": 789,
+          "visible": true
+        },
+        "pageOverflow": false
+      },
+      {
+        "rotation": "2",
+        "legal": false,
+        "verdict": {
+          "top": 644,
+          "bottom": 720,
+          "left": 22,
+          "right": 1034,
+          "visible": true
+        },
+        "actions": {
+          "top": 730,
+          "bottom": 771,
+          "left": 22,
+          "right": 1034,
+          "visible": false
+        },
+        "stage": {
+          "top": 312,
+          "bottom": 634,
+          "left": 22,
+          "right": 789,
+          "visible": true
+        },
+        "pageOverflow": false
+      },
+      {
+        "rotation": "1",
+        "legal": true,
+        "verdict": {
+          "top": 644,
+          "bottom": 702,
+          "left": 22,
+          "right": 1034,
+          "visible": true
+        },
+        "actions": {
+          "top": 712,
+          "bottom": 753,
+          "left": 22,
+          "right": 1034,
+          "visible": true
+        },
+        "stage": {
+          "top": 312,
+          "bottom": 634,
+          "left": 22,
+          "right": 789,
+          "visible": true
+        },
+        "pageOverflow": false
+      }
+    ],
+    "focus": {
+      "name": "Rotate clockwise",
+      "outline": "rgb(168, 220, 232) solid 3px"
+    },
+    "errors": []
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "rotations": [
+      {
+        "rotation": "0",
+        "legal": true,
+        "verdict": {
+          "top": 743,
+          "bottom": 807,
+          "left": 25,
+          "right": 1105,
+          "visible": true
+        },
+        "actions": {
+          "top": 821,
+          "bottom": 862,
+          "left": 25,
+          "right": 1105,
+          "visible": true
+        },
+        "stage": {
+          "top": 316,
+          "bottom": 729,
+          "left": 25,
+          "right": 860,
+          "visible": true
+        },
+        "pageOverflow": false
+      },
+      {
+        "rotation": "5",
+        "legal": false,
+        "verdict": {
+          "top": 743,
+          "bottom": 825,
+          "left": 25,
+          "right": 1105,
+          "visible": true
+        },
+        "actions": {
+          "top": 839,
+          "bottom": 880,
+          "left": 25,
+          "right": 1105,
+          "visible": true
+        },
+        "stage": {
+          "top": 316,
+          "bottom": 729,
+          "left": 25,
+          "right": 860,
+          "visible": true
+        },
+        "pageOverflow": false
+      },
+      {
+        "rotation": "4",
+        "legal": false,
+        "verdict": {
+          "top": 743,
+          "bottom": 825,
+          "left": 25,
+          "right": 1105,
+          "visible": true
+        },
+        "actions": {
+          "top": 839,
+          "bottom": 880,
+          "left": 25,
+          "right": 1105,
+          "visible": true
+        },
+        "stage": {
+          "top": 316,
+          "bottom": 729,
+          "left": 25,
+          "right": 860,
+          "visible": true
+        },
+        "pageOverflow": false
+      },
+      {
+        "rotation": "3",
+        "legal": true,
+        "verdict": {
+          "top": 743,
+          "bottom": 807,
+          "left": 25,
+          "right": 1105,
+          "visible": true
+        },
+        "actions": {
+          "top": 821,
+          "bottom": 862,
+          "left": 25,
+          "right": 1105,
+          "visible": true
+        },
+        "stage": {
+          "top": 316,
+          "bottom": 729,
+          "left": 25,
+          "right": 860,
+          "visible": true
+        },
+        "pageOverflow": false
+      },
+      {
+        "rotation": "2",
+        "legal": false,
+        "verdict": {
+          "top": 743,
+          "bottom": 825,
+          "left": 25,
+          "right": 1105,
+          "visible": true
+        },
+        "actions": {
+          "top": 839,
+          "bottom": 880,
+          "left": 25,
+          "right": 1105,
+          "visible": true
+        },
+        "stage": {
+          "top": 316,
+          "bottom": 729,
+          "left": 25,
+          "right": 860,
+          "visible": true
+        },
+        "pageOverflow": false
+      },
+      {
+        "rotation": "1",
+        "legal": true,
+        "verdict": {
+          "top": 743,
+          "bottom": 807,
+          "left": 25,
+          "right": 1105,
+          "visible": true
+        },
+        "actions": {
+          "top": 821,
+          "bottom": 862,
+          "left": 25,
+          "right": 1105,
+          "visible": true
+        },
+        "stage": {
+          "top": 316,
+          "bottom": 729,
+          "left": 25,
+          "right": 860,
+          "visible": true
+        },
+        "pageOverflow": false
+      }
+    ],
+    "focus": {
+      "name": "Rotate clockwise",
+      "outline": "rgb(168, 220, 232) solid 3px"
+    },
+    "errors": []
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "rotations": [
+      {
+        "rotation": "0",
+        "legal": true,
+        "verdict": {
+          "top": 755,
+          "bottom": 819,
+          "left": 250,
+          "right": 1330,
+          "visible": true
+        },
+        "actions": {
+          "top": 833,
+          "bottom": 874,
+          "left": 250,
+          "right": 1330,
+          "visible": true
+        },
+        "stage": {
+          "top": 319,
+          "bottom": 741,
+          "left": 250,
+          "right": 1085,
+          "visible": true
+        },
+        "pageOverflow": false
+      },
+      {
+        "rotation": "5",
+        "legal": false,
+        "verdict": {
+          "top": 755,
+          "bottom": 837,
+          "left": 250,
+          "right": 1330,
+          "visible": true
+        },
+        "actions": {
+          "top": 851,
+          "bottom": 892,
+          "left": 250,
+          "right": 1330,
+          "visible": true
+        },
+        "stage": {
+          "top": 319,
+          "bottom": 741,
+          "left": 250,
+          "right": 1085,
+          "visible": true
+        },
+        "pageOverflow": false
+      },
+      {
+        "rotation": "4",
+        "legal": false,
+        "verdict": {
+          "top": 755,
+          "bottom": 837,
+          "left": 250,
+          "right": 1330,
+          "visible": true
+        },
+        "actions": {
+          "top": 851,
+          "bottom": 892,
+          "left": 250,
+          "right": 1330,
+          "visible": true
+        },
+        "stage": {
+          "top": 319,
+          "bottom": 741,
+          "left": 250,
+          "right": 1085,
+          "visible": true
+        },
+        "pageOverflow": false
+      },
+      {
+        "rotation": "3",
+        "legal": true,
+        "verdict": {
+          "top": 755,
+          "bottom": 819,
+          "left": 250,
+          "right": 1330,
+          "visible": true
+        },
+        "actions": {
+          "top": 833,
+          "bottom": 874,
+          "left": 250,
+          "right": 1330,
+          "visible": true
+        },
+        "stage": {
+          "top": 319,
+          "bottom": 741,
+          "left": 250,
+          "right": 1085,
+          "visible": true
+        },
+        "pageOverflow": false
+      },
+      {
+        "rotation": "2",
+        "legal": false,
+        "verdict": {
+          "top": 755,
+          "bottom": 837,
+          "left": 250,
+          "right": 1330,
+          "visible": true
+        },
+        "actions": {
+          "top": 851,
+          "bottom": 892,
+          "left": 250,
+          "right": 1330,
+          "visible": true
+        },
+        "stage": {
+          "top": 319,
+          "bottom": 741,
+          "left": 250,
+          "right": 1085,
+          "visible": true
+        },
+        "pageOverflow": false
+      },
+      {
+        "rotation": "1",
+        "legal": true,
+        "verdict": {
+          "top": 755,
+          "bottom": 819,
+          "left": 250,
+          "right": 1330,
+          "visible": true
+        },
+        "actions": {
+          "top": 833,
+          "bottom": 874,
+          "left": 250,
+          "right": 1330,
+          "visible": true
+        },
+        "stage": {
+          "top": 319,
+          "bottom": 741,
+          "left": 250,
+          "right": 1085,
+          "visible": true
+        },
+        "pageOverflow": false
+      }
+    ],
+    "focus": {
+      "name": "Rotate clockwise",
+      "outline": "rgb(168, 220, 232) solid 3px"
+    },
+    "errors": []
+  }
+]

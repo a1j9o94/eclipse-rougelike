@@ -26,3 +26,22 @@ Author failing tests for initial command set and selectors to drive implementati
 - Context: Awaiting engine scaffolding paths and exported symbols.
 - Next: Confirm test runner, then add the five failing specs.
 - Questions: Are we standardizing on `jest` or `vitest` here?
+# 2026-09-07 — Local demo validation
+- Reproduced startup failures before implementation (missing Convex provider and blocked no-backend entry); configured-provider behavior remains covered.
+- Focused run: 18 passing tests across local_startup, eclipse_demo_navigation, usePublicRooms_hook and startpage.
+- Browser checks: tutorial launch, reload/continue, combat launch, two-player board, six-player board, guardians and generic galaxy page. No uncaught page errors.
+- Build passed. Lint remains at 88 existing errors/12 warnings versus 89/12 before this work.
+- Result & Next Steps: local demos ready for playtest; full multiplayer match behavior was not verified.
+
+## 2026-09-07 — Second Dawn validation result
+115 new focused tests across 16 files pass with one worker; 8 legacy startup/demo regression tests pass. Changed files lint-clean; repository baseline remains 88 errors / 12 warnings. 22 desktop screenshots reviewed with six automated fixture walkthroughs; independent review defects fixed. No full-game, deployed persistence, or human playtest acceptance claimed. See coding_agents/second_dawn_status.md and second_dawn_screenshots/review-results.json.
+
+## Full-game final verification
+
+246 game tests/37files passed with1worker;2 local-launcher preservation tests and2 baseline-checker tests passed;8 targeted legacy regressions passed. Production build and changed-code lint passed. Repository lint retains88existingerrors/12warnings. Reviewed21actualscreens match protected baselines.19 browser workflows,17 deterministic/faction fullmatches,8pairedAIbenchmarkgames, and live3/6seatConvexmatches are recorded separately from human playtesting (none claimed).
+### 2026-09-07 — final visual/multiplayer verification
+
+398 focused tests / 79 files passed in a memory-bounded single worker run. Added independent room ownership/capacity/privacy tests and a deterministic 197-command timeout completion test. Production two-browser walkthrough passed invitation routing, guest separation, factions/readiness, start, shared/private views, wrong-seat denial, offline/reconnect, actual timeout AI, human return, and history labeling. Solo compatibility smoke also passed. Changed-code lint, TypeScript, and build pass; inherited repository lint remains 88 errors/12 warnings. Rendered desktop review and validation artifacts are linked from `coding_agents/second_dawn_multiplayer_release.md`.
+
+## Mobile release gates — 2026-09-08
+Final memory-bounded full-game batch: 496 tests across100 files passed. New failing-first coverage includes public read-marker identity/monotonicity, recap boundaries, foreground recovery, faction focus, preview receipts, touch gestures, draft isolation/stale/duplicate recovery, mobile navigation/manual AI inspection and mobile AI retry. Production build (including TypeScript) and changed-code lint passed. Full repository lint remains88 inherited errors/12 warnings. Browser artifacts and actual-image review are indexed in second_dawn_mobile_release.md; no physical phone or human search-time evidence is claimed.

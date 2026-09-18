@@ -1,0 +1,18 @@
+# Portrait-first mobile Eclipse
+
+Outcome: full browser gameplay in portrait for both long sessions and quick multiplayer turns; Android leads hands-on review, iPhone Safari compatibility remains required. Existing desktop, rules, saves and ownership are preserved.
+
+Acceptance: Galaxy-first compact shell, one bottom navigation/action bar, resource/upkeep strip, expandable sector/AI sheets, dedicated research/blueprint/combat workspaces. Touch pan/pinch with tap safety and visible map controls. All actions/decisions work upright. Drafts survive navigation, refresh and rotation per browser/match/seat; stale drafts require validation and never auto-submit. Cross-device catch-up uses authenticated monotonic read markers outside game state. Reconnect/foreground refresh, no offline command queue. Native packaging/install/push deferred.
+
+Implementation: retain one shared command/action controller and rules; compact presentation below1024 CSS px or short touch landscape≤600px. Domain-typed local draft storage and controlled planner state; server pending choices remain authoritative. Read-only AI details automatically appear in compact sheet, expandable/dismissible, with follow toggle. Public activity recap on resume, markers on explicit dismissal/accepted turn command only.
+
+TDD and review: failing touch/draft/readmarker/navigation regressions before edits. Memory-bounded tests; scoped lint, TypeScript/build, desktop regression. Actual rendered 360×800,390×844,430×932 + landscape and desktop. Browser emulation is separate from physical Android/iPhone validation; report limits honestly and request hands-on feedback on deployed prototype. Plans/decisions/results here and subagents logs.
+
+Risks/rollback: shared desktop controller must retain current behavior; isolate compact styling. Additive optional read marker requires no match migration; UI/drafts can be rolled back independently. Preserve all existing dirty workspace changes and deployment data. Branch feature/second-dawn-mobile inherited from feature/second-dawn-full-game.
+
+Decision log: use additive optional ownership read markers (no GameState or rules version change); preview acknowledges actual successful engine commands through the same receipt prop as Convex. Local drafts persist public planning only and are never sent automatically. Capture recap boundaries once per visit/recovery. Early preview dpl_Dg8y5ipPyuRSRMxUdYBAZm1GUYFM deployed to existing Vercel alias with development Convex; user invited to try Android while enlargement/WebKit refinement continues.
+
+Visual defects found and resolved during implementation: exploration's inherited desktop flex sizing reduced the connection diagram to110px and collapsed notes; compact view now has a ≥260px diagram and natural scrolling. Peek sheets intercepted zoom/Fit/sector-list controls; space is now reserved. Drafts needed explicit same-revision resume affordances and visible save-error feedback. Trade's inherited two-column screen overflowed at360px; compact trade now uses full-width choices. Final accessibility and independent WebKit review are tracked in the release evidence.
+
+
+Result: implementation and deployable/browser-verifiable gates completed on the existing live and preview aliases. Final release `dpl_CnmZLVfkwiBF3sy1vjUCuJYAv7j3` is Ready; authoritative development backend preserved. See `second_dawn_mobile_release.md` for final tests, source changes, reviewed image sets, live workflow results and fixes. Follow-up: user physical Android/iPhone validation; no device feedback received during implementation. Native packaging/install/push remain deferred.

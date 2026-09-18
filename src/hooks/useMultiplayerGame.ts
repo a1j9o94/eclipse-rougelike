@@ -1,15 +1,16 @@
 // @ts-nocheck
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useConvex } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import type { MultiplayerGameConfig } from "../../shared/multiplayer";
 import type { PlayerState, ShipSnapshot } from "../../shared/mpTypes";
 
 export function useMultiplayerGame(roomId: Id<"rooms"> | null) {
+  const convex = useConvex();
   // Detect vitest and allow tests to bypass Convex entirely
   const isTestEnv = Boolean((import.meta as unknown as { vitest?: unknown }).vitest) || import.meta.env.MODE === 'test';
   // Check if Convex is available (tests and single‑player use should work without it)
-  const isConvexAvailable = !!import.meta.env.VITE_CONVEX_URL && !isTestEnv;
+  const isConvexAvailable = Boolean(convex) && !isTestEnv;
 
   // In environments without Convex (e.g., tests), return a safe stub and avoid calling Convex hooks
   if (!isConvexAvailable) {

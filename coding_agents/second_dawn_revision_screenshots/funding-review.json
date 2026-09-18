@@ -1,0 +1,35 @@
+{
+  "site": "https://eclipse-rougelike.vercel.app",
+  "checks": [
+    {
+      "width": 1366,
+      "height": 768,
+      "conversionWarned": true,
+      "sourceChanged": true,
+      "moneyAfterUpkeep": 24,
+      "researched": true,
+      "logged": true,
+      "pageErrors": []
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "conversionWarned": true,
+      "sourceChanged": true,
+      "moneyAfterUpkeep": 24,
+      "researched": true,
+      "logged": true,
+      "pageErrors": []
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "conversionWarned": true,
+      "sourceChanged": true,
+      "moneyAfterUpkeep": 24,
+      "researched": true,
+      "logged": true,
+      "pageErrors": []
+    }
+  ]
+}

@@ -1,0 +1,1819 @@
+[
+  {
+    "width": 1366,
+    "height": 768,
+    "screen": "research",
+    "horizontalOverflow": false,
+    "documentHeight": 768,
+    "scrollPanels": [
+      {
+        "class": "sd-main",
+        "height": 394,
+        "contentHeight": 1662
+      }
+    ],
+    "visibleButtons": [
+      {
+        "text": "Opening",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Round 4",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Round 8",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Active combat",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Ancients",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Your public VP10VP",
+        "bottom": 117,
+        "disabled": false
+      },
+      {
+        "text": "Galaxy",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Research",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Blueprints",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Players",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Diplomacy",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Scoring",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "History",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Game menu",
+        "bottom": 189,
+        "disabled": false
+      },
+      {
+        "text": "Eridani EmpireYou · active10VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "Hydran ProgressNormal AI · waiting14VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "PlantaNormal AI · waiting19VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "Descendants of DracoNormal AI · waiting27VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "MechanemaNormal AI · waiting7VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "Orion HegemonyNormal AI · waiting11VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "Animations",
+        "bottom": 290,
+        "disabled": false
+      },
+      {
+        "text": "Inspect researched Plasma Cannon",
+        "bottom": 466.140625,
+        "disabled": false
+      },
+      {
+        "text": "Inspect researched Gauss Shield",
+        "bottom": 466.140625,
+        "disabled": false
+      },
+      {
+        "text": "Inspect researched Fusion Drive",
+        "bottom": 466.140625,
+        "disabled": false
+      },
+      {
+        "text": "Gluon Computer ×113scienceNeed 5 more+3computer−2energy",
+        "bottom": 708.21875,
+        "disabled": false
+      },
+      {
+        "text": "Plasma Cannon ×2Researched1 × 2dice × damage−2energy",
+        "bottom": 865.578125,
+        "disabled": false
+      },
+      {
+        "text": "Improved Hull ×35scienceWithin budget+2hull",
+        "bottom": 708.21875,
+        "disabled": false
+      },
+      {
+        "text": "Gauss Shield ×2Researched−1shield",
+        "bottom": 865.578125,
+        "disabled": false
+      },
+      {
+        "text": "Monolith ×311scienceNeed 3 more3 VPmonolith",
+        "bottom": 708.21875,
+        "disabled": false
+      },
+      {
+        "text": "Advanced Robotics ×37scienceWithin budget+1influence",
+        "bottom": 872.3125,
+        "disabled": false
+      },
+      {
+        "text": "Warp Portal ×18scienceWithin budget+1warp portal+1sector VP",
+        "bottom": 708.21875,
+        "disabled": false
+      },
+      {
+        "text": "Pico Modulator ×110scienceNeed 2 more+2upgradeConversion available",
+        "bottom": 893.25,
+        "disabled": false
+      },
+      {
+        "text": "Explore",
+        "bottom": 734.5,
+        "disabled": false
+      },
+      {
+        "text": "Influence",
+        "bottom": 734.5,
+        "disabled": false
+      },
+      {
+        "text": "Research",
+        "bottom": 734.5,
+        "disabled": false
+      },
+      {
+        "text": "Upgrade",
+        "bottom": 734.5,
+        "disabled": false
+      },
+      {
+        "text": "Build",
+        "bottom": 734.5,
+        "disabled": false
+      },
+      {
+        "text": "Move",
+        "bottom": 734.5,
+        "disabled": false
+      },
+      {
+        "text": "Trade",
+        "bottom": 734.5,
+        "disabled": false
+      },
+      {
+        "text": "Discard reputation",
+        "bottom": 734.5,
+        "disabled": false
+      },
+      {
+        "text": "Pass",
+        "bottom": 734.5,
+        "disabled": false
+      }
+    ]
+  },
+  {
+    "width": 1366,
+    "height": 768,
+    "screen": "blueprints",
+    "horizontalOverflow": false,
+    "documentHeight": 768,
+    "scrollPanels": [
+      {
+        "class": "sd-main",
+        "height": 394,
+        "contentHeight": 1860
+      },
+      {
+        "class": "sd-inspector ",
+        "height": 394,
+        "contentHeight": 474
+      }
+    ],
+    "visibleButtons": [
+      {
+        "text": "Opening",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Round 4",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Round 8",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Active combat",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Ancients",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Your public VP10VP",
+        "bottom": 117,
+        "disabled": false
+      },
+      {
+        "text": "Galaxy",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Research",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Blueprints",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Players",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Diplomacy",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Scoring",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "History",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Game menu",
+        "bottom": 189,
+        "disabled": false
+      },
+      {
+        "text": "Eridani EmpireYou · active10VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "Hydran ProgressNormal AI · waiting14VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "PlantaNormal AI · waiting19VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "Descendants of DracoNormal AI · waiting27VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "MechanemaNormal AI · waiting7VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "Orion HegemonyNormal AI · waiting11VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "Animations",
+        "bottom": 290,
+        "disabled": false
+      },
+      {
+        "text": "Interceptor",
+        "bottom": 385.75,
+        "disabled": false
+      },
+      {
+        "text": "Cruiser",
+        "bottom": 385.75,
+        "disabled": false
+      },
+      {
+        "text": "Dreadnought",
+        "bottom": 385.75,
+        "disabled": false
+      },
+      {
+        "text": "Starbase",
+        "bottom": 385.75,
+        "disabled": false
+      },
+      {
+        "text": "All loadouts",
+        "bottom": 385.75,
+        "disabled": false
+      },
+      {
+        "text": "Slot 1: Ion Cannon",
+        "bottom": 651.0625,
+        "disabled": false
+      },
+      {
+        "text": "Slot 2: Nuclear Source",
+        "bottom": 651.0625,
+        "disabled": false
+      },
+      {
+        "text": "Slot 3: Nuclear Drive",
+        "bottom": 651.0625,
+        "disabled": false
+      },
+      {
+        "text": "Slot 4: Plasma Cannon",
+        "bottom": 787.0625,
+        "disabled": false
+      },
+      {
+        "text": "Confirm blueprint",
+        "bottom": 680.5,
+        "disabled": true
+      },
+      {
+        "text": "Reset draft",
+        "bottom": 680.5,
+        "disabled": false
+      },
+      {
+        "text": "Explore",
+        "bottom": 734.5,
+        "disabled": false
+      },
+      {
+        "text": "Influence",
+        "bottom": 734.5,
+        "disabled": false
+      },
+      {
+        "text": "Research",
+        "bottom": 734.5,
+        "disabled": false
+      },
+      {
+        "text": "Upgrade",
+        "bottom": 734.5,
+        "disabled": false
+      },
+      {
+        "text": "Build",
+        "bottom": 734.5,
+        "disabled": false
+      },
+      {
+        "text": "Move",
+        "bottom": 734.5,
+        "disabled": false
+      },
+      {
+        "text": "Trade",
+        "bottom": 734.5,
+        "disabled": false
+      },
+      {
+        "text": "Discard reputation",
+        "bottom": 734.5,
+        "disabled": false
+      },
+      {
+        "text": "Pass",
+        "bottom": 734.5,
+        "disabled": false
+      }
+    ]
+  },
+  {
+    "width": 1366,
+    "height": 768,
+    "screen": "combat",
+    "horizontalOverflow": false,
+    "documentHeight": 768,
+    "scrollPanels": [
+      {
+        "class": "sd-main",
+        "height": 379,
+        "contentHeight": 415
+      }
+    ],
+    "visibleButtons": [
+      {
+        "text": "Opening",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Round 4",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Round 8",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Active combat",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Ancients",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Your public VP24VP",
+        "bottom": 117,
+        "disabled": false
+      },
+      {
+        "text": "Galaxy",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Research",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Blueprints",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Players",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Diplomacy",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Scoring",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Decision",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "History",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Game menu",
+        "bottom": 189,
+        "disabled": false
+      },
+      {
+        "text": "Eridani EmpireNormal AI · passed10VP",
+        "bottom": 265,
+        "disabled": false
+      },
+      {
+        "text": "Hydran ProgressNormal AI · passed14VP",
+        "bottom": 265,
+        "disabled": false
+      },
+      {
+        "text": "PlantaNormal AI · passed19VP",
+        "bottom": 265,
+        "disabled": false
+      },
+      {
+        "text": "Descendants of Draco · Traitor −2You · passed24VP",
+        "bottom": 265,
+        "disabled": false
+      },
+      {
+        "text": "MechanemaNormal AI · passed8VP",
+        "bottom": 265,
+        "disabled": false
+      },
+      {
+        "text": "Orion HegemonyNormal AI · passed11VP",
+        "bottom": 265,
+        "disabled": false
+      },
+      {
+        "text": "Animations",
+        "bottom": 305,
+        "disabled": false
+      },
+      {
+        "text": "Target Mechanema · Interceptor #1 · hit",
+        "bottom": 616.59375,
+        "disabled": false
+      },
+      {
+        "text": "Confirm choice",
+        "bottom": 676.59375,
+        "disabled": true
+      },
+      {
+        "text": "Explore",
+        "bottom": 734.5,
+        "disabled": true
+      },
+      {
+        "text": "Influence",
+        "bottom": 734.5,
+        "disabled": true
+      },
+      {
+        "text": "Research",
+        "bottom": 734.5,
+        "disabled": true
+      },
+      {
+        "text": "Upgrade",
+        "bottom": 734.5,
+        "disabled": true
+      },
+      {
+        "text": "Build",
+        "bottom": 734.5,
+        "disabled": true
+      },
+      {
+        "text": "Move",
+        "bottom": 734.5,
+        "disabled": true
+      }
+    ]
+  },
+  {
+    "width": 1366,
+    "height": 768,
+    "screen": "build",
+    "horizontalOverflow": false,
+    "documentHeight": 768,
+    "scrollPanels": [
+      {
+        "class": "sd-inspector ",
+        "height": 394,
+        "contentHeight": 803
+      }
+    ],
+    "visibleButtons": [
+      {
+        "text": "Opening",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Round 4",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Round 8",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Active combat",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Ancients",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Your public VP10VP",
+        "bottom": 117,
+        "disabled": false
+      },
+      {
+        "text": "Galaxy",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Research",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Blueprints",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Players",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Diplomacy",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Scoring",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "History",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Game menu",
+        "bottom": 189,
+        "disabled": false
+      },
+      {
+        "text": "Eridani EmpireYou · active10VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "Hydran ProgressNormal AI · waiting14VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "PlantaNormal AI · waiting19VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "Descendants of DracoNormal AI · waiting27VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "MechanemaNormal AI · waiting7VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "Orion HegemonyNormal AI · waiting11VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "Animations",
+        "bottom": 290,
+        "disabled": false
+      },
+      {
+        "text": "Zoom out",
+        "bottom": 670.5,
+        "disabled": false
+      },
+      {
+        "text": "Zoom in",
+        "bottom": 670.5,
+        "disabled": false
+      },
+      {
+        "text": "Fit",
+        "bottom": 670.5,
+        "disabled": false
+      },
+      {
+        "text": "Pan left",
+        "bottom": 670.5,
+        "disabled": false
+      },
+      {
+        "text": "Pan right",
+        "bottom": 670.5,
+        "disabled": false
+      },
+      {
+        "text": "Pan up",
+        "bottom": 670.5,
+        "disabled": false
+      },
+      {
+        "text": "Pan down",
+        "bottom": 670.5,
+        "disabled": false
+      },
+      {
+        "text": "Close build planner",
+        "bottom": 129,
+        "disabled": false
+      },
+      {
+        "text": "Build in sector 222",
+        "bottom": 229,
+        "disabled": false
+      },
+      {
+        "text": "Build in sector 314",
+        "bottom": 229,
+        "disabled": false
+      },
+      {
+        "text": "Build in sector 309",
+        "bottom": 229,
+        "disabled": false
+      },
+      {
+        "text": "Build in sector 208",
+        "bottom": 229,
+        "disabled": false
+      },
+      {
+        "text": "Build in sector 315",
+        "bottom": 229,
+        "disabled": false
+      },
+      {
+        "text": "Remove interceptor",
+        "bottom": 377.25,
+        "disabled": true
+      },
+      {
+        "text": "Add interceptor",
+        "bottom": 377.25,
+        "disabled": false
+      },
+      {
+        "text": "Remove cruiser",
+        "bottom": 377.25,
+        "disabled": true
+      },
+      {
+        "text": "Add cruiser",
+        "bottom": 377.25,
+        "disabled": false
+      },
+      {
+        "text": "Remove dreadnought",
+        "bottom": 377.25,
+        "disabled": true
+      },
+      {
+        "text": "Add dreadnought",
+        "bottom": 377.25,
+        "disabled": false
+      },
+      {
+        "text": "Remove starbase",
+        "bottom": 569.25,
+        "disabled": true
+      },
+      {
+        "text": "Add starbase",
+        "bottom": 569.25,
+        "disabled": true
+      },
+      {
+        "text": "Remove orbital",
+        "bottom": 569.25,
+        "disabled": true
+      },
+      {
+        "text": "Add orbital",
+        "bottom": 569.25,
+        "disabled": true
+      },
+      {
+        "text": "Remove monolith",
+        "bottom": 569.25,
+        "disabled": true
+      },
+      {
+        "text": "Add monolith",
+        "bottom": 569.25,
+        "disabled": true
+      },
+      {
+        "text": "Cancel",
+        "bottom": 689,
+        "disabled": false
+      },
+      {
+        "text": "Confirm build",
+        "bottom": 689,
+        "disabled": true
+      },
+      {
+        "text": "Explore",
+        "bottom": 734.5,
+        "disabled": false
+      },
+      {
+        "text": "Influence",
+        "bottom": 734.5,
+        "disabled": false
+      },
+      {
+        "text": "Research",
+        "bottom": 734.5,
+        "disabled": false
+      },
+      {
+        "text": "Upgrade",
+        "bottom": 734.5,
+        "disabled": false
+      },
+      {
+        "text": "Build",
+        "bottom": 734.5,
+        "disabled": false
+      },
+      {
+        "text": "Move",
+        "bottom": 734.5,
+        "disabled": false
+      },
+      {
+        "text": "Trade",
+        "bottom": 734.5,
+        "disabled": false
+      },
+      {
+        "text": "Discard reputation",
+        "bottom": 734.5,
+        "disabled": false
+      },
+      {
+        "text": "Pass",
+        "bottom": 734.5,
+        "disabled": false
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "screen": "research",
+    "horizontalOverflow": false,
+    "documentHeight": 900,
+    "scrollPanels": [
+      {
+        "class": "sd-main",
+        "height": 526,
+        "contentHeight": 1697
+      }
+    ],
+    "visibleButtons": [
+      {
+        "text": "Opening",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Round 4",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Round 8",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Active combat",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Ancients",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Your public VP10VP",
+        "bottom": 117,
+        "disabled": false
+      },
+      {
+        "text": "Galaxy",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Research",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Blueprints",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Players",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Diplomacy",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Scoring",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "History",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Game menu",
+        "bottom": 189,
+        "disabled": false
+      },
+      {
+        "text": "Eridani EmpireYou · active10VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "Hydran ProgressNormal AI · waiting14VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "PlantaNormal AI · waiting19VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "Descendants of DracoNormal AI · waiting27VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "MechanemaNormal AI · waiting7VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "Orion HegemonyNormal AI · waiting11VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "Animations",
+        "bottom": 290,
+        "disabled": false
+      },
+      {
+        "text": "Inspect researched Plasma Cannon",
+        "bottom": 519.671875,
+        "disabled": false
+      },
+      {
+        "text": "Inspect researched Gauss Shield",
+        "bottom": 519.671875,
+        "disabled": false
+      },
+      {
+        "text": "Inspect researched Fusion Drive",
+        "bottom": 519.671875,
+        "disabled": false
+      },
+      {
+        "text": "Gluon Computer ×113scienceNeed 5 more+3computer−2energy",
+        "bottom": 779.34375,
+        "disabled": false
+      },
+      {
+        "text": "Plasma Cannon ×2Researched1 × 2dice × damage−2energy",
+        "bottom": 938.703125,
+        "disabled": false
+      },
+      {
+        "text": "Improved Hull ×35scienceWithin budget+2hull",
+        "bottom": 779.34375,
+        "disabled": false
+      },
+      {
+        "text": "Gauss Shield ×2Researched−1shield",
+        "bottom": 938.703125,
+        "disabled": false
+      },
+      {
+        "text": "Monolith ×311scienceNeed 3 more3 VPmonolith",
+        "bottom": 779.34375,
+        "disabled": false
+      },
+      {
+        "text": "Advanced Robotics ×37scienceWithin budget+1influence",
+        "bottom": 945.4375,
+        "disabled": false
+      },
+      {
+        "text": "Warp Portal ×18scienceWithin budget+1warp portal+1sector VP",
+        "bottom": 779.34375,
+        "disabled": false
+      },
+      {
+        "text": "Pico Modulator ×110scienceNeed 2 more+2upgradeConversion available",
+        "bottom": 966.375,
+        "disabled": false
+      },
+      {
+        "text": "Explore",
+        "bottom": 866.5,
+        "disabled": false
+      },
+      {
+        "text": "Influence",
+        "bottom": 866.5,
+        "disabled": false
+      },
+      {
+        "text": "Research",
+        "bottom": 866.5,
+        "disabled": false
+      },
+      {
+        "text": "Upgrade",
+        "bottom": 866.5,
+        "disabled": false
+      },
+      {
+        "text": "Build",
+        "bottom": 866.5,
+        "disabled": false
+      },
+      {
+        "text": "Move",
+        "bottom": 866.5,
+        "disabled": false
+      },
+      {
+        "text": "Trade",
+        "bottom": 866.5,
+        "disabled": false
+      },
+      {
+        "text": "Discard reputation",
+        "bottom": 866.5,
+        "disabled": false
+      },
+      {
+        "text": "Pass",
+        "bottom": 866.5,
+        "disabled": false
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "screen": "blueprints",
+    "horizontalOverflow": false,
+    "documentHeight": 900,
+    "scrollPanels": [
+      {
+        "class": "sd-main",
+        "height": 526,
+        "contentHeight": 1964
+      }
+    ],
+    "visibleButtons": [
+      {
+        "text": "Opening",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Round 4",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Round 8",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Active combat",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Ancients",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Your public VP10VP",
+        "bottom": 117,
+        "disabled": false
+      },
+      {
+        "text": "Galaxy",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Research",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Blueprints",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Players",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Diplomacy",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Scoring",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "History",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Game menu",
+        "bottom": 189,
+        "disabled": false
+      },
+      {
+        "text": "Eridani EmpireYou · active10VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "Hydran ProgressNormal AI · waiting14VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "PlantaNormal AI · waiting19VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "Descendants of DracoNormal AI · waiting27VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "MechanemaNormal AI · waiting7VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "Orion HegemonyNormal AI · waiting11VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "Animations",
+        "bottom": 290,
+        "disabled": false
+      },
+      {
+        "text": "Interceptor",
+        "bottom": 404.75,
+        "disabled": false
+      },
+      {
+        "text": "Cruiser",
+        "bottom": 404.75,
+        "disabled": false
+      },
+      {
+        "text": "Dreadnought",
+        "bottom": 404.75,
+        "disabled": false
+      },
+      {
+        "text": "Starbase",
+        "bottom": 404.75,
+        "disabled": false
+      },
+      {
+        "text": "All loadouts",
+        "bottom": 404.75,
+        "disabled": false
+      },
+      {
+        "text": "Slot 1: Ion Cannon",
+        "bottom": 741.625,
+        "disabled": false
+      },
+      {
+        "text": "Slot 2: Nuclear Source",
+        "bottom": 741.625,
+        "disabled": false
+      },
+      {
+        "text": "Slot 3: Nuclear Drive",
+        "bottom": 741.625,
+        "disabled": false
+      },
+      {
+        "text": "Slot 4: Plasma Cannon",
+        "bottom": 877.625,
+        "disabled": false
+      },
+      {
+        "text": "Confirm blueprint",
+        "bottom": 807.3125,
+        "disabled": true
+      },
+      {
+        "text": "Reset draft",
+        "bottom": 807.3125,
+        "disabled": false
+      },
+      {
+        "text": "Explore",
+        "bottom": 866.5,
+        "disabled": false
+      },
+      {
+        "text": "Influence",
+        "bottom": 866.5,
+        "disabled": false
+      },
+      {
+        "text": "Research",
+        "bottom": 866.5,
+        "disabled": false
+      },
+      {
+        "text": "Upgrade",
+        "bottom": 866.5,
+        "disabled": false
+      },
+      {
+        "text": "Build",
+        "bottom": 866.5,
+        "disabled": false
+      },
+      {
+        "text": "Move",
+        "bottom": 866.5,
+        "disabled": false
+      },
+      {
+        "text": "Trade",
+        "bottom": 866.5,
+        "disabled": false
+      },
+      {
+        "text": "Discard reputation",
+        "bottom": 866.5,
+        "disabled": false
+      },
+      {
+        "text": "Pass",
+        "bottom": 866.5,
+        "disabled": false
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "screen": "combat",
+    "horizontalOverflow": false,
+    "documentHeight": 900,
+    "scrollPanels": [],
+    "visibleButtons": [
+      {
+        "text": "Opening",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Round 4",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Round 8",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Active combat",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Ancients",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Your public VP24VP",
+        "bottom": 117,
+        "disabled": false
+      },
+      {
+        "text": "Galaxy",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Research",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Blueprints",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Players",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Diplomacy",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Scoring",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Decision",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "History",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Game menu",
+        "bottom": 189,
+        "disabled": false
+      },
+      {
+        "text": "Eridani EmpireNormal AI · passed10VP",
+        "bottom": 265,
+        "disabled": false
+      },
+      {
+        "text": "Hydran ProgressNormal AI · passed14VP",
+        "bottom": 265,
+        "disabled": false
+      },
+      {
+        "text": "PlantaNormal AI · passed19VP",
+        "bottom": 265,
+        "disabled": false
+      },
+      {
+        "text": "Descendants of Draco · Traitor −2You · passed24VP",
+        "bottom": 265,
+        "disabled": false
+      },
+      {
+        "text": "MechanemaNormal AI · passed8VP",
+        "bottom": 265,
+        "disabled": false
+      },
+      {
+        "text": "Orion HegemonyNormal AI · passed11VP",
+        "bottom": 265,
+        "disabled": false
+      },
+      {
+        "text": "Animations",
+        "bottom": 305,
+        "disabled": false
+      },
+      {
+        "text": "Target Mechanema · Interceptor #1 · hit",
+        "bottom": 634.59375,
+        "disabled": false
+      },
+      {
+        "text": "Confirm choice",
+        "bottom": 698.59375,
+        "disabled": true
+      },
+      {
+        "text": "Explore",
+        "bottom": 866.5,
+        "disabled": true
+      },
+      {
+        "text": "Influence",
+        "bottom": 866.5,
+        "disabled": true
+      },
+      {
+        "text": "Research",
+        "bottom": 866.5,
+        "disabled": true
+      },
+      {
+        "text": "Upgrade",
+        "bottom": 866.5,
+        "disabled": true
+      },
+      {
+        "text": "Build",
+        "bottom": 866.5,
+        "disabled": true
+      },
+      {
+        "text": "Move",
+        "bottom": 866.5,
+        "disabled": true
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "screen": "build",
+    "horizontalOverflow": false,
+    "documentHeight": 900,
+    "scrollPanels": [
+      {
+        "class": "sd-inspector ",
+        "height": 526,
+        "contentHeight": 828
+      }
+    ],
+    "visibleButtons": [
+      {
+        "text": "Opening",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Round 4",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Round 8",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Active combat",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Ancients",
+        "bottom": 27,
+        "disabled": false
+      },
+      {
+        "text": "Your public VP10VP",
+        "bottom": 117,
+        "disabled": false
+      },
+      {
+        "text": "Galaxy",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Research",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Blueprints",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Players",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Diplomacy",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Scoring",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "History",
+        "bottom": 189.5,
+        "disabled": false
+      },
+      {
+        "text": "Game menu",
+        "bottom": 189,
+        "disabled": false
+      },
+      {
+        "text": "Eridani EmpireYou · active10VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "Hydran ProgressNormal AI · waiting14VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "PlantaNormal AI · waiting19VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "Descendants of DracoNormal AI · waiting27VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "MechanemaNormal AI · waiting7VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "Orion HegemonyNormal AI · waiting11VP",
+        "bottom": 250,
+        "disabled": false
+      },
+      {
+        "text": "Animations",
+        "bottom": 290,
+        "disabled": false
+      },
+      {
+        "text": "Zoom out",
+        "bottom": 802.5,
+        "disabled": false
+      },
+      {
+        "text": "Zoom in",
+        "bottom": 802.5,
+        "disabled": false
+      },
+      {
+        "text": "Fit",
+        "bottom": 802.5,
+        "disabled": false
+      },
+      {
+        "text": "Pan left",
+        "bottom": 802.5,
+        "disabled": false
+      },
+      {
+        "text": "Pan right",
+        "bottom": 802.5,
+        "disabled": false
+      },
+      {
+        "text": "Pan up",
+        "bottom": 802.5,
+        "disabled": false
+      },
+      {
+        "text": "Pan down",
+        "bottom": 802.5,
+        "disabled": false
+      },
+      {
+        "text": "Close build planner",
+        "bottom": 195,
+        "disabled": false
+      },
+      {
+        "text": "Build in sector 222",
+        "bottom": 295,
+        "disabled": false
+      },
+      {
+        "text": "Build in sector 314",
+        "bottom": 295,
+        "disabled": false
+      },
+      {
+        "text": "Build in sector 309",
+        "bottom": 295,
+        "disabled": false
+      },
+      {
+        "text": "Build in sector 208",
+        "bottom": 295,
+        "disabled": false
+      },
+      {
+        "text": "Build in sector 315",
+        "bottom": 295,
+        "disabled": false
+      },
+      {
+        "text": "Remove interceptor",
+        "bottom": 443.25,
+        "disabled": true
+      },
+      {
+        "text": "Add interceptor",
+        "bottom": 443.25,
+        "disabled": false
+      },
+      {
+        "text": "Remove cruiser",
+        "bottom": 443.25,
+        "disabled": true
+      },
+      {
+        "text": "Add cruiser",
+        "bottom": 443.25,
+        "disabled": false
+      },
+      {
+        "text": "Remove dreadnought",
+        "bottom": 443.25,
+        "disabled": true
+      },
+      {
+        "text": "Add dreadnought",
+        "bottom": 443.25,
+        "disabled": false
+      },
+      {
+        "text": "Remove starbase",
+        "bottom": 635.25,
+        "disabled": true
+      },
+      {
+        "text": "Add starbase",
+        "bottom": 635.25,
+        "disabled": true
+      },
+      {
+        "text": "Remove orbital",
+        "bottom": 635.25,
+        "disabled": true
+      },
+      {
+        "text": "Add orbital",
+        "bottom": 635.25,
+        "disabled": true
+      },
+      {
+        "text": "Remove monolith",
+        "bottom": 635.25,
+        "disabled": true
+      },
+      {
+        "text": "Add monolith",
+        "bottom": 635.25,
+        "disabled": true
+      },
+      {
+        "text": "Cancel",
+        "bottom": 755,
+        "disabled": false
+      },
+      {
+        "text": "Confirm build",
+        "bottom": 755,
+        "disabled": true
+      },
+      {
+        "text": "Explore",
+        "bottom": 866.5,
+        "disabled": false
+      },
+      {
+        "text": "Influence",
+        "bottom": 866.5,
+        "disabled": false
+      },
+      {
+        "text": "Research",
+        "bottom": 866.5,
+        "disabled": false
+      },
+      {
+        "text": "Upgrade",
+        "bottom": 866.5,
+        "disabled": false
+      },
+      {
+        "text": "Build",
+        "bottom": 866.5,
+        "disabled": false
+      },
+      {
+        "text": "Move",
+        "bottom": 866.5,
+        "disabled": false
+      },
+      {
+        "text": "Trade",
+        "bottom": 866.5,
+        "disabled": false
+      },
+      {
+        "text": "Discard reputation",
+        "bottom": 866.5,
+        "disabled": false
+      },
+      {
+        "text": "Pass",
+        "bottom": 866.5,
+        "disabled": false
+      }
+    ]
+  }
+]

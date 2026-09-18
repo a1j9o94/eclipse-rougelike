@@ -1,0 +1,60 @@
+{
+  "seed": 106,
+  "engineCommands": 841,
+  "pinnedSector": "230",
+  "pinnedFaction": "draco",
+  "ancientExamples": {
+    "exploration-ancients": {
+      "seed": 106,
+      "commandIndex": 14,
+      "round": 1,
+      "decision": "exploration",
+      "owner": "p2",
+      "position": {
+        "q": 2,
+        "r": -1
+      },
+      "drawnSectors": [
+        {
+          "tileId": "204",
+          "ancients": 1
+        }
+      ]
+    },
+    "ancients": {
+      "seed": 106,
+      "commandIndex": 15,
+      "round": 1,
+      "sectors": [
+        {
+          "sectorId": "204",
+          "tileId": "204",
+          "ancients": 1
+        }
+      ]
+    },
+    "ancient-combat": {
+      "seed": 106,
+      "commandIndex": 547,
+      "round": 6,
+      "sectorId": "303",
+      "tileId": "303",
+      "attacker": "p0",
+      "defender": "ancient",
+      "decision": "combat-allocation",
+      "owner": "p0",
+      "ships": [
+        {
+          "owner": "ancient",
+          "type": "ancient",
+          "damage": 0
+        },
+        {
+          "owner": "p0",
+          "type": "cruiser",
+          "damage": 0
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "checkedAt": "2026-09-08T12:45:17.045Z",
+  "kind": "Agent-operated actual rendered browser review; not a human usability study",
+  "checks": [
+    "Invalid timer cleared by switching to solo",
+    "Solo room shows Wait for me",
+    "Human readied and started room",
+    "Solo board has no turn timer"
+  ],
+  "captures": [
+    {
+      "label": "solo-settings",
+      "width": 1366,
+      "height": 768,
+      "overflow": false
+    },
+    {
+      "label": "solo-settings",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "label": "solo-settings",
+      "width": 1920,
+      "height": 1080,
+      "overflow": false
+    },
+    {
+      "label": "solo-room",
+      "width": 1366,
+      "height": 768,
+      "overflow": false
+    },
+    {
+      "label": "solo-room",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "label": "solo-room",
+      "width": 1920,
+      "height": 1080,
+      "overflow": false
+    },
+    {
+      "label": "solo-board",
+      "width": 1366,
+      "height": 768,
+      "overflow": false
+    },
+    {
+      "label": "solo-board",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "label": "solo-board",
+      "width": 1920,
+      "height": 1080,
+      "overflow": false
+    }
+  ],
+  "errors": []
+}

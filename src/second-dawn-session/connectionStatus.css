@@ -1,0 +1,7 @@
+.dg-connection-status{color:var(--sd-muted,#c4c8ce);line-height:1.5}
+.dg-connection-status.needs-recovery{border:1px solid #9b8050;border-radius:8px;background:#24231e;padding:16px;margin:12px 0;max-width:720px}
+.dg-connection-status.needs-recovery [role=status]{font-weight:600;color:#ead393}
+.dg-connection-status p{margin:8px 0 12px}
+.dg-connection-status button{border:1px solid #bca061;border-radius:5px;padding:8px 14px;background:#393123;color:#f4e6bf;font:inherit;cursor:pointer}
+.dg-connection-status button:focus-visible{outline:3px solid #a7d6ee;outline-offset:3px}
+.dg-connection-status small{display:block;margin-top:8px}

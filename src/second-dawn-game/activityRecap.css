@@ -1,0 +1,12 @@
+.sd-activity-recap { padding:16px; border:1px solid #685c3d; border-radius:12px; background:linear-gradient(140deg,#232a30,#111b26); margin-bottom:16px; }
+.sd-activity-recap h2 { margin:4px 0 12px; font-size:23px; color:#e5ce91; }
+.sd-activity-recap>p { color:#bfccd6; line-height:1.5; }
+.sd-activity-recap ol { list-style:none; padding:0; margin:16px 0; }
+.sd-activity-recap li { padding:14px 0; border-top:1px solid #344653; }
+.sd-activity-recap li>div { display:flex; justify-content:space-between; gap:12px; }
+.sd-activity-recap li small { flex-shrink:0; color:#acbbc9; }
+.sd-activity-recap li p { margin:8px 0; line-height:1.5; }
+.sd-activity-recap summary { min-height:44px; align-content:center; }
+.sd-activity-recap footer { display:grid; gap:12px; margin-top:16px; }
+.sd-activity-recap footer button { min-height:48px; }
+.sd-activity-recap footer small { color:#b3c2ce; line-height:1.4; }

@@ -1,0 +1,176 @@
+.dg-planet-list {
+  display: grid;
+  gap: 8px;
+}
+.dg-planet-row {
+  display: grid;
+  grid-template-columns: 23px minmax(0, 1fr);
+  gap: 9px;
+  padding: 9px;
+  background: #ffffff04;
+  border: 1px solid #b4a57e30;
+  border-radius: 5px;
+}
+.dg-planet-row > svg {
+  width: 23px;
+  height: 23px;
+  margin-top: 1px;
+}
+.dg-planet-row strong {
+  font-size: 12px;
+}
+.dg-planet-occupancy {
+  display: block;
+  font-size: 11px;
+  margin-top: 4px;
+  color: #d5d9df;
+}
+.dg-planet-row small {
+  display: block;
+  font-size: 11px;
+  line-height: 1.45;
+  margin-top: 4px;
+  color: #b9c4d0;
+}
+.dg-planet-row .dg-colony-ready {
+  color: #a7d5ba;
+}
+.dg-advanced-badge {
+  margin-left: 6px;
+  border: 1px solid currentColor;
+  padding: 1px 4px;
+  font-size: 9px;
+  border-radius: 2px;
+}
+.dg-sector-facts {
+  display: flex !important;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 0;
+}
+.dg-sector-facts > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.dg-sector-facts dt {
+  font-size: 11px;
+  color: #b9c4d0;
+}
+.dg-sector-facts dd {
+  margin: 0;
+  font-size: 14px;
+  color: #e8d8b5;
+}
+.dg-sector-planets .dg-feature-note {
+  font-size: 11px;
+  line-height: 1.5;
+  margin: 8px 0;
+}
+.dg-planet-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+.dg-planet-row {
+  grid-template-columns: 19px minmax(0, 1fr);
+  gap: 6px;
+  padding: 7px 6px;
+  min-height: 68px;
+}
+.dg-planet-row > svg {
+  width: 19px;
+  height: 19px;
+}
+.dg-planet-row strong {
+  font-size: 11px;
+}
+.dg-planet-class {
+  display: block;
+  min-height: 17px;
+  margin-top: 3px;
+  font-size: 9px;
+  color: #b5c1ca;
+}
+.dg-planet-row .dg-advanced-badge {
+  margin-left: 0;
+  color: inherit;
+  display: inline-block;
+}
+.dg-planet-occupancy {
+  font-size: 10px;
+  margin-top: 2px;
+}
+.dg-colonization-details {
+  margin-top: 9px;
+  font-size: 11px;
+  color: #c9c3b7;
+}
+.dg-colonization-details summary {
+  cursor: pointer;
+  padding: 5px 0;
+}
+.dg-colonization-details > div {
+  border-top: 1px solid #8c7a5540;
+  margin-top: 8px;
+  padding-top: 8px;
+}
+.dg-colonization-details p {
+  font-size: 11px !important;
+  margin: 5px 0 !important;
+  line-height: 1.45;
+}
+.dg-planet-row > div {
+  font-size: 11px;
+  line-height: 1.25;
+}
+.dg-planet-row {
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  min-height: 61px;
+  padding: 6px;
+}
+.dg-planet-orb {
+  position: relative;
+  display: block;
+  width: 34px;
+  height: 34px;
+}
+.dg-planet-orb > svg {
+  display: block;
+  width: 34px;
+  height: 34px;
+}
+.dg-planet-orb > .dg-planet-advanced {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  top: -3px;
+  right: -3px;
+}
+.dg-planet-caption strong {
+  display: block;
+  line-height: 1.2;
+}
+.dg-population-cube {
+  display: block;
+  width: 23px;
+  height: 23px;
+  margin-top: 4px;
+}
+.dg-planet-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 10px;
+  font-size: 9px;
+  color: #c3c9d0;
+  margin-top: 9px;
+}
+.dg-planet-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.dg-planet-legend svg {
+  width: 13px;
+  height: 13px;
+}

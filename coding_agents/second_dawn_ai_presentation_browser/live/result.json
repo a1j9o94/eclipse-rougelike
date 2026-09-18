@@ -1,0 +1,163 @@
+{
+  "site": "https://eclipse-rougelike.vercel.app",
+  "checkedAt": "2026-09-08T22:11:53.624Z",
+  "aiDecisions": 17,
+  "visibleSummaries": [
+    {
+      "summary": "Hydran Progress · Explored a frontier",
+      "at": 2979
+    },
+    {
+      "summary": "Hydran Progress · Resolved exploration",
+      "at": 4079
+    },
+    {
+      "summary": "Hydran Progress · Resolved control",
+      "at": 5279
+    },
+    {
+      "summary": "Hydran Progress · Colonized 1 planet space",
+      "at": 6479
+    },
+    {
+      "summary": "Hydran Progress · Ended the action",
+      "at": 8879
+    },
+    {
+      "summary": "Planta · Explored a frontier",
+      "at": 10129
+    },
+    {
+      "summary": "Planta · Resolved exploration",
+      "at": 11380
+    },
+    {
+      "summary": "Planta · Resolved control",
+      "at": 12530
+    },
+    {
+      "summary": "Planta · Resolved discovery",
+      "at": 13829
+    },
+    {
+      "summary": "Planta · Resolved ancient part",
+      "at": 15029
+    },
+    {
+      "summary": "Planta · Explored a frontier",
+      "at": 16179
+    },
+    {
+      "summary": "Planta · Resolved exploration",
+      "at": 17529
+    },
+    {
+      "summary": "Planta · Resolved control",
+      "at": 18629
+    },
+    {
+      "summary": "Planta · Resolved discovery",
+      "at": 19779
+    },
+    {
+      "summary": "Planta · Colonized 1 planet space",
+      "at": 20979
+    },
+    {
+      "summary": "Planta · Ended the action",
+      "at": 22229
+    }
+  ],
+  "summaryIntervalsMs": [
+    1100,
+    1201,
+    1200,
+    2400,
+    1250,
+    1250,
+    1150,
+    1299,
+    1200,
+    1150,
+    1350,
+    1100,
+    1150,
+    1200,
+    1250
+  ],
+  "affectedSectorHighlighted": true,
+  "watchAiRevealsAffectedSector": true,
+  "movementObserved": false,
+  "motionOffSuppressesMapEffects": true,
+  "motionOffRetainsSummaries": true,
+  "motionPreferenceSurvivesReload": true,
+  "reducedMotionDefaultRespected": true,
+  "humanTurnVisible": true,
+  "reloadDoesNotReplayHistoricalEffects": true,
+  "automaticVisualAiInspector": true,
+  "followAiToggleWorks": true,
+  "humanTurnRestoresInspector": true,
+  "watchAiReopensMeaningfulAction": true,
+  "manualSectorSelectionDismissesAiPanel": true,
+  "observedPanelVisuals": [
+    "dg-ai-sector-context"
+  ],
+  "captures": [
+    {
+      "name": "ai-turn",
+      "width": 1366,
+      "height": 768,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "ai-turn",
+      "width": 1440,
+      "height": 900,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "ai-turn",
+      "width": 1920,
+      "height": 1080,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "human-turn",
+      "width": 1366,
+      "height": 768,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "human-turn",
+      "width": 1440,
+      "height": 900,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "human-turn",
+      "width": 1920,
+      "height": 1080,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "motion-off",
+      "width": 1366,
+      "height": 768,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "motion-off",
+      "width": 1440,
+      "height": 900,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "motion-off",
+      "width": 1920,
+      "height": 1080,
+      "horizontalOverflow": false
+    }
+  ],
+  "pageErrors": [],
+  "evidence": "Agent-operated real solo room and public journal checks. No credentials, room tokens, or private decisions recorded. Movement evidence is reported only if naturally observed."
+}

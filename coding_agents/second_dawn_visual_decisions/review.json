@@ -1,0 +1,320 @@
+[
+  {
+    "width": 1366,
+    "height": 768,
+    "position": "control",
+    "horizontalOverflow": false,
+    "bodyOverflow": false,
+    "confirm": [
+      {
+        "text": "Confirm control",
+        "top": 633.5,
+        "bottom": 674.5
+      }
+    ]
+  },
+  {
+    "width": 1366,
+    "height": 768,
+    "position": "bankruptcy",
+    "horizontalOverflow": false,
+    "bodyOverflow": false,
+    "confirm": [
+      {
+        "text": "Abandon selected sector",
+        "top": 633.5,
+        "bottom": 674.5
+      }
+    ]
+  },
+  {
+    "width": 1366,
+    "height": 768,
+    "position": "portal-placement",
+    "horizontalOverflow": false,
+    "bodyOverflow": false,
+    "confirm": [
+      {
+        "text": "Place warp portal",
+        "top": 633.5,
+        "bottom": 674.5
+      }
+    ]
+  },
+  {
+    "width": 1366,
+    "height": 768,
+    "position": "population-return",
+    "horizontalOverflow": false,
+    "bodyOverflow": false,
+    "confirm": [
+      {
+        "text": "Confirm population return",
+        "top": 624.296875,
+        "bottom": 665.296875
+      }
+    ]
+  },
+  {
+    "width": 1366,
+    "height": 768,
+    "position": "resource-reward",
+    "horizontalOverflow": false,
+    "bodyOverflow": false,
+    "confirm": [
+      {
+        "text": "Confirm reward",
+        "top": 631.296875,
+        "bottom": 672.296875
+      }
+    ]
+  },
+  {
+    "width": 1366,
+    "height": 768,
+    "position": "reputation",
+    "horizontalOverflow": false,
+    "bodyOverflow": false,
+    "confirm": [
+      {
+        "text": "Confirm reputation",
+        "top": 580,
+        "bottom": 621
+      }
+    ]
+  },
+  {
+    "width": 1366,
+    "height": 768,
+    "position": "diplomacy",
+    "horizontalOverflow": false,
+    "bodyOverflow": false,
+    "confirm": [
+      {
+        "text": "Accept ambassadors",
+        "top": 633.5,
+        "bottom": 674.5
+      }
+    ]
+  },
+  {
+    "width": 1366,
+    "height": 768,
+    "position": "bombardment",
+    "horizontalOverflow": false,
+    "bodyOverflow": false,
+    "confirm": []
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "position": "control",
+    "horizontalOverflow": false,
+    "bodyOverflow": false,
+    "confirm": [
+      {
+        "text": "Confirm control",
+        "top": 765.5,
+        "bottom": 806.5
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "position": "bankruptcy",
+    "horizontalOverflow": false,
+    "bodyOverflow": false,
+    "confirm": [
+      {
+        "text": "Abandon selected sector",
+        "top": 765.5,
+        "bottom": 806.5
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "position": "portal-placement",
+    "horizontalOverflow": false,
+    "bodyOverflow": false,
+    "confirm": [
+      {
+        "text": "Place warp portal",
+        "top": 765.5,
+        "bottom": 806.5
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "position": "population-return",
+    "horizontalOverflow": false,
+    "bodyOverflow": false,
+    "confirm": [
+      {
+        "text": "Confirm population return",
+        "top": 685.296875,
+        "bottom": 726.296875
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "position": "resource-reward",
+    "horizontalOverflow": false,
+    "bodyOverflow": false,
+    "confirm": [
+      {
+        "text": "Confirm reward",
+        "top": 695.296875,
+        "bottom": 736.296875
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "position": "reputation",
+    "horizontalOverflow": false,
+    "bodyOverflow": false,
+    "confirm": [
+      {
+        "text": "Confirm reputation",
+        "top": 636,
+        "bottom": 677
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "position": "diplomacy",
+    "horizontalOverflow": false,
+    "bodyOverflow": false,
+    "confirm": [
+      {
+        "text": "Accept ambassadors",
+        "top": 676.5,
+        "bottom": 717.5
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "position": "bombardment",
+    "horizontalOverflow": false,
+    "bodyOverflow": false,
+    "confirm": []
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "position": "control",
+    "horizontalOverflow": false,
+    "bodyOverflow": false,
+    "confirm": [
+      {
+        "text": "Confirm control",
+        "top": 945.5,
+        "bottom": 986.5
+      }
+    ]
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "position": "bankruptcy",
+    "horizontalOverflow": false,
+    "bodyOverflow": false,
+    "confirm": [
+      {
+        "text": "Abandon selected sector",
+        "top": 945.5,
+        "bottom": 986.5
+      }
+    ]
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "position": "portal-placement",
+    "horizontalOverflow": false,
+    "bodyOverflow": false,
+    "confirm": [
+      {
+        "text": "Place warp portal",
+        "top": 945.5,
+        "bottom": 986.5
+      }
+    ]
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "position": "population-return",
+    "horizontalOverflow": false,
+    "bodyOverflow": false,
+    "confirm": [
+      {
+        "text": "Confirm population return",
+        "top": 688.296875,
+        "bottom": 729.296875
+      }
+    ]
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "position": "resource-reward",
+    "horizontalOverflow": false,
+    "bodyOverflow": false,
+    "confirm": [
+      {
+        "text": "Confirm reward",
+        "top": 698.296875,
+        "bottom": 739.296875
+      }
+    ]
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "position": "reputation",
+    "horizontalOverflow": false,
+    "bodyOverflow": false,
+    "confirm": [
+      {
+        "text": "Confirm reputation",
+        "top": 639,
+        "bottom": 680
+      }
+    ]
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "position": "diplomacy",
+    "horizontalOverflow": false,
+    "bodyOverflow": false,
+    "confirm": [
+      {
+        "text": "Accept ambassadors",
+        "top": 679.5,
+        "bottom": 720.5
+      }
+    ]
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "position": "bombardment",
+    "horizontalOverflow": false,
+    "bodyOverflow": false,
+    "confirm": []
+  }
+]

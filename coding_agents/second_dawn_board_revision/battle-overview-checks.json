@@ -1,0 +1,62 @@
+[
+  {
+    "width": 1366,
+    "height": 768,
+    "fixture": "combat",
+    "overview": 141.59375,
+    "mainBottom": 686.5,
+    "confirmBottom": 795.6875,
+    "confirmVisible": false,
+    "pageOverflow": false
+  },
+  {
+    "width": 1366,
+    "height": 768,
+    "fixture": "ancient-combat",
+    "overview": 141.59375,
+    "mainBottom": 686.5,
+    "confirmBottom": 650.1875,
+    "confirmVisible": true,
+    "pageOverflow": false
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "fixture": "combat",
+    "overview": 141.59375,
+    "mainBottom": 818.5,
+    "confirmBottom": 795.6875,
+    "confirmVisible": true,
+    "pageOverflow": false
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "fixture": "ancient-combat",
+    "overview": 141.59375,
+    "mainBottom": 818.5,
+    "confirmBottom": 650.1875,
+    "confirmVisible": true,
+    "pageOverflow": false
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "fixture": "combat",
+    "overview": 141.59375,
+    "mainBottom": 998.5,
+    "confirmBottom": 798.6875,
+    "confirmVisible": true,
+    "pageOverflow": false
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "fixture": "ancient-combat",
+    "overview": 141.59375,
+    "mainBottom": 998.5,
+    "confirmBottom": 653.1875,
+    "confirmVisible": true,
+    "pageOverflow": false
+  }
+]

@@ -1,0 +1,31 @@
+.dg-owned-research { margin: .75rem 0 1.1rem; border: 1px solid #665b46; background: #131c22dc; }
+.dg-owned-research > details > summary { cursor: pointer; padding: .7rem .85rem; color: #e5c98e; }
+.dg-app .dg-owned-research summary h2 { display: inline; font: 1.1rem Georgia,serif; margin: 0 .8rem 0 .2rem; }
+.dg-owned-research summary > span { color: #bac5ce; font-size: .75rem; }
+.dg-owned-tracks { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .7rem; padding: 0 .85rem .85rem; }
+.dg-app .dg-owned-tracks h3 { font-size: .8rem; margin: .2rem 0 .45rem; display: flex; justify-content: space-between; color: #d6d2c6; }
+.dg-owned-tracks h3 > span { color: #aeb9c4; font-size: .7rem; font-weight: 400; }
+.dg-owned-tiles { display: grid; gap: .4rem; }
+.dg-app .dg-owned-tile { width: 100%; min-width: 0; padding: .5rem .6rem; text-align: left; border: 1px solid #595344; border-radius: 2px; background: linear-gradient(135deg,#292d2d,#16222c); }
+.dg-owned-tile > strong { font-size: .78rem; color: #ead4a6; }
+.dg-owned-tile .dg-part-stats { margin: .4rem 0 0; gap: .4rem .65rem; }
+.dg-owned-tile .dg-stat-badge { min-width: 48px; grid-template-columns: 20px auto; grid-template-rows: 22px 12px; gap: 0 .2rem; }
+.dg-owned-tile .dg-stat-icon { width: 19px; height: 19px; }
+.dg-owned-tile .dg-stat-badge strong { font-size: 1.05rem; }
+.dg-owned-tile .dg-stat-badge small { font-size: .58rem; }
+.dg-owned-tile[aria-pressed="true"] { border-color: #e9c47b; }
+.dg-owned-empty { margin: .5rem 0; color: #aeb9c4; font-size: .78rem; }
+.dg-owned-description { margin: 0 .85rem .85rem; padding: .7rem; border-top: 1px solid #595344; font-size: .85rem; color: #d1d8dd; line-height: 1.5; }
+.dg-app .dg-owned-tiles > .dg-owned-tile { margin: 0; }
+.dg-app .dg-owned-research > details > summary { padding: .5rem .75rem; }
+.dg-owned-tracks { padding: 0 .75rem .65rem; }
+.dg-app.dg-tabletop .dg-owned-research > details { margin: 0; }
+@media (max-height: 800px) {
+  .dg-app.dg-tabletop .dg-owned-research { margin: .4rem 0 .5rem; }
+  .dg-app.dg-tabletop .dg-owned-research > details > summary { padding: .25rem .65rem; line-height: 1.25; }
+  .dg-app.dg-tabletop .dg-owned-tracks { padding: 0 .65rem .4rem; }
+  .dg-app.dg-tabletop .dg-owned-tracks h3 { margin: 0 0 .2rem; font-size: .75rem; line-height: 1.2; }
+  .dg-app.dg-tabletop .dg-owned-tiles > .dg-owned-tile { padding: .3rem .5rem; line-height: 1.2; }
+  .dg-app.dg-tabletop .dg-owned-tile > strong { font-size: .8rem; line-height: 1.2; }
+  .dg-app.dg-tabletop .dg-owned-tile .dg-part-stats { margin-top: .2rem; }
+}

@@ -1,0 +1,17 @@
+{
+  "url": "https://eclipse-rougelike.vercel.app",
+  "backend": "https://ideal-nightingale-55.convex.cloud",
+  "checkedAt": "2026-09-08T12:47:06.550Z",
+  "gameCreated": true,
+  "seats": 3,
+  "revisionSurvivedReload": true,
+  "offlineSubmissionDisabled": true,
+  "reconnectedSubmissionAccepted": true,
+  "pendingExplorationSurvivedReload": true,
+  "aiAdvancedToRevision": 11,
+  "aiJobStatus": "waiting",
+  "humanAndAiHistoryVisible": true,
+  "publicScoreVisible": true,
+  "pageErrors": [],
+  "evidence": "Agent-operated real deployed browser and read-only API verification. Credentials never recorded."
+}

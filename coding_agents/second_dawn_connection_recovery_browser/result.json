@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-09-08T21:38:21.981Z",
+  "url": "http://127.0.0.1:5175",
+  "blockedSocketExplained": true,
+  "explicitRetryRestoredConnection": true,
+  "credentialPreservedAcrossRetry": true,
+  "socketLossExplainedWithOfflineHint": true,
+  "onlineAutomaticallyRecovered": true,
+  "pageErrors": [],
+  "evidence": "Agent-operated browser with deliberately blocked websocket followed by restoration. No credentials recorded."
+}

@@ -1,0 +1,16 @@
+.dg-history-panel { display:flex; flex-direction:column; height:100%; min-height:0; }
+.dg-history-panel header { flex:0 0 auto; padding-bottom:10px; border-bottom:1px solid #685b42; }
+.dg-app .dg-history-panel header p { font-size:11px; margin-top:4px; }
+.dg-history-scroll { overflow-y:auto; min-height:0; padding-right:6px; }
+.dg-history-scroll ol { list-style:none; padding:0; margin:0; }
+.dg-history-scroll li { padding:12px 0; border-bottom:1px solid #484d4d; }
+.dg-history-byline { display:flex; flex-direction:column; gap:3px; }
+.dg-history-byline strong { font-size:12px; color:#e3cda5; }
+.dg-history-byline small { font-size:10px; color:#aabdc5; }
+.dg-app .dg-history-scroll li > p { margin-top:6px; font-size:13px; color:#e4e6dc; }
+.dg-history-scroll details { margin:8px 0 0; font-size:11px; }
+.dg-app .dg-history-scroll details p { margin-top:6px; font-size:11px; line-height:1.5; }
+.dg-history-scroll > button { margin:12px 0; width:100%; }
+.dg-inspector-history { overflow:hidden !important; }
+.dg-history-toggle { white-space:nowrap; }
+.dg-history-scroll { overflow-anchor: none; }

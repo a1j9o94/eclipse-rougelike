@@ -1,0 +1,82 @@
+.dg-part-effect { display: block; color: #d4dce8; font-size: .84rem; font-weight: 400; line-height: 1.5; margin-top: .4rem; }
+.dg-blueprint-editor .dg-field { min-width: 0; padding: .7rem; border: 1px solid #40536c; background: #162236; border-radius: .45rem; }
+.dg-stat-comparison { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: .86rem; }
+.dg-stat-comparison caption { text-align: left; color: #d5dfec; font-weight: 600; padding: .5rem 0; }
+.dg-stat-comparison th, .dg-stat-comparison td { text-align: left; padding: .5rem .35rem; border-bottom: 1px solid #36465e; }
+.dg-stat-comparison th { font-weight: 500; }
+.dg-stat-changed td:last-child { color: #ffe0a1; font-weight: 700; }
+.dg-stat-change { font-size: .7rem; font-weight: 400; }
+.dg-stat-guide { margin-bottom: 1rem; font-size: .85rem; line-height: 1.55; color: #d4dce8; }
+.dg-stat-guide summary { cursor: pointer; color: #b8d7ff; }
+.dg-upgrade-confirm { position: sticky; bottom: 0; z-index: 2; display: flex; align-items: center; flex-wrap: wrap; gap: .65rem; padding: .7rem 0; background: #0b1420; border-top: 1px solid #40536c; }
+.dg-upgrade-summary { flex: 1 1 190px; color: #ead5a5; font-size: .74rem; line-height: 1.35; }
+.dg-shipyard-header { display: flex; align-items: center; gap: 1.25rem; padding: .6rem 1rem; margin: 0 0 .75rem; border: 1px solid #6c6147; background: radial-gradient(ellipse at 8% 60%, #35434977, transparent 65%), #10171be0; }
+.dg-ship-silhouette { flex: 0 0 130px; width: 130px; height: 130px; }
+.dg-ship-radar { fill: none; stroke: #779599; stroke-width: .7; stroke-dasharray: 3 5; opacity: .55; }
+.dg-ship-axis { fill: none; stroke: #779599; stroke-width: .6; opacity: .4; }
+.dg-ship-hull { fill: #7d898d; stroke: #ded6bd; stroke-width: 1.4; }
+.dg-ship-cockpit { fill: #b2e0e5; stroke: #43555f; stroke-width: 2; }
+.dg-ship-engine { fill: none; stroke: #e5c483; stroke-width: 3; }
+.dg-yard-eyebrow { color: #d5b477; text-transform: uppercase; letter-spacing: .15em; font-size: .7rem; }
+.dg-shipyard-identity h2 { text-transform: capitalize; margin: .4rem 0; font-family: Georgia, serif; font-size: 1.65rem; color: #f0deba; }
+.dg-shipyard-identity p { max-width: 27rem; line-height: 1.5; font-size: .9rem; color: #c6cdd2; }
+.dg-reactor-readout { margin-left: auto; display: flex; flex-direction: column; gap: .45rem; min-width: 155px; border-left: 1px solid #635e4c; padding-left: 1rem; }
+.dg-reactor-readout > span { color: #c3baab; font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; }
+.dg-reactor-readout strong { color: #e5d4ab; font-size: 1rem; }
+.dg-reactor-readout small { color: #c6cdd2; }
+.dg-slot-title { display: flex; gap: .7rem; align-items: center; color: #c6b997; font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; }
+.dg-slot-title b { display: grid; place-items: center; width: 1.55rem; height: 1.55rem; border: 1px solid #7f7155; color: #e8d6b2; font-family: Georgia, serif; }
+.dg-blueprint-editor .dg-field { border-color: #5a5547; border-radius: 2px; background: linear-gradient(135deg, #272b2b, #131c24); }
+.dg-stat-comparison th, .dg-stat-comparison td { border-color: #4c493f; }
+.dg-blueprint-canvas { margin: .7rem 0; border: 1px solid #5a5547; background: linear-gradient(135deg, #242b2d, #111a22); padding: .7rem; }
+.dg-blueprint-canvas-heading, .dg-parts-tray header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.dg-blueprint-canvas-heading h3, .dg-parts-tray h3 { margin: .1rem 0; color: #ebdbb7; font-family: Georgia, serif; font-size: 1rem; }
+.dg-blueprint-canvas-heading p, .dg-parts-tray header p { margin: .25rem 0 0; color: #bfc8ca; font-size: .76rem; line-height: 1.4; }
+.dg-blueprint-canvas-heading > span { color: #cfb881; font-size: .72rem; white-space: nowrap; }
+.dg-blueprint-editor .dg-blueprints { margin: .7rem 0 0; }
+.dg-blueprint-slot { min-width: 0; min-height: 126px; display: flex; flex-direction: column; align-items: flex-start; gap: .35rem; padding: .65rem; color: #e4e5e1; text-align: left; border: 1px solid #535c5a; border-radius: 2px; background: linear-gradient(145deg, #1d292e, #111a21); }
+.dg-blueprint-slot:hover:not(:disabled), .dg-blueprint-slot:focus-visible { border-color: #d2bb81; outline: 2px solid #d2bb8166; outline-offset: 1px; }
+.dg-blueprint-slot.is-selected { border-color: #eed18f; box-shadow: inset 0 0 0 1px #eed18f66, 0 0 18px #d7ad5950; background: linear-gradient(145deg, #37413a, #172128); }
+.dg-blueprint-slot.has-overlay { border-left: 3px solid #94cbb5; }
+.dg-blueprint-slot > strong { color: #f0dfba; font-size: .86rem; font-weight: 600; }
+.dg-blueprint-slot > small { margin-top: auto; color: #aab6bd; font-size: .66rem; }
+.dg-blueprint-slot .dg-slot-title { width: 100%; }
+.dg-blueprint-slot .dg-part-stats { margin: 0; gap: .35rem .55rem; }
+.dg-blueprint-slot .dg-stat-badge { grid-template-columns: 18px auto; grid-template-rows: 20px; min-width: 0; gap: 0 .18rem; }
+.dg-blueprint-slot .dg-stat-icon { width: 17px; height: 17px; }
+.dg-blueprint-slot .dg-stat-badge strong { font-size: .83rem; }
+.dg-blueprint-slot .dg-stat-badge small { display: none; }
+.dg-slot-empty { color: #8f9ca4 !important; }
+.dg-parts-tray { margin: .7rem 0 1rem; padding: .8rem; border: 1px solid #776644; background: radial-gradient(ellipse at 15% 0, #4a3a2166, transparent 50%), #121b21; }
+.dg-parts-tray-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: .5rem; margin-top: .75rem; }
+.dg-part-reveal-row { grid-template-columns: minmax(165px, 220px); }
+.dg-slot-replacement { display: flex; align-items: center; flex-wrap: wrap; gap: .55rem; margin-top: .65rem; padding: .45rem .55rem; color: #c5d0d1; border: 1px solid #4d5a58; background: #0d151a; font-size: .74rem; }
+.dg-slot-replacement strong { display: block; margin-top: .1rem; color: #efdbaf; font-size: .85rem; }
+.dg-slot-replacement > b { color: #dfbd78; font-size: 1.1rem; }
+.dg-part-group { margin-top: .85rem; }
+.dg-part-group h4 { margin: 0; color: #cbb885; font-size: .68rem; font-weight: 600; letter-spacing: .09em; text-transform: uppercase; }
+.dg-part-group .dg-parts-tray-grid { margin-top: .38rem; }
+.dg-part-choice { min-height: 132px; display: flex; flex-direction: column; align-items: flex-start; gap: .35rem; padding: .65rem; color: #d8e0e1; text-align: left; border: 1px solid #485b61; border-radius: 2px; background: #18252b; }
+.dg-part-choice:hover:not(:disabled), .dg-part-choice:focus-visible { border-color: #cbb273; outline: 2px solid #cbb27366; outline-offset: 1px; }
+.dg-part-choice.is-selected { border-color: #edce8c; background: linear-gradient(145deg, #3b4031, #20251e); box-shadow: inset 0 0 0 1px #edce8c66; }
+.dg-part-choice-title { color: #ead6ac; font-weight: 650; font-size: .84rem; }
+.dg-part-choice > small { color: #b4c0c4; font-size: .68rem; line-height: 1.35; }
+.dg-part-choice .dg-part-stats { margin: 0; gap: .35rem .55rem; }
+.dg-part-choice .dg-stat-badge { grid-template-columns: 18px auto; grid-template-rows: 20px; min-width: 0; gap: 0 .18rem; }
+.dg-part-choice .dg-stat-icon { width: 17px; height: 17px; }
+.dg-part-choice .dg-stat-badge strong { font-size: .83rem; }
+.dg-part-choice .dg-stat-badge small { display: none; }
+.dg-part-reveal { justify-content: center; border-style: dashed; }
+.dg-unavailable-parts { margin-top: .75rem; color: #b9c1c3; font-size: .75rem; }
+.dg-unavailable-parts summary { cursor: pointer; color: #d0be95; }
+.dg-unavailable-parts > div { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: .4rem; margin-top: .5rem; }
+.dg-unavailable-parts button { display: flex; flex-direction: column; align-items: flex-start; gap: .15rem; padding: .45rem; color: #9da7ab; text-align: left; border: 1px solid #485059; background: #151b20; opacity: .85; }
+.dg-unavailable-parts button small { font-size: .67rem; line-height: 1.35; }
+@media (max-width: 1400px) { .dg-shipyard-header { gap: .8rem; } .dg-ship-silhouette { flex-basis: 95px; width: 95px; height: 110px; } .dg-shipyard-identity p { font-size: .8rem; } }
+.dg-part-stats { display: flex; flex-wrap: wrap; gap: .7rem 1.05rem; margin-top: .75rem; }
+.dg-stat-badge { display: grid; grid-template-columns: 26px auto; grid-template-rows: 28px 14px; align-items: center; gap: 0 .35rem; color: #ead9ad; min-width: 70px; }
+.dg-stat-icon { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.65; stroke-linecap: round; stroke-linejoin: round; }
+.dg-stat-badge strong { font-size: 1.4rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.dg-stat-badge small { grid-column: 1 / -1; color: #c2c9ce; font-size: .65rem; text-transform: uppercase; letter-spacing: .035em; }
+.dg-part-rules { margin-top: .55rem; font-size: .75rem; color: #b7c0c8; }
+.dg-part-rules summary { cursor: pointer; }

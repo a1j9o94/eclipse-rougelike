@@ -1,0 +1,50 @@
+[
+  {
+    "width": 360,
+    "height": 800,
+    "tradeAcceptedByEngine": true,
+    "geometry": {
+      "width": 336,
+      "scrollWidth": 336,
+      "choices": [
+        108.65625,
+        108.671875,
+        108.671875,
+        165.5,
+        165.5
+      ]
+    }
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "tradeAcceptedByEngine": true,
+    "geometry": {
+      "width": 366,
+      "scrollWidth": 366,
+      "choices": [
+        118.65625,
+        118.671875,
+        118.671875,
+        180.5,
+        180.5
+      ]
+    }
+  },
+  {
+    "width": 430,
+    "height": 932,
+    "tradeAcceptedByEngine": true,
+    "geometry": {
+      "width": 406,
+      "scrollWidth": 406,
+      "choices": [
+        132,
+        132,
+        132,
+        200.5,
+        200.5
+      ]
+    }
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "action": "Explore",
+    "acceptedAction": "Eridani Empire\nRound 1 · #1\n\nExplored a frontier\n\nDetails",
+    "width": 390,
+    "documentWidth": 390,
+    "notice": null,
+    "screen": "Activity"
+  },
+  {
+    "action": "Research",
+    "acceptedAction": "Eridani Empire\nRound 4 · #320\n\nResearched Improved Hull\n\nDetails",
+    "width": 390,
+    "documentWidth": 390,
+    "notice": null,
+    "screen": "Activity"
+  },
+  {
+    "action": "Build",
+    "acceptedAction": "Eridani Empire\nRound 1 · #1\n\nBuilt 1 component\n\nDetails",
+    "width": 390,
+    "documentWidth": 390,
+    "notice": null,
+    "screen": "Activity"
+  },
+  {
+    "action": "Move",
+    "acceptedAction": "Eridani Empire\nRound 1 · #38\n\nMoved 1 ship\n\nDetails",
+    "width": 390,
+    "documentWidth": 390,
+    "notice": null,
+    "screen": "Activity"
+  },
+  {
+    "action": "Influence",
+    "acceptedAction": "Descendants of Draco\nRound 1 · #119\n\nChanged influence\n\nDetails",
+    "width": 390,
+    "documentWidth": 390,
+    "notice": null,
+    "screen": "Activity"
+  },
+  {
+    "action": "Upgrade",
+    "acceptedAction": "Eridani Empire\nRound 4 · #320\n\nUpgraded ship blueprints\n\nDetails",
+    "width": 390,
+    "documentWidth": 390,
+    "notice": null,
+    "screen": "Activity"
+  }
+]

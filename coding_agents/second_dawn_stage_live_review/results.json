@@ -1,0 +1,35 @@
+{
+  "site": "https://eclipse-rougelike.vercel.app",
+  "results": [
+    {
+      "position": "opening",
+      "directLinkOpened": true
+    },
+    {
+      "position": "midgame",
+      "directLinkOpened": true
+    },
+    {
+      "position": "late",
+      "directLinkOpened": true
+    },
+    {
+      "position": "combat",
+      "directLinkOpened": true
+    },
+    {
+      "position": "ancients",
+      "directLinkOpened": true
+    },
+    {
+      "position": "exploration-ancients",
+      "directLinkOpened": true
+    },
+    {
+      "position": "ancient-combat",
+      "directLinkOpened": true
+    }
+  ],
+  "pageErrors": [],
+  "evidence": "Agent browser review of real engine fixture views"
+}

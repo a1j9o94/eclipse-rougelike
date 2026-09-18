@@ -1,0 +1,111 @@
+{
+  "evidence": "Agent browser automation with recorded real-engine states. Actions executed through the actual UI; explicit choices are previewed and confirmed, while unambiguous turn buttons commit directly. processGameCommand accepts each. Fixture setup is automated. Timings are execution durations, not human search times. No Convex persistence or human playtest claimed.",
+  "results": [
+    {
+      "id": "browser-research",
+      "fixture": "workflow-research",
+      "result": "accepted by actual engine",
+      "chosen": "Neutron Bombs ×1",
+      "preview": "TECHNOLOGY\n\nNeutron Bombs\nALL\nENEMY POPULATION\n\nAfter winning a battle, destroy all enemy population in that sector without rolling bombardment dice, unless protected by Neutron Absorber.\n\nRESEARCH\n\nNew action · 1 influence disc\n\nRound-end upkeep: 1 → 2 money\n\n26 money + 3 income − 2 upkeep = 27 left\n\nScience: 2 → 0 Now\n\nResearch Neutron Bombs · military\n\n2 science after 1 track discount.\n\nConfirm actionCancel draft",
+      "after": "Research · 0 activations remaining\n\n3 colony ships · 9 influence discs",
+      "elapsedSeconds": 1.217,
+      "wrongTurns": 0
+    },
+    {
+      "id": "browser-build",
+      "fixture": "workflow-build",
+      "result": "accepted by actual engine",
+      "chosen": "Add interceptor",
+      "preview": "SHIPYARD\nBuild in sector 222\n×\nBuild location\n222\nSector 222\n2 population · 1 ships\nInterceptor\n3\n−\n1\n+\n6 unbuilt remaining\nCruiser\n5\n−\n0\n+\n4 unbuilt remaining\nDreadnought\n8\n−\n0\n+\n2 unbuilt remaining\nStarbase\n3\n−\n0\n+\nResearch Starbase first.\nOrbital\n4\n−\n0\n+\nResearch Orbital first.\nMonolith\n10\n−\n0\n+\nResearch Monolith first.\nTotal materials\n3\n1 / 2 Build activations · 1 remaining\nNew action · 1 influence disc\n\nRound-end upkeep: 1 → 2 money\n\n26 money + 3 income − 2 upkeep = 27 left\n\nMaterials: 4 → 1 Now\n\n1 component · 3 materials\nCancel\nConfirm build",
+      "after": "Build · 1 activations remaining\n\n3 colony ships · 9 influence discs",
+      "elapsedSeconds": 0.669,
+      "wrongTurns": 0
+    },
+    {
+      "id": "browser-move",
+      "fixture": "workflow-move",
+      "result": "accepted by actual engine",
+      "chosen": "Inspect sector 314, Eridani Empire, 0 ships, legal move destination",
+      "preview": "MOVE FLEET\nDepart sector 222\nClose\n\n1 / 2 move activations selected\n\nInterceptor 1\nRange 1\nDestination · sector 314\n\nInterceptor 1\n222 → 314\n\nNew action · 1 influence disc\n\nRound-end upkeep: 3 → 5 money\n\n26 money + 3 income − 5 upkeep = 24 left\n\nConfirm move · 1 ship",
+      "after": "Move · 1 activations remaining\n\n2 colony ships · 7 influence discs",
+      "elapsedSeconds": 0.782,
+      "wrongTurns": 0
+    },
+    {
+      "id": "browser-influence",
+      "fixture": "workflow-influence",
+      "result": "accepted by actual engine",
+      "chosen": "Transfer control: 228 → 109",
+      "preview": "INFLUENCE\nPlace and return influence discs\n7\ninfluence discs\n\nChoose a controlled sector to return its disc, then choose one of its legal connected destinations. A destination without a returned disc uses one from your track.\n\n↻\nRefresh colony ships\nRestore up to two colony ships as this Influence action.\n1. Return a disc\n\nReturning control also returns this sector’s population later in the action.\n\n228\n−\nReturn disc\nYour controlled sector · 2 population · 1 ships\n203\n−\nReturn disc\nYour controlled sector · 2 population · 2 ships\n302\n−\nReturn disc\nYour controlled sector · 1 population · 1 ships\n2. Place a disc\n\nChoose a connected uncontrolled sector.\n\n109\n+\nPlace disc\nUncontrolled sector · 0 population · 2 ships\nTransfer control: 228 → 109\nNew action · 1 influence disc\n\nRound-end upkeep: 5 → 7 money\n\n2 money + 2 income − 7 upkeep = 3 short\n\nPopulation return choices may change this income.\n\nPopulation on the returned sector will be sent back for you to allocate if required.\n\nConfirm influenceClear draft",
+      "after": "Influence · 1 activations remaining\n\n2 colony ships · 6 influence discs",
+      "elapsedSeconds": 0.72,
+      "wrongTurns": 0
+    },
+    {
+      "id": "browser-colonize",
+      "fixture": "workflow-colonize",
+      "result": "accepted by actual engine",
+      "chosen": "Colonize Any resource planet p0 in sector 314",
+      "preview": "COLONIZATION\nPopulate your controlled sectors\n3\ncolony ships ready\n\nChoose open planets, then their population cubes. Colonization is free: it does not take an action disc.\n\nOpen population spaces\nAny resource\nSector 314 · Standard\nPlanets & population\nAny resource\nPopulation\nUncolonized\nAdvanced\nControl value\n1 VP\nArtifacts\n0\nPopulation cube\n\nChoose what this any resource space produces.\n\nMoney\n1 on track\nScience\n1 on track\nMaterials\n0 on track\nNo action disc needed\n\nRound-end upkeep: 3 → 3 money\n\n26 money + 4 income − 3 upkeep = 27 left\n\nUse 1 colony ship and matching population cubes.\n\nConfirm colonization",
+      "after": "Explore · 0 activations remaining\n\n2 colony ships · 8 influence discs",
+      "elapsedSeconds": 1.095,
+      "wrongTurns": 0
+    },
+    {
+      "id": "browser-trade",
+      "fixture": "workflow-trade",
+      "result": "accepted by actual engine",
+      "chosen": "−6\nmoney\n→\n+2\nscience",
+      "preview": "Trade resources\n3 : 1\n\nNo action disc · Your turn continues\n\nReceive\nMoney\nScience\n✓\nMaterials\nPay with\nMoney\n26 held ✓\nMaterials\n4 held\n−\n2\nscience received\n+\n−6\nmoney\n→\n+2\nscience\nMoney: 26 → 20\nScience: 2 → 4\nMaterials: 4 → 4\nConfirm trade",
+      "after": "Choose an action below.\n\n3 colony ships · 10 influence discs",
+      "elapsedSeconds": 1.178,
+      "wrongTurns": 0
+    },
+    {
+      "id": "browser-pass",
+      "fixture": "workflow-pass",
+      "result": "accepted by actual engine",
+      "chosen": "Pass",
+      "preview": "Committed directly from the turn button.",
+      "after": "Choose an action below.\n\n3 colony ships · 12 influence discs",
+      "elapsedSeconds": 0.995,
+      "wrongTurns": 0
+    },
+    {
+      "id": "browser-end-action",
+      "fixture": "workflow-end-action",
+      "result": "accepted by actual engine",
+      "chosen": "End action",
+      "preview": "Committed directly from the turn button.",
+      "after": "Choose an action below.\n\n3 colony ships · 12 influence discs",
+      "elapsedSeconds": 1.001,
+      "wrongTurns": 0
+    },
+    {
+      "id": "browser-finish-upkeep",
+      "fixture": "workflow-finish-upkeep",
+      "result": "accepted by actual engine",
+      "chosen": "Finish upkeep",
+      "preview": "Committed directly from the turn button.",
+      "after": "Choose an action below.\n\n0 colony ships · 6 influence discs",
+      "elapsedSeconds": 1.005,
+      "wrongTurns": 0
+    },
+    {
+      "id": "browser-diplomacy-finish",
+      "fixture": "workflow-diplomacy",
+      "result": "accepted by actual engine",
+      "preview": "SAVED DECISION\nPost-combat diplomacy\nFinish diplomacy\nNo exchange\n✓\n2\nHydran Progress\nExchange ambassadors · 1 VP each\n\nReputation values remain private. Betraying a partner later gives you the traitor card (−2 VP).\n\nFinish diplomacy\nYour choices stay editable until confirmation.",
+      "elapsedSeconds": 1.055,
+      "wrongTurns": 0
+    },
+    {
+      "id": "browser-diplomacy-exchange",
+      "fixture": "workflow-diplomacy",
+      "result": "accepted by actual engine",
+      "preview": "SAVED DECISION\nPost-combat diplomacy\nFinish diplomacy\nNo exchange\n2\nHydran Progress\nExchange ambassadors · 1 VP each\n✓\nChoose your ambassador’s population cube\nMoney\n✓\nScience\nMaterials\n\nMoney income: 4 → 6 · 1 VP ambassador\n\nReputation values remain private. Betraying a partner later gives you the traitor card (−2 VP).\n\nOffer ambassadors\nYour choices stay editable until confirmation.",
+      "elapsedSeconds": 0.725,
+      "wrongTurns": 0
+    }
+  ]
+}

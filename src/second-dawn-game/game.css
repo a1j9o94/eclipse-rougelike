@@ -1,0 +1,608 @@
+.dg-app .sd-layout {
+  grid-template-columns: 210px minmax(0, 1fr) 300px;
+}
+.dg-app .sd-footer {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 20px;
+}
+.dg-app .sd-actions {
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.dg-app .sd-actions button {
+  min-width: 0;
+  padding: 7px 10px;
+  font-size: 11px;
+}
+.dg-app .sd-status {
+  border: 0;
+  padding: 0;
+}
+.dg-app .sd-tech-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.dg-app .sd-player {
+  background: transparent;
+  text-align: left;
+  justify-content: start;
+  border-color: transparent;
+  width: 100%;
+}
+.dg-app .sd-player:hover {
+  border-color: var(--owner);
+}
+.dg-app .sd-player strong {
+  white-space: normal;
+}
+.dg-save {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 11px;
+  color: #adc0d5;
+}
+.dg-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 16px 0;
+  color: #c1cfde;
+  font-size: 13px;
+}
+.dg-field select {
+  min-width: 0;
+  width: 100%;
+  padding: 10px;
+  background: #132337;
+  border: 1px solid #3b4e65;
+  color: #e1eaf3;
+  border-radius: 5px;
+  font: inherit;
+}
+.dg-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0;
+  font-size: 13px;
+}
+.dg-check input {
+  accent-color: #d4b379;
+}
+.dg-danger {
+  color: #f19aa0 !important;
+}
+.dg-action-panel {
+  margin-top: 22px;
+  border-top: 1px solid #34455a;
+  padding-top: 20px;
+}
+.dg-action-panel button {
+  margin-top: 12px;
+  margin-right: 5px;
+}
+.dg-decision {
+  max-width: 670px;
+}
+.dg-decision h2 {
+  text-transform: capitalize;
+  font-size: 24px;
+  margin-bottom: 22px;
+}
+.dg-decision > p {
+  color: #b7c9da;
+  font-size: 13px;
+}
+.dg-decision > .sd-primary {
+  margin-top: 24px;
+}
+.dg-decision > button:not(.sd-primary) {
+  margin: 8px;
+}
+.dg-die {
+  padding: 14px 18px;
+  border: 1px solid #34455a;
+  border-radius: 6px;
+  margin-top: 12px;
+  background: #132338;
+}
+.dg-die .dg-field {
+  margin-bottom: 0;
+}
+.dg-blueprints {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin: 24px 0;
+}
+.dg-blueprints section {
+  padding: 16px;
+  background: #132338;
+  border: 1px solid #34455a;
+  border-radius: 6px;
+}
+.dg-part {
+  padding: 8px;
+  margin-top: 9px;
+  border: 1px solid #40516a;
+  border-radius: 3px;
+  color: #bcd0e5;
+  font-size: 12px;
+}
+.dg-score {
+  padding: 18px;
+  border: 1px solid #34455a;
+  border-radius: 6px;
+}
+.dg-score summary {
+  font-size: 18px;
+  color: #e4c489;
+}
+.dg-score dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 15px;
+}
+.dg-score dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.dg-lobby {
+  min-height: 100vh;
+  padding: 8vh 8vw;
+  background: radial-gradient(ellipse at 70% 30%, #172d43, #080f19 60%);
+  color: #e1eaf3;
+  font:
+    15px/1.6 system-ui,
+    sans-serif;
+}
+.dg-lobby-inner {
+  max-width: 750px;
+  margin: auto;
+}
+.dg-lobby h1 {
+  font-size: 70px;
+  letter-spacing: 12px;
+  text-transform: uppercase;
+  font-weight: 300;
+  margin: 10px 0;
+}
+.dg-lobby h2 {
+  font-size: 20px;
+  font-weight: 500;
+  margin-top: 30px;
+}
+.dg-lobby p {
+  color: #a9bad0;
+}
+.dg-lobby button {
+  font: inherit;
+  padding: 12px 20px;
+  border: 1px solid #40516a;
+  background: #142237;
+  color: #e4ebf4;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+.dg-lobby button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.dg-lobby .dg-primary {
+  background: #d8b67b;
+  color: #10151e;
+  border-color: #d8b67b;
+}
+.dg-lobby a {
+  display: block;
+  color: #d8b67b;
+  margin-top: 28px;
+}
+.dg-lobby-status {
+  margin: 24px 0;
+  padding: 15px 18px;
+  border-left: 2px solid #b89b69;
+  background: #111f31;
+  color: #acbfd7;
+}
+.dg-saves {
+  display: grid;
+  gap: 10px;
+}
+.dg-saves button {
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+.dg-saves span {
+  font-size: 12px;
+  color: #abc0d6;
+}
+.dg-setup {
+  max-width: 480px;
+}
+.dg-error {
+  padding: 16px;
+  border: 1px solid #bf7979;
+  color: #f0b2b2;
+}
+.dg-app :focus-visible,
+.dg-lobby :focus-visible {
+  outline: 3px solid #a8dce8;
+  outline-offset: 3px;
+}
+@media (max-width: 1350px) {
+  .dg-app .sd-layout {
+    grid-template-columns: 190px minmax(0, 1fr) 275px;
+  }
+  .dg-app .sd-header {
+    gap: 20px;
+  }
+  .dg-app .sd-brand small {
+    font-size: 7px;
+  }
+  .dg-app .sd-toolbar nav button {
+    padding: 8px 10px;
+  }
+}
+.dg-review-bar {
+  height: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  background: #292820;
+  color: #d5c69d;
+  font:
+    11px system-ui,
+    sans-serif;
+}
+.dg-review-bar select {
+  background: #1a2634;
+  color: #e9dec0;
+  margin-left: 8px;
+}
+.dg-review-bar a {
+  color: #e8c77f;
+}
+.dg-review .dg-app {
+  height: calc(100vh - 30px);
+}
+.dg-compare {
+  border-left: 2px solid #cbb378;
+  padding-left: 10px;
+  color: #e1c58e !important;
+}
+.dg-field input[type="number"] {
+  padding: 10px;
+  background: #132337;
+  border: 1px solid #3b4e65;
+  color: #e1eaf3;
+  border-radius: 5px;
+}
+.dg-app .sd-player {
+  padding: 6px 2px !important;
+  gap: 8px;
+}
+.dg-app .sd-player-list {
+  gap: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: #7d8c9d #172537;
+}
+.dg-app .sd-player strong {
+  font-size: 10px;
+}
+.dg-app .sd-player small {
+  font-size: 9px;
+}
+.dg-app .sd-player .sd-owner {
+  width: 24px;
+  height: 24px;
+}
+.dg-app .sd-players .sd-note {
+  font-size: 11px;
+}
+.dg-app .sd-players .sd-note p {
+  margin-top: 6px;
+}
+.dg-blueprint-editor .dg-blueprints {
+  margin: 12px 0;
+  gap: 6px 18px;
+}
+.dg-blueprint-editor .dg-field {
+  margin: 8px 0;
+}
+.dg-blueprint-editor dl {
+  grid-template-columns: 1fr auto 1fr auto;
+  gap: 10px;
+  margin: 16px 0;
+}
+.dg-blueprint-editor > button {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+}
+.dg-score {
+  margin-top: 12px !important;
+}
+.dg-score summary {
+  font-size: 16px;
+}
+.dg-battle-context {
+  padding: 12px 16px;
+  background: #132338;
+  border: 1px solid #34455a;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+.dg-battle-context h1 {
+  font-size: 20px;
+}
+.dg-battle-context p {
+  font-size: 12px;
+  color: #bccdde;
+}
+.dg-app .dg-score {
+  padding: 12px 16px;
+  margin-top: 8px !important;
+}
+.dg-app .dg-score summary {
+  font-size: 15px;
+}
+.dg-app .dg-score dl {
+  margin-bottom: 4px;
+}
+
+/* Tabletop revision: one galaxy surface, a civilization ribbon, and one inspector. */
+.dg-tabletop {
+  --sd-bg: #080b10;
+  --sd-line: #514633;
+  --sd-muted: #b8b3a7;
+  --sd-gold: #dfbd7d;
+  background: #080b10;
+}
+.dg-app.dg-tabletop .sd-layout {
+  grid-template-columns: minmax(0, 1fr) 310px;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+.dg-tabletop .sd-players {
+  grid-column: 1 / -1;
+  padding: 0 18px;
+  border-right: 0;
+  border-bottom: 1px solid #514633;
+  background: linear-gradient(#181b20, #0f1217);
+  overflow: visible;
+}
+.dg-tabletop .sd-player-list {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 4px;
+  margin: 0;
+  overflow: visible;
+  padding: 7px 0;
+}
+.dg-app.dg-tabletop .sd-player { padding: 5px 8px !important; }
+.dg-app.dg-tabletop .sd-player strong { font-size: 11px; }
+.dg-app.dg-tabletop .sd-player small { font-size: 10px; color: #b9b5ab; }
+.dg-tabletop .sd-player.sd-active {
+  background: #392f20;
+  border-color: #a88a55;
+}
+.dg-tabletop .sd-main {
+  background: linear-gradient(#080b1070, #080b1040), url('/second-dawn/galaxy-atmosphere.png') center / cover;
+}
+.dg-tabletop .sd-header {
+  background: linear-gradient(100deg, #191918, #0b1119);
+  border-bottom-color: #665136;
+  padding: 13px 24px;
+  gap: 30px;
+}
+.dg-tabletop .sd-brand strong {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 28px;
+  letter-spacing: 7px;
+  color: #eed9ae;
+}
+.dg-tabletop .sd-brand small { color: #b9a786; }
+.dg-tabletop .sd-toolbar {
+  padding: 7px 20px;
+  background: #0c1016;
+}
+.dg-tabletop .sd-toolbar nav button { font-size: 13px; }
+.dg-tabletop .sd-inspector {
+  background: linear-gradient(130deg, #202025, #121820 65%);
+  padding: 22px;
+}
+.dg-tabletop .sd-inspector h2,
+.dg-tabletop .sd-workspace h1 {
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #f0d9ad;
+  font-weight: 400;
+}
+.dg-tabletop .sd-workspace {
+  background: #0c1119ed;
+  min-height: 100%;
+}
+.dg-tabletop .sd-inspector p { font-size: 13px; line-height: 1.65; color: #c9c7c0; }
+.dg-tabletop .sd-tech {
+  background: linear-gradient(135deg, #22262b, #121a24);
+  border-color: #514a40;
+  border-top: 2px solid #b39a67;
+  padding: 17px !important;
+  min-height: 0;
+}
+.dg-tabletop .sd-tech strong { font-size: 15px; color: #efdbb9; }
+.dg-tabletop .sd-tech small { font-size: 12px; color: #b9b8b0; }
+.dg-tabletop .sd-tech p.dg-tech-effect { font-size: 13px; color: #e0dfd8; line-height: 1.65; margin: 12px 0; }
+.dg-tabletop .sd-tech-grid { gap: 24px; }
+.dg-tabletop .sd-footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 11px 20px;
+  background: linear-gradient(#1a1a1d, #0d1118);
+  gap: 6px 18px;
+}
+.dg-tabletop .sd-footer .sd-actions { grid-column: 1; }
+.dg-tabletop .sd-footer .sd-note {
+  grid-row: 1 / 3;
+  grid-column: 2;
+  padding: 0 0 0 18px;
+  margin: 0;
+  border-top: 0;
+  border-left: 1px solid #514633;
+  max-width: 290px;
+}
+.dg-tabletop .sd-note small { display: none; }
+.dg-tabletop .sd-note p { margin: 0; font-size: 12px; }
+.dg-tabletop .sd-note p + p { color: #c4af87; margin-top: 3px; }
+.dg-tabletop .sd-actions button { font-size: 12px; padding: 8px 11px; }
+.dg-tabletop .sd-status { grid-column: 1; font-size: 11px; color: #aaa99f; }
+.dg-tabletop .dg-action-panel { border-top-color: #514633; }
+.dg-lobby {
+  background: linear-gradient(90deg, #080b10ef 5%, #080b1080 60%, #080b1020), url('/second-dawn/galaxy-atmosphere.png') center / cover fixed;
+}
+.dg-lobby h1 { font-family: Georgia, 'Times New Roman', serif; color: #eed9ae; }
+@media (min-width: 1650px) {
+  .dg-app.dg-tabletop .sd-layout { grid-template-columns: minmax(0, 1fr) 340px; }
+  .dg-tabletop .sd-player-list { gap: 12px; }
+  .dg-app.dg-tabletop .sd-player strong { font-size: 13px; }
+}
+.dg-tabletop .sd-tech { padding: 14px 16px !important; }
+.dg-tabletop .sd-tech-grid { gap: 18px; }
+.dg-tabletop .sd-tech .dg-part-stats { margin: 12px 0; }
+.dg-tabletop .sd-tech .dg-stat-badge { background: #0b121b70; border-color: #8b775346; }
+.dg-tabletop .sd-tech .dg-stat-badge strong { font-size: 28px; color: inherit; }
+.dg-tabletop .sd-tech .dg-stat-badge small { font-size: 11px; }
+.dg-tabletop .sd-tech > small:last-child { font-size: 11px; color: #bfb5a1; }
+.dg-tabletop .sd-tech-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.dg-tabletop .sd-tech-grid > section { min-width: 0; }
+.dg-tabletop .sd-tech-grid .sd-tech { padding: 12px !important; }
+.dg-tabletop .sd-tech-grid .sd-tech strong { font-size: 13px; }
+.dg-tabletop .sd-tech-grid .sd-tech .dg-stat-badge strong { font-size: 27px; }
+.dg-tabletop .sd-tech-grid .sd-tech > small { font-size: 11px; }
+.dg-tabletop .sd-tech-grid .sd-tech > small:last-child { line-height: 1.45; }
+.dg-tabletop .sd-tech-grid .dg-part-stats { gap: 10px; }
+@media (max-width: 1200px) {
+  .dg-tabletop .sd-tech-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.dg-class-selector { display: flex; gap: 7px; margin: 16px 0; position: sticky; top: -1px; background: #0e141cf5; z-index: 3; padding: 9px 0; }
+.dg-loadout-card > header { display: flex; align-items: center; gap: 18px; }
+.dg-loadout-card > header .dg-ship-silhouette { width: 85px; height: 85px; flex-basis: 85px; }
+.dg-loadout-card .dg-part { background: #0c141b; border-color: #5b5343; }
+.dg-loadout-card .dg-part strong { color: #e2cfab; font-weight: 500; }
+.dg-loadout-card .dg-part-stats { display: flex; margin-top: 6px; gap: 12px; }
+.dg-loadout-card .dg-part .dg-stat-badge { padding: 0; }
+.dg-loadout-card .dg-part .dg-stat-badge strong { font-size: 20px; }
+.dg-loadout-card .dg-part .dg-stat-icon { width: 20px; height: 20px; }
+.dg-loadout-card .dg-part .dg-stat-badge small { font-size: 9px; }
+.dg-tabletop .sd-header { padding-top: 9px; padding-bottom: 9px; }
+.dg-tabletop .sd-workspace { padding: 22px; }
+.dg-tabletop .sd-workspace > .sd-eyebrow { display: none; }
+.dg-tabletop .sd-workspace h1 { font-size: 27px; }
+.dg-running-score { border: 1px solid #9f8556 !important; background: #342c20 !important; padding: 7px 15px !important; text-align: center; }
+.dg-running-score small { display: block; font-size: 10px; color: #d6c29d; white-space: nowrap; }
+.dg-running-score strong { font-size: 26px; line-height: 1.1; color: #f2d296; }
+.dg-running-score strong span { font-size: 11px; margin-left: 5px; }
+.dg-roster-vp { margin-left: auto; color: #dbc28e; font-size: 16px; line-height: 1; }
+.dg-app.dg-tabletop .dg-roster-vp small { font-size: 8px; text-align: center; }
+.dg-tabletop .sd-brand { min-width: 260px; }
+@media (max-width: 1400px) { .dg-tabletop .sd-header { gap: 22px; } .dg-tabletop .sd-brand { min-width: 210px; } }
+.dg-traitor-marker { display: block; color: #efa49a; font-size: 10px; }
+.dg-player-technologies-title { margin-top: 24px !important; }
+.dg-player-technologies { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 18px; margin-bottom: 24px; }
+.dg-player-technologies details { border: 1px solid #5a4d38; border-radius: 3px; padding: 10px; background: #141b23; }
+.dg-blueprint-owner { display: flex; align-items: center; gap: 12px; font-size: 12px; margin-top: 10px; color: #b6b4ac; }
+.dg-blueprint-owner select { background: #18212a; border: 1px solid #5d533f; padding: 6px 12px; color: #e5d4af; font: inherit; }
+.dg-blueprint-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.dg-blueprint-heading .dg-blueprint-owner { margin: 0; }
+.dg-class-selector { margin: 9px 0; padding: 6px 0; }
+.dg-blueprint-editor .dg-shipyard-header { padding: 7px 12px; gap: 15px; margin-bottom: 12px; }
+.dg-blueprint-editor .dg-ship-silhouette { width: 65px; height: 65px; flex-basis: 65px; }
+.dg-blueprint-editor .dg-shipyard-identity h2 { font-size: 21px; margin: 3px 0; }
+.dg-blueprint-editor .dg-shipyard-identity p { display: none; }
+.dg-blueprint-editor .dg-blueprints { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }
+.dg-blueprint-editor .dg-field { padding: 10px; margin: 0; }
+.dg-blueprint-editor .dg-field select { padding: 6px; font-size: 12px; }
+.dg-blueprint-editor .dg-slot-title { font-size: 10px; gap: 6px; }
+.dg-blueprint-editor .dg-slot-title b { width: 21px; height: 21px; }
+.dg-blueprint-editor .dg-field .dg-stat-badge strong { font-size: 23px; }
+.dg-blueprint-editor .dg-field .dg-stat-badge small { font-size: 9px; }
+.dg-blueprint-editor .dg-field .dg-part-stats { gap: 7px; }
+.dg-blueprint-editor .dg-part-rules { margin-top: 3px; }
+.dg-current-loadout { display: grid; gap: 8px; margin-top: 12px; }
+.dg-current-loadout > div { border-bottom: 1px solid #4c4538; padding-bottom: 8px; }
+.dg-current-loadout > div > strong { font-size: 12px; color: #ddceb1; font-weight: 500; }
+.dg-current-loadout .dg-part-stats { margin-top: 5px; gap: 10px; }
+.dg-current-loadout .dg-stat-badge strong { font-size: 19px; }
+.dg-current-loadout .dg-stat-badge small { display: none; }
+.dg-current-loadout .dg-stat-icon { width: 19px; height: 19px; }
+@media (min-width: 1500px) { .dg-blueprint-editor .dg-blueprints { grid-template-columns: repeat(4,minmax(0,1fr)); } }
+
+/* Stage shortcuts expose the real engine fixtures without taking more board space. */
+.dg-review-bar { gap: 12px; }
+.dg-preview-label { font-size: 9px; letter-spacing: 1px; white-space: nowrap; }
+.dg-review-bar nav { display: flex; gap: 3px; }
+.dg-review-bar nav button { padding: 3px 9px; font-size: 11px; line-height: 18px; border: 0; border-radius: 3px; color: #dbd1b8; background: transparent; white-space: nowrap; }
+.dg-review-bar nav button[aria-pressed="true"] { background: #5b4b2d; color: #ffe1a2; box-shadow: inset 0 -2px #e4bd72; }
+.dg-review-bar nav button:focus-visible { outline: 2px solid #9bd4e2; outline-offset: 0; }
+.dg-review-bar label { margin-left: auto; white-space: nowrap; }
+.dg-review-bar select { max-width: 225px; }
+.dg-review-bar > a { white-space: nowrap; }
+
+.dg-combat-allocation { max-width: none; }
+.dg-combat-allocation > .sd-eyebrow { display: none; }
+.dg-app .dg-combat-allocation h2 { font-size: 20px; margin: 8px 0; }
+.dg-die-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; max-height: clamp(118px,calc(100vh - 610px),340px); overflow-y: auto; }
+.dg-die-grid .dg-die { margin: 0; padding: 10px 12px; border-radius: 2px; }
+.dg-combat-allocation > .sd-primary { margin-top: 12px; }
+.dg-combat-allocation > .sd-muted { font-size: 11px; margin-top: 8px; }
+.dg-die-grid .dg-field { margin-top: 8px; }
+.dg-app .sd-inspector:has(.dg-sector-fleet) > h3,
+.dg-app .sd-inspector:has(.dg-sector-fleet) .dg-sector-planets > h3 { margin-top: 12px; }
+.dg-sector-fleet { margin-top: 0; margin-bottom: 4px; }
+@media (max-height: 820px) {
+  .dg-app .sd-inspector:has(.dg-sector-fleet) > h3,
+  .dg-app .sd-inspector:has(.dg-sector-fleet) .dg-sector-planets > h3 { margin-top: 8px; }
+  .dg-sector-fleet { margin-bottom: 0; }
+}
+.dg-research-heading { display:flex; justify-content:space-between; align-items:center; gap:16px; }
+.dg-research-heading .dg-science-budget { margin:0; }
+.dg-app .dg-market-heading { margin:8px 0 0; font-size:17px; }
+.dg-app .dg-market-heading + p { margin-top:5px; font-size:12px; }
+.dg-tabletop .dg-market-heading + .sd-tech-grid { margin-top:8px; }
+.dg-tabletop .dg-market-heading + .sd-tech-grid h2 { margin-top:0; margin-bottom:8px; }
+@media (max-height:820px) {
+  .dg-research-heading .dg-science-budget { padding:5px 9px; }
+  .dg-app .sd-workspace:has(.dg-research-heading) { padding-top:14px; }
+}
+
+/* The galaxy remains the primary Influence/Colonize chooser; the sidebar keeps
+   a compact, scrollable confirmation and the selected sector's facts. */
+.sd-inspector .dg-influence-confirm button,.sd-inspector .dg-colonization-confirm button{margin-top:5px}
+.sd-inspector .dg-influence-confirm,.sd-inspector .dg-colonization-confirm{scroll-margin-bottom:24px}
+.sd-inspector .dg-colonization-resource>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+.sd-inspector .dg-influence-planner>header,.sd-inspector .dg-colonization-planner>header{padding-bottom:9px}.sd-inspector .dg-influence-planner h2,.sd-inspector .dg-colonization-planner h2{font-size:20px}.sd-inspector .dg-influence-guide{font-size:11px;margin:8px 0}.sd-inspector .dg-influence-refresh{padding:8px;margin:8px 0}.sd-inspector .dg-influence-refresh>span:first-child{width:28px;height:28px;font-size:18px}.sd-inspector .dg-influence-columns,.sd-inspector .dg-colonization-layout{grid-template-columns:1fr;gap:8px;margin-top:8px}.sd-inspector .dg-influence-columns>section{padding:9px}.sd-inspector .dg-influence-columns p{min-height:0;margin:4px 0}.sd-inspector .dg-influence-sector-list{max-height:106px;overflow:auto;padding-right:3px}.sd-inspector .dg-influence-sector{padding:5px}.sd-inspector .dg-influence-hex{width:32px;height:34px;font-size:9px}.sd-inspector .dg-influence-sector small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sd-inspector .dg-influence-confirm,.sd-inspector .dg-colonization-confirm{margin-top:6px;padding-top:7px}.sd-inspector .dg-influence-confirm .dg-action-economy{font-size:11px}.sd-inspector .dg-colonization-squares{grid-template-columns:1fr}.sd-inspector .dg-colonization-square{min-height:52px;padding:6px}.sd-inspector .dg-colonization-detail{padding:8px}.sd-inspector .dg-colonization-detail .dg-sector-planets>h3:not(:first-child),.sd-inspector .dg-colonization-detail .dg-sector-facts,.sd-inspector .dg-colonization-detail .dg-feature-note,.sd-inspector .dg-colonization-detail .dg-colonization-details{display:none}.sd-inspector .dg-colonization-detail .dg-planet-list{grid-template-columns:1fr}.sd-inspector .dg-colonization-detail .dg-planet-row{min-height:48px}.sd-inspector .dg-colonization-resource{margin-top:8px;padding-top:8px}
+/* Laptop-height workspaces keep the first interactive row in view. */
+@media (max-height: 800px) {
+  .dg-app .sd-workspace:has(.dg-blueprint-editor),
+  .dg-app .sd-workspace:has(.dg-combat-allocation) { padding-top: 10px; }
+  .dg-app .dg-blueprint-heading h1 { margin-bottom: 5px; }
+  .dg-app .dg-class-selector { margin: 4px 0; padding: 3px 0; }
+  .dg-app .dg-class-selector button { padding-top: 7px; padding-bottom: 7px; }
+  .dg-app .dg-blueprint-editor .dg-shipyard-header { padding: 4px 10px; margin-bottom: 6px; }
+  .dg-app .dg-blueprint-editor .dg-ship-silhouette { width: 40px; height: 40px; flex-basis: 40px; }
+  .dg-app .dg-blueprint-editor .dg-reactor-readout { gap: 2px; }
+  .dg-app .dg-blueprint-editor .dg-reactor-readout strong { font-size: 14px; }
+  .dg-app .dg-blueprint-canvas { margin-top: 6px; padding: 8px; }
+  .dg-app .dg-blueprint-canvas-heading h3 { margin: 0; }
+  .dg-app .dg-blueprint-canvas-heading p { margin: 3px 0 0; }
+  .dg-app .dg-blueprint-editor .dg-blueprints { margin-top: 8px; }
+  .dg-app .dg-upgrade-confirm { padding: 6px 0; }
+  .dg-app .sd-workspace:has(.dg-combat-allocation) .dg-battle-overview { margin-bottom: 8px; }
+  .dg-app .dg-combat-allocation > .sd-primary { margin-top: 8px; }
+}

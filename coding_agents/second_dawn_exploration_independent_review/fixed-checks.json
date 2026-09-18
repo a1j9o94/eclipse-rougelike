@@ -1,0 +1,1589 @@
+{
+  "checks": [
+    {
+      "width": 1366,
+      "height": 768,
+      "fixture": "opening-three",
+      "rotation": "0",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 306,
+          "bottom": 382,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 392,
+          "bottom": 433,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 392,
+          "bottom": 433,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 620,
+          "bottom": 661,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 620,
+          "bottom": 661,
+          "clipBottom": 687
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "fixture": "opening-three",
+      "rotation": "5",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 306,
+          "bottom": 382,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 392,
+          "bottom": 433,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 392,
+          "bottom": 433,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 620,
+          "bottom": 661,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 620,
+          "bottom": 661,
+          "clipBottom": 687
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "fixture": "opening-three",
+      "rotation": "4",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 306,
+          "bottom": 382,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 392,
+          "bottom": 433,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 392,
+          "bottom": 433,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 620,
+          "bottom": 661,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 620,
+          "bottom": 661,
+          "clipBottom": 687
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "fixture": "opening-three",
+      "rotation": "3",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 306,
+          "bottom": 382,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 392,
+          "bottom": 433,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 392,
+          "bottom": 433,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 620,
+          "bottom": 661,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 620,
+          "bottom": 661,
+          "clipBottom": 687
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "fixture": "opening-three",
+      "rotation": "2",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 306,
+          "bottom": 382,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 392,
+          "bottom": 433,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 392,
+          "bottom": 433,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 620,
+          "bottom": 661,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 620,
+          "bottom": 661,
+          "clipBottom": 687
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "fixture": "opening-three",
+      "rotation": "1",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 306,
+          "bottom": 382,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 392,
+          "bottom": 433,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 392,
+          "bottom": 433,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 620,
+          "bottom": 661,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 620,
+          "bottom": 661,
+          "clipBottom": 687
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "fixture": "exploration",
+      "rotation": "0",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 306,
+          "bottom": 382,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 392,
+          "bottom": 433,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 392,
+          "bottom": 433,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 620,
+          "bottom": 661,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 620,
+          "bottom": 661,
+          "clipBottom": 687
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "fixture": "exploration",
+      "rotation": "5",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 306,
+          "bottom": 382,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 392,
+          "bottom": 433,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 392,
+          "bottom": 433,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 620,
+          "bottom": 661,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 620,
+          "bottom": 661,
+          "clipBottom": 687
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "fixture": "exploration",
+      "rotation": "4",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 306,
+          "bottom": 382,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 392,
+          "bottom": 433,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 392,
+          "bottom": 433,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 620,
+          "bottom": 661,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 620,
+          "bottom": 661,
+          "clipBottom": 687
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "fixture": "exploration",
+      "rotation": "3",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 306,
+          "bottom": 382,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 392,
+          "bottom": 433,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 392,
+          "bottom": 433,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 620,
+          "bottom": 661,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 620,
+          "bottom": 661,
+          "clipBottom": 687
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "fixture": "exploration",
+      "rotation": "2",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 306,
+          "bottom": 382,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 392,
+          "bottom": 433,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 392,
+          "bottom": 433,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 620,
+          "bottom": 661,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 620,
+          "bottom": 661,
+          "clipBottom": 687
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "fixture": "exploration",
+      "rotation": "1",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 306,
+          "bottom": 382,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 392,
+          "bottom": 433,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 392,
+          "bottom": 433,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 620,
+          "bottom": 661,
+          "clipBottom": 687
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 620,
+          "bottom": 661,
+          "clipBottom": 687
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "fixture": "opening-three",
+      "rotation": "0",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 310,
+          "bottom": 392,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 402,
+          "bottom": 443,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 402,
+          "bottom": 443,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 752,
+          "bottom": 793,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 752,
+          "bottom": 793,
+          "clipBottom": 819
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "fixture": "opening-three",
+      "rotation": "5",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 310,
+          "bottom": 392,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 402,
+          "bottom": 443,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 402,
+          "bottom": 443,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 752,
+          "bottom": 793,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 752,
+          "bottom": 793,
+          "clipBottom": 819
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "fixture": "opening-three",
+      "rotation": "4",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 310,
+          "bottom": 392,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 402,
+          "bottom": 443,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 402,
+          "bottom": 443,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 752,
+          "bottom": 793,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 752,
+          "bottom": 793,
+          "clipBottom": 819
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "fixture": "opening-three",
+      "rotation": "3",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 310,
+          "bottom": 392,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 402,
+          "bottom": 443,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 402,
+          "bottom": 443,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 752,
+          "bottom": 793,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 752,
+          "bottom": 793,
+          "clipBottom": 819
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "fixture": "opening-three",
+      "rotation": "2",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 310,
+          "bottom": 392,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 402,
+          "bottom": 443,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 402,
+          "bottom": 443,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 752,
+          "bottom": 793,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 752,
+          "bottom": 793,
+          "clipBottom": 819
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "fixture": "opening-three",
+      "rotation": "1",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 310,
+          "bottom": 392,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 402,
+          "bottom": 443,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 402,
+          "bottom": 443,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 752,
+          "bottom": 793,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 752,
+          "bottom": 793,
+          "clipBottom": 819
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "fixture": "exploration",
+      "rotation": "0",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 310,
+          "bottom": 392,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 402,
+          "bottom": 443,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 402,
+          "bottom": 443,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 752,
+          "bottom": 793,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 752,
+          "bottom": 793,
+          "clipBottom": 819
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "fixture": "exploration",
+      "rotation": "5",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 310,
+          "bottom": 392,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 402,
+          "bottom": 443,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 402,
+          "bottom": 443,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 752,
+          "bottom": 793,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 752,
+          "bottom": 793,
+          "clipBottom": 819
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "fixture": "exploration",
+      "rotation": "4",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 310,
+          "bottom": 392,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 402,
+          "bottom": 443,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 402,
+          "bottom": 443,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 752,
+          "bottom": 793,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 752,
+          "bottom": 793,
+          "clipBottom": 819
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "fixture": "exploration",
+      "rotation": "3",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 310,
+          "bottom": 392,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 402,
+          "bottom": 443,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 402,
+          "bottom": 443,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 752,
+          "bottom": 793,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 752,
+          "bottom": 793,
+          "clipBottom": 819
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "fixture": "exploration",
+      "rotation": "2",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 310,
+          "bottom": 392,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 402,
+          "bottom": 443,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 402,
+          "bottom": 443,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 752,
+          "bottom": 793,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 752,
+          "bottom": 793,
+          "clipBottom": 819
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "fixture": "exploration",
+      "rotation": "1",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 310,
+          "bottom": 392,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 402,
+          "bottom": 443,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 402,
+          "bottom": 443,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 752,
+          "bottom": 793,
+          "clipBottom": 819
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 752,
+          "bottom": 793,
+          "clipBottom": 819
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "fixture": "opening-three",
+      "rotation": "0",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 313,
+          "bottom": 395,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 405,
+          "bottom": 446,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 405,
+          "bottom": 446,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 932,
+          "bottom": 973,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 932,
+          "bottom": 973,
+          "clipBottom": 999
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "fixture": "opening-three",
+      "rotation": "5",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 313,
+          "bottom": 395,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 405,
+          "bottom": 446,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 405,
+          "bottom": 446,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 932,
+          "bottom": 973,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 932,
+          "bottom": 973,
+          "clipBottom": 999
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "fixture": "opening-three",
+      "rotation": "4",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 313,
+          "bottom": 395,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 405,
+          "bottom": 446,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 405,
+          "bottom": 446,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 932,
+          "bottom": 973,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 932,
+          "bottom": 973,
+          "clipBottom": 999
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "fixture": "opening-three",
+      "rotation": "3",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 313,
+          "bottom": 395,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 405,
+          "bottom": 446,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 405,
+          "bottom": 446,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 932,
+          "bottom": 973,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 932,
+          "bottom": 973,
+          "clipBottom": 999
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "fixture": "opening-three",
+      "rotation": "2",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 313,
+          "bottom": 395,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 405,
+          "bottom": 446,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 405,
+          "bottom": 446,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 932,
+          "bottom": 973,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 932,
+          "bottom": 973,
+          "clipBottom": 999
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "fixture": "opening-three",
+      "rotation": "1",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 313,
+          "bottom": 395,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 405,
+          "bottom": 446,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 405,
+          "bottom": 446,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 932,
+          "bottom": 973,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 932,
+          "bottom": 973,
+          "clipBottom": 999
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "fixture": "exploration",
+      "rotation": "0",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 313,
+          "bottom": 395,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 405,
+          "bottom": 446,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 405,
+          "bottom": 446,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 932,
+          "bottom": 973,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 932,
+          "bottom": 973,
+          "clipBottom": 999
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "fixture": "exploration",
+      "rotation": "5",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 313,
+          "bottom": 395,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 405,
+          "bottom": 446,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 405,
+          "bottom": 446,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 932,
+          "bottom": 973,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 932,
+          "bottom": 973,
+          "clipBottom": 999
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "fixture": "exploration",
+      "rotation": "4",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 313,
+          "bottom": 395,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 405,
+          "bottom": 446,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 405,
+          "bottom": 446,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 932,
+          "bottom": 973,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 932,
+          "bottom": 973,
+          "clipBottom": 999
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "fixture": "exploration",
+      "rotation": "3",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 313,
+          "bottom": 395,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 405,
+          "bottom": 446,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 405,
+          "bottom": 446,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 932,
+          "bottom": 973,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 932,
+          "bottom": 973,
+          "clipBottom": 999
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "fixture": "exploration",
+      "rotation": "2",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 313,
+          "bottom": 395,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 405,
+          "bottom": 446,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 405,
+          "bottom": 446,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 932,
+          "bottom": 973,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 932,
+          "bottom": 973,
+          "clipBottom": 999
+        }
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "fixture": "exploration",
+      "rotation": "1",
+      "targets": [
+        {
+          "selector": ".dg-placement-verdict",
+          "unclipped": true,
+          "top": 313,
+          "bottom": 395,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-placement-actions button:first-child",
+          "unclipped": true,
+          "top": 405,
+          "bottom": 446,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-placement-actions button:nth-child(2)",
+          "unclipped": true,
+          "top": 405,
+          "bottom": 446,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-rotation-controls button:first-child",
+          "unclipped": true,
+          "top": 932,
+          "bottom": 973,
+          "clipBottom": 999
+        },
+        {
+          "selector": ".dg-rotation-controls button:last-child",
+          "unclipped": true,
+          "top": 932,
+          "bottom": 973,
+          "clipBottom": 999
+        }
+      ],
+      "horizontalOverflow": false
+    }
+  ],
+  "errors": []
+}

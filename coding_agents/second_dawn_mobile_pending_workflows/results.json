@@ -1,0 +1,254 @@
+{
+  "site": "http://127.0.0.1:5175",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "results": [
+    {
+      "position": "control",
+      "ok": true,
+      "steps": [
+        {
+          "before": {
+            "revision": 2,
+            "decision": "control",
+            "sectors": 8
+          },
+          "after": {
+            "revision": 3,
+            "decision": "discovery",
+            "sectors": 8
+          },
+          "confirmation": "Confirm control",
+          "geometry": {
+            "x": 12,
+            "y": 698.5,
+            "width": 131.75,
+            "height": 44
+          }
+        }
+      ]
+    },
+    {
+      "position": "bankruptcy",
+      "ok": true,
+      "steps": [
+        {
+          "before": {
+            "revision": 252,
+            "decision": "bankruptcy",
+            "sectors": 37
+          },
+          "after": {
+            "revision": 253,
+            "decision": null,
+            "sectors": 37
+          },
+          "confirmation": "Abandon selected sector",
+          "geometry": {
+            "x": 12,
+            "y": 698.5,
+            "width": 194.765625,
+            "height": 44
+          }
+        }
+      ]
+    },
+    {
+      "position": "portal-placement",
+      "ok": true,
+      "steps": [
+        {
+          "before": {
+            "revision": 746,
+            "decision": "portal-placement",
+            "sectors": 37
+          },
+          "after": {
+            "revision": 747,
+            "decision": null,
+            "sectors": 37
+          },
+          "confirmation": "Place warp portal",
+          "geometry": {
+            "x": 12,
+            "y": 698.5,
+            "width": 143.703125,
+            "height": 44
+          }
+        }
+      ]
+    },
+    {
+      "position": "reputation",
+      "ok": true,
+      "steps": [
+        {
+          "before": {
+            "revision": 399,
+            "decision": "reputation",
+            "sectors": 37
+          },
+          "after": {
+            "revision": 400,
+            "decision": null,
+            "sectors": 37
+          },
+          "confirmation": "Confirm reputation",
+          "geometry": {
+            "x": 12,
+            "y": 569.5,
+            "width": 153.9375,
+            "height": 44
+          }
+        }
+      ]
+    },
+    {
+      "position": "resource-reward",
+      "ok": true,
+      "steps": [
+        {
+          "before": {
+            "revision": 720,
+            "decision": "resource-reward",
+            "sectors": 37
+          },
+          "after": {
+            "revision": 721,
+            "decision": null,
+            "sectors": 37
+          },
+          "confirmation": "Confirm reward",
+          "geometry": {
+            "x": 12,
+            "y": 698.5,
+            "width": 130.859375,
+            "height": 44
+          }
+        }
+      ]
+    },
+    {
+      "position": "population-return",
+      "ok": true,
+      "steps": [
+        {
+          "before": {
+            "revision": 365,
+            "decision": "population-return",
+            "sectors": 37
+          },
+          "after": {
+            "revision": 366,
+            "decision": "population-return",
+            "sectors": 37
+          },
+          "confirmation": "Confirm population return",
+          "geometry": {
+            "x": 12,
+            "y": 698.5,
+            "width": 201.046875,
+            "height": 44
+          }
+        }
+      ]
+    },
+    {
+      "position": "discovery",
+      "ok": true,
+      "steps": [
+        {
+          "before": {
+            "revision": 3,
+            "decision": "discovery",
+            "sectors": 8
+          },
+          "after": {
+            "revision": 4,
+            "decision": "ancient-part",
+            "sectors": 8
+          },
+          "confirmation": "Confirm discovery",
+          "geometry": {
+            "x": 12,
+            "y": 740.796875,
+            "width": 149.421875,
+            "height": 44
+          }
+        },
+        {
+          "before": {
+            "revision": 4,
+            "decision": "ancient-part",
+            "sectors": 8
+          },
+          "after": {
+            "revision": 5,
+            "decision": null,
+            "sectors": 8
+          },
+          "confirmation": "Confirm storage",
+          "geometry": {
+            "x": 107.59375,
+            "y": 576.40625,
+            "width": 255.8125,
+            "height": 44
+          }
+        }
+      ]
+    },
+    {
+      "position": "retreat",
+      "ok": true,
+      "steps": [
+        {
+          "before": {
+            "revision": 396,
+            "decision": "combat-turn",
+            "sectors": 37
+          },
+          "after": {
+            "revision": 397,
+            "decision": "combat-turn",
+            "sectors": 37
+          },
+          "confirmation": "Confirm choice",
+          "geometry": {
+            "x": 12,
+            "y": 741,
+            "width": 128.5,
+            "height": 44
+          }
+        }
+      ]
+    },
+    {
+      "position": "diplomacy",
+      "ok": true,
+      "steps": [
+        {
+          "before": {
+            "revision": 152,
+            "decision": "diplomacy",
+            "sectors": 32
+          },
+          "after": {
+            "revision": 153,
+            "decision": "diplomacy-window",
+            "sectors": 32
+          },
+          "confirmation": "Accept ambassadors",
+          "geometry": {
+            "x": 12,
+            "y": 698.5,
+            "width": 167.65625,
+            "height": 44
+          }
+        }
+      ]
+    }
+  ],
+  "pageErrors": []
+}

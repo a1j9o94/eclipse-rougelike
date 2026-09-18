@@ -1,0 +1,134 @@
+[
+  {
+    "width": 360,
+    "height": 800,
+    "mode": "opening",
+    "innerWidth": 360,
+    "documentWidth": 360,
+    "documentHeight": 800,
+    "innerHeight": 800,
+    "mainHeight": 537,
+    "mainScroll": 537
+  },
+  {
+    "width": 360,
+    "height": 800,
+    "mode": "research",
+    "innerWidth": 360,
+    "documentWidth": 360,
+    "documentHeight": 800,
+    "innerHeight": 800,
+    "mainHeight": 537,
+    "mainScroll": 3544
+  },
+  {
+    "width": 360,
+    "height": 800,
+    "mode": "blueprints",
+    "innerWidth": 360,
+    "documentWidth": 360,
+    "documentHeight": 800,
+    "innerHeight": 800,
+    "mainHeight": 537,
+    "mainScroll": 2291
+  },
+  {
+    "width": 360,
+    "height": 800,
+    "mode": "combat",
+    "innerWidth": 360,
+    "documentWidth": 360,
+    "documentHeight": 800,
+    "innerHeight": 800,
+    "mainHeight": 550,
+    "mainScroll": 659
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "mode": "opening",
+    "innerWidth": 390,
+    "documentWidth": 390,
+    "documentHeight": 844,
+    "innerHeight": 844,
+    "mainHeight": 581,
+    "mainScroll": 581
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "mode": "research",
+    "innerWidth": 390,
+    "documentWidth": 390,
+    "documentHeight": 844,
+    "innerHeight": 844,
+    "mainHeight": 581,
+    "mainScroll": 3533
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "mode": "blueprints",
+    "innerWidth": 390,
+    "documentWidth": 390,
+    "documentHeight": 844,
+    "innerHeight": 844,
+    "mainHeight": 581,
+    "mainScroll": 2319
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "mode": "combat",
+    "innerWidth": 390,
+    "documentWidth": 390,
+    "documentHeight": 844,
+    "innerHeight": 844,
+    "mainHeight": 594,
+    "mainScroll": 675
+  },
+  {
+    "width": 430,
+    "height": 932,
+    "mode": "opening",
+    "innerWidth": 430,
+    "documentWidth": 430,
+    "documentHeight": 932,
+    "innerHeight": 932,
+    "mainHeight": 669,
+    "mainScroll": 669
+  },
+  {
+    "width": 430,
+    "height": 932,
+    "mode": "research",
+    "innerWidth": 430,
+    "documentWidth": 430,
+    "documentHeight": 932,
+    "innerHeight": 932,
+    "mainHeight": 669,
+    "mainScroll": 3446
+  },
+  {
+    "width": 430,
+    "height": 932,
+    "mode": "blueprints",
+    "innerWidth": 430,
+    "documentWidth": 430,
+    "documentHeight": 932,
+    "innerHeight": 932,
+    "mainHeight": 669,
+    "mainScroll": 2264
+  },
+  {
+    "width": 430,
+    "height": 932,
+    "mode": "combat",
+    "innerWidth": 430,
+    "documentWidth": 430,
+    "documentHeight": 932,
+    "innerHeight": 932,
+    "mainHeight": 682,
+    "mainScroll": 682
+  }
+]

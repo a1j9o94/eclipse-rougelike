@@ -1,0 +1,36 @@
+{
+  "version": 4,
+  "date": "2026-09-07",
+  "files": [
+    "1366x768-opening.png",
+    "1366x768-midgame.png",
+    "1366x768-late.png",
+    "1366x768-research.png",
+    "1366x768-blueprints.png",
+    "1366x768-combat.png",
+    "1366x768-scoring.png",
+    "1440x900-opening.png",
+    "1440x900-midgame.png",
+    "1440x900-late.png",
+    "1440x900-research.png",
+    "1440x900-blueprints.png",
+    "1440x900-combat.png",
+    "1440x900-scoring.png",
+    "1920x1080-opening.png",
+    "1920x1080-midgame.png",
+    "1920x1080-late.png",
+    "1920x1080-research.png",
+    "1920x1080-blueprints.png",
+    "1920x1080-combat.png",
+    "1920x1080-scoring.png"
+  ],
+  "review": "Actual 21 rendered desktop images independently reviewed by effects_revision after current resource/upkeep header, owned research and quiet sector IDs/strong owner fills. Root reviewed ownership and funded research/build images separately. Additional Build/Move/Trade/History screenshots reviewed outside baseline. Earlier versions retained; no automatic snapshot acceptance.",
+  "intentionalChanges": [
+    "Header current and next-action upkeep forecast",
+    "Persistent History navigation",
+    "Owned research tiles and single visual science price",
+    "Muted sector IDs and tinted faction ownership faces",
+    "Action cost preview in inspector"
+  ],
+  "limitations": "Agent visual review and scripted task walkthroughs, not a human usability study."
+}

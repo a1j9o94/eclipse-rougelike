@@ -1,0 +1,19 @@
+.dg-discovery-decision { max-width: 1050px; }
+.dg-discovery-decision h2 { margin: .65rem 0 1rem; font: 1.8rem Georgia, serif; color: #edd7a7; }
+.dg-discovery-alternatives { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(220px, 1fr); gap: 1rem; margin: 1rem 0; }
+.dg-discovery-reward { padding: 1rem; border: 1px solid #645944; background: linear-gradient(135deg,#2c3030,#111a24); }
+.dg-discovery-selected { border-color: #ebc272; box-shadow: inset 0 0 0 1px #ebc272; }
+.dg-discovery-reward > button { width: 100%; text-align: left; font-weight: 600; color: #ecd5a2; }
+.dg-discovery-reward .dg-part-stats { margin: 1.25rem 0; gap: 1rem 1.5rem; }
+.dg-discovery-reward p { font-size: .85rem; line-height: 1.55; color: #d0d5d9; }
+.dg-discovery-vp > .dg-stat-badge { margin: 1.25rem 0; }
+.dg-discovery-money { color: #e7bd67; }
+.dg-discovery-science { color: #b397da; }
+.dg-discovery-materials { color: #b89675; }
+.dg-discovery-note { font-size: .8rem; color: #aebbc5; }
+.dg-discovery-side { display: flex; gap: .7rem; align-items: center; min-height: 42px; padding: .65rem; background: #121e2a; color: #eddaad; border: 1px solid #57606a; font-size: .95rem; cursor: pointer; }
+.dg-discovery-side:focus-within { outline: 2px solid #b8e5ee; outline-offset: 3px; }
+.dg-discovery-side input { accent-color: #dfbc77; width: 18px; height: 18px; flex-shrink: 0; }
+.dg-discovery-piece .dg-ship-silhouette { width: 30px; height: 30px; }
+.dg-discovery-piece .dg-ship-radar, .dg-discovery-piece .dg-ship-axis { display: none; }
+.dg-app .dg-discovery-decision h2 { font: 1.65rem Georgia, serif; margin: .6rem 0 1rem; color: #edd7a7; }

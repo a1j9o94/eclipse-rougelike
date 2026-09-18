@@ -1,0 +1,92 @@
+{
+  "checkedAt": "2026-09-08T12:46:00.288Z",
+  "site": "http://127.0.0.1:5175",
+  "backend": "https://ideal-nightingale-55.convex.cloud",
+  "preExistingSoloRetained": true,
+  "soloRoomHasNoTimer": true,
+  "pendingExplorationRestoredOnSecondDevice": true,
+  "privateSeatRestored": true,
+  "recoveredBrowserSurvivesReload": true,
+  "originalBrowserCredentialRetained": true,
+  "wrongPinDoesNotSwitchPlayer": true,
+  "recoveryCodeRestoresGames": true,
+  "pinIsOptional": true,
+  "codeOnlyProfileSignsIn": true,
+  "previousBrowserPlayerRestored": true,
+  "pageErrors": [],
+  "captures": [
+    {
+      "name": "registration-empty",
+      "width": 1366,
+      "height": 768,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "registration-empty",
+      "width": 1440,
+      "height": 900,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "registration-empty",
+      "width": 1920,
+      "height": 1080,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "registered-player",
+      "width": 1366,
+      "height": 768,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "registered-player",
+      "width": 1440,
+      "height": 900,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "registered-player",
+      "width": 1920,
+      "height": 1080,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "solo-pending-choice",
+      "width": 1366,
+      "height": 768,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "solo-pending-choice",
+      "width": 1440,
+      "height": 900,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "solo-pending-choice",
+      "width": 1920,
+      "height": 1080,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "second-device-restored-choice",
+      "width": 1366,
+      "height": 768,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "second-device-restored-choice",
+      "width": 1440,
+      "height": 900,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "second-device-restored-choice",
+      "width": 1920,
+      "height": 1080,
+      "horizontalOverflow": false
+    }
+  ],
+  "evidence": "Agent-operated three isolated browser contexts. Credentials, PINs, recovery codes, room links, and match ids never recorded."
+}

@@ -1,0 +1,4 @@
+import {render,screen,fireEvent} from '@testing-library/react';
+import {expect,it,vi} from 'vitest';
+import HistoryPanel from '../second-dawn-game/HistoryPanel';
+it('shows ordered public actions and lets a player retrieve earlier actions without submitting a game command',()=>{const load=vi.fn();render(<HistoryPanel feed={{entries:[{revision:42,actorSeatId:'ai',actorName:'Hydran Progress',round:2,summary:'Researched Gluon Computer',details:['Computer +3 unlocked.']},{revision:41,actorSeatId:'human',actorName:'Eridani Empire',round:2,summary:'Passed',details:[]}],hasOlder:true,loading:false,loadingOlder:false,error:null,loadOlder:load}}/>);expect(screen.getByRole('log',{name:'Match actions'})).toBeInTheDocument();expect(screen.getByText('Researched Gluon Computer')).toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'Load earlier actions'}));expect(load).toHaveBeenCalledOnce();});

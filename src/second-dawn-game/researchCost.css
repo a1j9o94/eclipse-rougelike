@@ -1,0 +1,12 @@
+.dg-science-budget { display:inline-flex; align-items:center; gap:.5rem; padding:.5rem .75rem; border:1px solid #80729c; background:#292137; color:#d2b9ee; }
+.dg-science-budget svg { width:27px; height:27px; }
+.dg-science-budget strong { font-size:1.6rem; line-height:1; }
+.dg-science-budget > span { max-width:65px; color:#dbd1e8; font-size:.75rem; line-height:1.25; }
+.dg-research-price { display:flex; align-items:center; justify-content:space-between; gap:.5rem; margin:.55rem 0; color:#d2b9ee; }
+.dg-research-price-value { display:flex; align-items:center; gap:.3rem; }
+.dg-research-price-value svg { width:24px; height:24px; }
+.dg-research-affordability { color:#b8cdc0; font-size:.65rem; text-align:right; }
+.dg-research-shortfall .dg-research-affordability { color:#efb9a4; }
+.dg-research-cost-state { display:block; font-size:.72rem; color:#aebac5; margin:.55rem 0; }
+.dg-app .sd-tech .dg-research-price .dg-research-price-value > strong { color: #ddc8f4; font-size: 1.4rem; line-height: 1; }
+.dg-app .sd-tech .dg-research-price .dg-research-price-value > small { color: #d2b9ee; font-size: .65rem; margin: 0; }

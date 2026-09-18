@@ -1,0 +1,240 @@
+.dg-diplomacy-panel {
+  max-width: 1000px;
+  margin: auto;
+}
+.dg-diplomacy-intro,
+.dg-rack-note {
+  color: #bbc6d1;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.dg-diplomatic-rack {
+  background: linear-gradient(135deg, #302b2280, #11202ae6);
+  border: 1px solid #a38d624a;
+  border-radius: 8px;
+  padding: 18px;
+  margin: 18px 0;
+}
+.dg-rack-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.dg-rack-heading h2,
+.dg-rack-heading h3 {
+  margin: 0;
+}
+.dg-rack-heading span {
+  font-size: 12px;
+  color: #c6b58f;
+}
+.dg-ambassador-row,
+.dg-reputation-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.dg-ambassador-token {
+  color: var(--diplomat-color);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px;
+  background: #0a131db3;
+  border: 1px solid color-mix(in srgb, var(--diplomat-color) 50%, transparent);
+  border-radius: 4px;
+}
+.dg-ambassador-token svg {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 36px;
+}
+.dg-ambassador-token strong {
+  font-size: 11px;
+  display: block;
+}
+.dg-ambassador-token small {
+  color: #c1c7cc;
+  display: block;
+  font-size: 10px;
+  margin-top: 4px;
+}
+.dg-ambassador-empty {
+  padding: 18px 12px;
+  color: #8998a4;
+  font-size: 10px;
+  border: 1px dashed #9c8e713e;
+  border-radius: 4px;
+}
+.dg-reputation-token,
+.dg-reputation-empty,
+.dg-reputation-back {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.dg-reputation-token {
+  flex-direction: column;
+  background: radial-gradient(circle at 35% 30%, #dac18b, #6e542e);
+  border: 2px solid #d9bc80;
+  color: #201b13;
+  box-shadow: inset 0 0 0 3px #4f3e2444;
+}
+.dg-reputation-token strong {
+  font-size: 21px;
+  line-height: 1;
+}
+.dg-reputation-token small {
+  font-size: 9px;
+}
+.dg-reputation-empty {
+  border: 1px dashed #a38d624a;
+  color: #8f8271;
+}
+.dg-reputation-back {
+  background: radial-gradient(circle at 35% 30%, #52482f, #211e18);
+  border: 1px solid #ad9463;
+  color: #c9ae77;
+}
+.dg-reputation-back svg {
+  width: 29px;
+  height: 29px;
+}
+.dg-reputation-row > small {
+  font-size: 10px;
+  color: #adb9c4;
+}
+.dg-reputation-returns {
+  margin-top: 12px;
+}
+.dg-reputation-returns p {
+  font-size: 11px;
+  color: #baa991;
+}
+.dg-reputation-returns button {
+  font-size: 11px;
+  margin: 0 6px 5px 0;
+}
+.dg-traitor {
+  color: #e7a098 !important;
+  font-size: 12px;
+}
+.dg-diplomacy-partners {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.dg-partner-rack {
+  margin: 0;
+  padding: 14px;
+}
+.dg-partner-rack h3 {
+  color: var(--diplomat-color);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.dg-partner-rack p {
+  font-size: 11px;
+}
+.dg-partner-rack .dg-reputation-row {
+  margin-top: 13px;
+}
+.dg-rack-heading .dg-diplomat-number {
+  color: var(--diplomat-color);
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  width: 23px;
+  height: 23px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+.dg-diplomacy-offer {
+  margin-top: 14px;
+}
+.dg-diplomacy-offer > p {
+  margin: 0 0 8px;
+  font-size: 11px;
+  color: #c8c0af;
+}
+.dg-diplomacy-cube-choices {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+.dg-diplomacy-cube {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 5px;
+  padding: 7px;
+  color: #d8e0e1;
+  text-align: left;
+  border: 1px solid #53606a;
+  background: #15212a;
+}
+.dg-diplomacy-cube:hover:not(:disabled),
+.dg-diplomacy-cube:focus-visible {
+  border-color: #dfbd78;
+  outline: 2px solid #dfbd7860;
+  outline-offset: 1px;
+}
+.dg-diplomacy-cube.is-selected {
+  border-color: #e5c276;
+  background: linear-gradient(145deg, #3c3526, #19262d);
+  box-shadow: inset 0 0 0 1px #e5c27677;
+}
+.dg-diplomacy-cube:disabled {
+  color: #89939a;
+  border-style: dashed;
+  opacity: .72;
+}
+.dg-diplomacy-cube .dg-trade-icon {
+  width: 21px;
+  height: 21px;
+}
+.dg-diplomacy-cube span {
+  min-width: 0;
+}
+.dg-diplomacy-cube strong,
+.dg-diplomacy-cube small {
+  display: block;
+}
+.dg-diplomacy-cube strong {
+  font-size: 10px;
+}
+.dg-diplomacy-cube small {
+  margin-top: 2px;
+  color: inherit;
+  font-size: 8px;
+  line-height: 1.25;
+}
+.dg-diplomacy-cube b {
+  color: #f1d48f;
+}
+.dg-diplomacy-exchange {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #c9d5d6 !important;
+}
+.dg-diplomacy-exchange .dg-trade-icon {
+  width: 17px;
+  height: 17px;
+}
+.dg-diplomacy-offer button {
+  font-size: 11px;
+}
+@media (max-width: 720px) {
+  .dg-diplomacy-partners { grid-template-columns: 1fr; }
+  .dg-diplomacy-cube-choices { grid-template-columns: 1fr; }
+}

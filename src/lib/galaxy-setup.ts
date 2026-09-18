@@ -1,7 +1,7 @@
 // @ts-nocheck
 import type { EclipseSector } from '../types/eclipse-sectors';
 import { SECTOR_NUMBERS, STARTING_SECTORS_BY_PLAYER_COUNT, OUTER_STACK_SIZE } from '../types/eclipse-sectors';
-import { Hex } from 'react-hexgrid';
+import { GridGenerator, Hex } from 'react-hexgrid';
 
 /**
  * Galaxy setup utilities for Eclipse: Second Dawn
@@ -31,7 +31,7 @@ function generateRingCoordinates(ring: number): Array<{ q: number; r: number; s:
   }
 
   const centerHex = new Hex(0, 0, 0);
-  const hexes = require('react-hexgrid').GridGenerator.ring(centerHex, ring);
+  const hexes = GridGenerator.ring(centerHex, ring);
 
   return hexes.map((hex: Hex) => ({
     q: hex.q,

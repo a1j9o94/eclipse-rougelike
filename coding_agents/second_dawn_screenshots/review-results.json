@@ -1,0 +1,255 @@
+{
+  "reviewType": "Agent browser inspection, not a human playtest or approved visual baseline",
+  "results": [
+    {
+      "width": 1366,
+      "height": 768,
+      "screen": "opening",
+      "documentWidth": 1366,
+      "documentHeight": 768,
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "screen": "midgame",
+      "documentWidth": 1366,
+      "documentHeight": 768,
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "screen": "late",
+      "documentWidth": 1366,
+      "documentHeight": 768,
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "screen": "research",
+      "documentWidth": 1366,
+      "documentHeight": 768,
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "screen": "blueprints",
+      "documentWidth": 1366,
+      "documentHeight": 768,
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "screen": "combat",
+      "documentWidth": 1366,
+      "documentHeight": 768,
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "screen": "scoring",
+      "documentWidth": 1366,
+      "documentHeight": 768,
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "screen": "opening",
+      "documentWidth": 1440,
+      "documentHeight": 900,
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "screen": "midgame",
+      "documentWidth": 1440,
+      "documentHeight": 900,
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "screen": "late",
+      "documentWidth": 1440,
+      "documentHeight": 900,
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "screen": "research",
+      "documentWidth": 1440,
+      "documentHeight": 900,
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "screen": "blueprints",
+      "documentWidth": 1440,
+      "documentHeight": 900,
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "screen": "combat",
+      "documentWidth": 1440,
+      "documentHeight": 900,
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "screen": "scoring",
+      "documentWidth": 1440,
+      "documentHeight": 900,
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "screen": "opening",
+      "documentWidth": 1920,
+      "documentHeight": 1080,
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "screen": "midgame",
+      "documentWidth": 1920,
+      "documentHeight": 1080,
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "screen": "late",
+      "documentWidth": 1920,
+      "documentHeight": 1080,
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "screen": "research",
+      "documentWidth": 1920,
+      "documentHeight": 1080,
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "screen": "blueprints",
+      "documentWidth": 1920,
+      "documentHeight": 1080,
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "screen": "combat",
+      "documentWidth": 1920,
+      "documentHeight": 1080,
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "screen": "scoring",
+      "documentWidth": 1920,
+      "documentHeight": 1080,
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    }
+  ],
+  "enlargedText": {
+    "rosterKeyboardScrollTop": 177,
+    "rosterScrollHeight": 371,
+    "rosterClientHeight": 193
+  },
+  "tasks": [
+    {
+      "name": "Find exploration frontier",
+      "automationTimeMs": 378,
+      "outcome": "prototype interaction completed",
+      "limitation": "Frontier is illustrative; no verified legal target is calculated.",
+      "humanSearchTime": null,
+      "humanWrongTurns": null,
+      "humanAssistance": null
+    },
+    {
+      "name": "Inspect movement constraints",
+      "automationTimeMs": 51,
+      "outcome": "prototype interaction completed",
+      "limitation": "Inspector explains general constraints; no fleet-specific legality is computed.",
+      "humanSearchTime": null,
+      "humanWrongTurns": null,
+      "humanAssistance": null
+    },
+    {
+      "name": "Find projected upkeep",
+      "automationTimeMs": 8,
+      "outcome": "prototype interaction completed",
+      "limitation": "Values are fixtures; no actionable shortfall simulation.",
+      "humanSearchTime": null,
+      "humanWrongTurns": null,
+      "humanAssistance": null
+    },
+    {
+      "name": "Compare enemy blueprint and confirm draft",
+      "automationTimeMs": 123,
+      "outcome": "prototype interaction completed",
+      "limitation": "Prototype draft only; no actual legality validation or match command.",
+      "humanSearchTime": null,
+      "humanWrongTurns": null,
+      "humanAssistance": null
+    },
+    {
+      "name": "Allocate hits and choose retreat",
+      "automationTimeMs": 183,
+      "outcome": "prototype interaction completed",
+      "limitation": "Two separate visual interactions; no combat rules or outcome is simulated.",
+      "humanSearchTime": null,
+      "humanWrongTurns": null,
+      "humanAssistance": null
+    },
+    {
+      "name": "Find scoring breakdown",
+      "automationTimeMs": 43,
+      "outcome": "prototype interaction completed",
+      "limitation": "Illustrative category table; no real final scoring calculation.",
+      "humanSearchTime": null,
+      "humanWrongTurns": null,
+      "humanAssistance": null
+    }
+  ]
+}

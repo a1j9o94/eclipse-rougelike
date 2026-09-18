@@ -7,25 +7,13 @@ import { Analytics } from '@vercel/analytics/react'
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { ErrorBoundary, ErrorFallback } from './components/ErrorBoundary';
 
-// Environment variable validation with detailed logging
-console.log('=== Environment Debug ===');
-console.log('CONVEX_URL:', import.meta.env.VITE_CONVEX_URL);
-console.log('All VITE_ env vars:', Object.keys(import.meta.env).filter(key => key.startsWith('VITE_')));
-console.log('All env vars:', import.meta.env);
-console.log('========================');
-
 const CONVEX_URL = import.meta.env.VITE_CONVEX_URL;
 
-if (!CONVEX_URL) {
-  console.error('VITE_CONVEX_URL environment variable is not set. Multiplayer features will be disabled.');
-}
-
-// Only create ConvexReactClient if URL is available
+// Local solo play does not need a backend.
 let convex: ConvexReactClient | null = null;
 if (CONVEX_URL) {
   try {
     convex = new ConvexReactClient(CONVEX_URL);
-    console.log('Convex client created successfully');
   } catch (error) {
     console.error('Failed to create Convex client:', error);
     convex = null;
@@ -42,6 +30,15 @@ window.addEventListener('unhandledrejection', (e) => {
 
 export { ErrorFallback } from './components/ErrorBoundary';
 
+const app = (
+  <div className="relative min-h-screen">
+    <GlobalStarfield />
+    <div className="relative z-10">
+      <App />
+    </div>
+  </div>
+);
+
 // Render the app
 try {
   createRoot(document.getElementById('root')!).render(
@@ -49,15 +46,10 @@ try {
       <ErrorBoundary>
         {convex ? (
           <ConvexProvider client={convex}>
-            <div className="relative min-h-screen">
-              <GlobalStarfield />
-              <div className="relative z-10">
-                <App />
-              </div>
-            </div>
+            {app}
           </ConvexProvider>
         ) : (
-          <ErrorFallback message="The application is missing required environment variables." />
+          app
         )}
       </ErrorBoundary>
       <Analytics />

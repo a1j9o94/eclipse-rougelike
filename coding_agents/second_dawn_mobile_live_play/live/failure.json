@@ -1,0 +1,17 @@
+{
+  "error": "TimeoutError: page.waitForFunction: Timeout 30000ms exceeded.",
+  "screen": "Galaxy",
+  "buttons": [
+    "Menu",
+    "3VP",
+    "−",
+    "+",
+    "Fit",
+    "Sectors",
+    "Choose action",
+    "Galaxy",
+    "Empire",
+    "Players",
+    "Activity"
+  ]
+}

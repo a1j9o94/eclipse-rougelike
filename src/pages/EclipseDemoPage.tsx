@@ -55,9 +55,14 @@ export default function EclipseDemoPage() {
           🌌 Eclipse: Second Dawn for the Galaxy
         </h1>
         <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.875rem', color: '#94a3b8' }}>
-          Full board game implementation - 2 player demo
+          Board preview — complete matches are not available yet.
         </p>
       </div>
+
+      <nav aria-label="Local versions" style={{ display: 'flex', gap: '1.5rem', padding: '0.75rem 1rem' }}>
+        <a href="/#legacy">Original roguelike</a>
+        <a href="/eclipse-variable-demo.html">Variable galaxy demo</a>
+      </nav>
 
       {/* Controls */}
       <div style={{

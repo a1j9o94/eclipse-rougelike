@@ -13,6 +13,13 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as eclipseGuests from "../eclipseGuests.js";
+import type * as eclipseIdentity from "../eclipseIdentity.js";
+import type * as eclipseMatches from "../eclipseMatches.js";
+import type * as eclipsePlayerStore from "../eclipsePlayerStore.js";
+import type * as eclipsePlayers from "../eclipsePlayers.js";
+import type * as eclipseRooms from "../eclipseRooms.js";
+import type * as eclipseValidators from "../eclipseValidators.js";
 import type * as engine_actions from "../engine/actions.js";
 import type * as engine_combat from "../engine/combat.js";
 import type * as engine_resources from "../engine/resources.js";
@@ -43,6 +50,13 @@ import type * as seedData_tiles from "../seedData/tiles.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  eclipseGuests: typeof eclipseGuests;
+  eclipseIdentity: typeof eclipseIdentity;
+  eclipseMatches: typeof eclipseMatches;
+  eclipsePlayerStore: typeof eclipsePlayerStore;
+  eclipsePlayers: typeof eclipsePlayers;
+  eclipseRooms: typeof eclipseRooms;
+  eclipseValidators: typeof eclipseValidators;
   "engine/actions": typeof engine_actions;
   "engine/combat": typeof engine_combat;
   "engine/resources": typeof engine_resources;

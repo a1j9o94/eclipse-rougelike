@@ -1,0 +1,38 @@
+[
+  {
+    "width": 1366,
+    "height": 768,
+    "errors": [],
+    "plantaDetail": true,
+    "horizontalOverflow": false,
+    "pickerWidth": 863.46875,
+    "pairNameFont": "14px",
+    "effectFont": "13px",
+    "supportFont": "12px",
+    "resourceFont": "11px"
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "errors": [],
+    "plantaDetail": true,
+    "horizontalOverflow": false,
+    "pickerWidth": 866,
+    "pairNameFont": "14px",
+    "effectFont": "13px",
+    "supportFont": "12px",
+    "resourceFont": "11px"
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "errors": [],
+    "plantaDetail": true,
+    "horizontalOverflow": false,
+    "pickerWidth": 866,
+    "pairNameFont": "14px",
+    "effectFont": "13px",
+    "supportFont": "12px",
+    "resourceFont": "11px"
+  }
+]

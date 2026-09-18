@@ -1,5 +1,6 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { factionValidator, phaseValidator, receiptValidator } from "./eclipseValidators";
 
 /**
  * Eclipse: Second Dawn - Complete Data Schema
@@ -13,6 +14,119 @@ import { v } from "convex/values";
  */
 
 export default defineSchema({
+  // Isolated Second Dawn identity. Raw guest credentials are never stored.
+  eclipseGuestsV1: defineTable({
+    credentialHash: v.string(),
+    createdAt: v.number(),
+  }).index('by_credential_hash', ['credentialHash']),
+
+  // Profiles preserve canonical guest IDs so existing solo and room seats survive registration.
+  eclipsePlayersV1: defineTable({
+    guestId: v.id('eclipseGuestsV1'),
+    username: v.string(),
+    normalizedUsername: v.string(),
+    pinSalt: v.optional(v.string()),
+    pinHash: v.optional(v.string()),
+    pinIterations: v.optional(v.number()),
+    recoveryHash: v.string(),
+    createdAt: v.number(),
+  }).index('by_username', ['normalizedUsername'])
+    .index('by_guest', ['guestId']),
+  eclipsePlayerSessionsV1: defineTable({
+    guestId: v.id('eclipseGuestsV1'),
+    credentialHash: v.string(),
+    createdAt: v.number(),
+  }).index('by_credential_hash', ['credentialHash']),
+  eclipsePlayerLoginLimitsV1: defineTable({
+    normalizedUsername: v.string(),
+    attempts: v.number(),
+    resetAt: v.number(),
+  }).index('by_username', ['normalizedUsername']),
+
+  // Versioned full-game storage: no migration or mutation of legacy room data.
+  eclipseMatchesV1: defineTable({
+    snapshotJson: v.string(),
+    rulesVersion: v.string(),
+    catalogVersion: v.string(),
+    revision: v.number(),
+    round: v.number(),
+    phase: phaseValidator,
+    /** Present only for matches created from the isolated multiplayer lobby. */
+    roomToken: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }),
+  eclipseOwnershipV1: defineTable({
+    matchId: v.id('eclipseMatchesV1'),
+    guestId: v.id('eclipseGuestsV1'),
+    seatId: v.string(),
+    /** Explicitly acknowledged public activity; never advances game state. */
+    lastSeenRevision: v.optional(v.number()),
+  }).index('by_guest', ['guestId'])
+    .index('by_match_guest', ['matchId', 'guestId']),
+  eclipseAiJobsV1: defineTable({
+    matchId: v.id('eclipseMatchesV1'),
+    status: v.union(v.literal('scheduled'), v.literal('waiting'), v.literal('failed'), v.literal('finished')),
+    expectedRevision: v.number(),
+    attempts: v.number(),
+    error: v.union(v.string(), v.null()),
+    updatedAt: v.number(),
+  }).index('by_match', ['matchId']),
+  eclipseJournalV1: defineTable({
+    matchId: v.id('eclipseMatchesV1'),
+    commandId: v.string(),
+    actor: v.string(),
+    revision: v.number(),
+    requestJson: v.string(),
+    eventsJson: v.string(),
+    round: v.optional(v.number()),
+    receipt: receiptValidator,
+    createdAt: v.number(),
+  }).index('by_match_command', ['matchId', 'commandId'])
+    .index('by_match_revision', ['matchId', 'revision']),
+
+  // Isolated multiplayer lobby and durable timeout layer. Existing solo
+  // matches never require a room row or timer row.
+  eclipseRoomsV1: defineTable({
+    roomToken: v.string(),
+    hostGuestId: v.id('eclipseGuestsV1'),
+    status: v.union(v.literal('waiting'), v.literal('playing'), v.literal('finished'), v.literal('closed')),
+    humanSeatCount: v.number(),
+    aiCount: v.number(),
+    timerMs: v.number(),
+    warpPortals: v.boolean(),
+    matchId: v.optional(v.id('eclipseMatchesV1')),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index('by_token', ['roomToken'])
+    .index('by_host', ['hostGuestId'])
+    .index('by_match', ['matchId']),
+  eclipseRoomSeatsV1: defineTable({
+    roomId: v.id('eclipseRoomsV1'),
+    guestId: v.id('eclipseGuestsV1'),
+    slot: v.number(),
+    faction: factionValidator,
+    ready: v.boolean(),
+    isHost: v.boolean(),
+    joinedAt: v.number(),
+  }).index('by_room', ['roomId'])
+    .index('by_guest', ['guestId'])
+    .index('by_room_guest', ['roomId', 'guestId'])
+    .index('by_room_slot', ['roomId', 'slot']),
+  eclipseRoomTimersV1: defineTable({
+    roomId: v.id('eclipseRoomsV1'),
+    matchId: v.id('eclipseMatchesV1'),
+    token: v.string(),
+    deadlineAt: v.number(),
+    targetSeatId: v.string(),
+    decisionId: v.union(v.string(), v.null()),
+    status: v.union(v.literal('active'), v.literal('timed-out'), v.literal('failed'), v.literal('finished')),
+    error: v.union(v.string(), v.null()),
+    timeoutSteps: v.number(),
+    updatedAt: v.number(),
+  }).index('by_room', ['roomId'])
+    .index('by_match', ['matchId']),
+
   // ============================================================================
   // ROOM & LOBBY
   // ============================================================================

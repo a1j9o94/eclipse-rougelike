@@ -1,0 +1,333 @@
+{
+  "site": "http://127.0.0.1:5175",
+  "results": [
+    {
+      "position": "exploration",
+      "height": 800,
+      "width": 360,
+      "scrollWidth": 360,
+      "workspaceWidth": 360,
+      "workspaceContentWidth": 360,
+      "overflowing": []
+    },
+    {
+      "position": "discovery",
+      "height": 800,
+      "width": 360,
+      "scrollWidth": 360,
+      "workspaceWidth": 360,
+      "workspaceContentWidth": 360,
+      "overflowing": []
+    },
+    {
+      "position": "control",
+      "height": 800,
+      "width": 360,
+      "scrollWidth": 360,
+      "workspaceWidth": 360,
+      "workspaceContentWidth": 360,
+      "overflowing": []
+    },
+    {
+      "position": "bankruptcy",
+      "height": 800,
+      "width": 360,
+      "scrollWidth": 360,
+      "workspaceWidth": 360,
+      "workspaceContentWidth": 360,
+      "overflowing": []
+    },
+    {
+      "position": "reputation",
+      "height": 800,
+      "width": 360,
+      "scrollWidth": 360,
+      "workspaceWidth": 360,
+      "workspaceContentWidth": 360,
+      "overflowing": []
+    },
+    {
+      "position": "population-return",
+      "height": 800,
+      "width": 360,
+      "scrollWidth": 360,
+      "workspaceWidth": 360,
+      "workspaceContentWidth": 360,
+      "overflowing": []
+    },
+    {
+      "position": "resource-reward",
+      "height": 800,
+      "width": 360,
+      "scrollWidth": 360,
+      "workspaceWidth": 360,
+      "workspaceContentWidth": 360,
+      "overflowing": []
+    },
+    {
+      "position": "portal-placement",
+      "height": 800,
+      "width": 360,
+      "scrollWidth": 360,
+      "workspaceWidth": 360,
+      "workspaceContentWidth": 360,
+      "overflowing": []
+    },
+    {
+      "position": "retreat",
+      "height": 800,
+      "width": 360,
+      "scrollWidth": 360,
+      "workspaceWidth": 360,
+      "workspaceContentWidth": 360,
+      "overflowing": []
+    },
+    {
+      "position": "bombardment",
+      "height": 800,
+      "width": 360,
+      "scrollWidth": 360,
+      "workspaceWidth": 360,
+      "workspaceContentWidth": 360,
+      "overflowing": []
+    },
+    {
+      "position": "scoring",
+      "height": 800,
+      "width": 360,
+      "scrollWidth": 360,
+      "heading": "Final standings",
+      "workspaceWidth": 360,
+      "workspaceContentWidth": 360,
+      "overflowing": []
+    },
+    {
+      "position": "workflow-diplomacy",
+      "height": 800,
+      "width": 360,
+      "scrollWidth": 360,
+      "workspaceWidth": 360,
+      "workspaceContentWidth": 360,
+      "overflowing": []
+    },
+    {
+      "position": "exploration",
+      "height": 844,
+      "width": 390,
+      "scrollWidth": 390,
+      "workspaceWidth": 390,
+      "workspaceContentWidth": 390,
+      "overflowing": []
+    },
+    {
+      "position": "discovery",
+      "height": 844,
+      "width": 390,
+      "scrollWidth": 390,
+      "workspaceWidth": 390,
+      "workspaceContentWidth": 390,
+      "overflowing": []
+    },
+    {
+      "position": "control",
+      "height": 844,
+      "width": 390,
+      "scrollWidth": 390,
+      "workspaceWidth": 390,
+      "workspaceContentWidth": 390,
+      "overflowing": []
+    },
+    {
+      "position": "bankruptcy",
+      "height": 844,
+      "width": 390,
+      "scrollWidth": 390,
+      "workspaceWidth": 390,
+      "workspaceContentWidth": 390,
+      "overflowing": []
+    },
+    {
+      "position": "reputation",
+      "height": 844,
+      "width": 390,
+      "scrollWidth": 390,
+      "workspaceWidth": 390,
+      "workspaceContentWidth": 390,
+      "overflowing": []
+    },
+    {
+      "position": "population-return",
+      "height": 844,
+      "width": 390,
+      "scrollWidth": 390,
+      "workspaceWidth": 390,
+      "workspaceContentWidth": 390,
+      "overflowing": []
+    },
+    {
+      "position": "resource-reward",
+      "height": 844,
+      "width": 390,
+      "scrollWidth": 390,
+      "workspaceWidth": 390,
+      "workspaceContentWidth": 390,
+      "overflowing": []
+    },
+    {
+      "position": "portal-placement",
+      "height": 844,
+      "width": 390,
+      "scrollWidth": 390,
+      "workspaceWidth": 390,
+      "workspaceContentWidth": 390,
+      "overflowing": []
+    },
+    {
+      "position": "retreat",
+      "height": 844,
+      "width": 390,
+      "scrollWidth": 390,
+      "workspaceWidth": 390,
+      "workspaceContentWidth": 390,
+      "overflowing": []
+    },
+    {
+      "position": "bombardment",
+      "height": 844,
+      "width": 390,
+      "scrollWidth": 390,
+      "workspaceWidth": 390,
+      "workspaceContentWidth": 390,
+      "overflowing": []
+    },
+    {
+      "position": "scoring",
+      "height": 844,
+      "width": 390,
+      "scrollWidth": 390,
+      "heading": "Final standings",
+      "workspaceWidth": 390,
+      "workspaceContentWidth": 390,
+      "overflowing": []
+    },
+    {
+      "position": "workflow-diplomacy",
+      "height": 844,
+      "width": 390,
+      "scrollWidth": 390,
+      "workspaceWidth": 390,
+      "workspaceContentWidth": 390,
+      "overflowing": []
+    },
+    {
+      "position": "exploration",
+      "height": 932,
+      "width": 430,
+      "scrollWidth": 430,
+      "workspaceWidth": 430,
+      "workspaceContentWidth": 430,
+      "overflowing": []
+    },
+    {
+      "position": "discovery",
+      "height": 932,
+      "width": 430,
+      "scrollWidth": 430,
+      "workspaceWidth": 430,
+      "workspaceContentWidth": 430,
+      "overflowing": []
+    },
+    {
+      "position": "control",
+      "height": 932,
+      "width": 430,
+      "scrollWidth": 430,
+      "workspaceWidth": 430,
+      "workspaceContentWidth": 430,
+      "overflowing": []
+    },
+    {
+      "position": "bankruptcy",
+      "height": 932,
+      "width": 430,
+      "scrollWidth": 430,
+      "workspaceWidth": 430,
+      "workspaceContentWidth": 430,
+      "overflowing": []
+    },
+    {
+      "position": "reputation",
+      "height": 932,
+      "width": 430,
+      "scrollWidth": 430,
+      "workspaceWidth": 430,
+      "workspaceContentWidth": 430,
+      "overflowing": []
+    },
+    {
+      "position": "population-return",
+      "height": 932,
+      "width": 430,
+      "scrollWidth": 430,
+      "workspaceWidth": 430,
+      "workspaceContentWidth": 430,
+      "overflowing": []
+    },
+    {
+      "position": "resource-reward",
+      "height": 932,
+      "width": 430,
+      "scrollWidth": 430,
+      "workspaceWidth": 430,
+      "workspaceContentWidth": 430,
+      "overflowing": []
+    },
+    {
+      "position": "portal-placement",
+      "height": 932,
+      "width": 430,
+      "scrollWidth": 430,
+      "workspaceWidth": 430,
+      "workspaceContentWidth": 430,
+      "overflowing": []
+    },
+    {
+      "position": "retreat",
+      "height": 932,
+      "width": 430,
+      "scrollWidth": 430,
+      "workspaceWidth": 430,
+      "workspaceContentWidth": 430,
+      "overflowing": []
+    },
+    {
+      "position": "bombardment",
+      "height": 932,
+      "width": 430,
+      "scrollWidth": 430,
+      "workspaceWidth": 430,
+      "workspaceContentWidth": 430,
+      "overflowing": []
+    },
+    {
+      "position": "scoring",
+      "height": 932,
+      "width": 430,
+      "scrollWidth": 430,
+      "heading": "Final standings",
+      "workspaceWidth": 430,
+      "workspaceContentWidth": 430,
+      "overflowing": []
+    },
+    {
+      "position": "workflow-diplomacy",
+      "height": 932,
+      "width": 430,
+      "scrollWidth": 430,
+      "workspaceWidth": 430,
+      "workspaceContentWidth": 430,
+      "overflowing": []
+    }
+  ],
+  "pageErrors": []
+}

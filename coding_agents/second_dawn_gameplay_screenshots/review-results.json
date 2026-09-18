@@ -1,0 +1,152 @@
+{
+  "type": "Actual engine view fixtures; agent review, no human usability evidence",
+  "checks": [
+    {
+      "width": 1366,
+      "height": 768,
+      "screen": "opening",
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "screen": "midgame",
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "screen": "late",
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "screen": "research",
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "screen": "blueprints",
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "screen": "combat",
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "screen": "scoring",
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "screen": "opening",
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "screen": "midgame",
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "screen": "late",
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "screen": "research",
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "screen": "blueprints",
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "screen": "combat",
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "screen": "scoring",
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "screen": "opening",
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "screen": "midgame",
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "screen": "late",
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "screen": "research",
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "screen": "blueprints",
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "screen": "combat",
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "screen": "scoring",
+      "horizontalOverflow": false,
+      "verticalOverflow": false
+    }
+  ]
+}

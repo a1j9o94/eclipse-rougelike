@@ -1,0 +1,27 @@
+[
+  {
+    "position": "ancients",
+    "inspectorBottom": 686.5,
+    "planetBottoms": [
+      553.171875,
+      553.171875,
+      620.171875
+    ],
+    "allPlanetsVisible": true,
+    "text": "SECTOR INSPECTORSector 204Uncontrolled · orientation 300°FleetAncientAncients×1Planets & populationMoneyMaterialsAny resourcePopulationUncolonizedAdvancedColonization requirementsMoney · AdvancedRequires Advanced Economy, or Metasynthesis.Materials ·"
+  },
+  {
+    "position": "midgame",
+    "inspectorBottom": 686.5,
+    "planetBottoms": [
+      561.671875,
+      561.671875,
+      628.671875,
+      628.671875,
+      695.671875,
+      695.671875
+    ],
+    "allPlanetsVisible": false,
+    "text": "SECTOR INSPECTORSector 001Uncontrolled · orientation 0°FleetGCDSGalactic Center Defense System×1Planets & populationMoneyMoneyScienceScienceMaterialsMaterialsPopulationUncolonizedAdvancedColonization requirementsMoneyOnly this sector’s controller can"
+  }
+]

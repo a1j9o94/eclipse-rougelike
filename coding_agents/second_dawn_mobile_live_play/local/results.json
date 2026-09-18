@@ -1,0 +1,11 @@
+{
+  "site": "http://127.0.0.1:5175",
+  "createdSoloThroughUi": true,
+  "untimedSolo": true,
+  "draftSurvivedReload": true,
+  "explorationResolved": true,
+  "endAction": true,
+  "automaticAiActionVisible": true,
+  "expandedAiDetailsVisible": true,
+  "pageErrors": []
+}

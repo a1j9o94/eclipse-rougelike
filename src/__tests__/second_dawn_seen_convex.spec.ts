@@ -1,0 +1,47 @@
+import { webcrypto } from 'node:crypto';
+import { beforeEach, afterEach, it, expect, vi } from 'vitest';
+import { convexTest } from 'convex-test';
+import schema from '../../convex/schema';
+import { api } from '../../convex/_generated/api';
+import type { GameState } from '../../shared/eclipse/types';
+const modules = import.meta.glob('../../convex/**/*.{ts,js}');
+beforeEach(() => { vi.stubGlobal('crypto', webcrypto); vi.useFakeTimers(); });
+afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
+
+it('keeps read markers outside game revisions, authenticated and monotonic across recovered devices', async () => {
+ const t=convexTest(schema,modules);
+ const guest=await t.action(api.eclipseGuests.createGuestSession,{});
+ const {matchId}=await t.mutation(api.eclipseMatches.createMatch,guest);
+ const registered=await t.action(api.eclipsePlayers.registerPlayer,{...guest,username:'Mobile pilot'});
+ const second=await t.action(api.eclipsePlayers.loginPlayer,{username:'Mobile pilot',secret:registered.recoveryCode});
+ const before=await t.query(api.eclipseMatches.getMatchView,{...guest,matchId});
+ expect(before?.lastSeenRevision).toBeNull();
+ await t.mutation(api.eclipseMatches.markMatchSeen,{...guest,matchId,revision:0});
+ const after=await t.query(api.eclipseMatches.getMatchView,{credential:second.credential,matchId});
+ expect(after).toEqual({...before,lastSeenRevision:0});
+ expect((await t.query(api.eclipseMatches.listMyMatches,guest))[0].lastSeenRevision).toBe(0);
+ for(const revision of [-1,0.5,1]) await expect(t.mutation(api.eclipseMatches.markMatchSeen,{...guest,matchId,revision})).rejects.toThrow('revision');
+ const stranger=await t.action(api.eclipseGuests.createGuestSession,{});
+ await expect(t.mutation(api.eclipseMatches.markMatchSeen,{...stranger,matchId,revision:0})).rejects.toThrow('own');
+ expect((await t.query(api.eclipseMatches.getMatchView,{...guest,matchId}))?.lastSeenRevision).toBe(0);
+ expect((await t.query(api.eclipseMatches.getMatchHistory,{...guest,matchId}))?.entries).toEqual([]);
+});
+it('marks only accepted human submissions, not background views, rejects or future AI revisions',async()=>{
+ const t=convexTest(schema,modules);
+ const guest=await t.action(api.eclipseGuests.createGuestSession,{});
+ const {matchId}=await t.mutation(api.eclipseMatches.createMatch,guest);
+ await t.run(async ctx=>{const row=await ctx.db.get(matchId);const state=JSON.parse(row!.snapshotJson) as GameState;state.activeSeatId='seat-1';await ctx.db.patch(matchId,{snapshotJson:JSON.stringify(state)});});
+ const request={...guest,matchId,commandId:'seen-pass',expectedRevision:0,command:{type:'pass' as const}};
+ expect(await t.mutation(api.eclipseMatches.submitCommand,request)).toMatchObject({ok:true});
+ expect((await t.query(api.eclipseMatches.getMatchView,{...guest,matchId}))?.lastSeenRevision).toBe(1);
+ await t.mutation(api.eclipseMatches.markMatchSeen,{...guest,matchId,revision:0});
+ await t.run(async ctx=>{const row=await ctx.db.get(matchId);const state=JSON.parse(row!.snapshotJson) as GameState;state.revision=5;await ctx.db.patch(matchId,{snapshotJson:JSON.stringify(state),revision:5});});
+ await t.query(api.eclipseMatches.getMatchView,{...guest,matchId});
+ await t.query(api.eclipseMatches.getMatchHistory,{...guest,matchId});
+ expect(await t.mutation(api.eclipseMatches.submitCommand,request)).toMatchObject({ok:true,duplicate:true});
+ expect(await t.mutation(api.eclipseMatches.submitCommand,{...request,commandId:'stale'})).toMatchObject({ok:false});
+ expect((await t.query(api.eclipseMatches.getMatchView,{...guest,matchId}))?.lastSeenRevision).toBe(1);
+ await t.mutation(api.eclipseMatches.markMatchSeen,{...guest,matchId,revision:4});
+ await t.mutation(api.eclipseMatches.markMatchSeen,{...guest,matchId,revision:2});
+ expect((await t.query(api.eclipseMatches.getMatchView,{...guest,matchId}))?.lastSeenRevision).toBe(4);
+});
