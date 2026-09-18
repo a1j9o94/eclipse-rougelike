@@ -95,11 +95,12 @@ describe("persistent match decision controls", () => {
         reputation={[]}
       />,
     );
+    fireEvent.click(screen.getByRole("button", { name: "Retreat" }));
     fireEvent.click(screen.getByRole("button", { name: "Retreat to Sector home" }));
     expect(
       (
         screen.getByRole("button", {
-          name: "Confirm choice",
+          name: "Retreat to Sector home",
         }) as HTMLButtonElement
       ).disabled,
     ).toBe(true);
@@ -123,7 +124,8 @@ describe("persistent match decision controls", () => {
       />,
     );
     expect(screen.getByText(/cannot fire in this stalemate/i)).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Confirm choice" })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: "Roll dice" })).toBeNull();
+    expect(screen.getByText(/No legal retreat route/)).toBeTruthy();
   });
 });
 

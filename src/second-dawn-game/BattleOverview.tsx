@@ -33,10 +33,53 @@ const colors = {
   black: "#bac0ce",
 };
 type PublicVolley = NonNullable<GameEvent["combatVolley"]>;
-export function CombatPlayback({ volleys, fast = false }: { volleys: readonly PublicVolley[]; fast?: boolean }) {
-  const [skipMotion, setSkipMotion] = useState(fast);
+/** Public result cards survive the active fleet and battle being removed. */
+export function CombatPlayback({ volleys, view, knownShips = [], fast = false }: {
+  volleys: readonly PublicVolley[];
+  view?: PlayerView;
+  knownShips?: readonly Pick<Ship, "id" | "owner" | "type">[];
+  fast?: boolean;
+}) {
+  const [skipMotion, setSkipMotion] = useState(false);
   if (!volleys.length) return null;
-  return <section className={`dg-combat-playback${skipMotion ? " is-fast" : ""}`} aria-label="Recent combat impacts"><header><div><span>IMPACT LOG</span><strong>{volleys.length} resolved {volleys.length === 1 ? "volley" : "volleys"}</strong></div><button type="button" onClick={() => setSkipMotion(true)} disabled={skipMotion}>{skipMotion ? "Fast playback on" : "Skip volley animation"}</button></header>{volleys.map((volley,index)=><article className="dg-playback-volley" key={`${volley.battleId}:${volley.dice.map(die=>die.id).join(',')}:${index}`}><div className="dg-result-dice">{volley.dice.map(die=><span key={die.id} className={`is-${die.weaponColor??'unknown'}`} aria-label={`Roll ${die.face}, ${die.damage} damage`}><b>{die.face}</b><small>{die.weaponColor&&die.weaponKind?`${die.weaponColor} ${die.weaponKind}`:'weapon unavailable'}</small></span>)}</div><ul>{volley.targets.map(target=><li key={target.id}><strong>{target.id}</strong><span>{target.hpBefore} → {target.hpAfter} HP</span>{target.destroyed&&<b>Destroyed</b>}{target.excess>0&&<small>{target.excess} excess</small>}</li>)}</ul></article>)}</section>;
+  const destroyedCount = new Set(volleys.flatMap(volley => volley.targets.filter(target => target.destroyed).map(target => target.id))).size;
+  const isFast = fast || skipMotion;
+  return (
+    <section className={`dg-combat-playback${isFast ? " is-fast" : ""}`} aria-label="Recent combat impacts">
+      <header>
+        <div>
+          <span>BATTLE RESULTS</span>
+          <strong role="status" aria-atomic="true">{destroyedCount > 0 ? `${destroyedCount} ${destroyedCount === 1 ? "ship" : "ships"} destroyed` : "Volley resolved"}</strong>
+        </div>
+        <button type="button" onClick={() => setSkipMotion(true)} disabled={isFast}>{isFast ? "Fast playback on" : "Skip volley animation"}</button>
+      </header>
+      {volleys.map((volley, index) => (
+        <article className="dg-playback-volley" key={`${volley.battleId}:${volley.dice.map(die => die.id).join(",")}:${index}`}>
+          <div className="dg-result-dice">{volley.dice.map(die => <span key={die.id} className={`is-${die.weaponColor ?? "unknown"}`} aria-label={`Roll ${die.face}, ${die.damage} damage`}><b>{die.face}</b><small>{die.weaponColor && die.weaponKind ? `${die.weaponColor} ${die.weaponKind}` : "weapon unavailable"}</small></span>)}</div>
+          <ul className="dg-impact-targets">{volley.targets.map(target => {
+            const knownShip = knownShips.find(ship => ship.id === target.id) ?? view?.ships.find(ship => ship.id === target.id);
+            const type = target.shipType ?? knownShip?.type;
+            const owner = target.owner ?? knownShip?.owner;
+            const seat = view?.seats.find(candidate => candidate.id === owner);
+            const faction = seat ? getFaction(seat.faction) : undefined;
+            const ownerLabel = faction?.name ?? (owner === "ancient" || owner === "guardian" || owner === "gcds" ? neutralNames[owner] : owner);
+            const title = type ? names[type] : "Ship";
+            const outcome = target.destroyed ? "destroyed" : target.hpAfter < target.hpBefore ? "damaged" : "unharmed";
+            return <li key={target.id}>
+              <div className={`dg-impact-card is-${outcome}`} role="group" aria-label={`${title} ${outcome}`} style={faction ? { borderLeftColor: colors[faction.color] } : undefined}>
+                {type && <span className="dg-impact-ship-art">
+                  {type === "ancient" || type === "guardian" || type === "gcds" ? <NeutralShipSilhouette type={type} /> : <ShipSilhouette type={type} />}
+                  {target.destroyed && <svg className="dg-impact-destruction-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M16 16l32 32M48 16L16 48" /></svg>}
+                </span>}
+                <span className="dg-impact-copy"><strong>{title}</strong>{ownerLabel && <small>{ownerLabel}</small>}{!type && <small>{target.id}</small>}<span>{target.hpBefore} → {target.hpAfter} HP{target.excess > 0 && <small> · {target.excess} excess</small>}</span></span>
+                <b className="dg-impact-outcome">{target.destroyed ? "Destroyed" : outcome === "damaged" ? "Damaged" : "No damage"}</b>
+              </div>
+            </li>;
+          })}</ul>
+        </article>
+      ))}
+    </section>
+  );
 }
 export function NeutralShipSilhouette({
   type,
@@ -106,7 +149,7 @@ function BattleStat({
   );
 }
 /** Active engagement only; all stats come from the same public blueprints as combat. */
-export default function BattleOverview({ view, recentVolleys = [], fastPlayback = false }: { view: PlayerView; recentVolleys?: readonly NonNullable<GameEvent["combatVolley"]>[]; fastPlayback?: boolean }) {
+export default function BattleOverview({ view, recentVolleys = [], knownShips = [], fastPlayback = false }: { view: PlayerView; recentVolleys?: readonly NonNullable<GameEvent["combatVolley"]>[]; knownShips?: readonly Pick<Ship, "id" | "owner" | "type">[]; fastPlayback?: boolean }) {
   const battle = view.battle;
   if (!battle) return null;
   const inSector = view.ships.filter((s) => s.sectorId === battle.sectorId);
@@ -135,7 +178,7 @@ export default function BattleOverview({ view, recentVolleys = [], fastPlayback 
           {battle.engagement > 0 ? `· Round ${battle.engagement}` : ""}
         </span>
       </header>
-      <CombatPlayback volleys={recentVolleys} fast={fastPlayback} />
+      <CombatPlayback volleys={recentVolleys} view={view} knownShips={knownShips} fast={fastPlayback} />
       <div className="dg-battle-sides">
         {(
           [

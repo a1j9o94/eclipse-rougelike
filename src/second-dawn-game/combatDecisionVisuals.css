@@ -43,3 +43,21 @@
 @keyframes dg-die-settle{0%{opacity:.35;transform:translateY(-10px) rotate(-4deg)}65%{transform:translateY(2px) rotate(1deg)}100%{opacity:1;transform:none}}@media(prefers-reduced-motion:reduce){.dg-volley-die{transition:none;animation:none}.dg-volley-die:hover,.dg-volley-die:focus-visible{transform:none}}
 .dg-volley-result{display:grid;gap:7px;margin:7px 0;padding:8px;border:1px solid #536478;border-radius:6px;background:#101c28}.dg-result-dice{display:flex;flex-wrap:wrap;gap:5px}.dg-result-dice>span{display:grid;place-items:center;min-width:42px;padding:4px;border:1px solid #607286;border-radius:4px}.dg-result-dice b{font-size:18px}.dg-result-dice small{font-size:8px;color:#adc0d1}.dg-volley-result ul{display:grid;gap:4px;margin:0;padding:0;list-style:none}.dg-volley-result li{display:flex;gap:8px;align-items:center;font-size:10px;color:#bdcbd8}.dg-volley-result li b{color:#e89c91}.dg-volley-result li small{color:#e3c477}
 .dg-volley-die.is-auto-miss{opacity:.55;border-style:dashed}
+
+.dg-combat-turn {padding:16px;border:1px solid #768798;border-radius:10px;background:radial-gradient(ellipse at 0 0,#24364b,#111d2b 75%)}
+.dg-combat-turn-heading {display:flex;align-items:center;gap:14px}
+.dg-combat-turn-heading>.dg-ship-silhouette {width:58px;height:58px;flex:none;color:#e8c879}
+.dg-combat-turn-heading h2 {margin:2px 0 12px;text-transform:none}
+.dg-combat-turn-heading .sd-eyebrow {margin:0}
+.dg-combat-turn-actions {display:flex;gap:10px;flex-wrap:wrap}
+.dg-combat-turn-actions>button {min-height:48px;min-width:130px;font-size:16px}
+.dg-combat-turn-actions>.sd-primary {flex:1}
+.dg-combat-retreat-options {margin-top:14px}
+.dg-combat-retreat-options>p {color:#c7d6e4;line-height:1.5}
+.dg-combat-retreat-options>.dg-retreat-cards {margin-bottom:10px}
+.dg-retreat-card:disabled,.dg-fight-card:disabled {opacity:.5;cursor:not-allowed}
+@media(max-width:600px){.dg-combat-turn {padding:12px}.dg-combat-turn-actions>button {min-width:100px}}
+.dg-combat-aftermath {position:relative;z-index:2;margin:12px;padding:12px;border:1px solid #80665c;border-radius:8px;background:#101b28;max-height:42vh;overflow:auto}
+.dg-combat-aftermath-heading {display:flex;align-items:center;justify-content:space-between;gap:10px;color:#e5d3b9}
+.dg-combat-aftermath-heading button {min-height:44px}
+.dg-combat-turn+.dg-battle-overview,.dg-combat-allocation+.dg-battle-overview {margin-top:14px}

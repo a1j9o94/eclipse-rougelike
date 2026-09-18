@@ -50,7 +50,8 @@ import MovementPlanner from "./MovementPlanner";
 import FundingPlanSelector from "./FundingPlanSelector";
 import {fundedCandidates} from "./fundedCandidates";
 import {fundingOptions} from "../../shared/eclipse/funding";
-import BattleOverview from "./BattleOverview";
+import BattleOverview, {CombatPlayback} from "./BattleOverview";
+import {latestCombatPlayback} from "./combatPlayback";
 import DiplomacyPanel from "./DiplomacyPanel";
 import { runningScore } from "./runningScore";
 import ShipPartStats from "./ShipPartStats";
@@ -187,6 +188,10 @@ function SecondDawnBoardContent({
   const [screen, setScreen] = useActionDraftState('screen',
     view.phase === "finished" ? "Scoring" : "Galaxy",
   );
+  const playback = latestCombatPlayback(view, history?.entries ?? []);
+  const [dismissedCombatRevision,setDismissedCombatRevision] = useState<number|null>(null);
+  const knownShips = useRef(new Map(view.ships.map(ship=>[ship.id,ship])));
+  useEffect(()=>{for(const ship of view.ships)knownShips.current.set(ship.id,ship);},[view.ships]);
   const pendingId = view.pendingDecision?.id;
   const explorationPosition=view.pendingDecision?.kind==='exploration'?view.pendingDecision.position:null;
   const lastExplorationPosition=useRef(explorationPosition);
@@ -248,7 +253,7 @@ function SecondDawnBoardContent({
   useLayoutEffect(()=>{if(!compact||!workspaceRef.current)return;const element=workspaceRef.current;const measure=()=>{const rect=element.getBoundingClientRect();if(rect.height>0){setMobileWorkspaceTop(Math.ceil(rect.top)+4);setMobileBottomInset(Math.ceil(window.innerHeight-rect.bottom));}};measure();const observer=typeof ResizeObserver==='undefined'?null:new ResizeObserver(measure);observer?.observe(element);window.addEventListener('resize',measure);return()=>{observer?.disconnect();window.removeEventListener('resize',measure);};},[compact]);
   const actionPanelRef = useRef<HTMLDivElement>(null);
   const [actionFocus,setActionFocus]=useState(0);
-  useLayoutEffect(() => { if (workspaceRef.current) workspaceRef.current.scrollTop = 0; }, [screen, editing, playerId]);
+  useLayoutEffect(() => { if (workspaceRef.current) workspaceRef.current.scrollTop = 0; }, [screen, editing, playerId, pendingId]);
   useLayoutEffect(() => { if (inspectorRef.current) inspectorRef.current.scrollTop = 0; }, [screen, selected, researchSelection]);
   useLayoutEffect(()=>{if(!actionFocus||historyOpen)return;const inspector=inspectorRef.current,panel=actionPanelRef.current;if(inspector&&panel)inspector.scrollTop+=panel.getBoundingClientRect().top-inspector.getBoundingClientRect().top-14;},[actionFocus,historyOpen]);
   const own = view.seats.find((s) => s.id === view.viewerSeatId)!;
@@ -444,11 +449,17 @@ function SecondDawnBoardContent({
           <AiActivityBar following={followAi} onFollowChange={enabled=>{setFollowAi(enabled);setAiDismissed(false);if(!enabled)setReviewAi(false);}} humanDecision={!!view.pendingDecision} paused={!!aiFailure} actor={aiPresentation.actor} recent={aiPresentation.recent} humanTurn={!!view.pendingDecision||(!view.waitingFor&&view.activeSeatId===own.id)} finished={view.phase==='finished'} motionEnabled={motionEnabled} onMotionChange={changeMotion} onWatch={()=>{if(compact)setMobileSheet('peek');setFollowAi(true);setAiDismissed(false);setReviewAi(!aiPresentation.actor);setHistoryOpen(false);setScreen('Galaxy');setCamera(null);setFitRequest(n=>n+1);}}/>
         </aside>
         <section className="sd-main" ref={workspaceRef}>
-          {view.pendingDecision && (screen === "Galaxy" || screen === "Decision") ? (
+          {playback&&playback.volleys.some(volley=>volley.targets.some(target=>target.destroyed))&&playback.revision!==dismissedCombatRevision&&(screen==='Galaxy'||screen==='Decision')&&<div className="dg-combat-aftermath">
+            <div className="dg-combat-aftermath-heading"><strong>Last combat exchange</strong><button onClick={()=>setDismissedCombatRevision(playback.revision)}>Dismiss battle results</button></div>
+            <CombatPlayback volleys={playback.volleys} view={view} knownShips={[...knownShips.current.values()]} fast={!motionEnabled}/>
+          </div>}
+          {view.battle&&!view.pendingDecision&&(screen==='Galaxy'||screen==='Decision')?<div className="sd-workspace">
+            <p role="status">Waiting for {view.waitingFor?faction(view.waitingFor.owner)?.name??'your opponent':'your opponent'}’s combat decision.</p>
+            <BattleOverview view={view} fastPlayback={!motionEnabled} recentVolleys={playback?.volleys.some(volley=>volley.targets.some(target=>target.destroyed))?[]:playback?.volleys??[]} knownShips={[...knownShips.current.values()]}/>
+          </div>:view.pendingDecision && (screen === "Galaxy" || screen === "Decision") ? (
             <div className="sd-workspace">
               {explorationPosition&&<div className="dg-decision-location"><strong>Exploring hex {explorationPosition.q}, {explorationPosition.r}</strong><span>Rotate and place the drawn sector below.</span></div>}
               {selected&&['control','discovery','free-technology','resource-reward','ancient-part','colonization'].includes(view.pendingDecision.kind)&&<div className="dg-decision-location"><strong>Sector {sector?.tileId??selected}</strong><span>Resolve this opportunity here; your next choice stays connected to this location.</span><button onClick={()=>setInspectSector(selected)}>Inspect location</button></div>}
-              {['combat-allocation','combat-split-damage','combat-turn','retreat','initiative-order','bombardment'].includes(view.pendingDecision.kind)&&<BattleOverview view={view} fastPlayback={!motionEnabled} recentVolleys={(history?.entries[0]?.combatVolleys??(history?.entries[0]?.combatVolley?[history.entries[0].combatVolley]:[])).filter(volley=>volley.sectorId===view.battle?.sectorId)}/>}
               <DecisionPanel
                 view={view}
                 targetLabels={Object.fromEntries(
@@ -464,6 +475,7 @@ function SecondDawnBoardContent({
                 disabled={blocked}
                 onSubmit={onSubmit}
               />
+              {view.battle&&<BattleOverview view={view} fastPlayback={!motionEnabled} recentVolleys={playback?.volleys.some(volley=>volley.targets.some(target=>target.destroyed))?[]:playback?.volleys??[]} knownShips={[...knownShips.current.values()]}/>}
             </div>
           ) : compact&&screen==='Activity' ? <div className="sd-workspace dg-mobile-activity"><h1>Activity</h1>{activityRecap}<HistoryPanel feed={history??{entries:[],loading:false,hasOlder:false,loadingOlder:false,error:null,loadOlder:()=>{}}}/></div>
           : compact&&screen==='Empire' ? <div className="sd-workspace dg-mobile-empire"><h1>Your empire</h1>{draftGuard.draftKeys.length>0&&!view.pendingDecision&&<button className="dg-mobile-resume-draft" onClick={resumeSavedAction}>Resume saved action</button>}<p>Research, ships and resources</p><div className="dg-mobile-empire-grid">{[{screen:'Research',label:'Research technologies',detail:'Market & researched effects'},{screen:'Blueprints',label:'Ship blueprints',detail:'Inspect or upgrade your fleet'},{screen:'Trade',label:'Trade resources',detail:'Convert money, science or materials'},{screen:'Diplomacy',label:'Diplomacy',detail:'Ambassadors & relations'},{screen:'Scoring',label:'Score breakdown',detail:'Public points & final scoring'}].map(item=><button key={item.screen} aria-label={item.label} onClick={()=>{setScreen(item.screen);setMobileSheet('closed');if(item.screen==='Research')setAction('research');if(item.screen==='Blueprints'){setAction('upgrade');setPlayerId(own.id);}}}><strong>{item.label}</strong><small>{item.detail}</small></button>)}</div></div>

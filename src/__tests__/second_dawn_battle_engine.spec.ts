@@ -6,6 +6,8 @@ import {
 } from "../../shared/eclipse/battleEngine";
 import { initialBlueprints } from "../../shared/eclipse/blueprints";
 import { randomInt, randomSeed } from "../../shared/eclipse/random";
+import { getPlayerView, visibleEvents } from "../../shared/eclipse/protocol";
+import { projectHistoryEntry } from "../../shared/eclipse/history";
 import type {
   DecisionChoice,
   GameEvent,
@@ -347,6 +349,30 @@ describe("persisted complete battles", () => {
     const volley=events.find(event=>event.combatVolley)?.combatVolley;
     expect(volley).toMatchObject({battleId:"battle-1",attacker:"a",dice:[{sourceShipId:"a-i",weaponKind:"cannon"}],targets:[{id:"b-i"}]});
     expect(volley?.impacts).toHaveLength(d.dice.length);
+  });
+  it.each(["interceptor", "ancient"] as const)("retains destroyed %s identity in public combat history", (shipType) => {
+    const s = fixture();
+    advanceCombat(s, []);
+    expect(getPlayerView(s, "a")?.battle).toMatchObject({ id: "battle-1" });
+    choose(s, { kind: "combat-turn", retreatTo: null });
+    const d = s.pendingDecision;
+    if (d?.kind !== "combat-allocation") throw new Error("Expected saved volley");
+    const target = s.ships.find(ship => ship.id === "b-i")!;
+    const owner = shipType === "ancient" ? "ancient" : "b";
+    target.type = shipType;
+    target.owner = owner;
+    s.engine!.battle!.attacker = owner;
+    for (const die of s.engine!.battle!.dice!) { die.face = 6; die.damage = 20; }
+    const events: GameEvent[] = [];
+    const choice: DecisionChoice = { kind: "combat-allocation", allocations: d.dice.map(die => ({ dieId: die.id, targetId: target.id })) };
+    choose(s, choice, events);
+    expect(s.ships.some(ship => ship.id === target.id)).toBe(false);
+    const expected = { id: target.id, shipType, owner, destroyed: true, hpAfter: 0 };
+    expect(visibleEvents(events, "c").find(event => event.combatVolley)?.combatVolley?.targets).toEqual([expect.objectContaining(expected)]);
+    const history = projectHistoryEntry({ actor: "a", request: { commandId: "allocation", expectedRevision: 0, command: { type: "resolve", decisionId: d.id, choice } }, receipt: { commandId: "allocation", revision: 1, eventCount: events.length }, events }, s.seats);
+    expect(history.combatVolley?.targets).toEqual([expect.objectContaining(expected)]);
+    expect(history).not.toHaveProperty("random");
+    expect(history).not.toHaveProperty("privateSeats");
   });
   it("keeps retreating ships targetable until their next activation", () => {
     const s = fixture();

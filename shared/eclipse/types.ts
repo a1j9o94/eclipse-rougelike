@@ -351,7 +351,7 @@ export interface GameEvent {
     attacker: string;
     dice: { id: string; face: number; damage: number; computer: number; sourceShipId?: string; sourceShipType?: Ship["type"]; weaponKind?: "cannon" | "missile"; weaponColor?: "yellow" | "orange" | "blue" | "red" }[];
     impacts: { dieId: string; targetId: string; damage: number; hit: boolean }[];
-    targets: { id: string; hpBefore: number; hpAfter: number; excess: number; destroyed: boolean }[];
+    targets: { id: string; shipType?: Ship["type"]; owner?: string; hpBefore: number; hpAfter: number; excess: number; destroyed: boolean }[];
   };
 }
 export interface ValidationError {
@@ -435,6 +435,7 @@ export interface PlayerView {
   actionProgress?: ActionProgress | null;
   scores?: ScoreBreakdown[] | null;
   battle?: {
+    id?: string;
     sectorId: string;
     attacker: string;
     defender: string;

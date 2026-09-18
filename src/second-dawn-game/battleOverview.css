@@ -151,6 +151,67 @@
   font-size: 11px;
   margin: 6px 0;
 }
+.dg-impact-targets .dg-impact-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  padding: 9px;
+  border: 1px solid #49606f;
+  border-left-width: 4px;
+  border-radius: 5px;
+  background: #152433;
+}
+.dg-impact-targets .dg-impact-card.is-destroyed {
+  border-color: #b46e58;
+  background: radial-gradient(ellipse at 0 50%, #93442855, transparent 65%), #261c20;
+  animation: dg-ship-destroyed .65s ease-out both;
+}
+.dg-impact-ship-art {
+  position: relative;
+  flex: 0 0 54px;
+  width: 54px;
+  height: 54px;
+}
+.dg-impact-ship-art > .dg-ship-silhouette,
+.dg-impact-ship-art > .dg-battle-neutral { width: 54px; height: 54px; }
+.is-destroyed .dg-impact-ship-art > .dg-ship-silhouette,
+.is-destroyed .dg-impact-ship-art > .dg-battle-neutral { opacity: .55; }
+.dg-impact-destruction-mark {
+  position: absolute;
+  inset: 0;
+  width: 54px;
+  height: 54px;
+  fill: none;
+  stroke: #ffc09d;
+  stroke-width: 4px;
+  stroke-linecap: round;
+  filter: drop-shadow(0 1px 2px #160b04);
+}
+.dg-impact-copy { display: grid; gap: 3px; flex: 1; min-width: 0; }
+.dg-impact-copy > strong { color: #f4e7d5; font-size: 13px; }
+.dg-impact-copy > small { color: #c1c9d0; overflow-wrap: anywhere; }
+.dg-impact-copy > span { color: #d8dce0; font-size: 11px; }
+.dg-impact-copy > span > small { color: #d5ba72; }
+.dg-impact-outcome { font-size: 10px; text-transform: uppercase; letter-spacing: .04em; color: #e2c68b; }
+.is-destroyed .dg-impact-outcome { color: #ffc09d; }
+.dg-combat-playback > header > div > strong { color: #f4d6b6; font-size: 14px; }
+.dg-combat-playback.is-fast .dg-playback-volley,
+.dg-combat-playback.is-fast .dg-impact-card.is-destroyed { animation: none; }
+@keyframes dg-ship-destroyed {
+  from { box-shadow: inset 0 0 22px #eaa26088; transform: scale(.97); }
+  to { box-shadow: inset 0 0 0 #eaa26000; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dg-impact-targets .dg-impact-card.is-destroyed { animation: none; }
+}
+@media (max-width: 560px) {
+  .dg-impact-targets .dg-impact-card { flex-wrap: wrap; gap: 6px 9px; }
+  .dg-impact-outcome { margin-left: auto; }
+  .dg-combat-playback > header { flex-wrap: wrap; }
+  .dg-combat-playback > header > button { min-height: 44px; }
+}
 .dg-battle-overview .dg-battle-side h3 { margin: 0 0 6px; font-size: 12px; line-height: 1.3; }
 .dg-battle-overview .dg-battle-conditions { margin: 5px 0 0; padding: 0; font-size: 10px; }
 .dg-battle-overview .dg-battle-conditions summary { font-size: 10px; line-height: 1.2; }

@@ -495,3 +495,16 @@ Tests failing first: seen-marker Convex tests (missing metadata), activity recap
 - Evidence: [execution record](../ux_p1_execution.md). Fail-first tests drove research, affordability, and accepted/rejected movement lifecycle. Final 84 targeted tests across 15 suites, full build, changed-file lint and diff checks pass. Repository lint retains exactly its baseline 100 findings.
 - Risks/rollback: no engine, privacy, RNG, saved-game schema or deployment changes. Revert frontend slice normally. Wider draft/inspection lifecycle and human experiential acceptance remain open.
 - Handoff: do browser/device/newcomer/expert review, then continue funding/turn-label consistency and P2 build-first deployment/multi-route movement. Browser localhost access was blocked; no visual or human result claimed.
+
+## 2026-09-18 — Cross-device update and Vercel diagnosis
+- Outcome: fast-forward local main and identify deployment delays using direct remote evidence.
+- Acceptance: current remote code installed; exact live SHA confirmed; distinguish Git triggers, build waits, failures and status collisions; preserve production configuration.
+- Risk/rollback: read-only remote investigation; no redeploy, integration disconnect, paid settings change or gameplay edits.
+- Tests: existing deployment configuration/release guard tests, bounded Second Dawn suite, lint/build, live browser smoke. No new game behavior implemented. Existing failing fleet-inspection tests and TS1261 build error reproduced a case-insensitive import collision; rename the helper module without changing behavior.
+- Findings and follow-ups: see vercel_deployment_diagnosis_2026-09-18.md. Duplicate workspace status collision confirmed; substantial pre-build delay confirmed; official Vercel trigger and initialization incidents overlap the delayed deployments and are now resolved.
+
+## 2026-09-18 — Direct combat and visible ship losses
+- Outcome: combat opens at the firing decision, with one-click rolling, an explicit retreat destination choice, and recognizable destroyed-ship feedback that survives the final kill.
+- Acceptance: no Fight/Confirm staging before a roll; direct actions obey offline/busy/forced-retreat guards; legal retreat selection remains deliberate; public casualty art/identity/HP visible with reduced-motion support; matching fixtures and saved games use the same components. Push main and inspect all raw GitHub statuses to test the reinstalled Vercel app.
+- Tests first: roll/retreat command serialization and guards, combat controls before fleet details, volley retention across non-volley history and battle end, destroyed-target metadata and rendered casualty cards. Bounded suite, typecheck/build, changed-code lint, desktop/mobile browser checks.
+- Risk/rollback: additive optional public event metadata; no combat rule changes or automatic dice rolls. Keep old-event fallback. Preserve previous local Mac import/test fixes. Revert frontend commit/deployment if needed; no destructive backend changes.

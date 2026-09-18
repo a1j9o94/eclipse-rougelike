@@ -11,12 +11,12 @@ import ExplorationDecision from "./ExplorationDecision";
 import DiscoveryDecision from "./DiscoveryDecision";
 import AncientPartDecision from "./AncientPartDecision";
 import EconomyDecision from "./EconomyDecision";
+import CombatTurnDecision from "./CombatTurnDecision";
 import ColonizationPlanner from "./ColonizationPlanner";
 import {
   BombardmentTargets,
   CombatVolleyAllocator,
   InitiativeQueue,
-  RetreatCards,
 } from "./CombatDecisionVisuals";
 interface Props {
   view?: PlayerView;
@@ -120,25 +120,8 @@ export default function DecisionPanel({
       break;
     }
     case "retreat":
-      choice = {
-        kind: "retreat",
-        destinationId:
-          value("destination", "stay") === "stay" ? null : value("destination"),
-      };
-      fields = <RetreatCards view={view} destinationIds={decision.destinationIds} value={choice.destinationId} includeFight onSelect={(destination) => set("destination", destination ?? "stay")} />;
-      break;
     case "combat-turn":
-      {
-      const fallback = decision.forcedRetreat ? decision.destinationIds[0] ?? "" : "fight";
-      const destination = value("destination", fallback);
-      choice = {
-        kind: "combat-turn",
-        retreatTo: destination === "fight" ? null : destination || null,
-      };
-      valid = !decision.forcedRetreat || (choice.retreatTo !== null && decision.destinationIds.includes(choice.retreatTo));
-      fields = <RetreatCards view={view} destinationIds={decision.destinationIds} value={choice.retreatTo} includeFight={!decision.forcedRetreat} forced={decision.forcedRetreat} onSelect={(destination) => set("destination", destination ?? "fight")} />;
-      break;
-      }
+      return <CombatTurnDecision key={decision.id} decision={decision} view={view} disabled={disabled} onSubmit={onSubmit}/>;
     case "bombardment":
       valid = selected.length <= decision.hits;
       choice = { kind: "bombardment", squareIds: selected };

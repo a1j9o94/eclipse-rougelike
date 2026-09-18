@@ -1,0 +1,32 @@
+{
+  "site": "http://127.0.0.1:5173",
+  "results": [
+    {
+      "width": 1366,
+      "height": 768,
+      "rollVisibleWithoutScrolling": true,
+      "rollAccepted": true,
+      "retreatAccepted": true,
+      "casualtyText": "BATTLE RESULTS\n1 ship destroyed\nSkip volley animation\n3\nweapon unavailable\n6\nweapon unavailable\nInterceptor\nMechanema\n1 → 0 HP\nDESTROYED",
+      "pageErrors": []
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "rollVisibleWithoutScrolling": true,
+      "rollAccepted": true,
+      "retreatAccepted": true,
+      "casualtyText": "BATTLE RESULTS\n1 ship destroyed\nSkip volley animation\n3\nweapon unavailable\n6\nweapon unavailable\nInterceptor\nMechanema\n1 → 0 HP\nDESTROYED",
+      "pageErrors": []
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "rollVisibleWithoutScrolling": true,
+      "rollAccepted": true,
+      "retreatAccepted": true,
+      "casualtyText": "BATTLE RESULTS\n1 ship destroyed\nSkip volley animation\n3\nweapon unavailable\n6\nweapon unavailable\nInterceptor\nMechanema\n1 → 0 HP\nDESTROYED",
+      "pageErrors": []
+    }
+  ]
+}

@@ -486,7 +486,7 @@ function applyAllocation(
         const maximum = stats(state, target).hull + 1;
         const before = hpBefore.get(target.id) ?? 0;
         const applied = damage.get(target.id) ?? 0;
-        return { id: target.id, hpBefore: before, hpAfter: Math.max(0, before - applied), excess: Math.max(0, applied - before), destroyed: target.damage >= maximum };
+        return { id: target.id, shipType: target.type, owner: target.owner, hpBefore: before, hpAfter: Math.max(0, before - applied), excess: Math.max(0, applied - before), destroyed: target.damage >= maximum };
       }),
     },
   });

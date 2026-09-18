@@ -244,6 +244,7 @@ export function RetreatCards({
   value,
   includeFight,
   forced,
+  disabled = false,
   onSelect,
 }: {
   view?: PlayerView;
@@ -251,12 +252,13 @@ export function RetreatCards({
   value: string | null;
   includeFight: boolean;
   forced?: boolean;
+  disabled?: boolean;
   onSelect: (destination: string | null) => void;
 }) {
   return (
     <div className="dg-retreat-cards" role="group" aria-label="Battle decision">
       {includeFight && (
-        <button type="button" className={`dg-fight-card${value === null ? " is-selected" : ""}`} aria-pressed={value === null} onClick={() => onSelect(null)}>
+        <button type="button" disabled={disabled} className={`dg-fight-card${value === null ? " is-selected" : ""}`} aria-pressed={value === null} onClick={() => onSelect(null)}>
           <span className="dg-fight-emblem" aria-hidden="true" /><strong>Fight here</strong><small>Fire weapons and remain in the battle.</small>
         </button>
       )}
@@ -269,7 +271,7 @@ export function RetreatCards({
         const connection = origin && sector ? connectionBetween(mapSector(origin), mapSector(sector), hasGenerator) : "none";
         const connectionLabel = connection === "warp" ? "Warp portal link" : connection === "generator" ? "Wormhole generator route" : connection === "wormhole" ? "Paired wormholes" : "Connected retreat route";
         return (
-          <button key={id} type="button" className={`dg-retreat-card${value === id ? " is-selected" : ""}`} aria-pressed={value === id} aria-label={`Retreat to ${sectorLabel}`} onClick={() => onSelect(id)}>
+          <button key={id} type="button" disabled={disabled} className={`dg-retreat-card${value === id ? " is-selected" : ""}`} aria-pressed={value === id} aria-label={`Retreat to ${sectorLabel}`} onClick={() => onSelect(id)}>
             <span className="dg-mini-hex" aria-hidden="true">{sector?.tileId ?? "?"}</span>
             <span><strong>{sectorLabel}</strong><small>{connectionLabel}</small><small>{ownerName(view, sector?.owner ?? null)} · {fleet.length ? `${fleet.join(", ")} present` : "No ships present"}</small></span>
           </button>

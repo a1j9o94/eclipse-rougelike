@@ -3,7 +3,7 @@ import {afterEach,expect,it,vi} from 'vitest';
 import {createGame} from '../../shared/eclipse/setup';
 import {getPlayerView} from '../../shared/eclipse/protocol';
 import FleetInspection from '../second-dawn-game/FleetInspection';
-import {publicShipProfile,hitFaceDescription} from '../second-dawn-game/fleetInspection';
+import {publicShipProfile,hitFaceDescription} from '../second-dawn-game/fleetInspectionModel';
 afterEach(cleanup);
 function fixture(){const state=createGame({seed:4,seats:[{id:'a',faction:'terran-directorate',controller:'human'},{id:'b',faction:'hydran',controller:'ai'}]});return getPlayerView(state,'a')!;}
 it('compares actual selected public ships and retains neutral damage without private state',()=>{

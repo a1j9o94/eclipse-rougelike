@@ -5,7 +5,7 @@ import {TECHNOLOGIES} from '../../shared/eclipse/technologies';
 import ShipSilhouette from './ShipSilhouette';
 import {NeutralShipSilhouette} from './BattleOverview';
 import './fleetInspection.css';
-import {publicShipProfile,hitFaceDescription} from './fleetInspection';
+import {publicShipProfile,hitFaceDescription} from './fleetInspectionModel';
 export default function FleetInspection({view,sectorId,selectedShipIds,onClose,onDiplomacy,diplomacy}:{view:PlayerView;sectorId:string;selectedShipIds:readonly string[];onClose:()=>void;diplomacy?:ReactNode;onDiplomacy?:(seatId:string)=>void}){
  const panel=useRef<HTMLElement>(null);
  useEffect(()=>{const prior=document.activeElement instanceof HTMLElement?document.activeElement:null;panel.current?.focus();return()=>prior?.focus();},[]);

@@ -234,6 +234,7 @@ export function getPlayerView(
           : { ...score, reputation: 0, total: score.total - score.reputation }
       ) ?? null,
       battle: state.engine.battle ? {
+        id: state.engine.battle.id,
         sectorId: state.engine.battle.sectorId, attacker: state.engine.battle.attacker,
         defender: state.engine.battle.defender, stage: state.engine.battle.stage,
         engagement: state.engine.battle.engagement,

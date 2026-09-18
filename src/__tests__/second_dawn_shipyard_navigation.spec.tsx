@@ -9,7 +9,7 @@ afterEach(cleanup);
 it('shows current loadouts and switches all ship classes without discarding an uncommitted draft',()=>{
 const state=createGame({seed:11,warpPortals:true,seats:[{id:'a',faction:'terran-directorate',controller:'human'},{id:'b',faction:'terran-federation',controller:'ai'}]});const view=getPlayerView(state,'a')!;const submit=vi.fn();
 render(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="" onSubmit={submit} onMenu={vi.fn()}/>);
-fireEvent.click(screen.getByRole('button',{name:'Blueprints',exact:true}));
+fireEvent.click(screen.getByRole('button',{name:'Upgrade',exact:true}));
 const classes=screen.getByRole('navigation',{name:'Ship classes'});
 for(const name of ['Interceptor','Cruiser','Dreadnought','Starbase'])expect(within(classes).getByRole('button',{name})).toBeTruthy();
 expect(screen.getAllByRole('group',{name:/Ion Cannon statistics/}).length).toBeGreaterThan(0);

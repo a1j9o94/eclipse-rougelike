@@ -250,3 +250,10 @@ Added AiActionPanel.tsx and aiActionPanel.css with read-only research, current c
 
 ## Mobile resume and final integration — 2026-09-08
 Added optional ownership read markers, authenticated monotonic markMatchSeen, per-visit public recap boundaries, foreground/reconnect revalidation, mobile launcher/profile/faction access and live/preview receipt integration. Shared domain rules and deployed game snapshots remain unchanged. Shell/draft/map agents completed their bounded scopes; root fixed exploration connection sizing, trade width and mobile AI retry after actual review. Feature branch: feature/second-dawn-mobile. Result and evidence: second_dawn_mobile_release.md; physical Android/iPhone feedback remains separate from browser verification.
+
+## Combat casualty provenance — 2026-09-18
+
+- Outcome: destroyed player and neutral ships retain their public class and owner for visible casualty feedback, including after reconnect.
+- Added optional `shipType`/`owner` to public volley targets and additive `PlayerView.battle.id` to distinguish successive engagements in one sector. Target references are captured before ship removal; history contains their identity after removal.
+- TDD: two new player/Ancient destruction and public projection cases first failed on missing battle identity, then passed; complete battle/history batch: 30 tests green. Existing private-event exclusion tests remain green.
+- Backend deployment is required to produce new journal metadata; old persisted entries remain valid because new fields are optional. No rules, random draws, or hidden state added.
