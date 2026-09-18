@@ -324,7 +324,7 @@ function SecondDawnBoardContent({
   const buildPlanner=<BuildPlanner embedded view={view} defaultPlacementSectorId={buildHereSector} sectorId={buildHereSector} placementRequest={buildPlacement} onLegalTargetsChange={setBuildTargets} disabled={blocked||!!lastAcceptedCommand&&lastAcceptedCommand.revision>view.revision} onClose={()=>{setBuildOpen(false);setBuildTargets([]);}} onSubmit={command=>{const action=command.type==='trade-and-act'?command.action:command;pendingBuild.current={receipt:lastAcceptedCommand,type:command.type,count:action.type==='build'?action.builds.length:0};onSubmit(command);}}/>;
   return (
     <main className={`sd-app dg-app dg-tabletop${buildOpen&&screen==='Galaxy'?' dg-build-mode':''}${compact?' dg-mobile-board':''}`} data-motion={motionEnabled?'on':'off'} data-mobile-screen={compact?screen:undefined} style={compact?{"--mobile-sheet-top":`${mobileWorkspaceTop}px`,"--mobile-footer-height":`${mobileBottomInset}px`}as CSSProperties:undefined}>
-      {compact?<MobileHeader view={view} connected={connected} busy={busy} score={ownScore.total} turnClock={turnClock} onMenu={onMenu} onScore={()=>{setScreen('Scoring');setMobileSheet('closed');setMobileActionMode(false);}}/>:<header className="sd-header">
+      {compact?<MobileHeader view={view} connected={connected} busy={busy} score={ownScore.total} turnClock={turnClock} onMenu={onMenu} onScore={()=>{setScreen('Scoring');setMobileSheet('closed');setMobileActionMode(false);}}/>:<><header className="sd-header">
         <div className="sd-brand">
           <span className="sd-eclipse" />
           <div>
@@ -357,9 +357,6 @@ function SecondDawnBoardContent({
         <button className="dg-running-score" onClick={() => setScreen("Scoring")} title="Open the scoring breakdown. Reputation is excluded until game end.">
           <small>{view.phase === "finished" ? "Your final score" : "Your public VP"}</small><strong>{ownScore.total}<span>VP</span></strong>
         </button>
-      </header>}
-      {!view.pendingDecision&&<div className="dg-board-draft-notice"><ActionDraftNotice/></div>}
-      {!compact&&<div className="sd-toolbar">
         <nav aria-label="Game screens">
           {[
             "Galaxy",
@@ -404,7 +401,8 @@ function SecondDawnBoardContent({
           </span>
           <button onClick={onMenu}>{menuLabel}</button>
         </div>
-      </div>}
+      </header></>}
+      {!view.pendingDecision&&<div className="dg-board-draft-notice"><ActionDraftNotice/></div>}
       <div className="sd-layout">
         <aside className="sd-players">
           <div
