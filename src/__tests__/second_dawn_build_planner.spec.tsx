@@ -1,133 +1,17 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
-import BuildPlanner from "../second-dawn-game/BuildPlanner";
-import { createGame } from "../../shared/eclipse/setup";
-import { getPlayerView } from "../../shared/eclipse/protocol";
-import { processGameCommand } from "../../shared/eclipse/engine";
-import type { GameCommand } from "../../shared/eclipse/types";
-const fixture = () => {
-  const state = createGame({
-    seed: 42,
-    seats: [
-      { id: "a", faction: "terran-directorate", controller: "human" },
-      { id: "b", faction: "hydran", controller: "ai" },
-    ],
-  });
-  state.activeSeatId = "a";
-  state.seats[0].resources = { money: 20, materials: 20, science: 0 };
-  return {
-    state,
-    view: getPlayerView(state, "a")!,
-    sectorId: state.sectors.find((s) => s.owner === "a")!.id,
-  };
-};
-describe("visual build planner", () => {
-  it("submits one real multi-ship order and respects the activation budget", () => {
-    const f = fixture();
-    const submit = vi.fn();
-    render(
-      <BuildPlanner
-        {...f}
-        disabled={false}
-        onClose={() => {}}
-        onSubmit={submit}
-      />,
-    );
-    expect(screen.getByRole("dialog")).toBeVisible();
-    fireEvent.click(screen.getByRole("button", { name: "Add interceptor" }));
-    fireEvent.click(screen.getByRole("button", { name: "Add cruiser" }));
-    expect(
-      screen.getByRole("button", { name: "Add interceptor" }),
-    ).toBeDisabled();
-    fireEvent.click(screen.getByRole("button", { name: "Confirm build" }));
-    expect(submit).toHaveBeenCalledTimes(1);
-    const command = submit.mock.calls[0][0] as GameCommand;
-    expect(command).toMatchObject({
-      type: "build",
-      builds: [{ component: "interceptor" }, { component: "cruiser" }],
-    });
-    expect(processGameCommand(f.state, "a", command).ok).toBe(true);
-  });
-  it("shows technology and finite supply reasons and does not submit while disconnected", () => {
-    const f = fixture();
-    f.view.seats[0].technologies = { military: [], grid: [], nano: [] };
-    f.view.ships.push(
-      ...Array.from({ length: 7 }, (_, i) => ({
-        ...f.view.ships.find((s) => s.owner === "a")!,
-        id: `extra-${i}`,
-      })),
-    );
-    const submit = vi.fn();
-    render(
-      <BuildPlanner {...f} disabled onClose={() => {}} onSubmit={submit} />,
-    );
-    expect(screen.getByText("Research Starbase first.")).toBeVisible();
-    expect(screen.getByText("All 8 interceptors are deployed.")).toBeVisible();
-    expect(
-      screen.getByRole("button", { name: "Confirm build" }),
-    ).toBeDisabled();
-  });
-  it("converts only the missing materials atomically with a preview and permits removing a draft item", () => {
-    const f = fixture();
-    f.state.seats[0].resources = { money: 4, science: 0, materials: 1 };
-    f.view = getPlayerView(f.state, "a")!;
-    const submit = vi.fn();
-    render(
-      <BuildPlanner
-        {...f}
-        disabled={false}
-        onClose={() => {}}
-        onSubmit={submit}
-      />,
-    );
-    fireEvent.click(screen.getByRole("button", { name: "Add interceptor" }));
-    expect(screen.getByText("Conversion required")).toBeVisible();
-    expect(
-      within(
-        screen.getByRole("region", { name: "Action cost preview" }),
-      ).getByText(/money: 4 → 0/),
-    ).toBeVisible();
-    fireEvent.click(screen.getByRole("button", { name: "Remove interceptor" }));
-    expect(
-      screen.getByRole("button", { name: "Confirm build" }),
-    ).toBeDisabled();
-    fireEvent.click(screen.getByRole("button", { name: "Add interceptor" }));
-    fireEvent.click(screen.getByRole("button", { name: "Convert & build" }));
-    const command = submit.mock.calls[0][0] as GameCommand;
-    expect(command.type).toBe("trade-and-act");
-    expect(processGameCommand(f.state, "a", command).ok).toBe(true);
-  });
-  it("chooses a controlled sector with mini hex buttons and clears the local build draft", () => {
-    const f = fixture();
-    const first = f.state.sectors.find((sector) => sector.id === f.sectorId)!;
-    f.state.sectors.push({ ...first, id: "second-yard", tileId: "305", position: { q: first.position.q + 2, r: first.position.r }, population: [] });
-    f.view = getPlayerView(f.state, "a")!;
-    const submit = vi.fn();
-    render(<BuildPlanner {...f} disabled={false} onClose={() => {}} onSubmit={submit} />);
-    expect(screen.queryByRole("combobox", { name: "Build sector" })).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Add interceptor" }));
-    fireEvent.click(screen.getByRole("button", { name: "Build in sector 305" }));
-    expect(screen.getByLabelText("Interceptor quantity")).toHaveTextContent("0");
-    fireEvent.click(screen.getByRole("button", { name: "Add interceptor" }));
-    fireEvent.click(screen.getByRole("button", { name: "Confirm build" }));
-    expect(submit.mock.calls[0][0]).toMatchObject({ builds: [{ sectorId: "second-yard", component: "interceptor" }] });
-  });
+import { fireEvent, render, screen, within } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+import BuildPlanner from '../second-dawn-game/BuildPlanner';
+import { createGame } from '../../shared/eclipse/setup';
+import { getPlayerView } from '../../shared/eclipse/protocol';
+import { processGameCommand } from '../../shared/eclipse/engine';
+import type { GameCommand } from '../../shared/eclipse/types';
+const fixture=()=>{const state=createGame({seed:42,seats:[{id:'a',faction:'terran-directorate',controller:'human'},{id:'b',faction:'hydran',controller:'ai'}]});state.activeSeatId='a';state.seats[0].resources={money:20,materials:20,science:0};return {state,view:getPlayerView(state,'a')!,sectorId:state.sectors.find(s=>s.owner==='a')!.id};};
+const place=(component:string,tile='221')=>fireEvent.click(screen.getByRole('button',{name:`Place ${component} in sector ${tile}`}));
+describe('visual build planner',()=>{
+ it('auto-places a new piece only for a legal Build-here shortcut',()=>{const f=fixture(),submit=vi.fn();render(<BuildPlanner {...f} defaultPlacementSectorId={f.sectorId} disabled={false} onClose={()=>{}} onSubmit={submit}/>);fireEvent.click(screen.getByRole('button',{name:'Add interceptor'}));expect(screen.getByRole('button',{name:/1. Interceptor Sector/})).toBeVisible();expect(screen.getByRole('button',{name:/Build 1 ship/})).toBeEnabled();});
+ it('assembles first, places pieces independently, and submits one atomic order',()=>{const f=fixture(),first=f.state.sectors.find(s=>s.id===f.sectorId)!;f.state.sectors.push({...first,id:'second-yard',tileId:'305',position:{q:first.position.q+2,r:first.position.r},population:[]});f.view=getPlayerView(f.state,'a')!;const submit=vi.fn();render(<BuildPlanner {...f} disabled={false} onClose={()=>{}} onSubmit={submit}/>);fireEvent.click(screen.getByRole('button',{name:'Add interceptor'}));fireEvent.click(screen.getByRole('button',{name:'Add cruiser'}));expect(screen.getByText('2 pieces still need a sector')).toBeVisible();place('cruiser','305');place('interceptor');fireEvent.click(screen.getByRole('button',{name:/Build 2 ships/}));const command=submit.mock.calls[0][0] as GameCommand;expect(command).toMatchObject({type:'build',builds:[{component:'interceptor',sectorId:f.sectorId},{component:'cruiser',sectorId:'second-yard'}]});expect(processGameCommand(f.state,'a',command).ok).toBe(true);});
+ it('publishes map ghosts and handles serial map placement requests',()=>{const f=fixture(),ghosts=vi.fn(),targets=vi.fn(),submit=vi.fn();const ui=render(<BuildPlanner {...f} embedded disabled={false} placementRequest={null} onPlacementPreview={ghosts} onLegalTargetsChange={targets} onClose={()=>{}} onSubmit={submit}/>);expect(screen.queryByRole('dialog')).toBeNull();fireEvent.click(screen.getByRole('button',{name:'Add interceptor'}));expect(ghosts.mock.calls.at(-1)?.[0]).toMatchObject({component:'interceptor',sectorId:null,items:[{component:'interceptor'}]});expect(targets.mock.calls.at(-1)?.[0]).toContain(f.sectorId);ui.rerender(<BuildPlanner {...f} embedded disabled={false} placementRequest={{sectorId:f.sectorId,serial:1}} onPlacementPreview={ghosts} onLegalTargetsChange={targets} onClose={()=>{}} onSubmit={submit}/>);expect(screen.getByRole('button',{name:/1. Interceptor Sector/})).toBeVisible();});
+ it('shows capabilities and technology or finite-supply blockers',()=>{const f=fixture();f.view.seats[0].technologies={military:[],grid:[],nano:[]};f.view.ships.push(...Array.from({length:7},(_,i)=>({...f.view.ships.find(s=>s.owner==='a')!,id:`extra-${i}`})));render(<BuildPlanner {...f} disabled onClose={()=>{}} onSubmit={()=>{}}/>);expect(screen.getByText('Research Starbase first.')).toBeVisible();expect(screen.getByText('All interceptors are deployed.')).toBeVisible();expect(screen.getByText(/Hull 1 · move 1/)).toBeVisible();});
+ it('funds the placed order atomically and supports returning a piece to the tray',()=>{const f=fixture();f.state.seats[0].resources={money:4,science:0,materials:1};f.view=getPlayerView(f.state,'a')!;const submit=vi.fn();render(<BuildPlanner {...f} disabled={false} onClose={()=>{}} onSubmit={submit}/>);fireEvent.click(screen.getByRole('button',{name:'Add interceptor'}));place('interceptor');expect(screen.getByText('Conversion required')).toBeVisible();expect(within(screen.getByRole('region',{name:'Action cost preview'})).getByText(/money: 4 → 0/)).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'Return to tray'}));expect(screen.getByRole('button',{name:/Build 1 ship/})).toBeDisabled();place('interceptor');fireEvent.click(screen.getByRole('button',{name:/Convert & Build 1 ship/}));const command=submit.mock.calls[0][0] as GameCommand;expect(command.type).toBe('trade-and-act');expect(processGameCommand(f.state,'a',command).ok).toBe(true);});
 });
-it("disables building for an eliminated seat", () => {
-  const f = fixture();
-  f.view.seats[0].eliminated = true;
-  render(
-    <BuildPlanner
-      {...f}
-      disabled={false}
-      onClose={() => {}}
-      onSubmit={() => {}}
-    />,
-  );
-  expect(
-    screen.getByRole("button", { name: "Add interceptor" }),
-  ).toBeDisabled();
-  expect(
-    screen.getByText("This civilization has been eliminated."),
-  ).toBeVisible();
-});
+it('disables building for an eliminated seat',()=>{const f=fixture();f.view.seats[0].eliminated=true;render(<BuildPlanner {...f} disabled={false} onClose={()=>{}} onSubmit={()=>{}}/>);expect(screen.getByRole('button',{name:'Add interceptor'})).toBeDisabled();expect(screen.getByText('This civilization has been eliminated.')).toBeVisible();});

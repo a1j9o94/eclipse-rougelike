@@ -23,12 +23,12 @@ describe('partitioned local action drafts', () => {
     const view=getPlayerView(state,'a')!;const sectorId=view.sectors.find(sector=>sector.owner==='a')!.id;const submit=vi.fn();
     const planner=<BuildPlanner view={view} sectorId={sectorId} disabled={false} onSubmit={submit} onClose={()=>{}}/>;
     let ui=render(<ActionDraftProvider matchId="build-match" viewerSeatId="a" revision={0}>{planner}</ActionDraftProvider>);
-    fireEvent.click(screen.getByRole('button',{name:'Add cruiser'}));ui.unmount();
+    fireEvent.click(screen.getByRole('button',{name:'Add cruiser'}));fireEvent.click(screen.getByRole('button',{name:/Place cruiser in sector/}));ui.unmount();
     ui=render(<ActionDraftProvider matchId="build-match" viewerSeatId="a" revision={1}>{planner}</ActionDraftProvider>);
-    expect(screen.getByRole('button',{name:'Confirm build'})).toBeDisabled();
+    expect(screen.getByRole('button',{name:/Build 1 ship/})).toBeDisabled();
     fireEvent.click(screen.getByRole('button',{name:'I’ve reviewed my draft'}));
-    expect(screen.getByRole('button',{name:'Confirm build'})).toBeEnabled();expect(submit).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button',{name:'Confirm build'}));expect(submit.mock.calls[0][0]).toMatchObject({type:'build',builds:[{component:'cruiser'}]});ui.unmount();
+    expect(screen.getByRole('button',{name:/Build 1 ship/})).toBeEnabled();expect(submit).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button',{name:/Build 1 ship/}));expect(submit.mock.calls[0][0]).toMatchObject({type:'build',builds:[{component:'cruiser',sectorId}]});ui.unmount();
   });
   it('restores a blueprint and selected hardpoint after refresh without installing automatically', () => {
     const submit=vi.fn();const editor=<BlueprintEditor faction="terran-directorate" blueprint={initialBlueprints('terran-directorate')[0]} technologies={[]} storedParts={[]} capacity={2} disabled={false} onSubmit={submit}/>;

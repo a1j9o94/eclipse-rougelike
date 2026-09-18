@@ -9,3 +9,4 @@
 .dg-app .dg-movement-capacity{font-weight:700;color:#e8c77f}
 .dg-app .dg-movement-confirm{display:grid;gap:7px}
 .dg-app .dg-movement-confirm button+button{background:transparent;color:#ddcfb3;border-color:#73633e;font-weight:500}
+.dg-movement-queue{display:grid;gap:6px;padding:9px;border:1px solid #526b7c;border-radius:7px;background:#102130}.dg-movement-queue h3{margin:0;font-size:14px}.dg-movement-queue>div{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;align-items:center;gap:5px;padding:6px;border-left:3px solid #83c6dd;background:#172b3a;font-size:12px}.dg-movement-queue>div.is-rejected{border-left-color:#dc8c76;background:#3b2527}.dg-movement-queue small{grid-column:1/-1;color:#f0b5a5}.dg-movement-queue button{min-height:30px;padding:3px 7px;background:transparent;color:#dce6ef;border:1px solid #63798b;border-radius:4px}

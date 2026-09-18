@@ -6,6 +6,12 @@ import type { GameCommand, PlayerView } from '../../shared/eclipse/types';
 export interface MovementShipOption { id:string; type:BlueprintShipType; label:string; range:number; reason:string|null }
 export interface MovementDestination { sectorId:string; command:Extract<GameCommand,{type:'move'}>; activations:number }
 export interface MovementPlan { ships:MovementShipOption[]; capacity:number; leaveCapacity:number; destinations:MovementDestination[]; message:string|null }
+/** A reversible public route draft. It intentionally contains no hidden state. */
+export interface MovementRouteDraft { sourceSectorId:string; shipIds:string[]; destinationSectorId:string }
+export interface MovementRoutePreview {
+ draft:MovementRouteDraft; status:'valid'|'rejected'; message:string|null; command:Extract<GameCommand,{type:'move'}>|null; paths:Extract<GameCommand,{type:'move'}>['moves']; activations:number;
+}
+export interface QueuedMovementPlan { routes:MovementRoutePreview[]; command:Extract<GameCommand,{type:'move'}>; remainingCapacity:number; message:string|null; projectedView:PlayerView }
 function shortestPath(player:string,shipId:string,target:string,sectors:MovementSector[],ships:MovementShip[],abilities:MovementAbilities,maxActivations:number,neighbors:ReadonlyMap<string,readonly string[]>):string[]|null {
  const ship=ships.find(s=>s.id===shipId)!;const queue:string[][]=[[]];const seen=new Set([ship.sectorId]);
  // One BFS visit per sector. Other ships stay fixed during this ship's route,
@@ -22,10 +28,11 @@ function shortestPath(player:string,shipId:string,target:string,sectors:Movement
 }
 function orders(ids:readonly string[]):string[][] {return ids.length<2?[Array.from(ids)]:ids.flatMap(id=>orders(ids.filter(other=>other!==id)).map(rest=>[id,...rest]));}
 /** Public information only. Each planned move relocates its ship before validating the next, matching the authoritative command. */
-export function movementPlan(view:PlayerView,sourceSectorId:string|null,selectedShipIds:readonly string[]):MovementPlan {
+export function movementPlan(view:PlayerView,sourceSectorId:string|null,selectedShipIds:readonly string[],capacityOverride?:number):MovementPlan {
  const seat=view.seats.find(s=>s.id===view.viewerSeatId)!;const progress=view.actionProgress;
  const canAct=view.phase==='action'&&view.activeSeatId===seat.id&&!view.pendingDecision&&!view.waitingFor&&!seat.eliminated;
- const capacity=!canAct?0:progress?(progress.owner===seat.id&&progress.action==='move'?progress.remaining:0):seat.influenceOnTrack>0?actionCapacity(seat,'move'):0;
+ const availableCapacity=!canAct?0:progress?(progress.owner===seat.id&&progress.action==='move'?progress.remaining:0):seat.influenceOnTrack>0?actionCapacity(seat,'move'):0;
+ const capacity=capacityOverride===undefined?availableCapacity:Math.max(0,Math.min(capacityOverride,availableCapacity));
  const abilities=movementAbilities(seat);const sectors=view.sectors.map(mapSector);
  const neighbors=new Map(sectors.map(from=>[from.id,sectors.filter(to=>connectionBetween(from,to,abilities.wormholeGenerator)!=='none').map(to=>to.id)]));
  const fleet:MovementShip[]=view.ships.map(ship=>({id:ship.id,owner:ship.owner,sectorId:ship.sectorId,kind:ship.type,movement:ship.owner===seat.id&&ship.type!=='ancient'&&ship.type!=='guardian'&&ship.type!=='gcds'?deriveBlueprintStats(seat.faction,publicBlueprint(seat.blueprints.find(b=>b.shipType===ship.type)!)).movement:0}));
@@ -62,4 +69,26 @@ export function movementPlan(view:PlayerView,sourceSectorId:string|null,selected
   }
  }
  return {ships,capacity,leaveCapacity,destinations,message:destinations.length?null:'No shared destination is reachable with the remaining move activations and current wormhole connections. Enemy fleets may stop travel through a sector.'};
+}
+function projectMoves(view:PlayerView,command:Extract<GameCommand,{type:'move'}>):PlayerView {
+ const sectorsByShip=new Map(command.moves.map(move=>[move.shipId,move.path.at(-1)]).filter((entry):entry is [string,string]=>!!entry[1]));
+ return {...view,ships:view.ships.map(ship=>sectorsByShip.has(ship.id)?{...ship,sectorId:sectorsByShip.get(ship.id)!}:ship)};
+}
+/**
+ * Checks each queued route after applying earlier valid routes to a public-only
+ * view. Rejected rows remain in the returned list so a reconnect or revision
+ * never silently discards the player's intent.
+ */
+export function queuedMovementPlan(view:PlayerView,routes:readonly MovementRouteDraft[]):QueuedMovementPlan {
+ let projected=view;let remaining=movementPlan(view,null,[]).capacity;
+ const previews:MovementRoutePreview[]=[];const moves:Extract<GameCommand,{type:'move'}>['moves']=[];
+ for(const draft of routes){
+  const plan=movementPlan(projected,draft.sourceSectorId,draft.shipIds,remaining);
+  const destination=plan.destinations.find(item=>item.sectorId===draft.destinationSectorId);
+  if(!destination){previews.push({draft,status:'rejected',message:plan.message??'That route is no longer legal.',command:null,paths:[],activations:0});continue;}
+  previews.push({draft,status:'valid',message:null,command:destination.command,paths:destination.command.moves,activations:destination.activations});
+  moves.push(...destination.command.moves);remaining-=destination.activations;projected=projectMoves(projected,destination.command);
+ }
+ const rejected=previews.filter(route=>route.status==='rejected');
+ return {routes:previews,command:{type:'move',moves},remainingCapacity:remaining,message:rejected.length?`${rejected.length} queued ${rejected.length===1?'route needs':'routes need'} revision.`:null,projectedView:projected};
 }
