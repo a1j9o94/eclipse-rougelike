@@ -21,3 +21,8 @@ The authoritative public event now stores optional casualty shipType/owner and t
 - Frontend release uses Git push to main only. Inspect raw GitHub commit statuses after this push to determine whether the reinstalled Vercel app still triggers the former employer's duplicate workspace.
 - Also includes the previously validated local Mac import-collision repair (fleetInspectionModel.ts) and stale UI test selector updates from the diagnostic task.
 - Rollback: revert frontend change or promote previous Ready deployment; additive optional backend metadata need not be rolled back.
+
+## Main push and renewed Git connection
+- Combat commit e74fecc was merged/pushed to main after validation. Final focused combat batch:16 passed after the581-test full batch, and final build/scoped lint passed.
+- The first push after the user reinstalled Vercel's GitHub App produced no deployment or commit status in either workspace during the initial observation window. Existing current-project link still reported connected.
+- Refreshed only the intended obleton-adrian/eclipse-rougelike project's Git connection via disconnect/connect to the same GitHub repository; both operations succeeded. Project/domain/environment settings were preserved. This documentation commit provides a fresh Git push to test the renewed connection. No direct CLI frontend deployment was used.
