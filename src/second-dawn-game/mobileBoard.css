@@ -17,10 +17,10 @@
 .dg-mobile-resources > button { padding: 2px 5px; min-height: 36px; color: #efd39a; border-color: #7a6540; font-size: 18px; }
 .dg-mobile-resources > button small { color: #d1bd95; margin-left: 3px; }
 .dg-mobile-header .dg-upkeep-summary { width: 100%; padding: 5px 0; border-left: 0; border-top: 1px solid #42474a; }
-.dg-mobile-header .dg-upkeep-summary summary { display: grid; grid-template-columns: 1fr auto; column-gap: 6px; }
+.dg-mobile-header .dg-upkeep-summary summary { display: grid; grid-template-columns: minmax(0,1fr); gap: 2px; }
 .dg-mobile-header .dg-upkeep-summary summary > span { font-size: 11px; }
 .dg-mobile-header .dg-upkeep-summary summary > div { grid-column: 2; grid-row: 1 / 3; align-items: center; padding-right: 0; gap: 8px; }
-.dg-mobile-header .dg-upkeep-summary strong { font-size: 18px; }
+.dg-mobile-header .dg-upkeep-summary strong { font-size: 15px; line-height: 1.25; overflow-wrap: anywhere; }
 .dg-mobile-header .dg-upkeep-summary b { font-size: 12px; }
 .dg-mobile-header .dg-upkeep-summary summary > small { font-size: 10px; margin-top: 0; }
 .dg-mobile-header .dg-upkeep-explanation { width: min(335px,calc(100vw - 24px)); right: 0; top: 100%; max-height: 55dvh; overflow: auto; }

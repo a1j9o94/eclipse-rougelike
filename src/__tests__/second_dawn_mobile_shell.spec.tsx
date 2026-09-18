@@ -19,6 +19,9 @@ it('uses a compact Galaxy-first shell with Empire, Players and Activity navigati
  expect(screen.getByRole('heading',{name:'Your empire'})).toBeInTheDocument();
  fireEvent.click(screen.getByRole('button',{name:'Research technologies'}));
  expect(screen.getByRole('heading',{name:'Research',exact:true})).toBeInTheDocument();
+ fireEvent.click(screen.getAllByRole('button',{name:/×/})[0]);
+ expect(document.querySelector('.dg-mobile-sheet')).toHaveAttribute('data-sheet-state','closed');
+ expect(screen.getByRole('region',{name:/Research /})).toBeVisible();
 });
 it('opens actions as one visual chooser and returns to map selection for movement',()=>{
  setup();fireEvent.click(screen.getByRole('button',{name:'Choose action'}));

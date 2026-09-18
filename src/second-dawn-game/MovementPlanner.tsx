@@ -8,9 +8,9 @@ import { movementPlan } from './movementPlanning';
 import './movementPlanner.css';
 export interface MovementPlannerProps {
  view:PlayerView; sourceSectorId:string|null; selectedTargetId:string|null; disabled:boolean;
- onTargetsChange:(ids:string[])=>void; onClose:()=>void; onSubmit:(command:GameCommand)=>void;
+ result?:string; onDone?:()=>void; onTargetsChange:(ids:string[])=>void; onClose:()=>void; onSubmit:(command:GameCommand)=>void;
 }
-export default function MovementPlanner({view,sourceSectorId,selectedTargetId,disabled,onTargetsChange,onClose,onSubmit}:MovementPlannerProps){
+export default function MovementPlanner({view,sourceSectorId,selectedTargetId,disabled,result,onDone,onTargetsChange,onClose,onSubmit}:MovementPlannerProps){
  const [draft,setDraft]=useActionDraftState('movement',{source:sourceSectorId,ids:[]});
  const draftGuard=useActionDraftGuard();
  const ids=useMemo(()=>draft.source===sourceSectorId?draft.ids:[],[draft,sourceSectorId]);
@@ -24,6 +24,8 @@ export default function MovementPlanner({view,sourceSectorId,selectedTargetId,di
  const toggle=(id:string)=>setDraft({source:sourceSectorId,ids:ids.includes(id)?ids.filter(s=>s!==id):[...ids,id]});
  return <section className="dg-movement-planner" aria-label="Move fleet">
   <header><div><span className="dg-eyebrow">MOVE FLEET</span><h2>{source?`Depart sector ${source.tileId}`:'Choose a departure sector'}</h2></div><button type="button" onClick={onClose} aria-label="Close movement planner">Close</button></header>
+  {result&&<p className="dg-movement-result" role="status">{result}</p>}
+  {view.actionProgress?.owner===view.viewerSeatId&&view.actionProgress.action==='move'&&<p className="dg-movement-capacity">{plan.capacity} {plan.capacity===1?'move':'moves'} left in this action</p>}
   <p className="dg-movement-steps">1 Select ships · 2 Choose a sector on the galaxy · 3 Confirm</p>
   <p>{activations} / {plan.capacity} move activations selected{source&&plan.leaveCapacity<plan.ships.length?` · ${plan.leaveCapacity} ships can leave without being pinned`:''}</p>
   <div className="dg-movement-ships">{plan.ships.map(ship=>{const checked=ids.includes(ship.id);const locked=disabled||!!ship.reason||(!checked&&(ids.length>=plan.capacity||ids.length>=plan.leaveCapacity));return <label key={ship.id} className={`dg-movement-ship ${checked?'is-selected':''} ${locked?'is-unavailable':''}`}><input type="checkbox" checked={checked} disabled={locked} onChange={()=>toggle(ship.id)} aria-label={ship.label}/><ShipSilhouette type={ship.type}/><span><strong>{ship.label}</strong><small>{ship.range} {ship.range===1?'sector':'sectors'} per activation</small>{ship.reason&&<small className="dg-danger">{ship.reason}</small>}</span></label>;})}</div>
@@ -31,6 +33,6 @@ export default function MovementPlanner({view,sourceSectorId,selectedTargetId,di
   {!!ids.length&&!plan.message&&!destination&&<p role="status">{target?'That sector is outside the selected fleet’s legal routes.':'Choose a highlighted destination on the galaxy.'}</p>}
   {destination&&<div className="dg-movement-route"><h3>Destination · sector {target?.tileId}</h3>{ids.map(shipId=>{const moves=destination.command.moves.filter(move=>move.shipId===shipId);return <p key={shipId}><strong>{plan.ships.find(s=>s.id===shipId)?.label} <small>· {moves.length} {moves.length===1?'activation':'activations'}</small></strong><span>{[source?.tileId,...moves.flatMap(move=>move.path).map(id=>view.sectors.find(s=>s.id===id)?.tileId)].join(' → ')}</span></p>;})}</div>}
   <ActionEconomy view={view} action="move" preview={destination?previewCommand(view,destination.command):null}/>
-  <div className="dg-movement-confirm"><button type="button" disabled={disabled||draftGuard.stale||!destination} onClick={()=>{if(destination&&!draftGuard.stale)onSubmit(destination.command);}}>Confirm move{ids.length?` · ${ids.length} ${ids.length===1?'ship':'ships'}`:''}{destination?` · ${activations} ${activations===1?'activation':'activations'}`:''}</button></div>
+  <div className="dg-movement-confirm"><button type="button" disabled={disabled||draftGuard.stale||!destination} onClick={()=>{if(destination&&!draftGuard.stale)onSubmit(destination.command);}}>Confirm move{ids.length?` · ${ids.length} ${ids.length===1?'ship':'ships'}`:''}{destination?` · ${activations} ${activations===1?'activation':'activations'}`:''}</button>{onDone&&<button type="button" disabled={disabled||draftGuard.stale} onClick={onDone}>Done moving</button>}</div>
  </section>;
 }

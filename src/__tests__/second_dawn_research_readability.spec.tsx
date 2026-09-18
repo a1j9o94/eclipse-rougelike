@@ -17,7 +17,7 @@ it('explains technology behavior before selection and in its inspector without c
  expect(within(card).getByLabelText(/opening needed: 1/)).toBeTruthy();
  expect(card.textContent).toMatch(/wormhole/i);
  fireEvent.click(card);
- expect(within(screen.getByRole('complementary',{name:'Selection and action details'})).getByText(/normally both facing edges need one/)).toBeTruthy();
+ expect(within(screen.getByRole('region',{name:'Research Wormhole Generator'})).getByText(/normally both facing edges need one/)).toBeTruthy();
  const computer=screen.getByRole('button',{name:/Gluon Computer/});
  expect(within(computer).getByLabelText(/computer: \+3/)).toBeTruthy();
  expect(within(computer).getByLabelText(/energy: −2/)).toBeTruthy();

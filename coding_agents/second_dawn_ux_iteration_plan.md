@@ -259,7 +259,7 @@ Every delivery slice must implement the relevant anticipation, manipulation, com
 
 ## 6. Delivery slices and dependencies
 
-All implementation items are **not started by this plan**. The order below is the default; report any deliberate reordering with its dependency rationale.
+Implementation status is recorded in the delivery ledger below. The order below is the default; report any deliberate reordering with its dependency rationale.
 
 | Slice | Scope | Depends on | Exit evidence |
 | --- | --- | --- | --- |
@@ -276,8 +276,8 @@ Use reviewable commits within each slice; do not hold every system for one giant
 
 | Slice | Status | Branch / commit | Tests and review evidence | Next step / blocker |
 | --- | --- | --- | --- | --- |
-| P0 | Not started | — | — | Audit current main; baseline newcomer/experienced-player experience and workflows |
-| P1 | Not started | — | — | Depends on P0 |
+| P0 | Code audit complete; human baseline pending | `feature/second-dawn-ux-foundations` | [Code baseline and independent review](ux_p0_baseline.md); existing draft/receipt contracts reused | Observe unfamiliar and experienced players; broader cross-workflow inspection lifecycle remains to be implemented/verified |
+| P1 | First implementation ready for review; experience validation pending | `feature/second-dawn-ux-foundations` | [Execution and validation](ux_p1_execution.md): 84 tests across 15 suites; full build and changed-file lint pass | Browser/physical-device and human playtests; wider funding/end-action consistency remains; continue P2 after review |
 | P2 | Not started | — | — | Depends on P0/P1 |
 | P3 | Not started | — | — | Depends on shared draft/inspection contract |
 | P4 | Not started | — | — | Reuse existing allocation engine |
@@ -366,3 +366,9 @@ Do not discard saves, remove old journal fields, or rename deployed backends. Pr
 General post-commit undo, strategic auto-play, combat balance changes, battle win-probability simulation, a new tutorial campaign, and a visual rebrand are outside this iteration. Contextual learning is part of every flow; it does not require a separate tutorial campaign.
 
 During implementation, tune tray grouping, panel layout, motion timing, and sound through the playtests above. Record consequential choices here with their rationale, validation, and effect on player experience. Continue with the next incomplete slice, documenting a product or rules conflict if one arises.
+
+### 2026-09-18 — First P1 implementation
+
+Research now has a local purchase surface, explicit atomic funding, inspectable saved drafts, visible blockers, and ownership-confirmed acquisition feedback. The header leads with affordable ordinary actions and a disclosure of its assumptions; action previews use projected resources and influence. Movement remains open after accepted commands while capacity remains, keeps its departure context, shows remaining moves, and offers receipt-driven `Done moving`. Split destinations currently use consecutive commands within the same action; full multi-route batching remains P2.
+
+This bounded slice builds on the existing draft provider and engine. No engine, RNG, save-schema, privacy, or deployment configuration changed. P0 human observation was not available, so engineering proceeded from the documented code baseline; P0/P1 experiential acceptance is deliberately still pending. The supported cloud browser could not reach the local preview (`ERR_BLOCKED_BY_CLIENT`). No browser, device, newcomer, or expert-playtest pass is claimed.

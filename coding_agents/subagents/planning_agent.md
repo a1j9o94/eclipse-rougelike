@@ -486,3 +486,12 @@ Tests failing first: seen-marker Convex tests (missing metadata), activity recap
 - Acceptance: all 13 systems and build-first deployment remain covered; obsolete proposal comparisons are removed from the canonical brief; the root agent entry point states the product goal.
 - Validation: documentation content, coverage, retained engine constraints, and changed-file checks. No application code or implementation status changed; no application tests claimed.
 - Risks/rollback: documentation-only; normal revert restores the preceding brief. Future agents retain the shared rules, privacy, deterministic RNG, save compatibility, and draft/recovery contracts.
+
+
+## 2026-09-18 — First playable UX implementation slice
+
+- Outcome: local research purchase, understandable affordable-action capacity, and continuous movement planning on `feature/second-dawn-ux-foundations`.
+- Scope/acceptance: canonical [UX plan](../second_dawn_ux_iteration_plan.md) P0 code audit and bounded P1 implementation. Sol handled research, Terra handled economy, another Sol performed independent review; supervisor handled movement and integration.
+- Evidence: [execution record](../ux_p1_execution.md). Fail-first tests drove research, affordability, and accepted/rejected movement lifecycle. Final 84 targeted tests across 15 suites, full build, changed-file lint and diff checks pass. Repository lint retains exactly its baseline 100 findings.
+- Risks/rollback: no engine, privacy, RNG, saved-game schema or deployment changes. Revert frontend slice normally. Wider draft/inspection lifecycle and human experiential acceptance remain open.
+- Handoff: do browser/device/newcomer/expert review, then continue funding/turn-label consistency and P2 build-first deployment/multi-route movement. Browser localhost access was blocked; no visual or human result claimed.

@@ -1,0 +1,10 @@
+.dg-research-local{margin:1rem 0;padding:1rem;border:1px solid #947441;border-radius:10px;background:linear-gradient(135deg,rgba(42,51,66,.96),rgba(18,24,34,.98));box-shadow:0 10px 30px #0006}
+.dg-research-local>header{display:flex;align-items:start;justify-content:space-between;gap:1rem}
+.dg-research-local h2{margin:.1rem 0 .55rem}.dg-research-local .dg-tech-effect{font-size:1rem;line-height:1.45}
+.dg-research-commit{display:flex;align-items:center;flex-wrap:wrap;gap:.65rem;margin-top:1rem;padding-top:.8rem;border-top:1px solid #ffffff20}.dg-research-commit p{margin:0;flex:1 1 12rem}
+.dg-research-acquired{display:grid;gap:.25rem;margin:.7rem 0;padding:.75rem 1rem;border:1px solid #73c998;border-radius:8px;background:#173b3088;animation:dg-research-payoff .45s ease-out}
+.dg-research-draft-choice{display:flex;align-items:center;flex-wrap:wrap;gap:.6rem;padding:.7rem;border:1px solid #d5a95a66;border-radius:8px}.dg-research-draft-choice p{flex:1 1 100%;margin:0}
+.dg-research-blocker{padding:.65rem .75rem;border-left:3px solid #d5a95a;color:#f2d49d;background:#5a3b1838}
+@keyframes dg-research-payoff{from{transform:scale(.98);opacity:0}to{transform:scale(1);opacity:1}}
+@media(prefers-reduced-motion:reduce){.dg-research-acquired{animation:none}}
+@media(max-width:760px){.dg-research-local{position:relative;margin:.7rem 0;padding:.8rem}.dg-research-local>header{display:grid}.dg-research-commit{position:sticky;bottom:0;background:#131b27;padding:.75rem;z-index:2}.dg-research-commit .sd-primary{flex:1 1 100%}}

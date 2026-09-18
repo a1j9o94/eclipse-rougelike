@@ -5,7 +5,7 @@ import { BASE_FACTIONS } from "../../shared/eclipse/catalog";
 import {
   incomeForPopulationAway,
 } from "../../shared/eclipse/tracks";
-import { researchCost, TECHNOLOGIES } from "../../shared/eclipse/technologies";
+import { TECHNOLOGIES } from "../../shared/eclipse/technologies";
 import type { GameCommand, PlayerView } from "../../shared/eclipse/types";
 import { publicBlueprint } from "../../shared/eclipse/legal";
 import {
@@ -34,8 +34,6 @@ import AiActivityBar from "./AiActivityBar";
 import {useAiPresentation} from "./useAiPresentation";
 import FactionSymbol from "./FactionSymbol";
 import type {HistoryFeed} from "../second-dawn-session/useMatchHistory";
-import ResearchedTechnologies from "./ResearchedTechnologies";
-import ResearchCost,{ScienceBudget} from "./ResearchCost";
 import TradePanel from "./TradePanel";
 import InfluencePlanner from "./InfluencePlanner";
 import ColonizationPlanner from "./ColonizationPlanner";
@@ -61,6 +59,7 @@ import './mobileBoard.css';
 import {ActionDraftProvider} from './ActionDraftProvider';
 import {useActionDraftGuard,useActionDraftState} from './actionDraftContext';
 import ActionDraftNotice from './ActionDraftNotice';
+import ResearchWorkspace from './ResearchWorkspace';
 export interface CommandCandidate {
   command: GameCommand;
   label: string;
@@ -124,7 +123,8 @@ function SecondDawnBoardContent({
 }: Props) {
   const compact=useMobileLayout();
   const draftGuard=useActionDraftGuard();
-  const onSubmit=(command:GameCommand)=>{if(draftGuard.stale&&!view.pendingDecision&&!directTurnActions.includes(command.type))return;draftGuard.markSubmitted(command);submitAuthoritative(command);};
+  const submittedResearch=useRef<{id:TechnologyId;command:string}|null>(null);
+  const onSubmit=(command:GameCommand)=>{if(draftGuard.stale&&!view.pendingDecision&&!directTurnActions.includes(command.type))return;const action=command.type==='trade-and-act'?command.action:command;if(action.type==='research')submittedResearch.current={id:action.tileId as TechnologyId,command:JSON.stringify(command)};draftGuard.markSubmitted(command);submitAuthoritative(command);};
   const [mobileSheet,setMobileSheet]=useState<'closed'|'peek'|'expanded'>('closed');
   const [mobileActionsOpen,setMobileActionsOpen]=useState(false);
   const [mobileActionMode,setMobileActionMode]=useState(false);
@@ -146,6 +146,16 @@ function SecondDawnBoardContent({
   const [moveSource,setMoveSource]=useActionDraftState('moveSource',null);
   const [moveTarget,setMoveTarget]=useActionDraftState('moveTarget',null);
   const [moveTargets,setMoveTargets]=useState<string[]>([]);
+  const pendingMove=useRef<{receipt:Props['lastAcceptedCommand'];ships:number}|null>(null);
+  const [movementResult,setMovementResult]=useState('');
+  useEffect(()=>{
+    const pending=pendingMove.current;
+    if(!pending||!lastAcceptedCommand||lastAcceptedCommand===pending.receipt||lastAcceptedCommand.type!=='move'||view.revision<lastAcceptedCommand.revision)return;
+    pendingMove.current=null;
+    const continuing=view.phase==='action'&&view.activeSeatId===view.viewerSeatId&&!view.pendingDecision&&view.actionProgress?.owner===view.viewerSeatId&&view.actionProgress.action==='move'&&view.actionProgress.remaining>0;
+    setMovementResult(`${pending.ships} ${pending.ships===1?'ship moved':'ships moved'}. ${continuing?'Choose your next ships and destination.':'Movement complete.'}`);
+    if(!continuing)setMoveOpen(false);
+  },[lastAcceptedCommand,view.revision,view.phase,view.activeSeatId,view.viewerSeatId,view.pendingDecision,view.actionProgress,setMoveTarget,setMoveOpen]);
   const [influenceTargets,setInfluenceTargets]=useState<string[]>([]);
   const [selected, setSelected] = useActionDraftState('selectedSector',initialSectorId ?? null);
   const [screen, setScreen] = useActionDraftState('screen',
@@ -156,13 +166,14 @@ function SecondDawnBoardContent({
   useEffect(()=>{
     if(previousUiReceipt.current===lastAcceptedCommand)return;
     previousUiReceipt.current=lastAcceptedCommand;
+    if(lastAcceptedCommand?.type==='end-action'){setMoveOpen(false);setMoveTargets([]);}
     if(!compact||!lastAcceptedCommand)return;
     // A completed human choice resumes following; manual opponent-turn inspection stays put.
     setAiDismissed(false);
     if(directTurnActions.includes(lastAcceptedCommand.type)){
       setScreen(pendingId?'Decision':'Galaxy');setMobileSheet('closed');setMobileActionMode(false);
     }
-  },[compact,lastAcceptedCommand,pendingId,setScreen]);
+  },[compact,lastAcceptedCommand,pendingId,setScreen,setMoveOpen]);
 
   useEffect(()=>{if(!pendingId&&screen==='Decision')setScreen('Galaxy');if(view.phase==='finished')setScreen('Scoring');},[pendingId,screen,setScreen,view.phase]);
   useEffect(() => { if (pendingId) {setScreen("Decision");setMobileSheet('closed');setMobileActionsOpen(false);setMobileActionMode(false);} }, [pendingId,setScreen]);
@@ -174,6 +185,7 @@ function SecondDawnBoardContent({
   const [researchSelection, setResearchSelection] = useActionDraftState('researchSelection',
     null,
   );
+  const [acquiredResearch,setAcquiredResearch]=useState<TechnologyId|null>(null);
   const [editing, setEditing] = useActionDraftState('editing',null);
   const [blueprintDrafts, setBlueprintDrafts] = useState<{revision: number; drafts: Partial<Record<BlueprintShipType, ShipBlueprint>>}>({revision: view.revision, drafts: {}});
   const rememberBlueprintDraft = useCallback((draft: ShipBlueprint) => {
@@ -182,7 +194,7 @@ function SecondDawnBoardContent({
   const [playerId, setPlayerId] = useActionDraftState('playerId',view.viewerSeatId);
   const [camera,setCamera]=useActionDraftState('camera',null);
   const mobileRestored=useRef(false);
-  useEffect(()=>{if(!compact||mobileRestored.current)return;mobileRestored.current=true;if(!pendingId&&(draft||moveOpen||['influence','colonize'].includes(action))){setMobileActionMode(true);setMobileSheet('peek');}},[compact,pendingId,draft,moveOpen,action]);
+  useEffect(()=>{if(!compact||mobileRestored.current)return;mobileRestored.current=true;if(!pendingId&&(draft||moveOpen||['influence','colonize'].includes(action))){setMobileActionMode(true);setMobileSheet(action==='research'?'closed':'peek');}},[compact,pendingId,draft,moveOpen,action]);
   const workspaceRef = useRef<HTMLElement>(null);
   const inspectorRef = useRef<HTMLElement>(null);
   const mobileSheetBodyRef=useRef<HTMLDivElement>(null);
@@ -199,6 +211,8 @@ function SecondDawnBoardContent({
   useLayoutEffect(() => { if (inspectorRef.current) inspectorRef.current.scrollTop = 0; }, [screen, selected, researchSelection]);
   useLayoutEffect(()=>{if(!actionFocus||historyOpen)return;const inspector=inspectorRef.current,panel=actionPanelRef.current;if(inspector&&panel)inspector.scrollTop+=panel.getBoundingClientRect().top-inspector.getBoundingClientRect().top-14;},[actionFocus,historyOpen]);
   const own = view.seats.find((s) => s.id === view.viewerSeatId)!;
+  const ownedTechnologyKey=Object.values(own.technologies).flat().join('|');
+  useEffect(()=>{const submitted=submittedResearch.current;if(!submitted||!lastAcceptedCommand||!['research','trade-and-act'].includes(lastAcceptedCommand.type)||!ownedTechnologyKey.split('|').includes(submitted.id))return;submittedResearch.current=null;setAcquiredResearch(submitted.id);setDraft(current=>current&&JSON.stringify(current.command)===submitted.command?null:current);},[lastAcceptedCommand,ownedTechnologyKey,setDraft]);
   const liveScores = view.seats.map(seat => runningScore(view, seat.id).breakdown);
   const ownScore = liveScores.find(score => score.playerId === own.id)!;
   const inspectedPlayer = view.seats.find((s) => s.id === playerId) ?? own;
@@ -207,13 +221,6 @@ function SecondDawnBoardContent({
   const funded = useMemo(()=>fundedCandidates(view),[view]);
   const purchases = [...candidates,...funded];
   const available = purchases.filter((c) => (c.command.type === "trade-and-act" ? c.command.action.type : c.command.type) === action);
-  const researchEntries = (["military", "grid", "nano"] as const).flatMap(
-    (track) =>
-      own.technologies[track].map((technology) => ({
-        technology: technology as TechnologyId,
-        track,
-      })),
-  );
   const draftPreview = draft ? previewCommand(view, draft.command) : null;
   const stillLegal =
     draft &&
@@ -266,7 +273,7 @@ function SecondDawnBoardContent({
     if(restoredAction==='move')setMoveOpen(true);
     if(restoredAction==='build')setBuildOpen(true);
     if(restoredAction==='upgrade'){setPlayerId(own.id);if(!editing)setEditing((keys.find(key=>key.startsWith('blueprint-'))?.slice(10)??'interceptor')as BlueprintShipType);}
-    setMobileSheet(['research','explore','influence','colonize','move'].includes(restoredAction)?'expanded':'closed');
+    setMobileSheet(['explore','influence','colonize','move'].includes(restoredAction)?'expanded':'closed');
   };
   const mobileNavigate=(destination:MobileDestination)=>{setScreen(destination);setHistoryOpen(false);setMobileActionMode(false);setMobileActionsOpen(false);setMobileSheet('closed');setAiDismissed(true);if(destination==='Players')setPlayerId(own.id);};
   const mobileActionOptions:MobileActionOption[]=(['explore','influence','research','upgrade','build','move','colonize','trade','offer-diplomacy','discard-reputation','pass','end-action','finish-upkeep']as GameCommand['type'][]).filter(type=>!directTurnActions.includes(type)||candidates.some(candidate=>candidate.command.type===type)).map(type=>({type,label:humanize(type),description:type==='explore'?'Choose a frontier':type==='move'?'Choose ships & destination':type==='build'?'Choose a sector':type==='influence'?'Control or release sectors':type==='colonize'?'Populate your planets':type==='research'?'Technologies & effects':type==='upgrade'?'Edit ship loadouts':type==='trade'?'Convert resources':type==='pass'?'Pass for this round':'Available choices',disabled:blocked||!!view.pendingDecision||view.phase==='finished'||(view.phase!=='action'&&['explore','influence','research','upgrade','build','move'].includes(type))}));
@@ -326,10 +333,7 @@ function SecondDawnBoardContent({
                 setHistoryOpen(false);
                 setMoveOpen(false);setMoveTargets([]);
                 setScreen(name);
-                if (name === "Research") {
-                  setAction("research");
-                  setDraft(null);
-                }
+                if (name === "Research") setAction("research");
                 if (name === "Blueprints") setAction("upgrade");
               }}
             >
@@ -626,65 +630,7 @@ function SecondDawnBoardContent({
               </p>
             </div>
           ) : screen === "Research" ? (
-            <div className="sd-workspace">
-              <p className="sd-eyebrow">AVAILABLE TECHNOLOGY</p>
-              <div className="dg-research-heading"><h1>Research</h1><ScienceBudget available={own.resources.science}/></div>
-              <ResearchedTechnologies selectedId={researchSelection as TechnologyId|null} seat={own} onInspect={id=>{setResearchSelection(id);setDraft(null);if(compact)setMobileSheet('expanded');if(inspectorRef.current)inspectorRef.current.scrollTop=0;}}/>
-              <h2 className="dg-market-heading">Available technologies</h2>
-
-              <div className="sd-tech-grid">
-                {["military", "grid", "nano", "rare"].map((track) => (
-                  <section key={track}>
-                    <h2>{humanize(track)}</h2>
-                    {[...new Set(view.technologyMarket)]
-                      .filter(
-                        (id) =>
-                          TECHNOLOGIES.find((t) => t.id === id)?.track ===
-                          track,
-                      )
-                      .map((id, i) => {
-                        const tech = TECHNOLOGIES.find((t) => t.id === id)!;
-                        const costs = (["military", "grid", "nano"] as const)
-                          .map((track) =>
-                            researchCost(tech.id, track, researchEntries),
-                          )
-                          .flatMap((cost) =>
-                            cost.ok ? [cost.scienceCost] : [],
-                          );
-                        const price = costs.length ? Math.min(...costs) : null;
-                        const candidate = purchases.find((c) => {const command=c.command.type === "trade-and-act" ? c.command.action : c.command;return command.type === "research" && command.tileId === id;});
-                        return (
-                          <button
-                            className="sd-tech"
-                            title={describeTechnology(tech)}
-                            aria-pressed={researchSelection === id}
-                            key={`${id}-${i}`}
-                            onClick={() => {
-                              setAction("research");
-                              setResearchSelection(id);
-                              setDraft(candidate ?? null);
-                              if(compact){setMobileSheet('expanded');setMobileActionsOpen(false);setMobileActionMode(true);}
-                            }}
-                          >
-                            <strong>
-                              {tech.name} ×
-                              {
-                                view.technologyMarket.filter((t) => t === id)
-                                  .length
-                              }
-                            </strong>
-                            <ResearchCost cost={price} available={own.resources.science} owned={Object.values(own.technologies).flat().includes(id)} from={new Set(costs).size>1}/>
-                            <TechnologyStats technology={tech} />
-                            {candidate?.command.type === "trade-and-act" && <small className="dg-conversion-available">Conversion available</small>}
-                            {!candidate && !Object.values(own.technologies).flat().includes(id) && price !== null && own.resources.science >= price && <small>{view.activeSeatId!==own.id ? "Wait for your turn." : view.actionProgress && view.actionProgress.action!=="research" ? "Finish your current action first." : "No Research activation available."}</small>}
-
-                          </button>
-                        );
-                      })}
-                  </section>
-                ))}
-              </div>
-            </div>
+            <ResearchWorkspace view={view} purchases={purchases} selected={researchSelection as TechnologyId|null} draft={draft} disabled={blocked} stale={draftGuard.stale} stillLegal={!!stillLegal} acquired={acquiredResearch} onSelect={(id,owned)=>{setResearchSelection(id);if(compact){setMobileSheet('closed');setMobileActionsOpen(false);setMobileActionMode(!owned);}if(inspectorRef.current)inspectorRef.current.scrollTop=0;}} onDraft={setDraft} onSubmit={onSubmit}/>
           ) : (
             <>
               <div className="sd-map-heading">
@@ -716,7 +662,7 @@ function SecondDawnBoardContent({
 
           {historyOpen ? <HistoryPanel feed={history ?? {entries:[],loading:false,hasOlder:false,loadingOlder:false,error:null,loadOlder:()=>{}}}/> : showAiPanel && aiPresentation.action ? <><button onClick={()=>{setAiDismissed(true);setReviewAi(false);}}>Return to inspector</button><AiActionPanel view={view} entry={aiPresentation.action} onInspectSector={id=>{setSelected(id);setScreen('Galaxy');setAiDismissed(true);setReviewAi(false);if(compact)setMobileSheet('peek');}}/></> : moveOpen && screen === "Galaxy" ? <>
             <button onClick={()=>{setMoveSource(null);setMoveTarget(null);setMoveTargets([]);}}>Change departure sector</button>
-            <MovementPlanner key={`${view.revision}-${moveSource}`} view={view} sourceSectorId={moveSource} selectedTargetId={moveTarget} disabled={blocked} onTargetsChange={setMoveTargets} onClose={()=>{setMoveOpen(false);setMoveTargets([]);}} onSubmit={command=>{onSubmit(command);setMoveOpen(false);setMoveTargets([]);}}/>
+            <MovementPlanner key={moveSource} view={view} sourceSectorId={moveSource} selectedTargetId={moveTarget} disabled={blocked||!!lastAcceptedCommand&&lastAcceptedCommand.revision>view.revision} result={movementResult} onDone={candidates.some(candidate=>candidate.command.type==='end-action')?()=>{const command:GameCommand={type:'end-action'};if(previewCommand(view,command).betrayedPartners.length)activate('end-action');else onSubmit(command);}:undefined} onTargetsChange={setMoveTargets} onClose={()=>{setMoveOpen(false);setMoveTargets([]);}} onSubmit={command=>{pendingMove.current={receipt:lastAcceptedCommand,ships:command.type==='move'?new Set(command.moves.map(move=>move.shipId)).size:0};setMovementResult('');onSubmit(command);}}/>
           </> : screen === 'Galaxy' && action === 'influence' && !view.pendingDecision ? <InfluencePlanner key={view.revision} view={view} candidates={candidates} selectedSectorId={selected} onLegalTargetIdsChange={setInfluenceTargets} disabled={blocked} onSubmit={onSubmit}/>
           : screen === 'Galaxy' && action === 'colonize' && !view.pendingDecision ? <ColonizationPlanner key={view.revision} view={view} candidates={candidates} selectedSectorId={selected} disabled={blocked} onSubmit={onSubmit}/>
           : <>
@@ -725,16 +671,8 @@ function SecondDawnBoardContent({
           </p>
           {view.pendingDecision && screen === "Decision" ? (
             <><h2>{humanize(view.pendingDecision.kind)}</h2><p>Resolve the choice in the main panel. You can inspect technologies, ships, diplomacy, and public scores before returning to Decision.</p>{view.battle && ['combat-allocation','combat-split-damage','combat-turn','retreat','initiative-order','bombardment'].includes(view.pendingDecision.kind) && <p>Battle in sector {view.battle.sectorId}. Damage and dice are saved; your allocations and retreat remain under your control.</p>}{view.pendingDecision.kind==='reputation'&&<p>Only you can see these reputation values. Choose which tiles to keep before combat aftermath continues.</p>}</>
-          ) : screen === "Research" && researchSelection ? (
-            <>
-              <h2>
-                {TECHNOLOGIES.find((t) => t.id === researchSelection)?.name}
-              </h2>
-              <TechnologyStats technology={TECHNOLOGIES.find((t) => t.id === researchSelection)!} />
-              <p className="dg-tech-effect">
-                {describeTechnology(TECHNOLOGIES.find((t) => t.id === researchSelection)!)}
-              </p>
-            </>
+          ) : screen === "Research" ? (
+            <><h2>Research in place</h2><p>Select, compare, fund, and acquire technology in the research workspace.</p></>
           ) : screen === "Trade" ? (
             <><h2>Resource exchange</h2><p>Choose what to receive, adjust the amount, and select which resource pays for it.</p><p>Trading does not use an action disc. Your money after trading changes what you can afford at upkeep.</p></>
           ) : screen === "Blueprints" ? (
@@ -823,7 +761,7 @@ function SecondDawnBoardContent({
               <p>{screen === "Research" ? "Select a technology card to inspect its effect and research cost before confirming." : screen === "Blueprints" ? "Select a ship to compare its parts, then edit your blueprint to preview an upgrade." : "Inspect a tile to see its planets, fleets, ownership and usable connections."}</p>
             </>
           )}
-          {view.phase !== "finished" && screen !== "Trade" && ['explore','research','end-action'].includes(action) &&
+          {view.phase !== "finished" && screen !== "Trade" && ['explore','end-action'].includes(action) &&
             (!view.pendingDecision ||
               (view.pendingDecision.kind === "bankruptcy" &&
                 action === "trade") ||
@@ -963,7 +901,7 @@ function SecondDawnBoardContent({
         </div>
       </footer>}
       {compact&&status&&!/^(Saved|Saving|Applied to the isolated|Engine fixture review)/.test(status)&&<div className="dg-mobile-feedback" role="status" aria-live="polite">{status}</div>}
-      {compact&&<MobileNavigation selected={mobileDestination} onSelect={mobileNavigate} onActions={!view.pendingDecision&&view.phase!=='finished'&&view.activeSeatId===own.id&&!mobileActionMode?()=>{setMobileActionsOpen(true);setMobileSheet('expanded');setHistoryOpen(false);setAiDismissed(true);}:undefined} pending={!!view.pendingDecision&&screen!=='Decision'} onDecision={()=>{setScreen('Decision');setMobileSheet('closed');setMobileActionsOpen(false);setMobileActionMode(false);}} onConfirm={mobileActionMode&&draft?{label:draft.command.type==='trade-and-act'?'Convert & confirm':'Confirm',disabled:blocked||draftGuard.stale||!stillLegal,submit:()=>onSubmit(draft.command)}:undefined} onEndAction={mobileActionMode&&!draft&&candidates.some(candidate=>candidate.command.type==='end-action')?()=>activate('end-action'):undefined} actionLabel={mobileActionMode?`${humanize(action)}${view.actionProgress?` · ${view.actionProgress.remaining} left`:''}`:undefined} onBack={()=>{setMobileActionMode(false);setMobileSheet('closed');setMobileActionsOpen(false);setScreen('Galaxy');}} onDetails={mobileActionMode?()=>{if(action==='build')setBuildOpen(true);else setMobileSheet('expanded');}:undefined}/>}
+      {compact&&<MobileNavigation selected={mobileDestination} onSelect={mobileNavigate} onActions={!view.pendingDecision&&view.phase!=='finished'&&view.activeSeatId===own.id&&!mobileActionMode?()=>{setMobileActionsOpen(true);setMobileSheet('expanded');setHistoryOpen(false);setAiDismissed(true);}:undefined} pending={!!view.pendingDecision&&screen!=='Decision'} onDecision={()=>{setScreen('Decision');setMobileSheet('closed');setMobileActionsOpen(false);setMobileActionMode(false);}} onConfirm={mobileActionMode&&draft&&action!=='research'?{label:draft.command.type==='trade-and-act'?'Convert & confirm':'Confirm',disabled:blocked||draftGuard.stale||!stillLegal,submit:()=>onSubmit(draft.command)}:undefined} onEndAction={mobileActionMode&&!draft&&candidates.some(candidate=>candidate.command.type==='end-action')?()=>activate('end-action'):undefined} actionLabel={mobileActionMode?`${humanize(action)}${view.actionProgress?` · ${view.actionProgress.remaining} left`:''}`:undefined} onBack={()=>{setMobileActionMode(false);setMobileSheet('closed');setMobileActionsOpen(false);setScreen('Galaxy');}} onDetails={mobileActionMode?()=>{if(action==='build')setBuildOpen(true);else setMobileSheet('expanded');}:undefined}/>}
     </main>
   );
 }
