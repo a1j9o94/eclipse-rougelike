@@ -666,15 +666,17 @@
 .dg-tabletop:not(.dg-mobile-board) .sd-resource em { display: none; }
 .dg-tabletop:not(.dg-mobile-board) .dg-upkeep-summary { flex: 0 0 auto; padding-left: 8px; }
 .dg-tabletop:not(.dg-mobile-board) .dg-running-score { flex: 0 0 auto; }
-.dg-tabletop:not(.dg-mobile-board) .sd-header > nav {
+.dg-tabletop:not(.dg-mobile-board) .sd-header > .sd-actions {
   display: flex;
   align-items: center;
   gap: 2px;
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
   padding-left: 8px;
   border-left: 1px solid #66573a;
 }
-.dg-tabletop:not(.dg-mobile-board) .sd-header > nav button { min-height: 30px; padding: 4px 8px; font-size: 11px; white-space: nowrap; }
+.dg-tabletop:not(.dg-mobile-board) .sd-header > .sd-actions button { min-height: 30px; padding: 4px 8px; font-size: 11px; white-space: nowrap; }
 .dg-tabletop:not(.dg-mobile-board) .sd-header .dg-save { display: flex; align-items: center; gap: 5px; margin-left: auto; flex: 0 0 auto; white-space: nowrap; }
 .dg-tabletop:not(.dg-mobile-board) .sd-header .dg-save > span { display: none; }
 .dg-tabletop:not(.dg-mobile-board) .sd-header .dg-save button { min-height: 30px; padding: 4px 8px; font-size: 11px; }
@@ -682,6 +684,6 @@
   .dg-app.dg-tabletop:not(.dg-mobile-board) .sd-header { gap: 5px; padding-inline: 8px; }
   .dg-tabletop:not(.dg-mobile-board) .sd-turn { flex-basis: 125px; }
   .dg-tabletop:not(.dg-mobile-board) .sd-resource small { font-size: 9px; }
-  .dg-tabletop:not(.dg-mobile-board) .sd-header > nav { padding-left: 5px; }
-  .dg-tabletop:not(.dg-mobile-board) .sd-header > nav button { padding-inline: 6px; }
+  .dg-tabletop:not(.dg-mobile-board) .sd-header > .sd-actions { padding-left: 5px; }
+  .dg-tabletop:not(.dg-mobile-board) .sd-header > .sd-actions button { padding-inline: 6px; }
 }

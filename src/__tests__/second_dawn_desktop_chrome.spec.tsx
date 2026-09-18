@@ -1,4 +1,4 @@
-import { cleanup, render } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createGame } from '../../shared/eclipse/setup';
 import { getPlayerView } from '../../shared/eclipse/protocol';
@@ -13,7 +13,12 @@ it('keeps desktop navigation and session controls in one compact game bar', () =
   const { container } = render(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="" onSubmit={vi.fn()} onMenu={vi.fn()} />);
 
   const header = container.querySelector('.sd-header')!;
-  expect(header.querySelector('nav[aria-label="Game screens"]')).not.toBeNull();
+  expect(header.querySelector('.sd-actions')).not.toBeNull();
+  expect(header.querySelector('.sd-actions button')?.textContent).toBe('Explore');
   expect(header.querySelector('.dg-save button')).not.toBeNull();
   expect(container.querySelector('.sd-toolbar')).toBeNull();
+  expect(container.querySelector('.sd-footer')).toBeNull();
+
+  fireEvent.click(screen.getByRole('button', { name: 'Research', exact: true }));
+  expect(screen.getByRole('heading', { name: 'Research' })).toBeInTheDocument();
 });

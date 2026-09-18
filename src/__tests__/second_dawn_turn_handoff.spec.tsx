@@ -34,9 +34,9 @@ it('waits for a newer accepted receipt before leaving desktop Research, then pre
  expect(screen.getByRole('heading',{name:'Research'})).toBeInTheDocument();
 });
 
-it('returns a player who passes from Blueprints to Galaxy even with Follow AI off',()=>{
+it('returns a player who passes from Upgrade to Galaxy even with Follow AI off',()=>{
  const initial=actionView('upgrade'),props={...controls(initial),candidates:[...legalCommands(initial),{command:{type:'pass'} as const,label:'Pass for this round',description:''}]},rendered=render(<SecondDawnBoard view={initial} {...props}/>);
- fireEvent.click(screen.getAllByRole('button',{name:'Blueprints',exact:true})[0]);
+ fireEvent.click(screen.getAllByRole('button',{name:'Upgrade',exact:true})[0]);
  fireEvent.click(screen.getByRole('button',{name:'Follow AI'}));
  fireEvent.click(screen.getByRole('button',{name:'Pass for this round'}));
  expect(props.onSubmit).toHaveBeenCalledWith({type:'pass'});
