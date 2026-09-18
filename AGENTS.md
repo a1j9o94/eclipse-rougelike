@@ -1,5 +1,9 @@
 # Agents (Codex CLI) — Orchestrator & Sub-Agents
 
+## Current Second Dawn UX plan
+
+For the next full-game UX iteration, start with [the consolidated plan](coding_agents/second_dawn_ux_iteration_plan.md). It records the accepted interaction decisions, implementation slices, acceptance tests, and handoff ledger. The primary build flow is **choose pieces first, then deploy them to valid sectors**. This plan targets `src/second-dawn-game/`, not the legacy roguelike. Preserve the existing rules and recovery contracts, and update the plan ledger as slices are completed.
+
 ## Mission
 
 All “agents” are **Codex CLI** processes. A **Supervisor** coordinates **Planning**, **Engine/Implementation**, and **Tests** sub-agents. The Supervisor keeps CI green (tests/lint/build), spawns focused Codex jobs, and reaps completed work. Every run leaves an auditable trail under `coding_agents/`.

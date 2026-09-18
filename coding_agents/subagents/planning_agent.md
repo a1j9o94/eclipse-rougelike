@@ -467,3 +467,13 @@ Tests failing first: seen-marker Convex tests (missing metadata), activity recap
 - Risks/rollback: preserve current deployment until new build is ready; use Vercel rollback if verification fails. Do not commit local credentials or transient runtime logs.
 - Validation: bounded Second Dawn tests, full build, lint debt comparison, secret/artifact audit, Git and Vercel deployment metadata.
 - Decision: no gameplay changes. Configure deploymentEnabled for main only and a project-level non-main ignored-build guard; align dashboard build settings with the already deployed vercel.json.
+
+## 2026-09-18 — Consolidated Second Dawn UX iteration (plan only)
+
+- Outcome: players choose, preview, commit, and see results without panel hunting, unnecessary planner reopenings, or lost drafts.
+- Canonical plan: [Second Dawn UX iteration](../second_dawn_ux_iteration_plan.md). Covers research, movement, build-first multi-sector deployment, functional ship fitting, affordable actions, tactile dice allocation, opponent/neutral inspection, colonization, exploration/rewards, influence/diplomacy, funding, turn boundaries, scoring, and return recaps.
+- Acceptance criteria: complete system contracts, delivery slices P0–P5, source seams, fail-first behavioral tests, browser/human tasks, accessibility, deterministic combat, public-information boundaries, rollback, and a progress ledger are in that one plan.
+- Decision: the user's build-first correction supersedes the earlier sector-first proposal. Choose pieces, deploy them to legal sectors with a persistent tray/map, then commit once.
+- Risks & rollback: preserve rules, saves, atomic commands, unique-part conservation, and draft/reconnect behavior; presentation changes should be independently reversible. Documentation-only change can be reverted normally.
+- Tests: documentation/path/content checks for this commit only; no gameplay implementation or application-test claim. Required fail-first tests for future implementation are enumerated in the plan.
+- Status: all implementation slices not started by this plan. Reviewed source baseline ca764d429e4fe2ead0bba37eda6bf5fb83bb6879. Future agents should audit current main, start P0, and update the ledger with remote commit SHAs and evidence.
