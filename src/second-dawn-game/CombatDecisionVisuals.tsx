@@ -313,24 +313,42 @@ export function InitiativeQueue({
 
 export function BombardmentTargets({
   view,
+  neutronBombs,
   sectorId,
   squareIds,
   selected,
   hits,
   onToggle,
+  onSelect,
 }: {
   view?: PlayerView;
+  neutronBombs: boolean;
   sectorId: string;
   squareIds: readonly string[];
   selected: readonly string[];
   hits: number;
   onToggle: (id: string) => void;
+  onSelect: (ids: string[]) => void;
 }) {
   const sector = view?.sectors.find((candidate) => candidate.id === sectorId);
   const definition = sector ? sectorDefinition(Number(sector.tileId)) : undefined;
+  const allTargets = squareIds.slice(0, hits);
+  if (neutronBombs) return (
+    <div className="dg-bombardment-targets" role="group" aria-label="Neutron Bombs choice">
+      <p><strong>Neutron Bombs available.</strong> Destroy all {allTargets.length} population automatically; no bombardment dice were rolled.</p>
+      <div className="dg-bombardment-actions">
+        <button type="button" aria-pressed={selected.length > 0} onClick={() => onSelect(allTargets)}>Destroy all {allTargets.length} population with Neutron Bombs</button>
+        <button type="button" aria-pressed={selected.length === 0} onClick={() => onSelect([])}>Spare population</button>
+      </div>
+    </div>
+  );
   return (
     <div className="dg-bombardment-targets" role="group" aria-label="Population targets">
-      <p>{selected.length} / {hits} population hits assigned in Sector {sector?.tileId ?? sectorId}.</p>
+      <p>{selected.length} / {hits} population hits assigned in Sector {sector?.tileId ?? sectorId}. Population attacks are optional; choosing no targets spares all population.</p>
+      <div className="dg-bombardment-actions">
+        <button type="button" onClick={() => onSelect(allTargets)}>Destroy all available</button>
+        <button type="button" onClick={() => onSelect([])}>Spare population</button>
+      </div>
       <div className="dg-planet-target-grid">
         {squareIds.map((id) => {
           const cube = sector?.population.find((candidate) => candidate.squareId === id);

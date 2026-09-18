@@ -27,6 +27,13 @@ interface Props {
   disabled: boolean;
   onSubmit: (command: GameCommand) => void;
 }
+function activeNeutronBombs(view: PlayerView | undefined, decision: Extract<PendingDecision, { kind: "bombardment" }>): boolean {
+  const sector = view?.sectors.find(candidate => candidate.id === decision.sectorId);
+  const attacker = view?.seats.find(candidate => candidate.id === decision.owner);
+  const defender = view?.seats.find(candidate => candidate.id === sector?.owner);
+  const has = (seat: typeof attacker, technology: string) => seat ? Object.values(seat.technologies).some(track => track.includes(technology)) : false;
+  return has(attacker, "neutron-bombs") && !has(defender, "neutron-absorber");
+}
 /** Local state is an editable draft only. The outstanding decision lives in the authoritative view. */
 export default function DecisionPanel({
   decision,
@@ -38,7 +45,8 @@ export default function DecisionPanel({
   targetLabels = {},
 }: Props) {
   const [values, setValues] = useState<Record<string, string>>({});
-  const [selected, setSelected] = useState<string[]>([]);
+  const neutronBombs = decision.kind === "bombardment" && activeNeutronBombs(view, decision);
+  const [selected, setSelected] = useState<string[]>(() => neutronBombs && decision.kind === "bombardment" ? decision.squareIds.slice(0, decision.hits) : []);
   const value = (key: string, fallback = "") => values[key] ?? fallback;
   const set = (key: string, next: string) =>
     setValues((v) => ({ ...v, [key]: next }));
@@ -134,7 +142,7 @@ export default function DecisionPanel({
     case "bombardment":
       valid = selected.length <= decision.hits;
       choice = { kind: "bombardment", squareIds: selected };
-      fields = <BombardmentTargets view={view} sectorId={decision.sectorId} squareIds={decision.squareIds} selected={selected} hits={decision.hits} onToggle={toggle} />;
+      fields = <BombardmentTargets view={view} neutronBombs={neutronBombs} sectorId={decision.sectorId} squareIds={decision.squareIds} selected={selected} hits={decision.hits} onToggle={toggle} onSelect={setSelected} />;
       break;
     case "initiative-order":
       valid = selected.length === decision.groupIds.length;
@@ -156,7 +164,7 @@ export default function DecisionPanel({
           onSubmit({ type: "resolve", decisionId: decision.id, choice })
         }
       >
-        {decision.kind === "combat-allocation" ? "Resolve volley" : "Confirm choice"}
+        {decision.kind === "combat-allocation" ? "Resolve volley" : decision.kind === "bombardment" ? selected.length ? `Confirm: destroy ${selected.length} population` : "Confirm: spare population" : "Confirm choice"}
       </button>
       <p className="sd-muted">
         You may edit this choice until confirmation. Draws and rolls already

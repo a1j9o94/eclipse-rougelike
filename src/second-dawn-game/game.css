@@ -612,3 +612,36 @@
 
 .dg-decision-location{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:12px;margin-bottom:16px;border:1px solid #88734b;border-radius:8px;background:#152331}.dg-decision-location span{flex:1;min-width:150px;color:#b4c4d3;font-size:12px}.dg-decision-location button{min-height:44px}.dg-app[data-motion="off"] *, .dg-app[data-motion="off"] *::before,.dg-app[data-motion="off"] *::after{animation:none!important;transition:none!important}
 @media(min-width:761px){.dg-app.dg-tabletop.dg-build-mode .sd-layout{grid-template-columns:minmax(0,1fr) min(440px,42vw)}.dg-build-mode .sd-inspector{min-width:0;padding:10px;overflow:hidden}.dg-build-mode .sd-inspector>div,.dg-build-mode .sd-inspector>div>div{height:100%;min-height:0}.dg-build-mode .dg-build-planner.is-embedded{height:100%;min-height:0}.dg-build-mode .dg-build-planner .dg-build-body{flex:1 1 auto;overflow:auto;min-height:0}.dg-build-mode .dg-build-planner .dg-build-footer{flex:0 0 auto;position:static}.dg-build-mode .dg-build-header h2{font-size:20px}}
+
+/* Desktop chrome stays compact; the map and docked inspector take the height. */
+.dg-app.dg-tabletop:not(.dg-mobile-board) .sd-header {
+  display: grid;
+  grid-template-columns: minmax(125px,1fr) minmax(135px,1.1fr) repeat(3,minmax(70px,.7fr)) minmax(145px,1.1fr) auto;
+  gap: 16px;
+  min-height: 64px;
+  padding: 8px 16px;
+}
+.dg-tabletop:not(.dg-mobile-board) .sd-brand { min-width:0; margin:0; gap:10px; }
+.dg-tabletop:not(.dg-mobile-board) .sd-brand strong { font-size:20px; letter-spacing:4px; }
+.dg-tabletop:not(.dg-mobile-board) .sd-brand small { display:none; }
+.dg-tabletop:not(.dg-mobile-board) .sd-eclipse { width:24px; height:24px; flex:0 0 24px; }
+.dg-tabletop:not(.dg-mobile-board) .sd-turn { max-width:none; }
+.dg-tabletop:not(.dg-mobile-board) .sd-turn strong { font-size:12px; }
+.dg-tabletop:not(.dg-mobile-board) .sd-resource small,
+.dg-tabletop:not(.dg-mobile-board) .sd-turn > small { font-size:10px; }
+.dg-tabletop:not(.dg-mobile-board) .sd-resource strong { font-size:20px; line-height:1.2; }
+.dg-tabletop:not(.dg-mobile-board) .sd-resource em { display:inline; margin-left:7px; white-space:nowrap; font-size:10px; }
+.dg-tabletop:not(.dg-mobile-board) .dg-upkeep-summary { min-width:0; padding-left:12px; }
+.dg-tabletop:not(.dg-mobile-board) .dg-upkeep-summary strong { font-size:15px; margin:2px 0 0; }
+.dg-tabletop:not(.dg-mobile-board) .dg-running-score { padding:4px 10px !important; }
+.dg-tabletop:not(.dg-mobile-board) .dg-running-score strong { font-size:20px; }
+.dg-tabletop:not(.dg-mobile-board) .sd-toolbar { padding:4px 16px; }
+.dg-tabletop:not(.dg-mobile-board) .sd-toolbar nav button { padding:5px 10px; }
+.dg-app.dg-tabletop:not(.dg-mobile-board) .sd-layout { grid-template-columns:minmax(0,1fr) clamp(320px,26vw,400px); }
+.dg-tabletop:not(.dg-mobile-board) .sd-inspector { position:relative; padding:14px 16px; border-left:1px solid var(--sd-line); }
+.dg-app.dg-tabletop.dg-build-mode:not(.dg-mobile-board) .sd-layout { grid-template-columns:minmax(0,1fr) min(440px,42vw); }
+.dg-build-mode:not(.dg-mobile-board) .sd-inspector { padding:10px; }
+@media (max-width:1200px) {
+  .dg-app.dg-tabletop:not(.dg-mobile-board) .sd-header { gap:10px; }
+  .dg-tabletop:not(.dg-mobile-board) .sd-resource em { display:block; margin-left:0; }
+}
