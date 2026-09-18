@@ -357,33 +357,27 @@ function SecondDawnBoardContent({
         <button className="dg-running-score" onClick={() => setScreen("Scoring")} title="Open the scoring breakdown. Reputation is excluded until game end.">
           <small>{view.phase === "finished" ? "Your final score" : "Your public VP"}</small><strong>{ownScore.total}<span>VP</span></strong>
         </button>
-        <nav aria-label="Game screens">
-          {[
-            "Galaxy",
-            "Research",
-            "Blueprints",
-            "Players",
-            "Diplomacy",
-            "Scoring",
-            ...(view.pendingDecision ? ["Decision"] : []),
-          ].map((name) => (
-            <button
-              key={name}
-              aria-pressed={screen === name}
-              onClick={() => {
-                setReviewAi(false);setAiDismissed(true);
-                setHistoryOpen(false);
-                setMoveOpen(false);setMoveTargets([]);
-                setScreen(name);
-                if (name === "Research") setAction("research");
-                if (name === "Blueprints") setAction("upgrade");
-              }}
-            >
-              {name}
-            </button>
-          ))}
-          <button className="dg-history-toggle" aria-pressed={historyOpen} onClick={()=>setHistoryOpen(open=>!open)}>History</button>
-        </nav>
+        <div className="sd-actions" aria-label="Available actions">
+          {(
+            [
+              "explore", "influence", "research", "upgrade", "build", "move",
+              "colonize", "trade", "discard-reputation", "offer-diplomacy",
+              "pass", "end-action", "finish-upkeep",
+            ] as GameCommand["type"][]
+          )
+            .filter((type) => ["explore", "influence", "research", "upgrade", "build", "move"].includes(type) || candidates.some((candidate) => candidate.command.type === type))
+            .map((type) => (
+              <button
+                key={type}
+                aria-pressed={action === type && !view.pendingDecision && view.phase === "action"}
+                title={view.pendingDecision ? "Resolve the pending decision first." : undefined}
+                disabled={view.phase === "finished" || (directTurnActions.includes(type) && blocked) || (["explore", "influence", "research", "upgrade", "build", "move"].includes(type) && (Boolean(view.pendingDecision) || view.phase !== "action"))}
+                onClick={() => activate(type)}
+              >
+                {actionLabel(type)}
+              </button>
+            ))}
+        </div>
         <div className="dg-save">
           {aiFailure && (
             <button disabled={blocked} title={aiFailure} onClick={onRetryAi}>
@@ -399,6 +393,7 @@ function SecondDawnBoardContent({
                   : `Saved · revision ${view.revision}`
               : "Disconnected · waiting to reconnect"}
           </span>
+          <button className="dg-history-toggle" aria-pressed={historyOpen} onClick={()=>setHistoryOpen(open=>!open)}>History</button>
           <button onClick={onMenu}>{menuLabel}</button>
         </div>
       </header></>}
@@ -861,96 +856,6 @@ function SecondDawnBoardContent({
 
       <PublicInspectionModal view={view}/>
       {inspectSector&&<FleetInspection view={view} sectorId={inspectSector} selectedShipIds={movementDraft.ids.length?movementDraft.ids:[...new Set(moveRoutePreviews.flatMap(route=>route.draft.shipIds))]} onClose={()=>{setInspectSector(null);setInspectDiplomacy(null);}} onDiplomacy={setInspectDiplomacy} diplomacy={inspectDiplomacy?<DiplomacyPanel view={view} candidates={candidates} inspectedSeatId={inspectDiplomacy} disabled={blocked} onSubmit={onSubmit}/>:undefined}/>}
-      {!compact&&<footer className="sd-footer">
-        <div className="sd-actions">
-          {(
-            [
-              "explore",
-              "influence",
-              "research",
-              "upgrade",
-              "build",
-              "move",
-              "colonize",
-              "trade",
-              "discard-reputation",
-              "offer-diplomacy",
-              "pass",
-              "end-action",
-              "finish-upkeep",
-            ] as GameCommand["type"][]
-          )
-            .filter(
-              (type) =>
-                [
-                  "explore",
-                  "influence",
-                  "research",
-                  "upgrade",
-                  "build",
-                  "move",
-                ].includes(type) ||
-                candidates.some((c) => c.command.type === type),
-            )
-            .map((type) => (
-              <button
-                key={type}
-                aria-pressed={
-                  action === type &&
-                  !view.pendingDecision &&
-                  view.phase === "action"
-                }
-                title={
-                  view.pendingDecision
-                    ? "Resolve the pending decision first."
-                    : undefined
-                }
-                disabled={
-                  view.phase === "finished" ||
-                  (directTurnActions.includes(type) && blocked) ||
-                  ([
-                    "explore",
-                    "influence",
-                    "research",
-                    "upgrade",
-                    "build",
-                    "move",
-                  ].includes(type) &&
-                    (Boolean(view.pendingDecision) || view.phase !== "action"))
-                }
-                onClick={() => activate(type)}
-              >
-                {actionLabel(type)}
-              </button>
-            ))}
-        </div>
-          <div className="sd-note">
-            <small>YOUR NEXT DECISION</small>
-            <p>
-              {view.pendingDecision
-                ? humanize(view.pendingDecision.kind)
-                : view.phase === "finished"
-                  ? "Review the final scoring breakdown."
-                  : view.actionProgress
-                    ? `${humanize(view.actionProgress.action)} · ${view.actionProgress.remaining} activations remaining`
-                    : view.waitingFor
-                      ? `Waiting for ${faction(view.waitingFor.owner)?.name ?? view.waitingFor.owner}: ${humanize(view.waitingFor.kind)}`
-                      : view.activeSeatId === own.id
-                        ? "Choose an action below."
-                        : "An opponent is taking its turn."}
-            </p>
-            <p>
-              {own.colonyShipsAvailable} colony ships · {own.influenceOnTrack}{" "}
-              influence discs
-            </p>
-          </div>
-        <div className="sd-status" role="status">
-          {status ||
-            (!connected
-              ? "Submission is disabled until the server reconnects."
-              : "Every accepted command saves automatically.")}
-        </div>
-      </footer>}
       {compact&&status&&!/^(Saved|Saving|Applied to the isolated|Engine fixture review)/.test(status)&&<div className="dg-mobile-feedback" role="status" aria-live="polite">{status}</div>}
       {compact&&<MobileNavigation selected={mobileDestination} onSelect={mobileNavigate} onActions={!view.pendingDecision&&view.phase!=='finished'&&view.activeSeatId===own.id&&!mobileActionMode?()=>{setMobileActionsOpen(true);setMobileSheet('expanded');setHistoryOpen(false);setAiDismissed(true);}:undefined} pending={!!view.pendingDecision&&screen!=='Decision'} onDecision={()=>{setScreen('Decision');setMobileSheet('closed');setMobileActionsOpen(false);setMobileActionMode(false);}} onConfirm={mobileActionMode&&draft&&action!=='research'?{label:draft.command.type==='trade-and-act'?'Convert & confirm':'Confirm',disabled:blocked||draftGuard.stale||!stillLegal,submit:()=>onSubmit(draft.command)}:undefined} onEndAction={mobileActionMode&&!draft&&candidates.some(candidate=>candidate.command.type==='end-action')?()=>activate('end-action'):undefined} actionLabel={mobileActionMode?`${humanize(action)}${view.actionProgress?` · ${view.actionProgress.remaining} left`:''}`:undefined} onBack={()=>{setMobileActionMode(false);setMobileSheet('closed');setMobileActionsOpen(false);setScreen('Galaxy');}} onDetails={mobileActionMode?()=>{if(action==='build')setBuildOpen(true);else setMobileSheet('expanded');}:undefined}/>}
     </main>
