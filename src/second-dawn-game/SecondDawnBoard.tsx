@@ -132,7 +132,8 @@ function SecondDawnBoardContent({
   const publicInspection=usePublicInspection();
   const draftGuard=useActionDraftGuard();
   const submittedResearch=useRef<{id:TechnologyId;command:string}|null>(null);
-  const onSubmit=(command:GameCommand)=>{if(draftGuard.stale&&!view.pendingDecision&&!directTurnActions.includes(command.type))return;const action=command.type==='trade-and-act'?command.action:command;if(action.type==='research')submittedResearch.current={id:action.tileId as TechnologyId,command:JSON.stringify(command)};draftGuard.markSubmitted(command);submitAuthoritative(command);};
+  const submittedTurnHandoff=useRef<{receipt:Props['lastAcceptedCommand'];revision:number;type:GameCommand['type']}|null>(null);
+  const onSubmit=(command:GameCommand)=>{if(draftGuard.stale&&!view.pendingDecision&&!directTurnActions.includes(command.type))return;if(directTurnActions.includes(command.type))submittedTurnHandoff.current={receipt:lastAcceptedCommand,revision:view.revision,type:command.type};const action=command.type==='trade-and-act'?command.action:command;if(action.type==='research')submittedResearch.current={id:action.tileId as TechnologyId,command:JSON.stringify(command)};draftGuard.markSubmitted(command);submitAuthoritative(command);};
   const [mobileSheet,setMobileSheet]=useState<'closed'|'peek'|'expanded'>('closed');
   const [mobileActionsOpen,setMobileActionsOpen]=useState(false);
   const [mobileActionMode,setMobileActionMode]=useState(false);
@@ -197,15 +198,23 @@ function SecondDawnBoardContent({
   const previousUiReceipt=useRef(lastAcceptedCommand);
   useEffect(()=>{
     if(previousUiReceipt.current===lastAcceptedCommand)return;
+    const previousReceipt=previousUiReceipt.current;
     previousUiReceipt.current=lastAcceptedCommand;
+    if(lastAcceptedCommand&&(!previousReceipt||lastAcceptedCommand.revision>previousReceipt.revision)&&directTurnActions.includes(lastAcceptedCommand.type)&&!submittedTurnHandoff.current)submittedTurnHandoff.current={receipt:previousReceipt,revision:previousReceipt?.revision??-1,type:lastAcceptedCommand.type};
     if(lastAcceptedCommand?.type==='end-action'){setMoveOpen(false);setBuildOpen(false);setMoveTargets([]);}
-    if(!compact||!lastAcceptedCommand)return;
-    // A completed human choice resumes following; manual opponent-turn inspection stays put.
-    setAiDismissed(false);
-    if(directTurnActions.includes(lastAcceptedCommand.type)){
-      setScreen(pendingId?'Decision':'Galaxy');setMobileSheet('closed');setMobileActionMode(false);
-    }
-  },[compact,lastAcceptedCommand,pendingId,setScreen,setMoveOpen,setBuildOpen]);
+  },[lastAcceptedCommand,setMoveOpen,setBuildOpen]);
+
+  useEffect(()=>{
+    const pending=submittedTurnHandoff.current;
+    if(!pending||!lastAcceptedCommand||lastAcceptedCommand.revision<=pending.revision||lastAcceptedCommand.type!==pending.type||view.revision<lastAcceptedCommand.revision)return;
+    if(pendingId||view.phase==='finished'){submittedTurnHandoff.current=null;return;}
+    const controlOwner=view.waitingFor?.owner??view.activeSeatId;
+    if(controlOwner===view.viewerSeatId)return;
+    submittedTurnHandoff.current=null;
+    // This is the one acknowledged transfer of control; later activity must not undo navigation.
+    setAiDismissed(false);setReviewAi(false);setScreen('Galaxy');
+    if(compact){setMobileSheet('closed');setMobileActionMode(false);}
+  },[compact,lastAcceptedCommand,pendingId,setScreen,view.activeSeatId,view.phase,view.revision,view.viewerSeatId,view.waitingFor]);
 
   useEffect(()=>{if(!pendingId&&screen==='Decision')setScreen('Galaxy');if(view.phase==='finished')setScreen('Scoring');},[pendingId,screen,setScreen,view.phase]);
   useEffect(() => { if (pendingId) {setScreen("Decision");setMobileSheet('closed');setMobileActionsOpen(false);setMobileActionMode(false);} }, [pendingId,setScreen]);

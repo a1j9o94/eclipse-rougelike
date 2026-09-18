@@ -54,6 +54,22 @@ describe('Second Dawn round progression', () => {
     advanceRound(state, []);
     expect(state.random.draws).toBe(drawCount);
   });
+  it('offers Neutron Bombs as automatic hits against every population cube without rolling', () => {
+    const state = game(); state.phase = 'combat';
+    const home = state.sectors.find(s => s.owner === 'a')!;
+    state.seats.find(s => s.id === 'b')!.technologies.military.push('neutron-bombs');
+    state.ships = state.ships.filter(s => s.owner !== 'a');
+    state.ships.find(s => s.owner === 'b')!.sectorId = home.id;
+    const draws = state.random.draws;
+    advanceRound(state, []);
+    expect(state.pendingDecision).toMatchObject({ kind: 'bombardment', owner: 'b', sectorId: home.id, hits: home.population.length });
+    expect(state.random.draws).toBe(draws);
+    const decision = state.pendingDecision!;
+    if (decision.kind !== 'bombardment') throw new Error('Expected bombardment');
+    state.pendingDecision = null;
+    resolveAftermathChoice(state, 'b', decision, { kind: 'bombardment', squareIds: decision.squareIds }, []);
+    expect(home.population).toEqual([]);
+  });
   it('eliminates a civilization with neither ships nor sectors after combat', () => {
     const state = game(); state.phase = 'combat';
     state.ships = state.ships.filter(s => s.owner !== 'a');

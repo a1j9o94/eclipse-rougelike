@@ -36,8 +36,8 @@ it('reports passed, eliminated, and empty-disc capacity without inventing ordina
 it('leads with affordable capacity and exposes the same calculation on tap',()=>{
  const v=view();v.seats[0].resources.money=2;v.seats[0].populationTracks.money=1;v.seats[0].influenceOnTrack=10;
  render(<UpkeepSummary view={v}/>);
- expect(screen.getByText('3 more actions affordable this round')).toBeInTheDocument();
- fireEvent.click(screen.getByText('3 more actions affordable this round'));
+ expect(screen.getByText('3 actions affordable')).toBeInTheDocument();
+ fireEvent.click(screen.getByLabelText('3 more actions affordable this round'));
  expect(screen.getByText('2 money + 3 income − 1 upkeep = 4 left')).toBeInTheDocument();
  expect(screen.getByText('Forecast assumes no further trading, direct spending, territory or income changes, or special effects.')).toBeInTheDocument();
 });

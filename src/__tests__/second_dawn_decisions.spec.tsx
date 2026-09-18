@@ -2,6 +2,8 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import DecisionPanel from "../second-dawn-game/DecisionPanel";
+import { createGame } from "../../shared/eclipse/setup";
+import { getPlayerView } from "../../shared/eclipse/protocol";
 afterEach(cleanup);
 describe("persistent match decision controls", () => {
   it("keeps manual combat allocations editable until every target is chosen", () => {
@@ -215,11 +217,44 @@ it("uses population target buttons for bombardment", () => {
       onSubmit={submit}
     />,
   );
+  expect(screen.getByRole("button", { name: "Confirm: spare population" })).toBeEnabled();
+  expect(screen.getByText(/Population attacks are optional/)).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "Target population square p1" }));
-  fireEvent.click(screen.getByRole("button", { name: "Confirm choice" }));
+  fireEvent.click(screen.getByRole("button", { name: "Confirm: destroy 1 population" }));
   expect(submit).toHaveBeenCalledWith({
     type: "resolve", decisionId: "bomb", choice: { kind: "bombardment", squareIds: ["p1"] },
   });
+});
+
+it("identifies active Neutron Bombs and offers explicit destroy-all and spare choices", () => {
+  const state = createGame({ seed: 4, warpPortals: false, seats: [{ id: "human", faction: "hydran", controller: "human" }, { id: "enemy", faction: "planta", controller: "human" }] });
+  state.seats[0].technologies.military.push("neutron-bombs");
+  const sector = state.sectors.find(candidate => candidate.owner === "enemy")!;
+  const squareIds = sector.population.map(cube => cube.squareId);
+  const view = getPlayerView(state, "human")!;
+  const submit = vi.fn();
+  render(<DecisionPanel view={view} decision={{ id: "neutron", owner: "human", kind: "bombardment", sectorId: sector.id, hits: squareIds.length, squareIds }} reputation={[]} disabled={false} onSubmit={submit}/>);
+  expect(screen.getByText(/Neutron Bombs available/)).toBeTruthy();
+  expect(screen.getByText(/no bombardment dice were rolled/)).toBeTruthy();
+  expect(screen.getByRole("button", { name: `Confirm: destroy ${squareIds.length} population` })).toBeEnabled();
+  expect(screen.queryByRole("button", { name: /Target population square/ })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Spare population" }));
+  expect(screen.getByRole("button", { name: "Confirm: spare population" })).toBeEnabled();
+  fireEvent.click(screen.getByRole("button", { name: `Destroy all ${squareIds.length} population with Neutron Bombs` }));
+  fireEvent.click(screen.getByRole("button", { name: `Confirm: destroy ${squareIds.length} population` }));
+  expect(submit).toHaveBeenCalledWith({ type: "resolve", decisionId: "neutron", choice: { kind: "bombardment", squareIds } });
+});
+
+it("does not advertise Neutron Bombs when the defender has Neutron Absorber", () => {
+  const state = createGame({ seed: 4, warpPortals: false, seats: [{ id: "human", faction: "hydran", controller: "human" }, { id: "enemy", faction: "planta", controller: "human" }] });
+  state.seats[0].technologies.military.push("neutron-bombs");
+  state.seats[1].technologies.grid.push("neutron-absorber");
+  const sector = state.sectors.find(candidate => candidate.owner === "enemy")!;
+  const view = getPlayerView(state, "human")!;
+  render(<DecisionPanel view={view} decision={{ id: "absorbed", owner: "human", kind: "bombardment", sectorId: sector.id, hits: 1, squareIds: sector.population.map(cube => cube.squareId) }} reputation={[]} disabled={false} onSubmit={vi.fn()}/>);
+  expect(screen.queryByText(/Neutron Bombs available/)).toBeNull();
+  expect(screen.queryByText(/no bombardment dice were rolled/)).toBeNull();
+  expect(screen.getAllByRole("button", { name: /Target population square/ }).length).toBeGreaterThan(0);
 });
 
 it("reveals the discovered reward before asking the player to take it", () => {
