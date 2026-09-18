@@ -1,3 +1,5 @@
+import type {BuildOrderItem} from './buildPlanning';
+import type {MovementRoutePreview} from './movementPlanning';
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { PlayerView, Ship } from "../../shared/eclipse/types";
 import { BASE_FACTIONS } from "../../shared/eclipse/catalog";
@@ -15,6 +17,10 @@ import type {GalaxyActivity} from './galaxyActivity';
 import {useGalaxyGestures} from './useGalaxyGestures';
 import type {GalaxyCamera} from './galaxyGestures';
 interface Props {
+  plannedBuilds?:readonly BuildOrderItem[];
+  plannedMoves?:readonly MovementRoutePreview[];
+  onSelectBuildItem?:(id:string)=>void;
+  onInspectFleet?:(sectorId:string)=>void;
   view: PlayerView;
   candidates: CommandCandidate[];
   selected: string | null;
@@ -58,6 +64,7 @@ const hex = Array.from(
 ).join(" ");
 export default function GalaxyBoard({
   view,
+  plannedBuilds=[],plannedMoves=[],onSelectBuildItem,onInspectFleet,
   candidates,
   selected,
   legalTargetIds = [],
@@ -104,7 +111,9 @@ export default function GalaxyBoard({
   const detail=compact?tilePixels>=115:view.sectors.length<15||zoom>=1.6;
   const maximumZoom=compact?5:3;
   const gestures=useGalaxyGestures({camera,viewport:{x:minX,y:minY,width:maxX-minX,height:maxY-minY},maxZoom:maximumZoom,onCameraChange:updateCamera,onTap:target=>{
-    if(target.startsWith('sector:'))onSelect(target.slice(7));
+    if(target.startsWith('build:'))onSelectBuildItem?.(target.slice(6));
+    else if(target.startsWith('fleet:'))onInspectFleet?.(target.slice(6));
+    else if(target.startsWith('sector:'))onSelect(target.slice(7));
     else if(target.startsWith('frontier:')){const candidate=frontiers[Number(target.slice(9))];if(candidate)onExplore(candidate);}
   }});
   const ownerInfo = (id: string | null) => {
@@ -327,7 +336,7 @@ export default function GalaxyBoard({
                   const info=ownerInfo(group.owner), two=groups.length>1;
                   const fx=two?(index%2?21:-21):0,fy=Math.floor(index/2)*20;
                   const name=group.type[0].toUpperCase()+group.type.slice(1);
-                  return <g key={`${group.owner}-${group.type}`} data-fleet-card={group.type} role="img" aria-label={`${info.name}: ${group.count} ${name}${group.count>1?'s':''}`} transform={`translate(${fx} ${fy})`} color={info.color} className="dg-map-fleet-card">
+                  return <g key={`${group.owner}-${group.type}`} data-fleet-card={group.type} data-galaxy-target={onInspectFleet?`fleet:${s.id}`:undefined} role={onInspectFleet?"button":"img"} tabIndex={onInspectFleet?0:undefined} onClick={onInspectFleet?e=>{e.stopPropagation();onInspectFleet(s.id);}:undefined} onKeyDown={onInspectFleet?e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();onInspectFleet(s.id);}}:undefined} aria-label={`${info.name}: ${group.count} ${name}${group.count>1?'s':''}`} transform={`translate(${fx} ${fy})`} color={info.color} className="dg-map-fleet-card">
                     <rect x="-20" y="-9" width="40" height="18" rx="3" fill="#08121b" stroke={info.color} strokeWidth=".8"/>
                     <rect x="-20" y="-9" width="40" height="18" rx="3" fill={info.color} opacity=".13"/>
                     <svg x="-20" y="-9" width="22" height="18" viewBox="0 0 24 24">
@@ -439,6 +448,8 @@ export default function GalaxyBoard({
             const a=galaxyPoint(from.position),b=galaxyPoint(to.position);
             return <g key={`${move.from}-${move.to}-${index}`} className="dg-activity-move" pointerEvents="none" aria-hidden="true"><path d={`M${a.x} ${a.y} L${b.x} ${b.y}`} fill="none" stroke="#f3dc96" strokeWidth="3" strokeDasharray="7 6"/><circle cx={b.x} cy={b.y} r="11" fill="none" stroke="#f3dc96" strokeWidth="2"/></g>;
           })}
+          <g className="dg-draft-routes" aria-label="Planned routes" pointerEvents="none">{plannedMoves.map((route,index)=>route.status==='valid'?route.draft.shipIds.map(shipId=>{const ids=[route.draft.sourceSectorId,...route.paths.filter(move=>move.shipId===shipId).flatMap(move=>move.path)];const points=ids.flatMap(id=>{const sector=view.sectors.find(s=>s.id===id);return sector?[galaxyPoint(sector.position)]:[];});const last=points.at(-1);return <g key={`${index}-${shipId}`}><polyline points={points.map(p=>`${p.x},${p.y}`).join(' ')} fill="none" stroke="#f2d486" strokeWidth="3" strokeDasharray="7 4"/><title>Planned route {index+1}, {ids.map(id=>view.sectors.find(s=>s.id===id)?.tileId??id).join(' to ')}</title>{last&&<g transform={`translate(${last.x} ${last.y-33})`}><circle r="10" fill="#111e2acc" stroke="#f2d486"/><text textAnchor="middle" y="4" fill="#ffe4a4" fontSize="11">{index+1}</text></g>}</g>;}):null)}</g>
+          {plannedBuilds.filter(item=>item.sectorId).map((item,index)=>{const sector=view.sectors.find(s=>s.id===item.sectorId);if(!sector)return null;const p=galaxyPoint(sector.position);const peers=plannedBuilds.filter(other=>other.sectorId===item.sectorId);const offset=(peers.indexOf(item)-(peers.length-1)/2)*20;return <g key={item.id} transform={`translate(${p.x+offset} ${p.y+27})`} className="dg-draft-piece" role="button" tabIndex={0} data-galaxy-target={`build:${item.id}`} aria-label={`Relocate planned ${item.component} ${index+1} in sector ${sector.tileId}`} onClick={e=>{e.stopPropagation();onSelectBuildItem?.(item.id);}} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();onSelectBuildItem?.(item.id);}}}><rect x="-10" y="-12" width="20" height="24" rx="4" fill="#143949cc" stroke="#92e5d5" strokeDasharray="3 2"/><path d="M0 -8 7 7 0 3 -7 7Z" fill="#9fe1d2" opacity=".7"/><title>{item.component} · planned, not built</title></g>;})}
           {frontiers.map((candidate, index) => {
             if (candidate.command.type !== "explore") return null;
             const p = galaxyPoint(candidate.command.position);

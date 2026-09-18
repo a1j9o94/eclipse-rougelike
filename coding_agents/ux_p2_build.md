@@ -36,3 +36,9 @@ The UI derives legal targets from the same public view facts the engine validate
 ## Remaining review
 
 Parent integration supplies the embedded map layout, ghost rendering, map click serials, and accepted-result payoff. Browser/device and newcomer/expert human playtests remain required before experiential acceptance is claimed.
+
+## Integration review — 2026-09-18
+
+The integrated Board/Galaxy path was reviewed with bounded desktop and mobile suites. Global Build starts with unplaced pieces; the explicit `defaultPlacementSectorId` prop lets only the Board’s Build-here shortcut auto-place a newly added item, and only when the aggregate planner marks that sector legal. Map clicks retain serial placement, switching to Move and back preserves the build order, FleetInspection returns to the same plan, and the mobile build tray stays visible beneath the galaxy while the old detail sheet stays closed.
+
+Evidence: 36 broader Board/Galaxy/mobile/draft tests were run initially; one legacy modal expectation failed and was updated to the intended embedded build workspace. The focused integration rerun passed 19/19 tests, and the combined build/colonization/mobile rerun passed 27/27 tests. Changed-file ESLint and `typecheck:eclipse` passed. Receipt-lag disabling and accepted-draft clearing remain covered by the movement continuity and action-draft suites. A separate Board exploration-location issue was reported to the parent for correction.

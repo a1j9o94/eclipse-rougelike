@@ -606,3 +606,8 @@
   .dg-app .sd-workspace:has(.dg-combat-allocation) .dg-battle-overview { margin-bottom: 8px; }
   .dg-app .dg-combat-allocation > .sd-primary { margin-top: 8px; }
 }
+/* Persistent planning stays beside the galaxy; overlays inspect without replacing drafts. */
+.dg-build-mode .sd-inspector{min-width:340px}.dg-build-mode .sd-main{position:relative}.dg-plan-result{position:absolute;bottom:60px;left:24px;padding:10px 14px;background:#16382ddd;border:1px solid #86c6a6;border-radius:8px;color:#c7efd7;pointer-events:none}.dg-inspect-fleet{pointer-events:auto!important;min-height:44px;padding:7px 12px;border:1px solid #8d794d;background:#142431;color:#f0d7a2;border-radius:6px}.dg-draft-piece:focus-visible{outline:2px solid #ffeab0}.dg-build-mode .sd-map-heading{z-index:2}
+@media(max-width:760px){.dg-build-mode .sd-main{display:flex;flex-direction:column;overflow:auto}.dg-build-mode .dg-galaxy{flex:0 0 34dvh;min-height:230px}.dg-build-mode .dg-galaxy>svg{height:100%}.dg-build-mode .dg-build-planner{flex:0 0 auto;width:100%;box-sizing:border-box}.dg-build-mode .sd-map-heading{position:absolute}.dg-plan-result{position:static;margin:8px}.dg-inspect-fleet{font-size:11px;min-height:40px}}
+
+.dg-decision-location{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:12px;margin-bottom:16px;border:1px solid #88734b;border-radius:8px;background:#152331}.dg-decision-location span{flex:1;min-width:150px;color:#b4c4d3;font-size:12px}.dg-decision-location button{min-height:44px}.dg-app[data-motion="off"] *, .dg-app[data-motion="off"] *::before,.dg-app[data-motion="off"] *::after{animation:none!important;transition:none!important}

@@ -1,6 +1,6 @@
 # Second Dawn UX: discoverable strategy and tactile play
 
-Status: design ready for implementation; delivery progress is tracked below.
+Status: P1–P5 implementation and engineering review complete; release verification and human playtests tracked below.
 Product owner: Adrian Obleton.
 Source baseline reviewed: `ca764d429e4fe2ead0bba37eda6bf5fb83bb6879`.
 Last revised: September 18, 2026.
@@ -278,10 +278,10 @@ Use reviewable commits within each slice; do not hold every system for one giant
 | --- | --- | --- | --- | --- |
 | P0 | Code audit complete; human baseline pending | [PR #87](https://github.com/a1j9o94/eclipse-rougelike/pull/87), implementation `8c46c74` | [Code baseline and independent review](ux_p0_baseline.md); existing draft/receipt contracts reused | Observe unfamiliar and experienced players; broader cross-workflow inspection lifecycle remains to be implemented/verified |
 | P1 | First implementation ready for review; experience validation pending | [PR #87](https://github.com/a1j9o94/eclipse-rougelike/pull/87), implementation `8c46c74` | [Execution and validation](ux_p1_execution.md): 84 tests across 15 suites; full build and changed-file lint pass | Browser/physical-device and human playtests; wider funding/end-action consistency remains; continue P2 after review |
-| P2 | Not started | — | — | Depends on P0/P1 |
-| P3 | Not started | — | — | Depends on shared draft/inspection contract |
-| P4 | Not started | — | — | Reuse existing allocation engine |
-| P5 | Not started | — | — | Preserve continuity contracts across remaining systems |
+| P2 | Implemented and cross-reviewed | PR #87; planner checkpoint `4ea488f` | [Build](ux_p2_build.md), [movement](ux_p2_movement.md), [integrated review](ux_integrated_release.md) | Production browser checks and human playtest |
+| P3 | Implemented and cross-reviewed | PR #87; integrated release pending | [Fitting](ux_p3_fitting.md), [inspection and colony review](ux_integrated_release.md) | Production browser checks and human playtest |
+| P4 | Implemented; backend rollout required for rich live replay | PR #87; additive metadata | [Combat evidence and compatibility](ux_p4_combat.md), [rollout boundary](ux_integrated_release.md) | Publish compatible Convex backend; verify live provenance/impact replay |
+| P5 | Implemented and cross-reviewed | PR #87; integrated release pending | [Contextual actions](ux_p5_context.md), [history/scoring](ux_p5_history_scoring.md) | Production browser checks and human playtest |
 
 ## 7. Engineering seams and verification
 
@@ -372,3 +372,8 @@ During implementation, tune tray grouping, panel layout, motion timing, and soun
 Research now has a local purchase surface, explicit atomic funding, inspectable saved drafts, visible blockers, and ownership-confirmed acquisition feedback. The header leads with affordable ordinary actions and a disclosure of its assumptions; action previews use projected resources and influence. Movement remains open after accepted commands while capacity remains, keeps its departure context, shows remaining moves, and offers receipt-driven `Done moving`. Split destinations currently use consecutive commands within the same action; full multi-route batching remains P2.
 
 This bounded slice builds on the existing draft provider and engine. No engine, RNG, save-schema, privacy, or deployment configuration changed. P0 human observation was not available, so engineering proceeded from the documented code baseline; P0/P1 experiential acceptance is deliberately still pending. The supported cloud browser could not reach the local preview (`ERR_BLOCKED_BY_CLIENT`). No browser, device, newcomer, or expert-playtest pass is claimed.
+
+
+### 2026-09-18 — Integrated P2–P5 implementation
+
+The full engineering implementation is documented in [the integrated release record](ux_integrated_release.md). P1 now includes contextual end-action labels across the board. Public inspection uses separate modal camera state, and per-workflow drafts remain in the existing receipt-aware provider. Optional combat metadata is backward-compatible, but its richer live playback requires an authenticated Convex rollout and is not implied by a successful frontend deployment. Human experience validation remains outstanding.

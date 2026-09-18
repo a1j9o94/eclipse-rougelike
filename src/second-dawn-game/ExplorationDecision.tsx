@@ -29,7 +29,7 @@ export default function ExplorationDecision({view,decision,disabled,onSubmit}:Pr
  const resolve=(selectedTile:string|null,drawAnother=false)=>onSubmit({type:'resolve',decisionId:decision.id,choice:{kind:'exploration',tileId:selectedTile,rotation:selectedTile?rotation:0,...(drawAnother?{drawAnother:true}:{})}});
  const chooseTile=(id:string)=>{setTileId(id);setRotation(decision.placements.find(p=>p.tileId===id)?.rotation??0);};
  return <section className="dg-exploration-decision">
-  <header className="dg-explore-heading"><div><h2>Exploration</h2><p>Turn the new sector to line up its wormholes.</p></div><span>Drawn sector <strong>{tileId}</strong></span></header>
+  <header className="dg-explore-heading"><div><h2>Exploration</h2><p>Turn the new sector to line up its wormholes. This location stays in view through its follow-on choices.</p></div><span>At hex {decision.position.q}, {decision.position.r} · drawn sector <strong>{tileId}</strong></span></header>
   {decision.drawnTileIds.length>1&&<nav className="dg-drawn-choices" aria-label="Drawn sectors">{decision.drawnTileIds.map(id=><button key={id} aria-pressed={tileId===id} onClick={()=>chooseTile(id)}>Sector {id}<small>{sectorDefinition(Number(id))!.victoryPoints} VP · {sectorDefinition(Number(id))!.population.length} planets</small></button>)}</nav>}
   <div className="dg-explore-layout">
    <div className="dg-placement-stage">
@@ -62,6 +62,7 @@ export default function ExplorationDecision({view,decision,disabled,onSubmit}:Pr
     <div className="dg-connections-scroll">{tile.ancients>0&&<div className="dg-explore-ancients"><NeutralShipSilhouette type="ancient"/><div><strong>{tile.ancients} Ancient{tile.ancients===1?'':'s'} defend this sector</strong><small>Placing the tile also places these neutral ships.</small></div></div>}<h3>Connections</h3>
     <ul>{neighbors.map(n=><li key={n.edge} className={n.connection==='closed'?'closed':'connected'}><span aria-hidden="true">{n.connection==='closed'?'×':'✓'}</span><div><strong>Sector {n.sector!.tileId}</strong><small>{n.connection==='paired'?'Wormholes aligned':n.connection==='generator'?'Connected by your Wormhole Generator':n.connection==='warp'?'Connected by warp portals':'No matching connection'}{n.sourceEligible?' · exploration source':''}</small></div></li>)}</ul>
     <p className="dg-placement-rule">One connection to an exploration source is enough. Other edges may remain closed.</p>
+    <p className="dg-placement-rule">After placement, control, discoveries, and colonization remain separate choices. Placing this tile never spends an influence disc or colony ship automatically.</p>
     {preview.remotePortalSectorIds.length>0&&<p>Warp portal links: {preview.remotePortalSectorIds.join(', ')}.</p>}
     <details className="dg-drawn-details"><summary>Planets & sector features</summary><ul>{tile.population.map((p,i)=><li key={i}>{planetNames[p.resource]}{p.advanced?' · Advanced':' · Standard'}</li>)}</ul><p>{tile.victoryPoints} VP · {tile.artifacts} artifacts{tile.discovery?' · Discovery':''}{tile.warpPortal?' · Warp portal':''}{tile.ancients?` · ${tile.ancients} Ancients`:''}</p></details>
     </div>

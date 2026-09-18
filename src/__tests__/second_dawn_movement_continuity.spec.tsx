@@ -24,7 +24,7 @@ function startMove(tileId:string){
  fireEvent.click(screen.getByRole('button',{name:'Move',exact:true}));
  fireEvent.click(screen.getByRole('checkbox',{name:'Interceptor 1'}));
  fireEvent.click(destination(tileId));
- fireEvent.click(screen.getByRole('button',{name:/Confirm move/}));
+ fireEvent.click(screen.getByRole('button',{name:/Execute 1 route/}));
 }
 it('keeps the departure context and moves a second ship elsewhere without reopening',()=>{
  const {state,source,targets}=fixture();const submit=vi.fn();const ui=render(board(state,submit));
@@ -36,7 +36,7 @@ it('keeps the departure context and moves a second ship elsewhere without reopen
  expect(screen.getByText('2 moves left in this action')).toBeInTheDocument();
  expect(screen.getByRole('checkbox',{name:'Interceptor 1'})).not.toBeChecked();
  fireEvent.click(screen.getByRole('checkbox',{name:'Interceptor 1'}));fireEvent.click(destination(targets[1].tileId));
- fireEvent.click(screen.getByRole('button',{name:/Confirm move/}));expect(submit).toHaveBeenCalledTimes(2);
+ fireEvent.click(screen.getByRole('button',{name:/Execute 1 route/}));expect(submit).toHaveBeenCalledTimes(2);
  const second=processGameCommand(first.state,'a',submit.mock.calls[1][0]);expect(second.ok).toBe(true);if(!second.ok)return;
  expect(second.state.ships.map(s=>s.sectorId)).toEqual([targets[0].id,targets[1].id]);
  expect(second.state.seats[0].influenceOnTrack).toBe(state.seats[0].influenceOnTrack-1);
@@ -45,7 +45,7 @@ it('retains an unaccepted move and selection after busy clears',()=>{
  const {state,targets}=fixture();const submit=vi.fn();const ui=render(board(state,submit));startMove(targets[0].tileId);
  ui.rerender(board(state,submit,undefined,true));ui.rerender(board(state,submit));
  expect(screen.getByRole('checkbox',{name:'Interceptor 1'})).toBeChecked();
- expect(screen.getByRole('button',{name:/Confirm move/})).toBeEnabled();
+ expect(screen.getByRole('button',{name:/Execute 1 route/})).toBeEnabled();
 });
 it('waits for the accepted board before completing an exhausted move action',()=>{
  const {state,targets}=fixture();state.engine!.action={owner:'a',action:'move',remaining:1};
@@ -53,17 +53,17 @@ it('waits for the accepted board before completing an exhausted move action',()=
  const result=processGameCommand(state,'a',submit.mock.calls[0][0]);expect(result.ok).toBe(true);if(!result.ok)return;result.state.revision=state.revision+1;
  const receipt={revision:result.state.revision,type:'move' as const};
  ui.rerender(board(state,submit,receipt));expect(screen.getByRole('region',{name:'Move fleet'})).toBeInTheDocument();
- expect(within(screen.getByRole('region',{name:'Move fleet'})).getByRole('button',{name:/Confirm move/})).toBeDisabled();
+ expect(within(screen.getByRole('region',{name:'Move fleet'})).getByRole('button',{name:/Execute 0 routes/})).toBeDisabled();
  ui.rerender(board(result.state,submit,receipt));expect(screen.queryByRole('region',{name:'Move fleet'})).toBeNull();
 });
 
 it('ends the current move action with Done moving and closes on acceptance',()=>{
  const {state}=fixture();state.engine!.action={owner:'a',action:'move',remaining:2};
  const submit=vi.fn();const ui=render(board(state,submit));fireEvent.click(screen.getByRole('button',{name:'Move',exact:true}));
- fireEvent.click(screen.getByRole('button',{name:'Done moving'}));expect(submit).toHaveBeenCalledWith({type:'end-action'});
+ fireEvent.click(within(screen.getByRole('region',{name:'Move fleet'})).getByRole('button',{name:/Done moving/}));expect(submit).toHaveBeenCalledWith({type:'end-action'});
  expect(screen.getByRole('region',{name:'Move fleet'})).toBeInTheDocument();
  ui.rerender(board(state,submit,undefined,true));ui.rerender(board(state,submit));
- expect(screen.getByRole('button',{name:'Done moving'})).toBeEnabled();
+ expect(within(screen.getByRole('region',{name:'Move fleet'})).getByRole('button',{name:/Done moving/})).toBeEnabled();
  const result=processGameCommand(state,'a',submit.mock.calls[0][0]);expect(result.ok).toBe(true);if(!result.ok)return;
  result.state.revision=state.revision+1;ui.rerender(board(result.state,submit,{revision:result.state.revision,type:'end-action'}));
  expect(screen.queryByRole('region',{name:'Move fleet'})).toBeNull();

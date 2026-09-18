@@ -22,6 +22,7 @@ import type { FactionId } from "../../shared/eclipse/catalog";
 import type { TechnologyId } from "../../shared/eclipse/technologies";
 import type { AncientShipPartId } from "../../shared/eclipse/discoveries";
 import type { GameCommand } from "../../shared/eclipse/types";
+import { fittingInventory } from './fittingPlanning';
 interface Props {
   view?: PlayerView;
   initialDraft?: ShipBlueprint;
@@ -30,6 +31,7 @@ interface Props {
   blueprint: ShipBlueprint;
   technologies: TechnologyId[];
   storedParts: AncientShipPartId[];
+  installedAncientParts?: AncientShipPartId[];
   capacity: number;
   disabled: boolean;
   onSubmit: (command: GameCommand) => void;
@@ -39,6 +41,7 @@ export default function BlueprintEditor({
   blueprint,
   technologies,
   storedParts,
+  installedAncientParts,
   capacity,
   disabled,
   onSubmit,
@@ -62,14 +65,7 @@ export default function BlueprintEditor({
       id !== null &&
       SHIP_PARTS.some((p) => p.id === id && p.access.kind === "ancient"),
   );
-  const available = SHIP_PARTS.filter(
-    (p) =>
-      p.access.kind === "default" ||
-      (p.access.kind === "technology" &&
-        technologies.includes(p.access.technology)) ||
-      (p.access.kind === "ancient" &&
-        owned.includes(p.id as AncientShipPartId)),
-  );
+  const inventory=fittingInventory({blueprint,draft,technologies,storedParts,installedAncientParts});
   const issues = validateBlueprint(
     faction,
     draft,
@@ -84,12 +80,7 @@ export default function BlueprintEditor({
     technologies,
     owned,
   );
-  const changes =
-    draft.parts.filter(
-      (part, i) => part !== null && part !== blueprint.parts[i],
-    ).length +
-    draft.outsideParts.filter((part) => !blueprint.outsideParts.includes(part))
-      .length;
+  const installations=plan.ok?plan.installations:0;
   const changed = JSON.stringify(draft) !== JSON.stringify(blueprint);
   const preview = view
     ? previewCommand(view, { type: "upgrade", blueprints: [draft] })
@@ -125,11 +116,7 @@ export default function BlueprintEditor({
   };
   const slotName = (part: ShipPartId | null, printedPart: ShipPartId | null) =>
     part ? getShipPart(part).name : printedPart ? getShipPart(printedPart).name : "Empty slot";
-  const partGroups = [
-    { name: "Standard components", parts: available.filter((part) => part.placement === "grid" && part.access.kind === "default") },
-    { name: "Researched components", parts: available.filter((part) => part.placement === "grid" && part.access.kind === "technology") },
-    { name: "Ancient components", parts: available.filter((part) => part.placement === "grid" && part.access.kind === "ancient") },
-  ].filter((group) => group.parts.length > 0);
+  const availableOutside=SHIP_PARTS.filter(part=>part.placement==='outside'&&(blueprint.outsideParts.includes(part.id)||part.access.kind==='default'||part.access.kind==='technology'&&technologies.includes(part.access.technology)||part.access.kind==='ancient'&&storedParts.includes(part.id as AncientShipPartId)));
   const replacementSummary = draft.parts.flatMap((part, index) => {
     const before = blueprint.parts[index] ?? printed[index];
     const after = part ?? printed[index];
@@ -189,32 +176,33 @@ export default function BlueprintEditor({
             <small>{selectedPrinted ? getShipPart(selectedPrinted).name : "No component"}</small>
           </button>
         </div>
-        {partGroups.map((group) => <section className="dg-part-group" key={group.name} aria-label={group.name}>
+        {inventory.storedAncients.length>0&&<p className="dg-ancient-stock" role="status">Stored Ancient copies: {inventory.storedAncients.map(part=>`${getShipPart(part.id).name} ×${part.count}`).join(' · ')}. Installing one consumes that stored copy.</p>}
+        {inventory.groups.map((group) => <section className="dg-part-group" key={group.name} aria-label={group.name}>
           <h4>{group.name}</h4>
           <div className="dg-parts-tray-grid">
-            {group.parts.map((part) => <button
+            {group.parts.map((entry) => {const part=getShipPart(entry.id);const restoresOriginalAncient=part.access.kind==='ancient'&&blueprint.parts[selectedSlot]===part.id;const canInstall=entry.available||restoresOriginalAncient;return <button
               key={part.id}
               type="button"
               className={`dg-part-choice${selectedPart === part.id ? " is-selected" : ""}`}
-              aria-label={`Install ${part.name} in slot ${selectedSlot + 1}`}
+              aria-label={canInstall?`Install ${part.name} in slot ${selectedSlot + 1}`:`${part.name} blocked: ${entry.reason}`}
               aria-pressed={selectedPart === part.id}
-              disabled={disabled}
+              disabled={disabled||!canInstall}
               onClick={() => installPart(part.id)}
             >
-              <span className="dg-part-choice-title">{part.name}</span>
+              <span className="dg-part-choice-title">{part.name}{Number.isFinite(entry.availableCopies)?` · ${entry.availableCopies} stored`:''}</span>
               <ShipPartStats partId={part.id} />
               <small>{describeShipPart(part.id)}</small>
-            </button>)}
+              {!canInstall&&<small className="dg-danger">{entry.reason}</small>}
+            </button>;})}
           </div>
         </section>)}
         <details className="dg-unavailable-parts">
           <summary>Unavailable components</summary>
-          <div>{SHIP_PARTS.filter((part) => !available.includes(part)).map((part) => <button key={part.id} type="button" disabled aria-label={`${part.name} unavailable: ${unavailableReason(part)}`}><strong>{part.name}</strong><small>{unavailableReason(part)}</small></button>)}</div>
+          <div>{inventory.parts.filter(part=>!part.available).map(entry => {const part=getShipPart(entry.id);return <button key={part.id} type="button" disabled aria-label={`${part.name} unavailable: ${entry.reason??unavailableReason(part)}`}><strong>{part.name}</strong><small>{entry.reason??unavailableReason(part)}</small></button>;})}</div>
         </details>
         <p className="dg-part-effect" data-testid={`slot-effect-${selectedSlot + 1}`}>{selectedEffectivePart ? describeShipPart(selectedEffectivePart) : "Empty slot: install a part here without covering a printed part."}</p>
       </section>
-      {available
-        .filter((p) => p.placement === "outside")
+      {availableOutside
         .map((p) => (
           <label className="dg-check" key={p.id}>
             <input
@@ -237,9 +225,10 @@ export default function BlueprintEditor({
       <table className="dg-stat-comparison">
         <caption>Ship performance before confirmation</caption>
         <thead><tr><th scope="col">Statistic</th><th scope="col">Current</th><th scope="col">Draft</th></tr></thead>
-        <tbody>{comparison.map(([label, before, after]) => <tr key={label} className={before === after ? "" : "dg-stat-changed"}><th scope="row">{label}</th><td>{before}</td><td>{after}{before !== after && <span className="dg-stat-change"> changed</span>}</td></tr>)}</tbody>
+        <tbody>{comparison.filter(([,before,after])=>before!==after).map(([label, before, after]) => <tr key={label} className="dg-stat-changed"><th scope="row">{label}</th><td>{before}</td><td>{after}<span className="dg-stat-change"> changed</span></td></tr>)}</tbody>
       </table>
-      <p>Parts installed: {changes} / {capacity}. Removing an overlay reveals its printed part.</p>
+      <details className="dg-unchanged-stats"><summary>Unchanged ship statistics</summary><table className="dg-stat-comparison"><tbody>{comparison.filter(([,before,after])=>before===after).map(([label,before,after])=><tr key={label}><th scope="row">{label}</th><td>{before}</td><td>{after}</td></tr>)}</tbody></table></details>
+      <p>Installation plan: {installations} / {capacity} upgrades. Removing an overlay reveals its printed part.</p>
       <details className="dg-stat-guide"><summary>How ship statistics work</summary><p>Energy production must cover consumption. Higher initiative fires first; the defender wins ties. Computers add to attack rolls, while enemy shields subtract. A total of 6 hits; natural 6 always hits and natural 1 always misses. Cannons fire each round; missiles fire once at the start of battle. Damage must exceed hull to destroy a ship.</p></details>
       {preview && (
         <p className={preview.moneyBalanceAfter < 0 ? "dg-danger" : ""}>
@@ -257,7 +246,7 @@ export default function BlueprintEditor({
           {issue.message}
         </p>
       ))}
-      {changes > capacity && (
+      {installations > capacity && (
         <p className="dg-danger">
           This action allows {capacity} installed parts.
         </p>
@@ -272,11 +261,11 @@ export default function BlueprintEditor({
           !changed ||
           !plan.ok ||
           issues.length > 0 ||
-          changes > capacity
+          installations > capacity
         }
         onClick={() => onSubmit({ type: "upgrade", blueprints: [draft] })}
       >
-        Confirm blueprint
+        Apply {installations} {installations===1?'upgrade':'upgrades'}
       </button>
       <button onClick={() => setDraft(structuredClone(blueprint))}>
         Reset draft

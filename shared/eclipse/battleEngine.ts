@@ -290,6 +290,10 @@ function rollAttack(
           face: roll.value + 1,
           damage: weapon.damage,
           computer: s.computer,
+          sourceShipId: ship.id,
+          sourceShipType: ship.type,
+          weaponKind: weapon.kind,
+          weaponColor: weapon.color,
         });
         if (
           weapon.kind === "cannon" &&
@@ -316,6 +320,11 @@ function rollAttack(
       id: d.id,
       face: d.face,
       damage: d.damage,
+      computer: d.computer,
+      sourceShipId: d.sourceShipId,
+      sourceShipType: d.sourceShipType,
+      weaponKind: d.weaponKind,
+      weaponColor: d.weaponColor,
       hitTargets: targets.filter(t=>dieHits(d.face as DieFace,d.computer,stats(state,t).shield)).map(t=>t.id),
       targets: targets
         .filter(
@@ -397,7 +406,9 @@ function applyAllocation(
 ): void {
   const enemy = b.attackingOwner === b.attacker ? b.defender : b.attacker,
     targets = ships(state, b, enemy),
-    damage = new Map<string, number>();
+    damage = new Map<string, number>(),
+    hpBefore = new Map(targets.map((target) => [target.id, Math.max(0, stats(state, target).hull + 1 - target.damage)])),
+    impacts: NonNullable<GameEvent["combatVolley"]>["impacts"] = [];
   for (const a of allocations) {
     requireRule(
       !!b.dice?.some((d) => d.id === a.dieId),
@@ -430,6 +441,7 @@ function applyAllocation(
           "Split damage must hit the chosen target.",
         );
         damage.set(a.targetId, (damage.get(a.targetId) ?? 0) + amount);
+        impacts.push({ dieId: die.id, targetId: a.targetId, damage: amount, hit: true });
       }
     } else {
       requireRule(assigned.length === 1, "Assign each die exactly once.");
@@ -441,8 +453,10 @@ function applyAllocation(
       );
       if (
         dieHits(die.face as DieFace, die.computer, stats(state, target).shield)
-      )
+      ) {
         damage.set(a.targetId, (damage.get(a.targetId) ?? 0) + die.damage);
+        impacts.push({ dieId: die.id, targetId: a.targetId, damage: die.damage, hit: true });
+      } else impacts.push({ dieId: die.id, targetId: a.targetId, damage: 0, hit: false });
     }
   }
   for (const target of targets) {
@@ -457,6 +471,25 @@ function applyAllocation(
       );
     }
   }
+  events.push({
+    type: "combat",
+    seatId: b.attackingOwner!,
+    visibility: "public",
+    message: `${impacts.filter((impact) => impact.hit).length} attack dice hit their targets.`,
+    combatVolley: {
+      battleId: b.id,
+      sectorId: b.sectorId,
+      attacker: b.attackingOwner!,
+      dice: structuredClone(b.dice ?? []),
+      impacts,
+      targets: targets.map((target) => {
+        const maximum = stats(state, target).hull + 1;
+        const before = hpBefore.get(target.id) ?? 0;
+        const applied = damage.get(target.id) ?? 0;
+        return { id: target.id, hpBefore: before, hpAfter: Math.max(0, before - applied), excess: Math.max(0, applied - before), destroyed: target.damage >= maximum };
+      }),
+    },
+  });
   updatePenalty(state, b, enemy);
   b.dice = undefined;
   b.splitDice = undefined;

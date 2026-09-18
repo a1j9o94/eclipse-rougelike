@@ -26,6 +26,16 @@ function explanation(effect: DiscoveryEffect): string {
     case 'place-warp-portal': return 'Place a Warp Portal in the discovery sector. It connects to every other portal sector. Its final controller gains 2 VP from this portal.';
   }
 }
+function rewardAction(effect: DiscoveryEffect): string {
+  switch(effect.kind){
+    case 'resources': return `Gain ${(['money','science','materials'] as const).filter(r=>effect.resources[r]).map(r=>`${effect.resources[r]} ${r}`).join(', ')}`;
+    case 'ancient-ship-part': return `Install or store ${DISCOVERIES.find(d=>d.effect===effect)?.name ?? 'component'}`;
+    case 'free-technology': return 'Choose free technology';
+    case 'place-unbuilt-ship': return 'Place free Cruiser';
+    case 'place-structure': return `Place free ${effect.structure}`;
+    case 'place-warp-portal': return 'Place Warp Portal';
+  }
+}
 function RewardStats({ effect }: { effect: DiscoveryEffect }) {
   if (effect.kind === 'ancient-ship-part') return <ShipPartStats partId={effect.part}/>;
   const details = explanation(effect);
@@ -65,14 +75,15 @@ export default function DiscoveryDecision({ decision, view, disabled, onSubmit }
         <RewardStats effect={discovery.effect}/>
         <p>{explanation(discovery.effect)}</p>
         {!useAvailable && <p className="dg-danger">{noTechnology ? 'No eligible lowest-cost technology remains. Keep this tile for 2 VP.' : 'The reward cannot be used in this position.'}</p>}
+        {option==='use'&&<button className="sd-primary" disabled={disabled||!useAvailable} onClick={()=>onSubmit({type:'resolve',decisionId:decision.id,choice:{kind:'discovery',option:'use'}})}>{rewardAction(discovery.effect)}</button>}
       </section>
       <section className={`dg-discovery-reward dg-discovery-vp ${option === 'keep' ? 'dg-discovery-selected' : ''}`}>
         <label className="dg-discovery-side"><input type="radio" name={`discovery-${decision.id}`} checked={option==='keep'} disabled={disabled || !keepAvailable} onChange={()=>setOption('keep')}/>Keep for 2 VP</label>
         <StatBadge icon="discovery" value="2 VP" label="discovery points" explanation="Keep the tile for two victory points instead of receiving its reward."/>
         <p>Keep the tile. Gain 2 victory points; do not receive its reward.</p>
+        {option==='keep'&&<button className="sd-primary" disabled={disabled||!keepAvailable} onClick={()=>onSubmit({type:'resolve',decisionId:decision.id,choice:{kind:'discovery',option:'keep'}})}>Keep for 2 VP</button>}
       </section>
     </div>
-    <button className="sd-primary" disabled={disabled || option===null || (option==='use' ? !useAvailable : !keepAvailable)} onClick={()=>{if(option)onSubmit({type:'resolve',decisionId:decision.id,choice:{kind:'discovery',option}});}}>Confirm discovery</button>
-    <p className="dg-discovery-note">Choose a side, then confirm. The revealed tile is already saved.</p>
+    <p className="dg-discovery-note">Choose a side, then confirm inside that reward card. The revealed tile is already saved.</p>
   </section>;
 }

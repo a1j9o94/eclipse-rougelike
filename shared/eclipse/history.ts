@@ -1,6 +1,6 @@
 import { getFaction } from "./catalog";
 import { TECHNOLOGIES, type TechnologyId } from "./technologies";
-import type { GameCommand, JournalEntry, Seat, Sector, Ship, ShipType } from "./types";
+import type { GameCommand, GameEvent, JournalEntry, Seat, Sector, Ship, ShipType } from "./types";
 
 /** Exact public event written only by the authoritative room-timeout job. */
 export const TIMEOUT_AI_HISTORY_MARKER = "Normal AI completed this choice after the turn timer expired.";
@@ -29,6 +29,8 @@ export interface PublicHistoryEntry {
   summary: string;
   details: string[];
   presentation?: PublicActionPresentation;
+  combatVolley?: NonNullable<GameEvent["combatVolley"]>;
+  combatVolleys?: NonNullable<GameEvent["combatVolley"]>[];
 }
 export interface PublicHistoryPage {
   entries: PublicHistoryEntry[];
@@ -160,6 +162,8 @@ export function projectHistoryEntry(
       event.message === TIMEOUT_AI_HISTORY_MARKER,
   );
   const presentation = actionPresentation(submittedCommand, context);
+  const combatVolleys = events.flatMap(event=>event.combatVolley?[event.combatVolley]:[]);
+  const combatVolley = combatVolleys[0];
   return {
     revision: entry.receipt.revision,
     actorSeatId: entry.actor,
@@ -171,5 +175,6 @@ export function projectHistoryEntry(
       ...events.map((event) => namedMessage(event.message)),
     ],
     ...(presentation ? { presentation } : {}),
+    ...(combatVolley ? { combatVolley, combatVolleys } : {}),
   };
 }

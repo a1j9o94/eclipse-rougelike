@@ -238,3 +238,4 @@
   .dg-diplomacy-partners { grid-template-columns: 1fr; }
   .dg-diplomacy-cube-choices { grid-template-columns: 1fr; }
 }
+.dg-inspected-offer{margin-top:12px;border-color:#b79a56}.dg-inspected-offer>h2{margin-top:0}.dg-inspected-offer>.sd-primary{margin-top:10px}

@@ -25,13 +25,13 @@ describe("persistent match decision controls", () => {
     expect(
       (
         screen.getByRole("button", {
-          name: "Confirm choice",
+          name: "Resolve volley",
         }) as HTMLButtonElement
       ).disabled,
     ).toBe(true);
-    fireEvent.click(screen.getByRole("button", { name: "Target enemy2" }));
+    fireEvent.click(screen.getByRole("button", { name: /Target enemy2/ }));
     expect(submit).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button", { name: "Confirm choice" }));
+    fireEvent.click(screen.getByRole("button", { name: "Resolve volley" }));
     expect(submit).toHaveBeenCalledWith({
       type: "resolve",
       decisionId: "battle",
@@ -63,7 +63,7 @@ describe("persistent match decision controls", () => {
     fireEvent.click(screen.getByRole("button", { name: "Increase damage from die 1 to a" }));
     fireEvent.click(screen.getByRole("button", { name: "Increase damage from die 1 to b" }));
     fireEvent.click(screen.getByRole("button", { name: "Increase damage from die 1 to b" }));
-    fireEvent.click(screen.getByRole("button", { name: "Confirm choice" }));
+    fireEvent.click(screen.getByRole("button", { name: "Resolve volley" }));
     expect(submit).toHaveBeenCalledWith({
       type: "resolve",
       decisionId: "split",
@@ -173,7 +173,7 @@ it("automatically allocates a die that cannot hit any target without asking for 
   );
   expect(screen.queryByRole("button", { name: /Target enemy/i })).toBeNull();
   expect(screen.getByText(/no hit/i)).toBeTruthy();
-  fireEvent.click(screen.getByRole("button", { name: "Confirm choice" }));
+  fireEvent.click(screen.getByRole("button", { name: "Resolve volley" }));
   expect(submit).toHaveBeenCalledWith({
     type: "resolve",
     decisionId: "miss",
@@ -183,6 +183,8 @@ it("automatically allocates a die that cannot hit any target without asking for 
     },
   });
 });
+
+it("serializes no allocation for a legacy split die that cannot hit any target",()=>{const submit=vi.fn();render(<DecisionPanel decision={{id:'split-miss',owner:'human',kind:'combat-allocation',battleId:'b',dice:[{id:'d',face:2,damage:4,targets:['enemy'],hitTargets:[],split:true}]}} onSubmit={submit} disabled={false} reputation={[]}/>);fireEvent.click(screen.getByRole('button',{name:'Resolve volley'}));expect(submit).toHaveBeenCalledWith({type:'resolve',decisionId:'split-miss',choice:{kind:'combat-allocation',allocations:[]}});});
 
 it("uses ship cards and an editable initiative queue instead of raw combat selectors", () => {
   const submit = vi.fn();

@@ -32,6 +32,10 @@ it('opens actions as one visual chooser and returns to map selection for movemen
  fireEvent.click(screen.getByRole('button',{name:'Expand Move details'}));
  expect(screen.getByRole('region',{name:'Move fleet'})).toBeInTheDocument();
 });
+it('keeps the build tray visible below the galaxy on mobile and starts global Build unplaced',()=>{
+ const rendered=setup();fireEvent.click(screen.getByRole('button',{name:'Choose action'}));const picker=screen.getByRole('group',{name:'Choose your action'});fireEvent.click(within(picker).getByRole('button',{name:/Build/}));
+ expect(screen.getByRole('group',{name:'Galaxy map'})).toBeVisible();expect(screen.getByRole('region',{name:'Assemble your build order'})).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'Add interceptor'}));expect(screen.getByRole('button',{name:/1. Interceptor Unplaced/})).toBeVisible();expect(rendered.container.querySelector('.dg-mobile-sheet')).toHaveAttribute('data-sheet-state','closed');
+});
 it('prioritizes the saved pending decision and keeps a direct return after inspection',()=>{
  const state=(JSON.parse(fixtures)as Record<string,GameState>).combat;setup(state);
  expect(screen.getByRole('heading',{name:/Combat allocation/i})).toBeInTheDocument();

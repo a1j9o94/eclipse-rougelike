@@ -337,6 +337,17 @@ describe("persisted complete battles", () => {
     expect(d.dice[0]).toMatchObject({face:3,hitTargets:[]});
     expect(d.dice[0].targets.length).toBeGreaterThan(0);
   });
+  it("publishes additive weapon provenance and a structured volley result without another draw", () => {
+    const s=fixture(); advanceCombat(s,[]); choose(s,{kind:"combat-turn",retreatTo:null});
+    const d=s.pendingDecision;if(d?.kind!=="combat-allocation")throw new Error("expected volley");
+    expect(d.dice[0]).toMatchObject({sourceShipId:"a-i",sourceShipType:"interceptor",weaponKind:"cannon",weaponColor:"yellow",computer:0});
+    const draws=s.random.draws, events:GameEvent[]=[];
+    choose(s,{kind:"combat-allocation",allocations:d.dice.map(die=>({dieId:die.id,targetId:die.targets[0]}))},events);
+    expect(s.random.draws).toBe(draws);
+    const volley=events.find(event=>event.combatVolley)?.combatVolley;
+    expect(volley).toMatchObject({battleId:"battle-1",attacker:"a",dice:[{sourceShipId:"a-i",weaponKind:"cannon"}],targets:[{id:"b-i"}]});
+    expect(volley?.impacts).toHaveLength(d.dice.length);
+  });
   it("keeps retreating ships targetable until their next activation", () => {
     const s = fixture();
     advanceCombat(s, []);
