@@ -30,3 +30,7 @@ Risks and rollback: preserve authoritative previews and receipt-driven clearing.
 ## Remaining work
 
 Visual desktop/mobile/keyboard/reduced-motion browser review and human newcomer/expert playtests remain pending. The cloud browser blocked local preview access; automated component tests do not establish visual quality or fun. Wider funding and turn-label consistency is still P1 follow-up. P2 adds build-first multi-sector deployment and full batched multi-route movement. Ship fitting, opponent inspection, direct colonization, and tactile combat remain subsequent slices. Production remains unchanged until this feature branch is reviewed and merged through the existing release workflow.
+
+## Remote handoff
+
+Implementation: [`8c46c74451562e0a87ddbb14807d8ef3c47d0e21`](https://github.com/a1j9o94/eclipse-rougelike/commit/8c46c74451562e0a87ddbb14807d8ef3c47d0e21). Draft review: [PR #87](https://github.com/a1j9o94/eclipse-rougelike/pull/87). The committed Git tree was checked against the locally tested Git tree before publishing; they matched exactly. The follow-up documentation commit records this provenance.

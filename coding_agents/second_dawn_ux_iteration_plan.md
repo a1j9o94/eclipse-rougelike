@@ -276,8 +276,8 @@ Use reviewable commits within each slice; do not hold every system for one giant
 
 | Slice | Status | Branch / commit | Tests and review evidence | Next step / blocker |
 | --- | --- | --- | --- | --- |
-| P0 | Code audit complete; human baseline pending | `feature/second-dawn-ux-foundations` | [Code baseline and independent review](ux_p0_baseline.md); existing draft/receipt contracts reused | Observe unfamiliar and experienced players; broader cross-workflow inspection lifecycle remains to be implemented/verified |
-| P1 | First implementation ready for review; experience validation pending | `feature/second-dawn-ux-foundations` | [Execution and validation](ux_p1_execution.md): 84 tests across 15 suites; full build and changed-file lint pass | Browser/physical-device and human playtests; wider funding/end-action consistency remains; continue P2 after review |
+| P0 | Code audit complete; human baseline pending | [PR #87](https://github.com/a1j9o94/eclipse-rougelike/pull/87), implementation `8c46c74` | [Code baseline and independent review](ux_p0_baseline.md); existing draft/receipt contracts reused | Observe unfamiliar and experienced players; broader cross-workflow inspection lifecycle remains to be implemented/verified |
+| P1 | First implementation ready for review; experience validation pending | [PR #87](https://github.com/a1j9o94/eclipse-rougelike/pull/87), implementation `8c46c74` | [Execution and validation](ux_p1_execution.md): 84 tests across 15 suites; full build and changed-file lint pass | Browser/physical-device and human playtests; wider funding/end-action consistency remains; continue P2 after review |
 | P2 | Not started | — | — | Depends on P0/P1 |
 | P3 | Not started | — | — | Depends on shared draft/inspection contract |
 | P4 | Not started | — | — | Reuse existing allocation engine |
