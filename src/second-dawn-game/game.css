@@ -645,3 +645,43 @@
   .dg-app.dg-tabletop:not(.dg-mobile-board) .sd-header { gap:10px; }
   .dg-tabletop:not(.dg-mobile-board) .sd-resource em { display:block; margin-left:0; }
 }
+
+/* One desktop command strip keeps play space with the galaxy instead of spending a row on navigation. */
+.dg-app.dg-tabletop:not(.dg-mobile-board) .sd-header {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 4px 12px;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.dg-tabletop:not(.dg-mobile-board) .sd-brand { flex: 0 0 auto; gap: 0; }
+.dg-tabletop:not(.dg-mobile-board) .sd-brand > div { display: none; }
+.dg-tabletop:not(.dg-mobile-board) .sd-turn { display: flex; align-items: baseline; gap: 5px; flex: 0 1 180px; min-width: 104px; white-space: nowrap; }
+.dg-tabletop:not(.dg-mobile-board) .sd-turn > small { flex: 0 0 auto; }
+.dg-tabletop:not(.dg-mobile-board) .sd-turn strong { overflow: hidden; text-overflow: ellipsis; }
+.dg-tabletop:not(.dg-mobile-board) .sd-resource { display: flex; align-items: baseline; gap: 4px; flex: 0 0 auto; white-space: nowrap; }
+.dg-tabletop:not(.dg-mobile-board) .sd-resource strong { font-size: 15px; }
+.dg-tabletop:not(.dg-mobile-board) .sd-resource em { display: none; }
+.dg-tabletop:not(.dg-mobile-board) .dg-upkeep-summary { flex: 0 0 auto; padding-left: 8px; }
+.dg-tabletop:not(.dg-mobile-board) .dg-running-score { flex: 0 0 auto; }
+.dg-tabletop:not(.dg-mobile-board) .sd-header > nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 0 0 auto;
+  padding-left: 8px;
+  border-left: 1px solid #66573a;
+}
+.dg-tabletop:not(.dg-mobile-board) .sd-header > nav button { min-height: 30px; padding: 4px 8px; font-size: 11px; white-space: nowrap; }
+.dg-tabletop:not(.dg-mobile-board) .sd-header .dg-save { display: flex; align-items: center; gap: 5px; margin-left: auto; flex: 0 0 auto; white-space: nowrap; }
+.dg-tabletop:not(.dg-mobile-board) .sd-header .dg-save > span { display: none; }
+.dg-tabletop:not(.dg-mobile-board) .sd-header .dg-save button { min-height: 30px; padding: 4px 8px; font-size: 11px; }
+@media (max-width: 1200px) {
+  .dg-app.dg-tabletop:not(.dg-mobile-board) .sd-header { gap: 5px; padding-inline: 8px; }
+  .dg-tabletop:not(.dg-mobile-board) .sd-turn { flex-basis: 125px; }
+  .dg-tabletop:not(.dg-mobile-board) .sd-resource small { font-size: 9px; }
+  .dg-tabletop:not(.dg-mobile-board) .sd-header > nav { padding-left: 5px; }
+  .dg-tabletop:not(.dg-mobile-board) .sd-header > nav button { padding-inline: 6px; }
+}
