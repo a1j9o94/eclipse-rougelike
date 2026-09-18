@@ -51,8 +51,34 @@ history. Do not roll back by deleting tables or recreating the deployment.
 
 Nine release-guard tests passed after the failing-test baseline. Full `npm run
 build` (including codegen) and explicit Convex TypeScript check passed. Root lint
-retains the unchanged 88 errors / 12 warnings. Live deployment remains pending.
+retains the unchanged 88 errors / 12 warnings. Independent Sol review approved
+target selection, build-before-push ordering, failure handling and credential
+safety against the installed Convex CLI source.
 
 The Vercel connector cannot currently read the
 `obleton-adrian` team (403); deployment success will be checked through GitHub's
 Vercel status and public live checks, without exposing the secret.
+
+## Deployed and ready for playtest — 2026-09-18
+
+- PR #89 merged as `fd59535e7766ec7d39b4ae2b6870d0984a5c3003`.
+- GitHub's `Vercel – eclipse-rougelike` status reports **success** for that exact
+  commit: https://vercel.com/obleton-adrian/eclipse-rougelike/BY2shp4ESYU6TcqGi2X7uCPumeBG.
+  The committed build command requires the target guard, frontend build and Convex
+  push to succeed. This releases the additive combat backend metadata as well as
+  the existing frontend; it is no longer a frontend-only release.
+- A read-only query to `ideal-nightingale-55` returned an empty match list for an
+  invalid guest credential, preserving the guest privacy boundary.
+- The public site's real UI created a new three-player Eridani saved game, added
+  an interceptor to the build order, placed it in sector 222 and committed it.
+  Revision 1 showed two ships, an empty build tray and one remaining activation.
+- Navigating home and continuing restored revision 1, both ships and the remaining
+  Build activation. Done building submitted, and scheduled AI turns advanced the
+  game to revision 10 before returning control to the human.
+- The release check did not play a saved game through a combat volley. Rich
+  combat interaction was previously verified with isolated engine fixtures and
+  backend tests; actual saved-game combat and physical-device human usability
+  remain playtest items, not claimed observations.
+
+Play: https://eclipse-rougelike.vercel.app/ . The isolated workflow review starts at
+https://eclipse-rougelike.vercel.app/?position=workflow-build#second-dawn-preview .
