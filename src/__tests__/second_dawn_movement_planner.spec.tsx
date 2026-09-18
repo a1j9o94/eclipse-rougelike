@@ -5,7 +5,7 @@ import { createGame } from '../../shared/eclipse/setup';
 import { getPlayerView } from '../../shared/eclipse/protocol';
 import { processGameCommand } from '../../shared/eclipse/engine';
 import MovementPlanner from '../second-dawn-game/MovementPlanner';
-import { movementPlan } from '../second-dawn-game/movementPlanning';
+import { movementPlan, queuedMovementPlan } from '../second-dawn-game/movementPlanning';
 import { SECTORS } from '../../shared/eclipse/sectors';
 afterEach(cleanup);
 function fixture() {
@@ -27,6 +27,26 @@ function chainFixture() {
  return {state,source,middle,target,ship:state.ships[0]};
 }
 describe('visual movement planning',()=>{
+ it('validates queued routes against the progressively moved public fleet and preserves a rejected route',()=>{
+  const {state,source,middle,target,ship}=chainFixture();
+  const queued=queuedMovementPlan(getPlayerView(state,'a')!,[
+   {sourceSectorId:source.id,shipIds:[ship.id],destinationSectorId:middle.id},
+   {sourceSectorId:middle.id,shipIds:[ship.id],destinationSectorId:target.id},
+   {sourceSectorId:source.id,shipIds:['missing-public-ship'],destinationSectorId:target.id},
+  ]);
+  expect(queued.routes.map(route=>route.status)).toEqual(['valid','valid','rejected']);
+  expect(queued.command.moves).toEqual([{shipId:ship.id,path:[middle.id]},{shipId:ship.id,path:[target.id]}]);
+ expect(queued.remainingCapacity).toBe(1);
+ });
+ it('revalidates every retained route when the player changes queue order',()=>{
+  const {state,source,middle,target,ship}=chainFixture();
+  const routes=[
+   {sourceSectorId:source.id,shipIds:[ship.id],destinationSectorId:middle.id},
+   {sourceSectorId:middle.id,shipIds:[ship.id],destinationSectorId:target.id},
+  ];
+  expect(queuedMovementPlan(getPlayerView(state,'a')!,routes).routes.map(route=>route.status)).toEqual(['valid','valid']);
+  expect(queuedMovementPlan(getPlayerView(state,'a')!,[routes[1],routes[0]]).routes.map(route=>route.status)).toEqual(['rejected','valid']);
+ });
  it('spends two activations on a speed-one ship in one command and only one influence disc',()=>{
   const {state,source,middle,target,ship}=chainFixture();
   const before=state.seats[0].influenceOnTrack;
@@ -96,6 +116,43 @@ describe('visual movement planning',()=>{
   expect(targets).toHaveBeenLastCalledWith(expect.arrayContaining([target.id]));expect(submit).not.toHaveBeenCalled();
   rendered.rerender(<MovementPlanner {...props} selectedTargetId={target.id}/>);
   fireEvent.click(screen.getByRole('button',{name:/Confirm move/}));expect(submit).toHaveBeenCalledTimes(1);
+ });
+ it('queues, reorders, and executes the combined route command once',()=>{
+  const {state,source,middle,target,ship}=chainFixture();state.ships.push({...ship,id:'spare'});const submit=vi.fn();const previews=vi.fn();const selection=vi.fn();
+  const props={view:getPlayerView(state,'a')!,sourceSectorId:source.id,selectedTargetId:middle.id,disabled:false,onTargetsChange:vi.fn(),onClose:vi.fn(),onSubmit:submit,onRoutePreview:previews,onSelectionChange:selection};
+  const rendered=render(<MovementPlanner {...props}/>);
+  fireEvent.click(screen.getByRole('checkbox',{name:/Interceptor 1/}));
+  fireEvent.click(screen.getByRole('button',{name:/Queue route/}));
+  expect(screen.getByRole('region',{name:/Queued movement routes/})).toHaveTextContent(/Queued routes · 1/);
+  expect(selection).toHaveBeenLastCalledWith({sourceSectorId:source.id,shipIds:[],targetSectorId:null});
+  rendered.rerender(<MovementPlanner {...props} sourceSectorId={middle.id} selectedTargetId={target.id}/>);
+  fireEvent.click(screen.getByRole('checkbox',{name:/Interceptor 1/}));
+  fireEvent.click(screen.getByRole('button',{name:/Queue route/}));
+  fireEvent.click(screen.getByRole('button',{name:/Execute 2 routes/}));
+  expect(submit).toHaveBeenCalledWith({type:'move',moves:[{shipId:ship.id,path:[middle.id]},{shipId:ship.id,path:[target.id]}]});
+  expect(previews).toHaveBeenLastCalledWith(expect.arrayContaining([expect.objectContaining({status:'valid'})]));
+ });
+ it('explicitly includes the selected unqueued route when executing the batch',()=>{
+  const {state,source,middle,target,ship}=chainFixture();const submit=vi.fn();
+  const props={view:getPlayerView(state,'a')!,sourceSectorId:source.id,selectedTargetId:middle.id,disabled:false,onTargetsChange:vi.fn(),onClose:vi.fn(),onSubmit:submit,onRoutePreview:vi.fn(),onSelectionChange:vi.fn()};
+  const rendered=render(<MovementPlanner {...props}/>);
+  fireEvent.click(screen.getByRole('checkbox',{name:/Interceptor 1/}));fireEvent.click(screen.getByRole('button',{name:/Queue route/}));
+  rendered.rerender(<MovementPlanner {...props} sourceSectorId={middle.id} selectedTargetId={target.id}/>);
+  fireEvent.click(screen.getByRole('checkbox',{name:/Interceptor 1/}));
+  expect(screen.getByText(/Execute includes the selected route/)).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button',{name:/Execute 2 routes/}));
+  expect(submit).toHaveBeenCalledWith({type:'move',moves:[{shipId:ship.id,path:[middle.id]},{shipId:ship.id,path:[target.id]}]});
+  expect(state.ships.find(candidate=>candidate.id===ship.id)?.sectorId).toBe(source.id);
+ });
+ it('marks reordered dependent routes rejected and refuses their execution',()=>{
+  const {state,source,middle,target}=chainFixture();const props={view:getPlayerView(state,'a')!,sourceSectorId:source.id,selectedTargetId:middle.id,disabled:false,onTargetsChange:vi.fn(),onClose:vi.fn(),onSubmit:vi.fn(),onRoutePreview:vi.fn(),onSelectionChange:vi.fn()};
+  const rendered=render(<MovementPlanner {...props}/>);
+  fireEvent.click(screen.getByRole('checkbox',{name:/Interceptor 1/}));fireEvent.click(screen.getByRole('button',{name:/Queue route/}));
+  rendered.rerender(<MovementPlanner {...props} sourceSectorId={middle.id} selectedTargetId={target.id}/>);
+  fireEvent.click(screen.getByRole('checkbox',{name:/Interceptor 1/}));fireEvent.click(screen.getByRole('button',{name:/Queue route/}));
+  fireEvent.click(screen.getByRole('button',{name:/Move queued route 2 earlier/}));
+  expect(screen.getByText(/No friendly ships here|Select only mobile ships/)).toBeInTheDocument();
+  expect(screen.getByRole('button',{name:/Execute 2 routes/})).toBeDisabled();
  });
  it('explains stationary starbases and asks for a source rather than a dropdown',()=>{
   const {state,source}=fixture();state.ships.push({...state.ships[0],id:'base',owner:'a',sectorId:source.id,type:'starbase'});

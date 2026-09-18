@@ -8,6 +8,8 @@ import type { PlayerView, Ship } from "../../shared/eclipse/types";
 import ShipSilhouette from "./ShipSilhouette";
 import { StatIcon, type StatIconName } from "./ShipPartStats";
 import "./battleOverview.css";
+import type { GameEvent } from "../../shared/eclipse/types";
+import { useState } from "react";
 const names: Record<Ship["type"], string> = {
   interceptor: "Interceptor",
   cruiser: "Cruiser",
@@ -30,6 +32,12 @@ const colors = {
   white: "#e3e7ed",
   black: "#bac0ce",
 };
+type PublicVolley = NonNullable<GameEvent["combatVolley"]>;
+export function CombatPlayback({ volleys, fast = false }: { volleys: readonly PublicVolley[]; fast?: boolean }) {
+  const [skipMotion, setSkipMotion] = useState(fast);
+  if (!volleys.length) return null;
+  return <section className={`dg-combat-playback${skipMotion ? " is-fast" : ""}`} aria-label="Recent combat impacts"><header><div><span>IMPACT LOG</span><strong>{volleys.length} resolved {volleys.length === 1 ? "volley" : "volleys"}</strong></div><button type="button" onClick={() => setSkipMotion(true)} disabled={skipMotion}>{skipMotion ? "Fast playback on" : "Skip volley animation"}</button></header>{volleys.map((volley,index)=><article className="dg-playback-volley" key={`${volley.battleId}:${volley.dice.map(die=>die.id).join(',')}:${index}`}><div className="dg-result-dice">{volley.dice.map(die=><span key={die.id} className={`is-${die.weaponColor??'unknown'}`} aria-label={`Roll ${die.face}, ${die.damage} damage`}><b>{die.face}</b><small>{die.weaponColor&&die.weaponKind?`${die.weaponColor} ${die.weaponKind}`:'weapon unavailable'}</small></span>)}</div><ul>{volley.targets.map(target=><li key={target.id}><strong>{target.id}</strong><span>{target.hpBefore} → {target.hpAfter} HP</span>{target.destroyed&&<b>Destroyed</b>}{target.excess>0&&<small>{target.excess} excess</small>}</li>)}</ul></article>)}</section>;
+}
 export function NeutralShipSilhouette({
   type,
 }: {
@@ -98,7 +106,7 @@ function BattleStat({
   );
 }
 /** Active engagement only; all stats come from the same public blueprints as combat. */
-export default function BattleOverview({ view }: { view: PlayerView }) {
+export default function BattleOverview({ view, recentVolleys = [], fastPlayback = false }: { view: PlayerView; recentVolleys?: readonly NonNullable<GameEvent["combatVolley"]>[]; fastPlayback?: boolean }) {
   const battle = view.battle;
   if (!battle) return null;
   const inSector = view.ships.filter((s) => s.sectorId === battle.sectorId);
@@ -127,6 +135,7 @@ export default function BattleOverview({ view }: { view: PlayerView }) {
           {battle.engagement > 0 ? `· Round ${battle.engagement}` : ""}
         </span>
       </header>
+      <CombatPlayback volleys={recentVolleys} fast={fastPlayback} />
       <div className="dg-battle-sides">
         {(
           [

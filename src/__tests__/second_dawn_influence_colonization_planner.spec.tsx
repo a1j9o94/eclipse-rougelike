@@ -50,6 +50,7 @@ function influenceFixture() {
 }
 
 describe("visual influence planner", () => {
+  it("leads with Claim, Release, and Transfer control intents and previews territorial stakes",()=>{const fixture=influenceFixture();render(<InfluencePlanner view={fixture.view} candidates={fixture.candidates} disabled={false} onSubmit={vi.fn()}/>);expect(screen.getByRole('heading',{name:'Shape your territory'})).toBeTruthy();expect(screen.getByText('Release sector')).toBeTruthy();fireEvent.click(screen.getByRole('button',{name:new RegExp(`Remove control from sector ${fixture.source.tileId}`)}));fireEvent.click(screen.getByRole('button',{name:new RegExp(`Place disc in sector ${fixture.target.tileId}`)}));expect(screen.getByRole('heading',{name:'Transfer control'})).toBeTruthy();expect(screen.getAllByText(/population.*return/i).length).toBeGreaterThan(0);expect(screen.getAllByText(/sector VP/i).length).toBeGreaterThan(0);});
   it("stages a source and highlighted destination before submitting the exact legal transfer", () => {
     const fixture = influenceFixture();
     const submit = vi.fn();
@@ -67,7 +68,7 @@ describe("visual influence planner", () => {
     expect(targets).toHaveBeenLastCalledWith([fixture.target.id]);
     expect(screen.getByText(/Choose a connected uncontrolled sector/)).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: new RegExp(`Place disc in sector ${fixture.target.tileId}`) }));
-    expect(screen.getByText(/Transfer control/)).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Transfer control" })).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Confirm influence" }));
     expect(submit).toHaveBeenCalledWith(fixture.candidates[1].command);
   });
@@ -130,6 +131,16 @@ function colonizeFixture() {
 }
 
 describe("visual colonization planner", () => {
+  it('requires an explicit population resource on a multi-resource gray planet',()=>{const fixture=colonizeFixture();fixture.sector.tileId='108';fixture.view=getPlayerView(fixture.state,'a')!;const candidates=(['money','science','materials'] as const).map(resource=>({command:{type:'colonize' as const,placements:[{sectorId:fixture.sector.id,squareId:'p2',resource}]},label:`Colonize gray with ${resource}`,description:'Choose a cube.'}));const submit=vi.fn();render(<ColonizationPlanner view={fixture.view} candidates={candidates} disabled={false} onSubmit={submit}/>);fireEvent.click(screen.getByRole('button',{name:/Colonize Any resource planet p2/}));expect(screen.queryByRole('button',{name:/Colonize 1 planet/})).toBeNull();expect(screen.getByRole('button',{name:'Money population'})).toHaveAttribute('aria-pressed','false');fireEvent.click(screen.getByRole('button',{name:'Science population'}));fireEvent.click(screen.getByRole('button',{name:'Colonize 1 planet'}));expect(submit.mock.calls[0][0]).toMatchObject({placements:[{resource:'science'}]});});
+  it("keeps one multi-sector workspace and previews exact marginal income and cube use",()=>{
+    const fixture=colonizeFixture();const second={...fixture.sector,id:'second-colony',tileId:fixture.sector.tileId,position:{q:fixture.sector.position.q+2,r:fixture.sector.position.r},population:[]};fixture.state.sectors.push(second);fixture.state.seats[0].colonyShipsAvailable=3;fixture.state.seats[0].populationTracks.money=2;fixture.view=getPlayerView(fixture.state,'a')!;
+    const secondCommand:GameCommand={type:'colonize',placements:[{sectorId:second.id,squareId:'p0',resource:'money'}]};const sectors=vi.fn(),focus=vi.fn(),submit=vi.fn();
+    render(<ColonizationPlanner view={fixture.view} candidates={[...fixture.candidates,{command:secondCommand,label:'Colonize second money',description:'Use one colony ship.'}]} disabled={false} onSubmit={submit} onColonizableSectorIdsChange={sectors} onSectorFocus={focus}/>);
+    expect(sectors).toHaveBeenLastCalledWith(expect.arrayContaining([fixture.sector.id,second.id]));fireEvent.click(screen.getByRole('button',{name:new RegExp(`Colonize Money planet p0 in sector ${fixture.sector.tileId}$`)}));
+    fireEvent.click(screen.getAllByRole('button',{name:new RegExp(`Sector ${second.tileId}`)})[1]);expect(focus).toHaveBeenCalledWith(second.id);fireEvent.click(screen.getByRole('button',{name:new RegExp(`Colonize Money planet p0 in sector ${second.tileId}$`)}));
+    expect(screen.getByRole('region',{name:'Colonization consequences'})).toHaveTextContent('Colony ships3 → 1');expect(screen.getByRole('region',{name:'Colonization consequences'})).toHaveTextContent('income 4 → 8 +4');
+    fireEvent.click(screen.getByRole('button',{name:'Colonize 2 planets'}));expect(submit.mock.calls[0][0]).toMatchObject({type:'colonize',placements:[{sectorId:fixture.sector.id},{sectorId:second.id}]});expect(processGameCommand(fixture.state,'a',submit.mock.calls[0][0])).toMatchObject({ok:true});
+  });
   it("uses a planet card and resource chip to produce an existing legal colonize command", () => {
     const fixture = colonizeFixture();
     const submit = vi.fn();
@@ -138,7 +149,7 @@ describe("visual colonization planner", () => {
     expect(screen.getAllByText(/1 colony ship/).length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: "Money population" })).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Money population" }));
-    fireEvent.click(screen.getByRole("button", { name: "Confirm colonization" }));
+    fireEvent.click(screen.getByRole("button", { name: "Colonize 1 planet" }));
     expect(submit).toHaveBeenCalledWith(fixture.candidates[0].command);
     expect(processGameCommand(fixture.state, "a", submit.mock.calls[0][0])).toMatchObject({ ok: true });
   });

@@ -5,6 +5,7 @@ import type { GameCommand, PlayerView } from "../../shared/eclipse/types";
 import ActionEconomy from "./ActionEconomy";
 import type { CommandCandidate } from "./SecondDawnBoard";
 import { influenceChoices } from "./influencePlanning";
+import { sectorDefinition } from "../../shared/eclipse/sectors";
 import "./influencePlanner.css";
 
 export interface InfluencePlannerProps {
@@ -153,7 +154,7 @@ export default function InfluencePlanner({
       <header>
         <div>
           <small>INFLUENCE</small>
-          <h2>Place and return influence discs</h2>
+          <h2>Shape your territory</h2>
         </div>
         <output aria-label="Influence discs remaining">
           <b>{own?.influenceOnTrack ?? 0}</b>
@@ -161,7 +162,7 @@ export default function InfluencePlanner({
         </output>
       </header>
       <p className="dg-influence-guide">
-        Choose a controlled sector to return its disc, then choose one of its legal connected destinations. A destination without a returned disc uses one from your track.
+        Claim an open sector, release one you control, or transfer its disc to a connected frontier. The exact disc accounting remains visible with the consequences.
       </p>
       {!hasChoices ? (
         <p role="status">No legal influence changes are available. Finish the current action, remove enemy ships, or free an influence disc.</p>
@@ -185,7 +186,7 @@ export default function InfluencePlanner({
           )}
           <div className="dg-influence-columns">
             <section aria-labelledby="influence-return-title">
-              <h3 id="influence-return-title">1. Return a disc</h3>
+              <h3 id="influence-return-title">Release sector</h3>
               <p>Returning control also returns this sector’s population later in the action.</p>
               <div className="dg-influence-sector-list">
                 {[...new Set([...choices.removeOnly, ...[...choices.transfersBySource.values()].flat()]
@@ -205,7 +206,7 @@ export default function InfluencePlanner({
               </div>
             </section>
             <section aria-labelledby="influence-place-title">
-              <h3 id="influence-place-title">2. Place a disc</h3>
+              <h3 id="influence-place-title">{sourceId ? "Transfer control" : "Claim sector"}</h3>
               <p>{sourceId ? "Choose a connected uncontrolled sector." : "Choose a destination to use a disc from your track."}</p>
               <div className="dg-influence-sector-list">
                 {targets.map((candidate) => {
@@ -232,6 +233,10 @@ export default function InfluencePlanner({
               <strong>{draft.label}</strong>
               {!draftLegal&&<p role="status">This saved influence choice is no longer legal. Choose another sector or clear the draft.</p>}
               <ActionEconomy view={view} action="influence" preview={preview} />
+              {draft.command.type === "influence" && <div className="dg-influence-stakes" aria-label="Territory consequences">
+                {draft.command.removeSectorIds.map(id=>{const sector=view.sectors.find(s=>s.id===id);return sector?<p key={`remove-${id}`}><strong>Release Sector {sector.tileId}</strong> · lose {sectorDefinition(Number(sector.tileId))?.victoryPoints ?? 0} sector VP · {sector.population.length} population cube{sector.population.length===1?'':'s'} return in the next choice.</p>:null;})}
+                {draft.command.addSectorIds.map(id=>{const sector=view.sectors.find(s=>s.id===id);return sector?<p key={`add-${id}`}><strong>Claim Sector {sector.tileId}</strong> · gain {sectorDefinition(Number(sector.tileId))?.victoryPoints ?? 0} sector VP · its empty planets become colonization opportunities.</p>:null;})}
+              </div>}
               {draft.command.type === "influence" && draft.command.removeSectorIds.length > 0 && <p>Population on the returned sector will be sent back for you to allocate if required.</p>}
               <button
                 type="button"

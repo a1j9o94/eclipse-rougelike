@@ -1,334 +1,60 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from 'react';
 import { useActionDraftGuard, useActionDraftState } from './actionDraftContext';
-import { BASE_COMPONENTS, getFaction } from "../../shared/eclipse/catalog";
-import { capacity } from "../../shared/eclipse/rulesState";
-import { fundingOptions } from "../../shared/eclipse/funding";
-import { previewCommand } from "../../shared/eclipse/commandPreview";
-import type { GameCommand, PlayerView } from "../../shared/eclipse/types";
-import ShipSilhouette from "./ShipSilhouette";
-import { StatIcon } from "./ShipPartStats";
-import { TradeResourceIcon } from "./TradePanel";
-import FundingPlanSelector from "./FundingPlanSelector";
-import ActionEconomy from "./ActionEconomy";
+import { BASE_COMPONENTS, getFaction } from '../../shared/eclipse/catalog';
+import { deriveBlueprintStats, type BlueprintShipType } from '../../shared/eclipse/blueprints';
+import { describeWeapons } from './itemDescriptions';
+import { fundingOptions } from '../../shared/eclipse/funding';
+import { previewCommand } from '../../shared/eclipse/commandPreview';
+import { publicBlueprint } from '../../shared/eclipse/legal';
+import type { GameCommand, PlayerView } from '../../shared/eclipse/types';
+import ShipSilhouette from './ShipSilhouette';
+import { StatIcon } from './ShipPartStats';
+import { TradeResourceIcon } from './TradePanel';
+import FundingPlanSelector from './FundingPlanSelector';
+import ActionEconomy from './ActionEconomy';
 import ActionDraftNotice from './ActionDraftNotice';
-import "./buildPlanner.css";
-export interface BuildPlannerProps {
-  view: PlayerView;
-  sectorId: string | null;
-  disabled: boolean;
-  onClose: () => void;
-  onSubmit: (command: GameCommand) => void;
-}
-type BuildCommand = Extract<GameCommand, { type: "build" }>;
-type Component = BuildCommand["builds"][number]["component"];
-const TYPES: readonly Component[] = [
-  "interceptor",
-  "cruiser",
-  "dreadnought",
-  "starbase",
-  "orbital",
-  "monolith",
-];
-const name = (type: Component) => type[0].toUpperCase() + type.slice(1);
-const empty = (): Record<Component, number> => ({
-  interceptor: 0,
-  cruiser: 0,
-  dreadnought: 0,
-  starbase: 0,
-  orbital: 0,
-  monolith: 0,
-});
-export default function BuildPlanner({
-  view,
-  sectorId,
-  disabled,
-  onClose,
-  onSubmit,
-}: BuildPlannerProps) {
-  const dialog = useRef<HTMLDialogElement>(null);
-  const own = view.seats.find((seat) => seat.id === view.viewerSeatId);
-  const owned = view.sectors.filter(
-    (sector) => sector.owner === view.viewerSeatId,
-  );
-  const [selectedSector, setSelectedSector] = useActionDraftState('buildSector',sectorId ?? owned[0]?.id ?? "");
-  const [counts, setCounts] = useActionDraftState('buildCounts',empty);
-  const [selectedFunding, setSelectedFunding] = useActionDraftState('buildFunding',"");
-  const draftGuard=useActionDraftGuard();
-  useEffect(() => {
-    const node = dialog.current;
-    if (!node) return;
-    if (typeof node.showModal === "function") node.showModal();
-    else node.setAttribute("open", "");
-    return () => {
-      if (node.open && typeof node.close === "function") node.close();
-    };
-  }, []);
-  const sector = view.sectors.find(
-    (candidate) => candidate.id === selectedSector,
-  );
-  if (!own) return null;
-  const faction = getFaction(own.faction),
-    technologies = Object.values(own.technologies).flat();
-  const progress = view.actionProgress;
-  const limit =
-    progress?.owner === own.id && progress.action === "build"
-      ? progress.remaining
-      : capacity(own, "build");
-  const total = TYPES.reduce((sum, type) => sum + counts[type], 0);
-  const action: BuildCommand = {
-    type: "build",
-    builds: TYPES.flatMap((component) =>
-      Array.from({ length: counts[component] }, () => ({
-        sectorId: selectedSector,
-        component,
-      })),
-    ),
+import { addBuildItem, analyzeBuildOrder, BUILD_COMPONENTS, emptyBuildOrder, placeBuildItem, removeBuildItem, type BuildComponent, type BuildOrderDraft, type BuildPlacementPreview } from './buildPlanning';
+import './buildPlanner.css';
+
+export interface BuildPlannerProps { view: PlayerView; sectorId: string | null; defaultPlacementSectorId?: string | null; disabled: boolean; onClose: () => void; onSubmit: (command: GameCommand) => void; embedded?: boolean; placementRequest?: { sectorId: string; serial: number } | null; onPlacementPreview?: (preview: BuildPlacementPreview | null) => void; onLegalTargetsChange?: (targets: readonly string[]) => void }
+const name = (type: BuildComponent) => type[0].toUpperCase() + type.slice(1);
+const isShip = (type: BuildComponent): type is BlueprintShipType => !['orbital','monolith'].includes(type);
+
+export default function BuildPlanner({ view, sectorId, defaultPlacementSectorId=null, disabled, onClose, onSubmit, embedded=false, placementRequest, onPlacementPreview, onLegalTargetsChange }: BuildPlannerProps) {
+  const dialog=useRef<HTMLDialogElement>(null), handledPlacement=useRef<number|null>(null);
+  const own=view.seats.find(seat=>seat.id===view.viewerSeatId);
+  const [draft,setDraft]=useActionDraftState('buildOrder',emptyBuildOrder);
+  const guard=useActionDraftGuard(), analysis=useMemo(()=>analyzeBuildOrder(view,draft),[view,draft]);
+  const selected=draft.items.find(item=>item.id===draft.selectedItemId)??null;
+  const targets=useMemo(()=>selected?analysis.legalSectorIdsByItem[selected.id]??[]:[],[analysis.legalSectorIdsByItem,selected]);
+  useEffect(()=>{if(embedded)return;const node=dialog.current;if(!node)return;if(typeof node.showModal==='function')node.showModal();else node.setAttribute('open','');return()=>{if(node.open&&typeof node.close==='function')node.close();};},[embedded]);
+  useEffect(()=>onLegalTargetsChange?.(targets),[onLegalTargetsChange,targets]);
+  useEffect(()=>onPlacementPreview?.(selected?{itemId:selected.id,component:selected.component,sectorId:selected.sectorId,legalSectorIds:targets,items:draft.items,selectedItemId:selected.id}:null),[draft.items,onPlacementPreview,selected,targets]);
+  useEffect(()=>{if(!placementRequest||handledPlacement.current===placementRequest.serial)return;handledPlacement.current=placementRequest.serial;if(selected&&targets.includes(placementRequest.sectorId))setDraft(current=>placeBuildItem(current,selected.id,placementRequest.sectorId));},[placementRequest,selected,setDraft,targets]);
+  if(!own)return null;
+  const faction=getFaction(own.faction), technologies=Object.values(own.technologies).flat(), total=draft.items.length, action=analysis.command;
+  const plans=total&&analysis.unplacedCount===0?fundingOptions(view,action):[], funded=plans.find(plan=>JSON.stringify(plan.trades)===draft.fundingKey)??plans[0];
+  const command:GameCommand=analysis.cost>own.resources.materials&&funded?funded.command:action;
+  const turnReason=own.eliminated?'This civilization has been eliminated.':view.waitingFor||view.pendingDecision?'Resolve the pending decision first.':view.phase!=='action'||view.activeSeatId!==own.id?'Wait for your action turn.':view.actionProgress&&(view.actionProgress.owner!==own.id||view.actionProgress.action!=='build')?'Finish your current action first.':!view.actionProgress&&own.influenceOnTrack<1?'No influence discs remain.':analysis.limit<1?'No Build activations remain.':null;
+  const valid=total>0&&!turnReason&&analysis.issues.length===0&&(analysis.cost<=own.resources.materials||!!funded), preview=valid?previewCommand(view,command):null;
+  const componentReason=(type:BuildComponent):string|null=>{
+    if(['starbase','orbital','monolith'].includes(type)&&!technologies.includes(type))return `Research ${name(type)} first.`;
+    const sample={...draft,items:[...draft.items,{id:'candidate',component:type,sectorId:null}]} as BuildOrderDraft;
+    if(analyzeBuildOrder(view,sample).legalSectorIdsByItem.candidate.length===0)return type==='orbital'||type==='monolith'?`No sector can hold another ${type}.`:`All ${type}s are deployed.`;
+    return total>=analysis.limit?'Build activation limit reached.':null;
   };
-  const cost = action.builds.reduce(
-    (sum, build) => sum + faction.constructionCosts[build.component],
-    0,
-  );
-  const plans = total ? fundingOptions(view, action) : [];
-  const funded =
-    plans.find((plan) => JSON.stringify(plan.trades) === selectedFunding) ??
-    plans[0];
-  const command: GameCommand =
-    cost > own.resources.materials && funded ? funded.command : action;
-  const globalReason = own.eliminated
-    ? "This civilization has been eliminated."
-    : !sector || sector.owner !== own.id
-      ? "Choose a sector you control."
-      : view.waitingFor || view.pendingDecision
-        ? "Resolve the pending decision first."
-        : view.phase !== "action" || view.activeSeatId !== own.id
-          ? "Wait for your action turn."
-          : progress &&
-              (progress.owner !== own.id || progress.action !== "build")
-            ? "Finish your current action first."
-            : !progress && own.influenceOnTrack < 1
-              ? "No influence discs remain."
-              : limit < 1
-                ? "No Build activations remain."
-                : null;
-  const remaining = (type: Component) =>
-    type === "orbital" || type === "monolith"
-      ? sector?.[type]
-        ? 0
-        : 1
-      : BASE_COMPONENTS.perColor[type] -
-        view.ships.filter((ship) => ship.owner === own.id && ship.type === type)
-          .length;
-  const componentReason = (type: Component): string | null => {
-    if (
-      ["starbase", "orbital", "monolith"].includes(type) &&
-      !technologies.includes(type)
-    )
-      return `Research ${name(type)} first.`;
-    if (remaining(type) < 1)
-      return type === "orbital" || type === "monolith"
-        ? `This sector already has a ${type}.`
-        : `All ${BASE_COMPONENTS.perColor[type]} ${type}s are deployed.`;
-    return null;
-  };
-  const canAffordNext = (type: Component) => {
-    const next: BuildCommand = {
-      type: "build",
-      builds: [...action.builds, { sectorId: selectedSector, component: type }],
-    };
-    return (
-      cost + faction.constructionCosts[type] <= own.resources.materials ||
-      fundingOptions(view, next).length > 0
-    );
-  };
-  const valid =
-    total > 0 &&
-    !globalReason &&
-    total <= limit &&
-    TYPES.every(
-      (type) =>
-        counts[type] === 0 ||
-        (!componentReason(type) && counts[type] <= remaining(type)),
-    ) &&
-    (cost <= own.resources.materials || !!funded);
-  const preview = total && valid ? previewCommand(view, command) : null;
-  return (
-    <dialog
-      ref={dialog}
-      className="dg-build-dialog"
-      aria-labelledby="build-planner-title"
-      onCancel={(event) => {
-        event.preventDefault();
-        onClose();
-      }}
-    >
-      <header className="dg-build-header">
-        <div>
-          <small>SHIPYARD</small>
-          <h2 id="build-planner-title">
-            Build in sector {sector?.tileId ?? "—"}
-          </h2>
-        </div>
-        <button
-          type="button"
-          aria-label="Close build planner"
-          onClick={onClose}
-        >
-          ×
-        </button>
-      </header>
-      <div className="dg-build-body">
-        <ActionDraftNotice/>
-        <section className="dg-build-order" aria-label="Build order">
-          <nav className="dg-build-sector" aria-label="Controlled build sectors">
-            <span>Build location</span>
-            <div>
-              {owned.map((candidate) => {
-                const fleetCount = view.ships.filter((ship) => ship.owner === own.id && ship.sectorId === candidate.id).length;
-                return <button
-                  key={candidate.id}
-                  type="button"
-                  className={selectedSector === candidate.id ? "is-selected" : ""}
-                  aria-label={`Build in sector ${candidate.tileId}`}
-                  aria-pressed={selectedSector === candidate.id}
-                  disabled={disabled}
-                  onClick={() => {
-                    setSelectedSector(candidate.id);
-                    setCounts(empty());
-                    setSelectedFunding("");
-                  }}
-                >
-                  <i aria-hidden="true">{candidate.tileId}</i>
-                  <span><strong>Sector {candidate.tileId}</strong><small>{candidate.population.length} population · {fleetCount} ships</small></span>
-                </button>;
-              })}
-            </div>
-          </nav>
-          <div className="dg-build-cards">
-            {TYPES.map((type) => {
-              const reason = componentReason(type);
-              const quantity = counts[type];
-              const unavailable =
-                reason ??
-                globalReason ??
-                (quantity >= remaining(type)
-                  ? "No more available here."
-                  : total >= limit
-                    ? "Activation limit reached."
-                    : !canAffordNext(type)
-                      ? "Not enough resources, including conversion."
-                      : null);
-              return (
-                <article
-                  key={type}
-                  className={`dg-build-card ${reason ? "dg-build-unavailable" : ""}`}
-                  aria-label={name(type)}
-                >
-                  <div className="dg-build-piece">
-                    {type === "orbital" || type === "monolith" ? (
-                      <StatIcon
-                        kind={type === "orbital" ? "portal" : "structure"}
-                      />
-                    ) : (
-                      <ShipSilhouette type={type} />
-                    )}
-                  </div>
-                  <h3>{name(type)}</h3>
-                  <span className="dg-build-price">
-                    <TradeResourceIcon resource="materials" />
-                    {faction.constructionCosts[type]}
-                  </span>
-                  <div className="dg-build-stepper">
-                    <button
-                      type="button"
-                      aria-label={`Remove ${type}`}
-                      disabled={disabled || quantity === 0}
-                      onClick={() => {
-                        setCounts((c) => ({ ...c, [type]: c[type] - 1 }));
-                        setSelectedFunding("");
-                      }}
-                    >
-                      −
-                    </button>
-                    <output aria-label={`${name(type)} quantity`}>
-                      {quantity}
-                    </output>
-                    <button
-                      type="button"
-                      aria-label={`Add ${type}`}
-                      title={unavailable ?? `Add ${type}`}
-                      disabled={disabled || !!unavailable}
-                      onClick={() => {
-                        setCounts((c) => ({ ...c, [type]: c[type] + 1 }));
-                        setSelectedFunding("");
-                      }}
-                    >
-                      +
-                    </button>
-                  </div>
-                  <small>
-                    {reason ??
-                      (type === "orbital"
-                        ? "One money / science population space"
-                        : type === "monolith"
-                          ? "3 victory points"
-                          : `${Math.max(0, remaining(type) - quantity)} unbuilt remaining`)}
-                  </small>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-        <aside
-          className="dg-build-summary"
-          aria-label="Build price and funding"
-        >
-          <div className="dg-build-total">
-            <span>Total materials</span>
-            <strong>
-              <TradeResourceIcon resource="materials" />
-              {cost}
-            </strong>
-            <small>
-              {total} / {limit} Build activations · {Math.max(0, limit - total)}{" "}
-              remaining
-            </small>
-          </div>
-          {globalReason && <p role="status">{globalReason}</p>}
-          {total > 0 && cost > own.resources.materials && funded && (
-            <FundingPlanSelector
-              view={view}
-              command={funded.command}
-              disabled={disabled}
-              onChange={(choice) =>
-                setSelectedFunding(JSON.stringify(choice.trades))
-              }
-            />
-          )}
-          <ActionEconomy view={view} action="build" preview={preview} />
-        </aside>
-      </div>
-      <footer className="dg-build-footer">
-        <span>
-          {total
-            ? `${total} component${total === 1 ? "" : "s"} · ${cost} materials`
-            : "Choose ships or structures to build."}
-        </span>
-        <button type="button" onClick={onClose}>
-          Cancel
-        </button>
-        <button
-          type="button"
-          className="sd-primary"
-          disabled={disabled || draftGuard.stale || !valid}
-          onClick={() => {
-            if (!disabled && !draftGuard.stale && valid) onSubmit(command);
-          }}
-        >
-          {command.type === "trade-and-act"
-            ? "Convert & build"
-            : "Confirm build"}
-        </button>
-      </footer>
-    </dialog>
-  );
+  const content=<>
+    <header className="dg-build-header"><div><small>SHIPYARD · ORDER THEN DEPLOY</small><h2 id="build-planner-title">Assemble your build order</h2></div><button type="button" aria-label="Close build planner" onClick={onClose}>×</button></header>
+    <div className="dg-build-body"><main className="dg-build-workspace"><ActionDraftNotice/>
+      <section aria-labelledby="build-capabilities"><h3 id="build-capabilities">1. Choose pieces</h3><div className="dg-build-cards">{BUILD_COMPONENTS.map(type=>{
+        const reason=componentReason(type), blueprint=isShip(type)?own.blueprints.find(candidate=>candidate.shipType===type):null, stats=blueprint&&isShip(type)?deriveBlueprintStats(own.faction,publicBlueprint(blueprint)):null;
+        const remaining=isShip(type)?Math.max(0,BASE_COMPONENTS.perColor[type]-view.ships.filter(ship=>ship.owner===own.id&&ship.type===type).length-draft.items.filter(item=>item.component===type).length):null;
+        return <article key={type} className={`dg-build-card${reason?' dg-build-unavailable':''}`} aria-label={name(type)}><div className="dg-build-piece">{isShip(type)?<ShipSilhouette type={type}/>:<StatIcon kind={type==='orbital'?'portal':'structure'}/>}</div><h4>{name(type)}</h4><span className="dg-build-price"><TradeResourceIcon resource="materials"/>{faction.constructionCosts[type]}</span>{stats?<small className="dg-build-capability">Hull {stats.hull+1} · move {stats.movement}<br/>initiative {stats.initiative} · computer +{stats.computer} · shield −{stats.shield}<br/>{describeWeapons(stats)} · {remaining} in supply</small>:<small className="dg-build-capability">{type==='orbital'?'Adds a money / science population space':'Worth 3 victory points'}</small>}<button type="button" aria-label={`Add ${type}`} title={reason??`Add ${type} to order`} disabled={disabled||!!turnReason||!!reason} onClick={()=>setDraft(current=>{const added=addBuildItem(current,type),item=added.items.at(-1);if(!item||!defaultPlacementSectorId)return added;const next=analyzeBuildOrder(view,added);return next.legalSectorIdsByItem[item.id]?.includes(defaultPlacementSectorId)?placeBuildItem(added,item.id,defaultPlacementSectorId):added;})}>Add to order</button>{reason&&<small className="dg-build-reason">{reason}</small>}</article>;
+      })}</div></section>
+      <section className="dg-build-deployment" aria-labelledby="build-deploy"><h3 id="build-deploy">2. Place every piece</h3>{draft.items.length===0?<p className="dg-build-empty">Your tray is empty. Add a ship or structure above.</p>:<div className="dg-build-tray" aria-label="Build order tray">{draft.items.map((item,index)=><article key={item.id} className={item.id===selected?.id?'is-selected':''}><button type="button" className="dg-build-order-piece" aria-pressed={item.id===selected?.id} onClick={()=>setDraft(current=>({...current,selectedItemId:item.id}))}><b>{index+1}. {name(item.component)}</b><span>{item.sectorId?`Sector ${view.sectors.find(sector=>sector.id===item.sectorId)?.tileId??item.sectorId}`:'Unplaced'}</span></button><button type="button" aria-label={`Remove ${item.component} from order`} onClick={()=>setDraft(current=>removeBuildItem(current,item.id))}>×</button></article>)}</div>}
+      {selected&&<div className="dg-build-targets"><p>Place <strong>{name(selected.component)}</strong>{sectorId&&!selected.sectorId?` — Build here suggests sector ${view.sectors.find(sector=>sector.id===sectorId)?.tileId??sectorId}`:''}. Choose a map hex or a sector below.</p><div>{view.sectors.filter(sector=>targets.includes(sector.id)).map(sector=><button key={sector.id} type="button" aria-label={`Place ${selected.component} in sector ${sector.tileId}`} className={selected.sectorId===sector.id?'is-selected':''} onClick={()=>setDraft(current=>placeBuildItem(current,selected.id,sector.id))}>Sector {sector.tileId}</button>)}</div>{selected.sectorId&&<button type="button" onClick={()=>setDraft(current=>placeBuildItem(current,selected.id,null))}>Return to tray</button>}</div>}</section>
+    </main><aside className="dg-build-summary" aria-label="Build price and funding"><div className="dg-build-total"><span>Total materials</span><strong><TradeResourceIcon resource="materials"/>{analysis.cost}</strong><small>{total} / {analysis.limit} pieces · {analysis.placedCount} placed · {analysis.unplacedCount} unplaced</small></div>{turnReason&&<p role="status">{turnReason}</p>}{!turnReason&&analysis.issues.map(issue=><p role="status" key={issue}>{issue}</p>)}{total>0&&analysis.cost>own.resources.materials&&funded&&<FundingPlanSelector view={view} command={funded.command} disabled={disabled} onChange={choice=>setDraft(current=>({...current,fundingKey:JSON.stringify(choice.trades)}))}/>}<ActionEconomy view={view} action="build" preview={preview}/></aside></div>
+    <footer className="dg-build-footer"><span>{valid?`${total} pieces ready across ${new Set(action.builds.map(build=>build.sectorId)).size} sectors`:analysis.unplacedCount?`${analysis.unplacedCount} pieces still need a sector`:'Review the order before building.'}</span><button type="button" onClick={onClose}>Cancel</button><button type="button" className="sd-primary" disabled={disabled||guard.stale||!valid} onClick={()=>{if(!disabled&&!guard.stale&&valid){guard.markSubmitted(command);onSubmit(command);}}}>{command.type==='trade-and-act'?'Convert & ':''}Build {total} {draft.items.every(item=>isShip(item.component))?(total===1?'ship':'ships'):(total===1?'piece':'pieces')} · {analysis.cost} materials</button></footer>
+  </>;
+  return embedded?<section className="dg-build-planner is-embedded" aria-labelledby="build-planner-title">{content}</section>:<dialog ref={dialog} className="dg-build-dialog" aria-labelledby="build-planner-title" onCancel={event=>{event.preventDefault();onClose();}}>{content}</dialog>;
 }

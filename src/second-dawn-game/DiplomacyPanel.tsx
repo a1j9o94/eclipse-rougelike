@@ -34,6 +34,7 @@ export default function DiplomacyPanel({
   const own = view.seats.find(
     (s) => s.id === (inspectedSeatId ?? view.viewerSeatId),
   )!;
+  const viewer = view.seats.find((seat) => seat.id === view.viewerSeatId)!;
   const isOwn = own.id === view.viewerSeatId;
   const retainedCount = isOwn
     ? view.private.reputation.length
@@ -43,9 +44,7 @@ export default function DiplomacyPanel({
     reputationCapacity({ ...own, ambassadors: [] }) ===
     reputationCapacity({ ...own, ambassadors: [own.id] });
   const [chosenResources, setChosenResources] = useState<Record<string, Resource>>({});
-  const offers = candidates.filter(
-    (c) => isOwn && c.command.type === "offer-diplomacy",
-  );
+  const offers = candidates.filter((c) => c.command.type === "offer-diplomacy");
   const returns = candidates.filter(
     (c) => isOwn && c.command.type === "discard-reputation",
   );
@@ -206,6 +205,21 @@ export default function DiplomacyPanel({
           </p>
         )}
       </section>
+      {!isOwn && (()=>{
+        const partnerOffers=offers.filter(candidate=>candidate.command.type==='offer-diplomacy'&&candidate.command.to===own.id);
+        if(!partnerOffers.length)return null;
+        const selectedResource=chosenResources[own.id];
+        const chosen=partnerOffers.find(candidate=>candidate.command.type==='offer-diplomacy'&&candidate.command.resource===selectedResource);
+        const faction=getFaction(own.faction);
+        return <section className="dg-diplomacy-offer dg-inspected-offer" aria-label={`Offer diplomacy to ${faction.name}`}>
+          <h2>Form a relation · 1 VP ambassador</h2>
+          <p>Each civilization exchanges an ambassador and returns one population cube to its track. Choose your cube deliberately; inspecting this civilization sends nothing.</p>
+          <div className="dg-diplomacy-cube-choices" role="group" aria-label={`Your population cube for ${faction.name}`}>
+            {resources.map(resource=>{const candidate=partnerOffers.find(item=>item.command.type==='offer-diplomacy'&&item.command.resource===resource);const before=incomeForPopulationAway(viewer.populationTracks[resource]);const after=incomeForPopulationAway(Math.min(11,viewer.populationTracks[resource]+1));return <button key={resource} type="button" className={`dg-diplomacy-cube${selectedResource===resource?' is-selected':''}`} aria-label={candidate?`Choose ${resource} population for ${faction.name}`:`${names[resource]} population unavailable for ${faction.name}`} aria-pressed={selectedResource===resource} disabled={disabled||!candidate} onClick={()=>candidate&&setChosenResources(current=>({...current,[own.id]:resource}))}><TradeResourceIcon resource={resource}/><span><strong>{names[resource]}</strong><small>{candidate?`Income ${before} → ${after}`:'Unavailable'}</small></span></button>;})}
+          </div>
+          {chosen?.command.type==='offer-diplomacy'&&<button className="sd-primary" disabled={disabled} aria-label={`Offer ambassador exchange to ${faction.name}`} onClick={()=>onSubmit(chosen.command)}>Offer ambassador exchange</button>}
+        </section>;
+      })()}
       {isOwn && (
         <>
           <h2>Other civilizations</h2>

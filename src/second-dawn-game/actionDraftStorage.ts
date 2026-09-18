@@ -1,3 +1,5 @@
+import type { BuildOrderDraft } from './buildPlanning';
+import type { MovementRouteDraft } from './movementPlanning';
 import type { ShipBlueprint, BlueprintShipType } from '../../shared/eclipse/blueprints';
 import { isShipPartId } from '../../shared/eclipse/parts';
 import type { BuildComponent } from '../../shared/eclipse/history';
@@ -6,6 +8,7 @@ import type { CommandCandidate } from './SecondDawnBoard';
 
 export interface DraftPartition { matchId: string; viewerSeatId: string }
 export interface DraftValues {
+  buildOrder: BuildOrderDraft; movementRoutes: MovementRouteDraft[];
   selectedSector: string | null; screen: string; action: GameCommand['type']; commandDraft: CommandCandidate | null;
   researchSelection: string | null; editing: BlueprintShipType | null; playerId: string;
   buildOpen: boolean; moveOpen: boolean; moveSource: string | null; moveTarget: string | null; historyOpen: boolean;
@@ -21,7 +24,7 @@ export interface DraftValues {
 export type DraftKey = keyof DraftValues;
 export type DraftEntries = { [K in DraftKey]?: { revision: number; value: DraftValues[K] } };
 export interface DraftSnapshot extends DraftPartition { version: 1; values: DraftEntries }
-export const DRAFT_KEYS: readonly DraftKey[] = ['selectedSector','screen','action','commandDraft','researchSelection','editing','playerId','buildOpen','moveOpen','moveSource','moveTarget','historyOpen','camera','movement','buildSector','buildCounts','buildFunding','blueprint-interceptor','blueprint-cruiser','blueprint-dreadnought','blueprint-starbase','blueprintSlot-interceptor','blueprintSlot-cruiser','blueprintSlot-dreadnought','blueprintSlot-starbase','influenceSource','influenceDraft','colonization','colonizationFocus','tradeTo','tradeFrom','tradeAmount'];
+export const DRAFT_KEYS: readonly DraftKey[] = ['buildOrder','movementRoutes','selectedSector','screen','action','commandDraft','researchSelection','editing','playerId','buildOpen','moveOpen','moveSource','moveTarget','historyOpen','camera','movement','buildSector','buildCounts','buildFunding','blueprint-interceptor','blueprint-cruiser','blueprint-dreadnought','blueprint-starbase','blueprintSlot-interceptor','blueprintSlot-cruiser','blueprintSlot-dreadnought','blueprintSlot-starbase','influenceSource','influenceDraft','colonization','colonizationFocus','tradeTo','tradeFrom','tradeAmount'];
 const COMPONENTS = ['interceptor','cruiser','dreadnought','starbase','orbital','monolith'];
 const SHIPS = COMPONENTS.slice(0,4);
 const RESOURCES = ['money','science','materials'];
@@ -64,6 +67,8 @@ function validValue(key: DraftKey, value: unknown): boolean {
     case 'playerId': case 'buildSector': case 'buildFunding': return text(value);
     case 'buildOpen': case 'moveOpen': case 'historyOpen': return typeof value==='boolean';
     case 'camera': return value===null || record(value)&&keysOnly(value,['zoom','center'])&&typeof value.zoom==='number'&&value.zoom>0&&value.zoom<=20&&record(value.center)&&keysOnly(value.center,['x','y'])&&typeof value.center.x==='number'&&Number.isFinite(value.center.x)&&typeof value.center.y==='number'&&Number.isFinite(value.center.y);
+    case 'buildOrder': return record(value)&&keysOnly(value,['items','selectedItemId','fundingKey'])&&Array.isArray(value.items)&&value.items.length<=20&&value.items.every(item=>record(item)&&keysOnly(item,['id','component','sectorId'])&&text(item.id)&&COMPONENTS.includes(String(item.component))&&nullableText(item.sectorId))&&nullableText(value.selectedItemId)&&text(value.fundingKey);
+    case 'movementRoutes': return Array.isArray(value)&&value.length<=10&&value.every(route=>record(route)&&keysOnly(route,['sourceSectorId','shipIds','destinationSectorId'])&&text(route.sourceSectorId)&&strings(route.shipIds)&&route.shipIds.length<=10&&text(route.destinationSectorId));
     case 'movement': return record(value)&&keysOnly(value,['source','ids'])&&nullableText(value.source)&&strings(value.ids);
     case 'buildCounts': return record(value)&&keysOnly(value,COMPONENTS)&&COMPONENTS.every(component=>integer(value[component],100));
     case 'colonization': return record(value)&&Object.keys(value).length<=100&&Object.entries(value).every(([id,resource])=>text(id)&&RESOURCES.includes(String(resource)));
@@ -98,6 +103,8 @@ export function isMeaningfulDraft(key: DraftKey, entries: DraftEntries): boolean
   const entry=entries[key];if(!entry)return false;
   if(key==='commandDraft'||key==='influenceDraft')return entry.value!==null;
   if(key.startsWith('blueprint-'))return true;
+  if(key==='buildOrder')return !!entries.buildOrder?.value.items.length;
+  if(key==='movementRoutes')return !!entries.movementRoutes?.value.length;
   if(key==='movement')return !!entries.movement?.value.ids.length;
   if(key==='buildCounts')return Object.values(entries.buildCounts!.value).some(count=>count>0);
   if(key==='colonization')return Object.keys(entries.colonization!.value).length>0;
@@ -107,8 +114,8 @@ export function keysForCommand(command: GameCommand): DraftKey[] {
   if(command.type==='trade-and-act')return keysForCommand(command.action);
   const keys:DraftKey[]=['commandDraft'];
   switch(command.type){
-    case 'move':return [...keys,'movement','moveTarget'];
-    case 'build':return [...keys,'buildCounts','buildFunding'];
+    case 'move':return [...keys,'movement','movementRoutes','moveTarget'];
+    case 'build':return [...keys,'buildOrder','buildCounts','buildFunding'];
     case 'research': case 'explore': case 'pass': case 'end-action': case 'finish-upkeep':return keys;
     case 'upgrade':return [...keys,...command.blueprints.flatMap(blueprint=>[`blueprint-${blueprint.shipType}` as DraftKey,`blueprintSlot-${blueprint.shipType}` as DraftKey])];
     case 'influence':return [...keys,'influenceDraft','influenceSource'];

@@ -174,3 +174,12 @@ it("describes the received trade amount and public build/move destinations witho
   expect(move.details).toContain("Moved cruiser to sector 222.");
   expect(move.details).toContain("Eridani Empire attacks Planta.");
 });
+
+it('preserves all public volley groups in order and excludes private combat metadata',()=>{
+ const first={battleId:'battle',attacker:'a',dice:[],impacts:[],targets:[]};
+ const second={...first,attacker:'ancient'};
+ const result=projectHistoryEntry({...entry,events:[{type:'combat',seatId:'a',visibility:'public',message:'First',combatVolley:first},{type:'combat',seatId:'ancient',visibility:'public',message:'Second',combatVolley:second},{type:'combat',seatId:'a',visibility:{seatId:'a'},message:'Secret',combatVolley:{...first,battleId:'private'}}]},[]);
+ expect(result.combatVolleys).toEqual([first,second]);
+ expect(result.combatVolley).toEqual(first);
+ expect(JSON.stringify(result)).not.toContain('private');
+});

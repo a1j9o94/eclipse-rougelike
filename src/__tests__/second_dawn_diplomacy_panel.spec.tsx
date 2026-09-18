@@ -111,3 +111,5 @@ it("inspects an opponent without rendering the viewer’s secret reputation valu
   expect(screen.queryByText("3 VP")).not.toBeInTheDocument();
   expect(screen.getByText(/Traitor card · −2 VP/)).toBeInTheDocument();
 });
+
+it("offers diplomacy from the inspected opponent card only after an explicit resource choice",()=>{const state=(JSON.parse(fixturesJson) as Record<string,GameState>).opening;const view=getPlayerView(state,state.seats[0].id)!;const command={type:'offer-diplomacy' as const,to:state.seats[1].id,resource:'science' as const};const submit=vi.fn();render(<DiplomacyPanel view={view} inspectedSeatId={state.seats[1].id} candidates={[{command,label:'Offer diplomacy',description:'Exchange using science.'}]} disabled={false} onSubmit={submit}/>);expect(submit).not.toHaveBeenCalled();expect(screen.getByText(/Form a relation.*1 VP/i)).toBeTruthy();fireEvent.click(screen.getByRole('button',{name:/Choose science population/i}));fireEvent.click(screen.getByRole('button',{name:/Offer ambassador exchange to Hydran Progress/i}));expect(submit).toHaveBeenCalledWith(command);});

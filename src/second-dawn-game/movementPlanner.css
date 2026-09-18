@@ -5,3 +5,8 @@
 @media(max-height:800px){.dg-app .dg-movement-steps{display:none}.dg-app .dg-movement-planner{gap:5px}.dg-app .dg-movement-planner header h2{font-size:16px}.dg-app .dg-movement-planner header button{padding:5px 9px}.dg-app .dg-movement-route p{font-size:11px}.dg-app .dg-movement-confirm{padding:2px 0}}
 .dg-app .dg-movement-planner button:focus-visible{outline:2px solid #edc879;outline-offset:2px}
 .dg-app .dg-movement-route p{flex-wrap:wrap}.dg-movement-route strong small{font-weight:400;color:#c7b588;white-space:nowrap}.dg-movement-route span{overflow-wrap:anywhere}
+.dg-app .dg-movement-result{padding:9px 11px;border-left:3px solid #8bc8a6;border-radius:4px;background:#173b3066;color:#b7e6ca}
+.dg-app .dg-movement-capacity{font-weight:700;color:#e8c77f}
+.dg-app .dg-movement-confirm{display:grid;gap:7px}
+.dg-app .dg-movement-confirm button+button{background:transparent;color:#ddcfb3;border-color:#73633e;font-weight:500}
+.dg-movement-queue{display:grid;gap:6px;padding:9px;border:1px solid #526b7c;border-radius:7px;background:#102130}.dg-movement-queue h3{margin:0;font-size:14px}.dg-movement-queue>div{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;align-items:center;gap:5px;padding:6px;border-left:3px solid #83c6dd;background:#172b3a;font-size:12px}.dg-movement-queue>div.is-rejected{border-left-color:#dc8c76;background:#3b2527}.dg-movement-queue small{grid-column:1/-1;color:#f0b5a5}.dg-movement-queue button{min-height:30px;padding:3px 7px;background:transparent;color:#dce6ef;border:1px solid #63798b;border-radius:4px}

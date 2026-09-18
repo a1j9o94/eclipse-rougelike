@@ -1,11 +1,8 @@
 .dg-upkeep-summary { position: relative; flex: 0 0 206px; border-left: 1px solid #66573a; padding-left: 16px; align-self: center; }
 .dg-upkeep-summary summary { cursor: pointer; list-style: none; }
 .dg-upkeep-summary summary::-webkit-details-marker { display:none; }
-.dg-upkeep-summary summary > span { display:block; font-size:11px; color:#d5cab1; }
-.dg-upkeep-summary summary > div { display:flex; align-items:baseline; justify-content:space-between; gap:8px; padding-right:8px; }
-.dg-upkeep-summary strong { font-size:25px; color:#e8c77f; font-weight:600; }
-.dg-upkeep-summary strong small { font-size:10px; font-weight:400; }
-.dg-upkeep-summary b { font-size:13px; color:#a0d3b6; }
+.dg-upkeep-summary summary > span { display:block; font-size:10px; color:#d5cab1; letter-spacing:.08em; text-transform:uppercase; }
+.dg-upkeep-summary strong { display:block; margin:3px 0; font-size:15px; line-height:1.2; color:#a0d3b6; font-weight:700; }
 .dg-upkeep-summary summary > small { display:block; font-size:10px; margin-top:3px; color:#c3d2db; }
 .dg-upkeep-summary .dg-danger { color:#f6a4a1; }
 .dg-upkeep-explanation { position:absolute; top:calc(100% + 12px); right:0; width:335px; padding:16px; background:#15202b; border:1px solid #b58f4c; box-shadow:0 8px 22px #0009; z-index:40; color:#e4ded0; }

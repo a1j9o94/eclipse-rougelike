@@ -1,5 +1,6 @@
 import { sectorDefinition } from "../../shared/eclipse/sectors";
 import type { PendingDecision, PlayerView, Resource } from "../../shared/eclipse/types";
+import { incomeForPopulationAway } from '../../shared/eclipse/tracks';
 import type { PlanetResource } from "./SectorPlanets";
 import type { CommandCandidate } from "./SecondDawnBoard";
 
@@ -10,6 +11,37 @@ export interface PlanetOption {
   advanced: boolean;
   resources: Resource[];
   candidates: CommandCandidate[];
+}
+
+export interface ColonizationResourcePreview {
+  resource: Resource;
+  placements: number;
+  cubesBefore: number;
+  cubesAfter: number;
+  incomeBefore: number;
+  incomeAfter: number;
+  incomeDelta: number;
+}
+export interface ColonizationDraftPreview {
+  colonyShipsBefore: number;
+  colonyShipsAfter: number;
+  resources: readonly ColonizationResourcePreview[];
+  legal: boolean;
+}
+
+/** Player-facing cube and income consequences for a complete colonization draft. */
+export function previewColonizationDraft(view: PlayerView, placements: readonly { resource: Resource }[]): ColonizationDraftPreview {
+  const own = view.seats.find(seat => seat.id === view.viewerSeatId);
+  const colonyShipsBefore = own?.colonyShipsAvailable ?? 0;
+  const resources = (['money','science','materials'] as const).map(resource => {
+    const count = placements.filter(placement => placement.resource === resource).length;
+    const before = own?.populationTracks[resource] ?? 11;
+    const after = before + count;
+    const incomeBefore = incomeForPopulationAway(Math.max(-1, Math.min(11, before)));
+    const incomeAfter = incomeForPopulationAway(Math.max(-1, Math.min(11, after)));
+    return { resource, placements: count, cubesBefore: Math.max(0, 11 - before), cubesAfter: Math.max(0, 11 - after), incomeBefore, incomeAfter, incomeDelta: incomeAfter - incomeBefore };
+  });
+  return { colonyShipsBefore, colonyShipsAfter: colonyShipsBefore - placements.length, resources, legal: placements.length <= colonyShipsBefore && resources.every(resource => resource.cubesAfter >= 0 && resource.cubesBefore >= resource.placements) };
 }
 
 /** Groups legal colonize commands by the physical population square they affect. */

@@ -14,10 +14,9 @@ import EconomyDecision from "./EconomyDecision";
 import ColonizationPlanner from "./ColonizationPlanner";
 import {
   BombardmentTargets,
-  CombatTargetCards,
+  CombatVolleyAllocator,
   InitiativeQueue,
   RetreatCards,
-  SplitDamageCards,
 } from "./CombatDecisionVisuals";
 interface Props {
   view?: PlayerView;
@@ -88,11 +87,10 @@ export default function DecisionPanel({
         kind: "combat-allocation",
         allocations: dice.flatMap((d) =>
           d.hitTargets?.length === 0
-            ? [
+            ? d.split ? [] : [
                 {
                   dieId: d.id,
                   targetId: d.targets[0],
-                  ...(d.split ? { damage: d.damage } : {}),
                 },
               ]
             : d.split
@@ -110,46 +108,7 @@ export default function DecisionPanel({
                 : [],
         ),
       };
-      fields = (
-        <div className="dg-die-grid">
-          {decision.dice.map((d) => (
-            <div className="dg-die" key={d.id}>
-              <strong>
-                Roll {d.face} ·{" "}
-                {d.hitTargets?.length === 0
-                  ? "no hit"
-                  : `${d.damage} potential damage`}
-              </strong>
-              {d.hitTargets?.length === 0 ? (
-                <p>
-                  This roll misses every opposing ship. No allocation is needed.
-                </p>
-              ) : d.split ? (
-                <SplitDamageCards
-                  view={view}
-                  targetLabels={targetLabels}
-                  dieNumber={decision.dice.findIndex((die) => die.id === d.id) + 1}
-                  targets={d.targets}
-                  damage={d.damage}
-                  values={Object.fromEntries(d.targets.map((target) => [target, Number(value(`${d.id}/${target}`, "0"))]))}
-                  onChange={(target, next) => set(`${d.id}/${target}`, String(next))}
-                />
-              ) : d.targets.length ? (
-                <CombatTargetCards
-                  view={view}
-                  targetLabels={targetLabels}
-                  targets={d.targets}
-                  hitTargets={d.hitTargets}
-                  selected={value(d.id)}
-                  onSelect={(target) => set(d.id, target)}
-                />
-              ) : (
-                <p>No legal target for this die.</p>
-              )}
-            </div>
-          ))}
-        </div>
-      );
+      fields = <CombatVolleyAllocator view={view} decision={decision} targetLabels={targetLabels} values={values} setValue={set} />;
       break;
     }
     case "retreat":
@@ -197,7 +156,7 @@ export default function DecisionPanel({
           onSubmit({ type: "resolve", decisionId: decision.id, choice })
         }
       >
-        Confirm choice
+        {decision.kind === "combat-allocation" ? "Resolve volley" : "Confirm choice"}
       </button>
       <p className="sd-muted">
         You may edit this choice until confirmation. Draws and rolls already

@@ -19,6 +19,9 @@ it('uses a compact Galaxy-first shell with Empire, Players and Activity navigati
  expect(screen.getByRole('heading',{name:'Your empire'})).toBeInTheDocument();
  fireEvent.click(screen.getByRole('button',{name:'Research technologies'}));
  expect(screen.getByRole('heading',{name:'Research',exact:true})).toBeInTheDocument();
+ fireEvent.click(screen.getAllByRole('button',{name:/×/})[0]);
+ expect(document.querySelector('.dg-mobile-sheet')).toHaveAttribute('data-sheet-state','closed');
+ expect(screen.getByRole('region',{name:/Research /})).toBeVisible();
 });
 it('opens actions as one visual chooser and returns to map selection for movement',()=>{
  setup();fireEvent.click(screen.getByRole('button',{name:'Choose action'}));
@@ -28,6 +31,10 @@ it('opens actions as one visual chooser and returns to map selection for movemen
  expect(screen.getByRole('button',{name:'Expand Move details'})).toBeInTheDocument();
  fireEvent.click(screen.getByRole('button',{name:'Expand Move details'}));
  expect(screen.getByRole('region',{name:'Move fleet'})).toBeInTheDocument();
+});
+it('keeps the build tray visible below the galaxy on mobile and starts global Build unplaced',()=>{
+ const rendered=setup();fireEvent.click(screen.getByRole('button',{name:'Choose action'}));const picker=screen.getByRole('group',{name:'Choose your action'});fireEvent.click(within(picker).getByRole('button',{name:/Build/}));
+ expect(screen.getByRole('group',{name:'Galaxy map'})).toBeVisible();expect(screen.getByRole('region',{name:'Assemble your build order'})).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'Add interceptor'}));expect(screen.getByRole('button',{name:/1. Interceptor Unplaced/})).toBeVisible();expect(rendered.container.querySelector('.dg-mobile-sheet')).toHaveAttribute('data-sheet-state','closed');
 });
 it('prioritizes the saved pending decision and keeps a direct return after inspection',()=>{
  const state=(JSON.parse(fixtures)as Record<string,GameState>).combat;setup(state);

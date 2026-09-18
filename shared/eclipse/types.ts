@@ -126,6 +126,12 @@ export type PendingDecision = DecisionBase &
           id: string;
           face: number;
           damage: number;
+          /** Optional presentation provenance; absent in saves created before UX P4. */
+          computer?: number;
+          sourceShipId?: string;
+          sourceShipType?: Ship["type"];
+          weaponKind?: "cannon" | "missile";
+          weaponColor?: "yellow" | "orange" | "blue" | "red";
           targets: string[];
           hitTargets?: string[];
           split?: boolean;
@@ -296,7 +302,7 @@ export interface BattleState {
   kills: { owner: string; value: number }[];
   participants: string[];
   retreated: string[];
-  dice?: { id: string; face: number; damage: number; computer: number }[];
+  dice?: { id: string; face: number; damage: number; computer: number; sourceShipId?: string; sourceShipType?: Ship["type"]; weaponKind?: "cannon" | "missile"; weaponColor?: "yellow" | "orange" | "blue" | "red" }[];
   attackingOwner?: string;
   reputationOrder?: string[];
   awarded?: string[];
@@ -338,6 +344,15 @@ export interface GameEvent {
   seatId: SeatId | null;
   visibility: "public" | { seatId: SeatId };
   message: string;
+  /** Public, read-only combat playback data. Older journal entries omit it. */
+  combatVolley?: {
+    battleId: string;
+    sectorId?: string;
+    attacker: string;
+    dice: { id: string; face: number; damage: number; computer: number; sourceShipId?: string; sourceShipType?: Ship["type"]; weaponKind?: "cannon" | "missile"; weaponColor?: "yellow" | "orange" | "blue" | "red" }[];
+    impacts: { dieId: string; targetId: string; damage: number; hit: boolean }[];
+    targets: { id: string; hpBefore: number; hpAfter: number; excess: number; destroyed: boolean }[];
+  };
 }
 export interface ValidationError {
   code:

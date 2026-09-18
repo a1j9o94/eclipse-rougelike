@@ -56,6 +56,8 @@
 .dg-part-group { margin-top: .85rem; }
 .dg-part-group h4 { margin: 0; color: #cbb885; font-size: .68rem; font-weight: 600; letter-spacing: .09em; text-transform: uppercase; }
 .dg-part-group .dg-parts-tray-grid { margin-top: .38rem; }
+.dg-ancient-stock { margin: .7rem 0 0; padding: .5rem .6rem; color: #efd99f; border-left: 3px solid #c9a85f; background: #3a2e1b66; font-size: .75rem; line-height: 1.4; }
+.dg-unchanged-stats { margin: -.45rem 0 1rem; color: #bdc7c9; font-size: .8rem; }.dg-unchanged-stats summary { cursor: pointer; color: #cdbb90; }.dg-unchanged-stats .dg-stat-comparison { margin: .5rem 0 0; }
 .dg-part-choice { min-height: 132px; display: flex; flex-direction: column; align-items: flex-start; gap: .35rem; padding: .65rem; color: #d8e0e1; text-align: left; border: 1px solid #485b61; border-radius: 2px; background: #18252b; }
 .dg-part-choice:hover:not(:disabled), .dg-part-choice:focus-visible { border-color: #cbb273; outline: 2px solid #cbb27366; outline-offset: 1px; }
 .dg-part-choice.is-selected { border-color: #edce8c; background: linear-gradient(145deg, #3b4031, #20251e); box-shadow: inset 0 0 0 1px #edce8c66; }
