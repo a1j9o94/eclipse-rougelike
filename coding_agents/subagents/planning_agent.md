@@ -508,3 +508,15 @@ Tests failing first: seen-marker Convex tests (missing metadata), activity recap
 - Acceptance: no Fight/Confirm staging before a roll; direct actions obey offline/busy/forced-retreat guards; legal retreat selection remains deliberate; public casualty art/identity/HP visible with reduced-motion support; matching fixtures and saved games use the same components. Push main and inspect all raw GitHub statuses to test the reinstalled Vercel app.
 - Tests first: roll/retreat command serialization and guards, combat controls before fleet details, volley retention across non-volley history and battle end, destroyed-target metadata and rendered casualty cards. Bounded suite, typecheck/build, changed-code lint, desktop/mobile browser checks.
 - Risk/rollback: additive optional public event metadata; no combat rule changes or automatic dice rolls. Keep old-event fallback. Preserve previous local Mac import/test fixes. Revert frontend commit/deployment if needed; no destructive backend changes.
+
+## 2026-09-18 — Ambassador map inspection and Mac pinch
+- Outcome: inspect the galaxy during an ambassador exchange without losing the response draft; Mac trackpad pinches zoom the map around the pointer.
+- Acceptance: View galaxy and desktop Explore both open inspection; selecting sectors and returning preserve response/resource/partner; no exploration draw or other action commits while the decision is pending. Mobile Galaxy/Return to decision works. Native ctrl-wheel/Safari gesture support is map-scoped, bounded and does not interfere with touch pinches or ordinary scrolling.
+- Tests first: map navigation/draft retention and no accidental commands; pinch anchor/clamping/event interception. Verify Chromium/WebKit browser gestures and desktop/mobile layouts; full bounded tests, build, scoped lint.
+- Risks/rollback: UI only, preserve authoritative rules/backend and existing main-only Git deployment. Revert frontend commit if needed. Physical Mac gesture feedback remains separate from synthesized browser evidence.
+
+## 2026-09-18 — Endgame exits, completed saves and visual scoring
+- Outcome: finishing a game leads naturally to home/new-game setup; completed saves stop crowding active games; faction score cards communicate where points came from.
+- Acceptance: explicit Home/Play again and read-only galaxy inspection after completion; active and collapsed completed history separated without deleting games; faction emblems, rank/VP medallions and category icons; hidden reputation stays hidden until final scoring; exact ties and resource tiebreaks use existing score rules; categories remain inspectable on desktop/mobile.
+- Tests first: endgame callbacks/navigation, public hidden reputation, final totals/tied winners, score inspection; agent covers landing grouping and routing. Review rendered live/final score at desktop/mobile sizes and run bounded relevant tests, lint/build.
+- Risk/rollback: UI-only, retain all saves and authoritative scores; revert slice independently. No auto-created replay, no invitations/messages sent.

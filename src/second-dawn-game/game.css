@@ -687,3 +687,11 @@
   .dg-tabletop:not(.dg-mobile-board) .sd-header > .sd-actions { padding-left: 5px; }
   .dg-tabletop:not(.dg-mobile-board) .sd-header > .sd-actions button { padding-inline: 6px; }
 }
+
+/* Keep an ambassador draft mounted while the player inspects the galaxy. */
+.dg-preserved-decision[hidden]{display:none!important;}
+.dg-return-exchange{margin-left:auto;pointer-events:auto;min-height:44px;}
+
+/* Exploration owns its map and inspector as one workspace. */
+.dg-app.dg-tabletop.dg-placement-mode:not(.dg-mobile-board) .sd-layout{grid-template-columns:minmax(0,1fr);}
+.dg-placement-mode .sd-inspector{display:none;}

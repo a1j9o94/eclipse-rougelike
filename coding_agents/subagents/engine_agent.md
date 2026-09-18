@@ -257,3 +257,6 @@ Added optional ownership read markers, authenticated monotonic markMatchSeen, pe
 - Added optional `shipType`/`owner` to public volley targets and additive `PlayerView.battle.id` to distinguish successive engagements in one sector. Target references are captured before ship removal; history contains their identity after removal.
 - TDD: two new player/Ancient destruction and public projection cases first failed on missing battle identity, then passed; complete battle/history batch: 30 tests green. Existing private-event exclusion tests remain green.
 - Backend deployment is required to produce new journal metadata; old persisted entries remain valid because new fields are optional. No rules, random draws, or hidden state added.
+
+## 2026-09-18 — Map context and endgame UI
+Implemented persistent ambassador inspection, native Mac map pinch, Home/Play again and completed-save grouping, visual score cards, and shared-map exploration previews. Engine/Convex state unchanged; preview sectors and neutral fleets are immutable presentation copies. Review and release evidence: `coding_agents/second_dawn_map_endgame_release.md`.

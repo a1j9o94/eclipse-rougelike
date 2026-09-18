@@ -45,3 +45,6 @@ Author failing tests for initial command set and selectors to drive implementati
 
 ## Mobile release gates — 2026-09-08
 Final memory-bounded full-game batch: 496 tests across100 files passed. New failing-first coverage includes public read-marker identity/monotonicity, recap boundaries, foreground recovery, faction focus, preview receipts, touch gestures, draft isolation/stale/duplicate recovery, mobile navigation/manual AI inspection and mobile AI retry. Production build (including TypeScript) and changed-code lint passed. Full repository lint remains88 inherited errors/12 warnings. Browser artifacts and actual-image review are indexed in second_dawn_mobile_release.md; no physical phone or human search-time evidence is claimed.
+
+## 2026-09-18 — Map context and endgame validation
+Failing-first UI tests cover ambassador draft preservation, trackpad events, finished-game navigation, score privacy/ties, and exploration contents/faction fleets. Bounded full suite: 605 tests /123 files passed before the final camera sizing refinement, with focused camera/exploration checks afterward. See `second_dawn_map_endgame_release.md` for browser and gate evidence; no physical-device or human playtest pass is implied.

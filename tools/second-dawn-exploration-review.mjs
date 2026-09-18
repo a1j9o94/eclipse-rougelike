@@ -26,7 +26,7 @@ try {
           .click();
       }
       await page
-        .getByRole("img", { name: "Exploration placement preview" })
+        .getByRole("region", { name: "Exploration placement preview" })
         .waitFor();
       const orientations = new Set();
       for (let index = 0; index < 6; index++) {

@@ -377,3 +377,11 @@ This bounded slice builds on the existing draft provider and engine. No engine, 
 ### 2026-09-18 — Integrated P2–P5 implementation
 
 The full engineering implementation is documented in [the integrated release record](ux_integrated_release.md). P1 now includes contextual end-action labels across the board. Public inspection uses separate modal camera state, and per-workflow drafts remain in the existing receipt-aware provider. Optional combat metadata is backward-compatible, but its richer live playback requires an authenticated Convex rollout and is not implied by a successful frontend deployment. Human experience validation remains outstanding.
+
+### 2026-09-18 — Ambassador inspection and trackpad zoom
+
+Incoming and post-combat ambassador choices retain their response, partner and population cube while inspecting the galaxy. Explore/View galaxy and mobile navigation open the shared sector inspector; returning keeps the choice. Native map-scoped Mac pinch events support anchored zoom. [Release evidence](second_dawn_diplomacy_map_release.md) records failing-first tests, independent review fixes, browser screenshots, and physical-device follow-up. Rules and saved-game state are unchanged.
+
+### 2026-09-18 — Endgame flow, visual scores, and exploration context
+
+Finished games now offer Home, Play again, and final galaxy inspection; completed saves move to collapsed history. Scores use faction emblems and inspectable point-source tiles, with public reputation hidden and exact final ties preserved. [Scoring evidence](second_dawn_visual_scoring_release.md) and [launcher evidence](second_dawn_finished_game_navigation.md) distinguish regression/browser results from human testing. Exploration now reuses the actual galaxy and sector inspectors to reveal drawn contents and neighboring faction fleets while retaining saved placement legality.

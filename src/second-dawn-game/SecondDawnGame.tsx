@@ -15,6 +15,7 @@ import { isGuestCredential } from "../../shared/eclipse/guest";
 import { legalCommands } from "../../shared/eclipse/legal";
 import type { GameCommand } from "../../shared/eclipse/types";
 import SecondDawnBoard from "./SecondDawnBoard";
+import SavedGames from "./SavedGames";
 import FactionPicker from './FactionPicker';
 import RoomLobby,{RoomSettingsEditor} from './RoomLobby';
 import TurnClock from './TurnClock';
@@ -78,7 +79,7 @@ function ConnectedGame() {
   const setRoomReady = useMutation(api.eclipseRooms.setRoomReady);
   const startRoom = useMutation(api.eclipseRooms.startRoom);
   const retryRoomTimer = useMutation(api.eclipseRooms.retryRoomTimer);
-  const [roomToken]=useState(()=>{const match=window.location.pathname.match(/^\/room\/([a-zA-Z0-9_-]+)\/?$/);return match?.[1]??null;});
+  const [roomToken,setRoomToken]=useState(()=>{const match=window.location.pathname.match(/^\/room\/([a-zA-Z0-9_-]+)\/?$/);return match?.[1]??null;});
   const [roomOverview,setRoomOverview]=useState(false);
   const [creatingRoom,setCreatingRoom]=useState(false);
   const [clockExpired,setClockExpired]=useState(false);
@@ -156,10 +157,19 @@ function ConnectedGame() {
     return()=>window.clearTimeout(timeout);
   },[deadline]);
   useEffect(()=>{
-    if(!room?.matchId||room.viewerSlot===null)return;
+    if(!roomToken||!room?.matchId||room.viewerSlot===null)return;
     const id=room.matchId as Id<'eclipseMatchesV1'>;
     setMatchId(id);store(matchKey,id);
-  },[room?.matchId,room?.viewerSlot,credential]);
+  },[roomToken,room?.matchId,room?.viewerSlot,credential]);
+  function openHome(setup=false){
+    // Clear the room route as well as the selected match so its subscription
+    // cannot immediately reopen the finished galaxy. Saved ownership is intact.
+    window.history.replaceState({},'', '/');
+    setRoomToken(null);setMatchId(null);setRoomOverview(false);
+    setCreating(setup);setCreatingRoom(false);setStatus('');
+    lastRequest.current=null;setLastAcceptedCommand(undefined);
+    setRecapError(null);recap.dismiss();
+  }
   async function roomAction(action:()=>Promise<void>){
     if(!connected||!credential||busy)return;
     setBusy(true);setStatus('');
@@ -274,6 +284,8 @@ function ConnectedGame() {
         onSubmit={(command) => {
           void send(command);
         }}
+        onHome={()=>openHome()}
+        onPlayAgain={()=>openHome(true)}
         menuLabel={roomToken?'Game room':'Game menu'}
         onMenu={() => {if(roomToken)setRoomOverview(true);else setMatchId(null);}}
         turnClock={view.multiplayer?<TurnClock timer={view.multiplayer.timer} actorName={view.multiplayer.timer?.targetSeatId===view.viewerSeatId?'You':view.seats.find(s=>s.id===view.multiplayer?.timer?.targetSeatId)?getFaction(view.seats.find(s=>s.id===view.multiplayer?.timer?.targetSeatId)!.faction).name:'Opponent'} disabled={!connected||busy} onRetry={()=>{void roomAction(async()=>{await retryRoomTimer({credential:credential!,roomToken:view.multiplayer!.roomToken});});}}/>:undefined}
@@ -366,32 +378,10 @@ function ConnectedGame() {
               New game
             </button>
             <button disabled={!connected||!credential} onClick={()=>setCreatingRoom(true)}>Create multiplayer room</button>
-            {rooms&&rooms.length>0&&<section className="dg-room-saves"><h2>Your game rooms</h2><div className="dg-saves">{rooms.map(saved=><a key={saved.roomToken} href={roomInvitePath(saved.roomToken)}><strong>{saved.status==='waiting'?'Open room':'Continue room game'}</strong><span> · {saved.settings.humanSeatCount} human players · {saved.settings.aiCount} AI · {saved.status}</span></a>)}</div></section>}
-            <h2>Your saved games</h2>
-            {matches === undefined ? (
-              <p>Looking for saves…</p>
-            ) : matches.length === 0 ? (
-              <p>No saved Second Dawn games in this browser yet.</p>
-            ) : (
-              <div className="dg-saves">
-                {matches.map((match) => (
-                  <button
-                    key={match.matchId}
-                    onClick={() => {
-                      store(matchKey, match.matchId);
-                      setMatchId(match.matchId);
-                      setStatus("");
-                    }}
-                  >
-                    <strong>Continue · round {match.round} / 8</strong>
-                    <span>
-                      {match.playerCount} players · {match.phase} ·{" "}
-                      {new Date(match.updatedAt).toLocaleDateString()}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
+            <SavedGames matches={matches} rooms={rooms} onOpen={match=>{
+              store(matchKey,match.matchId);setMatchId(match.matchId);setStatus('');
+            }}/>
+
           </>
         )}
         <a href="#legacy">Legacy roguelike · separate saves</a>

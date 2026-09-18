@@ -110,7 +110,7 @@ export default function GalaxyBoard({
   const tilePixels=TILE_RADIUS*2*zoom*Math.min(mapSize.width/(maxX-minX),mapSize.height/(maxY-minY));
   const detail=compact?tilePixels>=115:view.sectors.length<15||zoom>=1.6;
   const maximumZoom=compact?5:3;
-  const gestures=useGalaxyGestures({camera,viewport:{x:minX,y:minY,width:maxX-minX,height:maxY-minY},maxZoom:maximumZoom,onCameraChange:updateCamera,onTap:target=>{
+  const gestures=useGalaxyGestures({svgRef,camera,viewport:{x:minX,y:minY,width:maxX-minX,height:maxY-minY},maxZoom:maximumZoom,onCameraChange:updateCamera,onTap:target=>{
     if(target.startsWith('build:'))onSelectBuildItem?.(target.slice(6));
     else if(target.startsWith('fleet:'))onInspectFleet?.(target.slice(6));
     else if(target.startsWith('sector:'))onSelect(target.slice(7));
@@ -275,7 +275,7 @@ export default function GalaxyBoard({
                   strokeOpacity={s.owner ? ".36" : ".14"}
                 />
                 {legalTargetIds.includes(s.id) && (
-                  <polygon className="dg-move-target-ring" points={hex} transform="scale(.88)" fill="none" stroke="#a1ebee" strokeWidth="2.5" strokeDasharray="6 4" pointerEvents="none"><title>Legal move destination for your selected ships</title></polygon>
+                  <polygon className="dg-move-target-ring" points={hex} transform="scale(.88)" fill="none" stroke="#a1ebee" strokeWidth="2.5" strokeDasharray="6 4" pointerEvents="none"><title>{targetLabel}</title></polygon>
                 )}
                 {definition.wormholes.map((edge) => {
                   const p = wormholePoint(edge, s.rotation);
@@ -580,7 +580,7 @@ export default function GalaxyBoard({
           </button>
         ))}
       </div>
-      {sectorListOpen&&<section ref={listRef} tabIndex={-1} className="dg-map-sector-list" aria-label="Galaxy sector list" onKeyDown={event=>{if(event.key==='Escape'){setSectorListOpen(false);listToggleRef.current?.focus();}}}><header><strong>Select a sector</strong><button onClick={()=>{setSectorListOpen(false);listToggleRef.current?.focus();}} aria-label="Close sector list">Close</button></header><div>{frontiers.map((candidate,index)=><button key={`frontier-${index}`} onClick={()=>{setSectorListOpen(false);onExplore(candidate);}}><strong>Explore</strong><span>{candidate.label}</span></button>)}{view.sectors.map(sector=><button key={sector.id} aria-pressed={selected===sector.id} onClick={()=>{setSectorListOpen(false);onSelect(sector.id);}}><strong>Sector {sector.tileId}{legalTargetIds.includes(sector.id)?' · legal target':''}</strong><span>{ownerInfo(sector.owner).name} · {view.ships.filter(ship=>ship.sectorId===sector.id).length} ships</span></button>)}</div></section>}
+      {sectorListOpen&&<section ref={listRef} tabIndex={-1} className="dg-map-sector-list" aria-label="Galaxy sector list" onKeyDown={event=>{if(event.key==='Escape'){setSectorListOpen(false);listToggleRef.current?.focus();}}}><header><strong>Select a sector</strong><button onClick={()=>{setSectorListOpen(false);listToggleRef.current?.focus();}} aria-label="Close sector list">Close</button></header><div>{frontiers.map((candidate,index)=><button key={`frontier-${index}`} onClick={()=>{setSectorListOpen(false);onExplore(candidate);}}><strong>Explore</strong><span>{candidate.label}</span></button>)}{view.sectors.map(sector=><button key={sector.id} aria-pressed={selected===sector.id} onClick={()=>{setSectorListOpen(false);onSelect(sector.id);}}><strong>Sector {sector.tileId}{legalTargetIds.includes(sector.id)?` · ${targetLabel}`:''}</strong><span>{ownerInfo(sector.owner).name} · {view.ships.filter(ship=>ship.sectorId===sector.id).length} ships</span></button>)}</div></section>}
     </div>
   );
 }

@@ -1,0 +1,42 @@
+.dg-score-workspace{background:radial-gradient(ellipse at 80% 0%,#5a4c2426,transparent 48%);}
+.dg-score-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:24px;}
+.dg-score-heading h1{margin:4px 0 8px!important;font-size:32px;}
+.dg-score-heading p{max-width:620px;color:#b8c6d0;line-height:1.5;}
+.dg-endgame-actions{display:flex;flex-wrap:wrap;gap:8px;flex:0 0 290px;}
+.dg-endgame-actions button{min-height:44px;flex:1 1 120px;}
+.dg-victory-banner{display:flex;align-items:center;gap:22px;padding:22px 26px;margin-bottom:24px;border:1px solid #b99b59;border-radius:12px;background:linear-gradient(110deg,#51422490,#112532cc 70%);}
+.dg-victory-emblems{display:flex;flex-wrap:wrap;gap:8px;}
+.dg-victory-emblems .dg-faction-symbol{width:54px;height:54px;}
+.dg-victory-banner strong{display:block;font:600 25px Georgia,serif;color:#f5dfaa;margin:6px 0;}
+.dg-victory-banner p{margin:6px 0 0;color:#c6c9c7;font-size:13px;}
+.dg-score-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:20px;}
+.dg-score-card{min-width:0;overflow:hidden;border:1px solid #60758770;border-top:3px solid var(--score-faction);border-radius:12px;background:linear-gradient(145deg,color-mix(in srgb,var(--score-faction) 12%,#0d1a26),#0b1520 55%);}
+.dg-score-card.dg-score-winner{box-shadow:0 0 0 1px #b99b5940;}
+.dg-score-card-heading{display:flex;align-items:center;gap:12px;padding:18px 16px 14px;}
+.dg-score-crest{position:relative;display:grid;place-items:center;flex:0 0 42px;width:42px;height:52px;color:var(--score-faction);}
+.dg-score-crest .dg-faction-symbol{width:38px;height:38px;}
+.dg-score-crest>span{position:absolute;bottom:-3px;right:-4px;display:grid;place-items:center;border:1px solid var(--score-faction);border-radius:50%;background:#0c1720;width:20px;height:20px;font-size:11px;font-weight:700;}
+.dg-score-civilization{flex:1;min-width:0;}
+.dg-score-civilization h2{margin:0 0 5px!important;font:600 19px Georgia,serif!important;color:#e5ebef;}
+.dg-score-civilization small{font-size:12px;color:#bbc5cd;}
+.dg-score-winner-label{display:block;margin-top:5px;font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:#efd088;}
+.dg-score-medallion{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:0 0 66px;width:66px;height:72px;clip-path:polygon(50% 0,100% 20%,100% 80%,50% 100%,0 80%,0 20%);background:color-mix(in srgb,var(--score-faction) 17%,#111d27);color:#f9e3ac;}
+.dg-score-medallion strong{font-size:32px;line-height:1;}
+.dg-score-medallion span{font-size:11px;letter-spacing:1px;margin-top:4px;}
+.dg-score-contributions{display:flex;gap:2px;height:5px;background:#283443;margin:0 16px 16px;border-radius:4px;overflow:hidden;}
+.dg-score-tokens{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:0 16px 16px;}
+.dg-app .dg-score-token{display:grid;grid-template-columns:25px 1fr;align-items:center;gap:4px 7px;border:1px solid color-mix(in srgb,var(--score-category) 30%,transparent);background:color-mix(in srgb,var(--score-category) 6%,#0b1621);border-radius:8px;padding:11px 8px;color:#edf0ed;text-align:left;min-height:70px;min-width:0;}
+.dg-score-token svg{width:24px;height:24px;fill:none;stroke:var(--score-category);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.dg-score-token strong{font-size:23px;text-align:right;line-height:1.1;}
+.dg-score-token>span{grid-column:1/-1;font-size:11px;line-height:1.3;color:#c4cdd5;}
+.dg-score-token small{grid-column:1/-1;font-size:9px;color:#c5b38c;}
+.dg-app .dg-score-secret{border-style:dashed;background:repeating-linear-gradient(135deg,#bca77207,#bca77207 3px,transparent 3px,transparent 9px);}
+.dg-score-secret strong{color:#c2ae84;}
+.dg-score-zero strong{color:#81909c;font-weight:400;}
+.dg-score-penalty strong{color:#ffa8ad;}
+.dg-app .dg-score-token:hover{border-color:var(--score-category);background:color-mix(in srgb,var(--score-category) 15%,#0d1b28);}
+.dg-score-card>footer{padding:12px 16px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:5px;background:#07111b80;border-top:1px solid #52677540;}
+.dg-score-card>footer>span{font-size:12px;color:#d2d9df;}
+.dg-score-card>footer>small{font-size:10px;color:#a5b4c0;}
+@media(max-width:1100px){.dg-score-heading{align-items:flex-start;flex-direction:column;}.dg-endgame-actions{flex-basis:auto;width:100%;}.dg-score-cards{gap:14px;}}
+@media(max-width:600px){.dg-score-heading{gap:14px;margin-bottom:18px;}.dg-score-heading h1{font-size:27px;}.dg-score-heading p{font-size:13px;margin-bottom:0;}.dg-victory-banner{padding:16px;gap:14px;}.dg-victory-banner strong{font-size:22px;}.dg-victory-emblems .dg-faction-symbol{width:36px;height:36px;}.dg-score-card-heading{padding:15px 12px;gap:10px;}.dg-score-tokens{padding:0 12px 12px;gap:6px;}.dg-score-token>span{font-size:10px;}}

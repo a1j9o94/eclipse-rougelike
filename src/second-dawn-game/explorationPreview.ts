@@ -1,3 +1,5 @@
+import {galaxyPoint} from './galaxyGeometry';
+import type {GalaxyCamera} from './galaxyGestures';
 import {
   adjacentPosition,
   connectionBetween,
@@ -163,4 +165,22 @@ export function deriveExplorePreview(
     remotePortalSectorIds,
     explanation,
   };
+}
+
+export interface ExplorationMapPreview {view:PlayerView;sector:Sector}
+/** Add a saved revealed tile to a public view for rendering; never place into live state. */
+export function createExplorationMapView(view:PlayerView,decision:Extract<PendingDecision,{kind:'exploration'}>,tileId:string,rotation:number):ExplorationMapPreview|null {
+ const tile=decision.drawnTileIds.includes(tileId)?sectorDefinition(Number(tileId)):null;
+ if(!tile||!Number.isInteger(rotation)||rotation<0||rotation>5)return null;
+ let id=`exploration-preview:${decision.id}`;while(view.sectors.some(sector=>sector.id===id))id+=':preview';
+ const sector:Sector={id,tileId,position:{...decision.position},rotation,owner:null,population:[],orbital:false,monolith:false,discovery:tile.discovery};
+ return {sector,view:{...view,sectors:[...view.sectors,sector],ships:[...view.ships,...Array.from({length:tile.ancients},(_,index)=>({id:`${id}:ancient:${index}`,owner:'ancient' as const,type:'ancient' as const,sectorId:id,damage:0}))]}};
+}
+
+/** One-time framing of the revealed tile and its neighbors, including hex edges. */
+export function fitExplorationCamera(positions:readonly Coordinate[],viewport:{width:number;height:number;viewWidth:number;viewHeight:number},compact:boolean):GalaxyCamera {
+ const points=positions.map(galaxyPoint),minX=Math.min(...points.map(point=>point.x)),maxX=Math.max(...points.map(point=>point.x)),minY=Math.min(...points.map(point=>point.y)),maxY=Math.max(...points.map(point=>point.y));
+ const scale=Math.min(viewport.width/viewport.viewWidth,viewport.height/viewport.viewHeight);
+ const fit=.92*Math.min(viewport.width/((maxX-minX+136)*scale),viewport.height/((maxY-minY+136)*scale));
+ return {center:{x:(minX+maxX)/2,y:(minY+maxY)/2},zoom:Math.max(.6,Math.min(compact?5:3,(compact?105:150)/(116*scale),fit))};
 }

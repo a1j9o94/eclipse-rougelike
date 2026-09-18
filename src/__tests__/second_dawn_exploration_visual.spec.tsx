@@ -16,7 +16,7 @@ function fixture():GameState {
 it('rotates the drawn tile in its real neighborhood, explains legality, and submits only the displayed legal orientation',()=>{
  const state=fixture(),view=getPlayerView(state,'a')!,decision=view.pendingDecision!;if(decision.kind!=='exploration')throw Error('fixture');
  const submit=vi.fn();render(<DecisionPanel view={view} decision={decision} reputation={[]} disabled={false} onSubmit={submit}/>);
- expect(screen.queryByRole('combobox')).toBeNull();expect(screen.getByRole('img',{name:'Exploration placement preview'})).toBeTruthy();
+ expect(screen.queryByRole('combobox')).toBeNull();expect(screen.getByRole('region',{name:'Exploration placement preview'})).toBeTruthy();
  const first=decision.placements[0].rotation;
  const legal=new Set(decision.placements.filter(p=>p.tileId===decision.drawnTileIds[0]).map(p=>p.rotation));
  for(let step=0;step<6;step++){

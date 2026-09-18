@@ -20,7 +20,7 @@ try{
  const details=page.getByRole('navigation',{name:'Current action'}).getByRole('button',{name:'Details',exact:true});if(await details.count())await details.click();
  const compactConfirm=page.getByRole('navigation',{name:'Current action'}).getByRole('button',{name:'Confirm',exact:true});
  if(await compactConfirm.count())await compactConfirm.click();else await page.getByRole('button',{name:'Confirm action',exact:true}).click({timeout:10000});
- await page.getByRole('img',{name:'Exploration placement preview',exact:true}).waitFor();
+ await page.getByRole('region',{name:'Exploration placement preview',exact:true}).waitFor();
  await page.screenshot({path:`${dir}/390-discovery-placement.png`});
  await page.getByRole('button',{name:'Rotate clockwise',exact:true}).click();
  await page.getByRole('button',{name:'Discard sector',exact:true}).click();

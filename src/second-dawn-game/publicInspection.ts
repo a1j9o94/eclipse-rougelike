@@ -26,6 +26,6 @@ export function scoreInspection(view:PlayerView,seatId:string,category:PublicSco
   case 'discoveries': return {title:'Discoveries',value:score.discoveries,sectorIds:[],contributors:[],explanation:'Kept discovery totals are public only as permitted by the player view.'};
   case 'ambassadors': return {title:'Ambassadors',value:score.ambassadors,sectorIds:[],contributors:seat.ambassadors.map(id=>view.seats.find(candidate=>candidate.id===id)?.faction??id),explanation:'Ambassador tiles retained on the public player board.'};
   case 'traitor': return {title:'Traitor penalty',value:score.traitor,sectorIds:[],contributors:[],explanation:'The current public diplomatic penalty.'};
-  case 'reputation': return {title:'Reputation',value:score.reputation,sectorIds:[],contributors:[],explanation:'Reputation remains hidden until final scoring.'};
+  case 'reputation': return {title:'Reputation',value:score.reputation,sectorIds:[],contributors:[],explanation:view.phase==='finished'?'Reputation is revealed and included in the final score.':'Reputation remains hidden until final scoring.'};
  }
 }

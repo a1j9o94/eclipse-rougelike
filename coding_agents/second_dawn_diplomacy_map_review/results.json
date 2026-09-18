@@ -1,0 +1,29 @@
+{
+  "site": "http://127.0.0.1:5173",
+  "results": [
+    {
+      "width": 1366,
+      "height": 768,
+      "mapInspection": true,
+      "draftPreserved": true,
+      "returnVisible": true,
+      "pageErrors": []
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "mapInspection": true,
+      "draftPreserved": true,
+      "returnVisible": true,
+      "pageErrors": []
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "mapInspection": true,
+      "draftPreserved": true,
+      "returnVisible": true,
+      "pageErrors": []
+    }
+  ]
+}

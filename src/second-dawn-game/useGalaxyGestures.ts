@@ -1,11 +1,50 @@
-import {useRef} from 'react';
-import type {PointerEvent as ReactPointerEvent,MouseEvent as ReactMouseEvent} from 'react';
-import {createGalaxyGesture,type GalaxyCamera,type GalaxyViewport} from './galaxyGestures';
-interface Options {camera:GalaxyCamera;viewport:{x:number;y:number;width:number;height:number};maxZoom:number;onCameraChange:(camera:GalaxyCamera)=>void;onTap:(target:string)=>void}
-export function useGalaxyGestures({camera,viewport,maxZoom,onCameraChange,onTap}:Options){
+import {useEffect,useRef} from 'react';
+import type {RefObject,PointerEvent as ReactPointerEvent,MouseEvent as ReactMouseEvent} from 'react';
+import {createGalaxyGesture,screenToGalaxyViewport,zoomGalaxyAt,type GalaxyCamera,type GalaxyViewport} from './galaxyGestures';
+interface Options {svgRef:RefObject<SVGSVGElement|null>;camera:GalaxyCamera;viewport:{x:number;y:number;width:number;height:number};maxZoom:number;onCameraChange:(camera:GalaxyCamera)=>void;onTap:(target:string)=>void}
+export function useGalaxyGestures({svgRef,camera,viewport,maxZoom,onCameraChange,onTap}:Options){
  const gesture=useRef(createGalaxyGesture());
  const currentCamera=useRef(camera);currentCamera.current=camera;
  const dimensions=(svg:SVGSVGElement):GalaxyViewport=>{const rect=svg.getBoundingClientRect();return {...viewport,clientLeft:rect.left,clientTop:rect.top,clientWidth:rect.width,clientHeight:rect.height};};
+ const latest=useRef({viewport,maxZoom,onCameraChange});latest.current={viewport,maxZoom,onCameraChange};
+ useEffect(()=>{
+  const svg=svgRef.current;if(!svg)return;
+  let safariStart:{camera:GalaxyCamera;scale:number}|null=null,lastSafariEnd=-Infinity;
+  const dimensions=():GalaxyViewport=>{const rect=svg.getBoundingClientRect();return {...latest.current.viewport,clientLeft:rect.left,clientTop:rect.top,clientWidth:rect.width,clientHeight:rect.height};};
+  const apply=(next:GalaxyCamera)=>{currentCamera.current=next;latest.current.onCameraChange(next);};
+  const wheel=(event:WheelEvent)=>{
+   if(!event.ctrlKey)return;
+   // Native listeners must be non-passive: React wheel listeners cannot reliably
+   // cancel the browser's page zoom during a Mac trackpad pinch.
+   event.preventDefault();
+   if(gesture.current.active()||safariStart||performance.now()-lastSafariEnd<100)return;
+   const bounds=dimensions();
+   const pixels=event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?bounds.clientHeight:1);
+   if(!Number.isFinite(pixels))return;
+   const point=screenToGalaxyViewport({x:event.clientX,y:event.clientY},bounds);
+   apply(zoomGalaxyAt(currentCamera.current,point,bounds,currentCamera.current.zoom*Math.exp(-pixels*.01),latest.current.maxZoom));
+  };
+  // Safari exposes cumulative GestureEvent scales instead of ctrl-wheel on
+  // some macOS versions. A single gesture owns zoom so both streams never add.
+  type SafariGestureEvent=Event&{scale?:number;clientX?:number;clientY?:number};
+  const safari=(event:SafariGestureEvent)=>{
+   if(gesture.current.active())return;
+   const scale=event.scale;if(scale===undefined||!Number.isFinite(scale)||scale<=0)return;
+   event.preventDefault();
+   if(event.type==='gesturestart'){safariStart={camera:currentCamera.current,scale};return;}
+   if(event.type==='gestureend'){safariStart=null;lastSafariEnd=performance.now();return;}
+   if(!safariStart)return;
+   const bounds=dimensions();
+   const point=screenToGalaxyViewport({x:event.clientX??bounds.clientLeft+bounds.clientWidth/2,y:event.clientY??bounds.clientTop+bounds.clientHeight/2},bounds);
+   apply(zoomGalaxyAt(safariStart.camera,point,bounds,safariStart.camera.zoom*scale/safariStart.scale,latest.current.maxZoom));
+  };
+  svg.addEventListener('wheel',wheel,{passive:false});
+  for(const type of ['gesturestart','gesturechange','gestureend'])svg.addEventListener(type,safari,{passive:false});
+  return()=>{
+   svg.removeEventListener('wheel',wheel);
+   for(const type of ['gesturestart','gesturechange','gestureend'])svg.removeEventListener(type,safari);
+  };
+ },[svgRef]);
  return {
   onPointerDown(event:ReactPointerEvent<SVGSVGElement>){
    if(event.button!==0)return;

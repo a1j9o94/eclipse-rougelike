@@ -10,7 +10,7 @@ for(const position of ['exploration','discovery','control','bankruptcy','reputat
  await page.screenshot({path:`${dir}/${width}-${position}.png`,animations:'disabled'});
  const metrics=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,heading:document.querySelector('.sd-workspace h1')?.textContent,workspaceWidth:document.querySelector('.sd-workspace')?.clientWidth,workspaceContentWidth:document.querySelector('.sd-workspace')?.scrollWidth,overflowing:[...document.querySelectorAll('.sd-workspace *')].filter(el=>{const b=el.getBoundingClientRect();return b.width>0&&(b.right>innerWidth+1||b.left< -1);}).slice(0,10).map(el=>({tag:el.tagName,className:el.className}))}));
  if(position==='exploration'){
-  const diagram=await page.getByRole('img',{name:'Exploration placement preview'}).boundingBox();
+  const diagram=await page.getByRole('region',{name:'Exploration placement preview'}).boundingBox();
   assert.ok(diagram.height>=240,`Exploration diagram too small: ${diagram.height}px`);
   assert.ok(await page.locator('.dg-connections-scroll').evaluate(el=>el.clientHeight>=100),'Exploration connection details must not collapse');
  }
