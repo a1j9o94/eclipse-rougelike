@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
   "installCommand": "npm ci",
-  "buildCommand": "npm run build:vercel",
+  "buildCommand": "node tools/check-convex-release.mjs && npx convex deploy --cmd 'npm run build:vercel' --cmd-url-env-var-name VITE_CONVEX_URL",
   "outputDirectory": "dist",
   "rewrites": [
     {

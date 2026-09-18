@@ -48,3 +48,12 @@ PR #87 merged as `f2869d0106573d088669595f84590e2841369ed7`. Vercel reported suc
 Live browser checks on isolated fixtures confirmed: adding an unplaced ship, public fleet inspection and return without losing that order, keyboard map placement, accepted build with the tray cleared and remaining Build capacity open, local research confirmation, and ownership-confirmed “Acquired” feedback. Desktop screenshot review found the build footer too low in its sidebar; the follow-up makes the planner a bounded scroll area with a visible footer and a wider desktop column. The final layout patch also improves singular build labels and avoids showing hidden reputation as a visible zero. Thirteen relevant tests and the production build passed for this follow-up.
 
 The explicit Convex push to `dev:ideal-nightingale-55` was rejected by automatic approval review: it changes a shared backend and the review requires specific authorization for this target/deployment action. Do not retry indirectly. Frontend deployment is unaffected. Ask the user to authorize publishing the backward-compatible combat metadata to that existing deployment; authenticated deployment access will also be necessary. No backend rollout or full rich saved-game replay is claimed.
+
+### Subsequent authorization and deployment configuration
+
+The user subsequently explicitly confirmed deploying this existing backend. The
+workspace login exchange was blocked, so the user configured its deploy key in
+Vercel and confirmed proceeding. The durable, target-checked deployment setup and
+current rollout status are recorded in [UX Convex release](ux_convex_release.md).
+That authorized release supersedes the earlier pending-approval and separate-build
+instructions above; no deployment to a different Convex target is authorized.
