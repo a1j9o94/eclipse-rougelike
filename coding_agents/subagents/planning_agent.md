@@ -477,3 +477,12 @@ Tests failing first: seen-marker Convex tests (missing metadata), activity recap
 - Risks & rollback: preserve rules, saves, atomic commands, unique-part conservation, and draft/reconnect behavior; presentation changes should be independently reversible. Documentation-only change can be reverted normally.
 - Tests: documentation/path/content checks for this commit only; no gameplay implementation or application-test claim. Required fail-first tests for future implementation are enumerated in the plan.
 - Status: all implementation slices not started by this plan. Reviewed source baseline ca764d429e4fe2ead0bba37eda6bf5fb83bb6879. Future agents should audit current main, start P0, and update the ledger with remote commit SHAs and evidence.
+
+## 2026-09-18 — Standalone UX brief and player-experience acceptance
+
+- Outcome: a self-contained plan centered on fun, tactile, delightful play, accessible option discovery, and rewarding strategic mastery.
+- Plan: [Second Dawn UX](../second_dawn_ux_iteration_plan.md). Its product goal, layered information model, system experience statements, delivery criteria, and newcomer/expert playtests can be understood without earlier conversation or proposals.
+- Decisions: explain available options and consequences while preserving strategic tradeoffs; include tactile feedback in each functional slice. Assess discovery, comprehension, agency, satisfaction, pace, and strategic expression alongside click/navigation diagnostics.
+- Acceptance: all 13 systems and build-first deployment remain covered; obsolete proposal comparisons are removed from the canonical brief; the root agent entry point states the product goal.
+- Validation: documentation content, coverage, retained engine constraints, and changed-file checks. No application code or implementation status changed; no application tests claimed.
+- Risks/rollback: documentation-only; normal revert restores the preceding brief. Future agents retain the shared rules, privacy, deterministic RNG, save compatibility, and draft/recovery contracts.

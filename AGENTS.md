@@ -2,7 +2,7 @@
 
 ## Current Second Dawn UX plan
 
-For the next full-game UX iteration, start with [the consolidated plan](coding_agents/second_dawn_ux_iteration_plan.md). It records the accepted interaction decisions, implementation slices, acceptance tests, and handoff ledger. The primary build flow is **choose pieces first, then deploy them to valid sectors**. This plan targets `src/second-dawn-game/`, not the legacy roguelike. Preserve the existing rules and recovery contracts, and update the plan ledger as slices are completed.
+For the next full-game UX iteration, start with [the standalone UX plan](coding_agents/second_dawn_ux_iteration_plan.md). The goal is fun, tactile, delightful play: newcomers can discover available options and understand consequences, while experienced players gain an edge through strategic judgment. Each delivery slice includes that experience, its feedback, rules-preservation tests, and newcomer/expert playtest criteria. Building begins with choosing pieces, followed by deployment to valid sectors. Apply the plan to `src/second-dawn-game/` and update its delivery ledger as slices are completed.
 
 ## Mission
 

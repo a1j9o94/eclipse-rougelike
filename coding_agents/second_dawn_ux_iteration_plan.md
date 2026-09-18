@@ -1,33 +1,72 @@
-# Second Dawn UX iteration: continuous, tactile play
+# Second Dawn UX: discoverable strategy and tactile play
 
-Status: approved design direction; implementation not started by this plan commit.
-Owner: Adrian Obleton. Consolidated from the September 18, 2026 UX discussion.
-Reviewed baseline: `ca764d429e4fe2ead0bba37eda6bf5fb83bb6879` on `main`.
+Status: design ready for implementation; delivery progress is tracked below.
+Product owner: Adrian Obleton.
+Source baseline reviewed: `ca764d429e4fe2ead0bba37eda6bf5fb83bb6879`.
+Last revised: September 18, 2026.
 
-## Start here
+## Product goal
 
-**Outcome:** Players can understand their options, plan an action, inspect its consequences, commit once, and see the result without hunting across panels or losing their place.
+**Make Eclipse fun, tactile, and delightful to play. A newcomer should be able to see what they can do and understand the immediate consequences. An experienced player should be able to make better decisions through planning, timing, and mastery of the same rules.**
 
-This is the canonical plan for the next UX iteration. It consolidates research, movement, building, upgrades, combat, economy, inspection, and the follow-on systems below. It supersedes conflicting interaction proposals in older UX plans, but does not replace game rules, existing regression coverage, multiplayer contracts, or the mobile/recovery work already shipped. In particular, the earlier sector-first building proposal is superseded: **choose what to build first, then deploy those pieces to valid sectors.**
+The player is building a civilization, fitting a fleet, discovering territory, and taking calculated risks. The interface should make those activities feel tangible: ships gather in a tray before deployment, a new component changes the ship in front of you, a technology becomes part of your empire, and rolled dice become the attacks you assign. Each action has anticipation, a meaningful choice, and a visible payoff.
 
-Apply this plan to the full Second Dawn game in `src/second-dawn-game/` and `shared/eclipse/`. The repository retains the legacy roguelike at `#legacy`; do not implement these features in its `src/pages/CombatPage.tsx`, `src/game/combat.ts`, or Outpost screens by mistake.
+A successful turn feels like: “I can see an opportunity. I can try a plan safely. I understand what I am committing. I can see what happened, and I want to make the next decision.” Fewer clicks and clearer counters support that experience; they are supporting measures rather than the definition of success.
 
-Before coding: read `AGENTS.md`, inspect current `main`, review the relevant source seams and existing tests, and compare this baseline with any intervening work. Select the next incomplete delivery slice below. Use a feature branch for implementation. Update the delivery ledger with exact commits, tests, observed limitations, and the next task. Do not treat a design checkbox or a historical release report as implementation evidence.
+### Accessible choices, rewarding mastery
 
-The scope of this commit is documentation only. It does not implement features or authorize a rules redesign, save reset, backend replacement, hosting migration, or unrelated cleanup. GitHub main-only Vercel releases are already configured; preserve them. The old February deployment investigation is no longer a prerequisite for this UX work.
+Everyone plays under the same rules, with information access governed by the game's existing public/private boundaries. Familiarity with Eclipse should improve strategic judgment. It should not be necessary just to find a legal action or interpret a button.
 
-## 1. Accepted product decisions
+Present information in three layers:
+
+1. **What can I do?** Show relevant objects, legal opportunities, actual costs, and clear verbs. An empty planet can be colonized; an available technology can be researched; a selected ship reveals its destinations. Explain blocked options beside them so players can see a route to unlocking them.
+2. **What would happen?** Preview the immediate effects of the player's draft: new capabilities, destinations, damage, income, remaining resources, and affordable actions. State material tradeoffs and uncertainty before commitment.
+3. **Why does it work?** Let players inspect exact parts, thresholds, discounts, influence accounting, range, initiative, and other rules when they want more depth. Make this available by tap, focus, and hover without forcing everyone to read it every turn.
+
+Explain consequences without choosing strategy for the player. Keep viable alternatives discoverable; do not turn all legal opportunities into an “optimal move” recommendation. Experienced players should still gain an edge from sequencing actions, choosing research and funding, timing expansion, matching ship designs to opponents, managing upkeep, and allocating damage well. Strategic difficulty comes from those tradeoffs, risk, and other players.
+
+| Moment | A newcomer can understand | Mastery can improve the outcome |
+| --- | --- | --- |
+| Research | What a technology unlocks, its price, and how to acquire it | Timing purchases, using discounts, and building complementary technologies |
+| Building | Which pieces they can afford and where each can be deployed | Fleet composition, resource commitment, and positioning |
+| Moving | Where selected ships can go and what the route costs | Splitting fleets, sequencing routes, pinning, and initiative preparation |
+| Fitting ships | How a chosen part changes the ship and whether it fits | Power/slot tradeoffs, counters, class-wide synergies, and unique-part placement |
+| Combat | What was rolled, legal assignments, and their immediate effects | Allocating against shields, avoiding wasted damage, using splitters, and retreat timing |
+| Economy and territory | Which actions remain affordable and what a colony changes | Managing income thresholds, action timing, territorial commitments, and calculated shortfalls |
+
+### The experience to deliver
+
+- **Agency:** trying a draft feels safe; committing it feels intentional. Inspection and revision are easy.
+- **Tactility:** the selected object maintains a visible identity through planning, commitment, and result. Pieces appear placed, fitted, acquired, or fired.
+- **Discovery:** opportunities reveal themselves through the board and components. The player learns a rule when it becomes relevant.
+- **Tension:** costs, opponents, and uncertain outcomes are readable enough to support deliberate risks. Dice resolve the existing uncertainty visibly.
+- **Payoff:** the player sees how their empire or fleet changed. Sound and motion reinforce that result.
+- **Flow:** routine turns stay quick, meaningful choices get room, and familiar players can inspect deeply or play briskly.
+
+Example: a player opens Build, sees the capabilities and costs of their current ships, and assembles an order. Selecting a piece illuminates valid deployment sectors. They place two ships, inspect an opposing fleet, revise a location, and commit the whole order. The previews become actual ships. A newcomer can complete this without knowing the construction rules in advance; an expert can choose a stronger composition and position using the same interface.
+
+## Implementation orientation
+
+This document is a standalone product brief and implementation plan for the full Second Dawn game. It includes the interaction requirements, rules to preserve, engineering references, delivery slices, and acceptance criteria. No prior conversation or proposal is required to understand the intended experience.
+
+The target code is `src/second-dawn-game/` and `shared/eclipse/`. The repository also contains a separate legacy roguelike at `#legacy`; leave that application's Outpost and combat screens outside this work.
+
+Before coding, read `AGENTS.md`, inspect current `main`, and review the relevant source and tests. Recheck baseline observations against intervening changes. Select the next incomplete delivery slice and use a feature branch. Update the ledger with remote commits, test results, playtest observations, remaining limitations, and the next task.
+
+Preserve the existing game rules, saves, multiplayer privacy, recovery contracts, and main-only Vercel release configuration. This is a UX implementation plan; changing game balance or deployment infrastructure requires its own concrete rationale and scope. The plan's delivery ledger separates requirements from implemented and verified behavior.
+
+## 1. Interaction principles
 
 1. **Choose → preview → commit → witness the result** in a continuous workspace. Put specific confirmation beside the choice; avoid generic confirmation in a remote panel.
 2. **Browsing is free, drafts are reversible, commitment is explicit.** Inspecting an opponent, technology, or another ship class must preserve the action draft, map camera, and return context.
 3. **Manipulate game objects.** Ships, sectors, planets, technology tiles, and dice expose their relevant actions. Keep the global action bar as an alternative route into the same workflows.
-4. **Build first, deploy second.** Assemble a fleet/structure order, distribute it across legal sectors, then commit once. Build-here is a shortcut, not the primary model.
+4. **Build first, deploy second.** Assemble a fleet/structure order, distribute it across legal sectors, then commit once. A Build-here shortcut preselects a destination in this same workflow.
 5. **Keep repeated actions open.** Stay in research/movement/build/upgrade as appropriate while legal activations remain; do not require exiting and reopening to continue.
 6. **Show player consequences before bookkeeping.** Costs, capabilities, territory, damage, income changes, and affordable actions lead. Disc accounting, provenance, and formulas remain accessible on demand.
 7. **Preserve meaningful choices.** Fewer navigation steps must not silently select a target, spend a resource mix, sacrifice a sector, discard a reward, or consume a unique part.
 8. **Tactile feedback is brief and explanatory.** A chosen tile becomes an acquired tile; an ordered ship becomes a deployed ship; assigned dice become impacts. Keep longer beats for discoveries, major upgrades, and victories.
-9. **Keep the current dark galaxy/brass visual direction.** Improve hierarchy and continuity before adding decoration. Support touch, keyboard, reduced motion, mute, and fast playback.
-10. **Do not add a mandatory Roll click to each volley.** Automatic roll presentation leads into the existing allocation decision; the allocation supplies player agency.
+9. **Carry the space-board-game atmosphere through every action.** Use the dark galaxy/brass visual direction, readable components, purposeful sound, and clear motion. Each functional slice includes its feedback and accessible equivalents.
+10. **Give combat a rhythm of anticipation, allocation, and impact.** Dice roll automatically as a firing group activates, settle into the tray, and await meaningful assignments. Support touch, keyboard, reduced motion, mute, and fast playback.
 
 ## 2. Current foundations and gaps
 
@@ -63,6 +102,8 @@ These observations refer to the reviewed baseline and must be rechecked against 
 
 ### UX-01 Research in place
 
+Player experience: “I see a new possibility for my civilization, understand what it unlocks, and acquire it right here.” Keep the acquired tile and its new capability visibly connected; experienced players can inspect track discounts and future synergies.
+
 Select a technology to expand a local detail/purchase surface in the research workspace. Show its plain-language benefit, discounted cost, relevant track selection, funding choice if needed, and a specific button such as `Research · 7 science`. No separate generic confirmation hunt. Mobile keeps details and commit together in the same surface.
 
 After acceptance, the tile moves into owned research with a brief effect statement. Offer an optional contextual next step such as `Open shipyard` when a component is unlocked; do not force navigation or spend another action. Retain research when further activations are available. Browse owned technology without creating a purchase draft.
@@ -70,6 +111,8 @@ After acceptance, the tile moves into owned research with a brief effect stateme
 Acceptance: ordinary research takes one selection and one commit after entering research; track/funding choices add steps only when they are real choices. Final displayed cost matches the authoritative preview. Conversion plus research remains atomic and explicit. Inspecting another item and returning does not lose an unfinished choice. Market depletion or remote changes invalidate the draft visibly.
 
 ### UX-02 Continuous movement and split routes
+
+Player experience: “I am directing a fleet across the galaxy.” Routes remain on the board as the player experiments; ships follow those routes after commitment. Legal highlights make movement discoverable while leaving route order, fleet splitting, and tactical position to the player.
 
 Selecting your ships exposes Move and legal destinations. Select a ship/group, select a destination, and keep its proposed route visible. Add another ship/group and another destination without leaving the workflow. One `Execute moves` submits the ordered route plan. Draft routes can be revised or removed.
 
@@ -81,6 +124,8 @@ Acceptance: two ships in one sector can be assigned to two different valid secto
 
 ### UX-03 Build order first, deployment second
 
+Player experience: “I am assembling a force, then putting it into the galaxy.” Filling the tray creates anticipation; placing ghost pieces makes the plan tangible; launch provides a clear payoff. Capabilities and costs help new players choose, while composition and deployment reward strategic judgment.
+
 **Primary flow: assemble → deploy → launch.** Enter Build without requiring a sector choice. Add ships or structures to an order tray. Cards show the current installed blueprint's capabilities, price, and remaining supply; uncommitted upgrade drafts must not be presented as installed capability. Show aggregate material cost, funding choices, and remaining construction capacity.
 
 Select an unplaced piece: legal sectors highlight. Tap a sector to place a translucent preview and automatically select the next unplaced piece. Identical pieces support repeated placement without repeated reselection. Support different ship/structure types and multiple sectors in the same order. A grouped-placement shortcut may supplement individual placement but must show quantity explicitly.
@@ -89,11 +134,13 @@ Tap a placed preview to relocate it or return it to the tray. Changing sectors n
 
 Commit once with a concrete total, e.g. `Build 3 ships · 14 materials` or `Build 2 ships + 1 orbital · …`. Enable only when every item is legally placed and the entire order is valid. Show the number still awaiting placement. After acceptance, previews become ships/structures at their assigned locations. If Build activations remain, keep the mode available.
 
-`Build here` remains a sector-context shortcut that preselects a destination while opening this same order model. It must not become the default sector-first design.
+`Build here` is a sector-context shortcut that preselects a destination in the shared order model. The primary Build entry begins with choosing pieces and keeps the order tray and deployment map together.
 
 Acceptance: mixed pieces can be distributed across two sectors and committed atomically; changing destination preserves all other entries. Validate aggregate supply/resources/activations and per-sector structure limits across the entire draft. An orbital already queued in a sector prevents queueing an illegal second orbital there. A rejected/stale submission leaves a recoverable editable order. Do not use current `setCounts(empty())` on sector changes.
 
 ### UX-04 Ship fitting by function
+
+Player experience: “I am designing a ship and can feel it becoming different.” Each candidate part changes the visible draft and highlights its benefits and costs. Players can explore safely; experts gain from power, slots, counters, and combinations.
 
 Group available parts by Weapons, Drives, Reactors, Defense, and Computers, with appropriate handling for special parts. Merge default and researched inventory in this functional catalog. Acquisition source can appear in secondary details; it must not dictate the main navigation.
 
@@ -104,6 +151,8 @@ Discovery/Ancient parts remain exceptional: show availability count, that instal
 Acceptance: selecting by function reveals all currently available matching parts; blueprint changes preview immediately without submission. Only installed blueprints affect actual ships/build cards. Energy/drive constraints, per-action installation limits, faction defaults, stored-part counts, and legal upgrade order remain authoritative. Draft undo does not consume or duplicate an Ancient part.
 
 ### UX-05 Affordable actions and local capacity
+
+Player experience: “I know how much room I have to act, and can decide whether to stretch my economy.” Lead with usable capacity and visible consequences; let players learn and exploit the exact upkeep and income thresholds through inspection.
 
 Replace the primary bookkeeping emphasis with `N more actions affordable this round`. Keep separate action-local counters such as moves remaining, part installations remaining, or research activations. Never label influence discs or distance as interchangeable moves.
 
@@ -117,6 +166,8 @@ Acceptance: income-track thresholds, influence gaps/factions, no discs, exact up
 
 ### UX-06 Tactile combat on the existing engine
 
+Player experience: “The roll creates suspense; my assignments matter; I see each attack land.” Readable dice and target previews make participation accessible. Target choice, shield interactions, damage efficiency, and retreat preserve the reward for mastery.
+
 The current full-game engine already rolls and persists results, then requests per-die allocation. Keep it. As a firing group activates, show its dice tumbling briefly, settling on committed faces, and gathering into a tray. Preserve identity from roll through assignment and impact. Show weapon/source and damage beside the face.
 
 Use one persistent set of enemy ship cards. Tap a die then a target; drag is optional, not required. Assigned dice appear on the target, and can be returned to the tray before confirmation. Display current HP, assigned damage, projected HP, and excess damage. Selecting a die explains target-specific hits and shield blocks. One `Resolve volley` commits the allocation, followed by impact, shield, and destruction feedback and the next firing group. No obligatory extra Roll step per volley. Preserve existing fight/retreat decisions; automatic opening missiles do not acquire a new decision.
@@ -129,6 +180,8 @@ Acceptance: identical seed and command sequence produce identical engine results
 
 ### UX-07 Opponent and neutral inspection where decisions happen
 
+Player experience: “I can size up the threat while keeping my plan in mind.” Show actionable public differences where the encounter is being considered. Exact comparisons support learning; deciding what to risk remains the player's judgment.
+
 Enemy fleet tokens and sector fleet cards open read-only details without replacing a move/build draft. Show ships present, damage, installed capabilities, weapons, shields, computers, and initiative. `Compare with selected fleet` presents relevant differences and exact explanatory statements such as which group fires first or the face needed to hit a particular target. Compare the actual selected fleet, not only same-class blueprints.
 
 Expose the civilization's public technologies and relationship through the same panel. Use the same inspection model for neutral ships. Preserve map camera, selected routes, and draft on dismissal. Do not expose private reputation, discoveries, hidden choices, or other restricted state. Battle win-probability simulation is outside this iteration; first deliver correct mechanical comparisons.
@@ -136,6 +189,8 @@ Expose the civilization's public technologies and relationship through the same 
 Acceptance: inspect an opponent from the map, compare it, then resume the unchanged move/build plan. Values reflect authoritative public state and installed designs. Public/private boundaries match `PlayerView`; derived summaries cannot leak server-only state. Desktop, touch, and keyboard have equivalent access.
 
 ### UX-08 Direct colonization
+
+Player experience: “This world can become part of my economy.” An open planet visibly accepts a draft colony; its income contribution is clear before commitment and appears in the empire's resources afterward. Experts can optimize resource choices and income thresholds.
 
 Make eligible empty planets actionable on the board/sector inspection surface. Tap to add a colony to a batch; show compatible resource choice only where multiple legal resources are available. Preserve the existing batching engine and colony-ship/cube limits. Show actual marginal income changes from the track, not an assumed +1 per cube, and one commit for the batch.
 
@@ -145,6 +200,8 @@ Acceptance: colonize multiple eligible planets with one commit; gray/orbital/adv
 
 ### UX-09 Continuous exploration and rewards
 
+Player experience: “I have discovered a place worth investigating.” Give the reveal a short moment, let the player shape its connections, and keep the tile present while resolving its opportunities. Preserve uncertainty until the rules reveal information and keep optional rewards a real choice.
+
 Retain the existing visual placement preview. Keep the revealed tile anchored as rotation, placement, and subsequent control/discovery/population choices occur in their actual engine order. Highlight real connections while rotating; clearly distinguish legal placement, disc cost of control, hostile ships, and later colonization opportunities.
 
 Place reward-specific confirmation inside the selected discovery card: e.g. `Keep for 2 VP`, `Store component`, or the actual effect. Show what is gained and where it goes; keep further resource/technology choices when required. No silent selection of reward versus VP, automatic control spending, reordered decisions, or rerolling an already saved draw.
@@ -152,6 +209,8 @@ Place reward-specific confirmation inside the selected discovery card: e.g. `Kee
 Acceptance: complete an exploration sequence without losing the tile/location context. Resume the exact persisted pending decision after reconnect. Legal rotations, optional discard/redraw abilities, blocked rewards, and follow-on choices retain rule semantics. Destructive choices stay deliberate.
 
 ### UX-10 Influence and diplomacy by intent
+
+Player experience: “I am shaping borders and relationships.” Claims and alliances should visibly change the board and relationship display. New players see the immediate stakes; experts judge when territory, income, diplomatic protection, or betrayal is worth its cost.
 
 Lead influence with `Claim sector`, `Release sector`, and `Transfer control`, derived from existing legal options. Preview territory, population/income, upkeep, and VP together; disc mechanics remain available as explanation. Do not hide colony refresh or other existing legal influence options.
 
@@ -161,11 +220,15 @@ Acceptance: previews match influence execution and subsequent population-return 
 
 ### UX-11 Funding and trading in context
 
+Player experience: “I can see how to make this plan possible and what I give up.” Offer explicit funding choices at the shortfall, with immediate resource and action consequences. Leave the strategic choice of which reserve to spend to the player.
+
 Standardize existing atomic funding on shortfalls within research/build: show what is missing, permitted funding mixes, resulting resources, and affordable-action effect beside the intended purchase. Keep the standalone Trade tool for deliberate exchanges. Do not automatically choose and spend the player's preferred resource mix merely to save a click.
 
 Acceptance: `Convert & research/build` executes atomically with the displayed ratio, mix, and cost. Editing a funding mix never submits. Affordability updates after draft changes. Insufficient, stale, or illegal funding is rejected without a partial trade or purchase.
 
 ### UX-12 Clear turn boundaries
+
+Player experience: “I know what I just accomplished and who acts next.” Close completed actions with a brief result and clear handoff. Passing remains a deliberate timing decision; unused opportunities are discoverable without repeated interruption.
 
 Use contextual `Done moving`/equivalents for ending the current action, `Pass for this round`, and `Finish upkeep`. Explain unused activations or legally available colonization when relevant. Keep ordinary transitions fast; do not introduce a mandatory confirmation dialog for every pass/end-action.
 
@@ -175,13 +238,17 @@ Acceptance: the correct scope is clear, each activation issues one command, and 
 
 ### UX-13 Scoring, history, and returning to play
 
+Player experience: “I can see my empire's progress and understand what changed while I was away.” Connect points and public events to real places and pieces. Let experts inspect exact contributions and trajectories while keeping the return to play quick.
+
 Let selecting a score category highlight public contributing sectors, structures, or technologies. Show point deltas with the actions that cause them. Keep public totals separate from private reputation until scoring rules permit disclosure; do not invent certainty about standings.
 
 Build on the existing public history and return recap: selecting a spatial event locates its sector, fleet, or route when meaningful. Show important public changes first with full chronological detail available. Clearly distinguish a historical location from the current board if the pieces have moved. Preserve the player's draft and previous camera after leaving inspection. Do not create mandatory acknowledgment clicks for each event.
 
 Acceptance: category totals reconcile to the scoring engine; map highlighting uses only permitted information. Recap links tolerate removed/moved entities, partial pagination, reconnect, and missing legacy event metadata. Inspection never submits a gameplay command.
 
-## 5. Game feel, accessibility, and presentation budget
+## 5. Game feel and accessible presentation
+
+Every delivery slice must implement the relevant anticipation, manipulation, commitment, and payoff. Game feel is part of the slice's acceptance, including static and silent equivalents; it is not deferred to a finishing pass.
 
 - Connect feedback to objects: technology tile settles into research, part snaps into a slot, ghost piece becomes a built ship, fleet follows its route, dice hit their targets.
 - Select/previews should react immediately. Suggested tuning starting points: 100–200 ms for ordinary transitions, 300–600 ms for move/build results, 600–900 ms for a dice roll. These are proposed budgets, not measured performance claims. Avoid cumulative waits on large fleets.
@@ -196,12 +263,12 @@ All implementation items are **not started by this plan**. The order below is th
 
 | Slice | Scope | Depends on | Exit evidence |
 | --- | --- | --- | --- |
-| P0 | Record baseline workflows; shared draft/inspection lifecycle; map/component entry points and command validation seams | Current main audit | Existing tests mapped; draft-survival contract covered; click/navigation baseline recorded |
-| P1 | UX-01 research, UX-05 economy, UX-11 funding consistency, UX-12 contextual labels; movement planner continuation portion of UX-02 | P0 | No remote confirmation hunt; continuing movement stays open; counters have honest semantics |
-| P2 | Full UX-03 build-first order/deployment and UX-02 multi-route movement | P0/P1 | Mixed multi-sector build and split fleet routes preserve drafts and commit correctly |
-| P3 | UX-04 functional ship fitting, UX-07 contextual fleet inspection, UX-08 direct colonization | P0; share capabilities with P2 | Inspect/compare without draft loss; unique parts safe; multi-planet action works |
-| P4 | UX-06 dice tray/allocation, then structured combat playback and object feedback | P0; public inspection primitives from P3 useful | Same deterministic results; one allocation surface; opponent/neutral playback faithful |
-| P5 | UX-09 exploration/rewards, UX-10 influence/diplomacy, UX-13 scoring/recap; complete feedback/accessibility pass | P0–P4 contracts | Follow-on decisions stay in context; history and scoring navigate the board accurately |
+| P0 | Observe newcomers and experienced players in baseline workflows; establish shared draft/inspection lifecycle and object entry points | Current main audit | Record option discovery, consequence comprehension, strategic choices, and felt experience alongside navigation; map existing tests |
+| P1 | UX-01 research, UX-05 economy, UX-11 funding consistency, UX-12 contextual labels; movement continuation | P0 | New players can identify a purchase and its consequence; acquisition has visible payoff; action capacity is understandable; continued movement stays open |
+| P2 | Full UX-03 build-first order/deployment and UX-02 multi-route movement, including piece/route feedback | P0/P1 | Players assemble, place, inspect, revise, and launch a plan; multi-sector orders and split routes remain correct; experts retain meaningful positioning choices |
+| P3 | UX-04 functional ship fitting, UX-07 contextual fleet inspection, UX-08 direct colonization | P0; share capabilities with P2 | New players understand changes and available options; experts inspect counters and tradeoffs; fitting and colony feedback show results; unique parts remain safe |
+| P4 | UX-06 dice roll, tray/allocation, impact feedback, and structured combat playback | P0; public inspection primitives from P3 useful | Combat has readable suspense, deliberate allocation, and clear impacts; decisions reward mastery; deterministic results and opponent/neutral playback remain faithful |
+| P5 | UX-09 exploration/rewards, UX-10 influence/diplomacy, UX-13 scoring/recap; whole-game flow review | P0–P4 contracts | Reveals, territorial changes, and progress feel connected; players can explain what changed and find their next opportunity; accessibility is consistent |
 
 Use reviewable commits within each slice; do not hold every system for one giant rewrite. P3 public capability selectors may be brought forward to support P2 build cards; record that explicitly. Reuse existing preview, funding, decision, and recovery code. Add server/event data only when a verified UI requirement cannot be met safely with the existing public projection.
 
@@ -209,7 +276,7 @@ Use reviewable commits within each slice; do not hold every system for one giant
 
 | Slice | Status | Branch / commit | Tests and review evidence | Next step / blocker |
 | --- | --- | --- | --- | --- |
-| P0 | Not started | — | — | Audit current main and record workflow baseline |
+| P0 | Not started | — | — | Audit current main; baseline newcomer/experienced-player experience and workflows |
 | P1 | Not started | — | — | Depends on P0 |
 | P2 | Not started | — | — | Depends on P0/P1 |
 | P3 | Not started | — | — | Depends on shared draft/inspection contract |
@@ -239,7 +306,21 @@ Use existing isolated review fixtures in `SecondDawnReview.tsx` and targeted tes
 
 Tests should check player behavior and rules contracts, not mirror component implementation. Use bounded relevant suites, per `AGENTS.md`; do not run the entire historical test suite into memory exhaustion. Run applicable lint, `npm run typecheck:eclipse`, and build gates for implementation. Current `npm run build` includes Convex codegen; `npm run build:vercel` is the frontend release build. Record exact commands and blockers, and do not change a backend merely to make a local build pass. Existing lint debt in historical release notes must be remeasured and distinguished from new failures.
 
-### Human/browser acceptance tasks
+### Playtest the experience and the depth
+
+Use both participants unfamiliar with Eclipse and experienced players, with comparable positions and the same rules. Give a short goal such as “strengthen this border” or “improve your economy”; avoid teaching the route through the interface first. A browser automation pass establishes functional behavior, while human playtests establish discovery, understanding, and felt experience.
+
+Evaluate five dimensions:
+
+1. **Option discovery:** Can newcomers identify relevant legal actions and a specific reason an unavailable option is blocked, without a rulebook or facilitator? Can they find the next step after a reveal or unlock?
+2. **Consequence comprehension:** Before committing, can they describe the main benefit, cost, and scope of their chosen action? Afterward, can they point to what changed and distinguish certainty from a dice-dependent outcome?
+3. **Tactility and agency:** Can players follow the same ship, part, technology, or die through the interaction? Do they feel comfortable trying and revising a plan, and do outcomes feel connected to their choices?
+4. **Delight and pace:** Which moment felt satisfying, surprising, or frustrating? Would they willingly take another turn? Observe attention and voluntary exploration alongside self-report. Routine animation must not become a repeated wait.
+5. **Strategic expression:** Can experienced players compare and execute alternative viable plans based on timing, synergy, position, funding, or allocation? Ask them to explain a concrete advantage their knowledge produced. Ensure the interface does not choose away that tradeoff. A novice need not match expert performance to pass discoverability checks.
+
+Record observations, participant familiarity, device, position, and exact task. Set improvement targets after baseline evidence; do not claim that low click counts or a small playtest prove fun. A slice needs evidence that its choices are understandable, its payoff is legible, and its strategic tradeoffs remain available. Treat a flow that is fast but confusing or unrewarding as unfinished.
+
+### Functional acceptance tasks
 
 - Research a technology, including a funded purchase, without looking for a separate confirmation panel.
 - Assign two ships from one origin to separate sectors without closing/reopening movement.
@@ -251,7 +332,7 @@ Tests should check player behavior and rules contracts, not mirror component imp
 - Complete dice allocation by touch and keyboard; identify why the same face hits one target but not another.
 - Complete exploration, pass/upkeep, and resume a pending decision without losing spatial context or rerolling.
 
-Record task success without assistance, clicks/taps, panel changes/reopens, hesitation/backtracking, and accidental commits. Baseline these first; do not invent improvement percentages. Target zero forced planner reopenings for continuing a legal action, zero draft loss from inspection, and zero confirmations outside the active workflow. Keep meaningful allocation/track/funding choices even if they take more taps. Agent browser evidence and real human playtest evidence must be labeled separately.
+Record task success without assistance, clicks/taps, panel changes/reopens, hesitation/backtracking, and accidental commits as diagnostic measures alongside the experience findings above. Baseline these first; do not invent improvement percentages. Target zero forced planner reopenings for continuing a legal action, zero draft loss from inspection, and zero confirmations outside the active workflow. Keep meaningful allocation/track/funding choices even if they take more taps. Agent browser evidence and real human playtest evidence must be labeled separately.
 
 ## 8. Risks, rollback, and release discipline
 
@@ -265,20 +346,23 @@ Record task success without assistance, clicks/taps, panel changes/reopens, hesi
 | Rich combat playback rerolls or replays damage | Read-only event presentation, decision/event IDs, zero authoritative animation RNG |
 | Opponent comparison leaks private state | Derive only from authorized PlayerView/public events; privacy tests |
 | Mobile overlays hide confirmation/map or seize camera | Same interaction contract, portrait/keyboard/reduced-motion review, restore inspection context |
-| Deployment recreates lost-local-work confusion | Push reviewable feature commits, record remote SHAs and validation; release through existing main workflow |
+| Release provenance is unclear | Push reviewable feature commits, record remote SHAs and validation; release through the configured main workflow |
 
 Do not discard saves, remove old journal fields, or rename deployed backends. Presentation metadata must be additive/backward-compatible and tolerate old saves/events. If backend projection changes are needed, coordinate a compatible backend rollout before frontend dependence. Revert the affected presentation slice or use the established deployment rollback; retain data needed to read already-created saves. The documentation commit itself is reversible with a normal revert.
 
-## 9. Decision log and bounded follow-ups
+## 9. Design rationale and decision log
 
-- 2026-09-18: User requested a consolidated committed plan for future agents; this file is the authoritative handoff for that request.
-- Preserve mechanics; improve discovery, continuity, feedback, and interpretation.
-- User explicitly reversed the initial sector-first build proposal: assemble desired pieces, then deploy to valid sectors. Both tray and map stay visible; one final commit.
-- Research confirmation stays with the selected technology. Movement continuation and split routes must not require exit/re-entry.
-- Part function takes precedence over acquisition source; stored discovery/Ancient parts retain unique inventory semantics.
-- Global affordable-action forecast and current-action capacity are separate concepts. Hover information must also be accessible by tap/focus.
-- Combat is a presentation/allocation improvement on the new full-game engine, not a rewrite of legacy roguelike combat.
-- Opponent details belong at the map decision, including neutrals, without losing action drafts or revealing private information.
-- General post-commit undo, strategic auto-play, combat balance changes, battle win-probability simulation, a new tutorial campaign, and a visual rebrand are not part of this iteration.
+- **Visible opportunities lower the entry barrier.** Object actions, clear costs, and specific blockers let a player participate before knowing every rule.
+- **Inspectable depth rewards learning.** Exact thresholds, components, and forecasts are available on demand. Players use that knowledge to improve their decisions under the unchanged rules.
+- **Build-first deployment matches the player's intent.** Choosing a force and then positioning it gives fleet composition and spatial planning their own meaningful steps within one persistent workspace.
+- **Local confirmation preserves attention.** Research, fitting, rewards, and funding keep the consequence and commitment beside the object.
+- **Draft continuity encourages experimentation.** Inspection and reversible edits let players compare options confidently while retaining explicit commitment.
+- **Functional catalogs support ship design.** Parts are found by their role; stored discovery/Ancient parts visibly retain unique inventory semantics.
+- **Separate forecasts answer different questions.** Affordable future actions explain economic room; remaining activations explain the current action's capacity.
+- **Combat feedback makes uncertainty and agency tangible.** Authoritative dice become editable allocations and then impacts. The presentation preserves deterministic results and all existing combat choices.
+- **Spatial explanations connect strategy to the board.** Opponent inspection, colonies, territory, scoring, and history point to the ships and places involved.
+- **Accessible feedback belongs in every slice.** Touch, keyboard, silent, reduced-motion, and fast-play paths communicate the same meaningful state.
 
-Implementation tuning may settle tray grouping, exact motion timings, and panel layout through playtests. No unresolved product choice blocks P0/P1. Future agents should proceed with the accepted flows, document findings, and ask only when a real rules/product conflict cannot be resolved from this plan and current code.
+General post-commit undo, strategic auto-play, combat balance changes, battle win-probability simulation, a new tutorial campaign, and a visual rebrand are outside this iteration. Contextual learning is part of every flow; it does not require a separate tutorial campaign.
+
+During implementation, tune tray grouping, panel layout, motion timing, and sound through the playtests above. Record consequential choices here with their rationale, validation, and effect on player experience. Continue with the next incomplete slice, documenting a product or rules conflict if one arises.
