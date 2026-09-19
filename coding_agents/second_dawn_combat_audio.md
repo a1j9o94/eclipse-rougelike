@@ -34,3 +34,5 @@ Evidence and listenable WAV files: `coding_agents/second_dawn_combat_audio_revie
 Waveform rendering, browser playback initiation, gating, timing, and lifecycle checks are verified. No subjective human listening/playtest claim is made. These are restrained synthesized effects; user feedback can refine their timbre without changing the rules or sound controls. Full integration lint/build is recorded by the supervisor.
 
 Final verification: **38 tests across six files passed**, all changed-code ESLint checks passed, and both browser engines passed the complete live-cue and real-3D-settlement script. Supervisor reports full repository lint and production build passed including the final-volley fallback.
+
+Released on main as cc3a580. Vercel production deployment dpl_84VGJhJ1R78WU6rE3UmmaH6dupq1 is Ready. A production browser smoke verified the new Game effects copy on eclipse-rougelike.vercel.app without page errors. Full audio sequencing/3D assertions use the documented local actual-Board harness.

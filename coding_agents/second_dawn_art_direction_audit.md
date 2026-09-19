@@ -40,3 +40,5 @@ Acceptance for that proof: a newcomer recognizes a place, two different fleets a
 ## Further direction under discussion
 
 The user preferred an illustrated atlas, then proposed a different main-board framing: a 3D blue holographic war table with generals/politicians around a model of the universe. Discussed low three-quarter perspective, volumetric planets/ships, restrained camera with overhead option, faction ownership accents within a blue projection, advisers as peripheral scenery, and combat expanding the same table sector. Atlas illustration could serve discoveries/records as separate in-world documents. Neither a hybrid nor a 3D renderer rewrite is approved or implemented; continue the art-direction conversation first.
+
+A second built-in generated study is preserved at [war-table-study.png](art_direction/war-table-study.png), with the exact [prompt](art_direction/war-table-prompt.md). Its physical-table atmosphere and projected volumes support the user's proposal; the low cinematic angle and decorative model contents would need a separate interaction proof before implementation. Both concepts remain discussion references.
