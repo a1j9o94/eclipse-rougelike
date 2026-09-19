@@ -15,3 +15,6 @@ History: reproduce unbounded log; bounded desktop/mobile scrolling, keyboard/tou
 
 ## Risks and rollback
 Separate source-derived faction abilities from global house rules. Shared board edits are integrated by supervisor. History/audio can revert independently. New match profile versions must remain supported once public matches exist; disabling new match creation is safer than removing handlers. Convex uses existing development deployment; Vercel deploys Git pushes to main only.
+
+## Result and follow-ups
+All planned implementation is integrated: four expanded factions, profile/color persistence, optional effects/music, history scrolling and trackpad panning. Additional user requests remove standalone reputation discard, rename Trade to Convert, and add resumable turn/upkeep notices. Final integration passes lint, build and 197 targeted tests; browser evidence and source decisions are recorded in the feature review documents. Backend deployed to the existing development environment. Follow-ups: collect human listening and faction balance feedback; remaining community factions require separate source review and implementation.
