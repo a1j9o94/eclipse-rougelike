@@ -417,3 +417,6 @@ Plan A adds independent, saved game effects (initially off, 35%) and original am
 
 ### September 19 — Select territory before committing Influence
 Replaced the source-first Influence flow with map-first control selection. Owned-sector clicks now explain existing control and cannot stage withdrawal. Separate withdrawal/transfer choices name the territory and show VP/population losses; a control commit names its destination, with current upkeep forecast beside it. Fifty bounded planner/draft/engine regression tests and four Chromium/WebKit desktop/mobile browser walks pass; rendered images were reviewed and excess inspector spacing corrected. [Audit and evidence](second_dawn_influence_clarity.md). Parent owns combined release gates; newcomer/expert human playtests remain pending.
+
+### September 19 — Colonize from upkeep review
+Upkeep notice and review now expose legal Colonize opportunities and open the existing planet planner. Back to upkeep preserves explicit confirmation and refreshes the economic preview after placement. Eight new cases plus related regressions (34 tests) passed; actual desktop/mobile component renders reviewed. [Implementation and evidence](second_dawn_upkeep_colonize_entry.md). Human playtest feedback remains pending.

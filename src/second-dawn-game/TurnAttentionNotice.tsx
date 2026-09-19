@@ -16,6 +16,8 @@ export interface TurnAttentionNoticeProps {
  onOpenTurn:()=>void;
  /** Navigation only: open upkeep review; never submit finish-upkeep from this callback. */
  onReviewUpkeep:()=>void;
+ /** Offered only when authoritative legal colonization candidates exist. */
+ onColonize?:()=>void;
 }
 interface AttentionMessage {boundary:string;kind:'turn'|'upkeep'}
 function subscribeVisibility(notify:()=>void):()=>void{
@@ -25,7 +27,7 @@ function subscribeVisibility(notify:()=>void):()=>void{
 const foreground=()=>!document.hidden;
 
 /** Explicitly acknowledge an incoming turn; callbacks only navigate, never submit commands. */
-export default function TurnAttentionNotice({view,matchScope='current-match',connected=true,suppressed=false,onOpenTurn,onReviewUpkeep}:TurnAttentionNoticeProps){
+export default function TurnAttentionNotice({view,matchScope='current-match',connected=true,suppressed=false,onOpenTurn,onReviewUpkeep,onColonize}:TurnAttentionNoticeProps){
  const visible=useSyncExternalStore(subscribeVisibility,foreground,()=>false);
  const seat=view.seats.find(candidate=>candidate.id===view.viewerSeatId);
  const kind=view.phase==='upkeep'?'upkeep':'turn';
@@ -58,5 +60,6 @@ export default function TurnAttentionNotice({view,matchScope='current-match',con
   </div>}
   <p>{upkeep?'Review your production and upkeep, then confirm when you are ready.':seat?.passed?'You have passed. Choose a reaction or continue passing.':'Choose your next action and lead your civilization forward.'}</p>
   <button type="button" className="dg-primary dg-turn-attention-action" onClick={()=>{dismiss();if(upkeep)onReviewUpkeep();else onOpenTurn();}}>{upkeep?'Review upkeep':'View turn'}</button>
+  {upkeep&&onColonize&&<><p>You can still colonize before collecting income.</p><button type="button" className="dg-turn-attention-action" onClick={()=>{dismiss();onColonize();}}>Colonize</button></>}
  </GameDialog>;
 }
