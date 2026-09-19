@@ -81,3 +81,15 @@ npm run build
 - Marginal private reputation was deliberately left unchanged: current private information boundaries remain intact, and the source-backed rack-improvement hypothesis needs its own paired behavioral and holdout evaluation.
 
 Rollback is an ordinary revert of the new strategy module, its tests, and the two `aiSearch.ts` ranking call sites. No save or data migration is involved.
+
+## Integration review after Rift release — 2026-09-19
+
+Merged main release `a0a97a5` into this feature branch only. Review found three regressions, reproduced before fixes: ordinary computer/shield multipliers on Rift cannons, ordinary-die Rift bombardment estimates, and conquest penalties applied to intermediate destinations when a multi-entry movement ends elsewhere. A fourth fail-first assertion caught the Ancient-preparation computer bonus on Rift-only loadouts. All are corrected.
+
+Rift bombardment contributes its true expected enemy damage of 1 per die regardless of computers; combat ranking reuses the shared expected-value heuristic including expected self-damage of 1/3. Shields receive no combat-value credit against an entirely Rift battery. Complete public movement commands contribute only each moving ship's final destination. Rules remain authoritative; no extra random sampling, hidden reads, or search-budget increases.
+
+Action-economy review: `beginAction` spends one influence disc even for passed-seat reactions; an already active action (including remaining mixed-action budgets) spends none. The conquest reserve matches that behavior. Funded commands convert resources but do not spend influence; this prior has no resource-balance reserve to recompute. No speculative economy correction applied.
+
+Verification: 59 tests across Drive priors (12), strategic search (13), combat simulation (21), and existing strategy (13). Beyond prior constants, a generated legal-candidate ranking prefers a deployed interceptor hull refit to an unused class; Hard and Expert execute legal bounded choices for two matched seeds each, retain the eight-node cap, and make identical choices after hidden deck order/RNG changes. These are correctness and ranking checks, not evidence of increased tournament strength. The earlier eight-match Normal benchmark is unchanged-policy health evidence only. Full lint and production build passed after integration; existing Browserslist/chunk-size warnings remain.
+
+Ready for main review after supervisor integration; this branch was pushed without merging into main or deploying it. No gameplay/UI asset changes in this review.

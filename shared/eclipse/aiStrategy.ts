@@ -1,3 +1,4 @@
+import { aiWeaponValue } from "./aiWeaponValue";
 import { deriveBlueprintStats } from "./blueprints";
 import { factionHasCapability } from "./catalog";
 import { dieHits, type DieFace } from "./combat";
@@ -49,16 +50,19 @@ function expectedBombardmentHits(
         seat.faction,
         publicBlueprint(blueprint),
       );
-      const chance = ([1, 2, 3, 4, 5, 6] as const).filter((face: DieFace) =>
-        dieHits(face, stats.computer, 0),
-      ).length / 6;
+      const chance =
+        ([1, 2, 3, 4, 5, 6] as const).filter((face: DieFace) =>
+          dieHits(face, stats.computer, 0),
+        ).length / 6;
       return (
         total +
         stats.weapons
           .filter((weapon) => weapon.kind === "cannon")
           .reduce(
             (sum, weapon) =>
-              sum + weapon.dice * weapon.damage * chance,
+              sum +
+              weapon.dice *
+                (weapon.color === "magenta" ? 1 : weapon.damage * chance),
             0,
           )
       );
@@ -69,10 +73,14 @@ function conquestAdjustment(
   view: PlayerView,
   command: Extract<GameCommand, { type: "move" }>,
 ): number {
-  const seat = view.seats.find((candidate) => candidate.id === view.viewerSeatId);
+  const seat = view.seats.find(
+    (candidate) => candidate.id === view.viewerSeatId,
+  );
   if (!seat) return 0;
   const destinations = new Set(
-    command.moves.map((move) => move.path.at(-1)).filter(Boolean),
+    view.ships
+      .filter((ship) => command.moves.some((move) => move.shipId === ship.id))
+      .map((ship) => projectedDestination(command, ship)),
   );
   let adjustment = 0;
   for (const sectorId of destinations) {
@@ -90,10 +98,15 @@ function conquestAdjustment(
     adjustment += reserveAfterAction > 0 ? 3 : -24;
 
     if (!sector.owner || !sector.population.length) continue;
-    const defender = view.seats.find((candidate) => candidate.id === sector.owner);
+    const defender = view.seats.find(
+      (candidate) => candidate.id === sector.owner,
+    );
     const automatic =
       (!!defender &&
-        factionHasCapability(defender.faction, "destroyed-population-when-occupied")) ||
+        factionHasCapability(
+          defender.faction,
+          "destroyed-population-when-occupied",
+        )) ||
       (hasTechnology(seat, "neutron-bombs") &&
         (!defender || !hasTechnology(defender, "neutron-absorber")));
     if (automatic) {
@@ -112,22 +125,35 @@ function combatValue(stats: ShipStats, enemy: ShipStats | null): number {
   const hostileShield = enemy?.shield ?? 0;
   const hostileDamage =
     enemy?.weapons.reduce(
-      (sum, weapon) => sum + weapon.dice * weapon.damage,
+      (sum, weapon) =>
+        sum + weapon.dice * (weapon.color === "magenta" ? 1 : weapon.damage),
       0,
     ) ?? 2;
   const weapons = stats.weapons.reduce(
     (sum, weapon) =>
       sum +
-      weapon.dice *
-        weapon.damage *
-        (weapon.kind === "missile" ? 0.8 : 1.1) *
+      aiWeaponValue(
+        weapon,
         Math.max(0.35, 1 + (stats.computer - hostileShield) * 0.14),
+      ) *
+        (weapon.kind === "missile" ? 0.8 : 1.1),
     0,
   );
+  const hostileDice =
+    enemy?.weapons.reduce((sum, weapon) => sum + weapon.dice, 0) ?? 0;
+  const shieldableShare =
+    enemy && hostileDice > 0
+      ? enemy.weapons.reduce(
+          (sum, weapon) => sum + (weapon.color === "magenta" ? 0 : weapon.dice),
+          0,
+        ) / hostileDice
+      : 1;
   return (
     weapons +
     stats.hull * Math.min(1.8, 0.7 + hostileDamage * 0.2) +
-    stats.shield * Math.min(1.8, 0.65 + hostileComputer * 0.25) +
+    stats.shield *
+      shieldableShare *
+      Math.min(1.8, 0.65 + hostileComputer * 0.25) +
     stats.movement * 0.25
   );
 }
@@ -152,7 +178,9 @@ function upgradeAdjustment(
   view: PlayerView,
   command: Extract<GameCommand, { type: "upgrade" }>,
 ): number {
-  const seat = view.seats.find((candidate) => candidate.id === view.viewerSeatId);
+  const seat = view.seats.find(
+    (candidate) => candidate.id === view.viewerSeatId,
+  );
   if (!seat) return 0;
   const enemy = visibleEnemyStats(view, seat);
   const visibleAncients = view.ships.some(
@@ -185,7 +213,8 @@ function upgradeAdjustment(
       visibleAncients &&
       view.round <= 5 &&
       (after.hull > before.hull ||
-        after.computer > before.computer ||
+        (after.computer > before.computer &&
+          after.weapons.some((weapon) => weapon.color !== "magenta")) ||
         after.shield > before.shield)
     )
       adjustment += 6;
@@ -197,7 +226,9 @@ function researchAdjustment(
   view: PlayerView,
   command: Extract<GameCommand, { type: "research" }>,
 ): number {
-  const seat = view.seats.find((candidate) => candidate.id === view.viewerSeatId);
+  const seat = view.seats.find(
+    (candidate) => candidate.id === view.viewerSeatId,
+  );
   if (!seat) return 0;
   const count = seat.technologies[command.track].length;
   const marginalVp =
