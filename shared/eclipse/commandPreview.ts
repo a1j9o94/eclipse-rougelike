@@ -1,16 +1,16 @@
-import { getFaction, tradeQuote } from "./catalog";
+import { researchCostForSeat, constructionCostForSeat, getMinorSpecies } from "./minorSpecies";
+import { tradeQuote } from "./catalog";
 import { capacity, paidActivationCost } from "./rulesState";
 import {
   incomeForPopulationAway,
   upkeepForEmptyInfluenceSlots,
 } from "./tracks";
-import { researchCost, getTechnology, type TechnologyId } from "./technologies";
+import { getTechnology, type TechnologyId } from "./technologies";
 import type {
   Action,
   GameCommand,
   PlayerView,
   Resources,
-  Track,
 } from "./types";
 export interface CommandPreview {
   betrayedPartners: string[];
@@ -44,7 +44,6 @@ export function previewCommand(
     population = { ...seat.populationTracks };
   let influence = seat.influenceOnTrack,
     uncertain = false;
-  const faction = getFaction(seat.faction);
   const actions: readonly Action[] = [
     "explore",
     "research",
@@ -57,22 +56,17 @@ export function previewCommand(
     influence--;
   if (command.type === "build")
     for (const build of command.builds)
-      resources.materials -= faction.constructionCosts[build.component];
+      resources.materials -= constructionCostForSeat(seat,build.component);
+  if (command.type === "buy-minor-species") {
+    resources.money -= getMinorSpecies(command.minorSpeciesId).cost;
+    if (getMinorSpecies(command.minorSpeciesId).effect.kind === "population" && command.resource) population[command.resource]++;
+  }
   if (command.type === "trade") {
     resources[command.from] -= (tradeQuote(seat.faction, command.from, command.to, command.amount)?.input ?? 0);
     resources[command.to] += command.amount;
   }
   if (command.type === "research") {
-    const cost = researchCost(
-      command.tileId as TechnologyId,
-      command.track,
-      Object.entries(seat.technologies).flatMap(([track, ids]) =>
-        ids.map((technology) => ({
-          track: track as Track,
-          technology: technology as TechnologyId,
-        })),
-      ),
-    );
+    const cost = researchCostForSeat(command.tileId as TechnologyId,command.track,seat);
     if (cost.ok) {
       resources.science -= cost.scienceCost;
       const effect = getTechnology(command.tileId as TechnologyId).effect;

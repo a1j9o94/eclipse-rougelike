@@ -117,6 +117,7 @@ function ConnectedGame() {
   const chooseProfile=(profile:FactionProfile)=>{setFactionProfile(profile);if(profile==='base'&&['rho-indi','magellan','midas','ragnarok'].includes(faction))setFaction('terran-directorate');};
   const [warpPortals, setWarpPortals] = useState(true);
   const [showCombatOdds,setShowCombatOdds]=useState(false);
+  const [minorSpecies,setMinorSpecies]=useState(false);
   const initialization = useRef<Promise<string> | null>(null);
   const lastRequest = useRef<{
     commandId: string;
@@ -221,7 +222,7 @@ function ConnectedGame() {
         credential,
         faction,
         pieceColor:factionProfile==='expanded-v1'?pieceColor:undefined,
-        settings:{humanSeatCount:1,aiCount,aiDifficulty,warpPortals,showCombatOdds,factionProfile,timerMs:DEFAULT_ROOM_SETTINGS.timerMs},
+        settings:{humanSeatCount:1,aiCount,aiDifficulty,warpPortals,showCombatOdds,minorSpecies,factionProfile,timerMs:DEFAULT_ROOM_SETTINGS.timerMs},
       });
       await setRoomReady({credential,roomToken:room.roomToken,ready:true});
       const result=await startRoom({credential,roomToken:room.roomToken});
@@ -375,6 +376,8 @@ function ConnectedGame() {
               Use base-game warp portals
             </label>
             <label className="dg-check"><input type="checkbox" checked={showCombatOdds} onChange={event=>setShowCombatOdds(event.target.checked)}/>Show estimated combat odds during movement</label>
+            <label className="dg-check"><input type="checkbox" checked={minorSpecies} disabled={busy} onChange={event=>setMinorSpecies(event.target.checked)}/>Include Minor Species</label>
+            <p>Purchase allies with money for lasting benefits. Each uses an ambassador space.</p>
             <AiDifficultyPicker value={aiDifficulty} onChange={setAiDifficulty} disabled={busy}/>
             <button
               className="dg-primary"

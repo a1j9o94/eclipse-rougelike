@@ -26,7 +26,7 @@ export default function ResearchedTechnologies({seat,view,onInspect,selectedId}:
         const name=track[0].toUpperCase()+track.slice(1);
         return <section key={track} role="group" aria-label={`${name} · ${seat.technologies[track].length} researched`}>
           <h3>{name}<span>{seat.technologies[track].length} / 7</span></h3>
-          <ResearchDiscountTrack track={track} count={seat.technologies[track].length}/>
+          <ResearchDiscountTrack track={track} count={seat.technologies[track].length} minorSpecies={seat.minorSpecies}/>
           <div className="dg-owned-tiles">{seat.technologies[track].map(id=>{
             const technology=TECHNOLOGIES.find(candidate=>candidate.id===id);
             return technology ? <button className="dg-owned-tile" key={id} aria-label={`Inspect researched ${technology.name}`} aria-pressed={selected===id} onClick={()=>{setSelected(technology.id);onInspect?.(technology.id);}}><strong>{technology.name}</strong><TechnologyStats technology={technology}/>{view&&view.viewerSeatId===seat.id&&<AdvancedPopulationPreview view={view} technology={technology}/>}</button> : <p key={id}>Catalog entry unavailable: {id}</p>;

@@ -1,6 +1,7 @@
 import {remainingAction} from './actionCapacity';
 import { BASE_COMPONENTS, getFaction } from '../../shared/eclipse/catalog';
 import { capacity } from '../../shared/eclipse/rulesState';
+import {constructionCostForSeat} from '../../shared/eclipse/minorSpecies';
 import type { BuildComponent } from '../../shared/eclipse/history';
 import type { GameCommand, PlayerView } from '../../shared/eclipse/types';
 
@@ -51,7 +52,6 @@ export function analyzeBuildOrder(view: PlayerView, draft: BuildOrderDraft): Bui
   const technologies = Object.values(own.technologies).flat();
   const progress = view.actionProgress;
   const limit = progress ? remainingAction(view,'build') : capacity(own, 'build');
-  const costs = getFaction(own.faction).constructionCosts;
   const legalSectorIdsByItem: Record<string, readonly string[]> = {};
   for (const item of draft.items) {
     const technologyLegal = !['starbase','orbital','monolith'].includes(item.component) || technologies.includes(item.component);
@@ -75,7 +75,7 @@ export function analyzeBuildOrder(view: PlayerView, draft: BuildOrderDraft): Bui
   }
   return {
     command,
-    cost: draft.items.reduce((sum, item) => sum + costs[item.component], 0),
+    cost: draft.items.reduce((sum, item) => sum + constructionCostForSeat(own,item.component), 0),
     limit,
     placedCount: command.builds.length,
     unplacedCount,

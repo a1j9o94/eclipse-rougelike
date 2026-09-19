@@ -1,0 +1,31 @@
+.dg-minor-market,.dg-minor-acquired { margin:20px 0; }
+.dg-minor-market > header p { color:#b8c8d1; font-size:13px; line-height:1.5; }
+.dg-minor-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr)); gap:12px; }
+.dg-minor-card { min-width:0; display:flex; flex-direction:column; gap:11px; padding:15px; border:1px solid #817353; border-radius:8px; background:linear-gradient(135deg,#283138,#111b27); }
+.dg-minor-card > header { display:flex; align-items:center; gap:10px; }
+.dg-app .dg-minor-card h3 { margin:3px 0 0; font-size:16px; color:#eddaad; line-height:1.25; }
+.dg-minor-card header small { font-size:9px; letter-spacing:.13em; color:#b9ac8d; }
+.dg-minor-emblem { display:grid; place-items:center; width:44px; height:50px; flex:none; color:#d9c79d; }
+.dg-minor-emblem > svg { width:38px; height:42px; }
+.dg-minor-emblem .dg-ship-silhouette { width:44px; height:50px; }
+.dg-minor-bonus { margin-left:auto; flex:none; font-size:24px; color:#e5c887; }
+.dg-app .dg-minor-card > p { margin:0; font-size:13px; line-height:1.5; color:#c0cbd3; }
+.dg-minor-price,.dg-minor-population { display:flex; align-items:center; gap:6px; color:#e1c28b; font-size:13px; }
+.dg-minor-price > strong { font-size:24px; }
+.dg-minor-card .dg-trade-icon { width:21px; height:21px; }
+.dg-minor-cubes { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px; }
+.dg-minor-cubes > button { display:flex; align-items:center; flex-direction:column; gap:5px; padding:8px 3px; background:#121e2b; border:1px solid #697585; border-radius:5px; color:#d8e0e6; font-size:11px; }
+.dg-minor-cubes > button small { font-size:9px; }
+.dg-app .dg-minor-cubes > button strong { font-size:11px; }
+.dg-minor-cubes > button[aria-pressed=true] { background:#453b28; border-color:#e3bf73; }
+.dg-minor-cubes > button:disabled { opacity:.5; }
+.dg-minor-return { display:flex; gap:9px; font-size:12px; line-height:1.5; padding:9px; color:#ebc895; border:1px solid #ad8651; background:#403322; border-radius:5px; }
+.dg-minor-return input { width:18px; height:18px; flex:none; }
+.dg-app .dg-minor-card .dg-minor-blocker { color:#bcb7af; font-size:12px; }
+.dg-app .dg-minor-buy { display:flex; align-items:center; justify-content:center; gap:8px; margin-top:auto; min-height:44px; }
+.dg-app .dg-minor-buy:disabled { opacity:.5; }
+.dg-minor-buy .dg-trade-icon { color:inherit; }
+.dg-minor-vp { align-self:flex-start; padding:3px 7px; border:1px solid #ac965f; border-radius:4px; color:#dcc18a; font-size:12px; }
+.dg-minor-acquired > h2 { margin-bottom:12px; }
+.eo-overview .dg-minor-card h3 { font-size:16px; }
+.eo-overview .dg-minor-acquired .dg-minor-grid,.dg-partner-rack .dg-minor-grid { grid-template-columns:1fr; }

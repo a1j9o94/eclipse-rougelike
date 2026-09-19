@@ -180,6 +180,8 @@ export function evaluateLegacyAiCommand(
         : balance < 0
           ? 15
           : -12;
+    case "buy-minor-species":
+      return -20; // Historical comparison policy does not invest in optional species.
     case "offer-diplomacy":
       return factionPolicy.diplomacyValue;
     case "move": {

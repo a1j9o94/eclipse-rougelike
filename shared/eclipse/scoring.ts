@@ -1,3 +1,4 @@
+import { minorSpeciesPoints, type MinorSpeciesTile } from "./minorSpecies";
 import { getFaction, type CatalogResources, type FactionId } from './catalog';
 export interface ScoringSector {
   readonly id: string;
@@ -7,6 +8,9 @@ export interface ScoringSector {
   readonly portalVp: 0 | 1 | 2 | 3;
 }
 export interface ScoringInput {
+  readonly minorSpecies?: readonly MinorSpeciesTile[];
+  /** Public tile count for estimates that intentionally omit private reputation values. */
+  readonly reputationTileCount?: number;
   readonly playerId: string;
   readonly faction: FactionId;
   readonly reputation: readonly number[];
@@ -23,6 +27,7 @@ export interface ScoringInput {
   readonly resources: CatalogResources;
 }
 export interface ScoreBreakdown {
+  readonly minorSpecies?: number;
   readonly playerId: string;
   readonly reputation: number;
   readonly ambassadors: number;
@@ -49,6 +54,7 @@ export function researchTrackVp(technologyCount: number): number {
   return [0, 0, 0, 0, 1, 2, 3, 5][technologyCount];
 }
 export function calculateScore(input: ScoringInput): ScoreBreakdown {
+  const minorSpecies = minorSpeciesPoints(input.minorSpecies ?? [], input.ambassadors, input.reputationTileCount ?? input.reputation.length);
   const reputation = input.reputation.reduce((sum, vp) => sum + vp, 0);
   const ambassadors = input.ambassadors;
   const sectors = input.sectors.reduce((sum, s) => sum + s.printedVp, 0);
@@ -69,6 +75,7 @@ export function calculateScore(input: ScoringInput): ScoreBreakdown {
       : 0;
   const species = speciesBase + (input.ancientPartsUsed ?? 0) * (faction.special?.ancientPartVp ?? 0);
   return {
+    ...(input.minorSpecies?.length ? {minorSpecies} : {}),
     playerId: input.playerId,
     reputation,
     ambassadors,
@@ -88,7 +95,7 @@ export function calculateScore(input: ScoringInput): ScoreBreakdown {
       discoveries +
       traitor +
       research +
-      species,
+      species + minorSpecies,
     resourceTotal:
       input.resources.materials +
       input.resources.science +

@@ -1,3 +1,4 @@
+import { researchCostForSeat, constructionCostForSeat } from "./minorSpecies";
 import { interruptAutoPassForEntry } from './autoPass';
 import { planBlueprintUpgrade } from "./upgradePlan";
 import { BASE_COMPONENTS, factionHasCapability, getFaction } from "./catalog";
@@ -7,7 +8,7 @@ import {
   type ShipBlueprint,
 } from "./blueprints";
 import { SHIP_PARTS, type ShipPartId } from "./parts";
-import { TECHNOLOGIES, researchCost, type TechnologyId } from "./technologies";
+import { TECHNOLOGIES, type TechnologyId } from "./technologies";
 import {
   getDiscovery,
   type DiscoveryId,
@@ -122,10 +123,7 @@ export function researchTechnology(
     !!definition && state.technologyMarket.includes(tileId),
     "This technology is not available in the market.",
   );
-  const entries = Object.entries(seat.technologies).flatMap(([t, ids]) =>
-    ids.map((id) => ({ track: t as Track, technology: id as TechnologyId })),
-  );
-  const cost = researchCost(definition!.id, track, entries);
+  const cost = researchCostForSeat(definition!.id, track, seat);
   requireRule(
     cost.ok,
     "Technology already researched, track full, or wrong track.",
@@ -372,9 +370,7 @@ export function performAction(
           !!sector && sector.owner === seat.id,
           "Build only in controlled sectors.",
         );
-        const cost = getFaction(seat.faction).constructionCosts[
-          build.component
-        ];
+        const cost = constructionCostForSeat(seat, build.component);
         requireRule(
           seat.resources.materials >= cost,
           `This build costs ${cost} materials.`,

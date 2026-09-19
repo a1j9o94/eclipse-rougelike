@@ -30,6 +30,8 @@ export function runningScore(view: PlayerView, seatId: string): RunningScore {
     faction: seat.faction,
     reputation: final && own ? view.private.reputation : [],
     ambassadors: seat.ambassadors.length,
+    minorSpecies: seat.minorSpecies,
+    reputationTileCount: own?view.private.reputation.length:counts?.reputation??0,
     sectors: view.sectors.filter(sector => sector.owner === seatId).map(sector => {
       const definition = sectorDefinition(Number(sector.tileId));
       if (!definition) throw new RangeError(`Sector is absent from base catalog: ${sector.tileId}`);

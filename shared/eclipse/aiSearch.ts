@@ -13,7 +13,7 @@ export interface AiSearchDiagnostics {nodes:number;completedDepth:number;opponen
 export interface StrategicAiChoice extends AiChoice {search:AiSearchDiagnostics}
 interface Node {worlds:GameState[];first:AiChoice;value:number;path:GameCommand[]}
 const actionType=(command:GameCommand)=>command.type==='trade-and-act'?command.action.type:command.type;
-const isStrategic=(command:GameCommand)=>['explore','research','upgrade','build','move','influence','pass'].includes(actionType(command));
+const isStrategic=(command:GameCommand)=>['explore','research','upgrade','build','move','influence','pass','buy-minor-species'].includes(actionType(command));
 
 /** Receding-horizon search. Its ONLY input is the same allowlisted view a human receives.
  * Fixed work limits make tests reproducible; the server additionally supplies a deadline.

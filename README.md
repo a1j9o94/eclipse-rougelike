@@ -63,3 +63,7 @@ The expanded roster is drawn from **Régis Étienne’s (@retienne) 24-faction c
 The [research index](coding_agents/faction_research/README.md) includes faction abilities and implementation difficulty, AI strategy notes, a file inventory, and [full credits](coding_agents/faction_research/credits.md). The [complete original-file snapshot](https://github.com/a1j9o94/eclipse-rougelike/releases/tag/faction-sources-2026-09-19) is preserved as a GitHub release archive, keeping large artwork and editable templates out of the game bundle.
 
 The underlying Eclipse game is by **Touko Tahkokallio / Lautapelit.fi**. Community sources retain their original credits and notices. Only the four additions listed above are playable; the rest of the archived factions and house rules remain research material.
+
+## Minor Species
+
+Enable **Include Minor Species** in new-game or room setup to include the optional [official Minor Species expansion](https://www.lautapelit.fi/files/Online%20rules/Eclipse2_MS_rules_web.pdf). Four of nine tiles are randomly available for the game. Open **Diplomacy** to inspect their prices and effects or purchase one during your action turn. Acquired tiles occupy ambassador-compatible spaces, cannot be discarded, and apply their income, research/construction discounts or scoring bonuses immediately. Any reputation returned to make room is shown privately before purchase. Existing saves retain their original options.

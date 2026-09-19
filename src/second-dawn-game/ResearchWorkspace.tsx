@@ -1,7 +1,8 @@
 import {tradeQuote} from '../../shared/eclipse/catalog';
 import {TradeResourceIcon} from './TradePanel';
 import {previewCommand} from '../../shared/eclipse/commandPreview';
-import {researchCost,TECHNOLOGIES,type TechnologyId} from '../../shared/eclipse/technologies';
+import {TECHNOLOGIES,type TechnologyId} from '../../shared/eclipse/technologies';
+import {researchCostForSeat} from '../../shared/eclipse/minorSpecies';
 import {useLayoutEffect,useRef} from 'react';
 import type {GameCommand,PlayerView,Track} from '../../shared/eclipse/types';
 import {ChoiceCards} from './DecisionChoicePrimitives';
@@ -24,10 +25,9 @@ const humanize=(value:string)=>value.replaceAll('-',' ').replace(/^./,c=>c.toUpp
 export default function ResearchWorkspace({view,purchases,selected,draft,disabled,stale,stillLegal,acquired,onSelect,onDraft,onSubmit}:{view:PlayerView;purchases:Candidate[];selected:TechnologyId|null;draft:Draft;disabled:boolean;stale:boolean;stillLegal:boolean;acquired:TechnologyId|null;onSelect:(id:TechnologyId,owned:boolean)=>void;onDraft:(draft:Draft)=>void;onSubmit:(command:GameCommand)=>void}){
  const detailRef=useRef<HTMLElement>(null);
  const seat=view.seats.find(s=>s.id===view.viewerSeatId)!;
- const entries=tracks.flatMap(track=>seat.technologies[track].map(technology=>({technology:technology as TechnologyId,track})));
  const owned=new Set(Object.values(seat.technologies).flat());
  const market=TECHNOLOGIES.filter(tech=>view.technologyMarket.includes(tech.id)).map(tech=>{
-  const costs=tracks.flatMap(track=>{const cost=researchCost(tech.id,track,entries);return cost.ok?[cost.scienceCost]:[];});
+  const costs=tracks.flatMap(track=>{const cost=researchCostForSeat(tech.id,track,seat);return cost.ok?[cost.scienceCost]:[];});
   return {tech,costs,sortCost:costs.length?Math.min(...costs):tech.baseCost};
  }).sort((a,b)=>a.sortCost-b.sortCost||a.tech.baseCost-b.tech.baseCost||a.tech.name.localeCompare(b.tech.name));
  const selectedTech=selected?TECHNOLOGIES.find(t=>t.id===selected):undefined;
@@ -35,10 +35,10 @@ export default function ResearchWorkspace({view,purchases,selected,draft,disable
  const purchaseTech=draftId?TECHNOLOGIES.find(t=>t.id===draftId):undefined;
  const options=selected? purchases.filter(candidate=>{const command=commandOf(candidate);return command?.type==='research'&&command.tileId===selected;}):[];
  const chosen=commandOf(draft??undefined);
- const chosenCost=chosen?.type==='research'?researchCost(chosen.tileId as TechnologyId,chosen.track,entries):null;
+ const chosenCost=chosen?.type==='research'?researchCostForSeat(chosen.tileId as TechnologyId,chosen.track,seat):null;
  const preview=draft?previewCommand(view,draft.command):null;
  const scienceCost=chosenCost?.ok?chosenCost.scienceCost:null;
- const trackCosts=selected?tracks.flatMap(track=>{const cost=researchCost(selected,track,entries);return cost.ok?[cost.scienceCost]:[];}):[];
+ const trackCosts=selected?tracks.flatMap(track=>{const cost=researchCostForSeat(selected,track,seat);return cost.ok?[cost.scienceCost]:[];}):[];
  const unavailableReason=selectedTech?owned.has(selectedTech.id)?'Already researched. Inspect its active effect above.':!view.technologyMarket.includes(selectedTech.id)?'No market copy remains. Choose another available technology.':view.pendingDecision?'Finish your pending decision before researching.':view.waitingFor?'Research is unavailable while another decision is being resolved.':view.activeSeatId!==seat.id?'Wait for your turn to research.':view.phase!=='action'?'Research is available during the action phase.':view.actionProgress&&view.actionProgress.action!=='research'?`Finish your current ${humanize(view.actionProgress.action)} action before researching.`:!view.actionProgress&&seat.influenceOnTrack<=0?'No influence disc is available to start a Research action.':trackCosts.length===0?'Every eligible research track for this technology is full.':options.length===0&&seat.resources.science<Math.min(...trackCosts)?`Not enough science or convertible resources. This technology costs at least ${Math.min(...trackCosts)} science.`:options.length===0?'No Research activation is available for this technology.':draft&&!stillLegal?'This research draft is no longer legal. Review the market, track, and funding choices.':null:null;
  useLayoutEffect(()=>{if(!selected||!detailRef.current)return;detailRef.current.focus({preventScroll:true});},[selected]);
  const selectedPanel=selectedTech&&<section ref={detailRef} tabIndex={-1} className="dg-research-local" aria-label={`Research ${selectedTech.name}`}>

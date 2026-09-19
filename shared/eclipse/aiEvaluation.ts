@@ -1,3 +1,4 @@
+import {minorSpeciesFutureValue} from './aiMinorSpecies';
 import { aiWeaponValue } from "./aiWeaponValue";
 import {factionHasCapability,getFaction} from './catalog';
 import {deriveBlueprintStats} from './blueprints';
@@ -14,9 +15,9 @@ function empireValue(view:PlayerView,seat:Seat):number {
  const sectors=view.sectors.filter(s=>s.owner===seat.id);
  const own=seat.id===view.viewerSeatId;
  const hidden=view.hiddenTileCounts.find(s=>s.seatId===seat.id);
-const score=calculateScore({playerId:seat.id,faction:seat.faction,reputation:own?view.private.reputation:[],ambassadors:seat.ambassadors.length,sectors:sectors.map(s=>({id:s.id,printedVp:sectorDefinition(Number(s.tileId))?.victoryPoints??0,monoliths:Number(s.monolith),portalVp:s.portalVp??0})),discoveriesKeptForVp:own?view.private.discoveriesKept.length:hidden?.discoveriesKept??0,traitor:seat.traitor,researchTracks:[seat.technologies.military.length,seat.technologies.grid.length,seat.technologies.nano.length],ancientsOnBoard:view.ships.filter(s=>s.type==='ancient').length,ancientPartsUsed:seat.ancientPartsUsed,resources:seat.resources});
+const score=calculateScore({playerId:seat.id,faction:seat.faction,reputation:own?view.private.reputation:[],ambassadors:seat.ambassadors.length,minorSpecies:seat.minorSpecies,reputationTileCount:own?view.private.reputation.length:hidden?.reputation??0,sectors:sectors.map(s=>({id:s.id,printedVp:sectorDefinition(Number(s.tileId))?.victoryPoints??0,monoliths:Number(s.monolith),portalVp:s.portalVp??0})),discoveriesKeptForVp:own?view.private.discoveriesKept.length:hidden?.discoveriesKept??0,traitor:seat.traitor,researchTracks:[seat.technologies.military.length,seat.technologies.grid.length,seat.technologies.nano.length],ancientsOnBoard:view.ships.filter(s=>s.type==='ancient').length,ancientPartsUsed:seat.ancientPartsUsed,resources:seat.resources});
  // Hidden reputation is an expectation based on count, never sampled opponent values.
- let value=score.total+(own?0:(hidden?.reputation??0)*2.5);
+ let value=score.total+(own?0:(hidden?.reputation??0)*2.5)+minorSpeciesFutureValue(view,seat);
  const remaining=Math.max(0,8-view.round),income={money:incomeForPopulationAway(seat.populationTracks.money),science:incomeForPopulationAway(seat.populationTracks.science),materials:incomeForPopulationAway(seat.populationTracks.materials)};
  const upkeep=upkeepForEmptyInfluenceSlots(Math.max(0,13-seat.influenceOnTrack));
  const balance=seat.resources.money+income.money-upkeep;

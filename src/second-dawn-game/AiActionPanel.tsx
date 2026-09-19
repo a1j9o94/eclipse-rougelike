@@ -13,6 +13,7 @@ import TechnologyStats from './TechnologyStats';
 import {describeTechnology} from './itemDescriptions';
 import SectorFleet from './SectorFleet';
 import SectorPlanets from './SectorPlanets';
+import {MinorSpeciesCard} from './MinorSpeciesMarket';
 import './aiActionPanel.css';
 export interface AiActionPanelProps {
  view:PlayerView;
@@ -30,7 +31,9 @@ export default function AiActionPanel({view,entry,onInspectSector}:AiActionPanel
  const sectorIds=presentation&&'sectorIds'in presentation?presentation.sectorIds:[];
  const sectors=[...new Set(sectorIds)].flatMap(id=>view.sectors.filter(sector=>sector.id===id));
  let content:ReactNode=null;
- if(presentation?.kind==='research'){
+ if(presentation?.kind==='minor-species'){
+  content=<MinorSpeciesCard id={presentation.minorSpeciesId} seat={actor}/>;
+ }else if(presentation?.kind==='research'){
   const technology=TECHNOLOGIES.find(item=>item.id===presentation.technologyId);
   if(technology)content=<article className="dg-ai-tech-card"><small>Technology researched</small><h3>{technology.name}</h3><TechnologyStats technology={technology}/><p>{describeTechnology(technology)}</p></article>;
  }else if(presentation?.kind==='upgrade'&&actor){

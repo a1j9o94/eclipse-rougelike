@@ -25,7 +25,7 @@ export function scoreSeat(state: GameState, seat: Seat): ScoreBreakdown {
     discoveriesKeptForVp: hidden?.discoveriesKept.length ?? 0, traitor: seat.traitor,
     researchTracks: [seat.technologies.military.length, seat.technologies.grid.length, seat.technologies.nano.length],
     ancientsOnBoard: state.ships.filter(ship => ship.type === 'ancient').length,
-    ancientPartsUsed: seat.ancientPartsUsed, resources: seat.resources });
+    minorSpecies: seat.minorSpecies, ancientPartsUsed: seat.ancientPartsUsed, resources: seat.resources });
 }
 function eliminate(state: GameState, seat: Seat, events: GameEvent[]): void {
   if (seat.eliminated) return;

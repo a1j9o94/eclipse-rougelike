@@ -1,3 +1,4 @@
+import type { MinorSpeciesId, MinorSpeciesState, MinorSpeciesTile } from "./minorSpecies";
 import type { CivilizationColor, FactionId, FactionProfile } from "./catalog";
 import type { RandomState } from "./random";
 import type { ScoreBreakdown } from "./scoring";
@@ -55,6 +56,7 @@ export interface Ship {
   arrival?: number;
 }
 export interface Seat {
+  minorSpecies?: MinorSpeciesTile[];
   id: SeatId;
   faction: FactionId;
   controller: "human" | "ai";
@@ -237,6 +239,7 @@ export interface FundingTrade {
   amount: number;
 }
 export type GameCommand =
+  | { type: "buy-minor-species"; minorSpeciesId: MinorSpeciesId; resource?: Resource; returnReputation?: number[] }
   | { type: "trade-and-act"; trades: FundingTrade[]; action: FundableAction }
   | { type: "explore"; position: Coordinate }
   | { type: "influence"; removeSectorIds: string[]; addSectorIds: string[] }
@@ -266,6 +269,7 @@ export type GameCommand =
   | { type: "resolve"; decisionId: string; choice: DecisionChoice };
 
 export interface GameState {
+  minorSpecies?: MinorSpeciesState;
   rulesVersion: string;
   catalogVersion: string;
   /** Missing on historical snapshots and therefore interpreted as the base profile. */
@@ -440,6 +444,7 @@ export interface SectorDeckCount {
 }
 
 export interface PlayerView {
+  minorSpecies?: MinorSpeciesState;
   rulesVersion: string;
   catalogVersion: string;
   factionProfile?: FactionProfile;

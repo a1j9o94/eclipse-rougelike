@@ -151,6 +151,7 @@ export default defineSchema({
     timerMs: v.number(),
     warpPortals: v.boolean(),
     showCombatOdds: v.optional(v.boolean()),
+    minorSpecies: v.optional(v.boolean()),
     matchId: v.optional(v.id('eclipseMatchesV1')),
     createdAt: v.number(),
     updatedAt: v.number(),

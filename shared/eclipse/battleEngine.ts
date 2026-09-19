@@ -1,5 +1,6 @@
+import { reputationCapacityWithMinorSpecies } from "./minorSpecies";
 import { bestReputation } from './reputation';
-import { factionHasCapability, getFaction, reputationDrawMoney } from './catalog';
+import { factionHasCapability, reputationDrawMoney } from './catalog';
 import {
   deriveBlueprintStats,
   neutralBlueprint,
@@ -209,12 +210,7 @@ function settleRetreats(state: GameState, b: BattleState): void {
 }
 /** Publisher pp.26–29: ambassador-only spaces never hold reputation tiles. */
 export function reputationCapacity(p: Seat): number {
-  const track = getFaction(p.faction).capabilities;
-  return Math.max(
-    0,
-    track.reputationSlots -
-      Math.max(0, p.ambassadors.length - track.dedicatedAmbassadorSlots),
-  );
+  return reputationCapacityWithMinorSpecies(p);
 }
 /** Settlement is private bookkeeping and never creates a user decision. */
 function settleReputation(state: GameState, owner: string, drawn: number[], capacity: number, events: GameEvent[]): void {

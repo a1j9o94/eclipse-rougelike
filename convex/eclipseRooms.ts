@@ -35,6 +35,7 @@ const settingsValidator = v.object({
   timerMs: v.number(),
   warpPortals: v.boolean(),
   showCombatOdds: v.optional(v.boolean()),
+  minorSpecies: v.optional(v.boolean()),
 });
 type ReadContext = Pick<QueryCtx, "db">;
 
@@ -75,7 +76,7 @@ async function ownedRoomSeat(ctx: ReadContext, credential: string, room: Doc<"ec
 }
 
 function settingsFor(room: Doc<"eclipseRoomsV1">): MultiplayerRoomSettings {
-  return { factionProfile: room.factionProfile ?? "base", humanSeatCount: room.humanSeatCount, aiCount: room.aiCount, ...(room.aiDifficulty ? {aiDifficulty: room.aiDifficulty} : {}), timerMs: room.timerMs, warpPortals: room.warpPortals, showCombatOdds:room.showCombatOdds??false };
+  return { factionProfile: room.factionProfile ?? "base", humanSeatCount: room.humanSeatCount, aiCount: room.aiCount, ...(room.aiDifficulty ? {aiDifficulty: room.aiDifficulty} : {}), timerMs: room.timerMs, warpPortals: room.warpPortals, minorSpecies:room.minorSpecies??false, showCombatOdds:room.showCombatOdds??false };
 }
 
 function toLobbySeats(room: Doc<"eclipseRoomsV1">, seats: readonly Doc<"eclipseRoomSeatsV1">[]): MultiplayerLobbySeat[] {
@@ -306,7 +307,7 @@ export const updateRoomSettings = mutation({
       if (!color || usedColors.has(color)) await ctx.db.patch(seat._id, { faction: null, pieceColor: undefined, ready: false });
       else { usedColors.add(color); await ctx.db.patch(seat._id, { pieceColor: color }); }
     }
-    await ctx.db.patch(room._id, { ...args.settings, factionProfile, showCombatOdds:args.settings.showCombatOdds??room.showCombatOdds??false, updatedAt: Date.now() });
+    await ctx.db.patch(room._id, { ...args.settings, factionProfile, minorSpecies:args.settings.minorSpecies??room.minorSpecies??false, showCombatOdds:args.settings.showCombatOdds??room.showCombatOdds??false, updatedAt: Date.now() });
     await resetReady(ctx, room._id);
     const updated = await ctx.db.get(room._id);
     if (!updated) throw new Error("Room unavailable.");
@@ -352,7 +353,7 @@ export const startRoom = mutation({
     });
     const opponents = roomAiSelections(humans, room.aiCount, factionProfile, Math.random);
     const seats = [...humans, ...opponents.map((opponent, index) => ({ id: `seat-${room.humanSeatCount + index + 1}`, ...opponent, controller: 'ai' as const }))];
-    const state = createGame({ seed: Math.floor(Math.random() * 0x100000000), seats, factionProfile, warpPortals: room.warpPortals, riftCannons: true, randomizeStartingPlayer: true });
+    const state = createGame({ seed: Math.floor(Math.random() * 0x100000000), seats, factionProfile, warpPortals: room.warpPortals, riftCannons: true, minorSpecies:room.minorSpecies??false, randomizeStartingPlayer: true });
     const now = Date.now();
     const matchId = await ctx.db.insert("eclipseMatchesV1", { snapshotJson: JSON.stringify(state), rulesVersion: state.rulesVersion, catalogVersion: state.catalogVersion, revision: state.revision, round: state.round, phase: state.phase, roomToken: room.roomToken, showCombatOdds:room.showCombatOdds??false, aiDifficulty: room.aiDifficulty ?? "normal", aiVersion: AI_VERSION, createdAt: now, updatedAt: now });
     await Promise.all(humanSeats.map((seat) => ctx.db.insert("eclipseOwnershipV1", { matchId, guestId: seat.guestId, seatId: `seat-${seat.slot}` })));

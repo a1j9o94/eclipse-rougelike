@@ -46,3 +46,10 @@ it('lets an expanded room change piece color without changing species',()=>{
 it('lets the host agree to optional combat odds before the game starts',()=>{
  const save=vi.fn();render(<RoomSettingsEditor settings={lobby.settings} disabled={false} onSave={save}/>);const toggle=screen.getByRole('checkbox',{name:/Show estimated combat odds/});expect(toggle).not.toBeChecked();fireEvent.click(toggle);fireEvent.click(screen.getByRole('button',{name:'Save room settings'}));expect(save).toHaveBeenCalledWith({...lobby.settings,showCombatOdds:true});
 });
+it('offers Minor Species as an optional default-off room agreement',()=>{
+ const save=vi.fn();render(<RoomSettingsEditor settings={lobby.settings} disabled={false} onSave={save}/>);
+ const toggle=screen.getByRole('checkbox',{name:'Include Minor Species'});expect(toggle).not.toBeChecked();
+ fireEvent.click(toggle);fireEvent.click(screen.getByRole('button',{name:'Save room settings'}));expect(save).toHaveBeenCalledWith({...lobby.settings,minorSpecies:true});
+ cleanup();render(<RoomLobby lobby={{...lobby,settings:{...lobby.settings,minorSpecies:true}}} disabled={false} {...callbacks()}/>);
+ expect(within(screen.getByRole('region',{name:'Agreed room rules'})).getByText('Minor Species enabled')).toBeVisible();
+});

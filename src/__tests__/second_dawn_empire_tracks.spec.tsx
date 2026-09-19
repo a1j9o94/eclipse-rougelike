@@ -62,3 +62,17 @@ it('stacked extra influence discs stay at zero upkeep until another slot is expo
  expect(within(track).getByText('Next new action: +0 upkeep · 0 total')).toBeVisible();
  expect(within(track).queryByText('Next')).toBeNull();
 });
+it.each([[9,'3 money left','Exactly covered'],[7,'1 money left','2 money short'],[4,'2 money short','5 money short']] as const)('projects money plus income minus upkeep with %i money', (money,current,next)=>{
+ const view=fixture();Object.assign(view.seats[0],{resources:{money,science:0,materials:0},influenceOnTrack:5});view.seats[0].populationTracks.money=2;
+ render(<EmpireOverview view={view} seatId="a" {...callbacks}/>);
+ const balance=screen.getByRole('region',{name:'Money after upkeep'});
+ expect(within(balance).getByLabelText('With current upkeep')).toHaveTextContent(current);
+ expect(within(balance).getByLabelText('After next new action')).toHaveTextContent(next);
+ expect(balance).toHaveTextContent(`${money} money + 4 income − 13 upkeep`);
+});
+it('does not project an unavailable next action',()=>{
+ const view=fixture();view.seats[0].influenceOnTrack=0;
+ render(<EmpireOverview view={view} seatId="a" {...callbacks}/>);
+ expect(screen.getByRole('region',{name:'Money after upkeep'})).toBeVisible();
+ expect(screen.queryByLabelText('After next new action')).toBeNull();
+});

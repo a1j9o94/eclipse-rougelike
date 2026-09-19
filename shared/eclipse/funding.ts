@@ -1,6 +1,7 @@
-import { getFaction, tradeQuote } from "./catalog";
+import { researchCostForSeat, constructionCostForSeat } from "./minorSpecies";
+import { tradeQuote } from "./catalog";
 import { tradeResources } from "./economy";
-import { researchCost, TECHNOLOGIES, type TechnologyId } from "./technologies";
+import { TECHNOLOGIES } from "./technologies";
 import type {
   FundableAction,
   FundingTrade,
@@ -8,7 +9,6 @@ import type {
   PlayerView,
   Resources,
   Seat,
-  Track,
 } from "./types";
 export interface FundingOption {
   trades: FundingTrade[];
@@ -26,24 +26,14 @@ export function fundingActionCost(
   if (action.type === "research") {
     const technology = TECHNOLOGIES.find((t) => t.id === action.tileId);
     if (!technology) return null;
-    const price = researchCost(
-      technology.id,
-      action.track,
-      Object.entries(seat.technologies).flatMap(([track, ids]) =>
-        ids.map((technology) => ({
-          track: track as Track,
-          technology: technology as TechnologyId,
-        })),
-      ),
-    );
+    const price = researchCostForSeat(technology.id, action.track, seat);
     return price.ok ? price.scienceCost : null;
   }
-  const costs = getFaction(seat.faction).constructionCosts;
   const price = action.builds.reduce(
-    (total, build) => total + costs[build.component],
+    (total, build) => total + constructionCostForSeat(seat, build.component),
     0,
   );
-  return Number.isSafeInteger(price) && price > 0 ? price : null;
+  return Number.isSafeInteger(price) && price >= 0 ? price : null;
 }
 /** Funding estimates only. The wrapped ordinary action still enforces all authoritative legality. */
 export function fundingOptions(

@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import type { Validator } from "convex/values";
 import { FACTION_IDS, type FactionId } from "../shared/eclipse/catalog";
+import { MINOR_SPECIES, type MinorSpeciesId } from "../shared/eclipse/minorSpecies";
 import type { DecisionChoice, GameCommand } from "../shared/eclipse/types";
 
 export const factionValidator: Validator<FactionId> = v.union(
@@ -8,6 +9,7 @@ export const factionValidator: Validator<FactionId> = v.union(
 );
 export const factionProfileValidator = v.union(v.literal('base'), v.literal('expanded-v1'));
 export const pieceColorValidator = v.union(v.literal('red'), v.literal('blue'), v.literal('green'), v.literal('yellow'), v.literal('white'), v.literal('black'));
+export const minorSpeciesValidator: Validator<MinorSpeciesId> = v.union(...MINOR_SPECIES.map(tile => v.literal(tile.id)));
 const action = v.union(v.literal('explore'), v.literal('influence'), v.literal('research'), v.literal('upgrade'), v.literal('build'), v.literal('move'));
 const resource = v.union(
   v.literal("money"),
@@ -98,6 +100,7 @@ const choice: Validator<DecisionChoice, "required", string> = v.union(
 /** Exact structural validation; numeric ranges and catalog membership remain engine-owned. */
 export const gameCommandValidator: Validator<GameCommand, "required", string> =
   v.union(
+    v.object({type:v.literal("buy-minor-species"),minorSpeciesId:minorSpeciesValidator,resource:v.optional(resource),returnReputation:v.optional(v.array(v.number()))}),
     v.object({
       type: v.literal("trade-and-act"),
       trades: v.array(

@@ -9,13 +9,14 @@ export const EXPANDED_RULES_VERSION = 'second-dawn-expanded-v1-2026-05-20' as co
 export const EXPANDED_CATALOG_VERSION = 'second-dawn-catalog-expanded-v1' as const;
 export type FactionProfile = 'base' | 'expanded-v1';
 export interface ProfileVersions { readonly rulesVersion: string; readonly catalogVersion: string }
-export function profileVersions(profile: FactionProfile, riftCannons = false): ProfileVersions {
+export function profileVersions(profile: FactionProfile, riftCannons = false, minorSpecies = false): ProfileVersions {
   const base = profile === 'base'
     ? { rulesVersion: RULES_VERSION, catalogVersion: CATALOG_VERSION }
     : { rulesVersion: EXPANDED_RULES_VERSION, catalogVersion: EXPANDED_CATALOG_VERSION };
-  return riftCannons
+  const rift = riftCannons
     ? { rulesVersion: `${base.rulesVersion}+rift-cannon-v1`, catalogVersion: `${base.catalogVersion}+rift-cannon-v1` }
     : base;
+  return minorSpecies ? {rulesVersion: `${rift.rulesVersion}+minor-species-v1`, catalogVersion: `${rift.catalogVersion}+minor-species-v1`} : rift;
 }
 export const RULEBOOK_URL =
   'https://www.dropbox.com/scl/fi/wfua8sx8lyp2axor71cjx/Eclipse2_rules-ENG_2021-04-27_small.pdf?rlkey=e6kaj8wow8rykg2esfbk8ixw0&dl=1';
@@ -62,6 +63,8 @@ export interface FactionCapabilities {
   advancedHomePopulation: readonly (keyof CatalogResources)[];
   reputationSlots: 3 | 4 | 5;
   dedicatedAmbassadorSlots: 0 | 1;
+  /** Spaces that cannot hold any regular or Minor Species ambassador. */
+  dedicatedReputationSlots?: 0 | 1;
   ambassadorSupply: 2 | 3;
   /** Behavior-preserving policy hints. They are inputs to AI judgment, never rules. */
   ai: {
@@ -416,6 +419,7 @@ export const FACTION_REGISTRY: readonly FactionDefinition[] = [
     capabilities: {
       ...DEFAULT_CAPABILITIES,
       reputationSlots: 5,
+      dedicatedReputationSlots: 1,
       ai: { ...DEFAULT_CAPABILITIES.ai, shipBuildBias: 3, diplomacyValue: 3 },
     },
     startingTechnologies: ['neutron-bombs', 'gauss-shield'],

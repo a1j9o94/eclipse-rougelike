@@ -2,6 +2,7 @@ import {remainingAction,continuesAction} from './actionCapacity';
 import type { BlueprintShipType } from '../../shared/eclipse/blueprints';
 import { BASE_COMPONENTS, getFaction, STANDARD_CONSTRUCTION_COSTS } from '../../shared/eclipse/catalog';
 import { fundingOptions } from '../../shared/eclipse/funding';
+import {constructionCostForSeat} from '../../shared/eclipse/minorSpecies';
 import type { PlayerView } from '../../shared/eclipse/types';
 import { addBuildItem, analyzeBuildOrder, emptyBuildOrder, placeBuildItem, type BuildOrderDraft } from './buildPlanning';
 
@@ -17,7 +18,6 @@ const SHIP_TYPES: readonly BlueprintShipType[] = ['interceptor', 'cruiser', 'dre
 /** Read-only shortcut estimates. Real placement, funding and submission stay in Build. */
 export function empireBuildOptions(view: PlayerView, draft: BuildOrderDraft = emptyBuildOrder()): EmpireBuildOption[] {
   const own = view.seats.find(seat => seat.id === view.viewerSeatId);
-  const costs = own ? getFaction(own.faction).constructionCosts : STANDARD_CONSTRUCTION_COSTS;
   const progress = view.actionProgress;
   const turnReason = !own ? 'Player is unavailable.'
     : own.eliminated ? 'This civilization has been eliminated.'
@@ -28,7 +28,7 @@ export function empireBuildOptions(view: PlayerView, draft: BuildOrderDraft = em
     : !progress && own.influenceOnTrack < 1 ? 'No influence discs remain.'
     : null;
   return SHIP_TYPES.map(shipType => {
-    const result: EmpireBuildOption = { shipType, cost: costs[shipType], disabledReason: turnReason, requiresConversion: false };
+    const result: EmpireBuildOption = { shipType, cost: own?constructionCostForSeat(own,shipType):STANDARD_CONSTRUCTION_COSTS[shipType], disabledReason: turnReason, requiresConversion: false };
     if (!own || turnReason) return result;
     if(getFaction(own.faction).componentSupply?.[shipType]===0)return {...result,disabledReason:`${getFaction(own.faction).name} does not build ${shipType[0].toUpperCase()+shipType.slice(1)}s.`};
     const unavailable = (disabledReason: string): EmpireBuildOption => ({ ...result, disabledReason });

@@ -1,3 +1,4 @@
+import {evaluateMinorSpeciesPurchase} from './aiMinorSpecies';
 import { aiWeaponValue } from "./aiWeaponValue";
 import { generateAiCandidates } from "./aiCandidates";
 import { factionHasCapability, getFaction, tradeQuote } from "./catalog";
@@ -389,6 +390,8 @@ export function evaluateAiCommand(
         : balance < 0
           ? 15
           : -12;
+    case "buy-minor-species":
+      return evaluateMinorSpeciesPurchase(view, command);
     case "offer-diplomacy":
       return factionPolicy.diplomacyValue;
     case "move": {

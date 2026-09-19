@@ -7,6 +7,8 @@ import type { GameCommand, PlayerView, Resource } from "../../shared/eclipse/typ
 import type { CommandCandidate } from "./SecondDawnBoard";
 import { TradeResourceIcon } from "./TradePanel";
 import { incomeForPopulationAway } from "../../shared/eclipse/tracks";
+import MinorSpeciesMarket,{AcquiredMinorSpecies} from './MinorSpeciesMarket';
+import {ambassadorCapacityForSeat} from '../../shared/eclipse/minorSpecies';
 import "./diplomacy.css";
 interface Props {
   inspectedSeatId?: string;
@@ -33,9 +35,10 @@ export default function DiplomacyPanel({
     ? view.private.reputation.length
     : (view.hiddenTileCounts.find((h) => h.seatId === own.id)?.reputation ?? 0);
   const capacity = reputationCapacity(own);
-  const dedicated =
-    reputationCapacity({ ...own, ambassadors: [] }) ===
-    reputationCapacity({ ...own, ambassadors: [own.id] });
+  const capabilities=getFaction(own.faction).capabilities;
+  const dedicated=capabilities.dedicatedAmbassadorSlots>0;
+  const emptyRackSpaces=Math.max(0,capabilities.reputationSlots+capabilities.dedicatedAmbassadorSlots-own.ambassadors.length-(own.minorSpecies?.length??0)-retainedCount);
+  const emptyAmbassadorSpaces=Math.min(emptyRackSpaces,Math.max(0,ambassadorCapacityForSeat(own)-own.ambassadors.length-(own.minorSpecies?.length??0)));
   const [chosenResources, setChosenResources] = useState<Record<string, Resource>>({});
   const offers = candidates.filter((c) => c.command.type === "offer-diplomacy");
   const returns = candidates.filter(
@@ -92,6 +95,7 @@ export default function DiplomacyPanel({
         Ambassadors are retained here beside your combat reputation. Each
         ambassador is worth 1 VP; your reputation values stay private.
       </p>
+      {isOwn&&<MinorSpeciesMarket view={view} disabled={disabled} onSubmit={onSubmit}/>}
       {view.seats.length < 4 && (
         <p className="sd-callout">
           Ambassador exchanges are available in games with 4–6 players. Combat
@@ -113,10 +117,10 @@ export default function DiplomacyPanel({
         <div className="dg-ambassador-row">
           {own.ambassadors.map((id) => ambassador(id, own.id))}
           {Array.from(
-            { length: Math.max(0, getFaction(own.faction).capabilities.ambassadorSupply - own.ambassadors.length) },
+            { length: Math.min(emptyAmbassadorSpaces,Math.max(0,capabilities.ambassadorSupply-own.ambassadors.length)) },
             (_, i) => (
               <div key={`empty-${i}`} className="dg-ambassador-empty">
-                Empty ambassador slot
+                {view.minorSpecies?'Empty shared space':'Empty ambassador slot'}
               </div>
             ),
           )}
@@ -128,6 +132,8 @@ export default function DiplomacyPanel({
           Exchanging ambassadors moves one population cube off each player’s
           track.
         </p>
+        {(own.minorSpecies?.length??0)>0&&<p className="dg-rack-note">{own.minorSpecies!.length} Minor Species {own.minorSpecies!.length===1?'tile occupies':'tiles occupy'} this diplomatic rack. {emptyRackSpaces} empty spaces remain.</p>}
+        <AcquiredMinorSpecies seat={own}/>
         <div className="dg-rack-heading">
           <h2>Combat reputation</h2>
           <span>
@@ -272,6 +278,7 @@ export default function DiplomacyPanel({
                         <small>No ambassadors retained.</small>
                       )}
                     </div>
+                    <AcquiredMinorSpecies seat={seat}/>
                     <div className="dg-reputation-row">
                       {Array.from({ length: count }, (_, i) => (
                         <div

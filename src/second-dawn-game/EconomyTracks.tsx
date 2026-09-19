@@ -32,6 +32,8 @@ export default function EmpireEconomyTracks({seat}:{seat:PlayerView['seats'][num
  const used=Math.max(0,13-seat.influenceOnTrack),cost=upkeepForEmptyInfluenceSlots(used),hasNext=seat.influenceOnTrack>0&&!seat.eliminated;
  const nextPosition=hasNext?Math.max(0,14-seat.influenceOnTrack):used;
  const nextCost=upkeepForEmptyInfluenceSlots(nextPosition);
+ const money=seat.resources.money,income=incomeForPopulationAway(seat.populationTracks.money);
+ const forecasts=[{label:'With current upkeep',cost},...(hasNext?[{label:`After next ${seat.passed?'reaction':'new action'}`,cost:nextCost}]:[])];
  return <section className="eo-panel eo-economy-tracks" aria-label="Economy tracks">
   <header><div><p className="sd-eyebrow">PLAN YOUR NEXT STEPS</p><h2>Income & upkeep tracks</h2></div></header>
   {resources.map(resource=>{
@@ -45,6 +47,17 @@ export default function EmpireEconomyTracks({seat}:{seat:PlayerView['seats'][num
    steps={BASE_ECONOMY_TRACKS.upkeep.map((value,position)=>({position,value,description:`${position} empty influence slots: ${value} money upkeep`}))}
    summary={`${cost} money / round`} showIncrease showNext={hasNext&&nextPosition>used}
    preview={seat.eliminated?'Eliminated':!hasNext?'No influence discs available':`Next ${seat.passed?'reaction':'new action'}: +${nextCost-cost} upkeep · ${nextCost} total`}/>
+  {!seat.eliminated&&<section className="eo-upkeep-balances" aria-label="Money after upkeep">
+   {forecasts.map(forecast=>{
+    const balance=money+income-forecast.cost;
+    return <div key={forecast.label} aria-label={forecast.label} className={balance<0?'eo-balance-short':'eo-balance-covered'}>
+     <span>{forecast.label}</span>
+     <strong>{balance<0?`${-balance} money short`:balance===0?'Exactly covered':`${balance} money left`}</strong>
+     <small>{money} money + {income} income − {forecast.cost} upkeep</small>
+    </div>;
+   })}
+   <p>Using current money and income, before spending or earning resources in the action.</p>
+  </section>}
   <p className="eo-track-explanation">Each new action, reaction or sector claimed uses an influence disc. Remaining activations in an action use no extra disc. The track shows total round upkeep; + values show the increase per disc. Pay during upkeep, using money plus income.</p>
  </section>;
 }

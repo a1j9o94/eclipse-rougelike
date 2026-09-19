@@ -1,3 +1,4 @@
+import { hasEmptyAmbassadorSpace } from "./minorSpecies";
 import { queueAncientPart, resolveAncientPart } from "./ancientAcquisition";
 import { reputationCapacity } from "./battleEngine";
 import { shuffle } from "./random";
@@ -56,6 +57,7 @@ export function validateDiplomacy(
       !seat.ambassadors.includes(to),
     "These players cannot form diplomatic relations.",
   );
+  requireRule(hasEmptyAmbassadorSpace(seat) && hasEmptyAmbassadorSpace(other), "All ambassador spaces are occupied.");
   const hasRoom = (s: Seat, partner: string) =>
     state.privateSeats.find((p) => p.seatId === s.id)!.reputation.length <=
     reputationCapacity({ ...s, ambassadors: [...s.ambassadors, partner] });

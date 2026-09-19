@@ -1,3 +1,4 @@
+import {getMinorSpecies,type MinorSpeciesId} from './minorSpecies';
 import { getFaction } from "./catalog";
 import { TECHNOLOGIES, type TechnologyId } from "./technologies";
 import type { GameCommand, GameEvent, JournalEntry, Seat, Sector, Ship, ShipType } from "./types";
@@ -8,6 +9,7 @@ export const TIMEOUT_AI_HISTORY_MARKER = "Normal AI completed this choice after 
 export type BuildComponent = ShipType | 'orbital' | 'monolith';
 /** References to accepted, public action results. Never a pending choice or hidden draw. */
 export type PublicActionPresentation =
+  | { kind: 'minor-species'; minorSpeciesId: MinorSpeciesId }
   | { kind: 'research'; technologyId: TechnologyId }
   | { kind: 'upgrade'; shipTypes: ShipType[] }
   | { kind: 'build'; sectorIds: string[]; components: { type: BuildComponent; count: number }[] }
@@ -74,6 +76,8 @@ function actionSummary(command: GameCommand): string {
       return `Bought an additional ${command.action} activation`;
     case "colonize":
       return `Colonized ${command.placements.length} planet space${command.placements.length === 1 ? "" : "s"}`;
+    case "buy-minor-species":
+      return `Recruited Minor Species · ${getMinorSpecies(command.minorSpeciesId).name}`;
     case "offer-diplomacy":
       return "Offered diplomatic relations";
     case "discard-reputation":
@@ -97,6 +101,7 @@ function actionPresentation(command: GameCommand, context?: HistoryPublicContext
   const sectors = (ids: readonly string[]): string[] => [...new Set(ids)].filter(id => knownSectors.has(id));
   switch (command.type) {
     case 'trade-and-act': return actionPresentation(command.action, context);
+    case 'buy-minor-species': return { kind: 'minor-species', minorSpeciesId: command.minorSpeciesId };
     case 'research': {
       const technology = TECHNOLOGIES.find(tech => tech.id === command.tileId);
       return technology ? { kind: 'research', technologyId: technology.id } : undefined;

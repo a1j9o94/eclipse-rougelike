@@ -18,6 +18,7 @@ const fixtures: Record<string, GameState> = {
   ...recordedFixtures,
   ...expandedReviewFixtures(),
   'rift-combat': riftCombatReviewFixture(),
+  'minor-species': createGame({seed:12,warpPortals:false,minorSpecies:true,seats:[{id:'minor-human',faction:'eridani',controller:'human'},{id:'minor-opponent',faction:'hydran',controller:'human'}]}),
   "opening-three": createGame({
     seed: 1703,
     warpPortals: true,
@@ -39,6 +40,7 @@ const positionNames: Record<string,string> = {
   'faction-rho-indi':'Rho Indi · expanded opening', 'faction-magellan':'Magellan · colony ship conversion', 'faction-midas':'Midas · paid activations', 'faction-ragnarok':'Ragnarok · expanded opening', 'ragnarok-mixed-action':'Ragnarok · Build & Move action',
   opening:'Opening · six players', 'opening-three':'Opening · three players',
   'rift-combat':'Rift Cannon · shields and backfire',
+  'minor-species':'Minor Species · recruit allies',
   midgame:'Round 4 · developed galaxy', late:'Round 8 · final round', combat:'Active combat · allocate hits',
   ancients:'Ancients on the board', 'exploration-ancients':'Explore a sector with Ancients', 'ancient-combat':'Battle against Ancients',
   exploration:'Explore a sector', discovery:'Discovery reward', retreat:'Combat · choose retreat', scoring:'Final scoring',

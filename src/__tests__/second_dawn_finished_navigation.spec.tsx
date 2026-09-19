@@ -65,3 +65,8 @@ it('returns to setup from a saved result opened on the home page',()=>{
  expect(screen.getByText('Completed games (1)').closest('details')).not.toHaveAttribute('open');
  expect(screen.getByRole('button',{name:/Continue · round 3/})).toBeVisible();
 });
+
+it('keeps Minor Species optional when creating a solo game',()=>{
+ render(<SecondDawnGame/>);fireEvent.click(screen.getByRole('button',{name:'New game'}));
+ const toggle=screen.getByRole('checkbox',{name:'Include Minor Species'});expect(toggle).not.toBeChecked();fireEvent.click(toggle);expect(toggle).toBeChecked();
+});

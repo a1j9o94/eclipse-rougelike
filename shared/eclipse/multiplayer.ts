@@ -18,6 +18,7 @@ export interface MultiplayerRoomSettings {
   timerMs: number;
   warpPortals: boolean;
   showCombatOdds?: boolean;
+  minorSpecies?: boolean;
   aiDifficulty?: AiDifficulty;
   factionProfile?: FactionProfile;
 }
@@ -93,6 +94,7 @@ export function isMultiplayerSettings(value: MultiplayerRoomSettings): boolean {
     isMultiplayerTimerMs(value.timerMs) &&
     (value.factionProfile === undefined || ["base", "expanded-v1"].includes(value.factionProfile)) &&
     (value.showCombatOdds === undefined || typeof value.showCombatOdds === "boolean") &&
+    (value.minorSpecies === undefined || typeof value.minorSpecies === "boolean") &&
     (value.aiDifficulty === undefined || ["normal", "hard", "expert"].includes(value.aiDifficulty))
   );
 }

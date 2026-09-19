@@ -1,3 +1,4 @@
+import { MINOR_SPECIES } from "./minorSpecies";
 import {
   BASE_COMPONENTS,
   profileVersions,
@@ -26,6 +27,7 @@ import { requireSectorDefinition as sectorDefinition } from "./rulesState";
 import type { GameState, Resource, Seat, Sector } from "./types";
 
 export interface GameSetup {
+  minorSpecies?: boolean;
   seed: number;
   seats: { id: string; faction: FactionId; controller: "human" | "ai"; pieceColor?: CivilizationColor }[];
   /** Omitted means the original base roster and pinned base versions. */
@@ -115,7 +117,7 @@ export function createGame(config: GameSetup): GameState {
     };
   });
   const state: GameState = {
-    ...profileVersions(profile, config.riftCannons),
+    ...profileVersions(profile, config.riftCannons, config.minorSpecies),
     ...(profile === 'expanded-v1' ? { factionProfile: profile } : {}),
     revision: 0,
     round: 1,
@@ -258,6 +260,11 @@ export function createGame(config: GameSetup): GameState {
     state.random = starter.state;
     state.activeSeatId = seats[starter.value].id;
     state.startSeatId = seats[starter.value].id;
+  }
+  if (config.minorSpecies) {
+    const market = shuffle(state.random, MINOR_SPECIES.map(tile => tile.id));
+    state.random = market.state;
+    state.minorSpecies = {market:market.items.slice(0,4)};
   }
   return state;
 }

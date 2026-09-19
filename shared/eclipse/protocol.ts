@@ -196,6 +196,7 @@ export function getPlayerView(
   if (visibleOwn.storedDiscovery && !visibleOwn.storedDiscoveryResolved)
     delete visibleOwn.storedDiscovery;
   return structuredClone({
+    ...(state.minorSpecies ? {minorSpecies:structuredClone(state.minorSpecies)} : {}),
     rulesVersion: state.rulesVersion,
     catalogVersion: state.catalogVersion,
     ...(state.factionProfile ? { factionProfile: state.factionProfile } : {}),

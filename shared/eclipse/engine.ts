@@ -1,3 +1,4 @@
+import { buyMinorSpecies } from "./minorSpeciesRules";
 import { pauseAutoPass, skipPassedReactionTurns } from './autoPass';
 import { FIRST_PASS_MONEY } from './passing';
 import { fundingActionCost, fundingOptions } from "./funding";
@@ -105,7 +106,9 @@ export function processGameCommand(
       "GAME_FINISHED",
     );
     requireRule(!seat.eliminated, "This seat has been eliminated.");
-    if (command.type === "set-auto-pass") {
+    if (command.type === "buy-minor-species") {
+      buyMinorSpecies(state, seat, command, events);
+    } else if (command.type === "set-auto-pass") {
       requireRule(typeof command.enabled === "boolean", "Choose whether automatic passing is enabled.", "INVALID_COMMAND");
       seat.autoPassUnlessAttacked = command.enabled;
       if (command.enabled) delete seat.autoPassPausedRound;

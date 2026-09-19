@@ -34,7 +34,7 @@ export function sampleAiWorld(view:PlayerView,seed:number):GameState {
  });
  const sectorDiscoveries=view.sectors.filter(s=>s.discovery).flatMap(s=>{const discoveryId=discoveryPool.shift();return discoveryId?[{sectorId:s.id,discoveryId}]:[];});
  const supplies={inner:ring('inner'),middle:ring('middle'),outer:ring('outer'),technology:mix(technology).slice(0,view.supplyCounts?.technology),discovery:discoveryPool.slice(0,view.supplyCounts?.discovery),reputation:repPool.slice(0,view.supplyCounts?.reputation)};
- return {rulesVersion:view.rulesVersion,catalogVersion:view.catalogVersion,revision:view.revision,round:view.round,phase:view.phase,activeSeatId:view.activeSeatId,startSeatId:view.startSeatId,firstPasser:view.firstPasser??null,seats:structuredClone(view.seats),sectors:structuredClone(view.sectors),ships:structuredClone(view.ships),technologyMarket:[...view.technologyMarket],pendingDecision:null,privateSeats,random,supplies,
+ return {...(view.minorSpecies?{minorSpecies:structuredClone(view.minorSpecies)}:{}),...(view.factionProfile?{factionProfile:view.factionProfile}:{}),rulesVersion:view.rulesVersion,catalogVersion:view.catalogVersion,revision:view.revision,round:view.round,phase:view.phase,activeSeatId:view.activeSeatId,startSeatId:view.startSeatId,firstPasser:view.firstPasser??null,seats:structuredClone(view.seats),sectors:structuredClone(view.sectors),ships:structuredClone(view.ships),technologyMarket:[...view.technologyMarket],pendingDecision:null,privateSeats,random,supplies,
   engine:{warpPortals,riftCannons,action:null,decisions:[],sectorDiscoveries,discardedSectors:{inner:[],middle:[],outer:[]},discardedDiscoveries:[],boxedSectors:[],battle:null,battleSectors:[],upkeepDone:[],scores:null,nextId:1_000_000+view.revision*10_000},
  };
 }

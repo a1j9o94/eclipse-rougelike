@@ -1,3 +1,4 @@
+import { researchCostForSeat, constructionCostForSeat, minorSpeciesPurchaseOptions, getMinorSpecies, hasEmptyAmbassadorSpace } from "./minorSpecies";
 import { planBlueprintUpgrade } from "./upgradePlan";
 import { BASE_COMPONENTS, factionHasCapability, getFaction, tradeQuote } from "./catalog";
 import {
@@ -9,8 +10,6 @@ import {
 import { SHIP_PARTS, type ShipPartId } from "./parts";
 import {
   TECHNOLOGIES,
-  researchCost,
-  type ResearchEntry,
   type TechnologyId,
 } from "./technologies";
 import type { AncientShipPartId } from "./discoveries";
@@ -118,6 +117,10 @@ export function legalCommands(
           ).movement
         : 0,
   }));
+  for (const command of minorSpeciesPurchaseOptions(view)) {
+    const tile = getMinorSpecies(command.minorSpeciesId);
+    add(command, `Befriend ${tile.name}`, `${tile.cost} money; no action disc or activation.`);
+  }
   const decision = view.pendingDecision;
   const trades = () => {
     for (const from of RESOURCES)
@@ -282,6 +285,7 @@ export function legalCommands(
         for (const resource of decision.populationSources.filter(() => {
           const proposer = view.seats.find((s) => s.id === decision.proposer)!;
           return (
+            hasEmptyAmbassadorSpace(seat) && hasEmptyAmbassadorSpace(proposer) &&
             reputationCapacity({
               ...seat,
               ambassadors: [...seat.ambassadors, decision.proposer],
@@ -597,19 +601,12 @@ export function legalCommands(
     }
   }
   if (can("research")) {
-    const entries: ResearchEntry[] = TRACKS.flatMap((track) =>
-      seat.technologies[track]
-        .filter((id): id is TechnologyId =>
-          TECHNOLOGIES.some((t) => t.id === id),
-        )
-        .map((technology) => ({ technology, track })),
-    );
     for (const tileId of [...new Set(view.technologyMarket)]) {
       if (tileId === "warp-portal" && controlled.length === 0) continue;
       const technology = TECHNOLOGIES.find((t) => t.id === tileId);
       if (!technology) continue;
       for (const track of TRACKS) {
-        const cost = researchCost(technology.id, track, entries);
+        const cost = researchCostForSeat(technology.id, track, seat);
         if (cost.ok && seat.resources.science >= cost.scienceCost)
           add(
             { type: "research", tileId, track },
@@ -647,7 +644,7 @@ export function legalCommands(
             (faction.componentSupply?.[component] ?? BASE_COMPONENTS.perColor[component])
         )
           continue;
-        const cost = faction.constructionCosts[component];
+        const cost = constructionCostForSeat(seat, component);
         if (seat.resources.materials >= cost)
           add(
             { type: "build", builds: [{ sectorId: sector.id, component }] },
@@ -874,7 +871,7 @@ export function legalCommands(
         }
     }
   }
-  if (view.seats.length >= 4 && !seat.traitor && seat.ambassadors.length < faction.capabilities.ambassadorSupply) {
+  if (view.seats.length >= 4 && !seat.traitor && hasEmptyAmbassadorSpace(seat) && seat.ambassadors.length < faction.capabilities.ambassadorSupply) {
     for (const other of view.seats) {
       if (
         reputationCapacity({
@@ -892,6 +889,7 @@ export function legalCommands(
       if (
         other.id === seat.id ||
         other.eliminated ||
+        !hasEmptyAmbassadorSpace(other) ||
         other.traitor ||
         other.ambassadors.length >= getFaction(other.faction).capabilities.ambassadorSupply ||
         seat.ambassadors.includes(other.id)

@@ -26,3 +26,11 @@
  .eo-track li { padding-top:4px; padding-bottom:2px; }
  .eo-track li.eo-track-current { padding-top:3px; padding-bottom:1px; }
 }
+.eo-upkeep-balances { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.eo-upkeep-balances > div { flex:1 1 220px; display:grid; gap:4px; padding:10px 12px; border:1px solid #455665; border-radius:6px; background:#101d27; }
+.eo-upkeep-balances span { color:#c2cdd5; font-size:12px; }
+.eo-upkeep-balances strong { font-size:18px; font-variant-numeric:tabular-nums; }
+.eo-balance-covered strong { color:#acd2b9; }
+.eo-balance-short strong { color:#efa6a6; }
+.eo-upkeep-balances small { color:#c2cdd5; font-size:12px; }
+.eo-overview .eo-upkeep-balances > p { flex-basis:100%; margin:0; font-size:11px; color:#afbdc7; }
