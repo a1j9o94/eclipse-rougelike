@@ -21,9 +21,14 @@ it('keeps benefit, track, funding, exact cost, and commit beside the selected ti
  fireEvent.click(screen.getAllByRole('button',{name:'Research',exact:true})[0]);
  fireEvent.click(screen.getByRole('button',{name:/Fusion Drive ×/}));
  const purchase=screen.getByRole('region',{name:'Research Fusion Drive'});
+ const card=screen.getByRole('article',{name:'Fusion Drive technology'});
+ expect(card).toContainElement(purchase);
+ expect(within(card).getByRole('button',{name:/Fusion Drive ×/})).not.toContainElement(purchase);
  expect(document.activeElement).toBe(purchase);
  expect(within(purchase).getByText(/Unlocks this part for Upgrade/)).toBeInTheDocument();
- expect(within(purchase).getByText('Conversion required')).toBeInTheDocument();
+ expect(within(purchase).getByText('Convert these resources')).toBeVisible();
+ fireEvent.click(within(purchase).getByText('Change conversion',{exact:true}));
+ expect(within(purchase).getByText('Conversion required')).toBeVisible();
  expect(within(purchase).getByRole('button',{name:/Research · 4 science/})).toBeInTheDocument();
  expect(screen.queryByRole('button',{name:'Confirm action'})).not.toBeInTheDocument();
  fireEvent.click(within(purchase).getByRole('button',{name:/Research · 4 science/}));
@@ -88,4 +93,24 @@ it('explains an unfundable science shortfall',()=>{
  const state=fixture();state.seats[0].resources={money:0,science:0,materials:0};const view=getPlayerView(state,'a')!;
  render(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="" onSubmit={vi.fn()} onMenu={vi.fn()}/>);fireEvent.click(screen.getAllByRole('button',{name:'Research',exact:true})[0]);fireEvent.click(screen.getByRole('button',{name:/Fusion Drive ×/}));
  expect(screen.getByRole('alert')).toHaveTextContent('Not enough science or convertible resources. This technology costs at least 4 science.');
+});
+
+it('keeps selecting and confirming a market tile local without scrolling to the top',()=>{
+ const scroll=vi.fn();const original=HTMLElement.prototype.scrollIntoView;HTMLElement.prototype.scrollIntoView=scroll;
+ try{const view=getPlayerView(fixture(),'a')!;render(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="" onSubmit={vi.fn()} onMenu={vi.fn()}/>);fireEvent.click(screen.getAllByRole('button',{name:'Research',exact:true})[0]);fireEvent.click(screen.getByRole('button',{name:/Fusion Drive ×/}));expect(scroll).not.toHaveBeenCalled();expect(within(screen.getByRole('article',{name:'Fusion Drive technology'})).getByRole('button',{name:/Research · 4 science/})).toBeVisible();}finally{HTMLElement.prototype.scrollIntoView=original;}
+});
+
+it('changes a rare technology track and confirms from that same card',()=>{
+ const state=fixture();state.technologyMarket=['conifold-field'];state.seats[0].resources.science=20;
+ const view=getPlayerView(state,'a')!,submit=vi.fn();render(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="" onSubmit={submit} onMenu={vi.fn()}/>);
+ fireEvent.click(screen.getAllByRole('button',{name:'Research',exact:true})[0]);fireEvent.click(screen.getByRole('button',{name:/Conifold Field ×/}));
+ const card=screen.getByRole('article',{name:'Conifold Field technology'});fireEvent.click(within(card).getByRole('radio',{name:'Nano'}));
+ expect(within(card).getAllByText('Nano',{selector:'strong'})[0]).toBeInTheDocument();fireEvent.click(within(card).getByRole('button',{name:'Research · 5 science'}));
+ expect(submit).toHaveBeenCalledWith(expect.objectContaining({type:'research',tileId:'conifold-field',track:'nano'}));
+});
+
+it('inspects owned technologies once even when another market copy remains',()=>{
+ const state=fixture();state.seats[0].technologies.nano.push('fusion-drive');const view=getPlayerView(state,'a')!;
+ render(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="" onSubmit={vi.fn()} onMenu={vi.fn()}/>);fireEvent.click(screen.getAllByRole('button',{name:'Research',exact:true})[0]);fireEvent.click(screen.getByRole('button',{name:/Fusion Drive ×/}));
+ expect(screen.getAllByRole('region',{name:'Research Fusion Drive'})).toHaveLength(1);expect(screen.queryByRole('button',{name:/Research ·/})).not.toBeInTheDocument();expect(screen.getByText('Already researched. Inspect its active effect above.')).toBeInTheDocument();
 });

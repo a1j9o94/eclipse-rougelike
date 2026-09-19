@@ -40,8 +40,8 @@ it('prioritizes the saved pending decision and keeps a direct return after inspe
  const state=(JSON.parse(fixtures)as Record<string,GameState>).combat;setup(state);
  expect(screen.getByRole('heading',{name:/Combat allocation/i})).toBeInTheDocument();
  fireEvent.click(screen.getByRole('button',{name:'Empire',exact:true}));
- expect(screen.getByRole('button',{name:'Return to decision'})).toBeInTheDocument();
- fireEvent.click(screen.getByRole('button',{name:'Return to decision'}));
+ expect(screen.getByRole('button',{name:'Return to combat allocation'})).toBeInTheDocument();
+ fireEvent.click(screen.getByRole('button',{name:'Return to combat allocation'}));
  expect(screen.getByRole('heading',{name:/Combat allocation/i})).toBeInTheDocument();
 });
 it('opens one compact sector sheet that can expand and dismiss',()=>{
@@ -88,4 +88,19 @@ it('resumes automatic AI following after an acknowledged human end-action withou
  fireEvent.click(screen.getByRole('button',{name:'Expand AI action details'}));
  expect(oldSheet.scrollTop).toBe(0);
  expect(screen.getByRole('region',{name:'AI action details'})).toBeInTheDocument();
+});
+
+it('opens Upgrade directly on the player blueprint and keeps the details sheet closed',()=>{
+ const rendered=setup();fireEvent.click(screen.getByRole('button',{name:'Choose action'}));
+ fireEvent.click(within(screen.getByRole('group',{name:'Choose your action'})).getByRole('button',{name:/^Upgrade/}));
+ expect(screen.getByRole('heading',{name:/^Edit interceptor$/i})).toBeInTheDocument();
+ expect(screen.getByRole('group',{name:'Blueprint hardpoints'})).toBeVisible();
+ expect(rendered.container.querySelector('.dg-mobile-sheet')).toHaveAttribute('data-sheet-state','closed');
+ expect(screen.queryByRole('dialog')).toBeNull();
+});
+
+it('shows the available first-pass money directly in the mobile action choice',()=>{
+ setup();fireEvent.click(screen.getByRole('button',{name:'Choose action'}));
+ const picker=screen.getByRole('group',{name:'Choose your action'});
+ expect(within(picker).getByRole('button',{name:/^Pass \+2 money/})).toBeEnabled();
 });

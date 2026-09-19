@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
     build: {
       sourcemap: true,
       rollupOptions: {
-        input: ['index.html', 'eclipse-demo.html', 'eclipse-variable-demo.html', 'galaxy-demo.html'],
+        input: ['index.html'],
       },
     },
     test: {

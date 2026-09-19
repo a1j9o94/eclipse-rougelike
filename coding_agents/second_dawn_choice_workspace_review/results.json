@@ -1,0 +1,32 @@
+{
+  "evidence": "Production components with deterministic fixtures, Chromium desktop and mobile emulation; no cloud writes or physical device playtest.",
+  "results": [
+    {
+      "width": 1366,
+      "height": 768,
+      "closedGalaxyWidth": 1366,
+      "draftPreserved": true,
+      "minimizeFocusRestored": true,
+      "popupFitsViewport": true,
+      "errors": []
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "closedGalaxyWidth": 1440,
+      "draftPreserved": true,
+      "minimizeFocusRestored": true,
+      "popupFitsViewport": true,
+      "errors": []
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "closedGalaxyWidth": 390,
+      "draftPreserved": true,
+      "minimizeFocusRestored": true,
+      "popupFitsViewport": true,
+      "errors": []
+    }
+  ]
+}

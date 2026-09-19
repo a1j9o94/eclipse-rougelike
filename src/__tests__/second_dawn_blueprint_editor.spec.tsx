@@ -57,7 +57,9 @@ it("prevents relocating a previously installed ancient part", () => {
 it("allows restoring an installed Ancient part to its original slot while still blocking relocation",()=>{
  const blueprint=initialBlueprints('terran-directorate')[0];blueprint.parts[3]='shard-hull';render(<BlueprintEditor faction="terran-directorate" blueprint={blueprint} technologies={[]} storedParts={[]} capacity={2} disabled={false} onSubmit={vi.fn()}/>);
  fireEvent.click(screen.getByRole('button',{name:'Slot 4: Shard Hull'}));fireEvent.click(screen.getByRole('button',{name:'Reveal printed component in slot 4'}));
+ fireEvent.click(screen.getByRole('button',{name:'Slot 4: Empty slot'}));
  expect(screen.getByRole('button',{name:'Install Shard Hull in slot 4'})).toBeEnabled();
+ fireEvent.click(screen.getByRole('button',{name:'Close component picker'}));
  fireEvent.click(screen.getByRole('button',{name:'Slot 1: Ion Cannon'}));expect(screen.getByRole('button',{name:/Shard Hull blocked:.*cannot be relocated/})).toBeDisabled();
 });
 
@@ -75,8 +77,11 @@ it("uses a visual slot canvas and explains locked components without a native pa
   render(<BlueprintEditor faction="terran-directorate" blueprint={initialBlueprints("terran-directorate")[0]} technologies={[]} storedParts={[]} capacity={2} disabled={false} onSubmit={vi.fn()} />);
   expect(screen.queryByRole("combobox", { name: /Part in slot/ })).toBeNull();
   expect(screen.getByRole("group", { name: "Blueprint hardpoints" })).toBeInTheDocument();
-  expect(screen.getByRole("region", { name: "Parts tray for slot 1" })).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: /Plasma Cannon unavailable: Research Plasma Cannon/ })).toBeDisabled();
+  expect(screen.queryByRole("dialog")).toBeNull();
+  fireEvent.click(screen.getByRole("button", {name:"Slot 1: Ion Cannon"}));
+  expect(screen.getByRole("dialog", {name:"Interceptor · slot 1"})).toBeInTheDocument();
+  fireEvent.click(screen.getByText(/Unavailable components \(/));
+  expect(screen.getByRole("button", { name: /Plasma Cannon blocked: Research Plasma Cannon/ })).toBeDisabled();
 });
 
 it('identifies the ship silhouette and explains draft energy in the shipyard', () => {
@@ -88,6 +93,7 @@ it('identifies the ship silhouette and explains draft energy in the shipyard', (
 
 it('shows stored Ancient copies, groups parts by function, and states the exact installation count',()=>{
  const submit=vi.fn();render(<BlueprintEditor faction="terran-directorate" blueprint={initialBlueprints('terran-directorate')[0]} technologies={['plasma-cannon','fusion-drive']} storedParts={['ion-disruptor']} capacity={2} disabled={false} onSubmit={submit}/>);
+ fireEvent.click(screen.getByRole('button',{name:'Slot 1: Ion Cannon'}));
  expect(screen.getByRole('region',{name:'Weapons'})).toHaveTextContent('Plasma Cannon');
  expect(screen.getByRole('region',{name:'Drives'})).toHaveTextContent('Fusion Drive');
  expect(screen.getByText(/Stored Ancient copies: Ion Disruptor ×1/)).toBeTruthy();

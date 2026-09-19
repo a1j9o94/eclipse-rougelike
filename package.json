@@ -14,8 +14,6 @@
     "test:run": "NODE_OPTIONS=--max-old-space-size=6144 vitest run --pool=threads --maxWorkers=1 --reporter=dot",
     "test:stable": "NODE_OPTIONS=--max-old-space-size=4096 vitest run --pool=threads --maxWorkers=1 --reporter=dot",
     "test:ui": "vitest --ui",
-    "check:app-lines": "node tools/check-app-lines.mjs",
-    "check:gameroot-lines": "node tools/check-gameroot-lines.mjs",
     "typecheck": "tsc -p . --noEmit",
     "typecheck:eclipse": "tsc -p tsconfig.eclipse.json",
     "test:second-dawn": "vitest run --maxWorkers=1 src/__tests__/second_dawn",
@@ -28,7 +26,7 @@
     "test:ci:shard5": "NODE_OPTIONS=--max-old-space-size=4096 vitest run --pool=forks --maxWorkers=1 --reporter=dot --shard=5/6",
     "test:ci:shard6": "NODE_OPTIONS=--max-old-space-size=4096 vitest run --pool=forks --maxWorkers=1 --reporter=dot --shard=6/6",
     "test:batched": "node tools/run-tests-batched.mjs",
-    "ci": "npm run lint && npm run typecheck && npm run test:run && npm run build && npm run check:app-lines",
+    "ci": "npm run lint && npm run typecheck && npm run test:run && npm run build",
     "orchestrator": "bash orchestrator.sh",
     "agents": "bash scripts/agents.sh",
     "agents:check": "node tools/agents-check.mjs",
@@ -37,7 +35,6 @@
     "agents:logs:one": "node tools/agents-logs.mjs --agent=$AGENT --lines=${LINES:-60}",
     "second-dawn:local": "node tools/second-dawn-local.mjs",
     "test:second-dawn:local": "node --test tools/second-dawn-local.test.mjs",
-    "test:second-dawn:prototype-visual": "node tools/second-dawn-visual-review.mjs",
     "test:second-dawn:visual-checker": "node --test tools/second-dawn-check-visual.test.mjs",
     "build:vercel": "tsc -b && npm run typecheck:eclipse && vite build"
   },
@@ -46,8 +43,6 @@
     "convex": "^1.26.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-hexgrid": "^2.0.1",
-    "react-zoom-pan-pinch": "^3.7.0",
     "three": "^0.186.0"
   },
   "devDependencies": {

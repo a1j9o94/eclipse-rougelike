@@ -62,7 +62,11 @@ it('shows visual counts on market and owned tiles and supply detail that refresh
  view.seats[0].technologies.nano=['advanced-labs'];view.sectors[0].population=[{squareId:'p2',resource:'science'}];
  rendered.rerender(<ResearchWorkspace {...props} view={{...view}}/>);
  expect(within(screen.getByRole('button',{name:'Inspect researched Advanced Labs'})).getByLabelText('1 eligible empty advanced planet for science')).toBeInTheDocument();
- expect(within(detail).getByText(/Already unlocked/)).toBeInTheDocument();
+ // Acquisition moves the selected panel from its market card to owned inspection.
+ expect(detail).not.toBeInTheDocument();
+ const ownedDetail=screen.getByRole('region',{name:'Research Advanced Labs'});
+ expect(within(ownedDetail).getByText(/Already unlocked/)).toBeInTheDocument();
+ expect(within(ownedDetail).getByLabelText('1 eligible empty advanced planet for science')).toBeInTheDocument();
 });
 
 it.each([['advanced-labs','science'],['advanced-economy','money'],['advanced-mining','materials']] as const)('counts %s against catalog squares and ignores orbitals', (id,resource)=>{

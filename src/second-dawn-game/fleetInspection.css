@@ -1,1 +1,73 @@
-.dg-inspection-backdrop{position:fixed;inset:0;z-index:90;background:#020914b8;display:grid;place-items:center;padding:20px}.dg-fleet-inspection{width:min(960px,100%);max-height:90dvh;overflow:auto;background:#101e2c;border:1px solid #c7a868;border-radius:14px;padding:22px;color:#e0e6ed;box-shadow:0 20px 80px #0008}.dg-fleet-inspection header{display:flex;justify-content:space-between;align-items:start;gap:18px}.dg-fleet-inspection h2{margin:5px 0}.dg-fleet-inspection h3{font-size:17px}.dg-fleet-inspection small{display:block;color:#cdb987}.dg-fleet-inspection button{min-height:44px;padding:8px 14px;background:#213647;border:1px solid #ad935e;border-radius:6px;color:#f3e4bc}.dg-inspection-ships{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}.dg-inspection-ships article,.dg-inspection-comparison{border:1px solid #3d5668;border-radius:8px;padding:12px;margin:8px 0}.dg-inspection-identity{display:flex;align-items:center;gap:12px}.dg-inspection-identity svg{width:52px;height:60px}.dg-inspection-ships dl{display:grid;grid-template-columns:1fr 1fr;gap:5px}.dg-inspection-ships dl div{display:flex;gap:8px}.dg-inspection-ships dd{margin:0;font-weight:700}.dg-fleet-inspection p{font-size:13px;line-height:1.5}.dg-inspection-civilization{border-top:1px solid #405365;padding:8px 0}.dg-fleet-inspection :focus-visible{outline:2px solid #efce86;outline-offset:3px}@media(max-width:760px){.dg-inspection-backdrop{padding:8px;align-items:end}.dg-fleet-inspection{padding:14px;max-height:88dvh}.dg-fleet-inspection header{flex-wrap:wrap}.dg-inspection-ships{grid-template-columns:1fr}}
+.dg-inspection-backdrop { position: fixed; inset: 0; z-index: 90; background: #02070bd9; padding: 20px; display: grid; place-items: center; backdrop-filter: blur(5px); }
+.dg-fleet-inspection { width: min(1180px,100%); max-height: 92dvh; overflow: auto; overscroll-behavior: contain; background: radial-gradient(ellipse at top right,#1f3440 0,transparent 50%),#0c1720; border: 1px solid #8a7954; border-radius: 14px; padding: 0 22px 22px; color: #e0e8ec; box-shadow: 0 24px 90px #000a; }
+.dg-fleet-inspection .dg-inspection-heading { position: sticky; top: 0; z-index: 2; display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 20px 0 15px; background: #0d1a23; border-bottom: 1px solid #69705b; margin-bottom: 18px; }
+.dg-inspection-heading small { color: #ceb77d; font-size: 10px; letter-spacing: .17em; }
+.dg-fleet-inspection .dg-inspection-heading h2 { margin: 3px 0; color: #f1e1b6; font-size: 28px; }
+.dg-inspection-heading p { margin: 5px 0 0; color: #aabcc7; font-size: 12px; }
+.dg-fleet-inspection button { min-height: 44px; padding: 9px 14px; background: #1e303d; color: #e3dac4; border: 1px solid #8b7b55; border-radius: 5px; cursor: pointer; }
+.dg-fleet-inspection button:focus-visible,.dg-fleet-inspection summary:focus-visible { outline: 3px solid #aadef1; outline-offset: 3px; }
+.dg-inspection-ships { display: grid; align-items: start; grid-template-columns: repeat(auto-fit,minmax(min(100%,440px),1fr)); gap: 16px; }
+.dg-inspection-blueprint { min-width: 0; padding: 16px; border: 1px solid color-mix(in srgb,var(--fleet-color) 50%,#253841); border-top: 3px solid var(--fleet-color); border-radius: 8px; background: linear-gradient(145deg,color-mix(in srgb,var(--fleet-color) 10%,#14232e),#101d26); }
+.dg-inspection-identity { display: flex; align-items: center; gap: 14px; min-height: 84px; }
+.dg-inspection-silhouette { flex: 0 0 82px; height: 82px; color: var(--fleet-color); border-radius: 50%; background: radial-gradient(ellipse,#68808f33,transparent 72%); }
+.dg-inspection-silhouette > svg { width: 82px; height: 82px; }
+.dg-inspection-owner { display: flex; align-items: center; gap: 7px; color: var(--fleet-color); font-size: 12px; }
+.dg-inspection-owner svg { flex: 0 0 20px; width: 20px; height: 20px; }
+.dg-fleet-inspection .dg-inspection-identity h3 { margin: 4px 0; font-size: 23px; color: #f1e7d3; }
+.dg-inspection-identity small { color: #a6bbc7; font-size: 11px; }
+.dg-inspection-count { margin-left: auto; color: var(--fleet-color); font-size: 29px; white-space: nowrap; }
+.dg-inspection-condition { margin-top: 15px; border-top: 1px solid #53647180; padding-top: 10px; }
+.dg-inspection-condition > small { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: #a8bbc7; }
+.dg-inspection-condition > div { display: flex; flex-wrap: wrap; gap: 7px; padding-top: 7px; }
+.dg-ship-condition { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 7px; border: 1px solid #536b7480; border-radius: 4px; padding: 6px 8px; font-size: 11px; background: #0a1720; }
+.dg-condition-index { color: #a3b6c1; }
+.dg-hp-pips { display: flex; flex-wrap: wrap; gap: 3px; }
+.dg-hp-pips i { width: 11px; height: 14px; background: #9bceb5; border: 1px solid #c3e7d2; border-radius: 2px; }
+.dg-hp-pips i.dg-hp-lost { background: #5c272c; color: #ffbbb7; border-color: #c97777; font: normal 11px/12px sans-serif; text-align: center; }
+.dg-ship-damaged { border-color: #b36b69; }
+.dg-ship-damaged small { color: #efa5a0; font-size: 10px; }
+.dg-inspection-selected { margin-top: 22px; }
+.dg-fleet-inspection > section > h3 { font-size: 18px; margin: 20px 0 12px; color: #eddfbd; }
+.dg-inspection-matchups { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,320px),1fr)); gap: 12px; }
+.dg-inspection-comparison { border: 1px solid #516672; border-radius: 7px; padding: 14px; background: #13232d; }
+.dg-inspection-comparison header { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: start; font-size: 13px; }
+.dg-inspection-comparison header > strong:last-child { text-align: right; }
+.dg-inspection-comparison header small { display: block; font-size: 10px; font-weight: normal; color: #a4bac7; margin-top: 4px; }
+.dg-inspection-comparison header > span { color: #a4bac7; font-size: 11px; }
+.dg-hit-directions { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 14px; padding-top: 15px; }
+.dg-hit-preview > span { font-size: 11px; color: #bcd0dc; }
+.dg-hit-faces { display: flex; gap: 3px; margin: 6px 0; }
+.dg-hit-faces span { width: 22px; height: 25px; display: grid; place-items: center; color: #7f919e; background: #0b151d; border: 1px solid #516371; border-radius: 4px; font: bold 12px/1 sans-serif; }
+.dg-hit-faces span.dg-face-hit { background: #e0c783; color: #14232c; border-color: #f4dfaa; box-shadow: inset 0 -3px #ac9256; }
+.dg-hit-preview > small { color: #dcc890; font-size: 11px; }
+.dg-initiative-comparison { display: flex; align-items: center; gap: 8px; border-top: 1px solid #405664; padding-top: 10px; margin-top: 13px; font-size: 11px; color: #b4c7d2; }
+.dg-initiative-comparison svg { width: 19px; height: 19px; }
+.dg-initiative-comparison b { color: #e9d6a4; }
+.dg-comparison-rules { margin-top: 12px; font-size: 12px; color: #acc0cb; }
+.dg-comparison-rules summary,.dg-inspection-civilization summary { cursor: pointer; min-height: 36px; padding-top: 9px; }
+.dg-inspection-hint { font-size: 13px; color: #adc1cd; }
+.dg-inspection-civilizations { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,280px),1fr)); gap: 14px; margin-top: 20px; }
+.dg-inspection-civilization { border-top: 1px solid #626d63; padding-top: 12px; }
+.dg-inspection-civilization h3 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 15px; color: #e3d6b8; }
+.dg-inspection-civilization p,.dg-inspection-civilization details { color: #afc1cd; font-size: 12px; }
+@media(max-width:760px){
+ .dg-inspection-backdrop { padding: 6px; align-items: end; }
+ .dg-fleet-inspection { max-height: 94dvh; padding: 0 12px 18px; border-radius: 12px; }
+ .dg-fleet-inspection .dg-inspection-heading { padding-top: 13px; gap: 8px; }
+ .dg-inspection-heading small { font-size: 8px; letter-spacing: .1em; }
+ .dg-fleet-inspection .dg-inspection-heading h2 { font-size: 23px; }
+ .dg-inspection-heading p { font-size: 11px; max-width: 185px; }
+ .dg-inspection-heading button { padding: 8px; font-size: 12px; flex-shrink: 0; }
+ .dg-inspection-blueprint { padding: 12px; }
+ .dg-inspection-identity { gap: 9px; }
+ .dg-inspection-silhouette { flex-basis: 65px; height: 70px; }
+ .dg-inspection-silhouette > svg { width: 65px; height: 70px; }
+ .dg-fleet-inspection .dg-inspection-identity h3 { font-size: 21px; }
+ .dg-inspection-owner { font-size: 11px; }
+ .dg-inspection-count { font-size: 24px; }
+}
+
+.dg-inspection-blueprint:only-child { max-width: 760px; width: 100%; }
+
+.dg-fleet-inspection { scroll-padding-top: 150px; }
+.dg-fleet-inspection.dg-inspection-single { width: min(850px,100%); }

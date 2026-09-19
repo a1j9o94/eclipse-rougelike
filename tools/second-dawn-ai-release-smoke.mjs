@@ -26,7 +26,7 @@ try{
   const initial=await getView();assert.equal(initial.aiDifficulty,difficulty);
   await page.reload();await page.getByRole('button',{name:/^Game (menu|room)$/}).waitFor();
   assert.equal((await getView()).aiDifficulty,difficulty);
-  await page.getByRole('button',{name:/^Pass( for this round)?$/}).click();
+  await page.getByRole('button',{name:/^Pass(?: \+2 money| for this round)?$/}).click();
   const started=Date.now(),diagnostics=[],states=new Set();let progressed=false,thinkingImage=false;
   while(Date.now()-started<100_000){
    const view=await getView();states.add(view.aiStatus?.status);

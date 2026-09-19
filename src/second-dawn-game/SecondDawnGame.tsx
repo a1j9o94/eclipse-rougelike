@@ -55,7 +55,7 @@ export default function SecondDawnGame() {
           The game saves its authoritative state to Convex. Connect the
           application to its game server, then return here.
         </p>
-        <a href="#legacy">Play the legacy roguelike</a>
+        <a href="#second-dawn-preview">Explore the playable preview</a>
       </main>
     );
   return <ConnectedGame />;
@@ -390,7 +390,6 @@ function ConnectedGame() {
 
           </>
         )}
-        <a href="#legacy">Legacy roguelike · separate saves</a>
         <a href="#second-dawn-preview">Playable preview · sample positions</a>
       </div>
     </main>

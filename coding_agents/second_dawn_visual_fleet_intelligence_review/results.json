@@ -1,0 +1,72 @@
+[
+  {
+    "width": 1366,
+    "height": 768,
+    "horizontalOverflow": false,
+    "scrollHeight": 950,
+    "clientHeight": 705,
+    "blueprints": 2,
+    "parts": 10,
+    "comparisonOverflow": false,
+    "closeAvailableAfterScroll": true,
+    "movementDraftPreserved": true,
+    "errors": []
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "horizontalOverflow": false,
+    "scrollHeight": 950,
+    "clientHeight": 826,
+    "blueprints": 2,
+    "parts": 10,
+    "comparisonOverflow": false,
+    "closeAvailableAfterScroll": true,
+    "movementDraftPreserved": true,
+    "errors": []
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "horizontalOverflow": false,
+    "scrollHeight": 950,
+    "clientHeight": 950,
+    "blueprints": 2,
+    "parts": 10,
+    "comparisonOverflow": false,
+    "closeAvailableAfterScroll": true,
+    "movementDraftPreserved": true,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "horizontalOverflow": false,
+    "scrollHeight": 1658,
+    "clientHeight": 791,
+    "blueprints": 2,
+    "parts": 10,
+    "comparisonOverflow": false,
+    "closeAvailableAfterScroll": true,
+    "movementDraftPreserved": true,
+    "errors": []
+  },
+  {
+    "width": 360,
+    "height": 800,
+    "horizontalOverflow": false,
+    "scrollHeight": 1658,
+    "clientHeight": 750,
+    "blueprints": 2,
+    "parts": 10,
+    "comparisonOverflow": false,
+    "closeAvailableAfterScroll": true,
+    "movementDraftPreserved": true,
+    "errors": []
+  },
+  {
+    "scenario": "neutral",
+    "neutralSilhouettes": 1,
+    "inventedModuleGrids": 0
+  }
+]

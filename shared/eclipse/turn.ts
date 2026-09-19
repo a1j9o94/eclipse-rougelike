@@ -1,3 +1,4 @@
+import { FIRST_PASS_MONEY } from './passing';
 import { tradeResources, type ResourceKind } from './economy';
 import type { GameState, RuleResult, SeatId, ValidationError } from './types';
 
@@ -26,14 +27,14 @@ export function passTurn(input: GameState, actor: SeatId): RuleResult {
   const state = structuredClone(input);
   const seat = state.seats[index];
   const first = state.firstPasser === null;
-  if (first && !Number.isSafeInteger(seat.resources.money + 2))
+  if (first && !Number.isSafeInteger(seat.resources.money + FIRST_PASS_MONEY))
     return reject(
       'INVALID_COMMAND',
       'Money storage is outside its supported range.',
     );
   seat.passed = true;
   if (first) {
-    seat.resources.money += 2;
+    seat.resources.money += FIRST_PASS_MONEY;
     state.firstPasser = actor;
     state.startSeatId = actor;
   }

@@ -32,5 +32,5 @@ it('switches from a build order to movement without losing the order',()=>{
  expect(screen.getByRole('region',{name:'Move fleet'})).toBeInTheDocument();
  fireEvent.click(screen.getByRole('button',{name:'Build',exact:true}));
  expect(screen.getByText(/0 placed · 1 unplaced/)).toBeInTheDocument();
- expect(screen.getByRole('button',{name:'Pass for this round'})).toBeInTheDocument();
+ expect(screen.getByRole('button',{name:/^Pass(?: \+2 money)?$/})).toBeInTheDocument();
 });

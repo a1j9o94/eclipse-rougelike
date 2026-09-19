@@ -1,0 +1,41 @@
+/* Choice content keeps its component identity while inspection changes screens. */
+.dg-tabletop .sd-main { position: relative; }
+.dg-board-surface { display: contents; }
+.dg-board-surface[inert] { pointer-events: none; }
+.dg-choice-workspace {
+ position: absolute; z-index: 24; inset: 12px 16px auto; margin-inline: auto;
+ width: min(960px, calc(100% - 32px)); max-height: calc(100% - 24px);
+ display: flex; flex-direction: column; overflow: hidden;
+ border: 1px solid #aa915d; border-radius: 12px;
+ background: linear-gradient(135deg, #1b2631fa, #101720fc);
+ box-shadow: 0 18px 56px #000b, 0 0 0 1px #e4c98718;
+}
+.dg-choice-workspace[hidden] { display: none !important; }
+.dg-choice-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 18px; border-bottom: 1px solid #aa915d66; background: #131c25; }
+.dg-choice-header > div { display: grid; gap: 2px; }
+.dg-choice-header .sd-eyebrow { margin: 0; font-size: 10px; }
+.dg-choice-header strong { font-size: 18px; color: #e5d39d; }
+.dg-choice-header button { white-space: nowrap; }
+.dg-choice-body { overflow: auto; overscroll-behavior: contain; padding: 18px; min-height: 0; }
+.dg-choice-placement { width: calc(100% - 32px); max-width: 1400px; }
+.dg-choice-placement .dg-choice-body { padding: 8px; }
+.dg-board-tools { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+.dg-board-tools:empty { display: none; }
+.dg-pending-return { display: flex; align-items: center; gap: 12px; margin-right: auto; }
+.dg-pending-return span { color: #dcc795; font-size: 13px; }
+.dg-pending-return button { border-color: #baa063; background: #453c29; color: #f5e4b3; }
+.dg-app.dg-tabletop.dg-inspector-collapsed:not(.dg-mobile-board) .sd-layout { grid-template-columns: minmax(0, 1fr); }
+.dg-tabletop .sd-inspector[hidden] { display: none !important; }
+.dg-inspector-close { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+.dg-mobile-board .dg-choice-workspace { inset: 6px 6px auto; width: calc(100% - 12px); max-height: calc(100% - 12px); border-radius: 10px; }
+.dg-mobile-board .dg-choice-header { padding: 10px 12px; gap: 8px; }
+.dg-mobile-board .dg-choice-header strong { font-size: 16px; }
+.dg-mobile-board .dg-choice-body { padding: 12px; }
+.dg-mobile-board .dg-choice-placement .dg-choice-body { padding: 0; }
+.dg-choice-header { flex: 0 0 auto; }
+.dg-choice-body > .dg-decision-location { padding: 0 0 10px; margin: 0; background: transparent; border: 0; }
+.dg-choice-placement { height: calc(100% - 24px); }
+.dg-choice-placement .dg-choice-body { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+.dg-choice-placement .dg-exploration-decision { width: 100%; flex: 1; height: auto; }
+.dg-mobile-board .dg-choice-placement { height: calc(100% - 12px); }
+.dg-mobile-board .dg-choice-placement .dg-choice-body { display: block; overflow: auto; }

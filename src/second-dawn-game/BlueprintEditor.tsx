@@ -5,7 +5,8 @@ import ShipSilhouette from "./ShipSilhouette";
 import { planBlueprintUpgrade } from "../../shared/eclipse/upgradePlan";
 import { previewCommand } from "../../shared/eclipse/commandPreview";
 import type { PlayerView } from "../../shared/eclipse/types";
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
+import UpgradePartPicker from "./UpgradePartPicker";
 import { useActionDraftGuard, useActionDraftState } from './actionDraftContext';
 import {
   blueprintDefinition,
@@ -53,6 +54,8 @@ export default function BlueprintEditor({
     structuredClone(initialDraft ?? blueprint),
   );
   const [selectedSlot, setSelectedSlot] = useActionDraftState(`blueprintSlot-${blueprint.shipType}`,0);
+  const [pickerOpen,setPickerOpen]=useState(false);
+  const slotTrigger=useRef<HTMLElement|null>(null);
   const draftGuard=useActionDraftGuard();
   useEffect(() => { onDraftChange?.(draft); }, [draft, onDraftChange]);
   const printed = blueprintDefinition(faction, blueprint.shipType).preprinted;
@@ -99,7 +102,6 @@ export default function BlueprintEditor({
   const selectedPart = draft.parts[selectedSlot];
   const selectedPrinted = printed[selectedSlot];
   const selectedEffectivePart = selectedPart ?? selectedPrinted;
-  const previousEffectivePart = blueprint.parts[selectedSlot] ?? selectedPrinted;
   const installPart = (partId: ShipPartId | null) => {
     setDraft((currentDraft) => ({
       ...currentDraft,
@@ -107,12 +109,6 @@ export default function BlueprintEditor({
         index === selectedSlot ? partId : part,
       ),
     }));
-  };
-  const unavailableReason = (part: (typeof SHIP_PARTS)[number]) => {
-    if (part.placement !== "grid") return "This component installs outside the blueprint grid.";
-    if (part.access.kind === "technology") return `Research ${part.name} before installing it.`;
-    if (part.access.kind === "ancient") return `Acquire ${part.name} from an Ancient discovery before installing it.`;
-    return "This component is unavailable.";
   };
   const slotName = (part: ShipPartId | null, printedPart: ShipPartId | null) =>
     part ? getShipPart(part).name : printedPart ? getShipPart(printedPart).name : "Empty slot";
@@ -133,7 +129,7 @@ export default function BlueprintEditor({
       </header>
       <section className="dg-blueprint-canvas" aria-label="Blueprint hardpoints">
         <div className="dg-blueprint-canvas-heading">
-          <div><h3>Blueprint hardpoints</h3><p>Choose a hardpoint, then select a component from the parts tray.</p></div>
+          <div><h3>Blueprint hardpoints</h3><p>Tap a slot to replace its component.</p></div>
           <span>{draft.parts.length} slots</span>
         </div>
         <div className="dg-blueprints" role="group" aria-label="Blueprint hardpoints">
@@ -146,68 +142,24 @@ export default function BlueprintEditor({
               type="button"
               aria-label={`Slot ${index + 1}: ${slotName(part, printed[index])}`}
               aria-pressed={isSelected}
-              onClick={() => setSelectedSlot(index)}
+              aria-haspopup="dialog"
+              onClick={event => {slotTrigger.current=event.currentTarget;setSelectedSlot(index);setPickerOpen(true);}}
             >
               <span className="dg-slot-title"><b>{String(index + 1).padStart(2, "0")}</b> {part ? "Installed" : printed[index] ? "Printed" : "Open"}</span>
               {effectivePart ? <><strong>{getShipPart(effectivePart).name}</strong><ShipPartStats partId={effectivePart} /></> : <strong className="dg-slot-empty">Open hardpoint</strong>}
-              <small>{isSelected ? "Selecting components below" : "Select hardpoint"}</small>
+              <small>{"Choose replacement"}</small>
             </button>;
           })}
         </div>
       </section>
-      <section className="dg-parts-tray" aria-label={`Parts tray for slot ${selectedSlot + 1}`}>
-        <header>
-          <div><span className="dg-yard-eyebrow">Selected hardpoint {selectedSlot + 1}</span><h3>{selectedEffectivePart ? `${getShipPart(selectedEffectivePart).name} is installed` : "Open hardpoint"}</h3></div>
-          <p>{selectedPart ? "Choose a part to replace the installed overlay, or reveal the printed component." : selectedPrinted ? "The printed component is active until you install an overlay." : "Install any available grid component here."}</p>
-        </header>
-        <div className="dg-slot-replacement" role="status" aria-label={`Slot ${selectedSlot + 1} replacement preview`}>
-          <span>Current <strong>{previousEffectivePart ? getShipPart(previousEffectivePart).name : "Empty"}</strong></span><b aria-hidden="true">→</b><span>Draft <strong>{selectedEffectivePart ? getShipPart(selectedEffectivePart).name : "Empty"}</strong></span>
-        </div>
-        <div className="dg-parts-tray-grid dg-part-reveal-row" role="group" aria-label={`Available parts for slot ${selectedSlot + 1}`}>
-          <button
-            type="button"
-            className={`dg-part-choice dg-part-reveal${selectedPart === null ? " is-selected" : ""}`}
-            aria-label={`Reveal printed component in slot ${selectedSlot + 1}`}
-            aria-pressed={selectedPart === null}
-            onClick={() => installPart(null)}
-            disabled={disabled}
-          >
-            <span className="dg-part-choice-title">{selectedPrinted ? "Reveal printed component" : "Leave hardpoint empty"}</span>
-            <small>{selectedPrinted ? getShipPart(selectedPrinted).name : "No component"}</small>
-          </button>
-        </div>
-        {inventory.storedAncients.length>0&&<p className="dg-ancient-stock" role="status">Stored Ancient copies: {inventory.storedAncients.map(part=>`${getShipPart(part.id).name} ×${part.count}`).join(' · ')}. Installing one consumes that stored copy.</p>}
-        {inventory.groups.map((group) => <section className="dg-part-group" key={group.name} aria-label={group.name}>
-          <h4>{group.name}</h4>
-          <div className="dg-parts-tray-grid">
-            {group.parts.map((entry) => {const part=getShipPart(entry.id);const restoresOriginalAncient=part.access.kind==='ancient'&&blueprint.parts[selectedSlot]===part.id;const canInstall=entry.available||restoresOriginalAncient;return <button
-              key={part.id}
-              type="button"
-              className={`dg-part-choice${selectedPart === part.id ? " is-selected" : ""}`}
-              aria-label={canInstall?`Install ${part.name} in slot ${selectedSlot + 1}`:`${part.name} blocked: ${entry.reason}`}
-              aria-pressed={selectedPart === part.id}
-              disabled={disabled||!canInstall}
-              onClick={() => installPart(part.id)}
-            >
-              <span className="dg-part-choice-title">{part.name}{Number.isFinite(entry.availableCopies)?` · ${entry.availableCopies} stored`:''}</span>
-              <ShipPartStats partId={part.id} />
-              <small>{describeShipPart(part.id)}</small>
-              {!canInstall&&<small className="dg-danger">{entry.reason}</small>}
-            </button>;})}
-          </div>
-        </section>)}
-        <details className="dg-unavailable-parts">
-          <summary>Unavailable components</summary>
-          <div>{inventory.parts.filter(part=>!part.available).map(entry => {const part=getShipPart(entry.id);return <button key={part.id} type="button" disabled aria-label={`${part.name} unavailable: ${entry.reason??unavailableReason(part)}`}><strong>{part.name}</strong><small>{entry.reason??unavailableReason(part)}</small></button>;})}</div>
-        </details>
-        <p className="dg-part-effect" data-testid={`slot-effect-${selectedSlot + 1}`}>{selectedEffectivePart ? describeShipPart(selectedEffectivePart) : "Empty slot: install a part here without covering a printed part."}</p>
-      </section>
+      {pickerOpen&&<UpgradePartPicker blueprint={blueprint} draft={draft} slot={selectedSlot} printed={selectedPrinted} inventory={inventory} disabled={disabled} returnFocus={slotTrigger.current} onSelect={part=>{installPart(part);setPickerOpen(false);}} onClose={()=>setPickerOpen(false)}/>}
+      <p className="dg-part-effect" data-testid={`slot-effect-${selectedSlot + 1}`}>{selectedEffectivePart ? describeShipPart(selectedEffectivePart) : "Empty slot: install a part here without covering a printed part."}</p>
       {availableOutside
         .map((p) => (
           <label className="dg-check" key={p.id}>
             <input
               type="checkbox"
-              disabled={blueprint.outsideParts.includes(p.id)}
+              disabled={disabled||blueprint.outsideParts.includes(p.id)}
               checked={draft.outsideParts.includes(p.id)}
               onChange={(e) =>
                 setDraft((d) => ({

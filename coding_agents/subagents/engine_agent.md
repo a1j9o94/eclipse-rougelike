@@ -295,3 +295,28 @@ Implemented optional match/room difficulty and version, exclusive leased dispatc
 - Result & next steps: fast policy frozen after held-out run. Parent integrates bounded search and scheduled runtime. Search superiority is a separate gate; no claim that deeper search automatically beats this stronger fast policy.
 
 - Follow-up correctness fix: funded continuation at zero influence now uses its already-spent action disc for upkeep preview, with bounded track indices. A failing-first regression caught the search rollout crash; 13 strategic tests now pass.
+
+### 2026-09-19 — Retired roguelike source cleanup
+
+Traced the current frontend/engine/backend/test dependency closure, removed 344 obsolete files in the initial manifest and retained only actually used root error-boundary/starfield utilities. Removed all retired gameplay endpoints while leaving schema tables/indexes byte-for-byte unchanged. Removed unused hex/zoom dependencies and standalone demo entries; rewrote README/deployment/backend entry docs. Full-repository lint is now clean without rule suppression; codegen/build and nine focused route/launcher/saved-game/error-boundary tests pass. Details and safe data distinction: `coding_agents/second_dawn_legacy_removal.md`. No commit/deploy.
+
+## 2026-09-19 — Automatic exhausted-action completion
+Implemented one central authoritative completion boundary for all six Second Dawn actions, shared by humans and AI. Existing queued decisions finish first; another seat's response cannot change the originating turn order. Optional free operations remain available before the final activation/later turns/upkeep where legal, without a new confirmation prompt. Final Move preview includes automatic betrayal and respects peaceful transit. Legacy exhausted saves retain explicit finish support. New24behavioral tests + focused36-test engine/preview batch pass; scoped ESLint and eclipse TypeScript pass. Full Second Dawn batch753pass/1newUIcapitalizationfailure, corrected by parent and10/10mobile rerun pass. Seeded2–6seat full matches finish validly. Details: `coding_agents/second_dawn_action_auto_advance.md`.
+
+## September 19, 2026 — slot-first upgrade picker
+Replaced the inline parts tray with an accessible slot-triggered dialog while preserving the existing BlueprintEditor API, saved drafts, validation, installation planning and final Apply. Mobile/landscape/enlarged text styles reviewed in Chromium/WebKit; Ancient inventory restrictions and outside-grid parts retained. Details: `coding_agents/second_dawn_upgrade_picker_release.md`.
+
+## 2026-09-19 — Visual fleet intelligence
+
+Replaced the plaintext ship inspector with grouped public blueprint cards and reusable read-only `BlueprintLoadout`, catalog part icons, faction identity, per-ship damage pips and visual attack-face comparisons. No commands, rules or private data interfaces changed. Six component tests and twelve integrated focused tests pass; repository lint and Vercel production build pass. Reviewed actual desktop/mobile/Ancient renders and preserved movement drafts across five browser viewports. See `coding_agents/second_dawn_visual_fleet_intelligence.md` and its screenshot directory for evidence and limitations.
+
+### September 19 — Inline Research commitment
+ResearchWorkspace now expands the chosen market card in place with a sibling exact-price purchase button, visible conversion/upkeep consequences and local rare/funding choices. Phone cards use full width. No Board API or game rule changes. Focus no longer scrolls the workspace to the top. Detailed evidence: `coding_agents/second_dawn_inline_research.md`.
+
+### 2026-09-19 — Persistent choices and collapsible board details
+
+Implemented `ChoiceWorkspace`, named desktop/mobile returns, stable same-ID mounted decision drafts, and collapsible desktop inspector in SecondDawnBoard. Preserved parent changes and authoritative rules. Fixed revision-induced reopening, hidden dice playback, choice casualty visibility, History access, and keyboard return focus. Added 13 focused passing tests; related browser/flow/hand-off/combat batches green; scoped lint and TypeScript pass. Three viewport browser captures reviewed and a discovered desktop exploration height defect fixed. Full evidence: `coding_agents/second_dawn_minimizable_choices.md`. No commit or deployment performed.
+
+### 2026-09-19 — Restore intentional Follow AI presentation after inspector collapse
+
+Reproduced final-suite regression, then restored one-time automatic opening for fresh public AI action entries on Galaxy. Manual close/inspection remains respected across revisions and different AI seats; explicit Follow does not open empty details during the human turn. Added four behavior regressions, retained existing Follow test. Final related batch 37/37; scoped ESLint/TypeScript pass; two-size browser walkthrough and screenshot review pass. Full follow-up recorded in `second_dawn_minimizable_choices.md`. Board implementation handed back; no commit/deploy.

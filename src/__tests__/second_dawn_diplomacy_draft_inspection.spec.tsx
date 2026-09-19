@@ -28,6 +28,6 @@ it('inspects sectors on mobile during an exchange without exposing or altering a
  expect(screen.getByRole('complementary',{name:'Selection and action details'})).toHaveAttribute('data-sheet-state','peek');
  expect(submit).not.toHaveBeenCalled();
  expect(readActionDrafts(localStorage,partition).values.buildOrder?.value).toEqual(order);
- fireEvent.click(screen.getByRole('button',{name:'Return to decision'}));
+ fireEvent.click(screen.getByRole('button',{name:'Return to ambassador exchange'}));
  expect(screen.getByRole('radio',{name:'Science'})).toHaveAttribute('aria-checked','true');
 });

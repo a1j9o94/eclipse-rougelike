@@ -42,7 +42,7 @@ it('keeps the mobile Galaxy navigation and return path usable during an exchange
  fireEvent.click(within(screen.getByRole('navigation',{name:'Mobile game navigation'})).getByRole('button',{name:'Galaxy'}));
  const map=screen.getByRole('group',{name:'Galaxy map'});fireEvent.click(within(map).getAllByRole('button',{name:/^Inspect sector /})[0]);
  expect(screen.queryByRole('button',{name:'Build here'})).toBeNull();expect(submit).not.toHaveBeenCalled();
- fireEvent.click(screen.getByRole('button',{name:'Return to decision'}));
+ fireEvent.click(screen.getByRole('button',{name:'Return to ambassador exchange'}));
  expect(screen.getByRole('radio',{name:'Science'})).toHaveAttribute('aria-checked','true');
 });
 it('preserves the chosen partner and cube during post-combat diplomacy inspection',()=>{

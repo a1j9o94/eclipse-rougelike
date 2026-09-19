@@ -60,13 +60,10 @@ it("preserves diplomacy when separate Move activations enter and leave a partner
   });
   expect(leave.ok).toBe(true);
   if (!leave.ok) return;
-  const end = processGameCommand(leave.state, attacker.id, {
-    type: "end-action",
-  });
-  expect(end.ok).toBe(true);
-  if (!end.ok) return;
-  expect(end.state.seats[0].traitor).toBe(false);
-  expect(end.state.seats[0].ambassadors).toEqual([partner.id]);
+  expect(leave.state.engine!.action).toBeNull();
+  expect(leave.state.activeSeatId).toBe(partner.id);
+  expect(leave.state.seats[0].traitor).toBe(false);
+  expect(leave.state.seats[0].ambassadors).toEqual([partner.id]);
   const aggressiveEnd = processGameCommand(enter.state, attacker.id, {
     type: "end-action",
   });

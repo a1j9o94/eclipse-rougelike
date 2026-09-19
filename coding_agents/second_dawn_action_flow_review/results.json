@@ -1,0 +1,113 @@
+{
+  "evidence": "Actual production components with deterministic pure engine; browser touch emulation, not physical device testing. No cloud writes.",
+  "results": [
+    {
+      "browser": "chromium",
+      "width": 390,
+      "height": 844,
+      "action": "upgrade",
+      "submissions": 1,
+      "automaticHandoff": true,
+      "pageErrors": []
+    },
+    {
+      "browser": "chromium",
+      "width": 390,
+      "height": 844,
+      "action": "research",
+      "submissions": 1,
+      "automaticHandoff": true,
+      "pageErrors": []
+    },
+    {
+      "browser": "chromium",
+      "width": 390,
+      "height": 844,
+      "action": "move",
+      "submissions": 1,
+      "automaticHandoff": true,
+      "pageErrors": []
+    },
+    {
+      "browser": "chromium",
+      "width": 1440,
+      "height": 900,
+      "action": "upgrade",
+      "submissions": 1,
+      "automaticHandoff": true,
+      "pageErrors": []
+    },
+    {
+      "browser": "chromium",
+      "width": 1440,
+      "height": 900,
+      "action": "research",
+      "submissions": 1,
+      "automaticHandoff": true,
+      "pageErrors": []
+    },
+    {
+      "browser": "chromium",
+      "width": 1440,
+      "height": 900,
+      "action": "move",
+      "submissions": 1,
+      "automaticHandoff": true,
+      "pageErrors": []
+    },
+    {
+      "browser": "webkit",
+      "width": 390,
+      "height": 844,
+      "action": "upgrade",
+      "submissions": 1,
+      "automaticHandoff": true,
+      "pageErrors": []
+    },
+    {
+      "browser": "webkit",
+      "width": 390,
+      "height": 844,
+      "action": "research",
+      "submissions": 1,
+      "automaticHandoff": true,
+      "pageErrors": []
+    },
+    {
+      "browser": "webkit",
+      "width": 390,
+      "height": 844,
+      "action": "move",
+      "submissions": 1,
+      "automaticHandoff": true,
+      "pageErrors": []
+    },
+    {
+      "browser": "webkit",
+      "width": 1440,
+      "height": 900,
+      "action": "upgrade",
+      "submissions": 1,
+      "automaticHandoff": true,
+      "pageErrors": []
+    },
+    {
+      "browser": "webkit",
+      "width": 1440,
+      "height": 900,
+      "action": "research",
+      "submissions": 1,
+      "automaticHandoff": true,
+      "pageErrors": []
+    },
+    {
+      "browser": "webkit",
+      "width": 1440,
+      "height": 900,
+      "action": "move",
+      "submissions": 1,
+      "automaticHandoff": true,
+      "pageErrors": []
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import { getFaction } from "./catalog";
+import { capacity } from "./rulesState";
 import {
   incomeForPopulationAway,
   upkeepForEmptyInfluenceSlots,
@@ -96,17 +97,43 @@ export function previewCommand(
     command.choice.accept
   )
     influence--;
+  const moveCapacity = view.actionProgress
+    ? view.actionProgress.owner === seat.id &&
+      view.actionProgress.action === "move"
+      ? view.actionProgress.remaining
+      : 0
+    : capacity(seat, "move");
+  const completesMove =
+    command.type === "move" &&
+    command.moves.length > 0 &&
+    command.moves.length === moveCapacity;
+  const destinations = new Map(
+    command.type === "move"
+      ? command.moves.flatMap((move) =>
+          move.path.length
+            ? [[move.shipId, move.path[move.path.length - 1]] as const]
+            : [],
+        )
+      : [],
+  );
+  const projectedShips =
+    command.type === "move"
+      ? view.ships.map((ship) => ({
+          ...ship,
+          sectorId: destinations.get(ship.id) ?? ship.sectorId,
+        }))
+      : view.ships;
   const betrayedPartners =
-    command.type === "end-action"
+    command.type === "end-action" || completesMove
       ? seat.ambassadors.filter((partner) =>
-          view.ships.some(
+          projectedShips.some(
             (ship) =>
               ship.owner === seat.id &&
               (view.sectors.some(
                 (sector) =>
                   sector.id === ship.sectorId && sector.owner === partner,
               ) ||
-                view.ships.some(
+                projectedShips.some(
                   (other) =>
                     other.sectorId === ship.sectorId && other.owner === partner,
                 )),

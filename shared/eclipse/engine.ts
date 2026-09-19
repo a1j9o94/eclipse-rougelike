@@ -1,3 +1,4 @@
+import { FIRST_PASS_MONEY } from './passing';
 import { fundingActionCost } from "./funding";
 import { getFaction } from "./catalog";
 import { tradeResources } from "./economy";
@@ -36,8 +37,20 @@ function nextSeat(state: GameState, seat: Seat): void {
   }
   state.activeSeatId = null;
 }
+function finishAction(state: GameState, seat: Seat): void {
+  breakAggressiveRelations(state, seat);
+  continuation(state).action = null;
+  nextSeat(state, seat);
+}
 function advance(state: GameState, events: GameEvent[]): void {
   if (presentNextDecision(state)) return;
+  const action = continuation(state).action;
+  if (state.phase === "action" && action?.remaining === 0) {
+    // Resolve all committed draws/rewards first, then use the same boundary as
+    // an explicit finish. A responding opponent never becomes the turn origin.
+    finishAction(state, player(state, action.owner));
+    if (presentNextDecision(state)) return;
+  }
   if (state.phase === "combat") {
     if (!advanceCombat(state, events) || presentNextDecision(state)) return;
     advanceRound(state, events);
@@ -240,9 +253,7 @@ export function processGameCommand(
           state.phase === "action" && !!e.action && e.action.owner === actor,
           "There is no open action to finish.",
         );
-        breakAggressiveRelations(state, seat);
-        e.action = null;
-        nextSeat(state, seat);
+        finishAction(state, seat);
       } else if (command.type === "pass") {
         requireRule(
           state.phase === "action" && !e.action,
@@ -252,7 +263,7 @@ export function processGameCommand(
         if (state.firstPasser === null) {
           state.firstPasser = actor;
           state.startSeatId = actor;
-          seat.resources.money += 2;
+          seat.resources.money += FIRST_PASS_MONEY;
         }
         emit(events, actor, `${getFaction(seat.faction).name} passes.`);
         if (state.seats.every((s) => s.passed || s.eliminated)) {

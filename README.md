@@ -1,74 +1,37 @@
-# React + TypeScript + Vite
+# Eclipse · Second Dawn
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A browser adaptation of the Second Dawn base game with solo AI games, multiplayer rooms, resumable player profiles, and an interactive preview using the same board and command engine.
 
-Currently, two official plugins are available:
+## Run locally
 
-Note: Multiplayer loop and Convex integration are under active development. Recent changes include:
-- Lobby-first flow (host stays in lobby after creating a room)
-- Concurrent outpost (no turn gating), combat result lives decrement, finish → lobby
-- Winner fleet archiving for future endless-war bosses
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```sh
+npm ci
+npm run second-dawn:local
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The local launcher starts an isolated Convex backend and Vite. To use an already configured backend, set `VITE_CONVEX_URL` in an ignored environment file and run `npm run dev`. Saved solo and multiplayer games require Convex; the playable preview runs from deterministic fixtures.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Code map
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- `shared/eclipse/`: typed rules, catalog, deterministic command processor, public views and AI planning.
+- `src/second-dawn-game/`: game board, launcher, decision workflows and fixture preview.
+- `src/second-dawn-session/`: identity, connection recovery, saved games and activity synchronization.
+- `convex/eclipse*.ts`: guest/profile identity, matches, rooms, authoritative persistence and scheduled AI work.
+- `src/__tests__/second_dawn*`: game, persistence, UI and AI regression tests.
+- `coding_agents/`: implementation plans, source audits and verification evidence.
+
+The former roguelike and its standalone demos were removed. Git history retains their implementation. Old database table definitions remain for safe compatibility with existing deployment data; the retired gameplay has no frontend or executable backend endpoints. `aiLegacy.ts` is a frozen Second Dawn AI benchmark opponent, not the removed roguelike.
+
+## Validate
+
+```sh
+npm run lint
+npm run test:second-dawn
+npm run build
 ```
+
+Tests run with one worker. `npm run test:batched` provides smaller sequential batches. Browser walkthroughs and deterministic visual tools are under `tools/second-dawn-*.mjs`; the public preview is `/#second-dawn-preview`.
+
+## Release
+
+[Vercel](https://eclipse-rougelike.vercel.app/) deploys pushes to `main` through Git integration. Feature branches do not deploy. The live site intentionally uses the existing Convex development deployment. See [DEPLOYMENT.md](DEPLOYMENT.md) for the configured release process.

@@ -1,4 +1,4 @@
-import { Component, type ReactNode } from 'react';
+import { Component, type ReactNode, type ErrorInfo } from 'react';
 
 export function ErrorFallback({ message }: { message: string }) {
   return (
@@ -23,15 +23,15 @@ export function ErrorFallback({ message }: { message: string }) {
   );
 }
 
-export class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; error?: unknown }>{
+export class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }>{
   constructor(props: { children: ReactNode }) {
     super(props);
     this.state = { hasError: false };
   }
-  static getDerivedStateFromError(error: unknown) {
-    return { hasError: true, error };
+  static getDerivedStateFromError() {
+    return { hasError: true };
   }
-  componentDidCatch(error: unknown, info: unknown) {
+  componentDidCatch(error: Error, info: ErrorInfo) {
     console.error('ErrorBoundary caught error:', error, info);
   }
   render() {

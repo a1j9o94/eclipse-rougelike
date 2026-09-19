@@ -1,0 +1,83 @@
+[
+  {
+    "engine": "chromium",
+    "width": 1440,
+    "height": 900,
+    "pickerWithinViewport": true,
+    "catalogScrolls": true,
+    "focusRestored": true,
+    "errors": []
+  },
+  {
+    "engine": "chromium",
+    "width": 390,
+    "height": 844,
+    "pickerWithinViewport": true,
+    "catalogScrolls": true,
+    "focusRestored": true,
+    "errors": []
+  },
+  {
+    "engine": "chromium",
+    "width": 360,
+    "height": 800,
+    "pickerWithinViewport": true,
+    "catalogScrolls": true,
+    "focusRestored": true,
+    "errors": []
+  },
+  {
+    "engine": "chromium",
+    "width": 844,
+    "height": 390,
+    "pickerWithinViewport": true,
+    "catalogScrolls": true,
+    "focusRestored": true,
+    "errors": []
+  },
+  {
+    "engine": "chromium",
+    "width": 422,
+    "height": 195,
+    "pickerWithinViewport": true,
+    "catalogScrolls": true,
+    "focusRestored": true,
+    "errors": []
+  },
+  {
+    "engine": "webkit",
+    "width": 390,
+    "height": 844,
+    "pickerWithinViewport": true,
+    "catalogScrolls": true,
+    "focusRestored": true,
+    "errors": []
+  },
+  {
+    "engine": "webkit",
+    "width": 360,
+    "height": 800,
+    "pickerWithinViewport": true,
+    "catalogScrolls": true,
+    "focusRestored": true,
+    "errors": []
+  },
+  {
+    "engine": "webkit",
+    "width": 844,
+    "height": 390,
+    "pickerWithinViewport": true,
+    "catalogScrolls": true,
+    "focusRestored": true,
+    "errors": []
+  },
+  {
+    "engine": "webkit",
+    "width": 422,
+    "height": 195,
+    "pickerWithinViewport": true,
+    "catalogScrolls": true,
+    "focusRestored": true,
+    "errors": []
+  }
+]

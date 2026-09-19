@@ -549,3 +549,6 @@ Tests failing first: seen-marker Convex tests (missing metadata), activity recap
 ## September 18, 2026 — stronger AI assessment
 
 Outcome: credible fleet threats and profitable conquest within bounded server think time. Read-only independent review by `ai_search_assessment` plus local warm profiling identified missing coordinated candidates, technology follow-through, economy opportunity costs and combat-model fidelity. Proposal and acceptance/test list: [stronger AI assessment](../second_dawn_stronger_ai_assessment.md). Targets: Normal 100–500 ms, Hard 1–3 s, Expert up to 30 s per strategic action, pending hosted benchmarking. Risk/rollback: versioned controller; keep previous AI; no authoritative rules changes. No gameplay implementation or deployment performed. Current tests/build were not rerun for this documentation-only assessment.
+
+## September 19 — Action flow and Second Dawn-only cleanup
+Outcome: remove exhausted-action bookkeeping, make mobile ship fitting a continuous slot/picker workflow, and remove the legacy roguelike. Acceptance, failing-first tests, risks/rollback and ownership: [delivery plan](../second_dawn_action_flow_cleanup.md). User explicitly supersedes earlier preserve-legacy and mandatory Done behavior. Feature branch after clean fetch/pull; npm ci passed. Full-suite runs remain memory bounded.

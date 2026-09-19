@@ -9,7 +9,7 @@ import { ErrorBoundary, ErrorFallback } from './components/ErrorBoundary';
 
 const CONVEX_URL = import.meta.env.VITE_CONVEX_URL;
 
-// Local solo play does not need a backend.
+// Saved solo and multiplayer games use the same authoritative backend.
 let convex: ConvexReactClient | null = null;
 if (CONVEX_URL) {
   try {
@@ -28,7 +28,6 @@ window.addEventListener('unhandledrejection', (e) => {
   console.error('Unhandled promise rejection:', e.reason);
 });
 
-export { ErrorFallback } from './components/ErrorBoundary';
 
 const app = (
   <div className="relative min-h-screen">

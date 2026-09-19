@@ -1,0 +1,32 @@
+.dg-readonly-loadout { min-width: 0; }
+.dg-readonly-hardpoints { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 7px; }
+.dg-readonly-part { min-width: 0; min-height: 110px; padding: 9px; display: flex; flex-direction: column; gap: 8px; background: linear-gradient(145deg,#20323f,#121e29); border: 1px solid #51616a; border-radius: 5px; }
+.dg-readonly-part.dg-readonly-overlay { border-color: #c6ad6e; background: linear-gradient(145deg,#353629,#18252b); }
+.dg-readonly-slot { display: flex; justify-content: space-between; align-items: center; color: #a8bac5; }
+.dg-readonly-slot span { border: 1px solid #56656f; border-radius: 3px; width: 18px; text-align: center; font-size: 10px; }
+.dg-readonly-part small { font-size: 10px; color: #adbdc6; }
+.dg-readonly-part > strong { font-size: 12px; line-height: 1.3; color: #ede3cb; }
+.dg-readonly-part .dg-part-stats { gap: 5px 8px; margin-top: auto; }
+.dg-readonly-part .dg-stat-badge,.dg-intrinsic-capabilities .dg-stat-badge { grid-template-columns: 19px auto; grid-template-rows: 22px; gap: 0 3px; min-width: 0; }
+.dg-readonly-part .dg-stat-badge strong,.dg-intrinsic-capabilities .dg-stat-badge strong { font-size: 15px; }
+.dg-readonly-part .dg-stat-badge small,.dg-intrinsic-capabilities .dg-stat-badge small { display: none; }
+.dg-readonly-part .dg-stat-icon,.dg-intrinsic-capabilities .dg-stat-icon { width: 19px; height: 19px; }
+.dg-readonly-empty { border-style: dashed; background: #101d26; opacity: .68; }
+.dg-empty-hardpoint { align-self: center; font-size: 27px; line-height: 1; color: #708591; }
+.dg-outside-loadout { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 7px; }
+.dg-outside-loadout > div { flex: 0 1 160px; }
+.dg-intrinsic-capabilities { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding-top: 10px; }
+.dg-intrinsic-capabilities > small { color: #aebdc6; font-size: 11px; }
+.dg-ship-capabilities { display: flex; flex-wrap: wrap; gap: 12px 18px; padding: 15px 0; }
+.dg-ship-capabilities .dg-stat-badge { min-width: 51px; grid-template-columns: 22px auto; grid-template-rows: 25px 14px; gap: 0 4px; }
+.dg-ship-capabilities .dg-stat-badge strong { font-size: 20px; }
+.dg-ship-capabilities .dg-stat-icon { width: 22px; height: 22px; }
+.dg-ship-capabilities .dg-stat-badge small { font-size: 9px; }
+@media(max-width:480px){
+ .dg-readonly-hardpoints { grid-template-columns: repeat(2,minmax(0,1fr)); }
+ .dg-readonly-part { min-height: 100px; }
+ .dg-ship-capabilities { gap: 11px 14px; }
+}
+@media(max-width:480px){
+ .dg-ship-capabilities { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); }
+}

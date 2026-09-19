@@ -38,7 +38,7 @@ it('returns a player who passes from Upgrade to Galaxy even with Follow AI off',
  const initial=actionView('upgrade'),props={...controls(initial),candidates:[...legalCommands(initial),{command:{type:'pass'} as const,label:'Pass for this round',description:''}]},rendered=render(<SecondDawnBoard view={initial} {...props}/>);
  fireEvent.click(screen.getAllByRole('button',{name:'Upgrade',exact:true})[0]);
  fireEvent.click(screen.getByRole('button',{name:'Follow AI'}));
- fireEvent.click(screen.getByRole('button',{name:'Pass for this round'}));
+ fireEvent.click(screen.getByRole('button',{name:/^Pass(?: \+2 money)?$/}));
  expect(props.onSubmit).toHaveBeenCalledWith({type:'pass'});
  const accepted=handedOff(initial);
  rendered.rerender(<SecondDawnBoard view={accepted} {...controls(accepted)} lastAcceptedCommand={{revision:accepted.revision,type:'pass'}}/>);
@@ -56,4 +56,28 @@ it('lets an authoritative pending decision keep priority over the handoff redire
  rendered.rerender(<SecondDawnBoard view={accepted} {...controls(accepted)} lastAcceptedCommand={{revision:accepted.revision,type:'end-action'}}/>);
  expect(screen.getAllByRole('heading',{name:/Combat allocation/i})).not.toHaveLength(0);
  expect(screen.queryByRole('group',{name:'Galaxy map'})).toBeNull();
+});
+
+it.each(['research','upgrade'] as const)('returns to Galaxy after an accepted final %s activation without an end-action command',type=>{
+ const initial=actionView(type),props=controls(initial),rendered=render(<SecondDawnBoard view={initial} {...props}/>);
+ fireEvent.click(screen.getAllByRole('button',{name:type==='research'?'Research':'Upgrade',exact:true})[0]);
+ const accepted={...handedOff(initial),actionProgress:null};
+ rendered.rerender(<SecondDawnBoard view={accepted} {...controls(accepted)} lastAcceptedCommand={{revision:accepted.revision,type}}/>);
+ expect(screen.getByRole('group',{name:'Galaxy map'})).toBeInTheDocument();
+ expect(props.onSubmit).not.toHaveBeenCalled();
+ fireEvent.click(screen.getAllByRole('button',{name:'Research',exact:true})[0]);
+ rendered.rerender(<SecondDawnBoard view={{...accepted,revision:accepted.revision+1}} {...controls(accepted)} lastAcceptedCommand={{revision:accepted.revision,type}}/>);
+ expect(screen.getByRole('heading',{name:'Research'})).toBeInTheDocument();
+});
+
+it('does not turn a partial activation receipt into a later unsolicited navigation',()=>{
+ const initial=actionView('research'),props=controls(initial),rendered=render(<SecondDawnBoard view={initial} {...props}/>);
+ fireEvent.click(screen.getAllByRole('button',{name:'Research',exact:true})[0]);
+ const partial={...initial,revision:initial.revision+1};
+ const receipt={revision:partial.revision,type:'research' as const};
+ rendered.rerender(<SecondDawnBoard view={partial} {...controls(partial)} lastAcceptedCommand={receipt}/>);
+ expect(screen.getByRole('heading',{name:'Research'})).toBeInTheDocument();
+ const later=handedOff(partial);
+ rendered.rerender(<SecondDawnBoard view={later} {...controls(later)} lastAcceptedCommand={receipt}/>);
+ expect(screen.getByRole('heading',{name:'Research'})).toBeInTheDocument();
 });

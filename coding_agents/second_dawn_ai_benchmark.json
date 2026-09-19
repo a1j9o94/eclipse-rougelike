@@ -11,14 +11,14 @@
   "ties": 0,
   "losses": 0,
   "vpMargins": [
-    15,
-    28,
+    24,
+    21,
+    18,
+    26,
+    12,
     22,
-    29,
-    23,
-    15,
-    20,
-    15
+    27,
+    18
   ],
   "baseline": "Uniform random legal main action; colonize when possible; finish one activation; random persisted choices",
   "limitations": "Small fixed benchmark, not general strength certification"
