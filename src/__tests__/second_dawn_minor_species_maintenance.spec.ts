@@ -1,0 +1,34 @@
+import {expect,it} from 'vitest';
+import {convexTest} from 'convex-test';
+import schema from '../../convex/schema';
+import {internal} from '../../convex/_generated/api';
+import {createGame} from '../../shared/eclipse/setup';
+import type {GameState} from '../../shared/eclipse/types';
+const modules=import.meta.glob('../../convex/**/*.{ts,js}');
+it('previews without mutation, preserves gameplay and history, and is idempotent',async()=>{
+ const t=convexTest(schema,modules);
+ const state=createGame({seed:21,seats:[{id:'a',faction:'hydran',controller:'human'},{id:'b',faction:'eridani',controller:'human'}]});
+ const ids=await t.run(async ctx=>{
+  const guestId=await ctx.db.insert('eclipseGuestsV1',{credentialHash:'test',createdAt:0});
+  const matchId=await ctx.db.insert('eclipseMatchesV1',{snapshotJson:JSON.stringify(state),rulesVersion:state.rulesVersion,catalogVersion:state.catalogVersion,revision:0,round:1,phase:'action',createdAt:0,updatedAt:0});
+  await ctx.db.insert('eclipseRoomsV1',{roomToken:'test-room',hostGuestId:guestId,status:'playing',humanSeatCount:2,aiCount:0,timerMs:3600000,warpPortals:false,matchId,createdAt:0,updatedAt:0});
+  const journalId=await ctx.db.insert('eclipseJournalV1',{matchId,commandId:'prior',actor:'a',revision:1,requestJson:'{}',eventsJson:'[]',preSnapshotJson:JSON.stringify(state),receipt:{commandId:'prior',revision:1,eventCount:0},createdAt:0});
+  return {matchId,journalId};
+ });
+ const preview=await t.mutation(internal.eclipseMaintenance.enableMinorSpecies,{roomToken:'test-room',apply:false});
+ expect(preview.enabled).toBe(false);expect(new Set(preview.market).size).toBe(4);
+ expect((await t.run(ctx=>ctx.db.get(ids.matchId)))?.snapshotJson).toBe(JSON.stringify(state));
+ await t.run(ctx=>ctx.db.patch(ids.journalId,{preSnapshotJson:undefined}));
+ await expect(t.mutation(internal.eclipseMaintenance.enableMinorSpecies,{roomToken:'test-room',apply:true})).rejects.toThrow('Recover missing');
+ expect((await t.run(ctx=>ctx.db.get(ids.matchId)))?.snapshotJson).toBe(JSON.stringify(state));
+ await t.run(ctx=>ctx.db.patch(ids.journalId,{preSnapshotJson:JSON.stringify(state)}));
+ await t.mutation(internal.eclipseMaintenance.enableMinorSpecies,{roomToken:'test-room',apply:true});
+ const row=await t.run(ctx=>ctx.db.get(ids.matchId));const changed=JSON.parse(row!.snapshotJson) as GameState;
+ const checkpoint=JSON.parse((await t.run(ctx=>ctx.db.get(ids.journalId)))!.preSnapshotJson!) as GameState;expect(checkpoint).toEqual(changed);
+ expect(changed.minorSpecies?.market).toEqual(preview.market);expect(changed.random).toEqual(state.random);
+ const {minorSpecies:module,rulesVersion,catalogVersion,...rest}=changed;
+ expect(module).toBeDefined();expect(rulesVersion).toContain('minor-species-v1');expect(catalogVersion).toBe(row!.catalogVersion);
+ const {rulesVersion:oldRules,catalogVersion:oldCatalog,...original}=state;
+ expect(oldRules).not.toBe(rulesVersion);expect(oldCatalog).not.toBe(catalogVersion);expect(rest).toEqual(original);
+ expect(await t.mutation(internal.eclipseMaintenance.enableMinorSpecies,{roomToken:'test-room',apply:true})).toMatchObject({enabled:true,changed:false,market:preview.market});
+});
