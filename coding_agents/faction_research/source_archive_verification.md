@@ -42,3 +42,7 @@ python3 tools/archive-eclipse-sources.py \
 ```
 
 The builder performs no network calls and publishes nothing. Rebuilding after changing credits or source file modification times changes the ZIP checksum; use the newly generated `.sha256` companion. Follow-up: publish the ZIP and its checksum with the complete research commit as the release tag target, then verify the release asset metadata.
+
+## Publication verification
+
+Published [faction-sources-2026-09-19](https://github.com/a1j9o94/eclipse-rougelike/releases/tag/faction-sources-2026-09-19), targeting full commit `c41405a9cf955d8ddec8841aad50bf88897ee26e`. The GitHub tag resolves to that commit. All three assets report `uploaded`: ZIP (1,092,486,694 bytes), checksum (109 bytes), and manifest (144,683 bytes). GitHub's server-reported ZIP SHA-256 matches the locally verified archive: `a0393d5151ca7f49a012e221ecf65bc658b61df8a7ddd900875da38924e9e028`. Release is public, not draft.

@@ -53,3 +53,11 @@ The main risk is a registry value drifting from the previous branch logic. Exact
 - Final `npm run lint && npm run build` passed; existing bundle-size/Browserslist advisories remain.
 - Archive-builder integrity checks: four passed. `git diff --check` passed.
 - Chromium rendered all six alien ship families at card and fleet-marker sizes; reviewed `.second-dawn/faction-research/visuals/all-families.png`, with no missing silhouettes or clipping. No styling or layout changed.
+
+## Release verification
+
+- Code/research commit `c41405a` merged by fast-forward and pushed to `main`.
+- Existing Convex development deployment `ideal-nightingale-55` updated successfully; no schema migration.
+- Vercel Git deployment `dpl_CzgseHoTULGMcbjY884RYs6hRfYN` reports READY, source `git`, ref `main`, exact commit `c41405a9cf955d8ddec8841aad50bf88897ee26e`.
+- Canonical live preview loads `/assets/index-ClVw4O2g.js`, renders the galaxy, 12 emblems and 7 fleet markers, with no browser page errors. Reviewed the 1440×900 screenshot under `.second-dawn/faction-research/visuals/live-opening.png`.
+- Source archive published separately with verified remote digest; see the archive audit.
