@@ -3,6 +3,7 @@ import {generateAiCandidates} from './aiCandidates';
 import {AI_BUDGETS,type AiDifficulty} from './aiConfig';
 import {sampleAiWorld} from './aiWorld';
 import {evaluateStrategicPosition} from './aiEvaluation';
+import {strategicCommandAdjustment} from './aiStrategy';
 import {processGameCommand} from './engine';
 import {getPlayerView} from './protocol';
 import type {GameCommand,GameState,PlayerView} from './types';
@@ -77,11 +78,11 @@ export function chooseStrategicAiCommand(view:PlayerView,simulationSeed:number,o
   return null;
  }
  function shortlist(visible:PlayerView,depth:number):AiChoice[]{
-  const ranked=generateAiCandidates(visible).filter(c=>isStrategic(c.command)).map(c=>({...c,evaluation:evaluateAiCommand(visible,c.command)})).sort((a,b)=>b.evaluation-a.evaluation);
+  const ranked=generateAiCandidates(visible).filter(c=>isStrategic(c.command)).map(c=>({...c,evaluation:evaluateAiCommand(visible,c.command)+strategicCommandAdjustment(visible,c.command)})).sort((a,b)=>b.evaluation-a.evaluation);
   const chosen:AiChoice[]=[],families=new Set<string>(),keys=new Set<string>();
   const add=(candidate:AiChoice)=>{const key=JSON.stringify(candidate.command);if(!keys.has(key)){keys.add(key);chosen.push(candidate);}};
   // Include the combat-aware fast policy even when cheap ranking disagrees.
-  const fast=chooseAiCommand(visible,simulationSeed);if(fast&&isStrategic(fast.command))add(fast);
+  const fast=chooseAiCommand(visible,simulationSeed);if(fast&&isStrategic(fast.command))add({...fast,evaluation:fast.evaluation+strategicCommandAdjustment(visible,fast.command)});
   for(const candidate of ranked)if(!families.has(actionType(candidate.command))){families.add(actionType(candidate.command));add(candidate);}
   for(const candidate of ranked){if(chosen.length>=8)break;add(candidate);}
   return chosen.slice(0,depth===1?8:options.difficulty==='expert'?5:3);
