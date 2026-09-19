@@ -1,0 +1,218 @@
+[
+  {
+    "engine": "chromium",
+    "width": 1366,
+    "height": 768,
+    "headerAndControlsWithinPanel": true,
+    "desktopControlsVisibleWithoutScroll": true,
+    "mobileScrollableFallback": false,
+    "placedPieceRetainedAfterReopen": true,
+    "bounds": {
+      "panel": {
+        "x": 926,
+        "y": 215.5,
+        "width": 440,
+        "height": 552.5
+      },
+      "header": {
+        "x": 950,
+        "y": 316.5,
+        "width": 233.46875,
+        "height": 24
+      },
+      "add": {
+        "x": 992.296875,
+        "y": 568,
+        "width": 106.890625,
+        "height": 44
+      },
+      "footer": {
+        "x": 938,
+        "y": 660,
+        "width": 417,
+        "height": 97
+      }
+    },
+    "errors": []
+  },
+  {
+    "engine": "chromium",
+    "width": 1440,
+    "height": 900,
+    "headerAndControlsWithinPanel": true,
+    "desktopControlsVisibleWithoutScroll": true,
+    "mobileScrollableFallback": false,
+    "placedPieceRetainedAfterReopen": true,
+    "bounds": {
+      "panel": {
+        "x": 1000,
+        "y": 215.5,
+        "width": 440,
+        "height": 684.5
+      },
+      "header": {
+        "x": 1024,
+        "y": 316.5,
+        "width": 233.46875,
+        "height": 24
+      },
+      "add": {
+        "x": 1066.296875,
+        "y": 568,
+        "width": 106.890625,
+        "height": 44
+      },
+      "footer": {
+        "x": 1012,
+        "y": 792,
+        "width": 417,
+        "height": 97
+      }
+    },
+    "errors": []
+  },
+  {
+    "engine": "chromium",
+    "width": 390,
+    "height": 844,
+    "headerAndControlsWithinPanel": true,
+    "desktopControlsVisibleWithoutScroll": false,
+    "mobileScrollableFallback": true,
+    "placedPieceRetainedAfterReopen": true,
+    "bounds": {
+      "panel": {
+        "x": 0,
+        "y": 490.203125,
+        "width": 390,
+        "height": 1357.6875
+      },
+      "header": {
+        "x": 13,
+        "y": 530.203125,
+        "width": 244.484375,
+        "height": 25.1875
+      },
+      "add": {
+        "x": 48.296875,
+        "y": 782.890625,
+        "width": 106.890625,
+        "height": 44
+      },
+      "footer": {
+        "x": 1,
+        "y": 1749.890625,
+        "width": 388,
+        "height": 97
+      }
+    },
+    "errors": []
+  },
+  {
+    "engine": "webkit",
+    "width": 1366,
+    "height": 768,
+    "headerAndControlsWithinPanel": true,
+    "desktopControlsVisibleWithoutScroll": true,
+    "mobileScrollableFallback": false,
+    "placedPieceRetainedAfterReopen": true,
+    "bounds": {
+      "panel": {
+        "x": 926,
+        "y": 215.5,
+        "width": 440,
+        "height": 552.5
+      },
+      "header": {
+        "x": 950,
+        "y": 316.5,
+        "width": 233.46875,
+        "height": 24
+      },
+      "add": {
+        "x": 992.296875,
+        "y": 568,
+        "width": 106.890625,
+        "height": 44
+      },
+      "footer": {
+        "x": 938,
+        "y": 660,
+        "width": 417,
+        "height": 97
+      }
+    },
+    "errors": []
+  },
+  {
+    "engine": "webkit",
+    "width": 1440,
+    "height": 900,
+    "headerAndControlsWithinPanel": true,
+    "desktopControlsVisibleWithoutScroll": true,
+    "mobileScrollableFallback": false,
+    "placedPieceRetainedAfterReopen": true,
+    "bounds": {
+      "panel": {
+        "x": 1000,
+        "y": 215.5,
+        "width": 440,
+        "height": 684.5
+      },
+      "header": {
+        "x": 1024,
+        "y": 316.5,
+        "width": 233.46875,
+        "height": 24
+      },
+      "add": {
+        "x": 1066.296875,
+        "y": 568,
+        "width": 106.890625,
+        "height": 44
+      },
+      "footer": {
+        "x": 1012,
+        "y": 792,
+        "width": 417,
+        "height": 97
+      }
+    },
+    "errors": []
+  },
+  {
+    "engine": "webkit",
+    "width": 390,
+    "height": 844,
+    "headerAndControlsWithinPanel": true,
+    "desktopControlsVisibleWithoutScroll": false,
+    "mobileScrollableFallback": true,
+    "placedPieceRetainedAfterReopen": true,
+    "bounds": {
+      "panel": {
+        "x": 0,
+        "y": 490.203125,
+        "width": 390,
+        "height": 1357.6875
+      },
+      "header": {
+        "x": 13,
+        "y": 530.203125,
+        "width": 244.453125,
+        "height": 25.1875
+      },
+      "add": {
+        "x": 48.296875,
+        "y": 782.890625,
+        "width": 106.890625,
+        "height": 44
+      },
+      "footer": {
+        "x": 1,
+        "y": 1749.890625,
+        "width": 388,
+        "height": 97
+      }
+    },
+    "errors": []
+  }
+]
