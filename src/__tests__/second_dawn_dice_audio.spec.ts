@@ -116,3 +116,15 @@ describe('cosmetic dice impact audio',()=>{
     expect(context.sources.every(source=>source.disconnect.mock.calls.length===1)).toBe(true);
   });
 });
+
+it('lets an explicit preview await the shared gesture unlock without queuing dice impacts',async()=>{
+ FakeContext.initialState='suspended';
+ const audio=await import('../second-dawn-game/dice3d/audio');
+ const ready=audio.prepareCosmeticAudio();
+ const context=FakeContext.instances[0];
+ expect(audio.playDiceImpact(1,0,.5)).toBeNull();
+ context.state='running';
+ await expect(ready).resolves.toBe(true);
+ expect(FakeContext.instances).toHaveLength(1);
+ expect(context.sources).toHaveLength(0);
+});

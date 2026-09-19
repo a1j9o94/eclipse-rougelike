@@ -25,7 +25,7 @@ for(const [name,type] of [['chromium',chromium],['webkit',webkit]]){
   await page.goto(`${site}/?position=retreat#second-dawn-preview`);
   await page.getByRole('button',{name:'Roll dice',exact:true}).click();
   if(scenario==='skip'||scenario==='minimize'){
-   const skip=page.getByRole('button',{name:scenario==='minimize'?'Minimize combat allocation':'Skip dice animation',exact:true});await skip.waitFor({state:'visible'});await page.waitForFunction(()=>window.audioReview.starts.length>0);await skip.click();
+   const skip=page.getByRole('button',{name:scenario==='minimize'?'Minimize combat allocation':'Skip dice animation',exact:true});await skip.waitFor({state:'visible'});await page.waitForFunction(()=>window.audioReview.starts.length>0);await skip.click({force:true});
    const starts=await page.evaluate(()=>window.audioReview.starts.length);await page.waitForTimeout(700);assert.equal(await page.evaluate(()=>window.audioReview.starts.length),starts,'Skip stops future impacts');
   }else if(scenario==='animated'){await page.locator('.dg-dice-overlay').waitFor({state:'visible'});await page.locator('.dg-dice-overlay').waitFor({state:'hidden'});await page.waitForTimeout(180);}else await page.waitForTimeout(1900);
   const audio=await page.evaluate(()=>window.audioReview);

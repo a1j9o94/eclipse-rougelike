@@ -1,0 +1,12 @@
+// @vitest-environment jsdom
+import {afterEach,beforeEach,expect,it,vi} from 'vitest';
+const audio=vi.hoisted(()=>({bus:vi.fn(),synthesize:vi.fn(),enabled:vi.fn(),volume:vi.fn()}));
+vi.mock('../second-dawn-game/dice3d/audio',()=>({preparedAudioBus:audio.bus}));
+vi.mock('../second-dawn-game/presentationSettings',()=>({readGameEffectsEnabled:audio.enabled,readGameEffectsVolume:audio.volume}));
+vi.mock('../second-dawn-game/sound/synthesis',()=>({synthesizeCue:audio.synthesize}));
+import {playCosmeticCue,stopCosmeticCues} from '../second-dawn-game/sound/runtime';
+beforeEach(()=>{vi.clearAllMocks();audio.enabled.mockReturnValue(true);audio.volume.mockReturnValue(.35);audio.bus.mockReturnValue({context:{},output:{}});audio.synthesize.mockImplementation((_context,_output,_cue,_volume,onEnded)=>({stop:vi.fn(onEnded)}));Object.defineProperty(document,'hidden',{configurable:true,value:false});});afterEach(()=>{stopCosmeticCues();vi.restoreAllMocks();});
+it('does not create or queue audio while disabled, hidden, zero-volume or locked',()=>{audio.enabled.mockReturnValue(false);playCosmeticCue('tile');expect(audio.bus).not.toHaveBeenCalled();audio.enabled.mockReturnValue(true);Object.defineProperty(document,'hidden',{configurable:true,value:true});playCosmeticCue('tile');expect(audio.bus).not.toHaveBeenCalled();Object.defineProperty(document,'hidden',{configurable:true,value:false});audio.volume.mockReturnValue(0);playCosmeticCue('tile');audio.volume.mockReturnValue(.35);audio.bus.mockReturnValue(null);playCosmeticCue('tile');expect(audio.synthesize).not.toHaveBeenCalled();});
+it('bounds overlapping effects and frees them on cancellation',()=>{for(let i=0;i<8;i++)playCosmeticCue('tile');expect(audio.synthesize.mock.results[0].value.stop).toHaveBeenCalledOnce();expect(audio.synthesize.mock.results[1].value.stop).toHaveBeenCalledOnce();stopCosmeticCues();for(const result of audio.synthesize.mock.results)expect(result.value.stop).toHaveBeenCalledOnce();});
+it('rate-limits detents without suppressing a later placement',()=>{let clock=1000;vi.spyOn(performance,'now').mockImplementation(()=>clock);playCosmeticCue('detent');clock+=30;playCosmeticCue('detent');playCosmeticCue('tile');clock+=50;playCosmeticCue('detent');expect(audio.synthesize.mock.calls.map(call=>call[2])).toEqual(['detent','tile','detent']);});
+it('never starts a sound with an invalid preview volume',()=>{playCosmeticCue('tile',Number.NaN);playCosmeticCue('tile',Infinity);expect(audio.synthesize).not.toHaveBeenCalled();});
