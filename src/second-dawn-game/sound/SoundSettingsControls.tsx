@@ -47,7 +47,7 @@ export default function SoundSettingsControls(){
  useEffect(()=>{stopPreview();},[ambient,ambientVolume,stopPreview]);
  return <>
   <label>
-   <span><strong>Game effects</strong><small>Quiet clicks, placed pieces, moving fleets and accepted actions.</small></span>
+   <span><strong>Game effects</strong><small>Clicks, placed pieces, moving fleets, weapon fire and explosions.</small></span>
    <input type="checkbox" checked={effects} onChange={event=>{if(event.target.checked)void prepareCosmeticAudio();setEffects(event.target.checked);}}/>
   </label>
   <label className="dg-dice-volume">

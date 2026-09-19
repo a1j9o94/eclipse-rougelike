@@ -1,8 +1,11 @@
+import {synthesizeCombatCue,type CombatCue} from './combatSynthesis';
 /** Original cosmetic synthesis. No game state or seeded randomness enters this module. */
-export type CosmeticCue='selection'|'confirm'|'detent'|'tile'|'move'|'install'|'reject';
+type InterfaceCue='selection'|'confirm'|'detent'|'tile'|'move'|'install'|'reject';
+export type CosmeticCue=InterfaceCue|CombatCue;
 export interface SoundHandle {stop(fadeSeconds?:number):void}
-const tones:Record<CosmeticCue,readonly [number,number,number]>={selection:[600,430,.045],detent:[370,250,.035],confirm:[520,780,.14],tile:[190,100,.16],move:[150,430,.28],install:[320,640,.18],reject:[220,165,.12]};
+const tones:Record<InterfaceCue,readonly [number,number,number]>={selection:[600,430,.045],detent:[370,250,.035],confirm:[520,780,.14],tile:[190,100,.16],move:[150,430,.28],install:[320,640,.18],reject:[220,165,.12]};
 export function synthesizeCue(context:BaseAudioContext,output:AudioNode,cue:CosmeticCue,volume:number,onEnded:()=>void=()=>{}):SoundHandle{
+ if(cue==='cannon-fire'||cue==='missile-launch'||cue==='impact'||cue==='explosion')return synthesizeCombatCue(context,output,cue,volume,onEnded);
  const [from,to,duration]=tones[cue],now=context.currentTime;
  const oscillator=context.createOscillator(),gain=context.createGain();
  oscillator.type=cue==='tile'||cue==='detent'?'triangle':'sine';

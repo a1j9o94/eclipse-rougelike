@@ -19,17 +19,18 @@ let previewInstance=0;
 const consumed=new Set<string>();
 function consume(key:string):boolean{if(consumed.has(key))return false;consumed.add(key);if(consumed.size>512)consumed.delete(consumed.values().next().value!);return true;}
 /** Human success is receipt-driven; AI feedback uses only the currently visible public presentation. */
-export interface GameSoundFeedback {submitted(command:GameCommand):void;rejected():void;capture():void;clicked(event:MouseEvent<HTMLElement>):void}
+export interface GameSoundFeedback {combatLive(revision:number):boolean;submitted(command:GameCommand):void;rejected():void;capture():void;clicked(event:MouseEvent<HTMLElement>):void}
 export function useGameSoundFeedback(options:SoundFeedbackOptions):GameSoundFeedback{
  const diceScope=useDiceRollScope(),[previewScope]=useState(()=>`preview-${previewInstance++}`);
  const scope=diceScope.startsWith('preview:')?previewScope:diceScope,latest=useRef(options);latest.current=options;
- const trackedScope=useRef(scope);
+ const trackedScope=useRef(scope),combatBoundary=useRef(options.revision);
  const mountedRevision=useRef(options.revision),lastConnected=useRef(options.connected),aiBoundary=useRef(options.revision);
  const pending=useRef<{command:GameCommand;revision:number;status:string}|null>(null),suppressClick=useRef(false);
- useEffect(()=>{const hide=()=>{if(document.hidden){aiBoundary.current=latest.current.revision;pending.current=null;stopCosmeticCues();}};document.addEventListener('visibilitychange',hide);return()=>{document.removeEventListener('visibilitychange',hide);stopCosmeticCues();};},[]);
+ useEffect(()=>{const hide=()=>{if(document.hidden){combatBoundary.current=latest.current.revision;aiBoundary.current=latest.current.revision;pending.current=null;stopCosmeticCues();}};document.addEventListener('visibilitychange',hide);return()=>{document.removeEventListener('visibilitychange',hide);stopCosmeticCues();};},[]);
  useEffect(()=>{
-  if(trackedScope.current!==scope){trackedScope.current=scope;mountedRevision.current=options.revision;aiBoundary.current=options.revision;pending.current=null;stopCosmeticCues();}
+  if(trackedScope.current!==scope){combatBoundary.current=options.revision;trackedScope.current=scope;mountedRevision.current=options.revision;aiBoundary.current=options.revision;pending.current=null;stopCosmeticCues();}
   if(!options.connected||!lastConnected.current){pending.current=null;aiBoundary.current=options.revision;}
+  if(!options.connected||!lastConnected.current||options.reviewing||document.hidden)combatBoundary.current=options.revision;
   lastConnected.current=options.connected;
   const receipt=options.receipt,request=pending.current;
   if(request&&options.busy)request.status=options.status;
@@ -45,6 +46,7 @@ export function useGameSoundFeedback(options:SoundFeedbackOptions):GameSoundFeed
   }
  },[options,scope]);
  return {
+  combatLive(revision:number){return trackedScope.current===scope&&latest.current.connected&&lastConnected.current&&!latest.current.reviewing&&!document.hidden&&revision===latest.current.revision&&revision>combatBoundary.current;},
   submitted(command:GameCommand){suppressClick.current=true;pending.current={command,revision:latest.current.revision,status:latest.current.status};},
   rejected(){suppressClick.current=true;playCosmeticCue('reject');},
   capture(){suppressClick.current=false;},

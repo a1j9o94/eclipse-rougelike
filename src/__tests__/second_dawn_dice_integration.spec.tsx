@@ -10,7 +10,7 @@ import { CombatPlayback } from '../second-dawn-game/BattleOverview';
 import { CombatVolleyResult } from '../second-dawn-game/CombatDecisionVisuals';
 
 const preference = vi.hoisted(() => ({ enabled: true }));
-vi.mock('../second-dawn-game/presentationSettings', () => ({ useDice3dEnabled: () => [preference.enabled, vi.fn()] }));
+vi.mock('../second-dawn-game/presentationSettings', () => ({ useDice3dEnabled: () => [preference.enabled, vi.fn()],useDiceRollScope:()=> 'dice-integration',useGameEffectsEnabled:()=>[false],useGameEffectsVolume:()=>[.35] }));
 vi.mock('../second-dawn-game/DiceRoll3D', () => ({ default: ({ rolls, rollId, enabled, skipped, children, onComplete }: { rolls: readonly { id: string; face: number; color: string }[]; rollId: string; enabled: boolean; skipped?: boolean; children?: ReactNode; onComplete?: () => void }) => <div data-testid="dice-presentation" data-roll-id={rollId} data-enabled={String(enabled)} data-skipped={String(skipped)} data-rolls={JSON.stringify(rolls)}>{children}{onComplete&&<button onClick={onComplete}>Finish test throw</button>}</div> }));
 
 const decision: Extract<PendingDecision, { kind: 'combat-allocation' }> = {

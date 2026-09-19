@@ -1,3 +1,4 @@
+import {useCombatVolleySounds} from './sound/useCombatVolleySounds';
 import {seatColor} from './factionColors';
 import { getFaction } from "../../shared/eclipse/catalog";
 import {
@@ -81,22 +82,24 @@ function VolleyScene({ volley, view, knownShips, still, awaitingDice }: {
   </div>;
 }
 /** Public result cards survive the active fleet and battle being removed. */
-export function CombatPlayback({ volleys, view, knownShips = [], fast = false }: {
+export function CombatPlayback({ volleys, view, knownShips = [], fast = false, soundEligible = false }: {
   volleys: readonly PublicVolley[];
   view?: PlayerView;
   knownShips?: readonly Pick<Ship, "id" | "owner" | "type">[];
   fast?: boolean;
+  soundEligible?: boolean;
 }) {
   const [skipMotion, setSkipMotion] = useState(false);
   const [settledRoll, setSettledRoll] = useState<string | null>(null);
   const [dice3dEnabled] = useDice3dEnabled();
-  if (!volleys.length) return null;
   const destroyedCount = new Set(volleys.flatMap(volley => volley.targets.filter(target => target.destroyed).map(target => target.id))).size;
   const isFast = fast || skipMotion;
   const opponentVolleys = volleys.filter(volley => !view || volley.attacker !== view.viewerSeatId);
   const opponentRolls = opponentVolleys.flatMap(volley => volley.dice.map(die => ({ id: die.id, face: die.face, color: die.weaponColor ?? "#bac0ce" })));
   const opponentRollId = JSON.stringify(opponentVolleys.map(volley => [volley.battleId, volley.dice.map(die => [die.id, die.face])]));
   const awaitingDice = dice3dEnabled && !isFast && opponentRolls.length > 0 && settledRoll !== opponentRollId;
+  useCombatVolleySounds({volleys,eligible:soundEligible,awaitingDice,skipped:skipMotion});
+  if (!volleys.length) return null;
   return (
     <section className={`dg-combat-playback${isFast ? " is-fast" : ""}`} aria-label="Recent combat impacts">
       <header>
@@ -205,7 +208,7 @@ function BattleStat({
   );
 }
 /** Active engagement only; all stats come from the same public blueprints as combat. */
-export default function BattleOverview({ view, recentVolleys = [], knownShips = [], fastPlayback = false }: { view: PlayerView; recentVolleys?: readonly NonNullable<GameEvent["combatVolley"]>[]; knownShips?: readonly Pick<Ship, "id" | "owner" | "type">[]; fastPlayback?: boolean }) {
+export default function BattleOverview({ view, recentVolleys = [], knownShips = [], fastPlayback = false, soundEligible = false }: { view: PlayerView; recentVolleys?: readonly NonNullable<GameEvent["combatVolley"]>[]; knownShips?: readonly Pick<Ship, "id" | "owner" | "type">[]; fastPlayback?: boolean; soundEligible?: boolean }) {
   const battle = view.battle;
   if (!battle) return null;
   const inSector = view.ships.filter((s) => s.sectorId === battle.sectorId);
@@ -234,7 +237,7 @@ export default function BattleOverview({ view, recentVolleys = [], knownShips = 
           {battle.engagement > 0 ? `· Round ${battle.engagement}` : ""}
         </span>
       </header>
-      <CombatPlayback volleys={recentVolleys} view={view} knownShips={knownShips} fast={fastPlayback} />
+      <CombatPlayback volleys={recentVolleys} view={view} knownShips={knownShips} fast={fastPlayback} soundEligible={soundEligible} />
       <div className="dg-battle-sides">
         {(
           [

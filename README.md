@@ -54,7 +54,7 @@ Open **Game menu** to save and return home, quit a solo run, or resign from mult
 
 **Settings → History & undo** lets the room host choose an action and restore the game before it. Every other active human must agree; AI agrees automatically and solo undo is immediate. Voting pauses the game and survives reloads. Undo restores saved randomness and private choices, removes the selected action and everything after it from playable History, and cannot cross a resignation. History has no round limit; use **Beginning of game** to reach the earliest remaining actions. Older checkpoints can be recovered only when a complete replay verifies against a saved game state. It cannot erase information players have already seen.
 
-Enable **Show estimated combat odds during movement** in new-game or room setup for optional public-fleet estimates. They are approximate and omit voluntary retreats and future reinforcements. Combat retains manual Roll/Retreat choices and now shows firing ships, impacts and wrecks. Influence selects a destination first; withdrawal is a separate explicit choice. Accepted actions save automatically without a confirmation popup.
+Enable **Show estimated combat odds during movement** in new-game or room setup for optional public-fleet estimates. They are approximate and omit voluntary retreats and future reinforcements. Combat retains manual Roll/Retreat choices and shows firing ships, impacts and wrecks. **Settings → Game effects** enables synchronized cannon fire, missile launches, hits and explosions, independently of animations and dice sounds. Influence selects a destination first; withdrawal is a separate explicit choice. Accepted actions save automatically without a confirmation popup.
 
 ## Community faction research and credits
 

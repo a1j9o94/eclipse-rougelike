@@ -1,5 +1,5 @@
 {
-  "base": "http://127.0.0.1:5173",
+  "base": "https://eclipse-rougelike.vercel.app",
   "checks": [
     "Actual pass saves silently",
     "Consent survives reload and restores starting resources/turn",

@@ -1,0 +1,74 @@
+[
+  {
+    "browser": "chromium",
+    "liveCannonStarts": 1,
+    "missHasNoImpact": true,
+    "liveDestruction": true,
+    "reloadSilent": true,
+    "animationsOffAudible": true,
+    "diceSettlementAudible": true,
+    "errors": [],
+    "rendering": [
+      {
+        "cue": "cannon-fire",
+        "peak": 0.08820000290870667,
+        "rms": 0.006554665640625843,
+        "finite": true
+      },
+      {
+        "cue": "missile-launch",
+        "peak": 0.08820000290870667,
+        "rms": 0.009521400051408913,
+        "finite": true
+      },
+      {
+        "cue": "impact",
+        "peak": 0.08820001035928726,
+        "rms": 0.004589947297662012,
+        "finite": true
+      },
+      {
+        "cue": "explosion",
+        "peak": 0.08820000290870667,
+        "rms": 0.006914019555652932,
+        "finite": true
+      }
+    ]
+  },
+  {
+    "browser": "webkit",
+    "liveCannonStarts": 1,
+    "missHasNoImpact": true,
+    "liveDestruction": true,
+    "reloadSilent": true,
+    "animationsOffAudible": true,
+    "diceSettlementAudible": true,
+    "errors": [],
+    "rendering": [
+      {
+        "cue": "cannon-fire",
+        "peak": 0.08820000290870667,
+        "rms": 0.006554665640625843,
+        "finite": true
+      },
+      {
+        "cue": "missile-launch",
+        "peak": 0.08820000290870667,
+        "rms": 0.009521400051408913,
+        "finite": true
+      },
+      {
+        "cue": "impact",
+        "peak": 0.08820001035928726,
+        "rms": 0.004589947297662012,
+        "finite": true
+      },
+      {
+        "cue": "explosion",
+        "peak": 0.08820000290870667,
+        "rms": 0.006914019555652932,
+        "finite": true
+      }
+    ]
+  }
+]

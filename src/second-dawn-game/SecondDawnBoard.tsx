@@ -2,6 +2,7 @@ import FactionAbilityControls from './FactionAbilityControls';
 import {remainingAction,continuesAction} from './actionCapacity';
 import {seatColor} from './factionColors';
 import {useSoundscape} from './sound/useSoundscape';
+import {useCombatVolleySounds} from './sound/useCombatVolleySounds';
 import {useGameSoundFeedback} from './sound/useGameSoundFeedback';
 import ChoiceWorkspace from './ChoiceWorkspace';
 import AutoPassControl from './AutoPassControl';
@@ -279,6 +280,7 @@ function SecondDawnBoardContent({
     if(!aiPresentation.actor&&openedForAi.current&&!reviewAi){openedForAi.current=false;if(!aiDismissed)setInspectorOpen(false);}
   },[aiPresentation.actor,reviewAi,aiDismissed]);
   const sound=useGameSoundFeedback({revision:view.revision,connected,busy,status,receipt:lastAcceptedCommand,aiEntry:aiPresentation.action,aiVisible:showAiPanel&&!settingsOpen&&screen==='Galaxy'&&!empireMapSeat&&!inspectSector&&!publicInspection?.active&&!reviewAi,reviewing:historyOpen||recapOpen});
+  useCombatVolleySounds({volleys:!view.battle&&!combatNotice.visible&&playback?playback.volleys:[],eligible:!!playback&&sound.combatLive(playback.revision),awaitingDice:false,skipped:false});
   const [action, setAction] = useActionDraftState('action',view.actionProgress?.owner===view.viewerSeatId?view.actionProgress.action:'explore');
   const [draft, setDraft] = useActionDraftState('commandDraft',null);
   const [researchSelection, setResearchSelection] = useActionDraftState('researchSelection',
@@ -377,7 +379,7 @@ function SecondDawnBoardContent({
   };
   const combatAftermath=playback&&combatNotice.visible&&<div className="dg-combat-aftermath">
             <div className="dg-combat-aftermath-heading"><strong>Last combat exchange</strong><button onClick={combatNotice.dismiss}>Dismiss battle results</button></div>
-            <CombatPlayback volleys={playback.volleys} view={view} knownShips={[...knownShips.current.values()]} fast={!motionEnabled}/>
+            <CombatPlayback soundEligible={sound.combatLive(playback.revision)} volleys={playback.volleys} view={view} knownShips={[...knownShips.current.values()]} fast={!motionEnabled}/>
           </div>;
   const pendingDecisionPanel = view.pendingDecision ? (
     <DecisionPanel
@@ -556,13 +558,13 @@ function SecondDawnBoardContent({
             {selected&&view.pendingDecision.kind!=='exploration'&&<div className="dg-decision-location"><strong>Sector {sector?.tileId??selected}</strong><button onClick={()=>setInspectSector(selected)}>Inspect location</button></div>}
             {screen==='Decision'&&combatAftermath}
             {pendingDecisionPanel}
-            {view.battle&&<BattleOverview view={view} fastPlayback={!motionEnabled||screen!=='Decision'} recentVolleys={playback?.volleys.some(volley=>volley.targets.some(target=>target.destroyed))?[]:playback?.volleys??[]} knownShips={[...knownShips.current.values()]}/>}
+            {view.battle&&<BattleOverview soundEligible={!!playback&&sound.combatLive(playback.revision)} view={view} fastPlayback={!motionEnabled||screen!=='Decision'} recentVolleys={playback?.volleys.some(volley=>volley.targets.some(target=>target.destroyed))?[]:playback?.volleys??[]} knownShips={[...knownShips.current.values()]}/>}
           </ChoiceWorkspace>}
           <div className="dg-board-surface" inert={screen==='Decision'} aria-hidden={screen==='Decision'?true:undefined}>
           {screen==='Galaxy'&&combatAftermath}
           {view.battle&&!view.pendingDecision&&!empireMapSeat&&(screen==='Galaxy'||screen==='Decision')?<div className="sd-workspace">
             <p role="status">Waiting for {view.waitingFor?faction(view.waitingFor.owner)?.name??'your opponent':'your opponent'}’s combat decision.</p>
-            <BattleOverview view={view} fastPlayback={!motionEnabled} recentVolleys={playback?.volleys.some(volley=>volley.targets.some(target=>target.destroyed))?[]:playback?.volleys??[]} knownShips={[...knownShips.current.values()]}/>
+            <BattleOverview soundEligible={!!playback&&sound.combatLive(playback.revision)} view={view} fastPlayback={!motionEnabled} recentVolleys={playback?.volleys.some(volley=>volley.targets.some(target=>target.destroyed))?[]:playback?.volleys??[]} knownShips={[...knownShips.current.values()]}/>
           </div>:compact&&screen==='Activity' ? <div className="sd-workspace dg-mobile-activity"><h1>Activity</h1>{activityRecap}<HistoryPanel rollback={historyRollback} feed={history??{entries:[],loading:false,hasOlder:false,loadingOlder:false,error:null,loadOlder:()=>{}}}/></div>
           : compact&&screen==='Empire' ? <div className="sd-workspace dg-mobile-empire">{draftGuard.draftKeys.length>0&&!view.pendingDecision&&<button className="dg-mobile-resume-draft" onClick={resumeSavedAction}>Resume saved action</button>}{empireOverview(own.id)}</div>
           : screen === "Trade" ? (
