@@ -15,13 +15,14 @@ export function sampleAiWorld(view:PlayerView,seed:number):GameState {
  function mix<T>(items:readonly T[]):T[]{const result=shuffle(random,items);random=result.state;return result.items;}
  function remove<T>(items:T[],used:readonly T[]):void{for(const item of used){const i=items.indexOf(item);if(i>=0)items.splice(i,1);}}
  const warpPortals=view.warpPortals??true;
+ const riftCannons=view.riftCannons??false;
  const visible=new Set(view.sectors.map(s=>Number(s.tileId)));
  const allowed=(id:number)=>!visible.has(id)&&(warpPortals||!BASE_COMPONENTS.sectorIds.optionalWarpPortals.some(portal=>portal===id));
  const ring=(name:'inner'|'middle'|'outer')=>mix(BASE_COMPONENTS.sectorIds[name].filter(allowed)).slice(0,view.supplyCounts?.[name]).map(String);
- const technology=createTechnologyBag(random,warpPortals).tiles.map(t=>t.technology as string);
+ const technology=createTechnologyBag(random,warpPortals,riftCannons).tiles.map(t=>t.technology as string);
  remove(technology,view.technologyMarket);
  for(const seat of view.seats){const acquired=Object.values(seat.technologies).flat();remove(acquired,getFaction(seat.faction).startingTechnologies);remove(technology,acquired);}
- const discoveries:string[]=createDiscoverySupply(warpPortals);remove(discoveries,view.private.discoveriesKept);
+ const discoveries:string[]=createDiscoverySupply(warpPortals,riftCannons);remove(discoveries,view.private.discoveriesKept);
  const visibleParts=view.seats.flatMap(s=>[...(s.storedParts??[]),...s.blueprints.flatMap(b=>[...b.parts,...(b.outsideParts??[])])]).filter((id):id is string=>id!==null&&SHIP_PARTS.some(p=>p.id===id&&p.access.kind==='ancient'));
  remove(discoveries,visibleParts);
  const discoveryPool=mix(discoveries);
@@ -34,6 +35,6 @@ export function sampleAiWorld(view:PlayerView,seed:number):GameState {
  const sectorDiscoveries=view.sectors.filter(s=>s.discovery).flatMap(s=>{const discoveryId=discoveryPool.shift();return discoveryId?[{sectorId:s.id,discoveryId}]:[];});
  const supplies={inner:ring('inner'),middle:ring('middle'),outer:ring('outer'),technology:mix(technology).slice(0,view.supplyCounts?.technology),discovery:discoveryPool.slice(0,view.supplyCounts?.discovery),reputation:repPool.slice(0,view.supplyCounts?.reputation)};
  return {rulesVersion:view.rulesVersion,catalogVersion:view.catalogVersion,revision:view.revision,round:view.round,phase:view.phase,activeSeatId:view.activeSeatId,startSeatId:view.startSeatId,firstPasser:view.firstPasser??null,seats:structuredClone(view.seats),sectors:structuredClone(view.sectors),ships:structuredClone(view.ships),technologyMarket:[...view.technologyMarket],pendingDecision:null,privateSeats,random,supplies,
-  engine:{warpPortals,action:null,decisions:[],sectorDiscoveries,discardedSectors:{inner:[],middle:[],outer:[]},discardedDiscoveries:[],boxedSectors:[],battle:null,battleSectors:[],upkeepDone:[],scores:null,nextId:1_000_000+view.revision*10_000},
+  engine:{warpPortals,riftCannons,action:null,decisions:[],sectorDiscoveries,discardedSectors:{inner:[],middle:[],outer:[]},discardedDiscoveries:[],boxedSectors:[],battle:null,battleSectors:[],upkeepDone:[],scores:null,nextId:1_000_000+view.revision*10_000},
  };
 }

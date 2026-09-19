@@ -348,6 +348,7 @@ function ConnectedGame() {
         ) : creating ? (
           <section className="dg-setup">
             <h2>New game</h2><FactionProfilePicker value={factionProfile} onChange={chooseProfile} disabled={busy}/>
+            <p>Includes the Rift Cannon expansion.</p>
             <p className="dg-solo-wait">Solo · Wait for me. No turn timer; your game waits until you return.</p>
             <div className="dg-solo-setup-grid">
             <FactionPicker selected={faction} onSelect={setFaction} disabled={busy} profile={factionProfile} pieceColor={pieceColor} onPieceColorChange={setPieceColor}/>

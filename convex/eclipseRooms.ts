@@ -352,7 +352,7 @@ export const startRoom = mutation({
     });
     const opponents = roomAiSelections(humans, room.aiCount, factionProfile, Math.random);
     const seats = [...humans, ...opponents.map((opponent, index) => ({ id: `seat-${room.humanSeatCount + index + 1}`, ...opponent, controller: 'ai' as const }))];
-    const state = createGame({ seed: Math.floor(Math.random() * 0x100000000), seats, factionProfile, warpPortals: room.warpPortals, randomizeStartingPlayer: true });
+    const state = createGame({ seed: Math.floor(Math.random() * 0x100000000), seats, factionProfile, warpPortals: room.warpPortals, riftCannons: true, randomizeStartingPlayer: true });
     const now = Date.now();
     const matchId = await ctx.db.insert("eclipseMatchesV1", { snapshotJson: JSON.stringify(state), rulesVersion: state.rulesVersion, catalogVersion: state.catalogVersion, revision: state.revision, round: state.round, phase: state.phase, roomToken: room.roomToken, showCombatOdds:room.showCombatOdds??false, aiDifficulty: room.aiDifficulty ?? "normal", aiVersion: AI_VERSION, createdAt: now, updatedAt: now });
     await Promise.all(humanSeats.map((seat) => ctx.db.insert("eclipseOwnershipV1", { matchId, guestId: seat.guestId, seatId: `seat-${seat.slot}` })));

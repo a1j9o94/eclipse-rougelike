@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { BASE_FACTIONS } from '../../shared/eclipse/catalog';
-import { SHIP_PARTS, getShipPart } from '../../shared/eclipse/parts';
+import { SHIP_PARTS as ALL_SHIP_PARTS, getShipPart } from '../../shared/eclipse/parts';
 import { blueprintDefinition, deriveBlueprintStats, initialBlueprints, validateBlueprint, neutralBlueprint, NEUTRAL_BLUEPRINTS, type ShipBlueprint } from '../../shared/eclipse/blueprints';
+
+const SHIP_PARTS = ALL_SHIP_PARTS.filter(item => !item.expansion);
 
 describe('Second Dawn physical ship components', () => {
   it('has precisely five default, nineteen researched and fifteen ancient parts', () => {

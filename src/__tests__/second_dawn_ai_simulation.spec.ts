@@ -451,3 +451,147 @@ it("estimates forced-retreat survivors from the destination of a proposed attack
     }),
   ).toMatchObject({ defenderWinProbability: 1, expectedSurvivors: 0 });
 });
+
+function seedForRiftFace(face: number): number {
+  for (let seed = 0; seed < 1000; seed++) {
+    if (randomInt(randomSeed(seed), 6).value + 1 === face) return seed;
+  }
+  throw new Error("Missing deterministic die seed");
+}
+
+describe("Rift combat estimates", () => {
+  it.each([
+    [1, 1, 1],
+    [2, 1, 1],
+    [3, 1, 1],
+    [4, 1, 0],
+    [5, 0, 0],
+    [6, 0, 1],
+  ])(
+    "models face %i enemy damage and backfire independently",
+    (face, own, enemy) => {
+      const { view, attacker, defender, attackBlueprint, defendBlueprint } =
+        duel();
+      attackBlueprint.parts = [
+        "rift-cannon",
+        "nuclear-source",
+        "nuclear-drive",
+        null,
+      ];
+      defendBlueprint.parts = ["hull", "gauss-shield", "phase-shield", null];
+      const before = JSON.stringify(view);
+      const result = estimatePublicBattle(
+        view,
+        [attacker.id],
+        [defender.id],
+        seedForRiftFace(face),
+        1,
+        { stage: "cannons", maxCannonRounds: 1 },
+      );
+      expect(result.expectedSurvivors).toBe(own);
+      expect(result.expectedDefenderSurvivors).toBe(enemy);
+      expect(result.attackerWinProbability).toBe(
+        Number(own > 0 && enemy === 0),
+      );
+      expect(result.defenderWinProbability).toBe(
+        Number(enemy > 0 && own === 0),
+      );
+      expect(JSON.stringify(view)).toBe(before);
+    },
+  );
+
+  it("does not let computers turn Rift blanks into hits or shields block Rift damage", () => {
+    const { view, attacker, defender, attackBlueprint, defendBlueprint } =
+      duel();
+    attackBlueprint.parts = [
+      "rift-cannon",
+      "nuclear-source",
+      "nuclear-drive",
+      null,
+    ];
+    defendBlueprint.parts = ["hull", null, null, null];
+    const before = estimatePublicBattle(
+      view,
+      [attacker.id],
+      [defender.id],
+      88,
+      128,
+      { stage: "cannons", maxCannonRounds: 1 },
+    );
+    attackBlueprint.parts[3] = "gluon-computer";
+    defendBlueprint.parts[1] = "phase-shield";
+    defendBlueprint.parts[2] = "flux-shield";
+    expect(
+      estimatePublicBattle(view, [attacker.id], [defender.id], 88, 128, {
+        stage: "cannons",
+        maxCannonRounds: 1,
+      }),
+    ).toEqual(before);
+  });
+});
+
+function seedForFaces(faces: number[]): number {
+  for (let seed = 0; seed < 100000; seed++) {
+    let random = randomSeed(seed);
+    if (
+      faces.every((face) => {
+        const roll = randomInt(random, 6);
+        random = roll.state;
+        return roll.value + 1 === face;
+      })
+    )
+      return seed;
+  }
+  throw new Error("Missing deterministic volley seed");
+}
+
+it("rolls the complete ship-class volley even when an earlier Rift die destroys the final enemy", () => {
+  const { view, attacker, defender, attackBlueprint, defendBlueprint } = duel();
+  attackBlueprint.parts = [
+    "rift-cannon",
+    "nuclear-source",
+    "nuclear-drive",
+    null,
+  ];
+  defendBlueprint.parts = ["gauss-shield", "gauss-shield", "gauss-shield", "gauss-shield"];
+  const second = { ...attacker, id: "a-second" };
+  view.ships.push(second);
+  const result = estimatePublicBattle(
+    view,
+    [attacker.id, second.id],
+    [defender.id],
+    seedForFaces([4, 6]),
+    1,
+    { stage: "cannons", maxCannonRounds: 1 },
+  );
+  expect(result.expectedSurvivors).toBe(1);
+  expect(result.expectedDefenderSurvivors).toBe(0);
+  expect(result.attackerWinProbability).toBe(1);
+});
+
+it("pools backfire and destroys a larger Rift ship before its later initiative volley", () => {
+  const { view, attacker, defender, attackBlueprint, defendBlueprint } = duel();
+  attackBlueprint.parts = [
+    "rift-cannon",
+    "rift-cannon",
+    "nuclear-drive",
+    "fusion-source",
+  ];
+  defendBlueprint.parts = ["gauss-shield", "gauss-shield", "gauss-shield", "gauss-shield"];
+  const cruiser = { ...attacker, id: "a-cruiser", type: "cruiser" as const };
+  view.ships.push(cruiser);
+  view.seats[0].blueprints.find(
+    (blueprint) => blueprint.shipType === "cruiser",
+  )!.parts = ["rift-cannon", "nuclear-source", null, null, null, null];
+  const result = estimatePublicBattle(
+    view,
+    [attacker.id, cruiser.id],
+    [defender.id],
+    seedForFaces([6, 6, 4]),
+    1,
+    { stage: "cannons", maxCannonRounds: 1 },
+  );
+  expect(result.expectedSurvivors).toBe(1);
+  expect(result.expectedDefenderSurvivors).toBe(1);
+  expect(result.unresolvedProbability).toBe(1);
+});

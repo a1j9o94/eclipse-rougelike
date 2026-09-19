@@ -1,4 +1,5 @@
 import {expandedReviewFixtures} from './expandedReviewFixtures';
+import {riftCombatReviewFixture} from './riftReviewFixture';
 import { useState } from "react";
 import { createGame } from "../../shared/eclipse/setup";
 import { movableShipCount } from "../../shared/eclipse/geometry";
@@ -18,6 +19,7 @@ const recordedFixtures = JSON.parse(fixturesJson) as Record<string, GameState>;
 const fixtures: Record<string, GameState> = {
   ...recordedFixtures,
   ...expandedReviewFixtures(),
+  'rift-combat': riftCombatReviewFixture(),
   "opening-three": createGame({
     seed: 1703,
     warpPortals: true,
@@ -32,12 +34,13 @@ const fixtures: Record<string, GameState> = {
 };
 const stageShortcuts = [
   {id:'opening',label:'Opening'}, {id:'midgame',label:'Round 4'}, {id:'late',label:'Round 8'},
-  {id:'ragnarok-mixed-action',label:'Expanded factions'}, {id:'combat',label:'Active combat'}, {id:'ancients',label:'Ancients'},
+  {id:'ragnarok-mixed-action',label:'Expanded factions'}, {id:'rift-combat',label:'Active combat'}, {id:'ancients',label:'Ancients'},
 ];
 const positionNames: Record<string,string> = {
   'midas-extra-activation':'Midas · buy an extra Research activation',
   'faction-rho-indi':'Rho Indi · expanded opening', 'faction-magellan':'Magellan · colony ship conversion', 'faction-midas':'Midas · paid activations', 'faction-ragnarok':'Ragnarok · expanded opening', 'ragnarok-mixed-action':'Ragnarok · Build & Move action',
   opening:'Opening · six players', 'opening-three':'Opening · three players',
+  'rift-combat':'Rift Cannon · shields and backfire',
   midgame:'Round 4 · developed galaxy', late:'Round 8 · final round', combat:'Active combat · allocate hits',
   ancients:'Ancients on the board', 'exploration-ancients':'Explore a sector with Ancients', 'ancient-combat':'Battle against Ancients',
   exploration:'Explore a sector', discovery:'Discovery reward', retreat:'Combat · choose retreat', scoring:'Final scoring',

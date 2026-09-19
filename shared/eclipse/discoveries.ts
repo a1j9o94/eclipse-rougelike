@@ -4,6 +4,7 @@ import type { CatalogResources } from './catalog';
 export const DISCOVERY_SOURCE =
   'https://rules.dized.com/game/dS7ANw3JR-O-HIg-7k5qVA/R2QHlAXtT2GyP-v4XJNiWA/discovery-tiles-1';
 export type AncientShipPartId =
+  | 'rift-conductor'
   | 'ion-disruptor'
   | 'ion-turret'
   | 'plasma-turret'
@@ -52,6 +53,7 @@ export type DiscoveryEffect =
     }
   | { kind: 'place-warp-portal'; controlledSectorVp: 2 };
 export interface Discovery {
+  expansion?: 'rift-cannon';
   id: DiscoveryId;
   name: string;
   copies: number;
@@ -82,6 +84,7 @@ function ancientPart(id: AncientShipPartId, name: string): Discovery {
  * and requires taking the VP alternative if it is not controlled (p30 FAQ).
  */
 export const DISCOVERIES: readonly Discovery[] = [
+  { ...ancientPart('rift-conductor', 'Rift Conductor'), expansion: 'rift-cannon' },
   discovery('materials', 'Materials Cache', 3, {
     kind: 'resources',
     resources: { materials: 6, science: 0, money: 0 },
@@ -143,8 +146,8 @@ export function getDiscovery(id: DiscoveryId): Discovery {
   return tile;
 }
 /** Fresh unshuffled base-box inventory; the authoritative seeded shuffle chooses order. */
-export function createDiscoverySupply(warpPortals = true): DiscoveryId[] {
+export function createDiscoverySupply(warpPortals = true, riftCannons = false): DiscoveryId[] {
   return DISCOVERIES.filter(
-    (tile) => warpPortals || tile.id !== 'ancient-warp-portal',
+    (tile) => (riftCannons || tile.expansion !== 'rift-cannon') && (warpPortals || tile.id !== 'ancient-warp-portal'),
   ).flatMap((tile) => Array.from({ length: tile.copies }, () => tile.id));
 }

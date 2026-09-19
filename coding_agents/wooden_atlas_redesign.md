@@ -49,6 +49,14 @@ Artifacts: [Chromium results](wooden_atlas_screenshots/review.json), [WebKit res
 
 This is an interactive direction preview, not a completed full-game visual replacement. The fleet atlas offers three study families, so several factions share silhouettes until faction-specific models are approved. At whole-galaxy scale ships remain small; true tabletop piece scale, quieter tile relief and art density need human review. Mobile overview retains the compact fleet-count marker and reveals classes on zoom/inspection.
 
-Research/parts use existing functional symbols on paper. Dedicated charcoal technology/component drawings, richer desk props, tactile action cards, ownership-colored miniature bases, remaining dialogs/scoring/lobby treatment, texture compression, and physical-device/enlarged-text playtests remain later work. The older combat fixture lacks weapon metadata and correctly says “Unknown weapon”; refresh it from the engine rather than invent labels. New Rift dice work is outside this branch.
+Research/parts use existing functional symbols on paper. Dedicated charcoal technology/component drawings, richer desk props, tactile action cards, ownership-colored miniature bases, remaining dialogs/scoring/lobby treatment, texture compression, and physical-device/enlarged-text playtests remain later work. The older archived combat fixture lacks weapon metadata; the Active combat shortcut now uses the current engine-generated Rift fixture instead of inventing labels for that recording.
 
 No changes to rules, AI, catalogs, database schema, credentials, hosting configuration or main. No merge/deployment performed.
+
+## Integration with released Rift dice and upkeep
+
+Merged `origin/main` at `c41626a` into the atlas feature branch after the initial art commit. This inherits the released Rift rules/catalog, accurate standard/Rift dice and upkeep colonization entry; the art work itself changes no authoritative rules. Both append-only documentation conflicts were resolved by retaining the entries from both branches. No atlas changes were merged to main or deployed.
+
+The Active combat shortcut and screenshot harness now use `rift-combat`, the authoritative engine-generated three-damage/one-backfire volley against a shielded dreadnought. The magenta die retains clear white damage/backfire symbols on paper, and its description states damage, self-damage and shield bypass. Actual Chromium/WebKit desktop/mobile images were reviewed; there is no numeric six or unknown-weapon placeholder in this showcased battle.
+
+Integration validation: 23 focused atlas/Rift UI/die-face/3D-dice tests passed; both 18-result browser walkthroughs passed again, including manual Rift hit allocation; lint, TypeScript and production build passed. The earlier 33-test art regression batch remains recorded above.

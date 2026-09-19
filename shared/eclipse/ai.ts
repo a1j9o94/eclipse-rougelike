@@ -1,3 +1,4 @@
+import { aiWeaponValue } from "./aiWeaponValue";
 import { generateAiCandidates } from "./aiCandidates";
 import { factionHasCapability, getFaction, tradeQuote } from "./catalog";
 import { connectionBetween } from "./geometry";
@@ -44,7 +45,7 @@ function fleetStrength(
             stats.weapons.reduce(
               (n, w) =>
                 n +
-                w.dice * w.damage * (0.33 + Math.min(3, stats.computer) * 0.12),
+                aiWeaponValue(w, (0.33 + Math.min(3, stats.computer) * 0.12) / 0.33) * 0.33,
               0,
             ) *
               2
@@ -198,7 +199,7 @@ function shipBuildValue(
   const quality =
     derived.hull * 0.8 +
     derived.computer +
-    derived.weapons.reduce((n, w) => n + w.damage * w.dice, 0);
+    derived.weapons.reduce((n, w) => n + aiWeaponValue(w), 0);
   return (
     Math.max(2, 12 - own.length * 0.8 + Math.min(8, enemy.length * 0.7)) +
     (threat ? 5 : 0) +
@@ -358,10 +359,8 @@ export function evaluateAiCommand(
           s.weapons.reduce(
             (n, w) =>
               n +
-              w.damage *
-                w.dice *
-                (w.kind === "missile" ? 0.9 : 1.5) *
-                (1 + Math.min(4, s.computer) * 0.45),
+              aiWeaponValue(w, 1 + Math.min(4, s.computer) * 0.45) *
+                (w.kind === "missile" ? 0.9 : 1.5),
             0,
           ) +
           Math.max(0, s.energyProduction - s.energyConsumption) * 0.03;

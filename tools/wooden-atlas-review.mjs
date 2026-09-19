@@ -72,14 +72,14 @@ try {
 
   for (const viewport of [{ width: 390, height: 844 }, { width: 1440, height: 900 }, { width: 1366, height: 768 }]) {
     await page.setViewportSize(viewport);
-    await load('combat');
+    await load('rift-combat');
     await capture('combat');
   }
-  await page.getByRole('button', { name: /^Die 2,/ }).click();
-  await page.getByRole('button', { name: /^Target Mechanema/ }).click();
+  await page.getByRole('button', { name: /^Die 1,/ }).click();
+  await page.getByRole('button', { name: /^Target Hydran/ }).click();
   assert.equal(await page.getByRole('button', { name: 'Resolve volley', exact: true }).isEnabled(), true);
   await page.getByRole('button', { name: 'Resolve volley', exact: true }).click();
-  results.push({ task: 'Manual combat allocation', result: 'Recorded hit allocated to legal opponent and volley accepted' });
+  results.push({ task: 'Manual Rift combat allocation', result: 'Engine-generated three-damage Rift hit allocated against shielded opponent and volley accepted' });
   assert.deepEqual(errors, []);
   await writeFile(`${directory}/review.json`, JSON.stringify({ scope: 'Engineering browser checks, not human playtesting', results, errors }, null, 2));
   console.log(`Verified ${results.length} atlas screenshots/walkthrough results.`);

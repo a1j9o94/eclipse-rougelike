@@ -421,3 +421,5 @@ Replaced the source-first Influence flow with map-first control selection. Owned
 
 ### September 19 — Separate wooden-atlas art preview
 A first interactive art slice on feature/wooden-atlas-redesign applies carved tile relief, sculpted ship figurines and paper workspaces to the existing review PlayerView/commands. It preserves P1–P5 interaction contracts and live-game styling. [Scope, findings and validation](wooden_atlas_redesign.md) record 33 focused tests, Chromium/WebKit desktop/mobile workflows, and remaining faction-art/playtest gaps. This exploratory branch is not merged or deployed.
+### September 19 — Colonize from upkeep review
+Upkeep notice and review now expose legal Colonize opportunities and open the existing planet planner. Back to upkeep preserves explicit confirmation and refreshes the economic preview after placement. Eight new cases plus related regressions (34 tests) passed; actual desktop/mobile component renders reviewed. [Implementation and evidence](second_dawn_upkeep_colonize_entry.md). Human playtest feedback remains pending.

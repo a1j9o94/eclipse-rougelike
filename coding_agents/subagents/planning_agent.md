@@ -603,3 +603,5 @@ Outcome: give the user concrete reusable art references for carved sector tiles,
 
 ## 2026-09-19 — Wooden atlas review branch
 Outcome: interactive carved sector/ship-figurine galaxy with readable paper research, fitting and combat. Acceptance, sources, risks/rollback, fail-first tests and browser results: coding_agents/wooden_atlas_redesign.md. First slice isolated in feature/wooden-atlas-redesign; 33 focused tests and Chromium/WebKit walkthroughs pass. Human direction review, complete faction art and remaining screens are follow-ups. No main merge/deployment.
+## 2026-09-19 — Rift Cannons and printed dice
+Outcome: new matches include the official Rift mini-expansion and combat dice show actual Eclipse faces. Acceptance, source references, fail-first coverage, rollout isolation and rollback are recorded in `coding_agents/rift_cannons_plan.md`. Engine/catalog/UI/AI work was delegated in separate file scopes. Additional Drive heuristics and wooden-atlas redesign use separate worktrees/branches and are excluded from this release.

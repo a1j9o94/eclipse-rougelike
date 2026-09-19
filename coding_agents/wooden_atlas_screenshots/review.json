@@ -98,8 +98,8 @@
       "horizontalOverflow": false
     },
     {
-      "task": "Manual combat allocation",
-      "result": "Recorded hit allocated to legal opponent and volley accepted"
+      "task": "Manual Rift combat allocation",
+      "result": "Engine-generated three-damage Rift hit allocated against shielded opponent and volley accepted"
     }
   ],
   "errors": []

@@ -338,3 +338,13 @@ Independent review found same-owner turn wrap reused the old timer and could kee
 ## Automatic reputation — September 19, 2026
 
 Fresh combat draws now settle the highest-value legal reputation holding without a manual choice, preserving at most one newly drawn tile, faction/ambassador capacity, finite supply and draw order. Added optional owner-only ReputationSummary and backwards-compatible omitted-kept resolution for saved decisions. Initial 19 behavior cases failed first; expanded 29 cases pass. Bounded engine/conservation/replay batch 95/95 and Convex restore/privacy/idempotency batch 13/13 pass. Details/source link: `coding_agents/second_dawn_auto_reputation.md`. Parent owns UI notice/legacy auto-submit and final release gates. No commit or deployment.
+
+## Rift Cannon AI integration — 2026-09-19
+
+Outcome: opponents and optional movement odds understand Rift damage/backfire while using only public information and independent randomness.
+
+Implemented: public combat simulation groups firing ships by owner/class, rolls the entire volley, bypasses computers/shields for magenta dice, applies variable Rift damage and pooled friendly backfire using authoritative combat helpers. Historical baseline simulation delegates only Rift-containing views to this model. Main AI build/upgrade/fleet evaluation uses an expected-damage heuristic that includes backfire and grants no computer multiplier to Rift weapons. Hypothetical search worlds retain the public Rift expansion flag and corresponding finite technology/discovery inventory; absent flags preserve base inventories.
+
+Tests first: new six-face simulation cases failed on faces 4, 5, 6 before simulation edits; the new heuristic test initially failed because its module did not exist. Added full-volley simultaneous backfire, destruction of a larger later-firing Rift ship, public expansion inventory/old-view regression, computer/shield independence and unchanged view assertions. Five focused files passed, 57 tests total: second_dawn_ai_simulation, second_dawn_ai_rift_value, second_dawn_ai_search, second_dawn_movement_battle_estimate, second_dawn_ai_strategy. Changed AI/test files pass ESLint. Supervisor owns full lint/build gate after integration.
+
+Decision: Rift heuristic treats expected enemy damage (1) minus expected backfire (1/3), normalized against existing base-cannon heuristic (1/3), for value 2 without computer scaling. This is a bounded ranking heuristic; displayed odds continue using actual dice simulation. No hidden deck or authoritative RNG access added.

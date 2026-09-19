@@ -1,3 +1,4 @@
+import { aiWeaponValue } from "./aiWeaponValue";
 import { BASE_COMPONENTS, getFaction } from "./catalog";
 import { deriveBlueprintStats, effectiveBlueprintParts } from "./blueprints";
 import { fundingActionCost, fundingOptions } from "./funding";
@@ -295,7 +296,7 @@ export function generateAiCandidates(
           s.computer * 2 +
           s.shield +
           s.movement +
-          s.weapons.reduce((n, w) => n + w.damage * w.dice * 2, 0)
+          s.weapons.reduce((n, w) => n + aiWeaponValue(w) * 2, 0)
         );
       };
       const previous = publicBlueprint(original);
@@ -320,10 +321,10 @@ export function generateAiCandidates(
           .filter((p) => p.energyConsumption > 1)
           .sort(
             (a, b) =>
-              b.weapons.reduce((n, w) => n + w.damage * w.dice, 0) +
+              b.weapons.reduce((n, w) => n + aiWeaponValue(w), 0) +
               b.computer +
               b.movement -
-              (a.weapons.reduce((n, w) => n + w.damage * w.dice, 0) +
+              (a.weapons.reduce((n, w) => n + aiWeaponValue(w), 0) +
                 a.computer +
                 a.movement),
           )

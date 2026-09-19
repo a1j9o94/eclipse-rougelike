@@ -2,7 +2,7 @@ import { eligibleDiplomacyPartners } from './decisions';
 import { factionHasCapability, getFaction, SETUP_BY_PLAYER_COUNT, type PlayerCount } from './catalog';
 import { deriveBlueprintStats } from './blueprints';
 import { isShipPartId } from './parts';
-import { dieHits, type DieFace } from './combat';
+import { dieHits, riftDieOutcome, allocateRiftBackfire, type DieFace } from './combat';
 import { randomInt } from './random';
 import { calculateScore, type ScoreBreakdown } from './scoring';
 import { getTechnology, type TechnologyId } from './technologies';
@@ -56,18 +56,33 @@ function destroyPopulation(state: GameState, sector: Sector, squareIds: readonly
   sector.population = sector.population.filter(cube => !squareIds.includes(cube.squareId));
 }
 function bombardmentDamage(state: GameState, seat: Seat, ships: Ship[], events: GameEvent[]): number {
-  let hits = 0;
+  let hits = 0, backfire = 0;
+  const riftTargets: {id: string; hp: number; size: number}[] = [];
+  const sizes: Record<Ship["type"], number> = {interceptor:1,ancient:1,starbase:2,cruiser:3,guardian:3,dreadnought:4,gcds:5};
   for (const ship of ships) {
     const blueprint = seat.blueprints.find(item => item.shipType === ship.type); requireRule(!!blueprint, 'Ship blueprint missing.');
     const parts = blueprint!.parts.map(id => { requireRule(id === null || isShipPartId(id), 'Unknown ship part.'); return id; });
     const outsideParts = (blueprint!.outsideParts ?? []).map(id => { requireRule(isShipPartId(id), 'Unknown outside ship part.'); return id; });
     const stats = deriveBlueprintStats(seat.faction, { shipType: blueprint!.shipType, parts, outsideParts });
+    if (stats.weapons.some(w => w.color === 'magenta')) riftTargets.push({id:ship.id,hp:stats.hull+1-ship.damage,size:sizes[ship.type]});
     for (const weapon of stats.weapons.filter(weapon => weapon.kind === 'cannon')) for (let die = 0; die < weapon.dice; die++) {
       const roll = randomInt(state.random, 6); state.random = roll.state;
       const face = (roll.value + 1) as DieFace;
+      if (weapon.color === 'magenta') {
+        const outcome = riftDieOutcome(face); hits += outcome.damage; backfire += outcome.backfire;
+        emit(events, seat.id, `Population attack: Rift die dealt ${outcome.damage} damage and ${outcome.backfire} backfire.`, 'combat');
+        continue;
+      }
       if (dieHits(face, stats.computer, 0)) hits += weapon.damage;
       emit(events, seat.id, `Population attack: ${weapon.color} die rolled ${face === 1 ? 'blank' : face === 6 ? 'burst' : face}.`, 'combat');
     }
+  }
+  for (const hit of allocateRiftBackfire(riftTargets, backfire)) {
+    const ship = state.ships.find(s => s.id === hit.targetId)!;
+    const destroyed = hit.damage >= riftTargets.find(t => t.id === ship.id)!.hp;
+    ship.damage += hit.damage;
+    if (destroyed) state.ships = state.ships.filter(s => s.id !== ship.id);
+    emit(events, seat.id, `${ship.type} ${ship.id} ${destroyed ? 'destroyed by' : 'takes '+hit.damage+' damage from'} Rift backfire during population attack.`, 'combat');
   }
   return hits;
 }

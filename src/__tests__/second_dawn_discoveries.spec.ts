@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DISCOVERIES,
+  DISCOVERIES as ALL_DISCOVERIES,
   createDiscoverySupply,
   getDiscovery,
 } from '../../shared/eclipse/discoveries';
+
+const DISCOVERIES = ALL_DISCOVERIES.filter(item => !item.expansion);
 
 describe('publisher-verified base discovery supply', () => {
   it('conserves exactly 36 tiles across 24 distinct effects', () => {

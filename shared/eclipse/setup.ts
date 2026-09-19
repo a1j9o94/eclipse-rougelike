@@ -1,9 +1,6 @@
 import {
   BASE_COMPONENTS,
-  CATALOG_VERSION,
-  EXPANDED_CATALOG_VERSION,
-  EXPANDED_RULES_VERSION,
-  RULES_VERSION,
+  profileVersions,
   SETUP_BY_PLAYER_COUNT,
   STARTING_LAYOUTS,
   getFaction,
@@ -34,6 +31,8 @@ export interface GameSetup {
   /** Omitted means the original base roster and pinned base versions. */
   factionProfile?: FactionProfile;
   warpPortals: boolean;
+  /** Explicit module opt-in preserves historical setup seeds and pinned saved matches. */
+  riftCannons?: boolean;
   /** Live matches opt in; omitted preserves historical deterministic fixture setup. */
   randomizeStartingPlayer?: boolean;
 }
@@ -63,14 +62,14 @@ export function createGame(config: GameSetup): GameState {
     count,
     config.warpPortals,
   );
-  const bag = createTechnologyBag(stacks.random, config.warpPortals);
+  const bag = createTechnologyBag(stacks.random, config.warpPortals, config.riftCannons);
   const tech = drawTechnologies(
     bag.tiles,
     SETUP_BY_PLAYER_COUNT[count].initialRegularTechs,
   );
   const discoveries = shuffle(
     bag.random,
-    createDiscoverySupply(config.warpPortals),
+    createDiscoverySupply(config.warpPortals, config.riftCannons),
   );
   const reputation = shuffle(discoveries.state, createReputationSupply());
   const guardians = shuffle(
@@ -116,8 +115,7 @@ export function createGame(config: GameSetup): GameState {
     };
   });
   const state: GameState = {
-    rulesVersion: profile === 'base' ? RULES_VERSION : EXPANDED_RULES_VERSION,
-    catalogVersion: profile === 'base' ? CATALOG_VERSION : EXPANDED_CATALOG_VERSION,
+    ...profileVersions(profile, config.riftCannons),
     ...(profile === 'expanded-v1' ? { factionProfile: profile } : {}),
     revision: 0,
     round: 1,
@@ -152,6 +150,7 @@ export function createGame(config: GameSetup): GameState {
       reputation: reputation.items,
     },
     engine: {
+      ...(config.riftCannons ? { riftCannons: true } : {}),
       warpPortals: config.warpPortals,
       action: null,
       decisions: [],

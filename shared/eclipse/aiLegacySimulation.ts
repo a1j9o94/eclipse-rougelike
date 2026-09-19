@@ -1,3 +1,4 @@
+import { estimatePublicBattle as estimateRiftBattle } from "./aiSimulation";
 import { deriveBlueprintStats, neutralBlueprint } from "./blueprints";
 import { publicBlueprint } from "./legal";
 import { dieHits, type DieFace } from "./combat";
@@ -27,6 +28,11 @@ export function estimatePublicBattle(
 ): CombatEstimate {
   if (!Number.isInteger(trials) || trials < 1 || trials > 128)
     throw new RangeError("Simulation trials must be between 1 and 128.");
+  // Keep the historical baseline for base weapons, but never use ordinary-die
+  // assumptions for Rift-equipped fleets.
+  if (view.seats.some((seat) => seat.blueprints.some((blueprint) => blueprint.parts.some((part) => part === "rift-cannon" || part === "rift-conductor")))) {
+    return estimateRiftBattle(view, attackerIds, defenderIds, simulationSeed, trials);
+  }
   const selected = view.ships.filter(
     (s) => attackerIds.includes(s.id) || defenderIds.includes(s.id),
   );

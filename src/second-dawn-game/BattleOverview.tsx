@@ -15,6 +15,8 @@ import { useState, useContext } from "react";
 import { AtlasArtContext } from './atlasArtContext';
 import { AtlasFigurine } from './AtlasArtwork';
 import DiceRoll3D from "./DiceRoll3D";
+import EclipseDieFace from "./EclipseDieFace";
+import {eclipseDieFace} from "./dice3d/faces";
 import { useDice3dEnabled } from "./presentationSettings";
 const names: Record<Ship["type"], string> = {
   interceptor: "Interceptor",
@@ -77,7 +79,7 @@ function VolleyScene({ volley, view, knownShips, still, awaitingDice }: {
             })}
           </svg>
           <span className="dg-volley-scene-target-art">{type ? art(type, target.owner ?? known?.owner) : <StatIcon kind="hull"/>}<span className="dg-volley-impact-flash" aria-hidden="true"/>{target.destroyed && <b className="dg-volley-wreck-mark" aria-hidden="true">×</b>}</span>
-          <span className="dg-volley-scene-target-copy"><strong>{name}</strong>{ownerLabel && <small>{ownerLabel}</small>}<b>{target.destroyed ? 'Destroyed' : outcome === 'damaged' ? 'Damaged' : 'No damage'}</b><small>{target.hpBefore} → {target.hpAfter} HP</small></span>
+          <span className="dg-volley-scene-target-copy"><strong>{name}</strong>{owner===volley.attacker&&<small className="dg-rift-backfire">Rift backfire · own fleet</small>}{ownerLabel && <small>{ownerLabel}</small>}<b>{target.destroyed ? 'Destroyed' : outcome === 'damaged' ? 'Damaged' : 'No damage'}</b><small>{target.hpBefore} → {target.hpAfter} HP</small></span>
         </div>;
       })}
     </div>
@@ -115,7 +117,7 @@ export function CombatPlayback({ volleys, view, knownShips = [], fast = false, s
       {volleys.map((volley, index) => (
         <article className="dg-playback-volley" key={`${volley.battleId}:${volley.dice.map(die => die.id).join(",")}:${index}`}>
           <VolleyScene volley={volley} view={view} knownShips={knownShips} still={isFast} awaitingDice={awaitingDice}/>
-          <div className="dg-result-dice">{volley.dice.map(die => <span key={die.id} className={`is-${die.weaponColor ?? "unknown"}`} aria-label={`Roll ${die.face}, ${die.damage} damage`}><b>{die.face}</b><small>{die.weaponColor && die.weaponKind ? `${die.weaponColor} ${die.weaponKind}` : "weapon unavailable"}</small></span>)}</div>
+          <div className="dg-result-dice">{volley.dice.map(die => <span key={die.id} className={`is-${die.weaponColor ?? "unknown"}`} aria-label={die.weaponColor==="magenta"?eclipseDieFace("magenta",die.face).label:`Roll ${die.face}, ${die.damage} damage`}><EclipseDieFace color={die.weaponColor??"#bac0ce"} face={die.face} decorative/><small>{die.weaponColor && die.weaponKind ? `${die.weaponColor} ${die.weaponKind}` : "weapon unavailable"}</small></span>)}</div>
           <ul className="dg-impact-targets">{volley.targets.map(target => {
             const knownShip = knownShips.find(ship => ship.id === target.id) ?? view?.ships.find(ship => ship.id === target.id);
             const type = target.shipType ?? knownShip?.type;
@@ -131,7 +133,7 @@ export function CombatPlayback({ volleys, view, knownShips = [], fast = false, s
                   {type === "ancient" || type === "guardian" || type === "gcds" ? <NeutralShipSilhouette type={type} /> : <ShipSilhouette type={type} faction={seat?.faction} />}
                   {target.destroyed && <svg className="dg-impact-destruction-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M16 16l32 32M48 16L16 48" /></svg>}
                 </span>}
-                <span className="dg-impact-copy"><strong>{title}</strong>{ownerLabel && <small>{ownerLabel}</small>}{!type && <small>{target.id}</small>}<span>{target.hpBefore} → {target.hpAfter} HP{target.excess > 0 && <small> · {target.excess} excess</small>}</span></span>
+                <span className="dg-impact-copy"><strong>{title}</strong>{owner===volley.attacker&&<small className="dg-rift-backfire">Rift backfire</small>}{ownerLabel && <small>{ownerLabel}</small>}{!type && <small>{target.id}</small>}<span>{target.hpBefore} → {target.hpAfter} HP{target.excess > 0 && <small> · {target.excess} excess</small>}</span></span>
                 <b className="dg-impact-outcome">{target.destroyed ? "Destroyed" : outcome === "damaged" ? "Damaged" : "No damage"}</b>
               </div>
             </li>;
@@ -338,19 +340,20 @@ export default function BattleOverview({ view, recentVolleys = [], knownShips = 
                               {stats.weapons.map((weapon, i) => (
                                 <span
                                   key={i}
-                                  title={`${weapon.dice} ${weapon.color} ${weapon.kind} dice per ship; each hit deals ${weapon.damage} damage.`}
-                                  aria-label={`${weapon.dice} ${weapon.color} ${weapon.kind} dice, ${weapon.damage} damage per hit`}
+                                  title={weapon.color==="magenta"?"Rift dice: 0–3 damage, ignoring computers and shields; may backfire.":`${weapon.dice} ${weapon.color} ${weapon.kind} dice per ship; each hit deals ${weapon.damage} damage.`}
+                                  aria-label={weapon.color==="magenta"?`${weapon.dice} Rift dice, 0–3 damage, may backfire`:`${weapon.dice} ${weapon.color} ${weapon.kind} dice, ${weapon.damage} damage per hit`}
                                   style={{
                                     color: {
                                       yellow: "#efd27b",
                                       orange: "#eeb180",
                                       blue: "#9bccef",
                                       red: "#e99b9b",
+                                      magenta: "#f094dc",
                                     }[weapon.color],
                                   }}
                                 >
                                   <StatIcon kind={weapon.kind} />
-                                  {weapon.dice}×{weapon.damage}
+                                  {weapon.dice}×{weapon.color==="magenta"?"0–3":weapon.damage}
                                 </span>
                               ))}
                             </div>
