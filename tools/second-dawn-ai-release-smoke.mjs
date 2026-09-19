@@ -31,7 +31,8 @@ try{
   await pass.click({trial:true,timeout:180_000});
   let autoPassSurvivedReload=false;
   if(difficulty==='normal'){
-   await page.getByRole('checkbox',{name:'Auto-pass unless attacked'}).check();
+   // Controlled preference changes become visible after the authoritative save.
+   await page.getByRole('checkbox',{name:'Auto-pass unless attacked'}).click();
    const savedAt=Date.now();
    while(!(await getView()).seats.find(seat=>seat.id===initial.viewerSeatId).autoPassUnlessAttacked){
     assert.ok(Date.now()-savedAt<15_000,'Auto-pass preference saved');await new Promise(resolve=>setTimeout(resolve,100));
