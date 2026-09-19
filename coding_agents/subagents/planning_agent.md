@@ -573,3 +573,7 @@ Outcome: tactile combat dice with synchronized clatter and persistent mute/volum
 ### September 19, 2026 — Drive faction research and archive
 
 Outcome: let the user choose new factions from source-backed ability/difficulty research, preserve all creator materials on GitHub, and prepare the existing engine without altering current matches. Acceptance: 24-option matrix, Drive authority/version decisions, all 190 originals archived and hashed, README credits, AI heuristic assessment, and behavior-preserving registry validation. Archive tests failed before implementation and now pass (4); registry tests also followed fail-first. Risks: conflicting source sheets and the broader ten-round variant must not silently change base saves. Rollback: ordinary code revert; no migration. Decisions and follow-ups: `coding_agents/faction_research/README.md` and `faction_registry_implementation.md`.
+
+### September 19, 2026 — Two-finger map scroll
+
+Outcome: pan the galaxy using ordinary trackpad scroll while preserving pinch zoom and panel scrolling. Acceptance, failed-first tests, browser checks and rollback are recorded in `coding_agents/second_dawn_trackpad_pan.md`. Both new pan tests failed before implementation; 14 relevant tests plus Chromium/WebKit, lint/build now pass.
