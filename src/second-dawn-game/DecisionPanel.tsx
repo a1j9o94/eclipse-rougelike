@@ -25,6 +25,7 @@ interface Props {
   decision: PendingDecision;
   reputation: number[];
   disabled: boolean;
+  motionEnabled?: boolean;
   onSubmit: (command: GameCommand) => void;
 }
 function activeNeutronBombs(view: PlayerView | undefined, decision: Extract<PendingDecision, { kind: "bombardment" }>): boolean {
@@ -40,6 +41,7 @@ export default function DecisionPanel({
   view,
   reputation,
   disabled,
+  motionEnabled = true,
   onSubmit,
   candidates = [],
   targetLabels = {},
@@ -116,7 +118,7 @@ export default function DecisionPanel({
                 : [],
         ),
       };
-      fields = <CombatVolleyAllocator view={view} decision={decision} targetLabels={targetLabels} values={values} setValue={set} />;
+      fields = <CombatVolleyAllocator view={view} decision={decision} targetLabels={targetLabels} values={values} setValue={set} motionEnabled={motionEnabled} />;
       break;
     }
     case "retreat":

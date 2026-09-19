@@ -57,7 +57,7 @@ export default function ExplorationDecision({view,decision,disabled,onSubmit}:Pr
      {preview.tile!.artifacts>0&&<span title="Artifacts" aria-label={`${preview.tile!.artifacts} artifacts`}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 9 5v10l-9 5-9-5V7Z m0 0v20 M3 7l18 10 M21 7 3 17" fill="none" stroke="currentColor" strokeWidth="1.5"/></svg><strong>{preview.tile!.artifacts}</strong></span>}
      {preview.tile!.warpPortal&&<span title="Warp portal" aria-label="Warp portal"><StatIcon kind="portal"/></span>}
     </div>
-    <GalaxyBoard view={mapped.view} candidates={[]} selected={selected} legalTargetIds={[mapped.sector.id]} targetLabel="new sector preview" compact={compact} camera={camera} onCameraChange={setCamera} onSelect={inspect} onInspectFleet={inspect} onExplore={()=>{}}/>
+    <GalaxyBoard showPrintedWormholes view={mapped.view} candidates={[]} selected={selected} legalTargetIds={[mapped.sector.id]} targetLabel="new sector preview" compact={compact} camera={camera} onCameraChange={setCamera} onSelect={inspect} onInspectFleet={inspect} onExplore={()=>{}}/>
    </div>
    <aside ref={inspector} className="dg-placement-notes" aria-label="Exploration sector inspection">
     <div className="dg-placement-inspector-heading"><h3>{inspected.id===mapped.sector.id?`New sector ${tileId}`:`Sector ${inspected.tileId}`}</h3>{inspected.id!==mapped.sector.id&&<button onClick={()=>inspect(mapped.sector.id)}>Inspect new sector</button>}</div>

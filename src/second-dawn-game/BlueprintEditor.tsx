@@ -127,7 +127,7 @@ export default function BlueprintEditor({
   return (
     <section className="dg-blueprint-editor">
       <header className="dg-shipyard-header">
-        <ShipSilhouette type={blueprint.shipType} />
+        <ShipSilhouette type={blueprint.shipType} faction={faction} />
         <div className="dg-shipyard-identity"><span className="dg-yard-eyebrow">Shipyard · configuration</span><h2>Edit {blueprint.shipType}</h2><p>Fit your ship below. Every ship of this class uses this blueprint.</p></div>
         <div className={`dg-reactor-readout ${stats.energyProduction < stats.energyConsumption ? "dg-danger" : ""}`}><span>Reactor balance</span><strong>{stats.energyProduction - stats.energyConsumption} energy available</strong><small>{stats.energyProduction} generated / {stats.energyConsumption} used</small></div>
       </header>

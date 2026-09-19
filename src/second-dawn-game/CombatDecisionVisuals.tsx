@@ -1,4 +1,4 @@
-import { getFaction } from "../../shared/eclipse/catalog";
+import { getFaction, type FactionId } from "../../shared/eclipse/catalog";
 import { deriveBlueprintStats, neutralBlueprint } from "../../shared/eclipse/blueprints";
 import { connectionBetween } from "../../shared/eclipse/geometry";
 import { publicBlueprint } from "../../shared/eclipse/legal";
@@ -8,6 +8,8 @@ import type { PendingDecision, PlayerView, Ship } from "../../shared/eclipse/typ
 import ShipSilhouette from "./ShipSilhouette";
 import { NeutralShipSilhouette } from "./BattleOverview";
 import { PlanetIcon } from "./SectorPlanets";
+import DiceRoll3D from "./DiceRoll3D";
+import { useDice3dEnabled } from "./presentationSettings";
 import "./combatDecisionVisuals.css";
 
 const shipNames: Record<Ship["type"], string> = {
@@ -21,13 +23,15 @@ const shipNames: Record<Ship["type"], string> = {
 };
 type AllocationDecision = Extract<PendingDecision, { kind: "combat-allocation" }>;
 
-export function CombatVolleyAllocator({ view, decision, targetLabels, values, setValue }: {
+export function CombatVolleyAllocator({ view, decision, targetLabels, values, setValue, motionEnabled = true }: {
   view?: PlayerView;
   decision: AllocationDecision;
   targetLabels: Record<string, string>;
   values: Record<string, string>;
   setValue: (key: string, value: string) => void;
+  motionEnabled?: boolean;
 }) {
+  const [dice3dEnabled] = useDice3dEnabled();
   const actionable = decision.dice.filter((die) => die.targets.length && die.hitTargets?.length !== 0);
   const selectedId = values.__selectedDie || actionable.find((die) => !values[die.id])?.id || actionable[0]?.id || "";
   const selected = decision.dice.find((die) => die.id === selectedId);
@@ -67,6 +71,7 @@ export function CombatVolleyAllocator({ view, decision, targetLabels, values, se
     })}
   </div>;
   return <div className="dg-volley-workspace">
+    <DiceRoll3D rolls={decision.dice.map(die => ({ id: die.id, face: die.face, color: die.weaponColor ?? "#bac0ce" }))} rollId={JSON.stringify([decision.battleId, decision.dice.map(die => [die.id, die.face])])} enabled={dice3dEnabled && motionEnabled}>
     <div className="dg-dice-tray" role="group" aria-label="Rolled attack dice">
       <header><strong>Volley tray</strong><small>Select a die, then choose its target.</small></header>
       {decision.dice.map((die, index) => {
@@ -79,6 +84,7 @@ export function CombatVolleyAllocator({ view, decision, targetLabels, values, se
       })}
       {decision.dice.some((die) => die.hitTargets?.length === 0) && <p className="dg-all-miss-note">Miss tray · these dice cannot hit any target and need no target choice.</p>}
     </div>
+    </DiceRoll3D>
     {!selected ? <p className="dg-all-miss-note">No hit. Every die misses all opposing ships; no allocation is needed.</p> : selected.split && selected.hitTargets?.length !== 0 ? <><SplitDamageCards view={view} targetLabels={targetLabels} dieNumber={decision.dice.indexOf(selected) + 1} targets={selected.targets} damage={selected.damage} values={Object.fromEntries(selected.targets.map((target) => [target, Number(values[`${selected.id}/${target}`] ?? "0")]))} onChange={(target, next) => setValue(`${selected.id}/${target}`, String(next))}/>{targetGrid}</> : targetGrid}
   </div>;
 }
@@ -91,11 +97,11 @@ export function CombatVolleyResult({ volley }: { volley: NonNullable<import("../
 }
 
 
-function ShipArt({ type }: { type: Ship["type"] }) {
+function ShipArt({ type, faction }: { type: Ship["type"]; faction?: FactionId }) {
   return type === "ancient" || type === "guardian" || type === "gcds" ? (
     <NeutralShipSilhouette type={type} />
   ) : (
-    <ShipSilhouette type={type} />
+    <ShipSilhouette type={type} faction={faction} />
   );
 }
 
@@ -147,7 +153,7 @@ function ShipCard({
       aria-label={`Target ${label}${hit === undefined ? "" : hit ? " · hit" : " · miss"}`}
       onClick={onClick}
     >
-      {ship && <span className="dg-combat-ship-art"><ShipArt type={ship.type} /></span>}
+      {ship && <span className="dg-combat-ship-art"><ShipArt type={ship.type} faction={seat?.faction} /></span>}
       <span className="dg-combat-card-copy">
         <strong>{name}</strong>
         {owner && <small>{owner}</small>}
@@ -216,7 +222,7 @@ export function SplitDamageCards({
         const ship = view?.ships.find((candidate) => candidate.id === target);
         return (
           <article className={`dg-combat-split-card${amount ? " is-selected" : ""}`} key={target}>
-            {ship && <span className="dg-combat-ship-art"><ShipArt type={ship.type} /></span>}
+            {ship && <span className="dg-combat-ship-art"><ShipArt type={ship.type} faction={view?.seats.find(seat => seat.id === ship.owner)?.faction} /></span>}
             <div><strong>{ship ? shipNames[ship.type] : label}</strong><small>{ship ? ownerName(view, ship.owner) : label}</small></div>
             <div className="dg-damage-stepper" aria-label={`Damage allocated to ${label}`}>
               <button type="button" aria-label={`Decrease damage from die ${dieNumber} to ${label}`} disabled={amount === 0} onClick={() => onChange(target, amount - 1)}>−</button>
@@ -304,7 +310,7 @@ export function InitiativeQueue({
         return (
           <button key={id} type="button" className={`dg-initiative-card${order >= 0 ? " is-selected" : ""}`} aria-pressed={order >= 0} aria-label={order >= 0 ? `Remove ${label} from firing order` : `Add ${label} to firing order`} onClick={() => onToggle(id)}>
             <span className="dg-initiative-order">{order >= 0 ? order + 1 : "—"}</span>
-            {shipType && <span className="dg-combat-ship-art"><ShipArt type={shipType} /></span>}
+            {shipType && <span className="dg-combat-ship-art"><ShipArt type={shipType} faction={view?.seats.find(seat => seat.id === owner)?.faction} /></span>}
             <span><strong>{label}</strong><small>{order >= 0 ? "Queued" : "Choose firing position"}</small></span>
           </button>
         );

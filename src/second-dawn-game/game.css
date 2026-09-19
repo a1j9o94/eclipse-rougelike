@@ -695,3 +695,7 @@
 /* Exploration owns its map and inspector as one workspace. */
 .dg-app.dg-tabletop.dg-placement-mode:not(.dg-mobile-board) .sd-layout{grid-template-columns:minmax(0,1fr);}
 .dg-placement-mode .sd-inspector{display:none;}
+
+/* The empire is a complete board; its own panels replace the action inspector. */
+.dg-app.dg-tabletop.dg-empire-mode:not(.dg-mobile-board) .sd-layout{grid-template-columns:minmax(0,1fr)}
+.dg-tabletop.dg-empire-mode .sd-inspector{display:none}

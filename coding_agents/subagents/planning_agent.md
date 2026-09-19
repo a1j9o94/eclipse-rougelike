@@ -533,3 +533,14 @@ Tests failing first: seen-marker Convex tests (missing metadata), activity recap
 - User correction: “No, it shouldn't ask at all, just save.” Remove all revision-based acknowledgement; do not replace it with selective prompts.
 - Acceptance: automatic save/restore, no draft-age blocking, receipt-safe cleanup; actual affordability/legality and authoritative expected revision still enforced.
 - Tests: new revision/resource/receipt regressions failed first, then passed; changed draft tests preserve existing persistence coverage. Rollback is presentation-only and keeps saved draft schema unchanged.
+
+## September 18 — Living empire overview and tactile combat dice
+- Outcome: faction inspection feels like a civilization board, with actionable planets/fleets and abilities visible in context; combat gains optional real 3D dice whose faces match authoritative results.
+- Acceptance: visual own/opponent overviews on desktop/mobile, public-only opponent data, location/blueprint/research navigation preserves drafts, faction effects near relevant actions. Dice use server values, do not reroll or add acknowledgement; saved off setting, reduced motion/fallback, responsive and skip-safe.
+- Failing-first tests: overview selectors/privacy/navigation; faction applicability; persistent settings; exact die orientation/lifecycle, human/AI combat integration without repeated throws or rule changes.
+- Delegation: mac_map_pinch overview/model; combat_destruction_feedback renderer; combat_casualty_provenance combat integration; supervisor settings, contextual faction markers, board integration and release gates.
+- Risks/rollback: isolated presentation only; lazy WebGL resources, cap DPR, dispose on unmount, static fallback. Preserve existing RNG/commands/saves. Revert presentation modules independently.
+- User steering: dice roll across the whole screen on a temporary transparent overlay, not in a dedicated tray. Keep controls usable and clear overlay automatically.
+- User steering: original faction-specific SVG ship families, paired Terran variants share catalog-color family; each class distinguishable at small map size and large blueprint size. Wire same assets throughout map/overview/planning/combat. combat_casualty_provenance owns vectors after integration; supervisor wires noncombat consumers.
+- User steering: normal galaxy shows only usable edge connections; unmatched openings remain visible during placement. Added read-only displayedWormholes projection, honors viewer Wormhole Generator on both sides; engine topology unchanged. Four failing-first regressions plus real browser edge-count assertions.
+- Review fixes: selected empire map inspection preserves unfinished build drafts; desktop overview drops empty inspector column; mobile Players roster explicitly horizontal to prevent inherited 190px flex-basis becoming row height. Browser reproduced roster1182px/main0 before correction.

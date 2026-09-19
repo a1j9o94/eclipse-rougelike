@@ -16,8 +16,8 @@ it('uses a compact Galaxy-first shell with Empire, Players and Activity navigati
  setup();const nav=screen.getByRole('navigation',{name:'Mobile game navigation'});
  expect(within(nav).getByRole('button',{name:'Galaxy'})).toHaveAttribute('aria-pressed','true');
  fireEvent.click(within(nav).getByRole('button',{name:'Empire'}));
- expect(screen.getByRole('heading',{name:'Your empire'})).toBeInTheDocument();
- fireEvent.click(screen.getByRole('button',{name:'Research technologies'}));
+ expect(screen.getByRole('heading',{name:'Eridani Empire'})).toBeInTheDocument();
+ fireEvent.click(screen.getByRole('button',{name:'Research technology'}));
  expect(screen.getByRole('heading',{name:'Research',exact:true})).toBeInTheDocument();
  fireEvent.click(screen.getAllByRole('button',{name:/×/})[0]);
  expect(document.querySelector('.dg-mobile-sheet')).toHaveAttribute('data-sheet-state','closed');
@@ -56,7 +56,7 @@ it('preserves manual mobile inspection when another AI seat starts acting',()=>{
  const initial=getPlayerView(createGame({seed:81,seats:[{id:'a',faction:'eridani',controller:'human'},{id:'b',faction:'hydran',controller:'ai'}]}),'a')!;
  const controls={candidates:[],connected:true,busy:false,status:'Saved',onSubmit:vi.fn(),onMenu:vi.fn()};
  const rendered=render(<Board {...controls} view={initial}/>);
- fireEvent.click(screen.getByRole('button',{name:'Empire',exact:true}));fireEvent.click(screen.getByRole('button',{name:'Research technologies'}));
+ fireEvent.click(screen.getByRole('button',{name:'Empire',exact:true}));fireEvent.click(screen.getByRole('button',{name:'Research technology'}));
  const history={entries:[{revision:1,actorSeatId:'b',actorName:'Hydran Progress',round:1,summary:'Researched Improved Hull',details:[],presentation:{kind:'research' as const,technologyId:'improved-hull' as const}}],loading:false,hasOlder:false,loadingOlder:false,error:null,loadOlder:vi.fn()};
  rendered.rerender(<Board {...controls} view={{...initial,activeSeatId:'b',revision:1}} history={history}/>);
  expect(rendered.container.querySelector('.dg-mobile-sheet')).toHaveAttribute('data-sheet-state','closed');
@@ -79,7 +79,7 @@ it('resumes automatic AI following after an acknowledged human end-action withou
  const initial=getPlayerView(createGame({seed:81,seats:[{id:'a',faction:'eridani',controller:'human'},{id:'b',faction:'hydran',controller:'ai'}]}),'a')!;
  const controls={candidates:[],connected:true,busy:false,status:'Saved',onSubmit:vi.fn(),onMenu:vi.fn()};
  const rendered=render(<Board {...controls} view={initial}/>);
- fireEvent.click(screen.getByRole('button',{name:'Empire',exact:true}));fireEvent.click(screen.getByRole('button',{name:'Research technologies'}));
+ fireEvent.click(screen.getByRole('button',{name:'Empire',exact:true}));fireEvent.click(screen.getByRole('button',{name:'Research technology'}));
  const history={entries:[{revision:2,actorSeatId:'b',actorName:'Hydran Progress',round:1,summary:'Researched Improved Hull',details:[],presentation:{kind:'research' as const,technologyId:'improved-hull' as const}}],loading:false,hasOlder:false,loadingOlder:false,error:null,loadOlder:vi.fn()};
  const oldSheet=rendered.container.querySelector<HTMLElement>('.dg-mobile-sheet-body')!;oldSheet.scrollTop=160;
  rendered.rerender(<Board {...controls} view={{...initial,activeSeatId:'b',revision:2}} history={history} lastAcceptedCommand={{revision:1,type:'end-action'}}/>);

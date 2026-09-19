@@ -1,0 +1,3 @@
+/* Large ship cards reveal plating; fleet markers preserve the family outline. */
+.dg-ship-plating {fill:#d9e3e733;stroke:#253945;stroke-width:1.6;stroke-linejoin:round}
+.dg-map-fleet-card .dg-ship-plating,.dg-fleet-figure .dg-ship-plating {display:none}

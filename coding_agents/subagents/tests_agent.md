@@ -54,3 +54,6 @@ Eight new tests cover controlled/empty/advanced filtering, resource-specific and
 
 ## September 18 — Combined release gate
 621 tests across 125 Second Dawn files passed with one worker. Seven new no-acknowledgement regressions plus updated draft tests cover unchanged persistence, receipt cleanup, and actual current affordability. Final production build and all changed-file lint passed. Repository lint debt unchanged (88 errors, 12 warnings). Four-view browser review and screenshots captured using tools/second-dawn-advanced-research-review.mjs.
+
+## September 18 — Empire/dice/ships/connections final gate
+661 tests/134 Second Dawn files pass in memory-bounded one-worker batch. Four old label expectations updated to replacement UI; their behavioral assertions remain. Production build passes. 43 changed TS/TSX/MJS files lint-clean; existing full-repo lint remains88 errors / 12 warnings. Reviewed all24ship silhouettes, five-size overview/map/settings screens, actual Chromium/WebKit combat throws. Artifacts/tools documented in second_dawn_empire_dice_release.md. Physical-device human experience not claimed.

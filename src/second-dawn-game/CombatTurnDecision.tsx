@@ -15,7 +15,7 @@ export default function CombatTurnDecision({decision,view,disabled,onSubmit}:{de
  };
  return <section className="dg-decision dg-combat-turn" aria-label="Combat controls">
   <div className="dg-combat-turn-heading">
-   {shipType&&['interceptor','cruiser','dreadnought','starbase'].includes(shipType)&&<ShipSilhouette type={shipType as 'interceptor'|'cruiser'|'dreadnought'|'starbase'}/>}
+   {shipType&&['interceptor','cruiser','dreadnought','starbase'].includes(shipType)&&<ShipSilhouette type={shipType as 'interceptor'|'cruiser'|'dreadnought'|'starbase'} faction={view?.seats.find(seat=>seat.id===decision.owner)?.faction}/>}
    <div><p className="sd-eyebrow">{sector?`BATTLE · SECTOR ${sector.tileId}`:'BATTLE'}</p><h2>{forced?'Retreat required':shipType?`Your ${shipType}s are ready`:'Your fleet is ready'}</h2></div>
   </div>
   {!forced&&<div className="dg-combat-turn-actions">

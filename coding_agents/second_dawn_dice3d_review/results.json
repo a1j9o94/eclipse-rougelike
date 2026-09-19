@@ -1,0 +1,26 @@
+[
+  {
+    "browser": "chromium",
+    "width": 1366,
+    "actualCombatCanvasObserved": true,
+    "overlayCleared": true,
+    "sixDiceWebGL": "available",
+    "pageErrors": []
+  },
+  {
+    "browser": "chromium",
+    "width": 390,
+    "actualCombatCanvasObserved": true,
+    "overlayCleared": true,
+    "sixDiceWebGL": "available",
+    "pageErrors": []
+  },
+  {
+    "browser": "webkit",
+    "width": 390,
+    "actualCombatCanvasObserved": true,
+    "overlayCleared": true,
+    "sixDiceWebGL": "available",
+    "pageErrors": []
+  }
+]

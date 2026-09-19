@@ -34,7 +34,7 @@ it("shows sector identities and reveals printed component details on zoom", () =
     screen.getAllByRole("button", { name: /^Inspect sector/ }),
   ).toHaveLength(view.sectors.length);
   expect(
-    screen.getByText("Paired wormholes", { exact: true }),
+    screen.getByText("Connected wormholes", { exact: true }),
   ).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "Zoom in" }));
   fireEvent.click(screen.getByRole("button", { name: "Zoom in" }));

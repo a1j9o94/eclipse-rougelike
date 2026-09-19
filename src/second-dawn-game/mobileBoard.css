@@ -214,3 +214,6 @@
 .dg-mobile-ai-recovery { padding:8px 0; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
 .dg-mobile-ai-recovery p { flex:1 1 180px; margin:0; font-size:13px; line-height:1.4; color:#f0c292; overflow-wrap:anywhere; }
 .dg-mobile-ai-recovery button { min-height:44px; border-color:#b59358; color:#efcf91; }
+
+/* The player roster is a horizontal strip, so its 190px basis is width. */
+.dg-mobile-board[data-mobile-screen=Players] .sd-player-list{flex-direction:row;flex-wrap:nowrap;}

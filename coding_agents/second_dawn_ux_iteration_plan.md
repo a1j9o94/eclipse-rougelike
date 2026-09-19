@@ -391,3 +391,6 @@ Advanced Labs/Economy/Mining and Metasynthesis now show eligible empty controlle
 
 ### September 18 — Save drafts without acknowledgements
 Removed the draft-review prompt and revision-age blocking per explicit user direction. Choices continue to save and restore; current legality and server revision enforcement remain active. [Evidence and cause](second_dawn_draft_autosave_no_review.md). Combined release: 621 bounded Second Dawn tests passed, final production build and changed-file lint passed.
+
+### September 18 — Empire identity, full-screen 3D dice, faction fleets and connections
+Replaced the plain player table and mobile Empire links with a shared visual overview of economy, planets, fleets, faction abilities, research and relations. Added contextual faction effects, 24 original class/faction SVG designs, saved 3D dice settings, and nonblocking whole-screen authoritative dice animation. Normal map edges hide unmatched openings; placement retains all printed openings and Generator connections remain explicit. [Combined release](second_dawn_empire_dice_release.md) records decisions and evidence. 661 bounded tests across 134 files pass; production build and 43 changed-code-file lint checks pass. Five-size overview/map/settings and Chromium/WebKit combat reviewed. Human playtest feedback pending.

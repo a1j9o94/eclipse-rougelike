@@ -266,3 +266,6 @@ Added typed, read-only advancedPopulationOpportunity selector and visual resourc
 
 ## September 18 — No draft-review acknowledgement
 Removed revision comparison and review callback from the shared draft provider/context, so all planner consumers cease blocking on draft age. Notice only reports actual storage failure. Automatic save/restore and authoritative validation unchanged. Implementation and tests by mac_map_pinch, reviewed by supervisor.
+
+## September 18 — Empire and combat identity delivery
+Integrated public empire overview/navigation, saved presentation settings, contextual faction badges, original SVG faction ship families throughout screens, full-screen lazy Three.js combat effects, and actual-edge connection display. Explicit inspection mode prevents empire navigation from modifying saved builds. Fixed desktop inspector width and mobile roster direction found during real screenshot review. No engine, Convex schema, RNG or authoritative save changes.

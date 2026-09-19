@@ -10,6 +10,8 @@ import { StatIcon, type StatIconName } from "./ShipPartStats";
 import "./battleOverview.css";
 import type { GameEvent } from "../../shared/eclipse/types";
 import { useState } from "react";
+import DiceRoll3D from "./DiceRoll3D";
+import { useDice3dEnabled } from "./presentationSettings";
 const names: Record<Ship["type"], string> = {
   interceptor: "Interceptor",
   cruiser: "Cruiser",
@@ -41,9 +43,12 @@ export function CombatPlayback({ volleys, view, knownShips = [], fast = false }:
   fast?: boolean;
 }) {
   const [skipMotion, setSkipMotion] = useState(false);
+  const [dice3dEnabled] = useDice3dEnabled();
   if (!volleys.length) return null;
   const destroyedCount = new Set(volleys.flatMap(volley => volley.targets.filter(target => target.destroyed).map(target => target.id))).size;
   const isFast = fast || skipMotion;
+  const opponentVolleys = volleys.filter(volley => !view || volley.attacker !== view.viewerSeatId);
+  const opponentRolls = opponentVolleys.flatMap(volley => volley.dice.map(die => ({ id: die.id, face: die.face, color: die.weaponColor ?? "#bac0ce" })));
   return (
     <section className={`dg-combat-playback${isFast ? " is-fast" : ""}`} aria-label="Recent combat impacts">
       <header>
@@ -53,6 +58,7 @@ export function CombatPlayback({ volleys, view, knownShips = [], fast = false }:
         </div>
         <button type="button" onClick={() => setSkipMotion(true)} disabled={isFast}>{isFast ? "Fast playback on" : "Skip volley animation"}</button>
       </header>
+      <DiceRoll3D rolls={opponentRolls} rollId={JSON.stringify(opponentVolleys.map(volley => [volley.battleId, volley.dice.map(die => [die.id, die.face])]))} enabled={dice3dEnabled && !isFast && opponentRolls.length > 0}>
       {volleys.map((volley, index) => (
         <article className="dg-playback-volley" key={`${volley.battleId}:${volley.dice.map(die => die.id).join(",")}:${index}`}>
           <div className="dg-result-dice">{volley.dice.map(die => <span key={die.id} className={`is-${die.weaponColor ?? "unknown"}`} aria-label={`Roll ${die.face}, ${die.damage} damage`}><b>{die.face}</b><small>{die.weaponColor && die.weaponKind ? `${die.weaponColor} ${die.weaponKind}` : "weapon unavailable"}</small></span>)}</div>
@@ -68,7 +74,7 @@ export function CombatPlayback({ volleys, view, knownShips = [], fast = false }:
             return <li key={target.id}>
               <div className={`dg-impact-card is-${outcome}`} role="group" aria-label={`${title} ${outcome}`} style={faction ? { borderLeftColor: colors[faction.color] } : undefined}>
                 {type && <span className="dg-impact-ship-art">
-                  {type === "ancient" || type === "guardian" || type === "gcds" ? <NeutralShipSilhouette type={type} /> : <ShipSilhouette type={type} />}
+                  {type === "ancient" || type === "guardian" || type === "gcds" ? <NeutralShipSilhouette type={type} /> : <ShipSilhouette type={type} faction={seat?.faction} />}
                   {target.destroyed && <svg className="dg-impact-destruction-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M16 16l32 32M48 16L16 48" /></svg>}
                 </span>}
                 <span className="dg-impact-copy"><strong>{title}</strong>{ownerLabel && <small>{ownerLabel}</small>}{!type && <small>{target.id}</small>}<span>{target.hpBefore} → {target.hpAfter} HP{target.excess > 0 && <small> · {target.excess} excess</small>}</span></span>
@@ -78,6 +84,7 @@ export function CombatPlayback({ volleys, view, knownShips = [], fast = false }:
           })}</ul>
         </article>
       ))}
+      </DiceRoll3D>
     </section>
   );
 }
@@ -235,7 +242,7 @@ export default function BattleOverview({ view, recentVolleys = [], knownShips = 
                         type === "gcds" ? (
                           <NeutralShipSilhouette type={type} />
                         ) : (
-                          <ShipSilhouette type={type} />
+                          <ShipSilhouette type={type} faction={seat?.faction} />
                         )}
                       </div>
                       <div className="dg-battle-class-info">

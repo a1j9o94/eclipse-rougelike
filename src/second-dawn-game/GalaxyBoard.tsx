@@ -1,3 +1,4 @@
+import {displayedWormholes} from './visibleConnections';
 import type {BuildOrderItem} from './buildPlanning';
 import type {MovementRoutePreview} from './movementPlanning';
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -5,7 +6,7 @@ import type { PlayerView, Ship } from "../../shared/eclipse/types";
 import { BASE_FACTIONS } from "../../shared/eclipse/catalog";
 import { sectorDefinition } from "../../shared/eclipse/sectors";
 import { connectionBetween } from "../../shared/eclipse/geometry";
-import { mapSector } from "../../shared/eclipse/rulesState";
+import { mapSector,movementAbilities } from "../../shared/eclipse/rulesState";
 import type { CommandCandidate } from "./SecondDawnBoard";
 import { galaxyPoint, TILE_RADIUS, wormholePoint } from "./galaxyGeometry";
 import "./galaxy.css";
@@ -17,6 +18,7 @@ import type {GalaxyActivity} from './galaxyActivity';
 import {useGalaxyGestures} from './useGalaxyGestures';
 import type {GalaxyCamera} from './galaxyGestures';
 interface Props {
+  showPrintedWormholes?:boolean;
   plannedBuilds?:readonly BuildOrderItem[];
   plannedMoves?:readonly MovementRoutePreview[];
   onSelectBuildItem?:(id:string)=>void;
@@ -64,6 +66,7 @@ const hex = Array.from(
 ).join(" ");
 export default function GalaxyBoard({
   view,
+  showPrintedWormholes=false,
   plannedBuilds=[],plannedMoves=[],onSelectBuildItem,onInspectFleet,
   candidates,
   selected,
@@ -78,6 +81,8 @@ export default function GalaxyBoard({
   onSelect,
   onExplore,
 }: Props) {
+  const viewer=view.seats.find(seat=>seat.id===view.viewerSeatId);
+  const hasGenerator=viewer?movementAbilities(viewer).wormholeGenerator:false;
   const [smallScreen,setSmallScreen]=useState(()=>window.matchMedia?.('(max-width: 760px)').matches??false);
   useEffect(()=>{const query=window.matchMedia?.('(max-width: 760px)');if(!query)return;const changed=()=>setSmallScreen(query.matches);query.addEventListener('change',changed);return()=>query.removeEventListener('change',changed);},[]);
   const compact=compactProp??smallScreen;
@@ -191,28 +196,24 @@ export default function GalaxyBoard({
         >
           {view.sectors.flatMap((from, i) =>
             view.sectors.slice(i + 1).map((to) => {
-              if (
-                connectionBetween(
-                  { ...mapSector(from), warpPortal: false },
-                  { ...mapSector(to), warpPortal: false },
-                ) !== "wormhole"
-              )
-                return null;
+              const connection=connectionBetween({...mapSector(from),warpPortal:false},{...mapSector(to),warpPortal:false},hasGenerator);
+              if(connection!=='wormhole'&&connection!=='generator')return null;
               const a = galaxyPoint(from.position),
                 b = galaxyPoint(to.position);
               return (
                 <line
                   key={`${from.id}-${to.id}`}
-                  data-connection="wormhole"
+                  data-connection={connection}
                   x1={a.x}
                   y1={a.y}
                   x2={b.x}
                   y2={b.y}
-                  stroke="#e8c881"
+                  stroke={connection==='generator'?'#8cd8e5':'#e8c881'}
+                  strokeDasharray={connection==='generator'?'3 2':undefined}
                   strokeWidth="7"
                 >
                   <title>
-                    Paired wormholes: sector {from.tileId} to {to.tileId}
+                    {connection==='generator'?'Your Wormhole Generator':'Paired wormholes'}: sector {from.tileId} to {to.tileId}
                   </title>
                 </line>
               );
@@ -277,22 +278,22 @@ export default function GalaxyBoard({
                 {legalTargetIds.includes(s.id) && (
                   <polygon className="dg-move-target-ring" points={hex} transform="scale(.88)" fill="none" stroke="#a1ebee" strokeWidth="2.5" strokeDasharray="6 4" pointerEvents="none"><title>{targetLabel}</title></polygon>
                 )}
-                {definition.wormholes.map((edge) => {
-                  const p = wormholePoint(edge, s.rotation);
+                {displayedWormholes(view,s,showPrintedWormholes).map(({edge,kind}) => {
+                  const p = wormholePoint(edge, 0);
                   return (
                     <circle
                       key={edge}
-                      data-wormhole-edge={(edge + s.rotation) % 6}
+                      data-wormhole-edge={edge}
+                      data-wormhole-kind={kind}
                       cx={p.x}
                       cy={p.y}
                       r="5"
                       fill="#11222f"
-                      stroke="#e8c881"
+                      stroke={kind==='generator'?'#8cd8e5':'#e8c881'}
                       strokeWidth="2"
                     >
                       <title>
-                        Wormhole opening; movement needs a matching opening
-                        across the edge, or Wormhole Generator.
+                        {kind==='printed'?'Printed opening; align with a neighbor when placing.':kind==='generator'?'Connection enabled by your Wormhole Generator.':'Connected wormholes.'}
                       </title>
                     </circle>
                   );
@@ -340,7 +341,7 @@ export default function GalaxyBoard({
                     <rect x="-20" y="-9" width="40" height="18" rx="3" fill="#08121b" stroke={info.color} strokeWidth=".8"/>
                     <rect x="-20" y="-9" width="40" height="18" rx="3" fill={info.color} opacity=".13"/>
                     <svg x="-20" y="-9" width="22" height="18" viewBox="0 0 24 24">
-                      {group.type==='ancient'||group.type==='guardian'||group.type==='gcds'?<NeutralShipSilhouette type={group.type}/>:<ShipSilhouette type={group.type}/>}
+                      {group.type==='ancient'||group.type==='guardian'||group.type==='gcds'?<NeutralShipSilhouette type={group.type}/>:<ShipSilhouette type={group.type} faction={view.seats.find(seat=>seat.id===group.owner)?.faction}/>}
                     </svg>
                     <text x="9" y="3.5" textAnchor="middle" fill={info.color} className="dg-fleet-label">×{group.count}</text>
                     <title>{info.name}: {group.count} {name}{group.count>1?'s':''}. Select sector to inspect fleet.</title>
@@ -528,7 +529,7 @@ export default function GalaxyBoard({
       <div className="dg-map-key">
         <span>
           <i className="dg-key-wormhole" />
-          Paired wormholes
+          {hasGenerator?'Connections · dashed: your Generator':'Connected wormholes'}
         </span>
         <span>
           <i className="dg-key-portal" />

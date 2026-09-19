@@ -1,0 +1,26 @@
+import { chromium } from 'playwright';
+import { mkdir } from 'node:fs/promises';
+const site = process.env.SITE_URL ?? 'http://127.0.0.1:5173';
+const output = 'coding_agents/visuals/faction-ships';
+await mkdir(output, { recursive: true });
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 1200, height: 1480 }, deviceScaleFactor: 1 });
+await page.goto(site);
+await page.evaluate(async () => {
+  const React = await import('/node_modules/.vite/deps/react.js');
+  const ReactDOM = await import('/node_modules/.vite/deps/react-dom_client.js');
+  const { createRoot } = ReactDOM.default ?? ReactDOM;
+  const { default: ShipSilhouette } = await import('/src/second-dawn-game/ShipSilhouette.tsx');
+  const { BASE_FACTIONS } = await import('/shared/eclipse/catalog.ts');
+  const root = document.createElement('div'); document.body.replaceChildren(root);
+  const style = document.createElement('style');
+  style.textContent = 'body{margin:0;background:#080f17;color:#e0e7eb;font:15px system-ui}.ship-review{padding:28px;max-width:1200px;margin:auto}.ship-review h1{font:30px Georgia;margin:0 0 9px;color:#e6cf91}.ship-review p{color:#a4bac9;margin:0 0 22px}.ship-review-row{display:grid;grid-template-columns:178px repeat(4,1fr);gap:12px;align-items:center;margin-bottom:14px}.ship-review-row h2{font:20px Georgia;line-height:1.3}.ship-review-row small{display:block;color:#92a7b9;font:12px system-ui;margin-top:8px}.ship-review-cell{background:#121e2a;border:1px solid #3c4d5c;border-radius:8px;padding:10px;height:170px;display:grid;grid-template-columns:1fr 40px;align-items:center;text-align:center}.ship-review-cell>span{grid-column:1/-1;font-size:12px;color:#c7d5df}.ship-review-cell>.dg-ship-silhouette{height:130px;width:130px;max-width:100%}.ship-review-cell>.tiny{height:34px;width:34px}.ship-review-cell>.tiny .dg-ship-silhouette{width:34px;height:34px}.tiny .dg-ship-hull{fill:#c6d4db;stroke:none}.tiny .dg-ship-radar,.tiny .dg-ship-axis,.tiny .dg-ship-plating,.tiny .dg-ship-cockpit,.tiny .dg-ship-engine{display:none}';
+  document.head.append(style);
+  const h = (React.default ?? React).createElement;
+  const descriptions = { eridani:'Swept attack wedges', hydran:'Twin fork hulls', planta:'Living petal forms', draco:'Hooked crescent wings', mechanema:'Modular machinery', orion:'Armored axial spines' };
+  createRoot(root).render(h('main', { className:'ship-review' }, h('h1',null,'Six fleets · twenty-four silhouettes'),h('p',null,'Original faction designs. Large card detail and 34px fleet markers. Paired Terrans use the same physical color family.'), ...BASE_FACTIONS.filter(f=>f.species==='alien').map(faction=>h('section',{className:'ship-review-row',key:faction.id},h('h2',null,faction.name,h('small',null,descriptions[faction.id])),...['interceptor','cruiser','dreadnought','starbase'].map(type=>h('div',{className:'ship-review-cell',key:type},h('span',null,type),h(ShipSilhouette,{type,faction:faction.id}),h('div',{className:'tiny'},h(ShipSilhouette,{type,faction:faction.id}))))))));
+});
+await page.waitForSelector('[data-ship-family="orion"]');
+await page.screenshot({ path: `${output}/all-families.png`, fullPage: true });
+console.log(`${output}/all-families.png`);
+await browser.close();

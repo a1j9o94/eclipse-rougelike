@@ -1,3 +1,4 @@
+import type {FactionId} from '../../shared/eclipse/catalog';
 import { useState } from 'react';
 import { DISCOVERIES, type DiscoveryEffect } from '../../shared/eclipse/discoveries';
 import { ancientTechnologyChoices } from '../../shared/eclipse/technologies';
@@ -36,20 +37,20 @@ function rewardAction(effect: DiscoveryEffect): string {
     case 'place-warp-portal': return 'Place Warp Portal';
   }
 }
-function RewardStats({ effect }: { effect: DiscoveryEffect }) {
+function RewardStats({ effect,faction }: { effect: DiscoveryEffect;faction?:FactionId }) {
   if (effect.kind === 'ancient-ship-part') return <ShipPartStats partId={effect.part}/>;
   const details = explanation(effect);
   return <div className="dg-part-stats">
     {effect.kind === 'resources' && (['money','science','materials'] as const).filter(resource=>effect.resources[resource]>0).map(resource => <ResourceReward key={resource} resource={resource} amount={effect.resources[resource]}/>)}
     {effect.kind === 'free-technology' && <StatBadge icon="discovery" value="1" label="free technology" explanation={details}/>}
-    {effect.kind === 'place-unbuilt-ship' && <PieceReward piece="cruiser" explanation={details}/>}
+    {effect.kind === 'place-unbuilt-ship' && <PieceReward piece="cruiser" explanation={details} faction={faction}/>}
     {effect.kind === 'place-structure' && <><PieceReward piece={effect.structure} explanation={details}/>{effect.structure === 'monolith' ? <StatBadge icon="discovery" value="3 VP" label="final controller" explanation={details}/> : <ResourceReward resource="materials" amount={effect.bonusMaterials}/>}</>}
     {effect.kind === 'place-warp-portal' && <><StatBadge icon="portal" value="+1" label="warp portal" explanation={details}/><StatBadge icon="discovery" value="2 VP" label="final controller" explanation={details}/></>}
   </div>;
 }
-function PieceReward({ piece, explanation: details }: { piece: 'cruiser'|'orbital'|'monolith'; explanation: string }) {
+function PieceReward({ piece, explanation: details,faction }: { piece: 'cruiser'|'orbital'|'monolith'; explanation: string;faction?:FactionId }) {
   return <span role="img" className="dg-stat-badge dg-discovery-piece" aria-label={`+1 ${piece}. ${details}`} title={details}>
-    {piece === 'cruiser' ? <span aria-hidden="true"><ShipSilhouette type="cruiser"/></span> : <svg viewBox="0 0 32 32" className="dg-stat-icon" aria-hidden="true">{piece === 'orbital' ? <><circle cx="16" cy="16" r="6"/><ellipse cx="16" cy="16" rx="14" ry="5" transform="rotate(-30 16 16)"/></> : <><path d="M10 28V6L21 2v26Z"/><path d="m10 6 11-4M17 5v23"/></>}</svg>}
+    {piece === 'cruiser' ? <span aria-hidden="true"><ShipSilhouette type="cruiser" faction={faction}/></span> : <svg viewBox="0 0 32 32" className="dg-stat-icon" aria-hidden="true">{piece === 'orbital' ? <><circle cx="16" cy="16" r="6"/><ellipse cx="16" cy="16" rx="14" ry="5" transform="rotate(-30 16 16)"/></> : <><path d="M10 28V6L21 2v26Z"/><path d="m10 6 11-4M17 5v23"/></>}</svg>}
     <strong>+1</strong><small>{piece}</small>
   </span>;
 }
@@ -72,7 +73,7 @@ export default function DiscoveryDecision({ decision, view, disabled, onSubmit }
     <div className="dg-discovery-alternatives" role="radiogroup" aria-label="Discovery reward">
       <section className={`dg-discovery-reward ${option === 'use' ? 'dg-discovery-selected' : ''}`}>
         <label className="dg-discovery-side"><input type="radio" name={`discovery-${decision.id}`} checked={option==='use'} disabled={disabled || !useAvailable} onChange={()=>setOption('use')}/>Use {discovery.name}</label>
-        <RewardStats effect={discovery.effect}/>
+        <RewardStats effect={discovery.effect} faction={seat?.faction}/>
         <p>{explanation(discovery.effect)}</p>
         {!useAvailable && <p className="dg-danger">{noTechnology ? 'No eligible lowest-cost technology remains. Keep this tile for 2 VP.' : 'The reward cannot be used in this position.'}</p>}
         {option==='use'&&<button className="sd-primary" disabled={disabled||!useAvailable} onClick={()=>onSubmit({type:'resolve',decisionId:decision.id,choice:{kind:'discovery',option:'use'}})}>{rewardAction(discovery.effect)}</button>}
