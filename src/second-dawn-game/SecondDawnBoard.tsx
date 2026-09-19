@@ -749,7 +749,7 @@ function SecondDawnBoardContent({
                   if(!moveSource||(!moveTargets.includes(id)&&view.ships.some(ship=>projectedShipSector(ship.id,ship.sectorId)===id&&ship.owner===own.id))){setMoveSource(id);setMoveTarget(null);}
                   else setMoveTarget(id);
                 } else if(action === "build" && view.sectors.some(s=>s.id===id&&s.owner===own.id)) setBuildOpen(true);
-              }} onExplore={candidate => { setInspectorOpen(true); if(compact){setMobileSheet('expanded');setMobileActionMode(true);setMobileActionsOpen(false);} setMoveOpen(false);setMoveTargets([]);setHistoryOpen(false); setAction("explore"); setDraft(candidate); setActionFocus(n=>n+1); }} />
+              }} onExplore={candidate => { setSelected(null);setReviewAi(false);setAiDismissed(true); setInspectorOpen(true); if(compact){setMobileSheet('expanded');setMobileActionMode(true);setMobileActionsOpen(false);} setMoveOpen(false);setMoveTargets([]);setHistoryOpen(false); setAction("explore"); setDraft(candidate); setActionFocus(n=>n+1); }} />
               {buildResult&&<p className="dg-plan-result" role="status">{buildResult}</p>}
               {compact&&buildOpen&&!inspectingGalaxy&&buildPlanner}
             </>
@@ -795,6 +795,8 @@ function SecondDawnBoardContent({
             </>
           ) : action === 'finish-upkeep' && view.phase === 'upkeep' ? (
             <><h2>Round {view.round} upkeep</h2><p>Review production and your civilization’s upkeep before continuing. You can convert resources first if needed.</p><button type="button" onClick={browseTechnologies}>Browse technologies</button>{canColonizeAtUpkeep&&<><p>You can still populate an open planet before collecting income.</p><button type="button" disabled={blocked} onClick={openUpkeepColonization}>Colonize</button></>}</>
+          ) : action === 'explore' && draft?.command.type === 'explore' ? (
+            <><h2>Explore new sector</h2><p>Confirm this frontier to draw a sector, then choose its orientation.</p></>
           ) : sector ? (
             <>
               <h2>Sector {sector.tileId}</h2>
