@@ -23,10 +23,12 @@ export interface GameSoundFeedback {submitted(command:GameCommand):void;rejected
 export function useGameSoundFeedback(options:SoundFeedbackOptions):GameSoundFeedback{
  const diceScope=useDiceRollScope(),[previewScope]=useState(()=>`preview-${previewInstance++}`);
  const scope=diceScope.startsWith('preview:')?previewScope:diceScope,latest=useRef(options);latest.current=options;
+ const trackedScope=useRef(scope);
  const mountedRevision=useRef(options.revision),lastConnected=useRef(options.connected),aiBoundary=useRef(options.revision);
  const pending=useRef<{command:GameCommand;revision:number;status:string}|null>(null),suppressClick=useRef(false);
  useEffect(()=>{const hide=()=>{if(document.hidden){aiBoundary.current=latest.current.revision;pending.current=null;stopCosmeticCues();}};document.addEventListener('visibilitychange',hide);return()=>{document.removeEventListener('visibilitychange',hide);stopCosmeticCues();};},[]);
  useEffect(()=>{
+  if(trackedScope.current!==scope){trackedScope.current=scope;mountedRevision.current=options.revision;aiBoundary.current=options.revision;pending.current=null;stopCosmeticCues();}
   if(!options.connected||!lastConnected.current){pending.current=null;aiBoundary.current=options.revision;}
   lastConnected.current=options.connected;
   const receipt=options.receipt,request=pending.current;
