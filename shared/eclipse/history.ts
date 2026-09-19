@@ -23,6 +23,7 @@ export interface HistoryPublicContext {
 
 export interface PublicHistoryEntry {
   rollbackAvailable?: boolean;
+  rollbackRecoverable?:boolean;
   rollbackUnavailableReason?: string;
   supersededAtRevision?: number;
   revision: number;

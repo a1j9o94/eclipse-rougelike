@@ -46,15 +46,15 @@ The four additions follow the faction sheets and explicit trade amendments in th
 
 Game Settings provides independent dice sounds, game effects, and ambient music controls. New effects and music start off; enable them and adjust their volumes there. Pinch over the galaxy to zoom and use two-finger scrolling to pan. History scrolls within its own panel.
 
-Turn and upkeep notices draw attention when input is needed. Resource exchange is labeled **Convert**; reputation capacity choices remain within diplomacy rather than the main action menu.
+Centered turn and upkeep dialogs take focus when input is needed; acknowledge them to continue. Resource exchange is labeled **Convert**; reputation capacity choices remain within diplomacy rather than the main action menu.
 
 ## Game recovery and combat guidance
 
 Open **Game menu** to save and return home, quit a solo run, or resign from multiplayer. Resignation permanently hands your civilization to AI; ended participation moves to Past games without inventing a final score.
 
-**Settings → History & undo** lets the room host choose an action and restore the game before it. Every other active human must agree; AI agrees automatically and solo undo is immediate. Voting pauses the game and survives reloads. Undo preserves a visible audit, restores saved randomness and private choices, and cannot cross a resignation. Actions recorded before checkpoint support are unavailable. It cannot erase information players have already seen.
+**Settings → History & undo** lets the room host choose an action and restore the game before it. Every other active human must agree; AI agrees automatically and solo undo is immediate. Voting pauses the game and survives reloads. Undo restores saved randomness and private choices, removes the selected action and everything after it from playable History, and cannot cross a resignation. History has no round limit; use **Beginning of game** to reach the earliest remaining actions. Older checkpoints can be recovered only when a complete replay verifies against a saved game state. It cannot erase information players have already seen.
 
-Enable **Show estimated combat odds during movement** in new-game or room setup for optional public-fleet estimates. They are approximate and omit voluntary retreats and future reinforcements. Combat retains manual Roll/Retreat choices and now shows firing ships, impacts and wrecks. Influence selects a destination first; withdrawal is a separate explicit choice. Successful actions show brief saved-result notifications.
+Enable **Show estimated combat odds during movement** in new-game or room setup for optional public-fleet estimates. They are approximate and omit voluntary retreats and future reinforcements. Combat retains manual Roll/Retreat choices and now shows firing ships, impacts and wrecks. Influence selects a destination first; withdrawal is a separate explicit choice. Accepted actions save automatically without a confirmation popup.
 
 ## Community faction research and credits
 

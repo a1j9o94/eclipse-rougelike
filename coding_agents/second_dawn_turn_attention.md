@@ -1,8 +1,8 @@
 # Turn and upkeep attention notice — September 19, 2026
 
-Outcome: a player gets a clear, nonblocking in-game cue when their action turn or upkeep is ready, with an explicit route back to the relevant controls.
+Outcome: a player explicitly acknowledges a centered turn or upkeep dialog before returning to play, with a clear route to the relevant controls.
 
-Acceptance: initial human-owned load, observed AI-to-human handoff, a fresh same-owner actionTurnSerial, hidden-to-visible return and new match scope are handled. Ordinary revisions do not recreate a dismissed notice. The notice disappears immediately when ownership/phase changes, while disconnected, or behind deliberate decisions/other active overlays. It never steals focus, submits a command, requests browser notification permissions, plays audio or replaces the persistent header status.
+Acceptance: initial human-owned load, observed AI-to-human handoff, a fresh same-owner actionTurnSerial, hidden-to-visible return and new match scope are handled. Ordinary revisions do not recreate an acknowledged notice. The modal disappears immediately when ownership/phase changes, while disconnected, or behind deliberate decisions/other active overlays. It focuses and traps keyboard interaction inside the dialog, blocks pointer input to the underlying game, and ignores backdrop clicks. View turn / Review upkeep, explicit close, or Escape acknowledge the notice. No command is submitted by the dialog.
 
 ## Decision log
 
@@ -16,9 +16,17 @@ Both CTA callbacks are navigation only. In particular, onReviewUpkeep must open 
 
 Import default TurnAttentionNotice from src/second-dawn-game/TurnAttentionNotice.tsx. Supply view, matchScope (match ID or preview identity), connected, suppressed, onOpenTurn and onReviewUpkeep. Suppress for settings/history/recap/inspection overlays and any other deliberate interaction that should own attention. The component handles public pending decisions and page visibility itself. Keep it mounted so dismissals survive revisions.
 
-Styling is fixed at the lower right, below higher modal layers, with a mobile footer offset, visible keyboard focus and 44px controls. There is no backdrop, forced focus or timer. Removing the component rolls back this presentation feature without changing rules.
+Styling is centered on desktop and mobile, with a dimmed backdrop, faction emblem and name, round indicator, one heading, and a prominent primary control. The existing GameDialog provides the modal boundary; optional props preserve existing behavior for its other callers. No timer dismisses it. Removing the component rolls back this presentation feature without changing rules.
 
 ## Validation
+
+Current modal revision: tests were changed first and failed against the prior nonblocking toast. Thirteen notice tests plus the integrated upkeep test and three rollback-dialog tests now pass. Existing boundary, suppression, visibility, connection, ownership and acknowledgment cases remain covered; focus trapping, focus restoration, explicit dismissal and ignored backdrop clicks are added. Review upkeep still makes no submission; Finish upkeep explicitly submits.
+
+The actual SecondDawnBoard was reviewed in Chromium and WebKit at 1440×900 and 390×844 using [the repeatable browser check](../tools/second-dawn-turn-attention-modal-review.mjs). All four cases passed centered geometry, repeated keyboard Tab containment, real pointer clicks intercepted by the backdrop, no backdrop dismissal, navigation-only upkeep review, explicit upkeep payment, no horizontal overflow and no page errors. [Results](second_dawn_turn_attention_modal_review/results.json), [desktop turn](second_dawn_turn_attention_modal_review/chromium-1440-turn.png), [mobile upkeep](second_dawn_turn_attention_modal_review/webkit-390-upkeep.png). Rendered desktop and mobile screenshots were inspected for legibility, spacing, focus visibility and clipping.
+
+Browser review found WebKit's native Tab preference could skip buttons between the first and last focus boundary. GameDialog now explicitly cycles every Tab/Shift+Tab within its controls, avoiding that platform-dependent escape. The browser harness also closes the deliberate mobile action drawer before simulating upkeep, preserving the product's intentional suppression while a player is using another screen. These are automated local fixture reviews, not human playtest evidence.
+
+### Earlier nonblocking notice evidence (superseded presentation)
 
 - Wrote behavior tests first; initial run failed because the component did not exist. All 11 tests in src/__tests__/second_dawn_turn_attention.spec.tsx pass: boundaries, revision dedupe, match scope, visibility/current owner, decision suppression, disconnected/finished/eliminated exclusions, explicit callbacks and focus preservation.
 - npm run lint, TypeScript build and npm run build passed. Production build retains the existing large-chunk advisory.

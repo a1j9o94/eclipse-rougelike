@@ -46,7 +46,7 @@ describe('Consensual history rollback', () => {
     expect(JSON.parse(restored!.snapshotJson)).toEqual({ ...JSON.parse(drawn!.snapshotJson), revision: restored!.revision });
     expect((await t.query(api.eclipseMatches.getMatchView, { ...host, matchId }))!.pendingDecision).toEqual(pendingView.pendingDecision);
     const history = await t.query(api.eclipseMatches.getMatchHistory, { ...host, matchId });
-    expect(history!.entries.map(entry => entry.revision)).toEqual(Array.from({ length: restored!.revision }, (_, index) => restored!.revision - index));
+    expect(history!.entries.map(entry => entry.revision)).toEqual([restored!.revision, pendingView.revision, 3]);
     expect(JSON.stringify(history)).not.toContain('preSnapshotJson');
   });
 
@@ -81,7 +81,7 @@ describe('Consensual history rollback', () => {
     expect((await solo.t.query(internal.eclipseMatches.getAiWork, { matchId: solo.matchId, expectedRevision: 1, leaseToken: job!.leaseToken! }))).toBeNull();
   });
 
-  it('can reopen scoring, but cannot cross a resignation or target a superseded action', async () => {
+  it('can reopen scoring but cannot revisit discarded history or cross resignation boundaries', async () => {
     const solo = await game();
     await solo.t.run(async ctx => {
       const row = (await ctx.db.get(solo.matchId))!;
@@ -94,7 +94,7 @@ describe('Consensual history rollback', () => {
     const restored = await solo.t.mutation(api.eclipseRollback.requestRollback, { ...solo.host, matchId: solo.matchId, expectedRevision: 1, targetRevision: 1 });
     expect((await solo.t.query(api.eclipseMatches.getMatchView, { ...solo.host, matchId: solo.matchId }))!.phase).toBe('action');
     expect((await solo.t.query(api.eclipseRooms.getRoom, { ...solo.host, roomToken: solo.roomToken }))!.status).toBe('playing');
-    await expect(solo.t.mutation(api.eclipseRollback.requestRollback, { ...solo.host, matchId: solo.matchId, expectedRevision: restored.revision, targetRevision: 1 })).rejects.toThrow('superseded');
+    await expect(solo.t.mutation(api.eclipseRollback.requestRollback, { ...solo.host, matchId: solo.matchId, expectedRevision: restored.revision, targetRevision: 1 })).rejects.toThrow('discarded');
 
     const multi = await game(true);
     const resigned = await multi.t.mutation(api.eclipseMatches.resignMatch, { ...multi.guest, matchId: multi.matchId, commandId: 'resign', expectedRevision: 1 });
@@ -139,7 +139,7 @@ describe('Consensual history rollback', () => {
     expect(undone.lastResolution?.status).toBe('applied');
   });
 
-  it('restores a solo checkpoint, keeps revisions monotonic and retains a superseded audit', async () => {
+  it('restores a solo checkpoint, keeps revisions monotonic and removes undone actions', async () => {
     const { t, host, matchId, before } = await game();
     const result = await t.mutation(api.eclipseRollback.requestRollback, { ...host, matchId, targetRevision: 1, expectedRevision: 1 });
     expect(result.pending).toBeNull();
@@ -149,7 +149,7 @@ describe('Consensual history rollback', () => {
     expect(restored).toEqual({ ...JSON.parse(before), revision: match!.revision });
     expect(match!.revision).toBeGreaterThan(1);
     const history = await t.query(api.eclipseMatches.getMatchHistory, { ...host, matchId });
-    expect(history?.entries.find(entry => entry.revision === 1)).toMatchObject({ rollbackAvailable: false, supersededAtRevision: match!.revision });
+    expect(history?.entries.find(entry => entry.revision === 1)).toBeUndefined();
     const duplicate = await t.mutation(api.eclipseMatches.submitCommand, { ...host, matchId, commandId: 'first', expectedRevision: 0, command: { type: 'pass' } });
     expect(duplicate).toMatchObject({ ok: true, duplicate: true, receipt: { revision: 1 } });
     const stale = await t.mutation(api.eclipseMatches.submitCommand, { ...host, matchId, commandId: 'stale', expectedRevision: 1, command: { type: 'pass' } });
@@ -225,4 +225,54 @@ describe('Consensual history rollback', () => {
     expect(history?.entries[0].rollbackUnavailableReason).toMatch(/checkpoint/);
     await expect(t.mutation(api.eclipseRollback.requestRollback, { ...host, matchId, targetRevision: 1, expectedRevision: 1 })).rejects.toThrow('checkpoint');
   });
+});
+it('reaches the original setup across multiple pages without a recent-action cutoff',async()=>{
+ const {t,host,matchId,before}=await game();
+ for(let revision=1;revision<125;revision++)expect((await t.mutation(api.eclipseMatches.submitCommand,{...host,matchId,commandId:`history-${revision}`,expectedRevision:revision,command:{type:'set-auto-pass',enabled:revision%2===0}})).ok).toBe(true);
+ const newest=await t.query(api.eclipseMatches.getMatchHistory,{...host,matchId});expect(newest!.entries).toHaveLength(40);expect(newest!.entries[0].revision).toBe(125);
+ const beginning=await t.query(api.eclipseMatches.getMatchHistory,{...host,matchId,fromStart:true});expect(beginning!.entries).toHaveLength(40);expect(beginning!.entries.at(-1)).toMatchObject({revision:1,rollbackAvailable:true});expect(JSON.stringify(beginning)).not.toContain('preSnapshotJson');
+ let cursor=newest!.nextBeforeRevision;const all=[...newest!.entries];while(cursor!==null){const next=(await t.query(api.eclipseMatches.getMatchHistory,{...host,matchId,beforeRevision:cursor}))!;all.push(...next.entries);cursor=next.nextBeforeRevision;}
+ expect(all.map(entry=>entry.revision)).toEqual(Array.from({length:125},(_,i)=>125-i));
+ await t.mutation(api.eclipseRollback.requestRollback,{...host,matchId,targetRevision:1,expectedRevision:125});const row=(await t.run(ctx=>ctx.db.get(matchId)))!;expect(JSON.parse(row.snapshotJson)).toEqual({...JSON.parse(before),revision:row.revision});
+});
+
+it('permanently removes the undone future from active history while keeping duplicate receipts safe',async()=>{
+ const t=convexTest(schema,modules),host=await t.action(api.eclipseGuests.createGuestSession,{}),{matchId}=await t.mutation(api.eclipseMatches.createMatch,{...host,aiCount:1});
+ for(let revision=0;revision<125;revision++)expect((await t.mutation(api.eclipseMatches.submitCommand,{...host,matchId,commandId:`timeline-${revision}`,expectedRevision:revision,command:{type:'set-auto-pass',enabled:revision%2===0}})).ok).toBe(true);
+ const restored=await t.mutation(api.eclipseRollback.requestRollback,{...host,matchId,targetRevision:60,expectedRevision:125});
+ expect(restored.revision).toBe(127);
+ const newest=(await t.query(api.eclipseMatches.getMatchHistory,{...host,matchId,limit:10}))!;
+ expect(newest.entries.map(entry=>entry.revision)).toEqual([127,59,58,57,56,55,54,53,52,51]);
+ const all=[...newest.entries];let cursor=newest.nextBeforeRevision;
+ while(cursor!==null){const next=(await t.query(api.eclipseMatches.getMatchHistory,{...host,matchId,beforeRevision:cursor,limit:10}))!;all.push(...next.entries);cursor=next.nextBeforeRevision;}
+ expect(all.map(entry=>entry.revision)).toEqual([127,...Array.from({length:59},(_,i)=>59-i)]);
+ const beginning=(await t.query(api.eclipseMatches.getMatchHistory,{...host,matchId,fromStart:true,limit:10}))!;
+ expect(beginning.entries.map(entry=>entry.revision)).toEqual([10,9,8,7,6,5,4,3,2,1]);
+ expect((await t.query(api.eclipseMatches.getMatchHistory,{...host,matchId,beforeRevision:120,limit:5}))!.entries.map(entry=>entry.revision)).toEqual([59,58,57,56,55]);
+ await expect(t.mutation(api.eclipseRollback.requestRollback,{...host,matchId,targetRevision:60,expectedRevision:127})).rejects.toThrow(/discarded/);
+ const duplicate=await t.mutation(api.eclipseMatches.submitCommand,{...host,matchId,commandId:'timeline-59',expectedRevision:59,command:{type:'set-auto-pass',enabled:false}});
+ expect(duplicate).toMatchObject({ok:true,duplicate:true,receipt:{revision:60}});
+ expect((await t.query(api.eclipseMatches.getMatchView,{...host,matchId}))!.revision).toBe(127);
+ for(let revision=127;revision<137;revision++)expect((await t.mutation(api.eclipseMatches.submitCommand,{...host,matchId,commandId:`new-timeline-${revision}`,expectedRevision:revision,command:{type:'set-auto-pass',enabled:revision%2===0}})).ok).toBe(true);
+ expect((await t.query(api.eclipseMatches.getMatchHistory,{...host,matchId,limit:10}))!.entries.map(entry=>entry.revision)).toEqual([137,136,135,134,133,132,131,130,129,128]);
+ await t.mutation(api.eclipseRollback.requestRollback,{...host,matchId,targetRevision:10,expectedRevision:137});
+ expect((await t.query(api.eclipseMatches.getMatchHistory,{...host,matchId}))!.entries.map(entry=>entry.revision)).toEqual([139,9,8,7,6,5,4,3,2,1]);
+ await expect(t.mutation(api.eclipseRollback.requestRollback,{...host,matchId,targetRevision:128,expectedRevision:139})).rejects.toThrow(/discarded/);
+});
+
+it('pages sparse retained control markers without reintroducing commands from repeated undos',async()=>{
+ const t=convexTest(schema,modules),host=await t.action(api.eclipseGuests.createGuestSession,{}),{matchId}=await t.mutation(api.eclipseMatches.createMatch,{...host,aiCount:1});
+ for(let turn=0;turn<12;turn++){
+  const revision=turn*3;
+  expect((await t.mutation(api.eclipseMatches.submitCommand,{...host,matchId,commandId:`discarded-${turn}`,expectedRevision:revision,command:{type:'set-auto-pass',enabled:true}})).ok).toBe(true);
+  await t.mutation(api.eclipseRollback.requestRollback,{...host,matchId,targetRevision:revision+1,expectedRevision:revision+1});
+ }
+ const latest=(await t.query(api.eclipseMatches.getMatchHistory,{...host,matchId,limit:5}))!;
+ expect(latest.entries.map(entry=>entry.revision)).toEqual([36,33,30,27,24]);
+ const next=(await t.query(api.eclipseMatches.getMatchHistory,{...host,matchId,beforeRevision:latest.nextBeforeRevision!,limit:5}))!;
+ expect(next.entries.map(entry=>entry.revision)).toEqual([21,18,15,12,9]);
+ const last=(await t.query(api.eclipseMatches.getMatchHistory,{...host,matchId,beforeRevision:next.nextBeforeRevision!,limit:5}))!;
+ expect(last.entries.map(entry=>entry.revision)).toEqual([6,3]);expect(last.nextBeforeRevision).toBeNull();
+ const beginning=(await t.query(api.eclipseMatches.getMatchHistory,{...host,matchId,fromStart:true,limit:5}))!;
+ expect(beginning.entries.map(entry=>entry.revision)).toEqual([15,12,9,6,3]);
 });

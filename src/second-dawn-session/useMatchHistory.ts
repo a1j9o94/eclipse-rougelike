@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useConvex, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
-import type { PublicHistoryEntry } from "../../shared/eclipse/history";
+import type { PublicHistoryEntry, PublicHistoryPage } from "../../shared/eclipse/history";
 export interface HistoryFeed {
   entries: PublicHistoryEntry[];
   loading: boolean;
@@ -10,8 +10,11 @@ export interface HistoryFeed {
   loadingOlder: boolean;
   error: string | null;
   loadOlder: () => void;
+  loadBeginning?:()=>Promise<void>;
 }
+interface Coverage { lower: number; upper: number }
 interface HistoryCache {
+  coverage: Coverage[];
   key: string | null;
   entries: PublicHistoryEntry[];
   loading: boolean;
@@ -22,14 +25,22 @@ function merge(entries: PublicHistoryEntry[]): PublicHistoryEntry[] {
     ...new Map(entries.map((entry) => [entry.revision, entry])).values(),
   ].sort((a, b) => b.revision - a.revision);
 }
-/** Every accepted revision has one journal row, including redacted private decisions.
- * Refill the newest gap first; a previously reached end never hides reconnect gaps. */
-function missingCursor(entries: PublicHistoryEntry[]): number | null {
-  for (let i = 1; i < entries.length; i++)
-    if (entries[i - 1].revision > entries[i].revision + 1)
-      return entries[i - 1].revision;
-  const oldest = entries[entries.length - 1]?.revision;
-  return oldest !== undefined && oldest > 1 ? oldest : null;
+/** Track fetched intervals, not contiguous revisions: undo removes entire ranges. */
+function coverageFor(page: PublicHistoryPage, before?: number, fromStart=false): Coverage {
+  return { lower: fromStart ? 0 : page.nextBeforeRevision ?? 0,
+    upper: before ?? ((page.entries[0]?.revision ?? 0) + 1) };
+}
+function mergeCoverage(ranges: Coverage[]): Coverage[] {
+  const result: Coverage[]=[];
+  for(const range of [...ranges].sort((a,b)=>b.upper-a.upper)){
+    const last=result.at(-1);
+    if(last && range.upper>=last.lower) last.lower=Math.min(last.lower,range.lower);
+    else result.push({...range});
+  }
+  return result;
+}
+function missingCursor(coverage: Coverage[]): number | null {
+  return mergeCoverage(coverage)[0]?.lower || null;
 }
 export function useMatchHistory(
   credential: string | null,
@@ -44,6 +55,7 @@ export function useMatchHistory(
   );
   const [cache, setCache] = useState<HistoryCache>({
     key: null,
+    coverage: [],
     entries: [],
     loading: false,
     error: null,
@@ -51,7 +63,7 @@ export function useMatchHistory(
   const inFlight = useRef<string | null>(null);
   useEffect(() => {
     if (!key || latest === null) {
-      setCache({ key, entries: [], loading: false, error: null });
+      setCache({ key, coverage: [], entries: [], loading: false, error: null });
       return;
     }
     if (!latest) return;
@@ -60,8 +72,9 @@ export function useMatchHistory(
         ? {
             ...current,
             entries: merge([...current.entries, ...latest.entries]),
+            coverage: mergeCoverage([...current.coverage,coverageFor(latest)]),
           }
-        : { key, entries: latest.entries, loading: false, error: null },
+        : { key, entries: latest.entries, coverage: [coverageFor(latest)], loading: false, error: null },
     );
   }, [key, latest]);
   const current = key && cache.key === key && latest !== null ? cache : null;
@@ -69,13 +82,13 @@ export function useMatchHistory(
     key && latest !== null
       ? merge([...(current?.entries ?? []), ...(latest?.entries ?? [])])
       : [];
-  const cursor = missingCursor(entries);
-  async function loadOlder() {
+  const cursor = missingCursor([...(current?.coverage??[]),...(latest?[coverageFor(latest)]:[])]);
+  async function loadPage(fromStart=false) {
     if (
       !credential ||
       !matchId ||
       !key ||
-      cursor === null ||
+      (!fromStart && cursor === null) ||
       current?.loading ||
       inFlight.current === key
     )
@@ -89,7 +102,7 @@ export function useMatchHistory(
       const page = await client.query(api.eclipseMatches.getMatchHistory, {
         credential,
         matchId,
-        beforeRevision: cursor,
+        ...(fromStart?{fromStart:true}:{beforeRevision:cursor!}),
         limit: 40,
       });
       if (!page) throw Error("This match history is unavailable.");
@@ -98,6 +111,7 @@ export function useMatchHistory(
           ? {
               ...c,
               entries: merge([...c.entries, ...page.entries]),
+              coverage: mergeCoverage([...c.coverage,coverageFor(page,fromStart?undefined:cursor!,fromStart)]),
               loading: false,
             }
           : c,
@@ -125,8 +139,7 @@ export function useMatchHistory(
     hasOlder: cursor !== null,
     loadingOlder: current?.loading ?? false,
     error: current?.error ?? null,
-    loadOlder: () => {
-      void loadOlder();
-    },
+    loadOlder: () => { void loadPage(); },
+    loadBeginning:()=>loadPage(true),
   };
 }

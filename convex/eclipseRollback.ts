@@ -13,6 +13,20 @@ type ReadContext = Pick<QueryCtx, 'db'>;
 export function supersededRevision(revision: number, rollbacks: readonly Doc<'eclipseRollbacksV1'>[]): number | undefined {
   return rollbacks.find(row => row.status === 'applied' && row.appliedRevision !== undefined && revision >= row.targetRevision && revision <= row.expectedRevision)?.appliedRevision;
 }
+export interface RetainedHistoryRange { first: number; last: number }
+/** Index intervals let public history skip discarded private snapshots without reading them. */
+export function retainedHistoryRanges(rollbacks: readonly Doc<'eclipseRollbacksV1'>[], throughRevision: number): RetainedHistoryRange[] {
+  const removed = rollbacks.filter(row => row.status === 'applied' && row.appliedRevision !== undefined).map(row => ({first: row.targetRevision, last: row.expectedRevision})).sort((a,b) => a.first - b.first);
+  const retained: RetainedHistoryRange[] = [];
+  let first = 1;
+  for (const range of removed) {
+    if (range.first > throughRevision) break;
+    if (range.first > first) retained.push({ first, last: Math.min(range.first - 1, throughRevision) });
+    first = Math.max(first, range.last + 1);
+  }
+  if (first <= throughRevision) retained.push({ first, last: throughRevision });
+  return retained;
+}
 interface Access { match: Doc<'eclipseMatchesV1'>; ownership: Doc<'eclipseOwnershipV1'>; isHost: boolean }
 async function access(ctx: ReadContext, credential: string, matchId: Id<'eclipseMatchesV1'>): Promise<Access | null> {
   const guest = await resolveGuest(ctx, credential);
@@ -81,7 +95,8 @@ async function finish(ctx: MutationCtx, match: Doc<'eclipseMatchesV1'>, row: Doc
   let appliedRevision: number | undefined;
   if (outcome === 'applied') {
     const target = await ctx.db.query('eclipseJournalV1').withIndex('by_match_revision', q => q.eq('matchId', match._id).eq('revision', row.targetRevision)).unique();
-    if (!target?.preSnapshotJson || target.supersededAtRevision !== undefined) throw new Error('This history checkpoint is no longer available.');
+    const audit = await ctx.db.query('eclipseRollbacksV1').withIndex('by_match_created', q => q.eq('matchId', match._id)).collect();
+    if (!target?.preSnapshotJson || target.supersededAtRevision !== undefined || supersededRevision(target.revision, audit) !== undefined) throw new Error('This history checkpoint was discarded and cannot be restored.');
     const restored = JSON.parse(target.preSnapshotJson) as GameState;
     if (restored.rulesVersion !== match.rulesVersion || restored.catalogVersion !== match.catalogVersion) throw new Error('Checkpoint rules do not match this game.');
     appliedRevision = match.revision + 1;
@@ -114,9 +129,9 @@ export const requestRollback = mutation({
     if (args.expectedRevision !== match.revision) throw new Error('The game changed. Refresh history before requesting an undo.');
     if (!Number.isSafeInteger(args.targetRevision) || args.targetRevision < 1 || args.targetRevision > match.revision) throw new Error('Choose an accepted action in history.');
     const target = await ctx.db.query('eclipseJournalV1').withIndex('by_match_revision', q => q.eq('matchId', match._id).eq('revision', args.targetRevision)).unique();
+    const audit = await ctx.db.query('eclipseRollbacksV1').withIndex('by_match_created', q => q.eq('matchId', match._id)).collect();
+    if (target && (target.supersededAtRevision !== undefined || supersededRevision(target.revision, audit) !== undefined)) throw new Error('This action was discarded by an undo and cannot be restored.');
     if (!target?.preSnapshotJson) throw new Error('This older action has no saved checkpoint. Only actions saved after the undo update can be restored.');
-    const rollbackAudit = await ctx.db.query('eclipseRollbacksV1').withIndex('by_match_created', q => q.eq('matchId', match._id)).collect();
-    if (target.supersededAtRevision !== undefined || supersededRevision(target.revision, rollbackAudit) !== undefined) throw new Error('This action belongs to an earlier, superseded timeline.');
     const lifecycle = await ctx.db.query('eclipseMatchLifecycleV1').withIndex('by_match_revision', q => q.eq('matchId', match._id).gte('revision', args.targetRevision)).first();
     if (lifecycle) throw new Error('Undo cannot cross a player resignation. Choose a more recent action.');
     const state = stateFrom(match);

@@ -1,0 +1,34 @@
+[
+  {
+    "engine": "chromium",
+    "width": 1440,
+    "firstActionSelected": true,
+    "scrolledToBeginning": true,
+    "errors": [],
+    "logHeight": 592
+  },
+  {
+    "engine": "chromium",
+    "width": 390,
+    "firstActionSelected": true,
+    "scrolledToBeginning": true,
+    "errors": [],
+    "logHeight": 395
+  },
+  {
+    "engine": "webkit",
+    "width": 1440,
+    "firstActionSelected": true,
+    "scrolledToBeginning": true,
+    "errors": [],
+    "logHeight": 592
+  },
+  {
+    "engine": "webkit",
+    "width": 390,
+    "firstActionSelected": true,
+    "scrolledToBeginning": true,
+    "errors": [],
+    "logHeight": 395
+  }
+]

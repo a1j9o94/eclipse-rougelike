@@ -593,3 +593,6 @@ Outcome: select an uncontrolled map sector and explicitly take control, with wit
 
 ### September 19 — Optional public movement win estimate
 Outcome: game-enabled approximate combat odds beside a selected movement destination, with clear uncertainty and responsive input. New tests failed before implementation. Public-only independent simulations, four-trial yields, bounded fleet/dice/round/sample/compute work and cancellation preserve rules/RNG. Thirty-nine focused estimator/UI/movement/simulation tests pass; shared TS and changed-code lint pass. Reviewed Chromium/WebKit desktop/mobile component runs include a twenty-ship stress case: 95–116ms total with 6–9ms largest input heartbeat gaps. Parent owns room/setup persistence, integration and release. Audit: `second_dawn_movement_win_estimates.md`.
+
+### September 19 — Full history and deliberate turn attention
+Outcome: rewind through the remaining game history with agreed truncation; draw attention centrally when a turn/upkeep needs input and remove routine save popups. Acceptance, user correction, fail-first tests, risks and verification are in `coding_agents/second_dawn_full_history_rollback.md`. Root owns cache/presentation integration and release; focused agents own truncation queries and recovery/modal verification. Existing match data is preserved; discarded timelines are inaccessible to game APIs.

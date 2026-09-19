@@ -9,9 +9,10 @@ import { createGame } from '../../shared/eclipse/setup';
 import { getPlayerView } from '../../shared/eclipse/protocol';
 import { useGameRecoveryControls } from '../second-dawn-game/useGameRecoveryControls';
 
-const mocks = vi.hoisted(() => ({ status: null as RollbackStatus | null, resign: vi.fn(), request: vi.fn(), respond: vi.fn(), cancel: vi.fn() }));
+const mocks = vi.hoisted(() => ({ status: null as RollbackStatus | null, resign: vi.fn(), request: vi.fn(), respond: vi.fn(), cancel: vi.fn(), recover:vi.fn() }));
 vi.mock('convex/react', () => ({
   useQuery: () => mocks.status,
+  useAction:()=>mocks.recover,
   useMutation: (reference: Parameters<typeof getFunctionName>[0]) => ({
     'eclipseMatches:resignMatch': mocks.resign,
     'eclipseRollback:requestRollback': mocks.request,
@@ -28,7 +29,7 @@ function view(viewerSeatId = 'seat-1'): MatchPlayerView {
 }
 function Harness({ matchId = first, viewer = view(), connected = true, onHome = () => {} }: { matchId?: Id<'eclipseMatchesV1'>; viewer?: MatchPlayerView; connected?: boolean; onHome?: () => void }) {
   const controls = useGameRecoveryControls({ credential: 'credential', matchId, view: viewer, connected, busy: false, onHome });
-  return <><button onClick={controls.openMenu}>Menu</button><button onClick={() => controls.historyRollback.onSelect(target)}>Select historical move</button><output aria-label="Working">{String(controls.working)}</output>{controls.banner}{controls.dialogs}</>;
+  return <><button onClick={controls.openMenu}>Menu</button><button onClick={() => controls.historyRollback.onSelect(target)}>Select historical move</button><button onClick={()=>controls.historyRollback.onSelect({...target,rollbackAvailable:false,rollbackRecoverable:true})}>Select old position</button><output aria-label="Working">{String(controls.working)}</output>{controls.banner}{controls.dialogs}</>;
 }
 function pending(isHost = false): RollbackStatus {
   return { isHost, revision: 11, pending: { id: 'rollback-one', targetRevision: 7, targetSummary: target.summary, requestedBySeatId: 'seat-1', requiredSeatIds: ['seat-2'], approvedSeatIds: [], createdAt: 100 }, lastResolution: null };
@@ -102,4 +103,11 @@ it('does not let an old resignation completion navigate away from a newly opened
   expect(screen.getByLabelText('Working')).toHaveTextContent('false');
   await act(async () => complete({ ok: true, revision: 11, outcome: 'abandoned', duplicate: false }));
   expect(home).not.toHaveBeenCalled();
+});
+
+it('verifies an older checkpoint before offering the existing consent flow',async()=>{
+ let complete:(value:{ok:boolean})=>void=()=>{};mocks.recover.mockImplementation(()=>new Promise(resolve=>{complete=resolve;}));render(<Harness/>);
+ fireEvent.click(screen.getByRole('button',{name:'Select old position'}));expect(mocks.recover).toHaveBeenCalledWith({credential:'credential',matchId:first,targetRevision:7});
+ expect(screen.getByRole('button',{name:'Request undo'})).toBeDisabled();expect(mocks.request).not.toHaveBeenCalled();
+ await act(async()=>complete({ok:true}));expect(screen.getByRole('button',{name:'Request undo'})).toBeEnabled();expect(mocks.request).not.toHaveBeenCalled();
 });

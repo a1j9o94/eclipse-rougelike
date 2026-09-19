@@ -1,5 +1,9 @@
 import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
 import type {PlayerView} from '../../shared/eclipse/types';
+import {getFaction} from '../../shared/eclipse/catalog';
+import GameDialog from './GameDialog';
+import FactionSymbol from './FactionSymbol';
+import {seatColor} from './factionColors';
 import './turnAttentionNotice.css';
 
 export interface TurnAttentionNoticeProps {
@@ -20,7 +24,7 @@ function subscribeVisibility(notify:()=>void):()=>void{
 }
 const foreground=()=>!document.hidden;
 
-/** A cosmetic attention cue, independent of commands, private choices and native notifications. */
+/** Explicitly acknowledge an incoming turn; callbacks only navigate, never submit commands. */
 export default function TurnAttentionNotice({view,matchScope='current-match',connected=true,suppressed=false,onOpenTurn,onReviewUpkeep}:TurnAttentionNoticeProps){
  const visible=useSyncExternalStore(subscribeVisibility,foreground,()=>false);
  const seat=view.seats.find(candidate=>candidate.id===view.viewerSeatId);
@@ -47,15 +51,12 @@ export default function TurnAttentionNotice({view,matchScope='current-match',con
  // Guard the render too: an obsolete CTA must disappear before effects observe the next view.
  if(!message||message.boundary!==boundary||!ownsTurn||!visible||!connected||suppressed||decisionActive)return null;
  const upkeep=message.kind==='upkeep';
- return <aside className="dg-turn-attention" aria-label={upkeep?'Upkeep notification':'Turn notification'}>
-  <span className="dg-turn-attention-symbol" aria-hidden="true">{upkeep?'◈':'✦'}</span>
-  <div className="dg-turn-attention-copy">
-   <div role="status" aria-live="polite" aria-atomic="true">
-    <strong>{upkeep?'Upkeep is ready':'Your turn'}</strong>
-    <p>{upkeep?'Review production and upkeep before continuing.':seat?.passed?'Your reaction turn is ready.':'Your civilization is ready for its next action.'}</p>
-   </div>
-   <button type="button" className="dg-turn-attention-action" onClick={()=>{dismiss();if(upkeep)onReviewUpkeep();else onOpenTurn();}}>{upkeep?'Review upkeep':'View turn'}</button>
-  </div>
-  <button type="button" className="dg-turn-attention-dismiss" aria-label={upkeep?'Dismiss upkeep notice':'Dismiss turn notice'} onClick={dismiss}>×</button>
- </aside>;
+ return <GameDialog title={upkeep?'Upkeep is ready':'Your turn'} onClose={dismiss} dismissOnBackdrop={false} closeLabel={upkeep?'Dismiss upkeep notice':'Dismiss turn notice'} className="dg-turn-attention" focusPrimary>
+  {seat&&<div className="dg-turn-attention-civilization">
+   <span className="dg-turn-attention-emblem" style={{color:seatColor(seat)}}><FactionSymbol faction={seat.faction}/></span>
+   <div><small>Round {view.round} / 8</small><strong>{getFaction(seat.faction).name}</strong></div>
+  </div>}
+  <p>{upkeep?'Review your production and upkeep, then confirm when you are ready.':seat?.passed?'You have passed. Choose a reaction or continue passing.':'Choose your next action and lead your civilization forward.'}</p>
+  <button type="button" className="dg-primary dg-turn-attention-action" onClick={()=>{dismiss();if(upkeep)onReviewUpkeep();else onOpenTurn();}}>{upkeep?'Review upkeep':'View turn'}</button>
+ </GameDialog>;
 }

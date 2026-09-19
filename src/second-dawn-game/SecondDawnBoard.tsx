@@ -49,7 +49,6 @@ import SectorPlanets from "./SectorPlanets";
 import SectorFleet from "./SectorFleet";
 import UpkeepSummary from "./UpkeepSummary";
 import ActionEconomy from "./ActionEconomy";
-import ActionSuccessNotice from "./ActionSuccessNotice";
 import HistoryPanel,{type HistoryRollbackControl} from "./HistoryPanel";
 import AiActionPanel from "./AiActionPanel";
 import AiActivityBar from "./AiActivityBar";
@@ -227,7 +226,7 @@ function SecondDawnBoardContent({
   const combatNotice=useCombatResultNotice(playback?.volleys.some(volley=>volley.targets.some(target=>target.destroyed))?playback.revision:null,view.revision,screen);
   const knownShips = useRef(new Map(view.ships.map(ship=>[ship.id,ship])));
   useEffect(()=>{for(const ship of view.ships)knownShips.current.set(ship.id,ship);},[view.ships]);
-  const [inspectorOpen,setInspectorOpen]=useState(Boolean(initialSectorId));
+  const [inspectorOpen,setInspectorOpen]=useState(Boolean(initialSectorId)||historyOpen);
   const desktopInspectorVisible=inspectorOpen&&(screen==='Galaxy'||historyOpen);
   const pendingId = view.pendingDecision?.id;
   const diplomacyDecision = view.pendingDecision?.kind === 'diplomacy' || view.pendingDecision?.kind === 'diplomacy-window';
@@ -902,7 +901,6 @@ function SecondDawnBoardContent({
         if(compact){setMobileActionsOpen(false);setMobileActionMode(true);setMobileSheet('expanded');}
       }}/>
       <PublicInspectionModal view={view}/>
-      <ActionSuccessNotice receipt={lastAcceptedCommand} entries={history?.entries??[]}/>
       {settingsOpen&&<GameSettingsPanel onHistory={()=>{setSettingsOpen(false);setHistoryOpen(true);setInspectorOpen(true);if(compact){setScreen("Activity");setMobileSheet("closed");setMobileActionMode(false);}}} onGameMenu={()=>{setSettingsOpen(false);onMenu();}} motionEnabled={motionEnabled} onMotionChange={changeMotion} followAi={followAi} onFollowAiChange={changeFollowAi} autoPass={view.phase!=='finished'&&!own.eliminated?{enabled:own.autoPassUnlessAttacked??false,paused:own.autoPassPausedRound===view.round,disabled:blocked,disabledReason:interactionBlockedReason??(!connected?'Reconnect to change auto-pass.':busy?'Saving your change…':undefined),onChange:enabled=>onSubmit({type:'set-auto-pass',enabled})}:undefined} onClose={()=>setSettingsOpen(false)}/>}
       {inspectSector&&<FleetInspection view={view} sectorId={inspectSector} selectedShipIds={movementDraft.ids.length?movementDraft.ids:[...new Set(moveRoutePreviews.flatMap(route=>route.draft.shipIds))]} onClose={()=>{setInspectSector(null);setInspectDiplomacy(null);}} onDiplomacy={setInspectDiplomacy} diplomacy={inspectDiplomacy?<DiplomacyPanel view={view} candidates={candidates} inspectedSeatId={inspectDiplomacy} disabled={blocked} onSubmit={onSubmit}/>:undefined}/>}
       {compact&&status&&!/^(Saved|Saving|Applied to the isolated|Engine fixture review)/.test(status)&&<div className="dg-mobile-feedback" role="status" aria-live="polite">{status}</div>}

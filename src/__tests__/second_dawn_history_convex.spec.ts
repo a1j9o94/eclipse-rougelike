@@ -18,6 +18,10 @@ it("authorizes history and pages durable revisions without leaking choices on re
   const guest = await t.action(api.eclipseGuests.createGuestSession, {});
   const { matchId } = await t.mutation(api.eclipseMatches.createMatch, guest);
   await t.run(async (ctx) => {
+    const row = (await ctx.db.get(matchId))!;
+    const state = JSON.parse(row.snapshotJson) as import("../../shared/eclipse/types").GameState;
+    state.revision = 5;
+    await ctx.db.patch(matchId, { revision: 5, snapshotJson: JSON.stringify(state) });
     for (let revision = 1; revision <= 5; revision++) {
       const commandId = `command-${revision}`;
       await ctx.db.insert("eclipseJournalV1", {

@@ -101,3 +101,24 @@ it("ignores an older-page response after switching to another history", async ()
   ]);
   expect(result.current.hasOlder).toBe(false);
 });
+it('jumps to the first page without loading every intermediate round',async()=>{
+ mocks.latest=page(240,201);mocks.query.mockResolvedValueOnce(page(40,1,true));
+ const {result}=renderHook(()=>useMatchHistory('credential',match));
+ await act(async()=>{await result.current.loadBeginning?.();});
+ expect(mocks.query).toHaveBeenCalledWith(expect.anything(),expect.objectContaining({fromStart:true,limit:40}));
+ expect(result.current.entries.at(-1)?.revision).toBe(1);expect(result.current.entries[0].revision).toBe(240);expect(result.current.hasOlder).toBe(true);
+});
+it('does not keep loading gaps removed by rollback or control revisions',async()=>{
+ mocks.latest={entries:[...page(104,103).entries,...page(20,1,true).entries],nextBeforeRevision:null};
+ const {result}=renderHook(()=>useMatchHistory('credential',match));
+ expect(result.current.hasOlder).toBe(false);
+ await act(async()=>result.current.loadOlder());
+ expect(mocks.query).not.toHaveBeenCalled();
+});
+it('uses the server cursor across discarded ranges then reaches the beginning',async()=>{
+ mocks.latest={entries:page(150,130).entries,nextBeforeRevision:130};
+ mocks.query.mockResolvedValueOnce({entries:page(20,1,true).entries,nextBeforeRevision:null});
+ const {result}=renderHook(()=>useMatchHistory('credential',match));
+ await act(async()=>result.current.loadOlder());
+ expect(result.current.entries).toHaveLength(41);expect(result.current.hasOlder).toBe(false);
+});

@@ -1,0 +1,10 @@
+{
+  "base": "http://127.0.0.1:5173",
+  "checks": [
+    "Actual pass saves silently",
+    "Consent survives reload and restores starting resources/turn",
+    "Selected action and future removed from public history",
+    "Browser cache removes discarded rows and stops pagination"
+  ],
+  "errors": []
+}
