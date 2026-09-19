@@ -1,6 +1,7 @@
 import {useEffect,useRef} from 'react';
 import {useDice3dEnabled,useDiceSoundEnabled,useDiceSoundVolume} from './presentationSettings';
 import './presentationSettings.css';
+import SoundSettingsControls from './sound/SoundSettingsControls';
 export interface GameSettingsPanelProps {
  motionEnabled:boolean;onMotionChange:(enabled:boolean)=>void;onClose:()=>void;
  followAi?:boolean;onFollowAiChange?:(enabled:boolean)=>void;
@@ -20,6 +21,7 @@ export default function GameSettingsPanel({motionEnabled,onMotionChange,onClose,
  <label><span><strong>Animations</strong><small>Movement, combat and action effects.</small></span><input type="checkbox" checked={motionEnabled} onChange={event=>onMotionChange(event.target.checked)}/></label>
  <label><span><strong>Dice sounds</strong><small>Hear the dice tumble and settle, even with animations off.</small></span><input type="checkbox" checked={diceSound} onChange={event=>setDiceSound(event.target.checked)}/></label>
  <label className="dg-dice-volume"><span><strong>Dice volume</strong><small>{Math.round(diceVolume*100)}%</small></span><input aria-label="Dice volume" aria-valuetext={`${Math.round(diceVolume*100)} percent`} type="range" min={0} max={100} step={5} value={Math.round(diceVolume*100)} disabled={!diceSound} onChange={event=>setDiceVolume(Number(event.target.value)/100)}/></label>
+ <SoundSettingsControls/>
  {onFollowAiChange&&<label><span><strong>Follow AI</strong><small>Follow opponents’ actions as they play.</small></span><input type="checkbox" checked={followAi??true} onChange={event=>onFollowAiChange(event.target.checked)}/></label>}
  {autoPass&&<><label><span><strong>Auto-pass unless attacked</strong><small>After passing, skip reaction turns until an opponent attacks. Saved for your seat across devices.</small></span><input type="checkbox" checked={autoPass.enabled} disabled={autoPass.disabled} onChange={event=>autoPass.onChange(event.target.checked)}/></label>
  {autoPass.disabled&&autoPass.disabledReason&&<p>{autoPass.disabledReason}</p>}

@@ -1,0 +1,22 @@
+[
+  {
+    "kind": "ambient",
+    "sampleRate": 22050,
+    "seconds": 90,
+    "peak": 0.0539177767932415,
+    "rms": 0.019704272393535338,
+    "maxDelta": 0.003071276005357504,
+    "firstSample": 0,
+    "lastSample": 4.956721255666707e-8
+  },
+  {
+    "kind": "effects",
+    "sampleRate": 22050,
+    "seconds": 7,
+    "peak": 0.05522136390209198,
+    "rms": 0.0042430391230371955,
+    "maxDelta": 0.00909925950691104,
+    "firstSample": 0,
+    "lastSample": 0
+  }
+]

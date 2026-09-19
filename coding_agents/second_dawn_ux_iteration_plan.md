@@ -410,3 +410,7 @@ Added priced, draft-preserving ship build shortcuts with conversion/technology/s
 - Settings includes 3D dice, animations, dice sounds/volume, Follow AI, and the existing server-backed auto-pass preference. Toolbar shortcuts continue reflecting the same choices. Follow AI now persists in this browser.
 - Explicit skips and minimized choices stop sound without affecting allocations or authoritative outcomes. Backgrounded rolls never accumulate delayed audio.
 - Engineering, browser, screenshot, and listening-evidence boundaries are recorded in [the dice-sound delivery record](second_dawn_dice_sound.md).
+
+### September 19, 2026 — Opt-in tactile effects and ambient music
+
+Plan A adds independent, saved game effects (initially off, 35%) and original ambient music (initially off, 15%). Existing dice and motion preferences are unchanged. Meaningful selections and rate-limited rotations have restrained cues; placements, fleet movement, technology and installations wait for an accepted command/public visible playback. Hidden, historical and reconnect activity does not create a sound backlog. The 90-second four-voice ambient bed ducks under dice, stops in hidden tabs and fades on leaving the match. See [sound expansion evidence](second_dawn_sound_expansion.md) for focused tests, Chromium/WebKit checks, rendered listening samples, and the distinction between measured audio and human subjective listening. Parent retains integration and release gates.

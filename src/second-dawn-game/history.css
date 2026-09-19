@@ -1,7 +1,13 @@
 .dg-history-panel { display:flex; flex-direction:column; height:100%; min-height:0; }
 .dg-history-panel header { flex:0 0 auto; padding-bottom:10px; border-bottom:1px solid #685b42; }
 .dg-app .dg-history-panel header p { font-size:11px; margin-top:4px; }
-.dg-history-scroll { overflow-y:auto; min-height:0; padding-right:6px; }
+.dg-history-scroll { flex:1 1 0; overflow-y:auto; min-height:0; padding-right:6px; overscroll-behavior:contain; touch-action:pan-y; }
+.dg-history-scroll:focus-visible { outline:2px solid #dfbd7d; outline-offset:-2px; }
+.dg-inspector-history > .dg-inspector-body { display:flex; flex-direction:column; height:100%; min-height:0; overflow:hidden; }
+.dg-inspector-history .dg-inspector-content { display:flex; flex:1 1 0; flex-direction:column; min-height:0; }
+.dg-inspector-history .dg-history-panel { flex:1 1 0; min-height:0; }
+.dg-mobile-board .sd-workspace.dg-mobile-activity { display:flex; flex-direction:column; height:100%; min-height:0; overflow:hidden; box-sizing:border-box; }
+.dg-mobile-board .dg-mobile-activity > .dg-history-panel { flex:1 1 0; min-height:0; }
 .dg-history-scroll ol { list-style:none; padding:0; margin:0; }
 .dg-history-scroll li { padding:12px 0; border-bottom:1px solid #484d4d; }
 .dg-history-byline { display:flex; flex-direction:column; gap:3px; }

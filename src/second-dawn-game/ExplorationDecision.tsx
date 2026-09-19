@@ -72,7 +72,7 @@ export default function ExplorationDecision({view,decision,disabled,onSubmit}:Pr
    </aside>
   </div>
   <footer className="dg-exploration-controls">
-   <div className="dg-rotation-controls"><button aria-label="Rotate counterclockwise" onClick={()=>setRotation(r=>(r+1)%6)}><RotateIcon clockwise={false}/> Rotate left</button><span aria-label={`Orientation ${rotation+1} of 6`}>{Array.from({length:6},(_,i)=><i key={i} className={i===rotation?'active':''}/>)}</span><button aria-label="Rotate clockwise" onClick={()=>setRotation(r=>(r+5)%6)}>Rotate right <RotateIcon clockwise/></button></div>
+   <div className="dg-rotation-controls"><button data-sound="detent" aria-label="Rotate counterclockwise" onClick={()=>setRotation(r=>(r+1)%6)}><RotateIcon clockwise={false}/> Rotate left</button><span aria-label={`Orientation ${rotation+1} of 6`}>{Array.from({length:6},(_,i)=><i key={i} className={i===rotation?'active':''}/>)}</span><button data-sound="detent" aria-label="Rotate clockwise" onClick={()=>setRotation(r=>(r+5)%6)}>Rotate right <RotateIcon clockwise/></button></div>
    <div className="dg-placement-actions"><button className="sd-primary" disabled={disabled||!preview.legal} onClick={()=>resolve(tileId)}>Place sector</button><button disabled={disabled} onClick={()=>resolve(null)}>Discard sector</button>{decision.canDrawAnother&&<button disabled={disabled} onClick={()=>resolve(null,true)}>Draw second Draco sector</button>}</div>
    <p className="dg-exploration-save-note">Saved draw · placement does not spend an influence disc or colony ship.</p>
   </footer>

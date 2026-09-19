@@ -35,11 +35,22 @@ describe('Mac trackpad galaxy zoom',()=>{
   expect(camera().center.x+100/camera().zoom).toBeCloseTo(300);
   expect(camera().center.y).toBe(100);
  });
- it('leaves ordinary scrolling and pinch outside the map to the browser',()=>{
+ it('pans both axes with two-finger scrolling and leaves gestures outside the map to the browser',()=>{
   const map=mount();
-  expect(wheel(map,-100,{ctrlKey:false}).defaultPrevented).toBe(false);
+  expect(wheel(map,100,{ctrlKey:false,deltaX:60}).defaultPrevented).toBe(true);
+  expect(camera()).toEqual({zoom:1,center:{x:230,y:150}});
   expect(wheel(document.body,-100).defaultPrevented).toBe(false);
   expect(camera().zoom).toBe(1);
+ });
+ it('normalizes pan deltas and keeps screen movement consistent when zoomed in',()=>{
+  const map=mount();wheel(map,-100);const before=camera();
+  wheel(map,2,{ctrlKey:false,deltaX:1,deltaMode:1});
+  expect(camera().zoom).toBe(before.zoom);
+  expect(camera().center.x-before.center.x).toBeCloseTo(16/2/before.zoom);
+  expect(camera().center.y-before.center.y).toBeCloseTo(32/2/before.zoom);
+  const line=camera();wheel(map,1,{ctrlKey:false,deltaX:1,deltaMode:2});
+  expect(camera().center.x-line.center.x).toBeCloseTo(400/before.zoom);
+  expect(camera().center.y-line.center.y).toBeCloseTo(200/before.zoom);
  });
  it('normalizes line and page deltas and honors the map zoom limits',()=>{
   const map=mount();wheel(map,-1,{deltaMode:1});const line=camera().zoom;
@@ -50,6 +61,7 @@ describe('Mac trackpad galaxy zoom',()=>{
  it('supports Safari cumulative gesture scale without applying matching ctrl-wheel events twice',()=>{
   const map=mount();expect(safari(map,'gesturestart',1).defaultPrevented).toBe(true);
   safari(map,'gesturechange',1.5);expect(camera().zoom).toBe(1.5);
+  const before=camera();wheel(map,40,{ctrlKey:false,deltaX:20});expect(camera()).toEqual(before);
   expect(wheel(map,-100).defaultPrevented).toBe(true);expect(camera().zoom).toBe(1.5);
   safari(map,'gesturechange',2);expect(camera().zoom).toBe(2);
   expect(camera().center.x+100/camera().zoom).toBeCloseTo(300);

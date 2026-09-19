@@ -13,12 +13,20 @@ export function useGalaxyGestures({svgRef,camera,viewport,maxZoom,onCameraChange
   const dimensions=():GalaxyViewport=>{const rect=svg.getBoundingClientRect();return {...latest.current.viewport,clientLeft:rect.left,clientTop:rect.top,clientWidth:rect.width,clientHeight:rect.height};};
   const apply=(next:GalaxyCamera)=>{currentCamera.current=next;latest.current.onCameraChange(next);};
   const wheel=(event:WheelEvent)=>{
-   if(!event.ctrlKey)return;
    // Native listeners must be non-passive: React wheel listeners cannot reliably
    // cancel the browser's page zoom during a Mac trackpad pinch.
    event.preventDefault();
    if(gesture.current.active()||safariStart||performance.now()-lastSafariEnd<100)return;
    const bounds=dimensions();
+   if(!event.ctrlKey){
+    const dx=event.deltaX*(event.deltaMode===1?16:event.deltaMode===2?bounds.clientWidth:1);
+    const dy=event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?bounds.clientHeight:1);
+    const scale=Math.min(bounds.clientWidth/bounds.width,bounds.clientHeight/bounds.height)*currentCamera.current.zoom;
+    if(!Number.isFinite(dx)||!Number.isFinite(dy)||!Number.isFinite(scale)||scale<=0)return;
+    const current=currentCamera.current;
+    apply({...current,center:{x:current.center.x+dx/scale,y:current.center.y+dy/scale}});
+    return;
+   }
    const pixels=event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?bounds.clientHeight:1);
    if(!Number.isFinite(pixels))return;
    const point=screenToGalaxyViewport({x:event.clientX,y:event.clientY},bounds);
