@@ -9,6 +9,7 @@ import {describeTechnology} from './itemDescriptions';
 import ResearchCost,{ScienceBudget} from './ResearchCost';
 import ResearchedTechnologies from './ResearchedTechnologies';
 import TechnologyStats from './TechnologyStats';
+import AdvancedPopulationPreview from './AdvancedPopulationPreview';
 import './researchWorkspace.css';
 
 type Candidate={command:GameCommand;label:string;description:string};
@@ -33,15 +34,15 @@ export default function ResearchWorkspace({view,purchases,selected,draft,disable
  const scienceCost=chosenCost?.ok?chosenCost.scienceCost:null;
  const trackCosts=selected?tracks.flatMap(track=>{const cost=researchCost(selected,track,entries);return cost.ok?[cost.scienceCost]:[];}):[];
  const unavailableReason=selectedTech?owned.has(selectedTech.id)?'Already researched. Inspect its active effect above.':!view.technologyMarket.includes(selectedTech.id)?'No market copy remains. Choose another available technology.':view.pendingDecision?'Finish your pending decision before researching.':view.waitingFor?'Research is unavailable while another decision is being resolved.':view.activeSeatId!==seat.id?'Wait for your turn to research.':view.phase!=='action'?'Research is available during the action phase.':view.actionProgress&&view.actionProgress.action!=='research'?`Finish your current ${humanize(view.actionProgress.action)} action before researching.`:!view.actionProgress&&seat.influenceOnTrack<=0?'No influence disc is available to start a Research action.':trackCosts.length===0?'Every eligible research track for this technology is full.':options.length===0&&seat.resources.science<Math.min(...trackCosts)?`Not enough science or convertible resources. This technology costs at least ${Math.min(...trackCosts)} science.`:options.length===0?'No Research activation is available for this technology.':draft&&!stillLegal?'This research draft is no longer legal. Review the market, track, and funding choices.':null:null;
- useLayoutEffect(()=>{if(!selected||!detailRef.current)return;detailRef.current.focus({preventScroll:true});detailRef.current.scrollIntoView?.({block:'nearest',behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});},[selected]);
+ useLayoutEffect(()=>{if(!selected||!detailRef.current)return;detailRef.current.focus({preventScroll:true});detailRef.current.scrollIntoView?.({block:'start',behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});},[selected]);
  return <div className="sd-workspace dg-research-workspace">
   <p className="sd-eyebrow">AVAILABLE TECHNOLOGY</p>
   <div className="dg-research-heading"><h1>Research</h1><ScienceBudget available={seat.resources.science}/></div>
   {acquired&&owned.has(acquired)&&<div className="dg-research-acquired" role="status"><strong>Acquired · {TECHNOLOGIES.find(t=>t.id===acquired)?.name}</strong><span>{describeTechnology(TECHNOLOGIES.find(t=>t.id===acquired)!)}</span></div>}
-  <ResearchedTechnologies selectedId={selected} seat={seat} onInspect={id=>onSelect(id,true)}/>
+  <ResearchedTechnologies view={view} selectedId={selected} seat={seat} onInspect={id=>onSelect(id,true)}/>
   {selectedTech&&<section ref={detailRef} tabIndex={-1} className="dg-research-local" aria-label={`Research ${selectedTech.name}`}>
    <header><div><p className="sd-eyebrow">SELECTED TECHNOLOGY</p><h2>{selectedTech.name}</h2></div>{selected===draftId&&scienceCost!==null&&<ResearchCost cost={scienceCost} available={seat.resources.science}/>}</header>
-   <TechnologyStats technology={selectedTech}/><p className="dg-tech-effect">{describeTechnology(selectedTech)}</p>
+   <TechnologyStats technology={selectedTech}/><p className="dg-tech-effect">{describeTechnology(selectedTech)}</p><AdvancedPopulationPreview view={view} technology={selectedTech} detailed/>
    {unavailableReason&&<p className="dg-research-blocker" role="alert">{unavailableReason}</p>}
    {draftId&&draftId!==selected&&purchaseTech&&<div className="dg-research-draft-choice"><p>Your {purchaseTech.name} draft is still saved.</p><button onClick={()=>onSelect(draftId,false)}>Return to {purchaseTech.name} draft</button>{options[0]&&<button onClick={()=>onDraft(options[0])}>Research {selectedTech.name} instead</button>}<button onClick={()=>onDraft(null)}>Cancel saved draft</button></div>}
    {selected!==null&&!owned.has(selected)&&(!draftId||draftId===selected)&&<>
@@ -56,7 +57,7 @@ export default function ResearchWorkspace({view,purchases,selected,draft,disable
    const tech=TECHNOLOGIES.find(t=>t.id===id)!;
    const costs=tracks.flatMap(track=>{const cost=researchCost(tech.id,track,entries);return cost.ok?[cost.scienceCost]:[];});
    const candidate=purchases.find(c=>techIdOf(c)===id);
-   return <button className="sd-tech" title={describeTechnology(tech)} aria-pressed={selected===id} key={id} onClick={()=>{onSelect(id,false);if(!draftId||draftId===id)onDraft(candidate??null);}}><strong>{tech.name} ×{view.technologyMarket.filter(t=>t===id).length}</strong><ResearchCost cost={costs.length?Math.min(...costs):null} available={seat.resources.science} owned={owned.has(id)} from={new Set(costs).size>1}/><TechnologyStats technology={tech}/>{candidate?.command.type==='trade-and-act'&&<small className="dg-conversion-available">Conversion available</small>}</button>;
+   return <button className="sd-tech" title={describeTechnology(tech)} aria-pressed={selected===id} key={id} onClick={()=>{onSelect(id,false);if(!draftId||draftId===id)onDraft(candidate??null);}}><strong>{tech.name} ×{view.technologyMarket.filter(t=>t===id).length}</strong><ResearchCost cost={costs.length?Math.min(...costs):null} available={seat.resources.science} owned={owned.has(id)} from={new Set(costs).size>1}/><TechnologyStats technology={tech}/><AdvancedPopulationPreview view={view} technology={tech}/>{candidate?.command.type==='trade-and-act'&&<small className="dg-conversion-available">Conversion available</small>}</button>;
   })}</section>)}</div>
  </div>;
 }

@@ -260,3 +260,9 @@ Added optional ownership read markers, authenticated monotonic markMatchSeen, pe
 
 ## 2026-09-18 — Map context and endgame UI
 Implemented persistent ambassador inspection, native Mac map pinch, Home/Play again and completed-save grouping, visual score cards, and shared-map exploration previews. Engine/Convex state unchanged; preview sectors and neutral fleets are immutable presentation copies. Review and release evidence: `coding_agents/second_dawn_map_endgame_release.md`.
+
+## September 18 — Advanced research preview
+Added typed, read-only advancedPopulationOpportunity selector and visual resource/star/count component. Research market, selected detail and owned cards share the same view-derived values. No engine commands or effects changed.
+
+## September 18 — No draft-review acknowledgement
+Removed revision comparison and review callback from the shared draft provider/context, so all planner consumers cease blocking on draft age. Notice only reports actual storage failure. Automatic save/restore and authoritative validation unchanged. Implementation and tests by mac_map_pinch, reviewed by supervisor.

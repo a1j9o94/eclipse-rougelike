@@ -17,7 +17,9 @@ function PartitionProvider({matchId,viewerSeatId,revision,lastAcceptedCommand,ch
   const submitted=useRef<{type:GameCommand['type'];acceptedBefore:AcceptedDraftCommand|undefined;values:Partial<Record<DraftKey,string>>}|null>(null);
   const acceptedRef=useRef(lastAcceptedCommand);acceptedRef.current=lastAcceptedCommand;
   const snapshotRef=useRef(snapshot);snapshotRef.current=snapshot;
-  const stale=DRAFT_KEYS.some(key=>isMeaningfulDraft(key,snapshot.values)&&snapshot.values[key]!.revision!==revision);
+  // Saved choices are always revalidated by their planner and the server.
+  // A newer revision must never add an acknowledgement before ordinary play.
+  const stale=false;
   const draftKeys=useMemo(()=>DRAFT_KEYS.filter(key=>isMeaningfulDraft(key,snapshot.values)),[snapshot.values]);
   useEffect(()=>{
     if(!matchId)return;
@@ -31,11 +33,6 @@ function PartitionProvider({matchId,viewerSeatId,revision,lastAcceptedCommand,ch
       return setDraftValue(previous,key,next,revision);
     });
   },[revision]);
-  const review=useCallback(()=>setSnapshot(previous=>{
-    const values={...previous.values};
-    for(const key of DRAFT_KEYS){const entry=values[key];if(entry&&isMeaningfulDraft(key,values))Object.assign(values,{[key]:{...entry,revision}});}
-    return {...previous,values};
-  }),[revision]);
   const clear=useCallback((keys?:readonly DraftKey[])=>setSnapshot(previous=>{
     const values={...previous.values};for(const key of keys??DRAFT_KEYS.filter(key=>isMeaningfulDraft(key,values)))delete values[key];return {...previous,values};
   }),[]);
@@ -60,6 +57,6 @@ function PartitionProvider({matchId,viewerSeatId,revision,lastAcceptedCommand,ch
       return {...previous,values};
     });
   },[lastAcceptedCommand]);
-  const context=useMemo(()=>({entries:snapshot.values,setValue,stale,draftKeys,review,clear,markSubmitted,storageAvailable}),[snapshot.values,setValue,stale,draftKeys,review,clear,markSubmitted,storageAvailable]);
+  const context=useMemo(()=>({entries:snapshot.values,setValue,stale,draftKeys,clear,markSubmitted,storageAvailable}),[snapshot.values,setValue,stale,draftKeys,clear,markSubmitted,storageAvailable]);
   return <ActionDraftContext.Provider value={context}>{children}</ActionDraftContext.Provider>;
 }

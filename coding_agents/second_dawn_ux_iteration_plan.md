@@ -385,3 +385,9 @@ Incoming and post-combat ambassador choices retain their response, partner and p
 ### 2026-09-18 — Endgame flow, visual scores, and exploration context
 
 Finished games now offer Home, Play again, and final galaxy inspection; completed saves move to collapsed history. Scores use faction emblems and inspectable point-source tiles, with public reputation hidden and exact final ties preserved. [Scoring evidence](second_dawn_visual_scoring_release.md) and [launcher evidence](second_dawn_finished_game_navigation.md) distinguish regression/browser results from human testing. Exploration now reuses the actual galaxy and sector inspectors to reveal drawn contents and neighboring faction fleets while retaining saved placement legality.
+
+### September 18 — Advanced population research opportunities
+Advanced Labs/Economy/Mining and Metasynthesis now show eligible empty controlled planets on available and owned cards, with current colony ship/cube capacity in selected detail. Gray squares are counted once and existing unlocks are explained. See [implementation and review](second_dawn_advanced_population_release.md). Eight new behavior tests, four viewport reviews; production build and changed-file lint passed. Human playtest pending.
+
+### September 18 — Save drafts without acknowledgements
+Removed the draft-review prompt and revision-age blocking per explicit user direction. Choices continue to save and restore; current legality and server revision enforcement remain active. [Evidence and cause](second_dawn_draft_autosave_no_review.md). Combined release: 621 bounded Second Dawn tests passed, final production build and changed-file lint passed.

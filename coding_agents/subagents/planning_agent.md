@@ -520,3 +520,16 @@ Tests failing first: seen-marker Convex tests (missing metadata), activity recap
 - Acceptance: explicit Home/Play again and read-only galaxy inspection after completion; active and collapsed completed history separated without deleting games; faction emblems, rank/VP medallions and category icons; hidden reputation stays hidden until final scoring; exact ties and resource tiebreaks use existing score rules; categories remain inspectable on desktop/mobile.
 - Tests first: endgame callbacks/navigation, public hidden reputation, final totals/tied winners, score inspection; agent covers landing grouping and routing. Review rendered live/final score at desktop/mobile sizes and run bounded relevant tests, lint/build.
 - Risk/rollback: UI-only, retain all saves and authoritative scores; revert slice independently. No auto-created replay, no invitations/messages sent.
+
+## September 18, 2026 — Advanced technology planet opportunity
+- Outcome: before researching advanced population technology, see the number of empty controlled planets it supports and the population current supplies could fill.
+- Acceptance: visual resource/advanced counter on market and owned research cards; selected detail separates eligible planets, newly enabled options, and colony ship/cube capacity. Include advanced gray squares once; exclude occupied, ordinary, and foreign planets. Update directly from authoritative views, including off-turn inspection.
+- Risks & rollback: presentation only, no rule/command changes. Avoid claiming immediate legality or double-counting gray planets; revert isolated UI/helper if needed.
+- Tests (must fail first): eligible planet filtering, gray/Metasynthesis overlap, supply limits, zero opportunities, market/owned integration and refreshed population state.
+- Decision: capacity is hypothetical using current supplies after acquisition, not a command legality promise. Independent rules audit by mac_map_pinch confirmed catalog/colonization mechanics.
+
+## September 18 — Automatic drafts, no acknowledgement
+- Outcome: saved choices remain available without interrupting play with a draft-review prompt.
+- User correction: “No, it shouldn't ask at all, just save.” Remove all revision-based acknowledgement; do not replace it with selective prompts.
+- Acceptance: automatic save/restore, no draft-age blocking, receipt-safe cleanup; actual affordability/legality and authoritative expected revision still enforced.
+- Tests: new revision/resource/receipt regressions failed first, then passed; changed draft tests preserve existing persistence coverage. Rollback is presentation-only and keeps saved draft schema unchanged.

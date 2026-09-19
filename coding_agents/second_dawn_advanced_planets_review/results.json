@@ -1,0 +1,38 @@
+[
+  {
+    "width": 1440,
+    "height": 900,
+    "eligible": 2,
+    "capacity": 2,
+    "countVisible": true,
+    "horizontalOverflow": false,
+    "errors": []
+  },
+  {
+    "width": 1366,
+    "height": 768,
+    "eligible": 2,
+    "capacity": 2,
+    "countVisible": true,
+    "horizontalOverflow": false,
+    "errors": []
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "eligible": 2,
+    "capacity": 2,
+    "countVisible": true,
+    "horizontalOverflow": false,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "eligible": 2,
+    "capacity": 2,
+    "countVisible": true,
+    "horizontalOverflow": false,
+    "errors": []
+  }
+]

@@ -1,0 +1,7 @@
+.dg-advanced-opportunity{--planet-color:#b5c3cd;border-top:1px solid #ffffff20;margin-top:.5rem;padding-top:.55rem;text-align:left}
+.dg-advanced-opportunity--science{--planet-color:#c2a5ea}.dg-advanced-opportunity--money{--planet-color:#e7bd67}.dg-advanced-opportunity--materials{--planet-color:#c8a681}
+.dg-advanced-count{display:flex;align-items:center;gap:.65rem;color:var(--planet-color)}
+.dg-advanced-planet{position:relative;display:inline-flex;flex:0 0 2rem;width:2rem;height:2rem;border:1px solid currentColor;border-radius:50%;padding:.2rem}
+.dg-advanced-planet>svg{width:100%;height:100%}.dg-advanced-planet>.dg-advanced-star{position:absolute;right:-.3rem;top:-.3rem;width:.9rem;height:.9rem;color:#e8d395;filter:drop-shadow(0 1px 2px #000)}
+.dg-advanced-count>b{font-size:1.65rem;line-height:1;font-variant-numeric:tabular-nums}.dg-advanced-count>span:last-child{font-size:.85rem;line-height:1.3;color:#e4e9ed}.dg-advanced-count small{display:block;color:#b5c1cc;font-size:.75rem}
+.dg-advanced-detail{display:grid;gap:.4rem;margin-top:.65rem;color:#e4e9ed;font-size:.9rem}.dg-advanced-detail p{margin:0}.dg-advanced-detail>strong{color:var(--planet-color)}.dg-advanced-detail>small,.dg-advanced-supplies{color:#b5c1cc}

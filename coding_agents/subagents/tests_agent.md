@@ -48,3 +48,9 @@ Final memory-bounded full-game batch: 496 tests across100 files passed. New fail
 
 ## 2026-09-18 — Map context and endgame validation
 Failing-first UI tests cover ambassador draft preservation, trackpad events, finished-game navigation, score privacy/ties, and exploration contents/faction fleets. Bounded full suite: 605 tests /123 files passed before the final camera sizing refinement, with focused camera/exploration checks afterward. See `second_dawn_map_endgame_release.md` for browser and gate evidence; no physical-device or human playtest pass is implied.
+
+## September 18 — Advanced research preview
+Eight new tests cover controlled/empty/advanced filtering, resource-specific and gray eligibility, duplicate prevention, existing technology overlap, ship/cube limits including minus-one tracks, immutable inspection, market/owned cards, and refreshed population. Initial missing-helper failure recorded in logs/advanced_population_red.out. Relevant research and colonization regressions pass. Four actual browser screenshots reviewed, no horizontal overflow. No human playtest claimed.
+
+## September 18 — Combined release gate
+621 tests across 125 Second Dawn files passed with one worker. Seven new no-acknowledgement regressions plus updated draft tests cover unchanged persistence, receipt cleanup, and actual current affordability. Final production build and all changed-file lint passed. Repository lint debt unchanged (88 errors, 12 warnings). Four-view browser review and screenshots captured using tools/second-dawn-advanced-research-review.mjs.

@@ -15,18 +15,17 @@ function Harness({ submit = () => {} }: { submit?: () => void }) {
   const [amount, setAmount] = useActionDraftState('tradeAmount', 1);
   const [sector, setSector] = useActionDraftState('selectedSector', null);
   const guard = useActionDraftGuard();
-  return <><output aria-label="Amount">{amount}</output><output aria-label="Sector">{sector}</output><span>{guard.stale ? 'Review required' : 'Ready'}</span><button onClick={() => setAmount(value => value + 1)}>Increase</button><button onClick={() => setSector('new-sector')}>Navigate</button><button onClick={guard.review}>Review</button><button disabled={guard.stale} onClick={() => { guard.markSubmitted({ type: 'trade', from: 'money', to: 'science', amount }); submit(); }}>Submit</button></>;
+  return <><output aria-label="Amount">{amount}</output><output aria-label="Sector">{sector}</output><span>{guard.stale ? 'Review required' : 'Ready'}</span><button onClick={() => setAmount(value => value + 1)}>Increase</button><button onClick={() => setSector('new-sector')}>Navigate</button><button disabled={guard.stale} onClick={() => { guard.markSubmitted({ type: 'trade', from: 'money', to: 'science', amount }); submit(); }}>Submit</button></>;
 }
 describe('partitioned local action drafts', () => {
-  it('restores a build after refresh and lets its modal review the stale draft before confirmation', () => {
+  it('restores a build after refresh without adding a draft-review confirmation', () => {
     const state=createGame({seed:4,seats:[{id:'a',faction:'terran-directorate',controller:'human'},{id:'b',faction:'hydran',controller:'ai'}]});state.activeSeatId='a';state.seats[0].resources.materials=20;
     const view=getPlayerView(state,'a')!;const sectorId=view.sectors.find(sector=>sector.owner==='a')!.id;const submit=vi.fn();
     const planner=<BuildPlanner view={view} sectorId={sectorId} disabled={false} onSubmit={submit} onClose={()=>{}}/>;
     let ui=render(<ActionDraftProvider matchId="build-match" viewerSeatId="a" revision={0}>{planner}</ActionDraftProvider>);
     fireEvent.click(screen.getByRole('button',{name:'Add cruiser'}));fireEvent.click(screen.getByRole('button',{name:/Place cruiser in sector/}));ui.unmount();
     ui=render(<ActionDraftProvider matchId="build-match" viewerSeatId="a" revision={1}>{planner}</ActionDraftProvider>);
-    expect(screen.getByRole('button',{name:/Build 1 ship/})).toBeDisabled();
-    fireEvent.click(screen.getByRole('button',{name:'I’ve reviewed my draft'}));
+    expect(screen.queryByRole('button',{name:'I’ve reviewed my draft'})).toBeNull();
     expect(screen.getByRole('button',{name:/Build 1 ship/})).toBeEnabled();expect(submit).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button',{name:/Build 1 ship/}));expect(submit.mock.calls[0][0]).toMatchObject({type:'build',builds:[{component:'cruiser',sectorId}]});ui.unmount();
   });
@@ -56,13 +55,13 @@ describe('partitioned local action drafts', () => {
     render(<ActionDraftProvider matchId="match-b" viewerSeatId="seat-a" revision={4}><Harness/></ActionDraftProvider>);
     expect(screen.getByLabelText('Amount')).toHaveTextContent('1');
   });
-  it('retains drafts on unrelated revisions, requires review, and clears only an explicitly accepted matching draft', () => {
+  it('retains drafts on unrelated revisions without review and clears only an explicitly accepted matching draft', () => {
     const submit = vi.fn();
     const ui = render(<ActionDraftProvider matchId="match-a" viewerSeatId="seat-a" revision={4}><Harness submit={submit}/></ActionDraftProvider>);
     fireEvent.click(screen.getByText('Increase'));fireEvent.click(screen.getByText('Navigate'));
     ui.rerender(<ActionDraftProvider matchId="match-a" viewerSeatId="seat-a" revision={5}><Harness submit={submit}/></ActionDraftProvider>);
-    expect(screen.getByText('Review required')).toBeInTheDocument();expect(screen.getByText('Submit')).toBeDisabled();expect(screen.getByLabelText('Amount')).toHaveTextContent('2');
-    fireEvent.click(screen.getByText('Review'));fireEvent.click(screen.getByText('Submit'));expect(submit).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('Ready')).toBeInTheDocument();expect(screen.getByText('Submit')).toBeEnabled();expect(screen.getByLabelText('Amount')).toHaveTextContent('2');
+    fireEvent.click(screen.getByText('Submit'));expect(submit).toHaveBeenCalledTimes(1);
     ui.rerender(<ActionDraftProvider matchId="match-a" viewerSeatId="seat-a" revision={6} lastAcceptedCommand={{revision:6,type:'trade'}}><Harness submit={submit}/></ActionDraftProvider>);
     expect(screen.getByLabelText('Amount')).toHaveTextContent('1');expect(screen.getByLabelText('Sector')).toHaveTextContent('new-sector');
   });
@@ -85,14 +84,14 @@ describe('partitioned local action drafts', () => {
     ui.rerender(<ActionDraftProvider matchId="duplicate-match" viewerSeatId="a" revision={9} lastAcceptedCommand={{revision:5,type:'trade'}}><Harness/></ActionDraftProvider>);
     expect(screen.getByLabelText('Amount')).toHaveTextContent('1');
   });
-  it('still permits explicit stale-draft review when browser storage becomes unavailable', () => {
+  it('preserves restored choices when browser storage becomes unavailable without a review gate', () => {
     const ui=render(<ActionDraftProvider matchId="quota-match" viewerSeatId="a" revision={0}><Harness/></ActionDraftProvider>);
     fireEvent.click(screen.getByText('Increase'));ui.unmount();
     const blocked=vi.spyOn(Storage.prototype,'setItem').mockImplementation(()=>{throw new Error('Quota exceeded');});
     try{
       render(<ActionDraftProvider matchId="quota-match" viewerSeatId="a" revision={1}><Harness/><ActionDraftNotice/></ActionDraftProvider>);
       expect(screen.getByText(/Browser storage is unavailable/)).toBeInTheDocument();
-      fireEvent.click(screen.getByRole('button',{name:'I’ve reviewed my draft'}));
+      expect(screen.queryByRole('button',{name:'I’ve reviewed my draft'})).toBeNull();
       expect(screen.getByText('Submit')).toBeEnabled();
     }finally{blocked.mockRestore();}
   });
