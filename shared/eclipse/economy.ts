@@ -1,4 +1,4 @@
-import { getFaction, type CatalogResources, type FactionId } from "./catalog";
+import { tradeQuote, type CatalogResources, type FactionId } from "./catalog";
 export type ResourceKind = keyof CatalogResources;
 const nonnegativeInteger = (n: number): boolean =>
   Number.isSafeInteger(n) && n >= 0;
@@ -209,7 +209,14 @@ export function tradeResources(
       code: "invalid-quantity",
       message: "Trade a positive whole number of times.",
     };
-  const cost = quantity * getFaction(faction).tradeRatio;
+  const quote = tradeQuote(faction, from, to, quantity);
+  if (!quote)
+    return {
+      ok: false,
+      code: "invalid-quantity",
+      message: "This faction cannot receive that exact amount with its printed trade rates.",
+    };
+  const cost = quote.input;
   if (
     !Number.isSafeInteger(cost) ||
     !Number.isSafeInteger(resources[to] + quantity)

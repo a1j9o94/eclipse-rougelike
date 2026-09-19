@@ -1,12 +1,18 @@
 import {
   BASE_COMPONENTS,
   CATALOG_VERSION,
+  EXPANDED_CATALOG_VERSION,
+  EXPANDED_RULES_VERSION,
   RULES_VERSION,
   SETUP_BY_PLAYER_COUNT,
   STARTING_LAYOUTS,
   getFaction,
+  factionAllowedForProfile,
+  seatPieceColor,
   validateFactionSelection,
+  type CivilizationColor,
   type FactionId,
+  type FactionProfile,
   type PlayerCount,
 } from "./catalog";
 import { initialBlueprints } from "./blueprints";
@@ -24,19 +30,30 @@ import type { GameState, Resource, Seat, Sector } from "./types";
 
 export interface GameSetup {
   seed: number;
-  seats: { id: string; faction: FactionId; controller: "human" | "ai" }[];
+  seats: { id: string; faction: FactionId; controller: "human" | "ai"; pieceColor?: CivilizationColor }[];
+  /** Omitted means the original base roster and pinned base versions. */
+  factionProfile?: FactionProfile;
   warpPortals: boolean;
   /** Live matches opt in; omitted preserves historical deterministic fixture setup. */
   randomizeStartingPlayer?: boolean;
 }
 export function createGame(config: GameSetup): GameState {
   const count = config.seats.length as PlayerCount;
+  const profile = config.factionProfile ?? 'base';
+  const invalidFactions = config.seats.some(seat => !factionAllowedForProfile(seat.faction, profile));
+  const selectionErrors = profile === 'base'
+    ? validateFactionSelection(config.seats.map(seat => seat.faction))
+    : validateFactionSelection(
+        config.seats.map(seat => seat.faction),
+        config.seats.map(seat => seatPieceColor(seat)),
+      );
   if (
     count < 2 ||
     count > 6 ||
     new Set(config.seats.map((s) => s.id)).size !== count ||
+    new Set(config.seats.map((s) => s.faction)).size !== count ||
     config.seats.some((s) => !s.id) ||
-    validateFactionSelection(config.seats.map((s) => s.faction)).length
+    invalidFactions || selectionErrors.length
   )
     throw new Error(
       "Choose two to six distinct seats and physical faction colors.",
@@ -99,8 +116,9 @@ export function createGame(config: GameSetup): GameState {
     };
   });
   const state: GameState = {
-    rulesVersion: RULES_VERSION,
-    catalogVersion: CATALOG_VERSION,
+    rulesVersion: profile === 'base' ? RULES_VERSION : EXPANDED_RULES_VERSION,
+    catalogVersion: profile === 'base' ? CATALOG_VERSION : EXPANDED_CATALOG_VERSION,
+    ...(profile === 'expanded-v1' ? { factionProfile: profile } : {}),
     revision: 0,
     round: 1,
     phase: "action",
@@ -112,14 +130,18 @@ export function createGame(config: GameSetup): GameState {
     ships: [],
     technologyMarket: tech.drawn.map((t) => t.technology),
     pendingDecision: null,
-    privateSeats: seats.map((s) => ({
-      seatId: s.id,
-      reputation: reputation.items.splice(
-        0,
-        getFaction(s.faction).startingReputationDraws,
-      ),
-      discoveriesKept: [],
-    })),
+    privateSeats: seats.map((s) => {
+      const privateSeat: GameState['privateSeats'][number] = {
+        seatId: s.id,
+        reputation: reputation.items.splice(0, getFaction(s.faction).startingReputationDraws),
+        discoveriesKept: [],
+      };
+      if (getFaction(s.faction).special?.privateInitialDiscovery) {
+        const storedDiscovery = discoveries.items.shift();
+        if (storedDiscovery) privateSeat.storedDiscovery = storedDiscovery;
+      }
+      return privateSeat;
+    }),
     random: guardians.state,
     supplies: {
       inner: stacks.inner.map(String),
@@ -183,14 +205,18 @@ export function createGame(config: GameSetup): GameState {
       });
       if (Object.values(remaining).some((n) => n !== 0))
         throw new Error("Catalog home population mismatch.");
-      state.ships.push({
-        id: `ship-${owner.id}-start`,
-        owner: owner.id,
-        type: getFaction(owner.faction).startingShip,
-        sectorId: sector.id,
-        damage: 0,
-        arrival: 0,
-      });
+      const faction = getFaction(owner.faction);
+      const startingShips = faction.startingShips ?? { [faction.startingShip]: 1 };
+      for (const [type, amount] of Object.entries(startingShips))
+        for (let i = 0; i < (amount ?? 0); i++)
+          state.ships.push({
+            id: i === 0 ? `ship-${owner.id}-start` : `ship-${owner.id}-start-${i + 1}`,
+            owner: owner.id,
+            type: type as 'interceptor' | 'cruiser' | 'dreadnought' | 'starbase',
+            sectorId: sector.id,
+            damage: 0,
+            arrival: 0,
+          });
     }
     if (d.guardian || d.gcds) {
       const type = d.gcds ? "gcds" : "guardian";

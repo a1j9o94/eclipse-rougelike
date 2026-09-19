@@ -140,6 +140,26 @@ export function researchTechnology(
   }
   state.technologyMarket.splice(state.technologyMarket.indexOf(tileId), 1);
   seat.technologies[track].push(tileId);
+  const faction = getFaction(seat.faction);
+  const hidden = state.privateSeats.find(candidate => candidate.seatId === seat.id);
+  if (
+    faction.special?.fourthTechnologyDiscovery &&
+    seat.technologies[track].length === 4 &&
+    hidden?.storedDiscovery &&
+    !hidden.storedDiscoveryResolved
+  ) {
+    const discoveryId = hidden.storedDiscovery;
+    hidden.storedDiscoveryResolved = true;
+    const home = state.sectors.find(s => Number(s.tileId) === faction.homeSector && s.owner === seat.id);
+    const placement = ["place-unbuilt-ship", "place-structure", "place-warp-portal"].includes(
+      getDiscovery(discoveryId as DiscoveryId).effect.kind,
+    );
+    queueDecision(state, {
+      id: uniqueId(state, "discovery"), owner: seat.id, kind: "discovery", tileId: discoveryId,
+      ...(home ? { sectorId: home.id } : {}),
+      options: placement && !home ? ["keep"] : ["keep", "use"],
+    });
+  }
   const effect = definition!.effect;
   if (effect.kind === "gain-influence") seat.influenceOnTrack += effect.amount;
   if (effect.kind === "artifact-resources") {
@@ -375,7 +395,7 @@ export function performAction(
           requireRule(
             state.ships.filter(
               (s) => s.owner === seat.id && s.type === build.component,
-            ).length < BASE_COMPONENTS.perColor[build.component],
+            ).length < (getFaction(seat.faction).componentSupply?.[build.component] ?? BASE_COMPONENTS.perColor[build.component]),
             "No unbuilt ships of this type remain.",
           );
           state.ships.push({
@@ -389,7 +409,7 @@ export function performAction(
         }
         seat.resources.materials -= cost;
       }
-      consumeActivations(state, command.builds.length);
+      consumeActivations(state, command.builds.length, "build");
       break;
     }
     case "upgrade": {
@@ -500,7 +520,7 @@ export function performAction(
         ship.sectorId = move.path[move.path.length - 1];
         ship.arrival = continuation(state).nextId++;
       }
-      consumeActivations(state, command.moves.length);
+      consumeActivations(state, command.moves.length, "move");
       break;
     }
     case "influence": {

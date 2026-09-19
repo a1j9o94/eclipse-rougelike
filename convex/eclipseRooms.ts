@@ -3,13 +3,13 @@ import { internalMutation, mutation, query } from "./_generated/server";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
-import { BASE_FACTIONS, getFaction, type FactionId } from "../shared/eclipse/catalog";
+import { factionAllowedForProfile, getFaction, seatPieceColor, type CivilizationColor, type FactionProfile, type FactionId } from "../shared/eclipse/catalog";
 import { resolveGuest as findGuest, playerNameForGuest } from './eclipseIdentity';
 import {
   isMultiplayerSettings,
   reconcileMultiplayerTimer,
   roomCanStart,
-  roomFactionsAreDistinct,
+  roomAiSelections,
   timerPublicView,
   timerTargetForState,
   type MultiplayerLobbySeat,
@@ -24,10 +24,11 @@ import { AI_BUDGETS, AI_VERSION } from "../shared/eclipse/aiConfig";
 import { AI_DECISION_DELAY_MS } from '../shared/eclipse/pacing';
 import { TIMEOUT_AI_HISTORY_MARKER } from "../shared/eclipse/history";
 import type { GameState, JournalEntry } from "../shared/eclipse/types";
-import { factionValidator } from "./eclipseValidators";
+import { factionValidator, factionProfileValidator, pieceColorValidator } from "./eclipseValidators";
 import { scheduleAi } from "./eclipseMatches";
 
 const settingsValidator = v.object({
+  factionProfile: v.optional(factionProfileValidator),
   humanSeatCount: v.number(),
   aiCount: v.number(),
   aiDifficulty: v.optional(v.union(v.literal("normal"), v.literal("hard"), v.literal("expert"))),
@@ -73,7 +74,7 @@ async function ownedRoomSeat(ctx: ReadContext, credential: string, room: Doc<"ec
 }
 
 function settingsFor(room: Doc<"eclipseRoomsV1">): MultiplayerRoomSettings {
-  return { humanSeatCount: room.humanSeatCount, aiCount: room.aiCount, ...(room.aiDifficulty ? {aiDifficulty: room.aiDifficulty} : {}), timerMs: room.timerMs, warpPortals: room.warpPortals };
+  return { factionProfile: room.factionProfile ?? "base", humanSeatCount: room.humanSeatCount, aiCount: room.aiCount, ...(room.aiDifficulty ? {aiDifficulty: room.aiDifficulty} : {}), timerMs: room.timerMs, warpPortals: room.warpPortals };
 }
 
 function toLobbySeats(room: Doc<"eclipseRoomsV1">, seats: readonly Doc<"eclipseRoomSeatsV1">[]): MultiplayerLobbySeat[] {
@@ -81,7 +82,7 @@ function toLobbySeats(room: Doc<"eclipseRoomsV1">, seats: readonly Doc<"eclipseR
   return Array.from({ length: room.humanSeatCount }, (_, index) => {
     const slot = index + 1;
     const seat = bySlot.get(slot);
-    return seat ? { slot, faction: seat.faction, ready: seat.ready, isHost: seat.isHost, occupied: true } : { slot, faction: null, ready: false, isHost: false, occupied: false };
+    return seat ? { slot, faction: seat.faction, ...(seat.pieceColor ? { pieceColor: seat.pieceColor } : {}), ready: seat.ready, isHost: seat.isHost, occupied: true } : { slot, faction: null, ready: false, isHost: false, occupied: false };
   });
 }
 
@@ -106,8 +107,13 @@ function requireSettings(settings: MultiplayerRoomSettings): void {
   if (!isMultiplayerSettings(settings)) throw new Error("Choose 2–6 total seats and a timer from 30 seconds through 48 hours.");
 }
 
-function colorOf(factionId: FactionId): string {
-  return getFaction(factionId).color;
+function selectedColor(faction: FactionId, pieceColor: CivilizationColor | undefined, profile: FactionProfile): CivilizationColor {
+  if (!factionAllowedForProfile(faction, profile)) throw new Error('Choose a faction available in this profile.');
+  return profile === 'base' ? getFaction(faction).color : seatPieceColor({ faction, pieceColor });
+}
+function requireAvailableSelection(faction: FactionId, pieceColor: CivilizationColor, seats: readonly Doc<'eclipseRoomSeatsV1'>[], profile: FactionProfile): void {
+  if (seats.some(seat => seat.faction === faction)) throw new Error('Choose an unused faction.');
+  if (seats.some(seat => seat.faction && selectedColor(seat.faction, seat.pieceColor, profile) === pieceColor)) throw new Error(profile === 'base' ? 'Choose a faction with an unused board color.' : 'Choose an unused piece color.');
 }
 
 async function resetReady(ctx: MutationCtx, roomId: Id<"eclipseRoomsV1">): Promise<void> {
@@ -167,17 +173,17 @@ async function synchronizeTimer(ctx: MutationCtx, room: Doc<"eclipseRoomsV1">, m
 }
 
 export const createRoom = mutation({
-  args: { credential: v.string(), settings: settingsValidator, faction: factionValidator },
+  args: { credential: v.string(), settings: settingsValidator, faction: factionValidator, pieceColor: v.optional(pieceColorValidator) },
   handler: async (ctx, args): Promise<{ roomToken: string; lobby: MultiplayerRoomLobby }> => {
     requireSettings(args.settings);
     const guest = await findGuest(ctx, args.credential);
     if (!guest) throw new Error("Guest session required.");
-    colorOf(args.faction);
+    const pieceColor = selectedColor(args.faction, args.pieceColor, args.settings.factionProfile ?? "base");
     const now = Date.now();
     let roomToken = randomToken();
     while (await findRoom(ctx, roomToken)) roomToken = randomToken();
     const roomId = await ctx.db.insert("eclipseRoomsV1", { roomToken, hostGuestId: guest._id, status: "waiting", ...args.settings, createdAt: now, updatedAt: now });
-    await ctx.db.insert("eclipseRoomSeatsV1", { roomId, guestId: guest._id, slot: 1, faction: args.faction, ready: false, isHost: true, joinedAt: now });
+    await ctx.db.insert("eclipseRoomSeatsV1", { roomId, guestId: guest._id, slot: 1, faction: args.faction, pieceColor, ready: false, isHost: true, joinedAt: now });
     const room = await ctx.db.get(roomId);
     if (!room) throw new Error("Room creation failed.");
     return { roomToken, lobby: await lobbyFor(ctx, room, args.credential) };
@@ -208,7 +214,7 @@ export const listMyRooms = query({
 });
 
 export const joinRoom = mutation({
-  args: { credential: v.string(), roomToken: v.string(), faction: factionValidator },
+  args: { credential: v.string(), roomToken: v.string(), faction: factionValidator, pieceColor: v.optional(pieceColorValidator) },
   handler: async (ctx, args): Promise<{ lobby: MultiplayerRoomLobby }> => {
     const room = await findRoom(ctx, args.roomToken);
     const guest = await findGuest(ctx, args.credential);
@@ -218,11 +224,12 @@ export const joinRoom = mutation({
     if (existing) return { lobby: await lobbyFor(ctx, room, args.credential) };
     const seats = await roomSeats(ctx, room._id);
     if (seats.length >= room.humanSeatCount) throw new Error("This room is full.");
-    const requestedColor = colorOf(args.faction);
-    if (seats.some((seat) => colorOf(seat.faction) === requestedColor)) throw new Error("Choose a faction with an unused board color.");
+    const profile = room.factionProfile ?? "base";
+    const pieceColor = selectedColor(args.faction, args.pieceColor, profile);
+    requireAvailableSelection(args.faction, pieceColor, seats, profile);
     const slot = Array.from({ length: room.humanSeatCount }, (_, index) => index + 1).find((candidate) => !seats.some((seat) => seat.slot === candidate));
     if (!slot) throw new Error("This room is full.");
-    await ctx.db.insert("eclipseRoomSeatsV1", { roomId: room._id, guestId: guest._id, slot, faction: args.faction, ready: false, isHost: false, joinedAt: Date.now() });
+    await ctx.db.insert("eclipseRoomSeatsV1", { roomId: room._id, guestId: guest._id, slot, faction: args.faction, pieceColor, ready: false, isHost: false, joinedAt: Date.now() });
     await resetReady(ctx, room._id);
     await ctx.db.patch(room._id, { updatedAt: Date.now() });
     const updated = await ctx.db.get(room._id);
@@ -259,16 +266,17 @@ export const leaveRoom = mutation({
 });
 
 export const chooseRoomFaction = mutation({
-  args: { credential: v.string(), roomToken: v.string(), faction: factionValidator },
+  args: { credential: v.string(), roomToken: v.string(), faction: factionValidator, pieceColor: v.optional(pieceColorValidator) },
   handler: async (ctx, args): Promise<MultiplayerRoomLobby> => {
     const room = await findRoom(ctx, args.roomToken);
     if (!room || room.status !== "waiting") throw new Error("This room cannot change factions.");
     const owned = await ownedRoomSeat(ctx, args.credential, room);
     if (!owned) throw new Error("This guest does not occupy a room seat.");
-    const requestedColor = colorOf(args.faction);
+    const profile = room.factionProfile ?? "base";
+    const pieceColor = selectedColor(args.faction, args.pieceColor, profile);
     const seats = await roomSeats(ctx, room._id);
-    if (seats.some((seat) => seat._id !== owned.seat._id && colorOf(seat.faction) === requestedColor)) throw new Error("Choose a faction with an unused board color.");
-    await ctx.db.patch(owned.seat._id, { faction: args.faction, ready: false });
+    requireAvailableSelection(args.faction, pieceColor, seats.filter(seat => seat._id !== owned.seat._id), profile);
+    await ctx.db.patch(owned.seat._id, { faction: args.faction, pieceColor, ready: false });
     await resetReady(ctx, room._id);
     await ctx.db.patch(room._id, { updatedAt: Date.now() });
     const updated = await ctx.db.get(room._id);
@@ -287,7 +295,16 @@ export const updateRoomSettings = mutation({
     if (!owned?.seat.isHost) throw new Error("Only the host can change room settings.");
     const seats = await roomSeats(ctx, room._id);
     if (seats.length > args.settings.humanSeatCount) throw new Error("Cannot remove occupied human seats.");
-    await ctx.db.patch(room._id, { ...args.settings, updatedAt: Date.now() });
+    const factionProfile = args.settings.factionProfile ?? room.factionProfile ?? 'base';
+    const usedColors = new Set<CivilizationColor>();
+    for (const seat of [...seats].sort((a, b) => a.slot - b.slot)) {
+      if (!seat.faction) continue;
+      const available = factionAllowedForProfile(seat.faction, factionProfile);
+      const color = available ? selectedColor(seat.faction, seat.pieceColor, factionProfile) : undefined;
+      if (!color || usedColors.has(color)) await ctx.db.patch(seat._id, { faction: null, pieceColor: undefined, ready: false });
+      else { usedColors.add(color); await ctx.db.patch(seat._id, { pieceColor: color }); }
+    }
+    await ctx.db.patch(room._id, { ...args.settings, factionProfile, updatedAt: Date.now() });
     await resetReady(ctx, room._id);
     const updated = await ctx.db.get(room._id);
     if (!updated) throw new Error("Room unavailable.");
@@ -302,6 +319,12 @@ export const setRoomReady = mutation({
     if (!room || room.status !== "waiting") throw new Error("This room is not waiting for ready players.");
     const owned = await ownedRoomSeat(ctx, args.credential, room);
     if (!owned) throw new Error("This guest does not occupy a room seat.");
+    if (args.ready) {
+      if (!owned.seat.faction) throw new Error('Choose a faction before marking ready.');
+      const profile = room.factionProfile ?? 'base';
+      const color = selectedColor(owned.seat.faction, owned.seat.pieceColor, profile);
+      requireAvailableSelection(owned.seat.faction, color, (await roomSeats(ctx, room._id)).filter(seat => seat._id !== owned.seat._id), profile);
+    }
     await ctx.db.patch(owned.seat._id, { ready: args.ready });
     await ctx.db.patch(room._id, { updatedAt: Date.now() });
     const updated = await ctx.db.get(room._id);
@@ -319,15 +342,15 @@ export const startRoom = mutation({
     if (!owned?.seat.isHost) throw new Error("Only the host can start this room.");
     const humanSeats = await roomSeats(ctx, room._id);
     const lobbySeats = toLobbySeats(room, humanSeats);
-    if (!roomCanStart({ humanSeatCount: room.humanSeatCount, aiCount: room.aiCount, seats: lobbySeats }) || !roomFactionsAreDistinct(lobbySeats)) throw new Error("Every human seat needs a distinct faction and must be ready before starting.");
-    const usedColors = new Set(humanSeats.map((seat) => colorOf(seat.faction)));
-    const aiFactions = BASE_FACTIONS.filter((faction) => !usedColors.has(faction.color)).slice(0, room.aiCount);
-    if (aiFactions.length !== room.aiCount) throw new Error("Not enough unused faction board colors for AI seats.");
-    const seats = [
-      ...humanSeats.sort((left, right) => left.slot - right.slot).map((seat) => ({ id: `seat-${seat.slot}`, faction: seat.faction, controller: "human" as const })),
-      ...aiFactions.map((faction, index) => ({ id: `seat-${room.humanSeatCount + index + 1}`, faction: faction.id, controller: "ai" as const })),
-    ];
-    const state = createGame({ seed: Math.floor(Math.random() * 0x100000000), seats, warpPortals: room.warpPortals, randomizeStartingPlayer: true });
+    const factionProfile = room.factionProfile ?? 'base';
+    if (!roomCanStart({ humanSeatCount: room.humanSeatCount, aiCount: room.aiCount, seats: lobbySeats, factionProfile })) throw new Error("Every human seat needs a distinct faction and must be ready before starting.");
+    const humans = [...humanSeats].sort((a, b) => a.slot - b.slot).map(seat => {
+      if (!seat.faction) throw new Error('Choose a faction before starting.');
+      return { id: `seat-${seat.slot}`, faction: seat.faction, pieceColor: selectedColor(seat.faction, seat.pieceColor, factionProfile), controller: 'human' as const };
+    });
+    const opponents = roomAiSelections(humans, room.aiCount, factionProfile, Math.random);
+    const seats = [...humans, ...opponents.map((opponent, index) => ({ id: `seat-${room.humanSeatCount + index + 1}`, ...opponent, controller: 'ai' as const }))];
+    const state = createGame({ seed: Math.floor(Math.random() * 0x100000000), seats, factionProfile, warpPortals: room.warpPortals, randomizeStartingPlayer: true });
     const now = Date.now();
     const matchId = await ctx.db.insert("eclipseMatchesV1", { snapshotJson: JSON.stringify(state), rulesVersion: state.rulesVersion, catalogVersion: state.catalogVersion, revision: state.revision, round: state.round, phase: state.phase, roomToken: room.roomToken, aiDifficulty: room.aiDifficulty ?? "normal", aiVersion: AI_VERSION, createdAt: now, updatedAt: now });
     await Promise.all(humanSeats.map((seat) => ctx.db.insert("eclipseOwnershipV1", { matchId, guestId: seat.guestId, seatId: `seat-${seat.slot}` })));

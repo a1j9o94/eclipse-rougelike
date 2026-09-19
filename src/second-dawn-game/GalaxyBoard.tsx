@@ -1,9 +1,10 @@
+import {seatColor} from './factionColors';
 import {displayedWormholes} from './visibleConnections';
 import type {BuildOrderItem} from './buildPlanning';
 import type {MovementRoutePreview} from './movementPlanning';
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { PlayerView, Ship } from "../../shared/eclipse/types";
-import { BASE_FACTIONS } from "../../shared/eclipse/catalog";
+import { getFaction } from "../../shared/eclipse/catalog";
 import { sectorDefinition } from "../../shared/eclipse/sectors";
 import { connectionBetween } from "../../shared/eclipse/geometry";
 import { mapSector,movementAbilities } from "../../shared/eclipse/rulesState";
@@ -37,14 +38,6 @@ interface Props {
   onSelect: (id: string) => void;
   onExplore: (candidate: CommandCandidate) => void;
 }
-const colors = {
-  red: "#e99b9b",
-  blue: "#88cde7",
-  green: "#8bd4ad",
-  yellow: "#efd27b",
-  white: "#e3e7ed",
-  black: "#bac0ce",
-};
 const territoryTones = {
   red: ["#553039", "#291c28"],
   blue: ["#204958", "#142a3a"],
@@ -123,13 +116,12 @@ export default function GalaxyBoard({
   }});
   const ownerInfo = (id: string | null) => {
     const index = view.seats.findIndex((s) => s.id === id);
-    const faction = BASE_FACTIONS.find(
-      (f) => f.id === view.seats[index]?.faction,
-    );
+    const seat=view.seats[index];
+    const faction=seat?getFaction(seat.faction):undefined;
     return {
       faction,
-      color: faction ? colors[faction.color] : "#a0aab7",
-      territory: faction ? `url(#dg-sector-owner-${faction.color})` : "url(#dg-sector-space)",
+      color: seat ? seatColor(seat) : "#a0aab7",
+      territory: seat ? `url(#dg-sector-owner-${seat.pieceColor??faction!.color})` : "url(#dg-sector-space)",
       mark:
         index >= 0
           ? String(index + 1)

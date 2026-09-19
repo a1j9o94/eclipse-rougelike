@@ -16,13 +16,14 @@ import { createGame } from '../../shared/eclipse/setup';
 describe('Second Dawn faction registry', () => {
   it('keeps the persisted base catalog identity and order stable', () => {
     expect(listFactions()).toBe(FACTION_REGISTRY);
-    expect(BASE_FACTIONS).toBe(FACTION_REGISTRY);
+    expect(BASE_FACTIONS).toEqual(FACTION_REGISTRY.slice(0, 12));
     expect(listFactions('second-dawn-base')).toEqual(BASE_FACTIONS);
     expect(listFactions('future-drive-pack')).toEqual([]);
     expect(listFactions().map(faction => faction.id)).toEqual([
       'eridani', 'hydran', 'planta', 'draco', 'mechanema', 'orion',
       'terran-directorate', 'terran-federation', 'terran-union',
       'terran-republic', 'terran-conglomerate', 'terran-alliance',
+      'rho-indi', 'magellan', 'midas', 'ragnarok',
     ]);
     expect(RULES_VERSION).toBe('second-dawn-base-2021-04-27');
     expect(CATALOG_VERSION).toBe('second-dawn-catalog-0.1');

@@ -1,3 +1,4 @@
+import {remainingAction} from './actionCapacity';
 import { deriveBlueprintStats, type BlueprintShipType } from '../../shared/eclipse/blueprints';
 import { publicBlueprint } from '../../shared/eclipse/legal';
 import { connectionBetween, movableShipCount, validateMovementPath, type MovementShip, type MovementSector, type MovementAbilities } from '../../shared/eclipse/geometry';
@@ -31,7 +32,7 @@ function orders(ids:readonly string[]):string[][] {return ids.length<2?[Array.fr
 export function movementPlan(view:PlayerView,sourceSectorId:string|null,selectedShipIds:readonly string[],capacityOverride?:number):MovementPlan {
  const seat=view.seats.find(s=>s.id===view.viewerSeatId)!;const progress=view.actionProgress;
  const canAct=view.phase==='action'&&view.activeSeatId===seat.id&&!view.pendingDecision&&!view.waitingFor&&!seat.eliminated;
- const availableCapacity=!canAct?0:progress?(progress.owner===seat.id&&progress.action==='move'?progress.remaining:0):seat.influenceOnTrack>0?actionCapacity(seat,'move'):0;
+ const availableCapacity=!canAct?0:progress?remainingAction(view,'move'):seat.influenceOnTrack>0?actionCapacity(seat,'move'):0;
  const capacity=capacityOverride===undefined?availableCapacity:Math.max(0,Math.min(capacityOverride,availableCapacity));
  const abilities=movementAbilities(seat);const sectors=view.sectors.map(mapSector);
  const neighbors=new Map(sectors.map(from=>[from.id,sectors.filter(to=>connectionBetween(from,to,abilities.wormholeGenerator)!=='none').map(to=>to.id)]));

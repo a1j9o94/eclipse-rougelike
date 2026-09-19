@@ -42,14 +42,14 @@ it('provides planet, fleet, research and trade navigation without submitting com
  fireEvent.click(within(screen.getByRole('group',{name:'Cruiser fleet'})).getByRole('button',{name:/Sector 1/}));expect(onSector).toHaveBeenCalledWith('own');
  fireEvent.click(screen.getByRole('button',{name:'Colonize planets'}));expect(onNavigate).toHaveBeenCalledWith('colonize');
  fireEvent.click(screen.getByRole('button',{name:'Research technology'}));expect(onNavigate).toHaveBeenCalledWith('Research');
- fireEvent.click(screen.getByRole('button',{name:/Trade resources/}));expect(onNavigate).toHaveBeenCalledWith('Trade');
+ fireEvent.click(screen.getByRole('button',{name:/Convert resources/}));expect(onNavigate).toHaveBeenCalledWith('Trade');
  expect(screen.getByRole('heading',{name:'Faction abilities'})).toBeVisible();expect(screen.getByRole('heading',{name:'Move activations'})).toBeVisible();
 });
 it('opponents expose researched effects locally, never own market actions or private rewards',()=>{
  const view=fixture();view.private.reputation=[987];view.private.discoveriesKept=['secret-discovery'];
  const onNavigate=vi.fn();render(<EmpireOverview view={view} seatId="b" onSector={vi.fn()} onNavigate={onNavigate} onBlueprints={vi.fn()}/>);
  expect(screen.getByRole('heading',{name:'Hydran Progress'})).toBeVisible();
- expect(screen.queryByRole('button',{name:'Research technology'})).toBeNull();expect(screen.queryByRole('button',{name:'Colonize planets'})).toBeNull();expect(screen.queryByRole('button',{name:/Trade resources/})).toBeNull();
+ expect(screen.queryByRole('button',{name:'Research technology'})).toBeNull();expect(screen.queryByRole('button',{name:'Colonize planets'})).toBeNull();expect(screen.queryByRole('button',{name:/Convert resources/})).toBeNull();
  fireEvent.click(screen.getByRole('button',{name:'Inspect Advanced Labs'}));
  expect(screen.getByText(/You may colonize advanced science population spaces/)).toBeVisible();expect(onNavigate).not.toHaveBeenCalled();
  expect(screen.queryByText(/987|secret-discovery/)).toBeNull();

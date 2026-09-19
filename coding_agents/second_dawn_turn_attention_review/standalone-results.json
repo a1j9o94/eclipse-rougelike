@@ -1,0 +1,34 @@
+[
+  {
+    "browser": "chromium",
+    "width": 1440,
+    "ownershipTransitions": true,
+    "focusPreserved": true,
+    "upkeepNavigationOnly": true,
+    "pageErrors": []
+  },
+  {
+    "browser": "chromium",
+    "width": 390,
+    "ownershipTransitions": true,
+    "focusPreserved": true,
+    "upkeepNavigationOnly": true,
+    "pageErrors": []
+  },
+  {
+    "browser": "webkit",
+    "width": 1440,
+    "ownershipTransitions": true,
+    "focusPreserved": true,
+    "upkeepNavigationOnly": true,
+    "pageErrors": []
+  },
+  {
+    "browser": "webkit",
+    "width": 390,
+    "ownershipTransitions": true,
+    "focusPreserved": true,
+    "upkeepNavigationOnly": true,
+    "pageErrors": []
+  }
+]

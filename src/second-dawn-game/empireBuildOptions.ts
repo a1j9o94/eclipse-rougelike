@@ -1,3 +1,4 @@
+import {remainingAction,continuesAction} from './actionCapacity';
 import type { BlueprintShipType } from '../../shared/eclipse/blueprints';
 import { BASE_COMPONENTS, getFaction, STANDARD_CONSTRUCTION_COSTS } from '../../shared/eclipse/catalog';
 import { fundingOptions } from '../../shared/eclipse/funding';
@@ -22,13 +23,14 @@ export function empireBuildOptions(view: PlayerView, draft: BuildOrderDraft = em
     : own.eliminated ? 'This civilization has been eliminated.'
     : view.pendingDecision || view.waitingFor ? 'Resolve the pending decision first.'
     : view.phase !== 'action' || view.activeSeatId !== own.id ? 'Wait for your action turn.'
-    : progress && (progress.owner !== own.id || progress.action !== 'build') ? 'Finish your current action first.'
-    : progress && progress.remaining <= 0 ? 'No Build activations remain.'
+    : progress && (!continuesAction(view,'build')) ? 'Finish your current action first.'
+    : progress && remainingAction(view,'build') <= 0 ? 'No Build activations remain.'
     : !progress && own.influenceOnTrack < 1 ? 'No influence discs remain.'
     : null;
   return SHIP_TYPES.map(shipType => {
     const result: EmpireBuildOption = { shipType, cost: costs[shipType], disabledReason: turnReason, requiresConversion: false };
     if (!own || turnReason) return result;
+    if(getFaction(own.faction).componentSupply?.[shipType]===0)return {...result,disabledReason:`${getFaction(own.faction).name} does not build ${shipType[0].toUpperCase()+shipType.slice(1)}s.`};
     const unavailable = (disabledReason: string): EmpireBuildOption => ({ ...result, disabledReason });
     if (!view.sectors.some(sector => sector.owner === own.id)) return unavailable('Control a sector before building ships.');
     let sample = addBuildItem(draft, shipType);
@@ -42,7 +44,7 @@ export function empireBuildOptions(view: PlayerView, draft: BuildOrderDraft = em
       if (item.component !== 'orbital' && item.component !== 'monolith') {
         const deployed = view.ships.filter(ship => ship.owner === own.id && ship.type === item.component).length;
         const ordered = sample.items.filter(other => other.component === item.component).length;
-        if (deployed + ordered > BASE_COMPONENTS.perColor[item.component]) return unavailable(`No unbuilt ${item.component}s remain in supply for this order.`);
+        if (deployed + ordered > (getFaction(own.faction).componentSupply?.[item.component]??BASE_COMPONENTS.perColor[item.component])) return unavailable(`No unbuilt ${item.component}s remain in supply for this order.`);
       }
     }
     // Place only a temporary copy to price the complete order. Existing placements

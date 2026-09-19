@@ -1,3 +1,4 @@
+import {remainingAction} from './actionCapacity';
 import { BASE_COMPONENTS, getFaction } from '../../shared/eclipse/catalog';
 import { capacity } from '../../shared/eclipse/rulesState';
 import type { BuildComponent } from '../../shared/eclipse/history';
@@ -49,14 +50,14 @@ export function analyzeBuildOrder(view: PlayerView, draft: BuildOrderDraft): Bui
   const owned = view.sectors.filter(sector => sector.owner === own.id);
   const technologies = Object.values(own.technologies).flat();
   const progress = view.actionProgress;
-  const limit = progress?.owner === own.id && progress.action === 'build' ? progress.remaining : capacity(own, 'build');
+  const limit = progress ? remainingAction(view,'build') : capacity(own, 'build');
   const costs = getFaction(own.faction).constructionCosts;
   const legalSectorIdsByItem: Record<string, readonly string[]> = {};
   for (const item of draft.items) {
     const technologyLegal = !['starbase','orbital','monolith'].includes(item.component) || technologies.includes(item.component);
     const deployed = view.ships.filter(ship => ship.owner === own.id && ship.type === item.component).length;
     const ordered = draft.items.filter(other => other.component === item.component && draft.items.indexOf(other) <= draft.items.indexOf(item)).length;
-    const supplyLegal = item.component === 'orbital' || item.component === 'monolith' || deployed + ordered <= BASE_COMPONENTS.perColor[item.component];
+    const supplyLegal = item.component === 'orbital' || item.component === 'monolith' || deployed + ordered <= (getFaction(own.faction).componentSupply?.[item.component]??BASE_COMPONENTS.perColor[item.component]);
     legalSectorIdsByItem[item.id] = technologyLegal && supplyLegal ? owned.filter(sector => {
       if (item.component !== 'orbital' && item.component !== 'monolith') return true;
       const already = !!sector[item.component] || draft.items.some(other => other.id !== item.id && other.component === item.component && other.sectorId === sector.id);

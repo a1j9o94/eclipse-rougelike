@@ -6,6 +6,9 @@ import type { DecisionChoice, GameCommand } from "../shared/eclipse/types";
 export const factionValidator: Validator<FactionId> = v.union(
   ...FACTION_IDS.map(id => v.literal(id)),
 );
+export const factionProfileValidator = v.union(v.literal('base'), v.literal('expanded-v1'));
+export const pieceColorValidator = v.union(v.literal('red'), v.literal('blue'), v.literal('green'), v.literal('yellow'), v.literal('white'), v.literal('black'));
+const action = v.union(v.literal('explore'), v.literal('influence'), v.literal('research'), v.literal('upgrade'), v.literal('build'), v.literal('move'));
 const resource = v.union(
   v.literal("money"),
   v.literal("science"),
@@ -179,6 +182,8 @@ export const gameCommandValidator: Validator<GameCommand, "required", string> =
       values: v.array(v.number()),
     }),
     v.object({ type: v.literal("end-action") }),
+    v.object({ type: v.literal("buy-activation"), action }),
+    v.object({ type: v.literal("convert-colony-ship"), resource }),
     v.object({ type: v.literal("finish-upkeep") }),
     v.object({
       type: v.literal("trade"),

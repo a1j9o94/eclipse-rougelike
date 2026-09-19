@@ -1,5 +1,5 @@
 import { planBlueprintUpgrade } from "./upgradePlan";
-import { BASE_COMPONENTS, factionHasCapability, getFaction } from "./catalog";
+import { BASE_COMPONENTS, factionHasCapability, getFaction, tradeQuote } from "./catalog";
 import {
   deriveBlueprintStats,
   effectiveBlueprintParts,
@@ -23,7 +23,7 @@ import {
   type HexEdge,
   type MovementShip,
 } from "./geometry";
-import { mapSector, movementAbilities } from "./rulesState";
+import { mapSector, movementAbilities, paidActivationCost } from "./rulesState";
 import { reputationCapacity } from "./battleEngine";
 import { sectorDefinition } from "./sectors";
 import type {
@@ -122,12 +122,16 @@ export function legalCommands(
   const trades = () => {
     for (const from of RESOURCES)
       for (const to of RESOURCES) {
-        if (from !== to && seat.resources[from] >= faction.tradeRatio)
+        if (from === to) continue;
+        for (let amount = 1; amount <= 16; amount++) {
+          const quote = tradeQuote(seat.faction, from, to, amount);
+          if (!quote || quote.input > seat.resources[from]) continue;
           add(
-            { type: "trade", from, to, amount: 1 },
-            `Trade ${faction.tradeRatio} ${from} for 1 ${to}`,
+            { type: "trade", from, to, amount },
+            `Trade ${quote.input} ${from} for ${amount} ${to}`,
             "Trade does not spend an action disc or end your turn.",
           );
+        }
       }
   };
   if (
@@ -143,6 +147,19 @@ export function legalCommands(
         "Return this reputation tile to free space for an ambassador.",
       );
   }
+  if (
+    faction.special?.convertColonyShipToResource &&
+    seat.colonyShipsAvailable > 0 &&
+    view.activeSeatId === seat.id &&
+    (view.phase === "action" || view.phase === "upkeep") &&
+    (!decision || decision.kind === "bankruptcy")
+  )
+    for (const resource of RESOURCES)
+      add(
+        { type: "convert-colony-ship", resource },
+        `Convert colony ship to ${resource}`,
+        `Flip one unused colony ship to gain 1 ${resource}.`,
+      );
   if (decision) {
     if (decision.owner !== seat.id) return result;
     const resolve = (
@@ -453,8 +470,7 @@ export function legalCommands(
   const can = (action: Action) =>
     progress
       ? progress.owner === seat.id &&
-        progress.action === action &&
-        progress.remaining > 0
+        (progress.budgets ? (progress.budgets[action] ?? 0) > 0 : progress.action === action && progress.remaining > 0)
       : seat.influenceOnTrack > 0 &&
         (!seat.passed || ["upgrade", "build", "move"].includes(action));
   if (view.phase === "action" && progress)
@@ -469,6 +485,15 @@ export function legalCommands(
       "Pass",
       "Your first pass ends normal actions; later turns allow Build, Upgrade, or Move reactions.",
     );
+  if (view.phase === "action" && progress && !progress.paidBonusUsed && progress.owner === seat.id) {
+    const cost = paidActivationCost(seat, progress.action);
+    if (cost !== null && seat.resources.money >= cost)
+      add(
+        { type: "buy-activation", action: progress.action },
+        `Buy one ${progress.action} activation`,
+        `Pay ${cost} money. Available once during this action.`,
+      );
+  }
   // Colony ships are a free operation during your turn, including after the action activations are spent.
   if (seat.colonyShipsAvailable > 0)
     for (const sector of controlled) {
@@ -619,7 +644,7 @@ export function legalCommands(
           component !== "orbital" &&
           component !== "monolith" &&
           ownShips.filter((s) => s.type === component).length >=
-            BASE_COMPONENTS.perColor[component]
+            (faction.componentSupply?.[component] ?? BASE_COMPONENTS.perColor[component])
         )
           continue;
         const cost = faction.constructionCosts[component];
@@ -849,7 +874,7 @@ export function legalCommands(
         }
     }
   }
-  if (view.seats.length >= 4 && !seat.traitor && seat.ambassadors.length < 3) {
+  if (view.seats.length >= 4 && !seat.traitor && seat.ambassadors.length < faction.capabilities.ambassadorSupply) {
     for (const other of view.seats) {
       if (
         reputationCapacity({
@@ -868,7 +893,7 @@ export function legalCommands(
         other.id === seat.id ||
         other.eliminated ||
         other.traitor ||
-        other.ambassadors.length >= 3 ||
+        other.ambassadors.length >= getFaction(other.faction).capabilities.ambassadorSupply ||
         seat.ambassadors.includes(other.id)
       )
         continue;

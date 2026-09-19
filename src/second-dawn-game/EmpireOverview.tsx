@@ -1,3 +1,4 @@
+import {seatColor} from './factionColors';
 import {useState,type CSSProperties} from 'react';
 import {getFaction} from '../../shared/eclipse/catalog';
 import type {BlueprintShipType} from '../../shared/eclipse/blueprints';
@@ -5,7 +6,6 @@ import {TECHNOLOGIES,type TechnologyId} from '../../shared/eclipse/technologies'
 import type {PlayerView,Resource} from '../../shared/eclipse/types';
 import FactionSymbol from './FactionSymbol';
 import ReputationSummary from './ReputationSummary';
-import {FACTION_COLORS} from './factionColors';
 import {factionPresentation} from './factionPresentation';
 import {empireOverviewModel} from './empireOverviewModel';
 import {empireBuildOptions} from './empireBuildOptions';
@@ -40,7 +40,7 @@ export default function EmpireOverview({view,seatId,onSector,onNavigate,onBluepr
  const technology=TECHNOLOGIES.find(tech=>tech.id===selectedTech&&researched.includes(tech.id));
  const planets=model.planets.filter(planet=>planetGroup==='gray'?planet.resource==='gray'||planet.resource==='orbital':planet.resource===planetGroup);
  const readyCount=model.planets.filter(planet=>planet.readyResources.length>0).length;
- return <div className="eo-overview" style={{'--empire-color':FACTION_COLORS[faction.color]} as CSSProperties}>
+ return <div className="eo-overview" style={{'--empire-color':seatColor(seat)} as CSSProperties}>
   <header className="eo-hero">
    <div className="eo-hero-emblem"><FactionSymbol faction={seat.faction}/></div>
    <div className="eo-hero-copy"><p className="sd-eyebrow">{model.own?'YOUR EMPIRE':'PUBLIC EMPIRE OVERVIEW'}{seat.eliminated?' · ELIMINATED':''}</p><h1>{faction.name}</h1><p>{presentation.overview}</p>
@@ -52,7 +52,7 @@ export default function EmpireOverview({view,seatId,onSector,onNavigate,onBluepr
   <div className="eo-economy" aria-label="Empire resources">
    {model.resources.map(resource=><article key={resource.resource} className={`eo-resource eo-${resource.resource}`}><ResourceSymbol resource={resource.resource}/><div><h2>{names[resource.resource]}</h2><strong>{resource.stock}</strong></div><div className="eo-production"><b>+{resource.income}</b><small>round income</small><span>{resource.cubes} cubes available</span></div></article>)}
   </div>
-  <div className="eo-economy-footer"><span><StatIcon kind="influence"/><b>{model.influence}</b> influence discs available</span><span>Round upkeep <b>{model.upkeep} money</b></span>{model.own&&<button onClick={()=>onNavigate('Trade')}>Trade resources <b>{model.tradeRatio}:1</b></button>}</div>
+  <div className="eo-economy-footer"><span><StatIcon kind="influence"/><b>{model.influence}</b> influence discs available</span><span>Round upkeep <b>{model.upkeep} money</b></span>{model.own&&<button onClick={()=>onNavigate('Trade')}>Convert resources <b>{faction.tradeRates?'Faction rates':`${model.tradeRatio}:1`}</b></button>}</div>
   <div className="eo-main-grid">
    <section className="eo-panel eo-colonies" aria-label="Colonization opportunities">
     <header><div><p className="sd-eyebrow">GROW YOUR ECONOMY</p><h2>Empty planets</h2></div><div className="eo-colony-ships"><StatIcon kind="population"/><strong>{model.colonyShips}<small> / {model.colonyShipCapacity}</small></strong><span>colony ships</span></div></header>
@@ -87,7 +87,7 @@ export default function EmpireOverview({view,seatId,onSector,onNavigate,onBluepr
    {technology&&<div className="eo-tech-effect" role="status"><h3>{technology.name}</h3><p>{describeTechnology(technology)}</p></div>}
   </section><section className="eo-panel eo-diplomacy"><header><div><p className="sd-eyebrow">RELATIONS</p><h2>Diplomacy</h2></div></header>
    <div className="eo-ambassadors">{seat.ambassadors.length?seat.ambassadors.map(id=>{const partner=view.seats.find(player=>player.id===id);return partner?<div key={id}><FactionSymbol faction={partner.faction}/><span>{getFaction(partner.faction).name}</span></div>:null;}):<p className="eo-muted">No ambassadors exchanged.</p>}</div>
-   <p>{seat.ambassadors.length} ambassador {seat.ambassadors.length===1?'tile':'tiles'}</p>{seat.traitor&&<p className="eo-traitor"><StatIcon kind="shield"/><strong>Traitor · −2 VP</strong><span>Cannot form diplomatic relations while holding the traitor tile.</span></p>}
+   <p>{seat.ambassadors.length} ambassador {seat.ambassadors.length===1?'tile':'tiles'}</p>{seat.traitor&&<p className="eo-traitor"><StatIcon kind="shield"/><strong>Traitor · {faction.special?.ignoresTraitorPenalty?'0':'−2'} VP</strong><span>Cannot form diplomatic relations while holding the traitor tile.</span></p>}
    <button onClick={()=>onNavigate('Diplomacy')}>View diplomatic relations</button><p className="eo-privacy">Reputation stays hidden until final scoring.</p>
   </section></div>
  </div>;

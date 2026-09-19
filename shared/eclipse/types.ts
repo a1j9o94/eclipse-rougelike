@@ -1,4 +1,4 @@
-import type { FactionId } from "./catalog";
+import type { CivilizationColor, FactionId, FactionProfile } from "./catalog";
 import type { RandomState } from "./random";
 import type { ScoreBreakdown } from "./scoring";
 
@@ -58,6 +58,7 @@ export interface Seat {
   id: SeatId;
   faction: FactionId;
   controller: "human" | "ai";
+  pieceColor?: CivilizationColor;
   resources: Resources;
   populationTracks: Resources;
   influenceOnTrack: number;
@@ -74,6 +75,8 @@ export interface Seat {
   graveyard?: Resources;
   storedParts?: string[];
   ambassadorResources?: { from: SeatId; resource: Resource }[];
+  /** Historical count retained for faction scoring even after an ancient part is removed. */
+  ancientPartsUsed?: number;
 }
 export interface ReputationSummary {
   id: string;
@@ -90,6 +93,9 @@ export interface PrivateSeat {
   reputation: number[];
   discoveriesKept: string[];
   reputationSummary?: ReputationSummary;
+  /** Private setup tile held by the Wardens until their first fourth technology. */
+  storedDiscovery?: string;
+  storedDiscoveryResolved?: boolean;
 }
 
 interface DecisionBase {
@@ -250,6 +256,8 @@ export type GameCommand =
   | { type: "end-action" }
   | { type: "finish-upkeep" }
   | { type: "trade"; from: Resource; to: Resource; amount: number }
+  | { type: "convert-colony-ship"; resource: Resource }
+  | { type: "buy-activation"; action: Action }
   | {
       type: "colonize";
       placements: { sectorId: string; squareId: string; resource: Resource }[];
@@ -260,6 +268,8 @@ export type GameCommand =
 export interface GameState {
   rulesVersion: string;
   catalogVersion: string;
+  /** Missing on historical snapshots and therefore interpreted as the base profile. */
+  factionProfile?: FactionProfile;
   revision: number;
   round: number;
   phase: Phase;
@@ -293,6 +303,9 @@ export interface ActionProgress {
   remaining: number;
   influenceSectorIds?: string[];
   coloniesRefreshed?: boolean;
+  paidBonusUsed?: boolean;
+  /** Separate persisted budgets for factions whose main action grants another action type. */
+  budgets?: Partial<Record<Action, number>>;
 }
 export interface BattleGroup {
   id: string;
@@ -422,7 +435,10 @@ export type SubmissionResult =
 export interface PlayerView {
   rulesVersion: string;
   catalogVersion: string;
+  factionProfile?: FactionProfile;
   revision: number;
+  /** Public turn boundary; distinguishes turns when a client misses intermediate AI updates. */
+  actionTurnSerial?: number;
   round: number;
   phase: Phase;
   activeSeatId: SeatId | null;

@@ -1,3 +1,4 @@
+import {seatColor} from './factionColors';
 import { getFaction } from "../../shared/eclipse/catalog";
 import {
   deriveBlueprintStats,
@@ -25,14 +26,6 @@ const neutralNames = {
   ancient: "Ancients",
   guardian: "Guardians",
   gcds: "Galactic Center Defense System",
-};
-const colors = {
-  red: "#e99b9b",
-  blue: "#88cde7",
-  green: "#8bd4ad",
-  yellow: "#efd27b",
-  white: "#e3e7ed",
-  black: "#bac0ce",
 };
 type PublicVolley = NonNullable<GameEvent["combatVolley"]>;
 /** Public result cards survive the active fleet and battle being removed. */
@@ -72,7 +65,7 @@ export function CombatPlayback({ volleys, view, knownShips = [], fast = false }:
             const title = type ? names[type] : "Ship";
             const outcome = target.destroyed ? "destroyed" : target.hpAfter < target.hpBefore ? "damaged" : "unharmed";
             return <li key={target.id}>
-              <div className={`dg-impact-card is-${outcome}`} role="group" aria-label={`${title} ${outcome}`} style={faction ? { borderLeftColor: colors[faction.color] } : undefined}>
+              <div className={`dg-impact-card is-${outcome}`} role="group" aria-label={`${title} ${outcome}`} style={seat ? { borderLeftColor: seatColor(seat) } : undefined}>
                 {type && <span className="dg-impact-ship-art">
                   {type === "ancient" || type === "guardian" || type === "gcds" ? <NeutralShipSilhouette type={type} /> : <ShipSilhouette type={type} faction={seat?.faction} />}
                   {target.destroyed && <svg className="dg-impact-destruction-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M16 16l32 32M48 16L16 48" /></svg>}
@@ -203,7 +196,7 @@ export default function BattleOverview({ view, recentVolleys = [], knownShips = 
               aria-label={`${side.role} fleet: ${ownerName(side.id)}`}
               style={{
                 borderColor: seat
-                  ? colors[getFaction(seat.faction).color]
+                  ? seatColor(seat)
                   : "#c0a56b",
               }}
             >

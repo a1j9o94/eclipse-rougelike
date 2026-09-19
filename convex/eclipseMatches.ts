@@ -3,19 +3,19 @@ import { v } from 'convex/values';
 import { internalAction, internalQuery, internalMutation, mutation, query } from './_generated/server';
 import type { MutationCtx, QueryCtx } from './_generated/server';
 import type { Doc, Id } from './_generated/dataModel';
-import { BASE_FACTIONS, CATALOG_VERSION, RULES_VERSION, getFaction } from '../shared/eclipse/catalog';
+import { factionAllowedForProfile, profileVersions, seatPieceColor } from '../shared/eclipse/catalog';
 import { resolveGuest as findGuest, playerNameForGuest } from './eclipseIdentity';
 import { commitCommand, getPlayerView } from '../shared/eclipse/protocol';
 import { createGame } from '../shared/eclipse/setup';
 import { processGameCommand } from '../shared/eclipse/engine';
 import type { CommandReceipt, GameState, JournalEntry, Phase, PlayerView, ValidationError } from '../shared/eclipse/types';
-import { reconcileMultiplayerTimer, timerTargetForState, type MultiplayerTimerPublic, type MultiplayerTurnTimer } from '../shared/eclipse/multiplayer';
+import { roomAiSelections, reconcileMultiplayerTimer, timerTargetForState, type MultiplayerTimerPublic, type MultiplayerTurnTimer } from '../shared/eclipse/multiplayer';
 import { internal } from './_generated/api';
 import { chooseStrategicAiCommand } from '../shared/eclipse/aiSearch';
 import { AI_BUDGETS, AI_VERSION, type AiDifficulty } from '../shared/eclipse/aiConfig';
 import { finishTimeoutAiCommand, validateTimeoutAi, retryFailedRoomTimeout } from './eclipseRooms';
 import { AI_DECISION_DELAY_MS } from '../shared/eclipse/pacing';
-import { factionValidator, gameCommandValidator } from './eclipseValidators';
+import { factionValidator, factionProfileValidator, pieceColorValidator, gameCommandValidator } from './eclipseValidators';
 
 type ReadContext = Pick<QueryCtx, 'db'>;
 async function ownedSeat(ctx: ReadContext, credential: string, matchId: Id<'eclipseMatchesV1'>): Promise<Doc<'eclipseOwnershipV1'> | null> {
@@ -102,20 +102,21 @@ export interface MatchPlayerView extends PlayerView {
 }
 
 export const createMatch = mutation({
-  args: { credential: v.string(), aiCount: v.optional(v.number()), faction: v.optional(factionValidator), warpPortals: v.optional(v.boolean()), aiDifficulty: v.optional(v.union(v.literal('normal'), v.literal('hard'), v.literal('expert'))) },
+  args: { credential: v.string(), aiCount: v.optional(v.number()), factionProfile: v.optional(factionProfileValidator), pieceColor: v.optional(pieceColorValidator), faction: v.optional(factionValidator), warpPortals: v.optional(v.boolean()), aiDifficulty: v.optional(v.union(v.literal('normal'), v.literal('hard'), v.literal('expert'))) },
   handler: async (ctx, args): Promise<{ matchId: Id<'eclipseMatchesV1'>; seatId: string }> => {
     const guest = await findGuest(ctx, args.credential);
     if (!guest) throw new Error('Guest session required.');
     const aiCount = args.aiCount ?? 2;
     if (!Number.isInteger(aiCount) || aiCount < 1 || aiCount > 5) throw new Error('AI count must be an integer between 1 and 5.');
     const humanFaction = args.faction ?? 'terran-directorate';
-    const human = getFaction(humanFaction);
-    const opponents = BASE_FACTIONS.filter(faction => faction.species === 'alien' && faction.color !== human.color).slice(0, aiCount);
-    if (opponents.length !== aiCount) throw new Error('Not enough distinct faction boards.');
+    const factionProfile = args.factionProfile ?? 'base';
+    if (!factionAllowedForProfile(humanFaction, factionProfile)) throw new Error('Choose a faction available in this profile.');
+    const human = { id: 'seat-1', faction: humanFaction, pieceColor: seatPieceColor({ faction: humanFaction, ...(factionProfile === 'base' ? {} : { pieceColor: args.pieceColor }) }), controller: 'human' as const };
+    const opponents = roomAiSelections([human], aiCount, factionProfile, Math.random);
     // Convex provides replay-stable transaction randomness; credentials use independent crypto randomness.
     const seed = Math.floor(Math.random() * 0x100000000);
-    const seats = [{ id: 'seat-1', faction: human.id, controller: 'human' as const }, ...opponents.map((faction, i) => ({ id: `seat-${i + 2}`, faction: faction.id, controller: 'ai' as const }))];
-    const state = createGame({ seed, seats, warpPortals: args.warpPortals ?? true, randomizeStartingPlayer: true });
+    const seats = [human, ...opponents.map((opponent, i) => ({ id: `seat-${i + 2}`, ...opponent, controller: 'ai' as const }))];
+    const state = createGame({ seed, seats, factionProfile, warpPortals: args.warpPortals ?? true, randomizeStartingPlayer: true });
     const now = Date.now();
     const matchId = await ctx.db.insert('eclipseMatchesV1', { snapshotJson: JSON.stringify(state), rulesVersion: state.rulesVersion, catalogVersion: state.catalogVersion, revision: state.revision, round: state.round, phase: state.phase, aiDifficulty: args.aiDifficulty ?? 'normal', aiVersion: AI_VERSION, createdAt: now, updatedAt: now });
     await ctx.db.insert('eclipseOwnershipV1', { matchId, guestId: guest._id, seatId: 'seat-1' });
@@ -226,7 +227,7 @@ export const submitCommand = mutation({
     }
     // Read the unique command key in the same transaction as insertion, so concurrent retries conflict safely.
     const journal: JournalEntry[] = original ? [{ actor: original.actor, request: JSON.parse(original.requestJson) as JournalEntry['request'], receipt: original.receipt, events: JSON.parse(original.eventsJson) as JournalEntry['events'] }] : [];
-    const result = commitCommand({ state, journal }, ownership.seatId, request, { rulesVersion: RULES_VERSION, catalogVersion: CATALOG_VERSION }, processGameCommand);
+    const result = commitCommand({ state, journal }, ownership.seatId, request, profileVersions(state.factionProfile ?? 'base'), processGameCommand);
     if (!result.ok) return { ok: false, error: result.error };
     if (!result.duplicate) {
       const entry = result.aggregate.journal[result.aggregate.journal.length - 1];
@@ -351,7 +352,7 @@ export const commitAiWork = internalMutation({
     const request = { commandId: `${job.timeoutToken ? 'timeout' : 'ai'}:${actor}:${expectedRevision}`, expectedRevision, command };
     const original = await ctx.db.query('eclipseJournalV1').withIndex('by_match_command', q => q.eq('matchId', matchId).eq('commandId', request.commandId)).unique();
     if (original) throw new Error('COMMAND_ID_REUSED: A stored command already uses this server action ID.');
-    const result = commitCommand({ state, journal: [] }, actor, request, { rulesVersion: RULES_VERSION, catalogVersion: CATALOG_VERSION }, processGameCommand);
+    const result = commitCommand({ state, journal: [] }, actor, request, profileVersions(state.factionProfile ?? 'base'), processGameCommand);
     if (!result.ok) throw new Error(`${result.error.code}: ${result.error.message}`);
     const remainingBudgetMs = Math.max(0, (job.remainingBudgetMs ?? 0) - Math.max(0, elapsedMs));
     await ctx.db.patch(job._id, { status:'waiting', remainingBudgetMs, lastComputeMs: elapsedMs, lastSearchNodes: searchNodes, lastSearchDepth: searchDepth, lastSearchCutoff: searchCutoff,

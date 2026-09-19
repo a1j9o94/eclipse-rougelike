@@ -1,4 +1,4 @@
-import { getFaction } from "./catalog";
+import { getFaction, tradeQuote } from "./catalog";
 import { tradeResources } from "./economy";
 import { researchCost, TECHNOLOGIES, type TechnologyId } from "./technologies";
 import type {
@@ -66,18 +66,19 @@ export function fundingOptions(
   const sources = (["money", "science", "materials"] as const).filter(
     (r) => r !== resource,
   );
-  const ratio = getFaction(seat.faction).tradeRatio;
-  const firstMax = Math.floor(seat.resources[sources[0]] / ratio),
-    secondMax = Math.floor(seat.resources[sources[1]] / ratio);
-  const minimum = Math.max(0, shortfall - secondMax),
-    maximum = Math.min(shortfall, firstMax);
-  if (minimum > maximum) return [];
+  const possible = Array.from({ length: shortfall + 1 }, (_, first) => first).filter(first => {
+    const second = shortfall - first;
+    const firstQuote = first ? tradeQuote(seat.faction, sources[0], resource, first) : { input: 0 };
+    const secondQuote = second ? tradeQuote(seat.faction, sources[1], resource, second) : { input: 0 };
+    return !!firstQuote && !!secondQuote && firstQuote.input <= seat.resources[sources[0]] && secondQuote.input <= seat.resources[sources[1]];
+  });
+  if (!possible.length) return [];
   // At most 16 representative allocations, including both source-heavy extremes.
-  const count = Math.min(16, maximum - minimum + 1);
+  const count = Math.min(16, possible.length);
   const allocations = Array.from({ length: count }, (_, i) =>
     count === 1
-      ? minimum
-      : minimum + Math.round((i * (maximum - minimum)) / (count - 1)),
+      ? possible[0]
+      : possible[Math.round((i * (possible.length - 1)) / (count - 1))],
   );
   return allocations.map((first) => {
     const trades: FundingTrade[] = [];

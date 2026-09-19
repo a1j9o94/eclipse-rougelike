@@ -1,3 +1,4 @@
+import {seatColor} from './factionColors';
 import { useState } from "react";
 import type { CSSProperties } from "react";
 import { getFaction } from "../../shared/eclipse/catalog";
@@ -14,14 +15,6 @@ interface Props {
   disabled: boolean;
   onSubmit: (command: GameCommand) => void;
 }
-const colors = {
-  red: "#e99b9b",
-  blue: "#88cde7",
-  green: "#8bd4ad",
-  yellow: "#efd27b",
-  white: "#e3e7ed",
-  black: "#bac0ce",
-};
 const names: Record<Resource, string> = { money: "Money", science: "Science", materials: "Materials" };
 const resources: readonly Resource[] = ["money", "science", "materials"];
 export default function DiplomacyPanel({
@@ -61,7 +54,7 @@ export default function DiplomacyPanel({
         className="dg-ambassador-token"
         key={partnerId}
         aria-label={`${ownerId === view.viewerSeatId ? "Your ambassador" : "Ambassador"} from ${partner.name}`}
-        style={{ "--diplomat-color": colors[partner.color] } as CSSProperties}
+        style={{ "--diplomat-color": seatColor(view.seats.find(s=>s.id===partnerId)!) } as CSSProperties}
       >
         <svg viewBox="0 0 32 32" aria-hidden="true">
           <path
@@ -115,12 +108,12 @@ export default function DiplomacyPanel({
       >
         <div className="dg-rack-heading">
           <h2>Ambassadors</h2>
-          <span>{own.ambassadors.length} / 3 retained</span>
+          <span>{own.ambassadors.length} / {getFaction(own.faction).capabilities.ambassadorSupply} retained</span>
         </div>
         <div className="dg-ambassador-row">
           {own.ambassadors.map((id) => ambassador(id, own.id))}
           {Array.from(
-            { length: Math.max(0, 3 - own.ambassadors.length) },
+            { length: Math.max(0, getFaction(own.faction).capabilities.ambassadorSupply - own.ambassadors.length) },
             (_, i) => (
               <div key={`empty-${i}`} className="dg-ambassador-empty">
                 Empty ambassador slot
@@ -200,7 +193,7 @@ export default function DiplomacyPanel({
         )}
         {own.traitor && (
           <p className="dg-traitor">
-            Traitor card · −2 VP. The holder cannot form new diplomatic
+            Traitor card · {getFaction(own.faction).special?.ignoresTraitorPenalty?'0':'−2'} VP. The holder cannot form new diplomatic
             relations.
           </p>
         )}
@@ -253,7 +246,7 @@ export default function DiplomacyPanel({
                     aria-label={`${faction.name} diplomatic rack`}
                     style={
                       {
-                        "--diplomat-color": colors[faction.color],
+                        "--diplomat-color": seatColor(seat),
                       } as CSSProperties
                     }
                   >
@@ -265,7 +258,7 @@ export default function DiplomacyPanel({
                         {faction.name}
                       </h3>
                       {seat.traitor && (
-                        <span className="dg-traitor">Traitor · −2 VP</span>
+                        <span className="dg-traitor">Traitor · {faction.special?.ignoresTraitorPenalty?'0':'−2'} VP</span>
                       )}
                     </div>
                     <p>

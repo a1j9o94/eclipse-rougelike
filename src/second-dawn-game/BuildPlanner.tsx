@@ -1,3 +1,4 @@
+import {continuesAction} from './actionCapacity';
 import { useEffect, useMemo, useRef } from 'react';
 import { useActionDraftGuard, useActionDraftState } from './actionDraftContext';
 import { BASE_COMPONENTS, getFaction } from '../../shared/eclipse/catalog';
@@ -35,9 +36,10 @@ export default function BuildPlanner({ view, sectorId, defaultPlacementSectorId=
   const faction=getFaction(own.faction), technologies=Object.values(own.technologies).flat(), total=draft.items.length, action=analysis.command;
   const plans=total&&analysis.unplacedCount===0?fundingOptions(view,action):[], funded=plans.find(plan=>JSON.stringify(plan.trades)===draft.fundingKey)??plans[0];
   const command:GameCommand=analysis.cost>own.resources.materials&&funded?funded.command:action;
-  const turnReason=own.eliminated?'This civilization has been eliminated.':view.waitingFor||view.pendingDecision?'Resolve the pending decision first.':view.phase!=='action'||view.activeSeatId!==own.id?'Wait for your action turn.':view.actionProgress&&(view.actionProgress.owner!==own.id||view.actionProgress.action!=='build')?'Finish your current action first.':!view.actionProgress&&own.influenceOnTrack<1?'No influence discs remain.':analysis.limit<1?'No Build activations remain.':null;
+  const turnReason=own.eliminated?'This civilization has been eliminated.':view.waitingFor||view.pendingDecision?'Resolve the pending decision first.':view.phase!=='action'||view.activeSeatId!==own.id?'Wait for your action turn.':view.actionProgress&&(!continuesAction(view,'build'))?'Finish your current action first.':!view.actionProgress&&own.influenceOnTrack<1?'No influence discs remain.':analysis.limit<1?'No Build activations remain.':null;
   const valid=total>0&&!turnReason&&analysis.issues.length===0&&(analysis.cost<=own.resources.materials||!!funded), preview=valid?previewCommand(view,command):null;
   const componentReason=(type:BuildComponent):string|null=>{
+    if(isShip(type)&&getFaction(own.faction).componentSupply?.[type]===0)return `${getFaction(own.faction).name} does not build ${name(type)}s.`;
     if(['starbase','orbital','monolith'].includes(type)&&!technologies.includes(type))return `Research ${name(type)} first.`;
     const sample={...draft,items:[...draft.items,{id:'candidate',component:type,sectorId:null}]} as BuildOrderDraft;
     if(analyzeBuildOrder(view,sample).legalSectorIdsByItem.candidate.length===0)return type==='orbital'||type==='monolith'?`No sector can hold another ${type}.`:`All ${type}s are deployed.`;

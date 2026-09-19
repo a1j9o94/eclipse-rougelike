@@ -1,4 +1,4 @@
-import { getFaction } from "../../shared/eclipse/catalog";
+import {seatColor} from './factionColors';
 import type { PlayerView, Resource, Sector } from "../../shared/eclipse/types";
 import { sectorDefinition } from "../../shared/eclipse/sectors";
 import type { CommandCandidate } from "./SecondDawnBoard";
@@ -73,16 +73,8 @@ export default function SectorPlanets({ sector, view, candidates }: Props) {
   const own = view.seats.find((s) => s.id === view.viewerSeatId)!;
   const owned = sector.owner === own.id;
   const owner = view.seats.find((seat) => seat.id === sector.owner);
-  const playerColors = {
-    red: "#e99b9b",
-    blue: "#88cde7",
-    green: "#8bd4ad",
-    yellow: "#efd27b",
-    white: "#e3e7ed",
-    black: "#bac0ce",
-  };
   const cubeColor = owner
-    ? playerColors[getFaction(owner.faction).color]
+    ? seatColor(owner)
     : "#c4cbd1";
   const technologies = Object.values(own.technologies).flat();
   const squares: { id: string; resource: PlanetResource; advanced: boolean }[] =

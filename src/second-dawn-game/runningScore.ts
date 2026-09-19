@@ -42,6 +42,7 @@ export function runningScore(view: PlayerView, seatId: string): RunningScore {
     }),
     discoveriesKeptForVp: own ? view.private.discoveriesKept.length : counts?.discoveriesKept ?? 0,
     traitor: seat.traitor,
+    ancientPartsUsed:seat.ancientPartsUsed??0,
     researchTracks: [seat.technologies.military.length, seat.technologies.grid.length, seat.technologies.nano.length],
     ancientsOnBoard: view.ships.filter(ship => ship.type === 'ancient').length,
     resources: seat.resources,

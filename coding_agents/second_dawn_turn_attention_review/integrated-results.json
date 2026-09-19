@@ -1,0 +1,30 @@
+[
+  {
+    "browser": "chromium",
+    "width": 1440,
+    "reviewDidNotSubmit": true,
+    "separateConfirmationSubmitted": true,
+    "pageErrors": []
+  },
+  {
+    "browser": "chromium",
+    "width": 390,
+    "reviewDidNotSubmit": true,
+    "separateConfirmationSubmitted": true,
+    "pageErrors": []
+  },
+  {
+    "browser": "webkit",
+    "width": 1440,
+    "reviewDidNotSubmit": true,
+    "separateConfirmationSubmitted": true,
+    "pageErrors": []
+  },
+  {
+    "browser": "webkit",
+    "width": 390,
+    "reviewDidNotSubmit": true,
+    "separateConfirmationSubmitted": true,
+    "pageErrors": []
+  }
+]

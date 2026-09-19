@@ -19,6 +19,26 @@ export interface FactionPresentation {
 
 const common: FactionEffect[] = [];
 const presentations: Record<FactionId, Omit<FactionPresentation, "startingShip" | "blueprintSummary">> = {
+  'rho-indi': {
+    overview: 'Fast raiders who turn combat into income and can break treaties without losing victory points.',
+    benefits: [{icon:'drive',value:'4',label:'Move activations',detail:'Bring a wider fleet into position with four Move activations.'},{icon:'discovery',value:'−1',label:'draws become Money',detail:'Gain Money equal to your reputation draws minus one after combat.'},{icon:'shield',value:'0',label:'Traitor VP penalty',detail:'Betrayal still breaks diplomacy; the Traitor tile costs you no victory points.'}],
+    constraints: ['No Dreadnoughts. Two ambassadors available.','Trade 3 Science or Materials for 1 resource, or 3 Money for 2 resources.'],
+  },
+  magellan: {
+    overview: 'Pioneering explorers who recover Ancient technology and turn unused colony ships into resources.',
+    benefits: [{icon:'population',value:'+1',label:'resource per colony ship',detail:'Flip an unused colony ship to receive one Money, Science or Materials.'},{icon:'discovery',value:'4',label:'technologies unlock a discovery',detail:'Reaching four technologies on a track unlocks your stored discovery reward.'},{icon:'hull',value:'+1',label:'VP per Ancient part used',detail:'Installed Ancient ship parts score even if you later remove them.'}],
+    constraints: ['Converting a colony ship leaves fewer ships available to populate planets this round.','Trade 2 resources for 1; 3 Materials can instead buy 2 Money or Science.'],
+  },
+  midas: {
+    overview: 'A wealthy civilization that buys an extra activation when a plan needs one more step.',
+    benefits: [{icon:'influence',value:'+1',label:'paid activation per action',detail:'Buy one extra activation in the action you are taking. Explore and Research cost 3 Money; other actions cost 1.'},{icon:'population',value:'+1',label:'advanced Money planet',detail:'Begin with Advanced Economy and your advanced Money planet populated.'}],
+    constraints: ['The extra activation costs 1 more Money when six or fewer influence discs remain.','Extra Influence capacity is one disc operation. Reactions do not gain the paid bonus.'],
+  },
+  ragnarok: {
+    overview: 'Build and move in the same action to deploy your fleet exactly when it is needed.',
+    benefits: [{icon:'drive',value:'+1',label:'Move during Build',detail:'A Build action includes one Move activation.'},{icon:'structure',value:'+1',label:'Build during Move',detail:'A Move action includes one Build activation. Use the separate counters to choose the sequence.'},{icon:'cannon',label:'Neutron Bombs at setup',detail:'Start with a Cruiser and Neutron Bombs for capturing populated sectors.'}],
+    constraints: ['Mixed activations apply to normal actions, not reactions.','Trade 2 resources for 1. Ship costs, slots and initiative differ from the base boards.'],
+  },
   eridani: {
     overview: "A rich opening economy with flexible early ship power.",
     benefits: [{ icon: "energy", value: "+1", label: "energy on mobile ships", detail: "Interceptors, Cruisers, and Dreadnoughts each begin with one permanent energy." }, { icon: "discovery", value: "2", label: "private reputation draws", detail: "Draw two reputation tiles before play; opponents never see their values." }],

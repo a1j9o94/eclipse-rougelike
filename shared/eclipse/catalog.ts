@@ -5,6 +5,15 @@ import type { ShipPartId, ShipStats } from './parts';
 
 export const RULES_VERSION = 'second-dawn-base-2021-04-27' as const;
 export const CATALOG_VERSION = 'second-dawn-catalog-0.1' as const;
+export const EXPANDED_RULES_VERSION = 'second-dawn-expanded-v1-2026-05-20' as const;
+export const EXPANDED_CATALOG_VERSION = 'second-dawn-catalog-expanded-v1' as const;
+export type FactionProfile = 'base' | 'expanded-v1';
+export interface ProfileVersions { readonly rulesVersion: string; readonly catalogVersion: string }
+export function profileVersions(profile: FactionProfile): ProfileVersions {
+  return profile === 'base'
+    ? { rulesVersion: RULES_VERSION, catalogVersion: CATALOG_VERSION }
+    : { rulesVersion: EXPANDED_RULES_VERSION, catalogVersion: EXPANDED_CATALOG_VERSION };
+}
 export const RULEBOOK_URL =
   'https://www.dropbox.com/scl/fi/wfua8sx8lyp2axor71cjx/Eclipse2_rules-ENG_2021-04-27_small.pdf?rlkey=e6kaj8wow8rykg2esfbk8ixw0&dl=1';
 export type PlayerCount = 2 | 3 | 4 | 5 | 6;
@@ -12,6 +21,7 @@ export const FACTION_IDS = [
   'eridani', 'hydran', 'planta', 'draco', 'mechanema', 'orion',
   'terran-directorate', 'terran-federation', 'terran-union',
   'terran-republic', 'terran-conglomerate', 'terran-alliance',
+  'rho-indi', 'magellan', 'midas', 'ragnarok',
 ] as const;
 export type FactionId = (typeof FACTION_IDS)[number];
 export type CivilizationColor =
@@ -27,7 +37,12 @@ export type FactionVisualIdentity =
   | 'planta'
   | 'draco'
   | 'mechanema'
-  | 'orion';
+  | 'orion'
+  | 'rho-indi'
+  | 'magellan'
+  | 'midas'
+  | 'ragnarok';
+export type ShipDesignFamily = Exclude<FactionVisualIdentity, 'rho-indi' | 'magellan' | 'midas' | 'ragnarok'>;
 export type FactionCapability =
   | 'ancient-coexistence'
   | 'controlled-sector-vp'
@@ -44,7 +59,7 @@ export interface FactionCapabilities {
   advancedHomePopulation: readonly (keyof CatalogResources)[];
   reputationSlots: 3 | 4 | 5;
   dedicatedAmbassadorSlots: 0 | 1;
-  ambassadorSupply: 3;
+  ambassadorSupply: 2 | 3;
   /** Behavior-preserving policy hints. They are inputs to AI judgment, never rules. */
   ai: {
     readonly exploreBias: number;
@@ -94,6 +109,22 @@ export interface ConstructionCosts {
   orbital: number;
   monolith: number;
 }
+export interface TradeRate {
+  readonly from: keyof CatalogResources;
+  readonly to: keyof CatalogResources;
+  readonly input: number;
+  readonly output: 1 | 2;
+}
+export interface FactionSpecialAbilities {
+  readonly reputationMoneyPerDrawMinus?: number;
+  readonly ignoresTraitorPenalty?: boolean;
+  readonly convertColonyShipToResource?: boolean;
+  readonly privateInitialDiscovery?: boolean;
+  readonly fourthTechnologyDiscovery?: boolean;
+  readonly ancientPartVp?: number;
+  readonly paidAdditionalActivation?: { readonly explore: number; readonly research: number; readonly upgrade: number; readonly build: number; readonly move: number; readonly influence: number; readonly lowDiscSurcharge: number; readonly lowDiscThreshold: number };
+  readonly mixedAction?: { readonly move: { readonly move: number; readonly build: number }; readonly build: { readonly move: number; readonly build: number } };
+}
 export interface FactionDefinition {
   id: FactionId;
   name: string;
@@ -110,18 +141,22 @@ export interface FactionDefinition {
   /** Includes the disc placed on the starting sector; excludes research-only reserve discs. */
   startingInfluenceDiscs: number;
   startingShip: 'interceptor' | 'cruiser';
+  startingShips?: Partial<Record<FactionBlueprintShipType, number>>;
   startingReputationDraws: number;
   startingTechnologies: readonly string[];
   activations: ActionActivations;
   tradeRatio: number;
+  tradeRates?: readonly TradeRate[];
   constructionCosts: ConstructionCosts;
+  componentSupply?: Partial<Record<FactionBlueprintShipType, number>>;
   /** Physical board color remains the base-game piece/seat constraint. */
   emblem: FactionVisualIdentity;
-  shipDesignFamily: FactionVisualIdentity;
+  shipDesignFamily: ShipDesignFamily;
   content: FactionContentMetadata;
   sources: { readonly rules: string; readonly blueprints: string };
   capabilities: FactionCapabilities;
   blueprints: FactionBlueprints;
+  special?: FactionSpecialAbilities;
   /** Compatibility alias retained for existing callers. */
   source: string;
 }
@@ -131,6 +166,15 @@ const DIZED = 'https://rules.dized.com/game/dS7ANw3JR-O-HIg-7k5qVA/';
 const BLUEPRINT_SOURCE = 'https://steamcommunity.com/sharedfiles/filedetails/?id=2414358241';
 const CONTENT: FactionContentMetadata = {
   packId: 'second-dawn-base', kind: 'official', edition: 'second-edition', authority: 'publisher',
+};
+const EXPANDED_CONTENT: FactionContentMetadata = {
+  packId: 'drive-expanded-v1', kind: 'unofficial', edition: 'second-dawn-community', authority: 'user-supplied-drive',
+};
+const OUTCASTS_CONTENT: FactionContentMetadata = {
+  packId: 'second-dawn-outcasts', kind: 'official', edition: 'second-dawn-outcasts', authority: 'publisher',
+};
+const SEEKERS_CONTENT: FactionContentMetadata = {
+  packId: 'second-dawn-seekers', kind: 'official', edition: 'second-dawn-seekers', authority: 'publisher',
 };
 const normalActivations: ActionActivations = {
   explore: 1,
@@ -163,6 +207,18 @@ const STANDARD_BLUEPRINTS: FactionBlueprints = {
   dreadnought: blueprint('dreadnought', ['electron-computer', 'ion-cannon', 'ion-cannon', 'hull', 'hull', 'nuclear-source', 'nuclear-drive', null], { initiative: 0 }),
   starbase: blueprint('starbase', ['electron-computer', 'ion-cannon', null, 'hull', 'hull'], { energyProduction: 3, initiative: 3 }),
 };
+const RHO_BLUEPRINTS: FactionBlueprints = {
+  interceptor: blueprint('interceptor', ['ion-cannon', 'nuclear-source', 'nuclear-drive', null], { initiative: 3, shield: 1 }),
+  cruiser: blueprint('cruiser', ['electron-computer', 'ion-cannon', 'hull', 'nuclear-source', 'nuclear-drive', null], { initiative: 2, shield: 1 }),
+  dreadnought: blueprint('dreadnought', [], {},),
+  starbase: blueprint('starbase', ['electron-computer', 'ion-cannon', null, 'hull', 'hull'], { energyProduction: 3, initiative: 3, shield: 1 }),
+};
+const RAGNAROK_BLUEPRINTS: FactionBlueprints = {
+  interceptor: blueprint('interceptor', ['ion-cannon', 'nuclear-source', 'nuclear-drive', null, 'hull'], { initiative: 1 }),
+  cruiser: blueprint('cruiser', ['electron-computer', 'ion-cannon', 'nuclear-source', 'nuclear-drive', null], { energyProduction: 1, initiative: 2 }),
+  dreadnought: STANDARD_BLUEPRINTS.dreadnought,
+  starbase: STANDARD_BLUEPRINTS.starbase,
+};
 const ERIDANI_BLUEPRINTS: FactionBlueprints = {
   interceptor: blueprint('interceptor', [...STANDARD_BLUEPRINTS.interceptor.preprinted], { energyProduction: 1, initiative: 2 }),
   cruiser: blueprint('cruiser', [...STANDARD_BLUEPRINTS.cruiser.preprinted], { energyProduction: 1, initiative: 1 }),
@@ -189,9 +245,15 @@ const DEFAULT_CAPABILITIES: FactionCapabilities = {
     nanorobotsBias: 0, shipBuildBias: 0, upgradeBias: 0, diplomacyValue: 7,
     ancientExplorationValue: -4, controlledSectorValue: 0 },
 };
-const visual = (identity: FactionVisualIdentity, blueprints: FactionBlueprints = STANDARD_BLUEPRINTS) => ({
+const visual = (identity: ShipDesignFamily, blueprints: FactionBlueprints = STANDARD_BLUEPRINTS) => ({
   emblem: identity, shipDesignFamily: identity, content: CONTENT, blueprints,
 });
+const expandedVisual = (
+  emblem: Extract<FactionVisualIdentity, 'rho-indi' | 'magellan' | 'midas' | 'ragnarok'>,
+  shipDesignFamily: ShipDesignFamily,
+  blueprints: FactionBlueprints = STANDARD_BLUEPRINTS,
+  content: FactionContentMetadata = EXPANDED_CONTENT,
+) => ({ emblem, shipDesignFamily, content, blueprints });
 const sources = (rules: string) => ({ source: rules, sources: { rules, blueprints: BLUEPRINT_SOURCE } });
 const standard = {
   colonyShips: 3,
@@ -410,18 +472,137 @@ export const FACTION_REGISTRY: readonly FactionDefinition[] = [
     homeSector: 231,
     ...sources(DIZED + '5UezU4jfQ3uuS6mOuEERHw/terran-alliance'),
   },
+  {
+    ...standard,
+    ...expandedVisual('rho-indi', 'orion', RHO_BLUEPRINTS, OUTCASTS_CONTENT),
+    id: 'rho-indi', name: 'Rho Indi Syndicate', color: 'black', species: 'alien', homeSector: 236,
+    startingResources: { materials: 3, science: 3, money: 2 },
+    startingPopulation: { materials: 1, science: 0, money: 1 },
+    normalHomePopulation: { materials: 1, science: 0, money: 1 },
+    advancedHomePopulation: { materials: 0, science: 1, money: 1 },
+    colonyShips: 2, startingShips: { interceptor: 2 },
+    startingTechnologies: ['starbase', 'gauss-shield'],
+    activations: { ...normalActivations, move: 4 },
+    constructionCosts: { ...STANDARD_CONSTRUCTION_COSTS, interceptor: 4, cruiser: 6, starbase: 4 },
+    componentSupply: { interceptor: 8, cruiser: 4, dreadnought: 0, starbase: 4 },
+    capabilities: { ...DEFAULT_CAPABILITIES, reputationSlots: 4, dedicatedAmbassadorSlots: 0, ambassadorSupply: 2 },
+    tradeRates: [
+      { from: 'materials', to: 'science', input: 3, output: 1 }, { from: 'materials', to: 'money', input: 3, output: 1 },
+      { from: 'science', to: 'materials', input: 3, output: 1 }, { from: 'science', to: 'money', input: 3, output: 1 },
+      { from: 'money', to: 'materials', input: 3, output: 2 }, { from: 'money', to: 'science', input: 3, output: 2 },
+    ],
+    special: { reputationMoneyPerDrawMinus: 1, ignoresTraitorPenalty: true },
+    source: '.second-dawn/faction-research/originals/Outcasts and Seekers/03 Rho indi syndicate Outcasts rules.jpg',
+    sources: { rules: '.second-dawn/faction-research/originals/Outcasts and Seekers/03 Rho indi syndicate Outcasts rules.jpg', blueprints: '.second-dawn/faction-research/originals/Outcasts and Seekers/03 Rho indi syndicate board Outcasts.jpg' },
+  },
+  {
+    ...standard,
+    ...expandedVisual('magellan', 'hydran', STANDARD_BLUEPRINTS, SEEKERS_CONTENT),
+    id: 'magellan', name: 'Wardens of Magellan', color: 'blue', species: 'alien', homeSector: 233,
+    startingResources: { materials: 3, science: 2, money: 2 },
+    startingPopulation: { materials: 1, science: 0, money: 0 },
+    normalHomePopulation: { materials: 1, science: 0, money: 0 },
+    advancedHomePopulation: { materials: 0, science: 1, money: 1 },
+    startingTechnologies: ['fusion-source'],
+    tradeRatio: 2,
+    tradeRates: [
+      { from: 'money', to: 'science', input: 2, output: 1 }, { from: 'money', to: 'materials', input: 2, output: 1 },
+      { from: 'science', to: 'money', input: 2, output: 1 }, { from: 'science', to: 'materials', input: 2, output: 1 },
+      { from: 'materials', to: 'money', input: 2, output: 1 }, { from: 'materials', to: 'science', input: 2, output: 1 },
+      { from: 'materials', to: 'money', input: 3, output: 2 }, { from: 'materials', to: 'science', input: 3, output: 2 },
+    ],
+    special: { convertColonyShipToResource: true, privateInitialDiscovery: true, fourthTechnologyDiscovery: true, ancientPartVp: 1 },
+    source: '.second-dawn/faction-research/originals/Outcasts and Seekers/02 Warden of Magellan Seekers rules.jpg',
+    sources: { rules: '.second-dawn/faction-research/originals/Outcasts and Seekers/02 Warden of Magellan Seekers rules.jpg', blueprints: '.second-dawn/faction-research/originals/Outcasts and Seekers/02 Warden of Magellan Seekers.jpg' },
+  },
+  {
+    ...standard,
+    ...expandedVisual('midas', 'eridani'),
+    id: 'midas', name: 'Legion of Midas', color: 'yellow', species: 'alien', homeSector: 277,
+    startingResources: { materials: 2, science: 3, money: 4 },
+    startingPopulation: { materials: 0, science: 0, money: 1 },
+    normalHomePopulation: { materials: 0, science: 0, money: 0 },
+    advancedHomePopulation: { materials: 0, science: 1, money: 1 },
+    startingTechnologies: ['advanced-economy'],
+    capabilities: { ...DEFAULT_CAPABILITIES, advancedHomePopulation: ['money'] },
+    special: { paidAdditionalActivation: { explore: 3, research: 3, upgrade: 1, build: 1, move: 1, influence: 1, lowDiscSurcharge: 1, lowDiscThreshold: 6 } },
+    source: '.second-dawn/faction-research/originals/NEW FACTIONS/02 Remaining Info Sheet and Rules of the new Factions/Legion of Midas rules Info sheet PRINT final.jpg',
+    sources: { rules: '.second-dawn/faction-research/originals/NEW FACTIONS/02 Remaining Info Sheet and Rules of the new Factions/Legion of Midas rules Info sheet PRINT final.jpg', blueprints: '.second-dawn/faction-research/originals/NEW FACTIONS/01 Faction Board Sheets/12 Legion of Midas.jpg' },
+  },
+  {
+    ...standard,
+    ...expandedVisual('ragnarok', 'draco', RAGNAROK_BLUEPRINTS),
+    id: 'ragnarok', name: 'Heralds of Ragnarok', color: 'red', species: 'alien', homeSector: 299,
+    startingResources: { materials: 2, science: 3, money: 3 },
+    startingPopulation: { materials: 0, science: 1, money: 1 },
+    normalHomePopulation: { materials: 0, science: 1, money: 1 },
+    advancedHomePopulation: { materials: 0, science: 0, money: 1 },
+    startingShip: 'cruiser', startingTechnologies: ['neutron-bombs'],
+    constructionCosts: { ...STANDARD_CONSTRUCTION_COSTS, interceptor: 4, cruiser: 4 },
+    tradeRatio: 2,
+    special: { mixedAction: { move: { move: 2, build: 1 }, build: { move: 1, build: 2 } } },
+    source: '.second-dawn/faction-research/originals/NEW FACTIONS/02 Remaining Info Sheet and Rules of the new Factions/Heralds of Ragnarok rules Info sheet PRINT final.jpg',
+    sources: { rules: '.second-dawn/faction-research/originals/NEW FACTIONS/02 Remaining Info Sheet and Rules of the new Factions/Heralds of Ragnarok rules Info sheet PRINT final.jpg', blueprints: '.second-dawn/faction-research/originals/NEW FACTIONS/01 Faction Board Sheets/13 Heralds of Ragnarok Board.png' },
+  },
 ];
-/** Compatibility catalog view. Base selection order and reference identity stay stable. */
-export const BASE_FACTIONS: readonly BaseFaction[] = FACTION_REGISTRY;
+/** Compatibility catalog view. Base selection order and membership stay stable. */
+export const BASE_FACTIONS: readonly BaseFaction[] = FACTION_REGISTRY.slice(0, 12);
 export function getFaction(id: FactionId): BaseFaction {
-  const faction = BASE_FACTIONS.find((candidate) => candidate.id === id);
+  const faction = FACTION_REGISTRY.find((candidate) => candidate.id === id);
   if (!faction) throw new Error(`Faction is absent from this catalog: ${id}`);
   return faction;
 }
-export function listFactions(contentPack?: string): readonly FactionDefinition[] {
-  return contentPack
-    ? FACTION_REGISTRY.filter(faction => faction.content.packId === contentPack)
+export function listFactions(profileOrContentPack?: FactionProfile | string): readonly FactionDefinition[] {
+  if (profileOrContentPack === 'base' || profileOrContentPack === 'expanded-v1')
+    return listFactionsForProfile(profileOrContentPack);
+  return profileOrContentPack
+    ? FACTION_REGISTRY.filter(faction => faction.content.packId === profileOrContentPack)
     : FACTION_REGISTRY;
+}
+export function listFactionsForProfile(profile: FactionProfile): readonly FactionDefinition[] {
+  return profile === 'base' ? FACTION_REGISTRY.slice(0, 12) : FACTION_REGISTRY;
+}
+export function factionAvailableInProfile(id: FactionId, profile: FactionProfile): boolean {
+  return listFactionsForProfile(profile).some(faction => faction.id === id);
+}
+export const factionAllowedForProfile = factionAvailableInProfile;
+export function seatPieceColor(seat: { readonly faction: FactionId; readonly pieceColor?: CivilizationColor }): CivilizationColor {
+  return seat.pieceColor ?? getFaction(seat.faction).color;
+}
+export function tradeRates(
+  faction: FactionId,
+  from: keyof CatalogResources,
+  to: keyof CatalogResources,
+): readonly TradeRate[] {
+  if (from === to) return [];
+  const definition = getFaction(faction);
+  return definition.tradeRates?.filter(rate => rate.from === from && rate.to === to)
+    ?? [{ from, to, input: definition.tradeRatio, output: 1 }];
+}
+/** Cheapest exact payment for a requested received amount; null means the amount cannot be formed. */
+export function tradeQuote(
+  faction: FactionId,
+  from: keyof CatalogResources,
+  to: keyof CatalogResources,
+  receive: number,
+): { readonly input: number; readonly output: number } | null {
+  if (!Number.isSafeInteger(receive) || receive < 1) return null;
+  const rates = tradeRates(faction, from, to);
+  const one = Math.min(...rates.filter(rate => rate.output === 1).map(rate => rate.input));
+  const two = Math.min(...rates.filter(rate => rate.output === 2).map(rate => rate.input));
+  let input: number;
+  if (Number.isFinite(one) && Number.isFinite(two)) {
+    const pairs = two < one * 2 ? Math.floor(receive / 2) : 0;
+    input = pairs * two + (receive - pairs * 2) * one;
+  } else if (Number.isFinite(one)) input = receive * one;
+  else if (Number.isFinite(two) && receive % 2 === 0) input = receive / 2 * two;
+  else return null;
+  return Number.isSafeInteger(input) ? { input, output: receive } : null;
+}
+export function reputationDrawMoney(faction: FactionId, tilesDrawn: number): number {
+  if (!Number.isSafeInteger(tilesDrawn) || tilesDrawn < 0) return 0;
+  const minus = getFaction(faction).special?.reputationMoneyPerDrawMinus;
+  return minus === undefined ? 0 : Math.max(0, tilesDrawn - minus);
 }
 export function isFactionId(value: string): value is FactionId {
   return FACTION_IDS.some(id => id === value);
@@ -437,11 +618,11 @@ export function factionHasCapability(id: FactionId, capability: FactionCapabilit
     case 'advanced-home-population': return abilities.advancedHomePopulation.length > 0;
   }
 }
-export function validateFactionSelection(ids: readonly FactionId[]): string[] {
+export function validateFactionSelection(ids: readonly FactionId[], pieceColors?: readonly CivilizationColor[]): string[] {
   const seen = new Set<CivilizationColor>();
   const errors: string[] = [];
-  for (const id of ids) {
-    const color = getFaction(id).color;
+  for (const [index, id] of ids.entries()) {
+    const color = pieceColors?.[index] ?? getFaction(id).color;
     if (seen.has(color)) errors.push(`duplicate-color:${color}`);
     seen.add(color);
   }

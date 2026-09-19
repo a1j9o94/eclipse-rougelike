@@ -1,3 +1,4 @@
+import {seatColor} from './factionColors';
 import type {CSSProperties} from 'react';
 import {getFaction} from '../../shared/eclipse/catalog';
 import {rankScores,type ScoreBreakdown} from '../../shared/eclipse/scoring';
@@ -17,7 +18,6 @@ const categories:{id:PublicScoreCategory;label:string;color:string;path:string}[
  {id:'species',label:'Faction bonus',color:'#dfa884',path:'M12 2 22 12 12 22 2 12Z M7 12l5-5 5 5-5 5Z'},
  {id:'traitor',label:'Traitor',color:'#eb979c',path:'M12 2 21 6v6c0 5-9 10-9 10S3 17 3 12V6Z M8 8l8 8 M16 8l-8 8'},
 ];
-const factionColors={red:'#df7e86',blue:'#70c8e3',green:'#79c9a0',yellow:'#e8c766',white:'#e3e7ed',black:'#a4acba'};
 interface Props {
  view:PlayerView;scores:readonly ScoreBreakdown[];playerNames:Record<string,string>;
  onInspect:(seatId:string,category:PublicScoreCategory)=>void;
@@ -45,7 +45,7 @@ export default function ScoreWorkspace({view,scores,playerNames,onInspect,onHome
     const seat=view.seats.find(seat=>seat.id===score.playerId)!;const faction=getFaction(seat.faction);
     const positiveTotal=categories.reduce((sum,c)=>sum+Math.max(0,c.id==='reputation'&&!final?0:score[c.id]),0);
     const winner=final&&rank.place===1;
-    return <article key={seat.id} className={`dg-score-card${winner?' dg-score-winner':''}`} aria-label={`${faction.name} score`} style={{'--score-faction':factionColors[faction.color]} as CSSProperties}>
+    return <article key={seat.id} className={`dg-score-card${winner?' dg-score-winner':''}`} aria-label={`${faction.name} score`} style={{'--score-faction':seatColor(seat)} as CSSProperties}>
      <header className="dg-score-card-heading">
       <div className="dg-score-crest"><FactionSymbol faction={seat.faction}/><span aria-label={`Rank ${rank.place}`}>{rank.place}</span></div>
       <div className="dg-score-civilization"><h2>{faction.name}</h2><small>{seat.id===view.viewerSeatId?'You':playerNames[seat.id]??(seat.controller==='ai'?'Computer':'Player')}{seat.eliminated?' · eliminated':''}</small>{winner&&<span className="dg-score-winner-label">{rank.players.length>1?'Joint winner':'Winner'}</span>}</div>

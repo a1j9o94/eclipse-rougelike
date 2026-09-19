@@ -192,10 +192,15 @@ export function getPlayerView(
   if (!state.seats.some((seat) => seat.id === viewerSeatId)) return null;
   const own = state.privateSeats.find((seat) => seat.seatId === viewerSeatId);
   if (!own) throw new Error('Seat has no private-state record.');
+  const visibleOwn = { ...own };
+  if (visibleOwn.storedDiscovery && !visibleOwn.storedDiscoveryResolved)
+    delete visibleOwn.storedDiscovery;
   return structuredClone({
     rulesVersion: state.rulesVersion,
     catalogVersion: state.catalogVersion,
+    ...(state.factionProfile ? { factionProfile: state.factionProfile } : {}),
     revision: state.revision,
+    actionTurnSerial: state.actionTurnSerial ?? 0,
     round: state.round,
     phase: state.phase,
     activeSeatId: state.activeSeatId,
@@ -215,7 +220,7 @@ export function getPlayerView(
     sectors: state.sectors,
     ships: state.ships,
     technologyMarket: state.technologyMarket,
-    private: own,
+    private: visibleOwn,
     pendingDecision:
       state.pendingDecision?.owner === viewerSeatId
         ? state.pendingDecision

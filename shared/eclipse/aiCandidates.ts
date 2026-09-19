@@ -1,4 +1,4 @@
-import { BASE_COMPONENTS } from "./catalog";
+import { BASE_COMPONENTS, getFaction } from "./catalog";
 import { deriveBlueprintStats, effectiveBlueprintParts } from "./blueprints";
 import { fundingActionCost, fundingOptions } from "./funding";
 import {
@@ -52,9 +52,9 @@ export function generateAiCandidates(
     return basic;
   const limit = (action: Action) =>
     view.actionProgress
-      ? view.actionProgress.action === action &&
-        view.actionProgress.owner === seat.id
-        ? view.actionProgress.remaining
+      ? view.actionProgress.owner === seat.id &&
+        (view.actionProgress.budgets ? (view.actionProgress.budgets[action] ?? 0) > 0 : view.actionProgress.action === action)
+        ? view.actionProgress.budgets?.[action] ?? view.actionProgress.remaining
         : 0
       : seat.influenceOnTrack > 0 &&
           (!seat.passed || ["move", "build", "upgrade"].includes(action))
@@ -158,7 +158,7 @@ export function generateAiCandidates(
           count <=
           Math.min(
             limit("build"),
-            BASE_COMPONENTS.perColor[first.component] - deployed,
+            (getFaction(seat.faction).componentSupply?.[first.component] ?? BASE_COMPONENTS.perColor[first.component]) - deployed,
           );
           count++
         ) {

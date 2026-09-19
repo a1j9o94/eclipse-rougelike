@@ -1,6 +1,6 @@
 # Eclipse · Second Dawn
 
-A browser adaptation of the Second Dawn base game with solo AI games, multiplayer rooms, resumable player profiles, and an interactive preview using the same board and command engine.
+A browser adaptation of Eclipse: Second Dawn with solo AI games, multiplayer rooms, resumable player profiles, and an interactive preview using the same board and command engine.
 
 ## Run locally
 
@@ -36,10 +36,22 @@ Tests run with one worker. `npm run test:batched` provides smaller sequential ba
 
 [Vercel](https://eclipse-rougelike.vercel.app/) deploys pushes to `main` through Git integration. Feature branches do not deploy. The live site intentionally uses the existing Convex development deployment. See [DEPLOYMENT.md](DEPLOYMENT.md) for the configured release process.
 
+## Faction rosters
+
+New games default to **Expanded civilizations**: the base roster plus Rho Indi Syndicate, Wardens of Magellan, Legion of Midas, and Heralds of Ragnarok. Choose **Base only** to use the original roster. Expanded games let each player choose a unique piece color independently of their faction. Existing saves and rooms retain their original roster and rules version.
+
+The four additions follow the faction sheets and explicit trade amendments in the source Drive. Games still use eight rounds, private reputation, the existing technology market and random exploration/discovery; the collection's full house-rule variant is not enabled. Base factions retain their original trade rates.
+
+## Sound and navigation
+
+Game Settings provides independent dice sounds, game effects, and ambient music controls. New effects and music start off; enable them and adjust their volumes there. Pinch over the galaxy to zoom and use two-finger scrolling to pan. History scrolls within its own panel.
+
+Turn and upkeep notices draw attention when input is needed. Resource exchange is labeled **Convert**; reputation capacity choices remain within diplomacy rather than the main action menu.
+
 ## Community faction research and credits
 
-We are researching **Régis Étienne’s (@retienne) 24-faction collection**, using [his Google Drive files](https://drive.google.com/drive/folders/1pFDgHXE_gsLb2AT3hPptgiSuuM237KHR) as the source of truth. See his [faction overview](https://boardgamegeek.com/thread/3318132/my-24-factions-for-eclipse-second-dawn-for-the-gal), [balance variant](https://boardgamegeek.com/thread/3299146/less-random-and-more-balanced-games-variant), and [sector statistics](https://boardgamegeek.com/filepage/281330/eclipse-all-sectors-statistics-and-probabilities-f). Thanks to Régis and the many original designers, strategy authors, and playtesters who made this collection possible.
+The expanded roster is drawn from **Régis Étienne’s (@retienne) 24-faction collection**, using [his Google Drive files](https://drive.google.com/drive/folders/1pFDgHXE_gsLb2AT3hPptgiSuuM237KHR) as the source of truth. See his [faction overview](https://boardgamegeek.com/thread/3318132/my-24-factions-for-eclipse-second-dawn-for-the-gal), [balance variant](https://boardgamegeek.com/thread/3299146/less-random-and-more-balanced-games-variant), and [sector statistics](https://boardgamegeek.com/filepage/281330/eclipse-all-sectors-statistics-and-probabilities-f). Thanks to Régis and the many original designers, strategy authors, and playtesters who made this collection possible.
 
 The [research index](coding_agents/faction_research/README.md) includes faction abilities and implementation difficulty, AI strategy notes, a file inventory, and [full credits](coding_agents/faction_research/credits.md). The [complete original-file snapshot](https://github.com/a1j9o94/eclipse-rougelike/releases/tag/faction-sources-2026-09-19) is preserved as a GitHub release archive, keeping large artwork and editable templates out of the game bundle.
 
-The underlying Eclipse game is by **Touko Tahkokallio / Lautapelit.fi**. Community sources retain their original credits and notices. Research and archival inclusion do not mean those factions or house rules are enabled in the current game.
+The underlying Eclipse game is by **Touko Tahkokallio / Lautapelit.fi**. Community sources retain their original credits and notices. Only the four additions listed above are playable; the rest of the archived factions and house rules remain research material.

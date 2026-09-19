@@ -29,16 +29,16 @@ for(const [type,label] of [['research','Research'],['build','Build'],['move','Mo
    const destination=page.getByRole('button',{name:/legal move destination/}).first();await destination.click();chosen=await destination.getAttribute('aria-label');preview=await planner.innerText();
    await page.getByRole('button',{name:/^Confirm move/}).click();
   }else if(type==='trade'){
-   const panel=page.getByRole('region',{name:'Trade resources',exact:true});
+   const panel=page.getByRole('region',{name:'Convert resources',exact:true});
    await panel.waitFor();
    const increment=page.getByRole('button',{name:'Increase received amount',exact:true});
    if(await increment.isEnabled())await increment.click();
    preview=await panel.innerText();
    chosen=await panel.locator('.dg-trade-swap').innerText();
-   const visible=await page.getByRole('button',{name:'Confirm trade',exact:true}).evaluate(button=>{const bounds=button.getBoundingClientRect();let top=0,bottom=innerHeight;for(let ancestor=button.parentElement;ancestor;ancestor=ancestor.parentElement){if(/auto|scroll|hidden|clip/.test(getComputedStyle(ancestor).overflowY)){const box=ancestor.getBoundingClientRect();top=Math.max(top,box.top);bottom=Math.min(bottom,box.bottom);}}return bounds.top>=top&&bounds.bottom<=bottom;});
+   const visible=await page.getByRole('button',{name:'Confirm conversion',exact:true}).evaluate(button=>{const bounds=button.getBoundingClientRect();let top=0,bottom=innerHeight;for(let ancestor=button.parentElement;ancestor;ancestor=ancestor.parentElement){if(/auto|scroll|hidden|clip/.test(getComputedStyle(ancestor).overflowY)){const box=ancestor.getBoundingClientRect();top=Math.max(top,box.top);bottom=Math.min(bottom,box.bottom);}}return bounds.top>=top&&bounds.bottom<=bottom;});
    assert.ok(visible,'Trade confirmation must be visible before scrolling.');
    await page.screenshot({path:`${directory}/1366x768-trade-workflow.png`});
-   await page.getByRole('button',{name:'Confirm trade',exact:true}).click();
+   await page.getByRole('button',{name:'Confirm conversion',exact:true}).click();
   }else if(type==='research'){
    const technology=page.locator('.sd-tech').filter({hasText:'Within budget'}).first();
    await technology.waitFor();chosen=(await technology.innerText()).split('\n')[0];await technology.click();

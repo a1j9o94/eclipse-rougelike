@@ -1,3 +1,4 @@
+import {continuesAction} from './actionCapacity';
 import FactionActionBenefit from './FactionActionBenefit';
 import type {GameCommand,PlayerView} from '../../shared/eclipse/types';
 import type {CommandPreview} from '../../shared/eclipse/commandPreview';
@@ -7,7 +8,7 @@ export default function ActionEconomy({view,action,preview}:{view:PlayerView;act
  const own=view.seats.find(s=>s.id===view.viewerSeatId)!;const base=upkeepForecast(view);
  const reactionsOnly=view.phase==='action'&&own.passed&&!own.eliminated;
  const reaction=reactionsOnly&&['upgrade','build','move'].includes(action);
- const ongoing=view.actionProgress?.owner===own.id&&view.actionProgress.action===action;
+ const ongoing=['explore','influence','research','upgrade','build','move'].includes(action)&&continuesAction(view,action as import('../../shared/eclipse/types').Action);
  const consumesDisc=['explore','influence','research','upgrade','build','move'].includes(action)&&!ongoing;
  const bill=preview?.upkeepAfter??(consumesDisc?base.nextUpkeep:base.upkeep);
  const income=preview?.moneyIncomeAfter??base.income,money=preview?.resourcesAfter.money??base.money;

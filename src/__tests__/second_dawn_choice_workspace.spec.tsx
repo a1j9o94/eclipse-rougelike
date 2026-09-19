@@ -103,7 +103,7 @@ it('shows a fresh destruction result inside the active choice and clears it when
  expect(screen.queryByRole('button',{name:'Dismiss battle results'})).toBeNull();
 });
 
-it.each(['Research','Upgrade','Trade'])('keeps mobile %s controls in their workspace without a redundant Details button',action=>{
+it.each(['Research','Upgrade','Convert'])('keeps mobile %s controls in their workspace without a redundant Details button',action=>{
  vi.stubGlobal('matchMedia',vi.fn((query:string)=>({matches:query.includes('max-width'),media:query,addEventListener:vi.fn(),removeEventListener:vi.fn()})));
  render(<SecondDawnBoard {...props(fixture(false))}/>);
  fireEvent.click(screen.getByRole('button',{name:'Choose action',exact:true}));
@@ -130,4 +130,14 @@ it('keeps details in the toolbar and consolidates fleet inspection inside sector
  fireEvent.click(hide);expect(screen.queryByRole('button',{name:'Inspect fleet',exact:true})).toBeNull();
  fireEvent.click(screen.getByRole('button',{name:'Research',exact:true}));
  expect(screen.queryByRole('button',{name:'Show sector details'})).toBeNull();
+});
+
+it('offers Convert without a standalone reputation discard action',()=>{
+ const view=fixture(false);view.private.reputation=[3,4];
+ render(<SecondDawnBoard {...props(view)}/>);
+ const actions=screen.getByLabelText('Available actions');
+ expect(within(actions).queryByRole('button',{name:'Discard reputation'})).toBeNull();
+ fireEvent.click(within(actions).getByRole('button',{name:'Convert',exact:true}));
+ expect(screen.getByRole('heading',{name:'Convert resources'})).toBeVisible();
+ expect(screen.getByRole('button',{name:'Confirm conversion'})).toBeVisible();
 });

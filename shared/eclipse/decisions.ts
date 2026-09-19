@@ -292,8 +292,11 @@ export function resolveGeneralChoice(
       if (effect.kind === "resources")
         for (const resource of ["money", "science", "materials"] as Resource[])
           seat.resources[resource] += effect.resources[resource];
-      if (effect.kind === "ancient-ship-part")
+      if (effect.kind === "ancient-ship-part") {
+        if (getFaction(seat.faction).special?.ancientPartVp)
+          seat.ancientPartsUsed = (seat.ancientPartsUsed ?? 0) + 1;
         queueAncientPart(state, seat, effect.part);
+      }
       if (effect.kind === "place-unbuilt-ship") {
         requireRule(!!sector, "This discovery needs a sector.");
         if (

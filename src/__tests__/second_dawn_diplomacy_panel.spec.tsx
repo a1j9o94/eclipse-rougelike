@@ -3,6 +3,7 @@ import { render, screen, within, fireEvent } from "@testing-library/react";
 import DiplomacyPanel from "../second-dawn-game/DiplomacyPanel";
 import fixturesJson from "../second-dawn-game/reviewFixtures.json?raw";
 import type { GameState } from "../../shared/eclipse/types";
+import { createGame } from "../../shared/eclipse/setup";
 import { getPlayerView } from "../../shared/eclipse/protocol";
 import { incomeForPopulationAway } from "../../shared/eclipse/tracks";
 
@@ -113,3 +114,11 @@ it("inspects an opponent without rendering the viewer’s secret reputation valu
 });
 
 it("offers diplomacy from the inspected opponent card only after an explicit resource choice",()=>{const state=(JSON.parse(fixturesJson) as Record<string,GameState>).opening;const view=getPlayerView(state,state.seats[0].id)!;const command={type:'offer-diplomacy' as const,to:state.seats[1].id,resource:'science' as const};const submit=vi.fn();render(<DiplomacyPanel view={view} inspectedSeatId={state.seats[1].id} candidates={[{command,label:'Offer diplomacy',description:'Exchange using science.'}]} disabled={false} onSubmit={submit}/>);expect(submit).not.toHaveBeenCalled();expect(screen.getByText(/Form a relation.*1 VP/i)).toBeTruthy();fireEvent.click(screen.getByRole('button',{name:/Choose science population/i}));fireEvent.click(screen.getByRole('button',{name:/Offer ambassador exchange to Hydran Progress/i}));expect(submit).toHaveBeenCalledWith(command);});
+
+
+it("shows Rho Indi's actual two-ambassador supply", () => {
+  const state = createGame({ seed: 5, warpPortals: false, factionProfile: 'expanded-v1', seats: [{ id: 'a', faction: 'rho-indi', controller: 'human', pieceColor: 'black' }, { id: 'b', faction: 'hydran', controller: 'human', pieceColor: 'blue' }] });
+  render(<DiplomacyPanel view={getPlayerView(state, 'a')!} candidates={[]} disabled={false} onSubmit={() => {}}/>);
+  expect(screen.getByText('0 / 2 retained')).toBeVisible();
+  expect(screen.getAllByText('Empty ambassador slot')).toHaveLength(2);
+});

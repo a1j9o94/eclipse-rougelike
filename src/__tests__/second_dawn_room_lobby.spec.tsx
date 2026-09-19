@@ -34,3 +34,12 @@ it('edits timer with visual presets and validates custom bounds before saving',(
  fireEvent.click(screen.getByRole('button',{name:'48 hours',exact:true}));fireEvent.click(screen.getByRole('button',{name:'Save room settings'}));expect(change).toHaveBeenLastCalledWith({...lobby.settings,timerMs:172800000});
  const custom=screen.getByRole('spinbutton',{name:'Custom turn duration'});fireEvent.change(custom,{target:{value:'49'}});fireEvent.click(within(screen.getByRole('group',{name:'Timer units'})).getByRole('button',{name:'Hours',exact:true}));expect(screen.getByRole('button',{name:'Save room settings'})).toBeDisabled();
 });
+it('keeps an occupied seat after its incompatible faction is cleared and requires a new choice',()=>{
+ const handlers=callbacks();render(<RoomLobby lobby={{...lobby,seats:[{...lobby.seats[0],faction:null},lobby.seats[1]]}} disabled={false} {...handlers}/>);
+ expect(screen.getByText('Choose faction',{exact:true})).toBeVisible();expect(screen.getByRole('button',{name:'Ready to play'})).toBeDisabled();
+});
+it('lets an expanded room change piece color without changing species',()=>{
+ const handlers=callbacks();render(<RoomLobby lobby={{...lobby,settings:{...lobby.settings,factionProfile:'expanded-v1'},seats:[{...lobby.seats[0],faction:'magellan',pieceColor:'green'},{...lobby.seats[1],pieceColor:'red'}]}} disabled={false} {...handlers}/>);
+ expect(screen.getByRole('button',{name:/Red pieces.*Chosen by/})).toBeDisabled();fireEvent.click(screen.getByRole('button',{name:'Yellow pieces'}));expect(handlers.onFaction).toHaveBeenCalledWith('magellan','yellow');
+ expect(screen.getByRole('button',{name:'Hydran Progress',exact:true})).toBeEnabled();
+});

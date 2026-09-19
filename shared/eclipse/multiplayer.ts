@@ -1,4 +1,4 @@
-import { BASE_FACTIONS, type FactionId } from "./catalog";
+import { factionAllowedForProfile, getFaction, seatPieceColor, listFactionsForProfile, type CivilizationColor, type FactionProfile, type FactionId } from "./catalog";
 import type { AiDifficulty } from "./aiConfig";
 import type { GameState, SeatId } from "./types";
 
@@ -18,6 +18,7 @@ export interface MultiplayerRoomSettings {
   timerMs: number;
   warpPortals: boolean;
   aiDifficulty?: AiDifficulty;
+  factionProfile?: FactionProfile;
 }
 
 /** This projection intentionally excludes a guest ID, credential, email, and private game state. */
@@ -25,6 +26,7 @@ export interface MultiplayerLobbySeat {
   slot: number;
   username?: string | null;
   faction: FactionId | null;
+  pieceColor?: CivilizationColor;
   ready: boolean;
   isHost: boolean;
   occupied: boolean;
@@ -88,21 +90,48 @@ export function isMultiplayerSettings(value: MultiplayerRoomSettings): boolean {
     total >= MIN_MULTIPLAYER_HUMAN_SEATS &&
     total <= MAX_MULTIPLAYER_SEATS &&
     isMultiplayerTimerMs(value.timerMs) &&
+    (value.factionProfile === undefined || ["base", "expanded-v1"].includes(value.factionProfile)) &&
     (value.aiDifficulty === undefined || ["normal", "hard", "expert"].includes(value.aiDifficulty))
   );
 }
 
-export function roomFactionsAreDistinct(seats: readonly MultiplayerLobbySeat[]): boolean {
-  const factions = seats.flatMap((seat) => (seat.occupied && seat.faction ? [seat.faction] : []));
-  const colors = factions.map((factionId) => BASE_FACTIONS.find((faction) => faction.id === factionId)?.color);
-  return new Set(factions).size === factions.length && !colors.includes(undefined) && new Set(colors).size === colors.length;
+export function roomFactionsAreDistinct(seats: readonly MultiplayerLobbySeat[], profile: FactionProfile = 'base'): boolean {
+  const selected = seats.filter((seat): seat is MultiplayerLobbySeat & { faction: FactionId } => seat.occupied && seat.faction !== null);
+  if (selected.some(seat => !factionAllowedForProfile(seat.faction, profile))) return false;
+  const colors = selected.map(seat => profile === 'base' ? getFaction(seat.faction).color : seatPieceColor(seat));
+  return new Set(selected.map(seat => seat.faction)).size === selected.length && new Set(colors).size === colors.length;
+}
+
+/** Assign each computer an unused faction and piece color. Random is supplied by the authoritative caller. */
+export function roomAiSelections(humans: readonly { faction: FactionId; pieceColor?: CivilizationColor }[], count: number, profile: FactionProfile, random: () => number): Array<{ faction: FactionId; pieceColor: CivilizationColor }> {
+  const colors: CivilizationColor[] = ['red', 'blue', 'green', 'yellow', 'white', 'black'];
+  const usedColors = new Set(humans.map(seat => profile === 'base' ? getFaction(seat.faction).color : seatPieceColor(seat)));
+  const usedFactions = new Set(humans.map(seat => seat.faction));
+  const candidates = listFactionsForProfile(profile).filter(faction => faction.species === 'alien' && !usedFactions.has(faction.id));
+  if (profile !== 'base') {
+    for (let i = candidates.length - 1; i > 0; i--) {
+      const j = Math.floor(random() * (i + 1));
+      [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+    }
+  }
+  const result: Array<{ faction: FactionId; pieceColor: CivilizationColor }> = [];
+  for (const faction of candidates) {
+    if (result.length === count) break;
+    const pieceColor = profile === 'base' ? faction.color : colors.find(color => !usedColors.has(color));
+    if (!pieceColor || usedColors.has(pieceColor)) continue;
+    usedColors.add(pieceColor);
+    result.push({ faction: faction.id, pieceColor });
+  }
+  if (result.length !== count) throw new Error('Not enough unused faction board colors for AI seats.');
+  return result;
 }
 
 /** The host needs every configured human seat present, ready, and assigned a distinct faction. */
 export function roomCanStart(input: {
   humanSeatCount: number;
   aiCount: number;
-  seats: readonly Pick<MultiplayerLobbySeat, "slot" | "faction" | "ready" | "occupied">[];
+  factionProfile?: FactionProfile;
+  seats: readonly Pick<MultiplayerLobbySeat, "slot" | "faction" | "pieceColor" | "ready" | "occupied">[];
 }): boolean {
   const humanSeats = input.seats.filter((seat) => seat.slot <= input.humanSeatCount);
   const settings = {
@@ -115,7 +144,7 @@ export function roomCanStart(input: {
     isMultiplayerSettings(settings) &&
     humanSeats.length === input.humanSeatCount &&
     humanSeats.every((seat) => seat.occupied && seat.ready && seat.faction !== null) &&
-    roomFactionsAreDistinct(humanSeats.map((seat) => ({ ...seat, isHost: false })))
+    roomFactionsAreDistinct(humanSeats.map((seat) => ({ ...seat, isHost: false })), input.factionProfile)
   );
 }
 

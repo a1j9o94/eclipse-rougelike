@@ -1665,6 +1665,51 @@ export const SECTORS: readonly SectorDefinition[] = [
     source:
       "https://images.steamusercontent.com/ugc/1267149075135793543/60EB3911D8EAB7CD27E59B52DC14239DC903E2C4/",
   },
+  {
+    id: 233, name: "47 Ursae Majoris", wormholes: [0, 1, 3, 4], victoryPoints: 3,
+    population: [
+      { resource: "materials", advanced: false },
+      { resource: "science", advanced: true },
+      { resource: "money", advanced: true },
+    ],
+    ancients: 0, artifacts: 1, discovery: false, warpPortal: false,
+    guardian: false, gcds: false, homeArrow: 1,
+    source: ".second-dawn/faction-research/originals/Outcasts and Seekers/02 Warden of Magellan Seekers.jpg",
+  },
+  {
+    id: 236, name: "Rho Indi", wormholes: [0, 1, 3, 4], victoryPoints: 0,
+    population: [
+      { resource: "money", advanced: true },
+      { resource: "money", advanced: false },
+      { resource: "science", advanced: true },
+      { resource: "materials", advanced: false },
+    ],
+    ancients: 0, artifacts: 1, discovery: false, warpPortal: false,
+    guardian: false, gcds: false, homeArrow: 1,
+    source: ".second-dawn/faction-research/originals/Outcasts and Seekers/03 Rho indi syndicate Outcasts starting sector.jpg",
+  },
+  {
+    id: 277, name: "Phrygia - Ionys", wormholes: [0, 1, 3, 4], victoryPoints: 3,
+    population: [
+      { resource: "gray", advanced: false },
+      { resource: "money", advanced: true },
+      { resource: "science", advanced: true },
+    ],
+    ancients: 0, artifacts: 1, discovery: false, warpPortal: false,
+    guardian: false, gcds: false, homeArrow: 1,
+    source: ".second-dawn/faction-research/originals/NEW FACTIONS/03 Starting Sectors/New Starting Sectors print sheet03.jpg",
+  },
+  {
+    id: 299, name: "Yggdrasil", wormholes: [0, 1, 3, 4], victoryPoints: 3,
+    population: [
+      { resource: "money", advanced: true },
+      { resource: "money", advanced: false },
+      { resource: "science", advanced: false },
+    ],
+    ancients: 0, artifacts: 1, discovery: false, warpPortal: false,
+    guardian: false, gcds: false, homeArrow: 1,
+    source: ".second-dawn/faction-research/originals/NEW FACTIONS/03 Starting Sectors/New Starting Sectors print sheet03.jpg",
+  },
 ];
 
 export function sectorDefinition(id: number): SectorDefinition | undefined {

@@ -94,6 +94,10 @@ export function evaluateLegacyAiCommand(
             seat.resources[command.to] < 3
           ? 5
           : -20;
+    case "convert-colony-ship":
+      return utility(command.resource) * 3 - 2;
+    case "buy-activation":
+      return 12 - (getFaction(seat.faction).special?.paidAdditionalActivation?.[command.action] ?? 9);
     case "colonize":
       return (
         35 +

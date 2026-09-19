@@ -185,6 +185,11 @@ export function beginAction(
     "NOT_YOUR_TURN",
   );
   if (e.action) {
+    if (e.action.owner === seat.id && e.action.budgets) {
+      const budget = e.action.budgets[action] ?? 0;
+      requireRule(budget > 0, "This mixed action has no activations of that type remaining.");
+      return budget;
+    }
     requireRule(
       e.action.owner === seat.id &&
         e.action.action === action &&
@@ -197,22 +202,44 @@ export function beginAction(
     seat.influenceOnTrack > 0,
     "No influence discs remain for another action.",
   );
+  const mixed = !seat.passed ? getFaction(seat.faction).special?.mixedAction?.[action as 'move' | 'build'] : undefined;
   const n = capacity(seat, action);
   seat.influenceOnTrack--;
   seat.actionDiscs[action]++;
-  e.action = { owner: seat.id, action, remaining: n };
-  return n;
+  const mixedBudgets = mixed
+    ? { move: action === 'move' ? n : mixed.move, build: action === 'build' ? n : mixed.build }
+    : null;
+  e.action = mixedBudgets
+    ? { owner: seat.id, action, remaining: mixedBudgets.move + mixedBudgets.build, budgets: mixedBudgets }
+    : { owner: seat.id, action, remaining: n };
+  return mixedBudgets ? mixedBudgets[action === 'move' ? 'move' : 'build'] : n;
 }
-export function consumeActivations(state: GameState, count: number): void {
+export function consumeActivations(state: GameState, count: number, kind?: Action): void {
   const action = continuation(state).action;
+  const budgetKind = kind ?? action?.action;
+  const available = action?.budgets ? action.budgets[budgetKind!] ?? 0 : action?.remaining ?? 0;
   requireRule(
     !!action &&
       Number.isInteger(count) &&
       count > 0 &&
-      count <= action.remaining,
+      count <= available,
     "The action has too few activations.",
   );
-  action!.remaining -= count;
+  if (action!.budgets) {
+    action!.budgets[budgetKind!] = available - count;
+    action!.remaining = Object.values(action!.budgets).reduce((sum, value) => sum + (value ?? 0), 0);
+  } else action!.remaining -= count;
+}
+export function paidActivationCost(seat: Seat, action: Action): number | null {
+  const ability = getFaction(seat.faction).special?.paidAdditionalActivation;
+  if (!ability) return null;
+  return ability[action] + (seat.influenceOnTrack <= ability.lowDiscThreshold ? ability.lowDiscSurcharge : 0);
+}
+export function canBuyActivation(state: GameState, seat: Seat): boolean {
+  const action = continuation(state).action;
+  if (!action || action.owner !== seat.id || action.paidBonusUsed || seat.passed) return false;
+  const cost = paidActivationCost(seat, action.action);
+  return cost !== null && seat.resources.money >= cost;
 }
 export function resourceOptions(seat: Seat): Resource[] {
   return (["money", "science", "materials"] as Resource[]).filter(

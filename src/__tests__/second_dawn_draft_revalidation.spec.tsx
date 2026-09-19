@@ -44,6 +44,6 @@ it('keeps a newer edited draft when an earlier submission is accepted',()=>{
 it('still blocks an unaffordable saved trade using current legality without a review dialog',()=>{
  const view=initial();view.seats[0].resources.money=10;const submit=vi.fn();
  const trader=(current:PlayerView)=><ActionDraftProvider matchId="trade-legality" viewerSeatId="a" revision={current.revision}><TradePanel view={current} candidates={legalCommands(current)} disabled={false} onSubmit={submit}/><ActionDraftNotice/></ActionDraftProvider>;
- const rendered=render(trader(view));fireEvent.click(screen.getByRole('button',{name:'Increase received amount'}));expect(screen.getByRole('button',{name:'Confirm trade'})).toBeEnabled();
- const next=structuredClone(view);next.revision++;next.seats[0].resources.money=0;rendered.rerender(trader(next));expect(screen.getByRole('button',{name:'Confirm trade'})).toBeDisabled();expect(screen.queryByRole('button',{name:/reviewed/i})).toBeNull();fireEvent.click(screen.getByRole('button',{name:'Confirm trade'}));expect(submit).not.toHaveBeenCalled();
+ const rendered=render(trader(view));fireEvent.click(screen.getByRole('button',{name:'Increase received amount'}));expect(screen.getByRole('button',{name:'Confirm conversion'})).toBeEnabled();
+ const next=structuredClone(view);next.revision++;next.seats[0].resources.money=0;rendered.rerender(trader(next));expect(screen.getByRole('button',{name:'Confirm conversion'})).toBeDisabled();expect(screen.queryByRole('button',{name:/reviewed/i})).toBeNull();fireEvent.click(screen.getByRole('button',{name:'Confirm conversion'}));expect(submit).not.toHaveBeenCalled();
 });

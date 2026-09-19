@@ -1,7 +1,7 @@
 import { pauseAutoPass, skipPassedReactionTurns } from './autoPass';
 import { FIRST_PASS_MONEY } from './passing';
-import { fundingActionCost } from "./funding";
-import { getFaction } from "./catalog";
+import { fundingActionCost, fundingOptions } from "./funding";
+import { getFaction, tradeQuote } from "./catalog";
 import { tradeResources } from "./economy";
 import { colonize, performAction } from "./actions";
 import {
@@ -19,6 +19,8 @@ import {
   requireRule,
   RuleViolation,
   upkeepBalance,
+  canBuyActivation,
+  paidActivationCost,
 } from "./rulesState";
 import type {
   GameCommand,
@@ -27,6 +29,8 @@ import type {
   RuleResult,
   Seat,
 } from "./types";
+import { getPlayerView } from "./protocol";
+import { legalCommands } from "./legal";
 function nextSeat(state: GameState, seat: Seat): void {
   const i = state.seats.indexOf(seat);
   for (let offset = 1; offset <= state.seats.length; offset++) {
@@ -51,7 +55,26 @@ function finishAction(state: GameState, seat: Seat, events: GameEvent[]): void {
 function advance(state: GameState, events: GameEvent[]): void {
   if (presentNextDecision(state)) return;
   const action = continuation(state).action;
-  if (state.phase === "action" && action?.remaining === 0) {
+  if (state.phase === "action" && action?.budgets && action.remaining > 0) {
+    const view = getPlayerView(state, action.owner);
+    let usable = !!view && legalCommands(view, { perFamilyLimit: 1 }).some(candidate =>
+      (candidate.command.type === "move" || candidate.command.type === "build") &&
+      (action.budgets?.[candidate.command.type] ?? 0) > 0,
+    );
+    if (!usable && view && (action.budgets.build ?? 0) > 0) {
+      const fundedView = {
+        ...view,
+        seats: view.seats.map(seat => seat.id === action.owner
+          ? { ...seat, resources: { ...seat.resources, materials: 1000 } }
+          : seat),
+      };
+      usable = legalCommands(fundedView, { perFamilyLimit: 64 }).some(candidate =>
+        candidate.command.type === "build" && fundingOptions(view, candidate.command).length > 0,
+      );
+    }
+    if (!usable) action.remaining = 0;
+  }
+  if (state.phase === "action" && action?.remaining === 0 && !canBuyActivation(state, player(state, action.owner))) {
     // Resolve all committed draws/rewards first, then use the same boundary as
     // an explicit finish. A responding opponent never becomes the turn origin.
     finishAction(state, player(state, action.owner), events);
@@ -154,7 +177,7 @@ export function processGameCommand(
         emit(
           events,
           actor,
-          `${getFaction(seat.faction).name} gains ${trade.amount} ${trade.to} by trading ${trade.amount * getFaction(seat.faction).tradeRatio} ${trade.from}.`,
+          `${getFaction(seat.faction).name} gains ${trade.amount} ${trade.to} by trading ${tradeQuote(seat.faction, trade.from, trade.to, trade.amount)!.input} ${trade.from}.`,
           "resource",
         );
       }
@@ -195,6 +218,29 @@ export function processGameCommand(
         `${getFaction(seat.faction).name} trades resources.`,
         "resource",
       );
+    } else if (command.type === "convert-colony-ship") {
+      requireRule(
+        !state.pendingDecision ||
+          (state.pendingDecision.kind === "bankruptcy" && state.pendingDecision.owner === actor),
+        "Resolve the pending choice before converting a colony ship.",
+        "DECISION_PENDING",
+      );
+      requireRule(state.activeSeatId === actor, "Wait for your turn.", "NOT_YOUR_TURN");
+      requireRule(
+        (state.phase === "action" || state.phase === "upkeep") &&
+          !!getFaction(seat.faction).special?.convertColonyShipToResource,
+        "This faction cannot convert colony ships to resources.",
+      );
+      requireRule(seat.colonyShipsAvailable > 0, "No unused colony ship remains.");
+      seat.colonyShipsAvailable--;
+      seat.resources[command.resource]++;
+      if (state.pendingDecision?.kind === "bankruptcy") {
+        if (upkeepBalance(seat) >= 0) {
+          state.pendingDecision = null;
+          finishUpkeep(state, actor, events);
+        } else state.pendingDecision.shortfall = -upkeepBalance(seat);
+      }
+      emit(events, actor, `Converted a colony ship into 1 ${command.resource}.`, "resource");
     } else if (command.type === "discard-reputation") {
       requireRule(
         !state.pendingDecision ||
@@ -256,6 +302,19 @@ export function processGameCommand(
       );
       if (command.type === "colonize")
         colonize(state, seat, command.placements);
+      else if (command.type === "buy-activation") {
+        const progress = e.action;
+        requireRule(
+          state.phase === "action" && !!progress && progress.owner === actor && progress.action === command.action,
+          "Buy an activation for the open main action.",
+        );
+        requireRule(canBuyActivation(state, seat), "This paid activation is unavailable or unaffordable.");
+        const cost = paidActivationCost(seat, command.action)!;
+        seat.resources.money -= cost;
+        progress!.paidBonusUsed = true;
+        progress!.remaining++;
+        emit(events, actor, `Paid ${cost} money for one additional ${command.action} activation.`, "resource");
+      }
       else if (command.type === "offer-diplomacy") {
         requireRule(
           state.phase === "action",

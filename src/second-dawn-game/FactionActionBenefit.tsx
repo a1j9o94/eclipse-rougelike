@@ -6,6 +6,7 @@ interface Benefit {value:string;label:string;detail:string}
 function benefit(factionId:FactionId,action:GameCommand['type']):Benefit|null {
  const faction=getFaction(factionId);
  const abilities=faction.capabilities;
+ if(action==='trade'&&faction.tradeRates)return {value:'↔',label:'Faction trade rates',detail:faction.id==='rho-indi'?'Money trades 3 for 2; Science and Materials trade 3 for 1.':'Trade 2 for 1, or 3 Materials for 2 Money or Science.'};
  if(action==='trade'&&faction.tradeRatio!==3)return {value:`${faction.tradeRatio}:1`,label:faction.species==='terran'?'Terran trade':'Faction trade rate',detail:`Spend ${faction.tradeRatio} resources for one of another type.`};
  if(action==='build'&&faction.activations.build>2)return {value:String(faction.activations.build),label:'base builds / action',detail:'Reduced construction prices are already included. Technology bonuses add to this capacity.'};
  if(action==='upgrade'&&faction.activations.upgrade>2)return {value:String(faction.activations.upgrade),label:'base installs / action',detail:'Technology bonuses add to this capacity. Removals are free.'};

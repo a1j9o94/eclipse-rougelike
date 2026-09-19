@@ -1,5 +1,5 @@
 import { generateAiCandidates } from "./aiCandidates";
-import { factionHasCapability, getFaction } from "./catalog";
+import { factionHasCapability, getFaction, tradeQuote } from "./catalog";
 import { connectionBetween } from "./geometry";
 import { mapSector, movementAbilities } from "./rulesState";
 import { fundingOptions } from "./funding";
@@ -256,8 +256,7 @@ export function evaluateAiCommand(
       const lost = command.trades.reduce(
         (sum, t) =>
           sum +
-          t.amount *
-            getFaction(seat.faction).tradeRatio *
+          (tradeQuote(seat.faction, t.from, t.to, t.amount)?.input ?? Number.POSITIVE_INFINITY) *
             utility(t.from) *
             0.7,
         0,
@@ -298,6 +297,10 @@ export function evaluateAiCommand(
             seat.resources[command.to] < 3
           ? 5
           : -20;
+    case "convert-colony-ship":
+      return utility(command.resource) * 3 - 2;
+    case "buy-activation":
+      return 18 - (getFaction(seat.faction).special?.paidAdditionalActivation?.[command.action] ?? 9) * utility("money");
     case "colonize":
       return (
         35 +

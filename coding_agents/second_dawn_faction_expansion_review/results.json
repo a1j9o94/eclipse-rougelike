@@ -1,0 +1,114 @@
+[
+  {
+    "engine": "chromium",
+    "width": 1440,
+    "height": 900,
+    "scene": "picker",
+    "passed": true
+  },
+  {
+    "engine": "chromium",
+    "width": 1440,
+    "height": 900,
+    "scene": "ragnarok-mixed-action",
+    "passed": true
+  },
+  {
+    "engine": "chromium",
+    "width": 1440,
+    "height": 900,
+    "scene": "midas-extra-activation",
+    "passed": true
+  },
+  {
+    "engine": "chromium",
+    "width": 1440,
+    "height": 900,
+    "scene": "faction-magellan",
+    "passed": true
+  },
+  {
+    "engine": "chromium",
+    "width": 390,
+    "height": 844,
+    "scene": "picker",
+    "passed": true
+  },
+  {
+    "engine": "chromium",
+    "width": 390,
+    "height": 844,
+    "scene": "ragnarok-mixed-action",
+    "passed": true
+  },
+  {
+    "engine": "chromium",
+    "width": 390,
+    "height": 844,
+    "scene": "midas-extra-activation",
+    "passed": true
+  },
+  {
+    "engine": "chromium",
+    "width": 390,
+    "height": 844,
+    "scene": "faction-magellan",
+    "passed": true
+  },
+  {
+    "engine": "webkit",
+    "width": 1440,
+    "height": 900,
+    "scene": "picker",
+    "passed": true
+  },
+  {
+    "engine": "webkit",
+    "width": 1440,
+    "height": 900,
+    "scene": "ragnarok-mixed-action",
+    "passed": true
+  },
+  {
+    "engine": "webkit",
+    "width": 1440,
+    "height": 900,
+    "scene": "midas-extra-activation",
+    "passed": true
+  },
+  {
+    "engine": "webkit",
+    "width": 1440,
+    "height": 900,
+    "scene": "faction-magellan",
+    "passed": true
+  },
+  {
+    "engine": "webkit",
+    "width": 390,
+    "height": 844,
+    "scene": "picker",
+    "passed": true
+  },
+  {
+    "engine": "webkit",
+    "width": 390,
+    "height": 844,
+    "scene": "ragnarok-mixed-action",
+    "passed": true
+  },
+  {
+    "engine": "webkit",
+    "width": 390,
+    "height": 844,
+    "scene": "midas-extra-activation",
+    "passed": true
+  },
+  {
+    "engine": "webkit",
+    "width": 390,
+    "height": 844,
+    "scene": "faction-magellan",
+    "passed": true
+  }
+]

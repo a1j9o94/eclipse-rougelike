@@ -1,4 +1,4 @@
-import {getFaction} from '../../shared/eclipse/catalog';
+import {tradeQuote} from '../../shared/eclipse/catalog';
 import {TradeResourceIcon} from './TradePanel';
 import {previewCommand} from '../../shared/eclipse/commandPreview';
 import {researchCost,TECHNOLOGIES,type TechnologyId} from '../../shared/eclipse/technologies';
@@ -43,7 +43,7 @@ export default function ResearchWorkspace({view,purchases,selected,draft,disable
    {draftId&&draftId!==selected&&purchaseTech&&<div className="dg-research-draft-choice"><p>Your {purchaseTech.name} draft is still saved.</p><button onClick={()=>onSelect(draftId,false)}>Return to {purchaseTech.name} draft</button>{options[0]&&<button onClick={()=>onDraft(options[0])}>Research {selectedTech.name} instead</button>}<button onClick={()=>onDraft(null)}>Cancel saved draft</button></div>}
    {selected!==null&&!owned.has(selected)&&(!draftId||draftId===selected)&&<>
     {draft&&scienceCost!==null&&<div className="dg-research-commit">
-     {draft.command.type==='trade-and-act'&&<p className="dg-research-conversion-summary"><strong>Convert these resources</strong><span>{draft.command.trades.map(trade=><span key={trade.from}><TradeResourceIcon resource={trade.from}/><b>{trade.amount*getFaction(seat.faction).tradeRatio}</b><small>{trade.from}</small></span>)}</span></p>}
+     {draft.command.type==='trade-and-act'&&<p className="dg-research-conversion-summary"><strong>Convert these resources</strong><span>{draft.command.trades.map(trade=><span key={trade.from}><TradeResourceIcon resource={trade.from}/><b>{tradeQuote(seat.faction,trade.from,trade.to,trade.amount)?.input??0}</b><small>{trade.from}</small></span>)}</span></p>}
      {chosen?.type==='research'&&selectedTech.track==='rare'&&<p className="dg-research-track-summary">Research on the <strong>{humanize(chosen.track)}</strong> track</p>}
      {preview&&preview.moneyBalanceAfter<0&&<p className="dg-danger" role="alert">{Math.abs(preview.moneyBalanceAfter)} money short at upkeep after this action.</p>}
      <button className="sd-primary dg-research-buy" aria-label={`${draft.command.type==='trade-and-act'?'Convert & ':''}Research · ${scienceCost} science`} disabled={disabled||stale||!stillLegal} onClick={()=>onSubmit(draft.command)}><span>{draft.command.type==='trade-and-act'?'Convert & research':'Research'}</span><span><TradeResourceIcon resource="science"/><strong>{scienceCost}</strong></span></button>

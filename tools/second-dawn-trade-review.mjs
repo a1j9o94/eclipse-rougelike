@@ -5,14 +5,14 @@ try{
  for(const [width,height]of [[1366,768],[1440,900],[1920,1080]]){
  const page=await browser.newPage({viewport:{width,height}});
  await page.goto(`${(process.env.SECOND_DAWN_SITE_URL??'http://127.0.0.1:5175').replace(/\/$/,'')}/?position=midgame#second-dawn-preview`);
- await page.getByRole('button',{name:'Trade',exact:true}).first().click();
+ await page.getByRole('button',{name:'Convert',exact:true}).first().click();
  const before=await page.locator('.dg-trade-balance').innerText();
  await page.getByRole('button',{name:'Increase received amount'}).click();
  const increased=await page.getByRole('img',{name:'Receive 2 science'}).count()===1;
  await page.getByRole('button',{name:'Decrease received amount'}).click();
  await page.getByRole('button',{name:'Receive money'}).click();
  const receive=await page.getByRole('img',{name:'Receive 1 money'}).count()===1;
- const confirm=page.getByRole('button',{name:'Confirm trade'});
+ const confirm=page.getByRole('button',{name:'Confirm conversion'});
  const button=await confirm.boundingBox();const footer=await page.locator('.sd-footer').boundingBox();const workspace=await page.locator('.sd-main').boundingBox();
  await page.waitForTimeout(300);
  await page.screenshot({path:`coding_agents/second_dawn_revision_screenshots/${width}x${height}-trade.png`});

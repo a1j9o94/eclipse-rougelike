@@ -1,5 +1,5 @@
-import { getFaction } from "./catalog";
-import { capacity } from "./rulesState";
+import { getFaction, tradeQuote } from "./catalog";
+import { capacity, paidActivationCost } from "./rulesState";
 import {
   incomeForPopulationAway,
   upkeepForEmptyInfluenceSlots,
@@ -33,7 +33,7 @@ export function previewCommand(
     if (!fundingSeat) throw Error("A command preview needs an owned seat.");
     for (const trade of command.trades) {
       fundingSeat.resources[trade.from] -=
-        trade.amount * getFaction(fundingSeat.faction).tradeRatio;
+        (tradeQuote(fundingSeat.faction, trade.from, trade.to, trade.amount)?.input ?? 0);
       fundingSeat.resources[trade.to] += trade.amount;
     }
     return previewCommand(converted, command.action);
@@ -59,7 +59,7 @@ export function previewCommand(
     for (const build of command.builds)
       resources.materials -= faction.constructionCosts[build.component];
   if (command.type === "trade") {
-    resources[command.from] -= command.amount * faction.tradeRatio;
+    resources[command.from] -= (tradeQuote(seat.faction, command.from, command.to, command.amount)?.input ?? 0);
     resources[command.to] += command.amount;
   }
   if (command.type === "research") {
@@ -81,6 +81,9 @@ export function previewCommand(
   }
   if (command.type === "colonize")
     for (const p of command.placements) population[p.resource]++;
+  if (command.type === "convert-colony-ship") resources[command.resource]++;
+  if (command.type === "buy-activation")
+    resources.money -= paidActivationCost(seat, command.action) ?? 0;
   if (command.type === "influence") {
     influence += command.removeSectorIds.length - command.addSectorIds.length;
     for (const id of command.removeSectorIds) {

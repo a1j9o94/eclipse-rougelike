@@ -1,3 +1,4 @@
+import {seatColor} from './factionColors';
 import {useEffect,useRef,type CSSProperties,type ReactNode} from 'react';
 import {getFaction} from '../../shared/eclipse/catalog';
 import {publicBlueprint} from '../../shared/eclipse/legal';
@@ -5,7 +6,6 @@ import type {PlayerView} from '../../shared/eclipse/types';
 import {TECHNOLOGIES} from '../../shared/eclipse/technologies';
 import ShipSilhouette from './ShipSilhouette';
 import FactionSymbol from './FactionSymbol';
-import {FACTION_COLORS} from './factionColors';
 import {NeutralShipSilhouette} from './BattleOverview';
 import BlueprintLoadout,{ShipCapabilities} from './BlueprintLoadout';
 import {StatIcon} from './ShipPartStats';
@@ -21,7 +21,7 @@ function FleetBlueprintCard({view,ships}:{view:PlayerView;ships:PublicShipProfil
  const p=ships[0],seat=view.seats.find(seat=>seat.id===p.ship.owner);
  const blueprint=seat?.blueprints.find(b=>b.shipType===p.ship.type);
  const neutral=p.ship.type==='ancient'||p.ship.type==='guardian'||p.ship.type==='gcds';
- return <article className="dg-inspection-blueprint" style={{'--fleet-color':seat?FACTION_COLORS[getFaction(seat.faction).color]:'#cab88d'} as CSSProperties} aria-label={`${p.ownerName} ${p.name} fleet`}>
+ return <article className="dg-inspection-blueprint" style={{'--fleet-color':seat?seatColor(seat):'#cab88d'} as CSSProperties} aria-label={`${p.ownerName} ${p.name} fleet`}>
   <header className="dg-inspection-identity">
    <div className="dg-inspection-silhouette">{neutral?<NeutralShipSilhouette type={p.ship.type as 'ancient'|'guardian'|'gcds'}/>:<ShipSilhouette type={p.ship.type as 'interceptor'|'cruiser'|'dreadnought'|'starbase'} faction={seat?.faction}/>}</div>
    <div><span className="dg-inspection-owner">{seat&&<FactionSymbol faction={seat.faction}/>}<span>{p.ownerName}</span></span><h3>{p.name}</h3><small>{neutral?'Defender blueprint':'Public blueprint'}</small></div><strong className="dg-inspection-count" aria-label={`${ships.length} ships`}>×{ships.length}</strong>

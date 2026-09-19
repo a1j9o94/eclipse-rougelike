@@ -1,5 +1,5 @@
 import { bestReputation } from './reputation';
-import { factionHasCapability, getFaction } from './catalog';
+import { factionHasCapability, getFaction, reputationDrawMoney } from './catalog';
 import {
   deriveBlueprintStats,
   neutralBlueprint,
@@ -256,6 +256,11 @@ function nextReputation(
       drawn.push(...state.supplies.reputation.splice(roll.value, 1));
     }
     if (!drawn.length) continue;
+    const gained = reputationDrawMoney(player(state, owner).faction, drawn.length);
+    if (gained) {
+      player(state, owner).resources.money += gained;
+      emit(events, owner, `Gained ${gained} money from reputation draws.`, "resource");
+    }
     settleReputation(state, owner, drawn, reputationCapacity(player(state, owner)), events);
   }
   return true;

@@ -64,6 +64,10 @@ function actionSummary(command: GameCommand): string {
       return "Completed upkeep";
     case "trade":
       return `Gained ${command.amount} ${command.to} by trading ${command.from}`;
+    case "convert-colony-ship":
+      return `Converted a colony ship to ${command.resource}`;
+    case "buy-activation":
+      return `Bought an additional ${command.action} activation`;
     case "colonize":
       return `Colonized ${command.placements.length} planet space${command.placements.length === 1 ? "" : "s"}`;
     case "offer-diplomacy":

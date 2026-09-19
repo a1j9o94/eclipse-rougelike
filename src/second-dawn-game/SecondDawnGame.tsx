@@ -11,13 +11,14 @@ import {
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { getFaction } from "../../shared/eclipse/catalog";
-import type { FactionId } from "../../shared/eclipse/catalog";
+import type { FactionId, FactionProfile, CivilizationColor } from "../../shared/eclipse/catalog";
 import { loadOrCreateGuestCredential } from "../second-dawn-session/guestStorage";
 import { isGuestCredential } from "../../shared/eclipse/guest";
 import { legalCommands } from "../../shared/eclipse/legal";
 import type { GameCommand } from "../../shared/eclipse/types";
 import SecondDawnBoard from "./SecondDawnBoard";
 import SavedGames from "./SavedGames";
+import FactionProfilePicker from "./FactionProfilePicker";
 import FactionPicker from './FactionPicker';
 import RoomLobby,{RoomSettingsEditor} from './RoomLobby';
 import TurnClock from './TurnClock';
@@ -34,7 +35,7 @@ import "./game.css";
 import './mobileLauncher.css';
 const credentialKey = "eclipse.second-dawn.guest.v1";
 const matchKey = "eclipse.second-dawn.match.v1";
-const DEFAULT_ROOM_SETTINGS:MultiplayerRoomSettings={humanSeatCount:2,aiCount:0,timerMs:600000,warpPortals:true};
+const DEFAULT_ROOM_SETTINGS:MultiplayerRoomSettings={humanSeatCount:2,aiCount:0,timerMs:600000,warpPortals:true,factionProfile:"expanded-v1"};
 function readStorage(key: string): string | null {
   try {
     return localStorage.getItem(key);
@@ -110,6 +111,9 @@ function ConnectedGame() {
   const [aiCount, setAiCount] = useState(2);
   const [aiDifficulty, setAiDifficulty] = useState<AiDifficulty>('normal');
   const [faction, setFaction] = useState<FactionId>("terran-directorate");
+  const [factionProfile,setFactionProfile]=useState<FactionProfile>('expanded-v1');
+  const [pieceColor,setPieceColor]=useState<CivilizationColor>('red');
+  const chooseProfile=(profile:FactionProfile)=>{setFactionProfile(profile);if(profile==='base'&&['rho-indi','magellan','midas','ragnarok'].includes(faction))setFaction('terran-directorate');};
   const [warpPortals, setWarpPortals] = useState(true);
   const initialization = useRef<Promise<string> | null>(null);
   const lastRequest = useRef<{
@@ -179,7 +183,7 @@ function ConnectedGame() {
     try{await action();}catch(error){setStatus(error instanceof Error?error.message:'The room could not be updated.');}finally{setBusy(false);}
   }
   function newRoom(settings:MultiplayerRoomSettings){
-    void roomAction(async()=>{const result=await createRoom({credential:credential!,settings,faction});window.location.assign(roomInvitePath(result.roomToken));});
+    void roomAction(async()=>{const result=await createRoom({credential:credential!,settings:{...settings,factionProfile},faction,pieceColor:factionProfile==='expanded-v1'?pieceColor:undefined});window.location.assign(roomInvitePath(result.roomToken));});
   }
   useEffect(() => {
     if (credential) return;
@@ -212,7 +216,8 @@ function ConnectedGame() {
       const room = await createRoom({
         credential,
         faction,
-        settings:{humanSeatCount:1,aiCount,aiDifficulty,warpPortals,timerMs:DEFAULT_ROOM_SETTINGS.timerMs},
+        pieceColor:factionProfile==='expanded-v1'?pieceColor:undefined,
+        settings:{humanSeatCount:1,aiCount,aiDifficulty,warpPortals,factionProfile,timerMs:DEFAULT_ROOM_SETTINGS.timerMs},
       });
       await setRoomReady({credential,roomToken:room.roomToken,ready:true});
       const result=await startRoom({credential,roomToken:room.roomToken});
@@ -308,7 +313,7 @@ function ConnectedGame() {
         }}
       />{recovery.error&&<div className="dg-foreground-warning" role="alert"><span>{recovery.error}</span><button onClick={recovery.retry}>Retry refresh</button></div>}</>
     );
-  if(roomToken)return <><div className="dg-room-player-access"><ConnectionStatus connected={connected} browserOnline={browserOnline} sessionReady={Boolean(credential&&guest)} status={status}/>{playerAccess}</div>{room===undefined?<main className="dg-lobby"><p>Loading game room…</p></main>:room===null?<main className="dg-lobby"><h1>Room unavailable</h1><p>This room link is no longer available.</p><a href="/">All games</a></main>:<RoomLobby lobby={room} disabled={!connected||!credential||busy||guest===null} onJoin={selected=>{void roomAction(async()=>{await joinRoom({credential:credential!,roomToken,faction:selected});});}} onLeave={()=>{void roomAction(async()=>{await leaveRoom({credential:credential!,roomToken});window.location.assign('/');});}} onFaction={selected=>{void roomAction(async()=>{await chooseRoomFaction({credential:credential!,roomToken,faction:selected});});}} onReady={ready=>{void roomAction(async()=>{await setRoomReady({credential:credential!,roomToken,ready});});}} onSettings={settings=>{void roomAction(async()=>{await updateRoomSettings({credential:credential!,roomToken,settings});});}} onStart={()=>{void roomAction(async()=>{await startRoom({credential:credential!,roomToken});setRoomOverview(false);});}} onEnter={()=>setRoomOverview(false)}/>}</>;
+  if(roomToken)return <><div className="dg-room-player-access"><ConnectionStatus connected={connected} browserOnline={browserOnline} sessionReady={Boolean(credential&&guest)} status={status}/>{playerAccess}</div>{room===undefined?<main className="dg-lobby"><p>Loading game room…</p></main>:room===null?<main className="dg-lobby"><h1>Room unavailable</h1><p>This room link is no longer available.</p><a href="/">All games</a></main>:<RoomLobby lobby={room} disabled={!connected||!credential||busy||guest===null} onJoin={(selected,color)=>{void roomAction(async()=>{await joinRoom({credential:credential!,roomToken,faction:selected,pieceColor:color});});}} onLeave={()=>{void roomAction(async()=>{await leaveRoom({credential:credential!,roomToken});window.location.assign('/');});}} onFaction={(selected,color)=>{void roomAction(async()=>{await chooseRoomFaction({credential:credential!,roomToken,faction:selected,pieceColor:color});});}} onReady={ready=>{void roomAction(async()=>{await setRoomReady({credential:credential!,roomToken,ready});});}} onSettings={settings=>{void roomAction(async()=>{await updateRoomSettings({credential:credential!,roomToken,settings});});}} onStart={()=>{void roomAction(async()=>{await startRoom({credential:credential!,roomToken});setRoomOverview(false);});}} onEnter={()=>setRoomOverview(false)}/>}</>;
   return (
     <main className="dg-lobby">
       <div className="dg-lobby-inner">
@@ -332,13 +337,13 @@ function ConnectedGame() {
             <button onClick={() => setMatchId(null)}>Back to games</button>
           </>
         ) : creatingRoom ? (
-          <section className="dg-room dg-room-creation"><h2>Create multiplayer room</h2><div className="dg-room-creation-grid"><FactionPicker selected={faction} onSelect={setFaction} disabled={busy}/><div><RoomSettingsEditor settings={DEFAULT_ROOM_SETTINGS} disabled={!connected||!credential||busy} onSave={newRoom} saveLabel="Create room"/></div></div><button onClick={()=>setCreatingRoom(false)}>Back</button></section>
+          <section className="dg-room dg-room-creation"><h2>Create multiplayer room</h2><div className="dg-room-creation-grid"><FactionPicker selected={faction} onSelect={setFaction} disabled={busy} profile={factionProfile} pieceColor={pieceColor} onPieceColorChange={setPieceColor}/><div><RoomSettingsEditor onProfileChange={chooseProfile} settings={{...DEFAULT_ROOM_SETTINGS,factionProfile}} disabled={!connected||!credential||busy} onSave={newRoom} saveLabel="Create room"/></div></div><button onClick={()=>setCreatingRoom(false)}>Back</button></section>
         ) : creating ? (
           <section className="dg-setup">
-            <h2>New game</h2>
+            <h2>New game</h2><FactionProfilePicker value={factionProfile} onChange={chooseProfile} disabled={busy}/>
             <p className="dg-solo-wait">Solo · Wait for me. No turn timer; your game waits until you return.</p>
             <div className="dg-solo-setup-grid">
-            <FactionPicker selected={faction} onSelect={setFaction} disabled={busy}/>
+            <FactionPicker selected={faction} onSelect={setFaction} disabled={busy} profile={factionProfile} pieceColor={pieceColor} onPieceColorChange={setPieceColor}/>
             <aside className="dg-solo-controls">
             <label className="dg-field">
               AI opponents

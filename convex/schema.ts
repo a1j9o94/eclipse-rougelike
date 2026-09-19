@@ -1,6 +1,6 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
-import { factionValidator, phaseValidator, receiptValidator } from "./eclipseValidators";
+import { factionProfileValidator, pieceColorValidator, factionValidator, phaseValidator, receiptValidator } from "./eclipseValidators";
 
 /**
  * Eclipse: Second Dawn - Complete Data Schema
@@ -109,6 +109,7 @@ export default defineSchema({
     roomToken: v.string(),
     hostGuestId: v.id('eclipseGuestsV1'),
     status: v.union(v.literal('waiting'), v.literal('playing'), v.literal('finished'), v.literal('closed')),
+    factionProfile: v.optional(factionProfileValidator),
     humanSeatCount: v.number(),
     aiCount: v.number(),
     aiDifficulty: v.optional(v.union(v.literal('normal'), v.literal('hard'), v.literal('expert'))),
@@ -124,7 +125,8 @@ export default defineSchema({
     roomId: v.id('eclipseRoomsV1'),
     guestId: v.id('eclipseGuestsV1'),
     slot: v.number(),
-    faction: factionValidator,
+    faction: v.union(factionValidator, v.null()),
+    pieceColor: v.optional(pieceColorValidator),
     ready: v.boolean(),
     isHost: v.boolean(),
     joinedAt: v.number(),

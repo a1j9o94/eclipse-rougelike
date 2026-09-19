@@ -19,6 +19,7 @@ export interface ScoringInput {
   /** Include printed starting technologies and rare technologies. */
   readonly researchTracks: readonly [number, number, number];
   readonly ancientsOnBoard: number;
+  readonly ancientPartsUsed?: number;
   readonly resources: CatalogResources;
 }
 export interface ScoreBreakdown {
@@ -54,17 +55,19 @@ export function calculateScore(input: ScoringInput): ScoreBreakdown {
   const monoliths = input.sectors.reduce((sum, s) => sum + 3 * s.monoliths, 0);
   const portals = input.sectors.reduce((sum, s) => sum + s.portalVp, 0);
   const discoveries = 2 * input.discoveriesKeptForVp;
-  const traitor = input.traitor ? -2 : 0;
+  const faction = getFaction(input.faction);
+  const traitor = input.traitor && !faction.special?.ignoresTraitorPenalty ? -2 : 0;
   const research = input.researchTracks.reduce(
     (sum, n) => sum + researchTrackVp(n),
     0,
   );
-  const scoring = getFaction(input.faction).capabilities.endGameVp;
-  const species = scoring === 'controlled-sector'
+  const scoring = faction.capabilities.endGameVp;
+  const speciesBase = scoring === 'controlled-sector'
     ? input.sectors.length
     : scoring === 'surviving-ancient'
       ? input.ancientsOnBoard
       : 0;
+  const species = speciesBase + (input.ancientPartsUsed ?? 0) * (faction.special?.ancientPartVp ?? 0);
   return {
     playerId: input.playerId,
     reputation,

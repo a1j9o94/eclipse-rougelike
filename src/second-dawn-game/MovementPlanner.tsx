@@ -1,3 +1,4 @@
+import {continuesAction} from './actionCapacity';
 import { useEffect, useMemo } from 'react';
 import { useActionDraftGuard, useActionDraftState } from './actionDraftContext';
 import type { GameCommand, PlayerView } from '../../shared/eclipse/types';
@@ -39,7 +40,7 @@ export default function MovementPlanner({view,sourceSectorId,selectedTargetId,di
  return <section className="dg-movement-planner" aria-label="Move fleet">
   <header><div className="dg-movement-heading-copy"><span className="dg-eyebrow">MOVE FLEET</span><h2>{source?`Depart sector ${source.tileId}`:'Choose a departure sector'}</h2></div><div className="dg-movement-header-actions">{onChangeSource&&<button type="button" onClick={onChangeSource}>Change departure sector</button>}<button type="button" onClick={onClose} aria-label="Close movement planner">Close</button></div></header>
   {result&&<p className="dg-movement-result" role="status">{result}</p>}
-  {view.actionProgress?.owner===view.viewerSeatId&&view.actionProgress.action==='move'&&<p className="dg-movement-capacity">{queued.remainingCapacity} {queued.remainingCapacity===1?'move':'moves'} left in this action</p>}
+  {continuesAction(view,'move')&&<p className="dg-movement-capacity">{queued.remainingCapacity} {queued.remainingCapacity===1?'move':'moves'} left in this action</p>}
   <p className="dg-movement-steps">{routeMode?'1 Select ships · 2 Choose a sector on the galaxy · 3 Queue route · 4 Execute':'1 Select ships · 2 Choose a sector on the galaxy · 3 Confirm'}</p>
   <p>{activations} / {queued.remainingCapacity} move activations selected{source&&plan.leaveCapacity<plan.ships.length?` · ${plan.leaveCapacity} ships can leave without being pinned`:''}</p>
   <div className="dg-movement-ships">{plan.ships.map(ship=>{const checked=ids.includes(ship.id);const locked=disabled||!!ship.reason||(!checked&&(ids.length>=queued.remainingCapacity||ids.length>=plan.leaveCapacity));return <label key={ship.id} className={`dg-movement-ship ${checked?'is-selected':''} ${locked?'is-unavailable':''}`}><input type="checkbox" checked={checked} disabled={locked} onChange={()=>toggle(ship.id)} aria-label={ship.label}/><ShipSilhouette type={ship.type} faction={view.seats.find(seat=>seat.id===view.viewerSeatId)?.faction}/><span><strong>{ship.label}</strong><small>{ship.range} {ship.range===1?'sector':'sectors'} per activation</small>{ship.reason&&<small className="dg-danger">{ship.reason}</small>}</span></label>;})}</div>
