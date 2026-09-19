@@ -577,3 +577,13 @@ Outcome: let the user choose new factions from source-backed ability/difficulty 
 ### September 19, 2026 — Two-finger map scroll
 
 Outcome: pan the galaxy using ordinary trackpad scroll while preserving pinch zoom and panel scrolling. Acceptance, failed-first tests, browser checks and rollback are recorded in `coding_agents/second_dawn_trackpad_pan.md`. Both new pan tests failed before implementation; 14 relevant tests plus Chromium/WebKit, lint/build now pass.
+
+### September 19, 2026 — Plan A opt-in sound expansion
+
+Outcome: optional quiet interaction/result sounds and an original ambient match soundscape make play tactile without changing rules or existing dice preferences.
+
+Acceptance: new effects OFF/35%, music OFF/15%; saved independent settings and previews, shared audio context; authoritative receipt/public-visible-event confirmation; bounded/deduplicated playback; hidden/history/reconnect/leave cancellation; independent animations. See `coding_agents/second_dawn_sound_expansion.md` for test and browser evidence.
+
+Risks/rollback: autoplay is a silent fallback, no sound backlog; browser route departure must stop audio even if lazy React loading retains a mounted tree. Cosmetic code revert, no migration or backend change.
+
+Fail-first tests: new settings/API absent; invalid preview gain suppression; failed audio synthesis must not block the game; route departure must fade before delayed unmount. Additional focused coverage verifies receipt/deduplication/visibility, voice bounds, dice ducking and original dice behavior.

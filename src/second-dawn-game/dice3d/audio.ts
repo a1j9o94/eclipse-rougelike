@@ -4,6 +4,7 @@ export interface DiceSoundHandle {stop():void}
 const MAX_VOICES=12;
 const CLACK_SECONDS=.12;
 let context:AudioContext|null=null;
+let resumePending:Promise<void>=Promise.resolve();
 let output:DynamicsCompressorNode|null=null;
 let samples:AudioBuffer[]=[];
 const voices=new Set<DiceSoundHandle>();
@@ -42,14 +43,14 @@ export function prepareDiceAudio():void {
       stopAllDiceAudio();
       const Constructor=globalThis.AudioContext??(typeof window!=='undefined'?(window as Window & {webkitAudioContext?:typeof AudioContext}).webkitAudioContext:undefined);
       if(!Constructor)return;
-      context=new Constructor();
+      context=new Constructor();resumePending=Promise.resolve();
       output=context.createDynamicsCompressor();
       output.threshold.value=-16;output.knee.value=14;output.ratio.value=12;
       output.attack.value=.001;output.release.value=.08;
       output.connect(context.destination);
       samples=Array.from({length:6},(_,index)=>clackBuffer(context!,index));
     }
-    if(context.state==='suspended')void context.resume().catch(()=>{/* A later gesture can retry; old impacts are never queued. */});
+    if(context.state==='suspended')resumePending=context.resume().catch(()=>{/* A later gesture can retry; old impacts are never queued. */});
   }catch{/* Audio support must never block combat or create an unhandled autoplay rejection. */}
 }
 
@@ -86,6 +87,7 @@ export function playDiceImpact(strength:number,pan:number,volume:number):DiceSou
     }else gain.connect(output);
     source.onended=cleanup;
     voices.add(handle);source.start();
+    for(const listener of diceListeners)listener();
     return handle;
   }catch{handle.stop();return null;}
 }
@@ -94,3 +96,13 @@ export function playDiceImpact(strength:number,pan:number,volume:number):DiceSou
 export function stopAllDiceAudio():void {
   for(const voice of voices)voice.stop();
 }
+
+/** Shared cosmetic bus. Reading it never unlocks/creates audio or queues an event. */
+export function preparedAudioBus():{context:AudioContext;output:AudioNode}|null {
+ return context?.state==='running'&&output?{context,output}:null;
+}
+const diceListeners=new Set<()=>void>();
+export function onDiceImpact(listener:()=>void):()=>void {diceListeners.add(listener);return()=>{diceListeners.delete(listener);};}
+
+/** Explicit previews/music may await unlock; transient gameplay impacts never use this promise. */
+export async function prepareCosmeticAudio():Promise<boolean>{prepareDiceAudio();await resumePending;const ready=preparedAudioBus()!==null;if(ready&&typeof window!=='undefined')window.dispatchEvent(new Event('eclipse-audio-ready'));return ready;}

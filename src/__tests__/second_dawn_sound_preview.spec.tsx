@@ -1,0 +1,11 @@
+// @vitest-environment jsdom
+import {act,cleanup,fireEvent,render,screen} from '@testing-library/react';
+import {afterEach,beforeEach,expect,it,vi} from 'vitest';
+const audio=vi.hoisted(()=>({ready:vi.fn(),bus:vi.fn(),synthesize:vi.fn()}));
+vi.mock('../second-dawn-game/dice3d/audio',()=>({prepareCosmeticAudio:audio.ready,preparedAudioBus:audio.bus,onDiceImpact:()=>()=>{}}));
+vi.mock('../second-dawn-game/sound/synthesis',()=>({synthesizeAmbient:audio.synthesize}));
+import SoundSettingsControls from '../second-dawn-game/sound/SoundSettingsControls';
+beforeEach(()=>{localStorage.clear();vi.clearAllMocks();Object.defineProperty(document,'hidden',{configurable:true,value:false});audio.bus.mockReturnValue({context:{createGain:()=>({gain:{value:0},connect:vi.fn(),disconnect:vi.fn()})},output:{}});audio.synthesize.mockReturnValue({stop:vi.fn()});});afterEach(()=>{cleanup();vi.restoreAllMocks();});
+it('cancels an explicit preview if its screen leaves before unlock finishes',async()=>{let finish:()=>void=()=>{};audio.ready.mockReturnValue(new Promise<void>(resolve=>{finish=resolve;}));const ui=render(<SoundSettingsControls/>);fireEvent.click(screen.getByText('Preview ambient music'));ui.unmount();await act(async()=>finish());expect(audio.synthesize).not.toHaveBeenCalled();});
+it('discards a stale unlock instead of playing an old requested preview',async()=>{let finish:()=>void=()=>{};audio.ready.mockReturnValue(new Promise<void>(resolve=>{finish=resolve;}));let now=0;vi.spyOn(performance,'now').mockImplementation(()=>now);render(<SoundSettingsControls/>);fireEvent.click(screen.getByText('Preview ambient music'));now=2000;await act(async()=>finish());expect(audio.synthesize).not.toHaveBeenCalled();});
+it('a fresh explicit preview can await unlock without enabling ambient music',async()=>{audio.ready.mockResolvedValue(true);render(<SoundSettingsControls/>);await act(async()=>fireEvent.click(screen.getByText('Preview ambient music')));expect(audio.synthesize).toHaveBeenCalledOnce();expect(screen.getByRole('checkbox',{name:/Ambient music/})).not.toBeChecked();fireEvent.click(screen.getByText('Stop music preview'));expect(audio.synthesize.mock.results[0].value.stop).toHaveBeenCalledOnce();});

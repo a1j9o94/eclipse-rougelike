@@ -1,0 +1,192 @@
+[
+  {
+    "browser": "chromium",
+    "previewFromAllMuted": true,
+    "previewAutoStops": true
+  },
+  {
+    "browser": "chromium",
+    "width": 1440,
+    "contexts": 1,
+    "starts": [
+      {
+        "frequency": 440,
+        "time": 745.2999999970198,
+        "state": "running"
+      },
+      {
+        "frequency": 440,
+        "time": 1003.2999999970198,
+        "state": "running"
+      },
+      {
+        "frequency": 440,
+        "time": 1047.5,
+        "state": "running"
+      },
+      {
+        "frequency": 440,
+        "time": 1047.5,
+        "state": "running"
+      },
+      {
+        "frequency": 440,
+        "time": 1047.5999999940395,
+        "state": "running"
+      },
+      {
+        "frequency": 440,
+        "time": 1047.5999999940395,
+        "state": "running"
+      }
+    ],
+    "ended": 2,
+    "peak": 0.10199806094169617,
+    "errors": [],
+    "preferencesPersist": true,
+    "rotationOneCue": true,
+    "acceptedPlacementOneCue": true,
+    "hiddenStops": true,
+    "leaveStops": true
+  },
+  {
+    "browser": "chromium",
+    "width": 390,
+    "contexts": 1,
+    "starts": [
+      {
+        "frequency": 440,
+        "time": 1145,
+        "state": "running"
+      },
+      {
+        "frequency": 440,
+        "time": 1377.2000000029802,
+        "state": "running"
+      },
+      {
+        "frequency": 440,
+        "time": 1405.3999999910593,
+        "state": "running"
+      },
+      {
+        "frequency": 440,
+        "time": 1405.3999999910593,
+        "state": "running"
+      },
+      {
+        "frequency": 440,
+        "time": 1405.3999999910593,
+        "state": "running"
+      },
+      {
+        "frequency": 440,
+        "time": 1405.3999999910593,
+        "state": "running"
+      }
+    ],
+    "ended": 2,
+    "peak": 0.10199806094169617,
+    "errors": [],
+    "preferencesPersist": true,
+    "rotationOneCue": true,
+    "acceptedPlacementOneCue": true,
+    "hiddenStops": true,
+    "leaveStops": true
+  },
+  {
+    "browser": "webkit",
+    "previewFromAllMuted": true,
+    "previewAutoStops": true
+  },
+  {
+    "browser": "webkit",
+    "width": 1440,
+    "contexts": 1,
+    "starts": [
+      {
+        "frequency": 440,
+        "time": 1025,
+        "state": "running"
+      },
+      {
+        "frequency": 440,
+        "time": 1257,
+        "state": "running"
+      },
+      {
+        "frequency": 440,
+        "time": 1264,
+        "state": "running"
+      },
+      {
+        "frequency": 440,
+        "time": 1264,
+        "state": "running"
+      },
+      {
+        "frequency": 440,
+        "time": 1264,
+        "state": "running"
+      },
+      {
+        "frequency": 440,
+        "time": 1264,
+        "state": "running"
+      }
+    ],
+    "ended": 2,
+    "peak": 0.1010824516415596,
+    "errors": [],
+    "preferencesPersist": true,
+    "rotationOneCue": true,
+    "acceptedPlacementOneCue": true,
+    "hiddenStops": true,
+    "leaveStops": true
+  },
+  {
+    "browser": "webkit",
+    "width": 390,
+    "contexts": 1,
+    "starts": [
+      {
+        "frequency": 440,
+        "time": 1011,
+        "state": "running"
+      },
+      {
+        "frequency": 440,
+        "time": 1244,
+        "state": "running"
+      },
+      {
+        "frequency": 440,
+        "time": 1251,
+        "state": "running"
+      },
+      {
+        "frequency": 440,
+        "time": 1251,
+        "state": "running"
+      },
+      {
+        "frequency": 440,
+        "time": 1251,
+        "state": "running"
+      },
+      {
+        "frequency": 440,
+        "time": 1251,
+        "state": "running"
+      }
+    ],
+    "ended": 2,
+    "peak": 0.10208170115947723,
+    "errors": [],
+    "preferencesPersist": true,
+    "rotationOneCue": true,
+    "acceptedPlacementOneCue": true,
+    "hiddenStops": true,
+    "leaveStops": true
+  }
+]
