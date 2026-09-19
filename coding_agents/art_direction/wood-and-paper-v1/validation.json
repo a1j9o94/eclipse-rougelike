@@ -1,0 +1,149 @@
+[
+  {
+    "file": "sector-tiles.png",
+    "width": 1536,
+    "height": 1024,
+    "pngColorType": 6,
+    "alphaChannel": true,
+    "transparencyChunk": false,
+    "bytes": 2712649,
+    "sha256": "1351d38e74839c71de5dbf07e03efb63ca6aeb2a7461e904f4922ed2652a0157",
+    "pngIntegrity": "passed",
+    "alphaMin": 0,
+    "alphaMax": 254,
+    "fullyTransparentPixels": 610788,
+    "fullyOpaquePixels": 0,
+    "alphaSampleRows": {
+      "0": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "512": [
+        0,
+        0,
+        246,
+        0,
+        0
+      ],
+      "1023": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "file": "ship-figurines.png",
+    "width": 1536,
+    "height": 1024,
+    "pngColorType": 6,
+    "alphaChannel": true,
+    "transparencyChunk": false,
+    "bytes": 2495570,
+    "sha256": "ce6efa6cbc34f01d0c09453a62ff242178c3ac0391316bddfe824ef240622e6c",
+    "pngIntegrity": "passed",
+    "alphaMin": 0,
+    "alphaMax": 254,
+    "fullyTransparentPixels": 916428,
+    "fullyOpaquePixels": 0,
+    "alphaSampleRows": {
+      "0": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "512": [
+        0,
+        253,
+        0,
+        252,
+        2
+      ],
+      "1023": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "file": "paper-actions.png",
+    "width": 1536,
+    "height": 1024,
+    "pngColorType": 6,
+    "alphaChannel": true,
+    "transparencyChunk": false,
+    "bytes": 2946372,
+    "sha256": "1320b03d5c1b4147d23937801e80132f1b885a53ad4d8c4c3e0577449ba7e127",
+    "pngIntegrity": "passed",
+    "alphaMin": 0,
+    "alphaMax": 254,
+    "fullyTransparentPixels": 212910,
+    "fullyOpaquePixels": 0,
+    "alphaSampleRows": {
+      "0": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "512": [
+        0,
+        3,
+        3,
+        0,
+        0
+      ],
+      "1023": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "file": "whole-board.png",
+    "width": 1536,
+    "height": 1024,
+    "pngColorType": 2,
+    "alphaChannel": false,
+    "transparencyChunk": false,
+    "bytes": 3395216,
+    "sha256": "42e45b0dbea57d5f2ad206b367ce9b5a0e5e35eeee9979621f11c45413bd4dfc",
+    "pngIntegrity": "passed"
+  },
+  {
+    "file": "combat.png",
+    "width": 1536,
+    "height": 1024,
+    "pngColorType": 2,
+    "alphaChannel": false,
+    "transparencyChunk": false,
+    "bytes": 3011977,
+    "sha256": "d3288a4245dfaa7b72bbe0b1d2dda7fe277a86e0338c303d6d2dfc9b1dbffa7a",
+    "pngIntegrity": "passed"
+  },
+  {
+    "file": "research-blueprint.png",
+    "width": 1536,
+    "height": 1024,
+    "pngColorType": 2,
+    "alphaChannel": false,
+    "transparencyChunk": false,
+    "bytes": 3209544,
+    "sha256": "6a7a5bfde30c2fc6833650ec773b3ee200aae20be0c9e5e92a7f4e8a4eb72c61",
+    "pngIntegrity": "passed"
+  }
+]

@@ -596,3 +596,6 @@ Outcome: game-enabled approximate combat odds beside a selected movement destina
 
 ### September 19 — Full history and deliberate turn attention
 Outcome: rewind through the remaining game history with agreed truncation; draw attention centrally when a turn/upkeep needs input and remove routine save popups. Acceptance, user correction, fail-first tests, risks and verification are in `coding_agents/second_dawn_full_history_rollback.md`. Root owns cache/presentation integration and release; focused agents own truncation queries and recovery/modal verification. Existing match data is preserved; discarded timelines are inaccessible to game APIs.
+
+### September 19 — Wooden galaxy and paper play-area asset studies
+Outcome: give the user concrete reusable art references for carved sector tiles, three-dimensional ship figurines and paper actions, plus full-board/combat/research/blueprint compositions. Six built-in image generations and their exact prompts are saved in `coding_agents/art_direction/wood-and-paper-v1/`. Acceptance and visual review are in its README; read-only PNG integrity/alpha checks and hashes are in validation.json. No app code/rules changed. Lint/build pass. Production sprite slicing, camera/edge verification and live state overlays remain a later integration task; no approval of these studies is assumed.
