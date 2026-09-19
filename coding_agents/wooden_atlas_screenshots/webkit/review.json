@@ -1,0 +1,106 @@
+{
+  "scope": "Engineering browser checks, not human playtesting",
+  "results": [
+    {
+      "name": "opening",
+      "width": 1440,
+      "height": 900,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "midgame",
+      "width": 1440,
+      "height": 900,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "late",
+      "width": 1440,
+      "height": 900,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "research",
+      "width": 1440,
+      "height": 900,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "research-selected",
+      "width": 1440,
+      "height": 900,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "research-submitted",
+      "width": 1440,
+      "height": 900,
+      "horizontalOverflow": false
+    },
+    {
+      "task": "Research Improved Hull",
+      "result": "New engine receipt, public research history and next seat active"
+    },
+    {
+      "name": "blueprints",
+      "width": 1440,
+      "height": 900,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "blueprints",
+      "width": 390,
+      "height": 844,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "part-picker",
+      "width": 390,
+      "height": 844,
+      "horizontalOverflow": false
+    },
+    {
+      "task": "Mobile slot picker, upgrade and theme comparison",
+      "result": "Hull committed, theme toggle retains the fitted blueprint"
+    },
+    {
+      "name": "opening",
+      "width": 390,
+      "height": 844,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "sector-inspector",
+      "width": 390,
+      "height": 844,
+      "horizontalOverflow": false
+    },
+    {
+      "task": "Mobile sector selection",
+      "result": "222 selected through real map and inspector opened"
+    },
+    {
+      "name": "combat",
+      "width": 390,
+      "height": 844,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "combat",
+      "width": 1440,
+      "height": 900,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "combat",
+      "width": 1366,
+      "height": 768,
+      "horizontalOverflow": false
+    },
+    {
+      "task": "Manual combat allocation",
+      "result": "Recorded hit allocated to legal opponent and volley accepted"
+    }
+  ],
+  "errors": []
+}

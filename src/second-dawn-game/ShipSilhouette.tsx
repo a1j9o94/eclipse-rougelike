@@ -2,6 +2,9 @@ import type { BlueprintShipType } from '../../shared/eclipse/blueprints';
 import type { FactionId } from '../../shared/eclipse/catalog';
 import { factionShipDesign, shipDesignFamily } from './factionShipDesigns';
 import './factionShipDesigns.css';
+import { useContext } from 'react';
+import { AtlasArtContext } from './atlasArtContext';
+import { AtlasFigurine } from './AtlasArtwork';
 const HULLS: Record<BlueprintShipType, string> = {
   interceptor: 'M160 17 181 91 230 147 224 160 182 142 174 178 146 178 138 142 96 160 90 147 139 91Z',
   cruiser: 'M160 12 182 53 186 87 207 76 222 102 237 171 204 167 188 137 179 187 141 187 132 137 116 167 83 171 98 102 113 76 134 87 138 53Z',
@@ -10,9 +13,11 @@ const HULLS: Record<BlueprintShipType, string> = {
 };
 /** Original vector silhouettes: decorative ship identity, not a physical slot map. */
 export default function ShipSilhouette({ type, faction }: { type: BlueprintShipType; faction?: FactionId }) {
+  const atlas = useContext(AtlasArtContext);
   const name = type[0].toUpperCase() + type.slice(1);
   const family = faction ? shipDesignFamily(faction) : undefined;
   const design = family ? factionShipDesign(family, type) : undefined;
+  if (atlas) return <AtlasFigurine type={type} faction={faction} label={`${name} blueprint silhouette`} className="dg-ship-silhouette"/>;
   return <svg className="dg-ship-silhouette" role="img" aria-label={`${name} blueprint silhouette`} data-ship-family={family} viewBox="40 0 240 240">
     <circle cx="160" cy="120" r="105" className="dg-ship-radar" />
     <circle cx="160" cy="120" r="76" className="dg-ship-radar" />

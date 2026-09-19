@@ -599,3 +599,7 @@ Outcome: rewind through the remaining game history with agreed truncation; draw 
 
 ### September 19 — Wooden galaxy and paper play-area asset studies
 Outcome: give the user concrete reusable art references for carved sector tiles, three-dimensional ship figurines and paper actions, plus full-board/combat/research/blueprint compositions. Six built-in image generations and their exact prompts are saved in `coding_agents/art_direction/wood-and-paper-v1/`. Acceptance and visual review are in its README; read-only PNG integrity/alpha checks and hashes are in validation.json. No app code/rules changed. Lint/build pass. Production sprite slicing, camera/edge verification and live state overlays remain a later integration task; no approval of these studies is assumed.
+
+
+## 2026-09-19 — Wooden atlas review branch
+Outcome: interactive carved sector/ship-figurine galaxy with readable paper research, fitting and combat. Acceptance, sources, risks/rollback, fail-first tests and browser results: coding_agents/wooden_atlas_redesign.md. First slice isolated in feature/wooden-atlas-redesign; 33 focused tests and Chromium/WebKit walkthroughs pass. Human direction review, complete faction art and remaining screens are follow-ups. No main merge/deployment.

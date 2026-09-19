@@ -1,0 +1,182 @@
+/* Material study scoped to the isolated review route. The live game is unaffected. */
+:root:has(.atlas-review), .atlas-review {
+  --atlas-ink: #33291f;
+  --atlas-muted: #71624f;
+  --atlas-paper: #f0e6cf;
+  --atlas-rule: #b5a183;
+  --atlas-grain: repeating-linear-gradient(2deg, #91714906 0 1px, transparent 1px 4px);
+  --atlas-sheet: var(--atlas-grain), linear-gradient(120deg, #f4eddb, #e9ddc1);
+}
+.atlas-review { background: #3d291d; }
+.atlas-review .dg-app {
+  --sd-bg: #e5d8bb;
+  --sd-panel: #f0e6cf;
+  --sd-line: #b5a183;
+  --sd-muted: #71624f;
+  --sd-gold: #78522b;
+  color-scheme: light;
+  color: var(--atlas-ink);
+  background: var(--atlas-sheet);
+}
+.atlas-review .dg-review-bar {
+  background: #35271d;
+  color: #efe3c8;
+  border-bottom: 2px solid #a88454;
+}
+.atlas-review .dg-review-bar button,
+.atlas-review .dg-review-bar select { color: #efe3c8; background: #493527; border: 1px solid #8b7150; border-radius: 2px; }
+.atlas-review .dg-preview-label { font: 11px Georgia, serif; letter-spacing: 1.2px; }
+.atlas-review .dg-app :is(h1,h2,h3) { color: #3c2e20; font-family: Georgia, 'Times New Roman', serif; }
+.atlas-review .dg-app :is(p,small,label,summary,dt,dd) { color: #645641; }
+.atlas-review .dg-app :is(h1,h2,h3) { font-weight: 600; }
+.atlas-review .dg-app button { background: #f4ebd8; color: #40301e; border-color: #b39a75; border-radius: 3px; box-shadow: 0 2px 0 #71503218; }
+.atlas-review .dg-app button:hover:not(:disabled) { background: #fff8e8; color: #352617; border-color: #765637; }
+.atlas-review .dg-app :is(button[aria-pressed=true],button[aria-checked=true],button.is-selected,.sd-primary) { background: #ddc391; color: #302313; border-color: #896235; box-shadow: inset 0 0 0 1px #a7824d; }
+.atlas-review .dg-app .sd-primary { background: #705132; color: #fff5df; }
+.atlas-review .dg-app :focus-visible { outline-color: #765a2b; }
+.atlas-review .dg-app :is(input,select) { background: #fff8e8; color: #40301e; border-color: #aa9574; }
+.atlas-review .dg-app :is(.sd-header,.sd-toolbar,.sd-player-list,.dg-ai-activity-bar,.sd-footer,.dg-mobile-header,.dg-mobile-navigation,.dg-mobile-resource-strip) { background: var(--atlas-sheet); border-color: #ad9470; color: #423523; }
+.atlas-review .dg-app .sd-eclipse { background: #3c2c1e; border-color: #9b763f; box-shadow: 4px 1px 0 -1px #c09a60; }
+.atlas-review .dg-app .sd-player { background: transparent; border-radius: 2px; }
+.atlas-review .dg-app .sd-player[aria-pressed=true] { background: #e1cba2; }
+.atlas-review .dg-app .sd-player strong { color: #433725; }
+.atlas-review .dg-app .sd-player small { color: #756349; }
+.atlas-review .dg-app :is(.dg-running-score,.dg-upkeep-summary) { background: #e5d1a8; border-color: #aa8d5d; color: #624219; }
+.atlas-review .dg-app :is(.dg-danger,.sd-danger,.is-short) { color: #a23223; }
+.atlas-review .dg-app .sd-main {
+  background: repeating-linear-gradient(2deg,#e9bd7930 0 1px,transparent 2px 7px),repeating-linear-gradient(174deg,#28190d50 0 2px,transparent 3px 26px),linear-gradient(110deg,#553c28,#78583b 45%,#422c1c);
+}
+.atlas-review .dg-app .dg-galaxy {
+  margin: 14px;
+  width: calc(100% - 28px);
+  height: calc(100% - 28px);
+  background: radial-gradient(ellipse at center,#f1e7d0c4,#cdb994aa),repeating-linear-gradient(0deg,transparent 0 47px,#5942251f 48px 49px),repeating-linear-gradient(90deg,transparent 0 47px,#5942251f 48px 49px),#d9c7a5;
+  border: 1px solid #a0875c;
+  box-shadow: 0 2px 8px #1c120d88,inset 0 0 50px #7b57382b;
+}
+.atlas-review .dg-app .sd-map-heading { padding: 23px 30px; }
+.atlas-review .dg-app .sd-map-heading :is(h1,h2,p,span) { color: #5a432a; text-shadow: 0 1px #f7efd9; }
+.atlas-review .dg-app .sd-map-heading .sd-eyebrow { letter-spacing: 2px; }
+.atlas-review .dg-app .sd-map-heading h1 { font-size: 23px; }
+.atlas-review .dg-tile-face { fill: #b58b54; filter: drop-shadow(0 2px 1.5px #39230db3); }
+.atlas-review .dg-tile-atmosphere,.atlas-review .dg-sector-world { display: none; }
+.atlas-review .atlas-sector-relief { overflow: hidden; }
+.atlas-review .dg-tile-ownership { stroke-width: 2.5px; stroke-opacity: .9; }
+.atlas-review .dg-tile.is-selected .dg-tile-face { stroke: #63461e; stroke-width: 4px; }
+.atlas-review .dg-tile:hover .dg-tile-face { stroke: #765624; }
+.atlas-review .dg-sector-id { fill: #493319; paint-order: stroke; stroke: #e9d1a7; stroke-width: 2px; opacity: 1; }
+.atlas-review .dg-sector-vp { fill: #4d381e; paint-order: stroke; stroke: #e9d1a7; stroke-width: 2px; }
+.atlas-review .dg-tile [data-wormhole-edge] { fill: #432d17; stroke: #f7e5bb; stroke-width: 2px; }
+.atlas-review .dg-tile [data-wormhole-kind=generator] { stroke: #0f6770; }
+.atlas-review .dg-map-fleet-card > rect:first-child { fill: #4e3926; fill-opacity: .94; }
+.atlas-review .dg-map-fleet-card > svg { x: -23px; y: -16px; width: 29px; height: 30px; }
+.atlas-review .atlas-figurine { overflow: hidden; filter: drop-shadow(0 3px 2px #34231666); }
+.atlas-review .dg-map-fleet-card .atlas-figurine { filter: drop-shadow(0 1px .8px #180c0866); }
+.atlas-review .dg-app :is(.dg-map-key,.dg-galaxy-overview,.sd-map-controls) { background: #ede0c5ec; color: #4c3b24; border-color: #aa8d64; }
+.atlas-review .dg-key-wormhole { background: #61471f; }
+.atlas-review .dg-key-portal { border-color: #216b70; }
+.atlas-review .dg-app :is(.sd-inspector,.sd-workspace,.dg-choice-workspace,.dg-choice-header,.dg-choice-body,.dg-public-inspection,.dg-dialog,.sd-modal,.dg-game-dialog,.dg-mobile-sheet) {
+  color: var(--atlas-ink); background: var(--atlas-sheet); border-color: #ad9470;
+}
+.atlas-review .dg-app .sd-workspace { box-shadow: inset 0 0 70px #8c693411; }
+.atlas-review .dg-app :is(.dg-choice-header,.dg-blueprint-heading,.dg-battle-heading) { border-bottom-color: #a3885e; }
+.atlas-review .dg-app :is(.sd-tech,.dg-research-card,.dg-research-local,.dg-readonly-part,.dg-choice-card,.dg-planet-row,.dg-fleet-group,.dg-blueprint-canvas,.dg-blueprint-slot,.dg-battle-side,.dg-combat-ship-card,.dg-combat-split-card,.dg-die-choice,.dg-fight-card,.dg-retreat-card,.dg-shipyard-header,.dg-part-detail,.dg-discovery-reward,.dg-discovery-keep,.dg-sector-facts,.dg-score-card,.dg-tech-detail,.sd-part,.sd-blueprint,.dg-empire-section) {
+  background: var(--atlas-sheet); color: #493820; border-color: #af9670; box-shadow: 0 2px 5px #69512f17;
+}
+.atlas-review .dg-app :is(.dg-research-card.is-selected,.dg-combat-ship-card.is-selected,.dg-choice-card[aria-checked=true],.dg-blueprint-slot.is-selected) { background: #e5cea5; border-color: #79582e; }
+.atlas-review .dg-app :is(.dg-tech-effect,.dg-research-after,.dg-part-stats,.dg-stat-badge,.dg-stat-badge strong,.dg-readonly-part>strong,.dg-reactor-readout,.dg-reactor-readout strong,.dg-tech-detail,.dg-part-detail,.dg-blueprint-summary,.dg-fleet-summary,.dg-battle-side h3,.dg-combat-card-copy strong,.dg-die-heading,.dg-health-label,.dg-class-selector strong,.dg-research-conversion-summary>strong) { color: #4d3a22; }
+.atlas-review .dg-app :is(.dg-stat-badge small,.dg-part-detail p,.dg-tech-detail p,.dg-fleet-group small,.dg-tech-subtitle,.dg-readonly-slot,.dg-battle-subtitle,.dg-combat-card-copy small,.dg-blueprint-canvas-heading p) { color: #736046; }
+.atlas-review .dg-app :is(.dg-ship-silhouette,.dg-battle-neutral) { flex-shrink: 0; }
+.atlas-review .dg-app .dg-battle-overview { padding: 18px; background: #dcc9a4; border: 1px solid #ac8c5b; box-shadow: inset 0 0 36px #af895825; }
+.atlas-review .dg-app .dg-battle-fleet .atlas-figurine { width: 112px; height: 96px; }
+.atlas-review .dg-app :is(.dg-combat-ship-art,.dg-volley-source-art,.dg-volley-scene-target-art) { width: 100px; height: 88px; }
+.atlas-review .dg-app :is(.dg-volley-scene,.dg-volley-result,.dg-combat-explanation,.dg-hit-preview,.dg-combat-rollout,.dg-battle-stats) { color: #493820; background: #e3d0ab; border-color: #a28659; }
+.atlas-review .dg-app :is(.dg-blueprint-canvas,.dg-shipyard-header) { background: repeating-linear-gradient(0deg,transparent 0 23px,#8a745518 24px 25px),#eee4cd; }
+.atlas-review .dg-app .dg-blueprint-canvas { border: 1px solid #9f8968; }
+.atlas-review .dg-app .dg-upgrade-confirm { background: #ebdcc0; border-color: #b8a17a; }
+.atlas-review .dg-app .dg-compare { color: #79562a !important; border-color: #a47e47; }
+.atlas-review .dg-app .sd-tech>strong { font-family: Georgia,serif; font-size: 18px; color: #49361f; }
+.atlas-review .dg-app .sd-tech { border-radius: 2px; box-shadow: 0 3px 4px #69512f22; }
+.atlas-review .dg-app :is(.dg-trade-icon,.dg-stat-icon) { filter: saturate(.8) brightness(.68); }
+.atlas-review .dg-app :is(.dg-technology-stats,.dg-tech-stats,.dg-research-track-summary) { color: #4f3c23; }
+.atlas-review .dg-app .sd-eyebrow { color: #856538; }
+.atlas-review .dg-app .sd-players { background: var(--atlas-sheet); border-color: #b09a75; }
+.atlas-review .dg-app :is(.dg-ai-activity,.dg-ai-activity strong,.dg-ai-summary,.dg-ai-summary b,.dg-turn-order-label,.dg-roster-vp) { color: #624723; }
+.atlas-review .dg-app .dg-upkeep-summary summary { color: #665030; }
+.atlas-review .dg-app .dg-upkeep-summary summary strong { color: #356348; }
+.atlas-review .dg-app .dg-upkeep-summary summary strong.dg-danger { color: #a23223; }
+.atlas-review .dg-app .dg-danger { color: #a23223 !important; }
+.atlas-review .dg-app .dg-upkeep-summary summary>span { color: #765733; }
+.atlas-review .dg-app :is(.sd-player>.dg-faction-symbol,.sd-player .dg-faction-symbol) { filter: brightness(.62) saturate(1.5); }
+.atlas-review .dg-app .dg-owned-research { background: #e2d3b4; border-color: #baa078; }
+.atlas-review .dg-app :is(.dg-owned-tile>strong,.dg-owned-tracks h3,.dg-owned-tracks h3>span,.dg-owned-research summary>span,.dg-owned-description) { color: #60492b; }
+.atlas-review .dg-app .dg-owned-tiles>.dg-owned-tile>strong { color: #49331c; }
+.atlas-review .dg-app .sd-tech .dg-stat-badge { background: transparent; }
+.atlas-review .dg-app :is(.dg-science-budget,.dg-science-budget>span,.dg-research-price) { color: #604575; background: transparent; }
+.atlas-review .dg-app .dg-science-budget { border: 1px solid #9e83ab; background: #e7dae8; }
+.atlas-review .dg-app .sd-tech .dg-research-price .dg-research-price-value>:is(strong,small) { color: #604575; }
+.atlas-review .dg-app .dg-research-affordability { color: #3c6547; }
+.atlas-review .dg-app .dg-research-shortfall .dg-research-affordability { color: #98442d; }
+.atlas-review .dg-app .dg-research-cost-state { color: #716046; }
+.atlas-review .dg-app :is(.dg-battle-class-info>strong,.dg-battle-stat,.dg-battle-side h3>span,.dg-battle-overview>header>span) { color: #634929; }
+.atlas-review .dg-app .dg-battle-ship-art { flex-basis: 95px; }
+.atlas-review .dg-app .dg-battle-ship-art :is(.dg-ship-silhouette,.dg-battle-neutral) { width: 95px; height: 85px; }
+.atlas-review .dg-app .dg-stat-badge[style] { filter: brightness(.75) saturate(.8); }
+.atlas-review .dg-app :is(.dg-choice-header strong,.dg-dice-tray header strong,.dg-target-projection,.dg-battle-class-info>strong) { color: #553c1e; }
+.atlas-review .dg-app :is(.dg-dice-tray,.dg-volley-target,.dg-combat-turn,.dg-combat-aftermath) { background: #e2cfaa; border-color: #ad8c5a; }
+.atlas-review .dg-app .dg-combat-ship-art :is(.dg-ship-silhouette,.dg-battle-neutral) { width: 100%; height: 100%; }
+.atlas-review .dg-app .dg-volley-target>p { color: #675033; }
+.atlas-review .dg-app .dg-volley-die { color: #463521; background: #f6eedc; }
+.atlas-review .dg-map-fleet-card > rect { x: -22px; y: 8px; width: 43px; height: 13px; rx: 6px; }
+.atlas-review .dg-map-fleet-card > svg { x: -24px; y: -10px; width: 37px; height: 34px; }
+.atlas-review .dg-map-fleet-card .dg-fleet-label { transform: translate(4px,13px); paint-order: stroke; stroke: #3e2b16; stroke-width: 4px; stroke-linejoin: round; }
+.atlas-review .sd-frontier polygon { fill: #d7c39d; fill-opacity: .6; stroke: #8c7046; stroke-dasharray: 3 3; }
+.atlas-review .sd-frontier text { fill: #75572e; }
+.atlas-review .dg-choice-body:has(>.dg-combat-allocation) { display: flex; flex-direction: column; }
+.atlas-review .dg-choice-body:has(>.dg-combat-allocation)>.dg-battle-overview { order: -1; flex: 0 0 auto; }
+.atlas-review .dg-choice-body:has(>.dg-combat-allocation)>.dg-combat-allocation { flex: 0 0 auto; }
+.atlas-review .dg-app :is(.dg-class-selector,.dg-mobile-footer) { background: var(--atlas-sheet); }
+.atlas-review .dg-app :is(.dg-blueprint-slot>strong,.dg-slot-title,.dg-slot-title b,.dg-reactor-readout>span,.dg-yard-eyebrow,.dg-blueprint-canvas-heading>span,.dg-mobile-turn strong,.dg-mobile-resources strong,.dg-stat-comparison caption) { color: #664a28; }
+.atlas-review .dg-app .dg-shipyard-header>.atlas-figurine { width: 108px; height: 80px; flex-basis: 108px; }
+body:has(.atlas-review) :is(.dg-part-picker,.dg-part-picker-current,.dg-part-picker-footer,.dg-public-inspection-dialog,.dg-game-dialog) { background: var(--atlas-sheet); color: var(--atlas-ink); border-color: #ac926a; }
+body:has(.atlas-review) .dg-part-picker :is(h2,h3,strong,.dg-part-choice-title,.dg-stat-badge,.dg-stat-badge strong) { color: #49331c; }
+body:has(.atlas-review) .dg-part-picker :is(p,small,span,summary) { color: #705a3e; }
+body:has(.atlas-review) .dg-part-picker button { background: #efe2c8; color: #513b20; border-color: #b49a73; }
+body:has(.atlas-review) .dg-part-picker button[aria-pressed=true] { background: #d3b781; color: #37230c; border-color: #8e6b35; }
+body:has(.atlas-review) .dg-part-picker .dg-part-picker-warning { background: #ecd6b1; border-color: #946536; color: #744621; }
+.atlas-review .dg-app :is(.dg-mobile-sheet-header,.dg-mobile-sheet-expand,.dg-mobile-sheet-expand strong) { background: var(--atlas-sheet); color: #654925; }
+.atlas-review .dg-app .sd-inspector.dg-mobile-sheet { background: var(--atlas-sheet); }
+.atlas-review .dg-app .dg-battle-weapons { color: #725222; }
+.atlas-review .dg-app .dg-battle-weapons>span { filter: brightness(.65) saturate(.85); }
+.atlas-review .dg-app .dg-fleet-group-main strong { color: #51391c; }
+.atlas-review .dg-app .dg-fleet-count { filter: brightness(.62) saturate(1.3); }
+.atlas-review .dg-app .dg-planet-row :is(strong,.dg-planet-orb) { filter: brightness(.65) saturate(.85); }
+.atlas-review .dg-app .dg-planet-legend { color: #705536; }
+.atlas-review .dg-app .dg-running-score { background: #e5cea4 !important; }
+.atlas-review .dg-app .dg-running-score :is(small,strong) { color: #5f401c; }
+.atlas-review .dg-app .dg-next-starter { color: #77551e; }
+.atlas-review .dg-app .dg-traitor-marker { color: #9a3426; }
+@media(max-width:760px) {
+  .atlas-review .dg-app .dg-blueprint-editor .dg-shipyard-header { grid-template-columns: 90px minmax(0,1fr); }
+  .atlas-review .dg-app .dg-shipyard-header>.atlas-figurine { width: 90px; height: 76px; }
+  .atlas-review .dg-app .dg-battle-sides { grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 7px; }
+  .atlas-review .dg-app .dg-battle-side { padding: 8px; }
+  .atlas-review .dg-app .dg-battle-classes { grid-template-columns: minmax(0,1fr); }
+  .atlas-review .dg-app .dg-battle-class { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .atlas-review .dg-app .dg-battle-ship-art { flex-basis: auto; align-self: center; }
+  .atlas-review .dg-app .dg-battle-ship-art :is(.dg-ship-silhouette,.dg-battle-neutral) { width: 78px; height: 64px; }
+  .atlas-review .dg-app .dg-battle-side h3 { min-height: 43px; align-content: start; }
+  .atlas-review .dg-app .dg-battle-side h3>span { display: none; }
+  .atlas-review .dg-app .dg-combat-allocation>.sd-primary:disabled { position: static; }
+}
+@media(max-width:760px) {
+  .atlas-review .dg-preview-label { display: none; }
+  .atlas-review .dg-review-bar { overflow-x: auto; white-space: nowrap; gap: 9px; padding: 3px 8px; }
+  .atlas-review .dg-review-bar > button { flex: 0 0 auto; min-height: 30px; }
+  .atlas-review .dg-app .dg-galaxy { margin: 5px; width: calc(100% - 10px); height: calc(100% - 10px); }
+  .atlas-review .dg-app .sd-map-heading { padding: 10px 14px; }
+  .atlas-review .dg-app .sd-map-heading h1 { font-size: 19px; }
+  .atlas-review .dg-app :is(.dg-mobile-bottom-nav,.dg-mobile-actions,.dg-mobile-sheet-heading,.dg-research-commit) { background: var(--atlas-sheet); color: var(--atlas-ink); border-color: #aa9574; }
+  .atlas-review .dg-app .dg-battle-overview { padding: 10px; }
+  .atlas-review .dg-app .dg-combat-ship-art { width: 68px; height: 65px; }
+}

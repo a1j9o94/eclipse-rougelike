@@ -2,7 +2,9 @@ import {seatColor} from './factionColors';
 import {displayedWormholes} from './visibleConnections';
 import type {BuildOrderItem} from './buildPlanning';
 import type {MovementRoutePreview} from './movementPlanning';
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { AtlasArtContext } from './atlasArtContext';
+import { AtlasSectorRelief } from './AtlasArtwork';
 import type { PlayerView, Ship } from "../../shared/eclipse/types";
 import { getFaction } from "../../shared/eclipse/catalog";
 import { sectorDefinition } from "../../shared/eclipse/sectors";
@@ -74,6 +76,7 @@ export default function GalaxyBoard({
   onSelect,
   onExplore,
 }: Props) {
+  const atlas = useContext(AtlasArtContext);
   const viewer=view.seats.find(seat=>seat.id===view.viewerSeatId);
   const hasGenerator=viewer?movementAbilities(viewer).wormholeGenerator:false;
   const [smallScreen,setSmallScreen]=useState(()=>window.matchMedia?.('(max-width: 760px)').matches??false);
@@ -100,7 +103,7 @@ export default function GalaxyBoard({
   const owned = view.sectors
     .filter((s) => s.owner === view.viewerSeatId)
     .map((s) => galaxyPoint(s.position));
-  const [localCamera,setLocalCamera]=useState<GalaxyCamera>(()=>controlledCamera??{zoom:initialFit||compact?1:view.sectors.length>20?1.4:1.6,center:initialFit||compact||!owned.length?center:{x:owned.reduce((n,p)=>n+p.x,0)/owned.length,y:owned.reduce((n,p)=>n+p.y,0)/owned.length}});
+  const [localCamera,setLocalCamera]=useState<GalaxyCamera>(()=>controlledCamera??{zoom:initialFit||compact||atlas?1:view.sectors.length>20?1.4:1.6,center:initialFit||compact||atlas||!owned.length?center:{x:owned.reduce((n,p)=>n+p.x,0)/owned.length,y:owned.reduce((n,p)=>n+p.y,0)/owned.length}});
   const camera=controlledCamera??localCamera,zoom=camera.zoom;
   const updateCamera=(next:GalaxyCamera)=>{setLocalCamera(next);onCameraChange?.(next);};
   const appliedFit=useRef(controlledCamera?fitRequest:0);
@@ -255,15 +258,19 @@ export default function GalaxyBoard({
                   }
                   strokeWidth={selected === s.id ? 3.5 : s.owner ? 2.4 : 1.2}
                 />
+                {atlas && <AtlasSectorRelief central={Boolean(definition.gcds)} tileId={s.tileId}/>}
                 <polygon
                   points={hex}
                   fill="url(#dg-sector-nebula)"
+                  className="dg-tile-atmosphere"
                   pointerEvents="none"
                 />
                 <polygon
+                  className="dg-tile-ownership"
                   points={hex}
                   transform="scale(.93)"
-                  fill="none"
+                  fill={atlas && s.owner ? owner.color : 'none'}
+                  fillOpacity={atlas ? .22 : 0}
                   stroke={owner.color}
                   strokeOpacity={s.owner ? ".36" : ".14"}
                 />

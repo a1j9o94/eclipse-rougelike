@@ -417,3 +417,7 @@ Plan A adds independent, saved game effects (initially off, 35%) and original am
 
 ### September 19 — Select territory before committing Influence
 Replaced the source-first Influence flow with map-first control selection. Owned-sector clicks now explain existing control and cannot stage withdrawal. Separate withdrawal/transfer choices name the territory and show VP/population losses; a control commit names its destination, with current upkeep forecast beside it. Fifty bounded planner/draft/engine regression tests and four Chromium/WebKit desktop/mobile browser walks pass; rendered images were reviewed and excess inspector spacing corrected. [Audit and evidence](second_dawn_influence_clarity.md). Parent owns combined release gates; newcomer/expert human playtests remain pending.
+
+
+### September 19 — Separate wooden-atlas art preview
+A first interactive art slice on feature/wooden-atlas-redesign applies carved tile relief, sculpted ship figurines and paper workspaces to the existing review PlayerView/commands. It preserves P1–P5 interaction contracts and live-game styling. [Scope, findings and validation](wooden_atlas_redesign.md) record 33 focused tests, Chromium/WebKit desktop/mobile workflows, and remaining faction-art/playtest gaps. This exploratory branch is not merged or deployed.

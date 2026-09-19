@@ -12,6 +12,8 @@ import historyJson from "./reviewHistory.json?raw";
 import {projectHistoryEntry,type PublicHistoryEntry} from "../../shared/eclipse/history";
 const recordedHistory=JSON.parse(historyJson) as Record<string,PublicHistoryEntry[]>;
 import SecondDawnBoard from "./SecondDawnBoard";
+import { AtlasArtContext } from './atlasArtContext';
+import './woodenAtlas.css';
 const recordedFixtures = JSON.parse(fixturesJson) as Record<string, GameState>;
 const fixtures: Record<string, GameState> = {
   ...recordedFixtures,
@@ -46,6 +48,7 @@ function initialPosition(): string {
 }
 /** Recorded engine states are explicit isolated review fixtures, never guest match snapshots. */
 export default function SecondDawnReview() {
+  const [atlas, setAtlas] = useState(true);
   const [lastAcceptedCommand,setLastAcceptedCommand]=useState<{revision:number;type:GameCommand['type']}|undefined>();
   const [fixture, setFixture] = useState(initialPosition);
   const [state, setState] = useState(() => structuredClone(fixtures[fixture]));
@@ -90,9 +93,10 @@ export default function SecondDawnReview() {
     state.seats[0].id;
   const view = getPlayerView(state, actor)!;
   return (
-    <div className="dg-review">
+    <AtlasArtContext.Provider value={atlas}><div className={`dg-review${atlas ? ' atlas-review' : ''}`}>
       <div className="dg-review-bar">
-        <span className="dg-preview-label">PLAYABLE PREVIEW</span>
+        <span className="dg-preview-label">{atlas ? 'THE CAPTAIN’S ATLAS' : 'PLAYABLE PREVIEW'}</span>
+        <button aria-pressed={atlas} onClick={()=>setAtlas(value=>!value)}>Wooden atlas {atlas ? 'on' : 'off'}</button>
         <nav aria-label="Preview game stages">{stageShortcuts.map(stage=><button key={stage.id} aria-pressed={fixture===stage.id} onClick={()=>selectFixture(stage.id)}>{stage.label}</button>)}</nav>
         <label>
           More positions{" "}
@@ -137,6 +141,6 @@ export default function SecondDawnReview() {
           window.location.hash = "";
         }}
       />
-    </div>
+    </div></AtlasArtContext.Provider>
   );
 }

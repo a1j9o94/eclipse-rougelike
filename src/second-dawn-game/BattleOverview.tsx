@@ -11,7 +11,9 @@ import ShipSilhouette from "./ShipSilhouette";
 import { StatIcon, type StatIconName } from "./ShipPartStats";
 import "./battleOverview.css";
 import type { GameEvent } from "../../shared/eclipse/types";
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { AtlasArtContext } from './atlasArtContext';
+import { AtlasFigurine } from './AtlasArtwork';
 import DiceRoll3D from "./DiceRoll3D";
 import { useDice3dEnabled } from "./presentationSettings";
 const names: Record<Ship["type"], string> = {
@@ -145,6 +147,8 @@ export function NeutralShipSilhouette({
 }: {
   type: "ancient" | "guardian" | "gcds";
 }) {
+  const atlas = useContext(AtlasArtContext);
+  if (atlas) return <AtlasFigurine type={type} label={`${type === 'gcds' ? 'Galactic Center Defense System' : names[type]} ship silhouette`} className="dg-battle-neutral"/>;
   return (
     <svg
       className="dg-battle-neutral"
