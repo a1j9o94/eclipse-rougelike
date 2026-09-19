@@ -24,3 +24,6 @@
 .dg-public-inspection header{align-items:flex-start;}
 .dg-public-inspection header button{min-height:44px;flex-shrink:0;}
 @media(max-width:600px){.dg-public-inspection{inset:16px 12px auto;max-height:calc(100dvh - 32px);padding:14px;}.dg-public-inspection h2{font-size:21px;}}
+/* Public details can be long; retain the sole exit above scrolling map/content. */
+.dg-public-inspection > header{position:sticky;top:-18px;z-index:20;margin:-18px -18px 0;padding:18px;background:#101d28;border-bottom:1px solid #4d5b60}
+@media(max-width:600px){.dg-public-inspection > header{top:-14px;margin:-14px -14px 0;padding:14px}}

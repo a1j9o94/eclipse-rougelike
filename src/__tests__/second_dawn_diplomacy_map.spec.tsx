@@ -10,7 +10,10 @@ function fixture(){const state=(JSON.parse(fixturesJson) as Record<string,GameSt
 it('views the galaxy, inspects a sector and returns with the ambassador cube selection preserved',()=>{
  const view=fixture(),submit=vi.fn();render(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="" onSubmit={submit} onMenu={vi.fn()}/>);
  fireEvent.click(screen.getByRole('radio',{name:'Science'}));
- fireEvent.click(screen.getByRole('button',{name:'View galaxy'}));
+ const mapButton=screen.getByRole('button',{name:'View galaxy'});
+ expect(mapButton.closest('.dg-choice-header')).not.toBeNull();
+ expect(screen.queryByRole('button',{name:'Minimize ambassador exchange'})).toBeNull();
+ fireEvent.click(mapButton);
  const map=screen.getByRole('group',{name:'Galaxy map'});expect(map).toBeVisible();
  fireEvent.click(within(map).getAllByRole('button',{name:/^Inspect sector /})[0]);
  expect(submit).not.toHaveBeenCalled();

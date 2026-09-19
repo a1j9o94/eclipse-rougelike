@@ -26,7 +26,6 @@
 .dg-pending-return button { border-color: #baa063; background: #453c29; color: #f5e4b3; }
 .dg-app.dg-tabletop.dg-inspector-collapsed:not(.dg-mobile-board) .sd-layout { grid-template-columns: minmax(0, 1fr); }
 .dg-tabletop .sd-inspector[hidden] { display: none !important; }
-.dg-inspector-close { display: flex; justify-content: flex-end; margin-bottom: 10px; }
 .dg-mobile-board .dg-choice-workspace { inset: 6px 6px auto; width: calc(100% - 12px); max-height: calc(100% - 12px); border-radius: 10px; }
 .dg-mobile-board .dg-choice-header { padding: 10px 12px; gap: 8px; }
 .dg-mobile-board .dg-choice-header strong { font-size: 16px; }

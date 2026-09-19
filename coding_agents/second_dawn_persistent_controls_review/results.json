@@ -1,0 +1,74 @@
+[
+  {
+    "engine": "chromium",
+    "width": 1440,
+    "height": 900,
+    "scenario": "build",
+    "settingsSavedWithoutLeavingWorkspace": true,
+    "draftPreserved": true,
+    "errors": []
+  },
+  {
+    "engine": "chromium",
+    "width": 1440,
+    "height": 900,
+    "scenario": "diplomacy",
+    "settingsSavedWithoutLeavingWorkspace": true,
+    "draftPreserved": true,
+    "errors": []
+  },
+  {
+    "engine": "chromium",
+    "width": 390,
+    "height": 844,
+    "scenario": "build",
+    "settingsSavedWithoutLeavingWorkspace": true,
+    "draftPreserved": true,
+    "errors": []
+  },
+  {
+    "engine": "chromium",
+    "width": 390,
+    "height": 844,
+    "scenario": "diplomacy",
+    "settingsSavedWithoutLeavingWorkspace": true,
+    "draftPreserved": true,
+    "errors": []
+  },
+  {
+    "engine": "webkit",
+    "width": 1440,
+    "height": 900,
+    "scenario": "build",
+    "settingsSavedWithoutLeavingWorkspace": true,
+    "draftPreserved": true,
+    "errors": []
+  },
+  {
+    "engine": "webkit",
+    "width": 1440,
+    "height": 900,
+    "scenario": "diplomacy",
+    "settingsSavedWithoutLeavingWorkspace": true,
+    "draftPreserved": true,
+    "errors": []
+  },
+  {
+    "engine": "webkit",
+    "width": 390,
+    "height": 844,
+    "scenario": "build",
+    "settingsSavedWithoutLeavingWorkspace": true,
+    "draftPreserved": true,
+    "errors": []
+  },
+  {
+    "engine": "webkit",
+    "width": 390,
+    "height": 844,
+    "scenario": "diplomacy",
+    "settingsSavedWithoutLeavingWorkspace": true,
+    "draftPreserved": true,
+    "errors": []
+  }
+]

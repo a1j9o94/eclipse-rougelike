@@ -1,0 +1,11 @@
+# Command-center Build browser review
+
+Independent browser validation uses actual SecondDawnBoard and production EmpireOverview/BuildPlanner components with deterministic seed 4, two seats, and all own technologies explicitly cleared. The own faction is Terran Directorate: its 2:1 exchange makes the requested six-money conversion fixture exactly fund a three-material Interceptor. These custom local fixtures send no commands and make no cloud writes.
+
+All 18 cases passed: Chromium and WebKit at 1440×900, 1366×768 and 390×844, each with funded (12 materials), conversion (6 money / 0 materials) and unaffordable (0 resources) variants. Checks cover visible per-class material icon/price, disabled Starbase with a visible research explanation, explicit conversion warning, disabled unaffordable hulls, keyboard focus, and no Build controls for an inspected opponent.
+
+The funded workflow clicks Interceptor from the empire, receives one unplaced piece without any command, returns to the empire using actual desktop/mobile routes, adds a Cruiser without clearing the existing Interceptor, places both and obtains an enabled eight-material confirmation. The conversion workflow places the selected Interceptor and obtains an enabled Convert & Build confirmation with the funding explanation. Every recorded command count remains zero until deliberate confirmation, which this read-only review does not invoke. The parent's integration tests verify command acceptance.
+
+Actual screenshots inspected: WebKit 390px funded, Chromium 1440px conversion, WebKit 1366px funded. Hulls and shortcut prices remain distinct, conversion/technology explanations wrap inside cards, and the mobile two-column hull layout fits without horizontal overflow. No page errors or document overflow in any case. This is agent browser review with touch emulation; no physical-device or user playtest claimed.
+
+Evidence: `results.json` contains all cases, with 36 screenshots in this directory. Reproduce using `node tools/second-dawn-command-center-build-review.mjs`. Script ESLint passes. Logs: `coding_agents/logs/command_center_build_browser.out` and `command_center_build_browser_lint.out`. No production files were changed by this reviewer.

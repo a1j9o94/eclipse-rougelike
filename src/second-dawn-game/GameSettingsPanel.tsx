@@ -13,6 +13,5 @@ export default function GameSettingsPanel({motionEnabled,onMotionChange,onClose}
  <label><span><strong>Animations</strong><small>Movement, combat and action effects.</small></span><input type="checkbox" checked={motionEnabled} onChange={event=>onMotionChange(event.target.checked)}/></label>
  {dice3d&&!motionEnabled&&<p>Animations are off. Dice results appear instantly.</p>}
  <p>Preferences save automatically in this browser. Reduced-motion settings are respected.</p>
- <button className="sd-primary" onClick={onClose}>Back to game</button>
  </section></div>;
 }

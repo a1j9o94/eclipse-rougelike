@@ -615,7 +615,6 @@
 .dg-decision-location{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:12px;margin-bottom:16px;border:1px solid #88734b;border-radius:8px;background:#152331}.dg-decision-location span{flex:1;min-width:150px;color:#b4c4d3;font-size:12px}.dg-decision-location button{min-height:44px}.dg-app[data-motion="off"] *, .dg-app[data-motion="off"] *::before,.dg-app[data-motion="off"] *::after{animation:none!important;transition:none!important}
 /* Keep inspector chrome outside the planner's bounded scrolling area. */
 .dg-build-mode:not(.dg-mobile-board) .sd-inspector { display:flex; flex-direction:column; min-width:0; padding:10px; overflow:hidden; }
-.dg-build-mode:not(.dg-mobile-board) .dg-inspector-close { flex:0 0 auto; }
 .dg-build-mode:not(.dg-mobile-board) .dg-inspector-body { flex:1 1 auto; min-height:0; }
 .dg-build-mode:not(.dg-mobile-board) .dg-inspector-content { height:100%; min-height:0; }
 .dg-build-mode:not(.dg-mobile-board) .dg-build-planner.is-embedded { height:100%; min-height:0; }

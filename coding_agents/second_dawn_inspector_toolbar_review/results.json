@@ -1,0 +1,50 @@
+[
+  {
+    "engine": "chromium",
+    "width": 1440,
+    "height": 900,
+    "returnControlInToolbar": true,
+    "focusRestored": true,
+    "automaticPublicAction": true,
+    "manualCloseRetained": true,
+    "followCanResume": true,
+    "manualInspectionPreserved": true,
+    "errors": []
+  },
+  {
+    "engine": "chromium",
+    "width": 390,
+    "height": 844,
+    "returnControlInToolbar": true,
+    "focusRestored": true,
+    "automaticPublicAction": true,
+    "manualCloseRetained": true,
+    "followCanResume": true,
+    "manualInspectionPreserved": true,
+    "errors": []
+  },
+  {
+    "engine": "webkit",
+    "width": 1440,
+    "height": 900,
+    "returnControlInToolbar": true,
+    "focusRestored": true,
+    "automaticPublicAction": true,
+    "manualCloseRetained": true,
+    "followCanResume": true,
+    "manualInspectionPreserved": true,
+    "errors": []
+  },
+  {
+    "engine": "webkit",
+    "width": 390,
+    "height": 844,
+    "returnControlInToolbar": true,
+    "focusRestored": true,
+    "automaticPublicAction": true,
+    "manualCloseRetained": true,
+    "followCanResume": true,
+    "manualInspectionPreserved": true,
+    "errors": []
+  }
+]

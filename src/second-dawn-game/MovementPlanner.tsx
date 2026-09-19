@@ -10,10 +10,11 @@ export interface MovementSelection { sourceSectorId:string|null; shipIds:string[
 export interface MovementPlannerProps {
  view:PlayerView; sourceSectorId:string|null; selectedTargetId:string|null; disabled:boolean;
  result?:string; onDone?:()=>void; onTargetsChange:(ids:string[])=>void; onClose:()=>void; onSubmit:(command:GameCommand)=>void;
+ onChangeSource?:()=>void;
  onRoutePreview?:(routes:readonly MovementRoutePreview[])=>void;
  onSelectionChange?:(selection:MovementSelection)=>void;
 }
-export default function MovementPlanner({view,sourceSectorId,selectedTargetId,disabled,result,onDone,onTargetsChange,onClose,onSubmit,onRoutePreview,onSelectionChange}:MovementPlannerProps){
+export default function MovementPlanner({view,sourceSectorId,selectedTargetId,disabled,result,onDone,onTargetsChange,onClose,onSubmit,onRoutePreview,onSelectionChange,onChangeSource}:MovementPlannerProps){
  const [draft,setDraft]=useActionDraftState('movement',{source:sourceSectorId,ids:[]});
  const [queuedRoutes,setQueuedRoutes]=useActionDraftState('movementRoutes',[]);
  const draftGuard=useActionDraftGuard();
@@ -36,7 +37,7 @@ export default function MovementPlanner({view,sourceSectorId,selectedTargetId,di
  const execution=routeMode&&destination&&sourceSectorId?queuedMovementPlan(view,[...queuedRoutes,{sourceSectorId,shipIds:[...ids],destinationSectorId:destination.sectorId}]):queued;
  const executionRouteCount=queuedRoutes.length+(routeMode&&destination?1:0);
  return <section className="dg-movement-planner" aria-label="Move fleet">
-  <header><div><span className="dg-eyebrow">MOVE FLEET</span><h2>{source?`Depart sector ${source.tileId}`:'Choose a departure sector'}</h2></div><button type="button" onClick={onClose} aria-label="Close movement planner">Close</button></header>
+  <header><div className="dg-movement-heading-copy"><span className="dg-eyebrow">MOVE FLEET</span><h2>{source?`Depart sector ${source.tileId}`:'Choose a departure sector'}</h2></div><div className="dg-movement-header-actions">{onChangeSource&&<button type="button" onClick={onChangeSource}>Change departure sector</button>}<button type="button" onClick={onClose} aria-label="Close movement planner">Close</button></div></header>
   {result&&<p className="dg-movement-result" role="status">{result}</p>}
   {view.actionProgress?.owner===view.viewerSeatId&&view.actionProgress.action==='move'&&<p className="dg-movement-capacity">{queued.remainingCapacity} {queued.remainingCapacity===1?'move':'moves'} left in this action</p>}
   <p className="dg-movement-steps">{routeMode?'1 Select ships · 2 Choose a sector on the galaxy · 3 Queue route · 4 Execute':'1 Select ships · 2 Choose a sector on the galaxy · 3 Confirm'}</p>

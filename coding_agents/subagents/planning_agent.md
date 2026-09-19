@@ -555,3 +555,6 @@ Outcome: remove exhausted-action bookkeeping, make mobile ship fitting a continu
 
 ## September 19 — visible turn order
 Outcome: fair initial live starter and readable upcoming clockwise roster. Acceptance, fail-first tests, ownership and rollback: `coding_agents/second_dawn_turn_order.md`. Engine agent owns live seeded setup/scheduling; supervisor owns visual roster and release. Existing saved matches stay intact.
+
+## 2026-09-19 — Command-center build shortcuts
+Outcome: own fleet cards expose priced build shortcuts with clear blockers and conversion warnings. Acceptance: add exactly one unplaced ship to preserved draft, no immediate command; opponent inspection unchanged; desktop/mobile readable. Fail-first helper and UI cases cover costs, gates, conversion, draft retention and final authoritative build. Risk: shortcut availability drifting from engine; reuse existing analysis/funding and retain final engine validation. Rollback feature commit only; published build-panel fix remains intact. Plan: `coding_agents/second_dawn_command_center_build.md`.

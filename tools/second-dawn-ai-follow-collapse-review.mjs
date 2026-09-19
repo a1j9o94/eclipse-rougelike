@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import {mkdir,writeFile} from 'node:fs/promises';
-import {chromium} from 'playwright';
-const site='http://127.0.0.1:5173',output='coding_agents/second_dawn_ai_follow_collapse_review';await mkdir(output,{recursive:true});
-const browser=await chromium.launch(),results=[];
-try{for(const [width,height] of [[1366,768],[1440,900]]){
- const page=await browser.newPage({viewport:{width,height}}),errors=[];page.on('pageerror',error=>errors.push(error.message));
+import {chromium,webkit} from 'playwright';
+const site='http://127.0.0.1:5173',output='coding_agents/second_dawn_inspector_toolbar_review';await mkdir(output,{recursive:true});
+const results=[];
+for(const [engine,launcher]of [['chromium',chromium],['webkit',webkit]]){const browser=await launcher.launch();
+try{for(const [width,height] of [[1440,900],[390,844]]){
+ const page=await browser.newPage({viewport:{width,height},hasTouch:width<600,isMobile:width<600,reducedMotion:'reduce'}),errors=[];page.on('pageerror',error=>errors.push(error.message));
  await page.route('**/__ai-follow-review',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><div id="fixture"></div></body></html>'}));
  await page.goto(`${site}/__ai-follow-review`);
  await page.evaluate(async()=>{
@@ -17,22 +18,25 @@ try{for(const [width,height] of [[1366,768],[1440,900]]){
   }
   ReactDOM.createRoot(document.getElementById('fixture')).render(React.createElement(Host));
  });
- await page.getByRole('button',{name:'Show sector details'}).waitFor();
+ await page.locator('.dg-app').waitFor();page.setDefaultTimeout(8000);
  await page.evaluate(()=>window.__aiAction());
+ if(width<600)await page.getByRole('button',{name:'Expand AI action details',exact:true}).click();
  await page.getByRole('region',{name:'AI action details'}).waitFor();
- await page.screenshot({path:`${output}/${width}-ai-automatically-visible.png`});
- await page.getByRole('button',{name:'Close details'}).click();
+ await page.screenshot({path:`${output}/${engine}-${width}-ai-automatically-visible.png`});
+ const returnButton=page.getByRole('button',{name:'Return to inspector',exact:true});assert.equal(await returnButton.evaluate(e=>!!e.closest('.dg-ai-activity')),true);assert.equal(await page.getByRole('button',{name:'Close details',exact:true}).count(),0);await returnButton.click();assert.equal(await page.getByRole('region',{name:'AI action details'}).isVisible(),false);assert.equal(await page.getByRole('complementary',{name:'Selection and action details'}).evaluate(e=>e===document.activeElement),true);await page.screenshot({path:`${output}/${engine}-${width}-returned-to-inspector.png`});await page.getByRole('button',{name:'Follow AI',exact:true}).click();await page.getByRole('button',{name:'Follow AI',exact:true}).click();if(width<600)await page.getByRole('button',{name:'Expand AI action details',exact:true}).click();await page.getByRole('region',{name:'AI action details'}).waitFor();
+ if(width<600)await page.getByRole('button',{name:'Dismiss details',exact:true}).click();else await page.getByRole('button',{name:'Hide sector details'}).click();
  await page.evaluate(()=>window.__aiAction());
  assert.equal(await page.getByRole('region',{name:'AI action details'}).isVisible(),false);
- assert.equal(await page.getByRole('button',{name:'Show sector details'}).getAttribute('aria-expanded'),'false');
- await page.screenshot({path:`${output}/${width}-manual-close-preserved.png`});
+ if(width>=600)assert.equal(await page.getByRole('button',{name:'Show sector details'}).getAttribute('aria-expanded'),'false');
+ await page.screenshot({path:`${output}/${engine}-${width}-manual-close-preserved.png`});
  await page.getByRole('button',{name:'Follow AI',exact:true}).click();await page.getByRole('button',{name:'Follow AI',exact:true}).click();
+ if(width<600)await page.getByRole('button',{name:'Expand AI action details',exact:true}).click();
  await page.getByRole('region',{name:'AI action details'}).waitFor();
- await page.getByRole('button',{name:/Hydran Progress Normal AI/}).click();
+ if(width<600){await page.getByRole('button',{name:'Players',exact:true}).click();await page.getByRole('button',{name:/Hydran Progress/}).first().click();}else await page.getByRole('button',{name:/Hydran Progress Normal AI/}).click();
  await page.getByRole('button',{name:'Inspect Interceptor blueprint'}).click();
  await page.evaluate(()=>window.__aiAction());
  await page.getByRole('heading',{name:'Ship blueprints'}).waitFor();
  assert.equal(await page.getByRole('region',{name:'AI action details'}).isVisible(),false);
- assert.deepEqual(errors,[]);results.push({width,height,automaticPublicAction:true,manualCloseRetained:true,followCanResume:true,manualInspectionPreserved:true,errors});await page.close();
-}}finally{await browser.close();}
+ assert.deepEqual(errors,[]);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);results.push({engine,width,height,returnControlInToolbar:true,focusRestored:true,automaticPublicAction:true,manualCloseRetained:true,followCanResume:true,manualInspectionPreserved:true,errors});await page.close();
+}}finally{await browser.close();}}
 await writeFile(`${output}/results.json`,JSON.stringify(results,null,2));console.log(JSON.stringify(results));

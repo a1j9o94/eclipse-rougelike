@@ -1,4 +1,4 @@
-import {cleanup,fireEvent,render,screen} from '@testing-library/react';
+import {cleanup,fireEvent,render,screen,within} from '@testing-library/react';
 import {afterEach,expect,it,vi} from 'vitest';
 import {createGame} from '../../shared/eclipse/setup';
 import {getPlayerView} from '../../shared/eclipse/protocol';
@@ -8,6 +8,18 @@ function fixture(){return getPlayerView(createGame({seed:13,seats:[{id:'a',facti
 const controls={candidates:[],connected:true,busy:false,status:'',onSubmit:vi.fn(),onMenu:vi.fn(),aiFailure:null,onRetryAi:vi.fn()};
 const feed=(entries:PublicHistoryEntry[])=>({entries,loading:false,hasOlder:false,loadingOlder:false,error:null,loadOlder:vi.fn()});
 afterEach(()=>{cleanup();localStorage.clear();});
+it('keeps inspector navigation in the board toolbar with one details toggle',()=>{
+ const initial=fixture(),rendered=render(<SecondDawnBoard {...controls} view={initial} history={feed([])}/>);
+ const entry:PublicHistoryEntry={revision:1,actorSeatId:'b',actorName:'Hydran Progress',round:1,summary:'Researched Improved Hull',details:[],presentation:{kind:'research',technologyId:'improved-hull'}};
+ rendered.rerender(<SecondDawnBoard {...controls} view={{...initial,activeSeatId:'b',revision:1}} history={feed([entry])}/>);
+ const toolbar=screen.getByRole('button',{name:'Hide sector details'}).closest<HTMLElement>('.dg-ai-activity')!;
+ const back=within(toolbar).getByRole('button',{name:'Return to inspector'});
+ expect(screen.queryByRole('button',{name:'Close details'})).toBeNull();
+ expect(within(toolbar).getByRole('button',{name:'Hide sector details'})).toBeVisible();
+ fireEvent.click(back);expect(screen.queryByRole('region',{name:'AI action details'})).toBeNull();
+ expect(screen.queryByRole('button',{name:'Return to inspector'})).toBeNull();
+ expect(screen.getByRole('complementary',{name:'Selection and action details'})).toHaveFocus();
+});
 it('automatically shows a public AI action, allows opting out, and restores the human inspector',()=>{
  const initial=fixture();const rendered=render(<SecondDawnBoard {...controls} view={initial} history={feed([])}/>);
  const ai=structuredClone(initial);ai.activeSeatId='b';ai.revision=1;const entry:PublicHistoryEntry={revision:1,actorSeatId:'b',actorName:'Hydran Progress',round:1,summary:'Researched Improved Hull',details:[],presentation:{kind:'research',technologyId:'improved-hull'}};
@@ -24,7 +36,7 @@ it('keeps a manually closed AI panel closed through further actions and unrelate
  const ai={...initial,activeSeatId:'b',revision:1};
  rendered.rerender(<SecondDawnBoard {...controls} view={ai} history={feed([entry])}/>);
  expect(screen.getByRole('region',{name:'AI action details'})).toBeVisible();
- fireEvent.click(screen.getByRole('button',{name:'Close details'}));
+ fireEvent.click(screen.getByRole('button',{name:'Hide sector details'}));
  expect(screen.getByRole('button',{name:'Show sector details'})).toHaveFocus();
  rendered.rerender(<SecondDawnBoard {...controls} view={{...ai,revision:2}} history={feed([{...entry,revision:2},entry])}/>);
  expect(screen.queryByRole('region',{name:'AI action details'})).toBeNull();
@@ -46,7 +58,7 @@ it('keeps the close preference when control passes to a different AI seat',()=>{
  const rendered=render(<SecondDawnBoard {...controls} view={initial} history={feed([])}/>);
  const entry:PublicHistoryEntry={revision:1,actorSeatId:'b',actorName:'Hydran Progress',round:1,summary:'Researched Improved Hull',details:[],presentation:{kind:'research',technologyId:'improved-hull'}};
  rendered.rerender(<SecondDawnBoard {...controls} view={{...initial,activeSeatId:'b',revision:1}} history={feed([entry])}/>);
- fireEvent.click(screen.getByRole('button',{name:'Close details'}));
+ fireEvent.click(screen.getByRole('button',{name:'Hide sector details'}));
  rendered.rerender(<SecondDawnBoard {...controls} view={{...initial,activeSeatId:'c',revision:2}} history={feed([{...entry,revision:2,actorSeatId:'c',actorName:'Planta'},entry])}/>);
  expect(screen.queryByRole('region',{name:'AI action details'})).toBeNull();
  expect(screen.getByRole('button',{name:'Show sector details'})).toHaveAttribute('aria-expanded','false');

@@ -1,0 +1,146 @@
+[
+  {
+    "engine": "chromium",
+    "width": 1440,
+    "height": 900,
+    "variant": "funded",
+    "errors": [],
+    "commandCount": 0
+  },
+  {
+    "engine": "chromium",
+    "width": 1440,
+    "height": 900,
+    "variant": "conversion",
+    "errors": [],
+    "commandCount": 0
+  },
+  {
+    "engine": "chromium",
+    "width": 1440,
+    "height": 900,
+    "variant": "unaffordable",
+    "errors": [],
+    "commandCount": 0
+  },
+  {
+    "engine": "chromium",
+    "width": 1366,
+    "height": 768,
+    "variant": "funded",
+    "errors": [],
+    "commandCount": 0
+  },
+  {
+    "engine": "chromium",
+    "width": 1366,
+    "height": 768,
+    "variant": "conversion",
+    "errors": [],
+    "commandCount": 0
+  },
+  {
+    "engine": "chromium",
+    "width": 1366,
+    "height": 768,
+    "variant": "unaffordable",
+    "errors": [],
+    "commandCount": 0
+  },
+  {
+    "engine": "chromium",
+    "width": 390,
+    "height": 844,
+    "variant": "funded",
+    "errors": [],
+    "commandCount": 0
+  },
+  {
+    "engine": "chromium",
+    "width": 390,
+    "height": 844,
+    "variant": "conversion",
+    "errors": [],
+    "commandCount": 0
+  },
+  {
+    "engine": "chromium",
+    "width": 390,
+    "height": 844,
+    "variant": "unaffordable",
+    "errors": [],
+    "commandCount": 0
+  },
+  {
+    "engine": "webkit",
+    "width": 1440,
+    "height": 900,
+    "variant": "funded",
+    "errors": [],
+    "commandCount": 0
+  },
+  {
+    "engine": "webkit",
+    "width": 1440,
+    "height": 900,
+    "variant": "conversion",
+    "errors": [],
+    "commandCount": 0
+  },
+  {
+    "engine": "webkit",
+    "width": 1440,
+    "height": 900,
+    "variant": "unaffordable",
+    "errors": [],
+    "commandCount": 0
+  },
+  {
+    "engine": "webkit",
+    "width": 1366,
+    "height": 768,
+    "variant": "funded",
+    "errors": [],
+    "commandCount": 0
+  },
+  {
+    "engine": "webkit",
+    "width": 1366,
+    "height": 768,
+    "variant": "conversion",
+    "errors": [],
+    "commandCount": 0
+  },
+  {
+    "engine": "webkit",
+    "width": 1366,
+    "height": 768,
+    "variant": "unaffordable",
+    "errors": [],
+    "commandCount": 0
+  },
+  {
+    "engine": "webkit",
+    "width": 390,
+    "height": 844,
+    "variant": "funded",
+    "errors": [],
+    "commandCount": 0
+  },
+  {
+    "engine": "webkit",
+    "width": 390,
+    "height": 844,
+    "variant": "conversion",
+    "errors": [],
+    "commandCount": 0
+  },
+  {
+    "engine": "webkit",
+    "width": 390,
+    "height": 844,
+    "variant": "unaffordable",
+    "errors": [],
+    "commandCount": 0
+  }
+]
