@@ -375,7 +375,7 @@ function ConnectedGame() {
               />
               Use base-game warp portals
             </label>
-            <label className="dg-check"><input type="checkbox" checked={showCombatOdds} onChange={event=>setShowCombatOdds(event.target.checked)}/>Show estimated combat odds during movement</label>
+            <label className="dg-check"><input type="checkbox" checked={showCombatOdds} onChange={event=>setShowCombatOdds(event.target.checked)}/>Show estimated combat odds in movement and fleet inspection</label>
             <label className="dg-check"><input type="checkbox" checked={minorSpecies} disabled={busy} onChange={event=>setMinorSpecies(event.target.checked)}/>Include Minor Species</label>
             <p>Purchase allies with money for lasting benefits. Each uses an ambassador space.</p>
             <AiDifficultyPicker value={aiDifficulty} onChange={setAiDifficulty} disabled={busy}/>

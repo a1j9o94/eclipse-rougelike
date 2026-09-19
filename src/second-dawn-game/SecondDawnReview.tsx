@@ -116,6 +116,7 @@ export default function SecondDawnReview() {
         <a href="#">Return to game</a>
       </div>
       <SecondDawnBoard
+        showCombatOdds
         key={fixture}
         reviewMode
         lastAcceptedCommand={lastAcceptedCommand}

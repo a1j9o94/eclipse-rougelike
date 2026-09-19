@@ -11,6 +11,7 @@ import BlueprintLoadout,{ShipCapabilities} from './BlueprintLoadout';
 import {StatIcon} from './ShipPartStats';
 import {publicShipProfile,hitFaceDescription,type PublicShipProfile} from './fleetInspectionModel';
 import './fleetInspection.css';
+import MovementBattlePreview from './MovementBattlePreview';
 
 function groupShips(profiles:PublicShipProfile[]):PublicShipProfile[][]{
  const groups=new Map<string,PublicShipProfile[]>();
@@ -37,7 +38,7 @@ function HitFaces({label,computer,shield}:{label:string;computer:number;shield:n
  const description=hitFaceDescription(computer,shield);
  return <div className="dg-hit-preview"><span>{label}</span><div className="dg-hit-faces" role="img" aria-label={`${label}: ${description}`} title={`${description}. Natural 1 misses; natural 6 hits.`}>{[1,2,3,4,5,6].map(face=><span key={face} className={face===6||face!==1&&face+computer-shield>=6?'dg-face-hit':''} aria-hidden="true">{face}</span>)}</div><small>{description}</small></div>;
 }
-export default function FleetInspection({view,sectorId,selectedShipIds,onClose,onDiplomacy,diplomacy}:{view:PlayerView;sectorId:string;selectedShipIds:readonly string[];onClose:()=>void;diplomacy?:ReactNode;onDiplomacy?:(seatId:string)=>void}){
+export default function FleetInspection({view,sectorId,selectedShipIds,onClose,onDiplomacy,diplomacy,showCombatOdds=false}:{view:PlayerView;sectorId:string;selectedShipIds:readonly string[];showCombatOdds?:boolean;onClose:()=>void;diplomacy?:ReactNode;onDiplomacy?:(seatId:string)=>void}){
  const panel=useRef<HTMLElement>(null);
  useEffect(()=>{const prior=document.activeElement instanceof HTMLElement?document.activeElement:null;panel.current?.focus();return()=>prior?.focus();},[]);
  const sector=view.sectors.find(s=>s.id===sectorId);
@@ -45,8 +46,11 @@ export default function FleetInspection({view,sectorId,selectedShipIds,onClose,o
  const selected=[...new Set(selectedShipIds)].flatMap(id=>{const p=publicShipProfile(view,id);return p&&p.ship.owner===view.viewerSeatId?[p]:[];});
  const groups=groupShips(profiles),selectedGroups=groupShips(selected);
  const owners=[...new Set(profiles.map(p=>p.ship.owner))];
+ const residentIds=profiles.filter(p=>p.ship.owner===view.viewerSeatId).map(p=>p.ship.id);
+ const oddsIds=residentIds.length?residentIds:selected.map(p=>p.ship.id);
  return <div className="dg-inspection-backdrop"><section ref={panel} tabIndex={-1} className={`dg-fleet-inspection${groups.length<=1&&!selected.length?' dg-inspection-single':''}`} role="dialog" aria-modal="true" aria-label={`Fleet inspection · sector ${sector?.tileId??'no longer present'}`} onKeyDown={e=>{if(e.key==='Escape'){e.stopPropagation();onClose();}if(e.key==='Tab'){const buttons=Array.from(panel.current?.querySelectorAll<HTMLElement>('button:not(:disabled),a[href],summary')??[]);if(!buttons.length){e.preventDefault();return;}const first=buttons[0],last=buttons[buttons.length-1];if(e.shiftKey&&(document.activeElement===first||document.activeElement===panel.current)){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}}}>
   <header className="dg-inspection-heading"><div><small>PUBLIC FLEET INTELLIGENCE</small><h2>Sector {sector?.tileId??'unavailable'}</h2><p>Your action plan stays saved while you inspect.</p></div><button onClick={onClose}>Return to plan</button></header>
+  {showCombatOdds&&oddsIds.length>0&&<MovementBattlePreview view={view} shipIds={oddsIds} targetSectorId={sectorId}/>}
   {!profiles.length&&<p>No ships remain at this location.</p>}
   <div className="dg-inspection-ships">{groups.map(ships=><FleetBlueprintCard key={`${ships[0].ship.owner}:${ships[0].ship.type}`} view={view} ships={ships}/>)}</div>
   {selected.length>0?<>

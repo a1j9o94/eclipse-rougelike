@@ -13,3 +13,9 @@ describe('public movement battle estimates',()=>{
  it('cancels while batches yield when the player changes selection',async()=>{const {view,ship,target}=fixture(),abort=new AbortController();const pending=movementBattleEstimate(view,[ship.id],target.id,abort.signal);abort.abort();expect(await pending).toMatchObject({status:'unavailable',reason:'Selection changed.'});});
  it('cancels superseded estimates without sampling or touching state',async()=>{const {view,ship,target}=fixture(),abort=new AbortController();abort.abort();expect(await movementBattleEstimate(view,[ship.id],target.id,abort.signal)).toMatchObject({status:'unavailable',reason:'Selection changed.'});});
 });
+it('uses arrival order for a resident fleet in an uncontrolled sector',async()=>{
+ const {view,ship,target}=fixture();target.owner=null;ship.sectorId=target.id;ship.arrival=1;view.ships.find(s=>s.owner==='b')!.arrival=2;
+ expect(await movementBattleEstimate(view,[ship.id],target.id)).toMatchObject({status:'estimate',defender:true});
+ ship.arrival=3;
+ expect(await movementBattleEstimate(view,[ship.id],target.id)).toMatchObject({status:'estimate',defender:false});
+});
