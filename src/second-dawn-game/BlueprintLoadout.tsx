@@ -29,6 +29,6 @@ export function ShipCapabilities({stats,neutral=false}:{stats:ShipStats;neutral?
   <StatBadge icon="shield" value={`−${stats.shield}`} label="shield" explanation="Subtract from enemy attack rolls against this ship."/>
   <StatBadge icon="drive" value={stats.movement} label="movement" explanation="Sectors moved per activation. Zero means immobile."/>
   {!neutral&&<StatBadge icon="energy" value={`${stats.energyConsumption}/${stats.energyProduction}`} label="energy used" explanation={`${stats.energyConsumption} energy used of ${stats.energyProduction} produced.`}/>}
-  {neutral&&stats.weapons.map((weapon,index)=><StatBadge key={index} icon={weapon.kind} value={`${weapon.dice} × ${weapon.damage}`} label="dice × damage" explanation={`Roll ${weapon.dice} ${weapon.color} ${weapon.kind} dice; each hit deals ${weapon.damage} damage.`} color={{yellow:'#f0d477',orange:'#ffb076',blue:'#91c9ff',red:'#ff9391'}[weapon.color]}/>)}
+  {neutral&&stats.weapons.map((weapon,index)=><StatBadge key={index} icon={weapon.kind} value={`${weapon.dice} × ${weapon.damage}`} label="dice × damage" explanation={`Roll ${weapon.dice} ${weapon.color} ${weapon.kind} dice; each hit deals ${weapon.damage} damage.`} color={{yellow:'#f0d477',orange:'#ffb076',blue:'#91c9ff',red:'#ff9391',magenta:'#f094dc'}[weapon.color]}/>)}
  </div>;
 }

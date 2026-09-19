@@ -13,7 +13,7 @@ beforeEach(()=>{vi.stubGlobal('crypto',webcrypto);vi.useFakeTimers();});
 afterEach(()=>{vi.restoreAllMocks();vi.unstubAllGlobals();vi.useRealTimers();});
 function seedFor(count:number,target:number){
  const seats=BASE_FACTIONS.filter(f=>f.species==='alien').slice(0,count).map((f,i)=>({id:`seat-${i+1}`,faction:f.id,controller:'ai' as const}));
- for(let seed=0;seed<1000;seed++)if(randomInt(createGame({seed,seats,warpPortals:true}).random,count).value===target)return seed;
+ for(let seed=0;seed<1000;seed++)if(randomInt(createGame({seed,seats,warpPortals:true,riftCannons:true}).random,count).value===target)return seed;
  throw new Error('No fixture seed');
 }
 it('can start a direct solo game with AI and immediately schedules its authoritative worker',async()=>{

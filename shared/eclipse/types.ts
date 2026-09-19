@@ -150,7 +150,7 @@ export type PendingDecision = DecisionBase &
           sourceShipId?: string;
           sourceShipType?: Ship["type"];
           weaponKind?: "cannon" | "missile";
-          weaponColor?: "yellow" | "orange" | "blue" | "red";
+          weaponColor?: "yellow" | "orange" | "blue" | "red" | "magenta";
           targets: string[];
           hitTargets?: string[];
           split?: boolean;
@@ -331,7 +331,7 @@ export interface BattleState {
   kills: { owner: string; value: number }[];
   participants: string[];
   retreated: string[];
-  dice?: { id: string; face: number; damage: number; computer: number; sourceShipId?: string; sourceShipType?: Ship["type"]; weaponKind?: "cannon" | "missile"; weaponColor?: "yellow" | "orange" | "blue" | "red" }[];
+  dice?: { id: string; face: number; damage: number; computer: number; sourceShipId?: string; sourceShipType?: Ship["type"]; weaponKind?: "cannon" | "missile"; weaponColor?: "yellow" | "orange" | "blue" | "red" | "magenta" }[];
   attackingOwner?: string;
   reputationOrder?: string[];
   awarded?: string[];
@@ -341,6 +341,8 @@ export interface BattleState {
   forcedRetreat?: boolean;
 }
 export interface EngineContinuation {
+  /** Absent on pre-expansion snapshots; their finite decks stay unchanged. */
+  riftCannons?: boolean;
   warpPortals: boolean;
   action: ActionProgress | null;
   decisions: PendingDecision[];
@@ -378,7 +380,7 @@ export interface GameEvent {
     battleId: string;
     sectorId?: string;
     attacker: string;
-    dice: { id: string; face: number; damage: number; computer: number; sourceShipId?: string; sourceShipType?: Ship["type"]; weaponKind?: "cannon" | "missile"; weaponColor?: "yellow" | "orange" | "blue" | "red" }[];
+    dice: { id: string; face: number; damage: number; computer: number; sourceShipId?: string; sourceShipType?: Ship["type"]; weaponKind?: "cannon" | "missile"; weaponColor?: "yellow" | "orange" | "blue" | "red" | "magenta" }[];
     impacts: { dieId: string; targetId: string; damage: number; hit: boolean }[];
     targets: { id: string; shipType?: Ship["type"]; owner?: string; hpBefore: number; hpAfter: number; excess: number; destroyed: boolean }[];
   };
@@ -447,6 +449,7 @@ export interface PlayerView {
   /** Public turn order and optional-rule configuration, also used by fair AI rollouts. */
   firstPasser?: SeatId | null;
   warpPortals?: boolean;
+  riftCannons?: boolean;
   seats: Seat[];
   sectors: Sector[];
   ships: Ship[];

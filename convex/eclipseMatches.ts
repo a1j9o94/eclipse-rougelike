@@ -133,7 +133,7 @@ export const createMatch = mutation({
     // Convex provides replay-stable transaction randomness; credentials use independent crypto randomness.
     const seed = Math.floor(Math.random() * 0x100000000);
     const seats = [human, ...opponents.map((opponent, i) => ({ id: `seat-${i + 2}`, ...opponent, controller: 'ai' as const }))];
-    const state = createGame({ seed, seats, factionProfile, warpPortals: args.warpPortals ?? true, randomizeStartingPlayer: true });
+    const state = createGame({ seed, seats, factionProfile, warpPortals: args.warpPortals ?? true, riftCannons: true, randomizeStartingPlayer: true });
     const now = Date.now();
     const matchId = await ctx.db.insert('eclipseMatchesV1', { snapshotJson: JSON.stringify(state), rulesVersion: state.rulesVersion, catalogVersion: state.catalogVersion, revision: state.revision, round: state.round, phase: state.phase, showCombatOdds:args.showCombatOdds??false, aiDifficulty: args.aiDifficulty ?? 'normal', aiVersion: AI_VERSION, createdAt: now, updatedAt: now });
     await ctx.db.insert('eclipseOwnershipV1', { matchId, guestId: guest._id, seatId: 'seat-1' });
@@ -350,7 +350,7 @@ export const submitCommand = mutation({
     }
     // Read the unique command key in the same transaction as insertion, so concurrent retries conflict safely.
     const journal: JournalEntry[] = original ? [{ actor: original.actor, request: JSON.parse(original.requestJson) as JournalEntry['request'], receipt: original.receipt, events: JSON.parse(original.eventsJson) as JournalEntry['events'] }] : [];
-    const result = commitCommand({ state, journal }, ownership.seatId, request, profileVersions(state.factionProfile ?? 'base'), processGameCommand);
+    const result = commitCommand({ state, journal }, ownership.seatId, request, profileVersions(state.factionProfile ?? 'base', state.engine?.riftCannons), processGameCommand);
     if (!result.ok) return { ok: false, error: result.error };
     if (!result.duplicate) {
       const entry = result.aggregate.journal[result.aggregate.journal.length - 1];
@@ -480,7 +480,7 @@ export const commitAiWork = internalMutation({
     const request = { commandId: `${job.timeoutToken ? 'timeout' : 'ai'}:${actor}:${expectedRevision}`, expectedRevision, command };
     const original = await ctx.db.query('eclipseJournalV1').withIndex('by_match_command', q => q.eq('matchId', matchId).eq('commandId', request.commandId)).unique();
     if (original) throw new Error('COMMAND_ID_REUSED: A stored command already uses this server action ID.');
-    const result = commitCommand({ state, journal: [] }, actor, request, profileVersions(state.factionProfile ?? 'base'), processGameCommand);
+    const result = commitCommand({ state, journal: [] }, actor, request, profileVersions(state.factionProfile ?? 'base', state.engine?.riftCannons), processGameCommand);
     if (!result.ok) throw new Error(`${result.error.code}: ${result.error.message}`);
     const remainingBudgetMs = Math.max(0, (job.remainingBudgetMs ?? 0) - Math.max(0, elapsedMs));
     await ctx.db.patch(job._id, { status:'waiting', remainingBudgetMs, lastComputeMs: elapsedMs, lastSearchNodes: searchNodes, lastSearchDepth: searchDepth, lastSearchCutoff: searchCutoff,

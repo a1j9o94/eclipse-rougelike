@@ -25,9 +25,11 @@ export interface TechnologyBag {
 export function createTechnologyBag(
   random: RandomState,
   warpPortals = true,
+  riftCannons = false,
 ): TechnologyBag {
   const tiles: TechnologyTile[] = [];
   for (const technology of TECHNOLOGIES) {
+    if (technology.expansion === 'rift-cannon' && !riftCannons) continue;
     if (
       technology.copies === null ||
       !Number.isSafeInteger(technology.copies) ||
@@ -44,8 +46,8 @@ export function createTechnologyBag(
       });
     }
   }
-  if (tiles.length !== BASE_COMPONENTS.physical.technologyTiles)
-    throw new Error('Technology inventory does not match the base-box total.');
+  if (tiles.length !== BASE_COMPONENTS.physical.technologyTiles + (riftCannons ? 1 : 0))
+    throw new Error('Technology inventory does not match the selected modules.');
   const excluded: TechnologyTile[] = warpPortals
     ? []
     : tiles.filter((tile) => tile.technology === 'warp-portal');

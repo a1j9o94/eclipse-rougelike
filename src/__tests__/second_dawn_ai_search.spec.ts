@@ -83,3 +83,17 @@ describe('bounded strategic AI search',()=>{
   expect(result.search.nodes).toBe(0);expect(result.search.completedDepth).toBe(0);
  });
 });
+
+it('preserves the public Rift expansion inventory in hypothetical worlds and excludes it from old views',()=>{
+ const state=game(),view=getPlayerView(state,'a');
+ view.riftCannons=true;
+ const world=sampleAiWorld(view,17);
+ expect(world.engine?.riftCannons).toBe(true);
+ expect([...world.supplies.technology,...world.technologyMarket]).toContain('rift-cannon');
+ expect([...world.supplies.discovery,...world.engine!.sectorDiscoveries.map(item=>item.discoveryId)]).toContain('rift-conductor');
+ delete view.riftCannons;
+ const base=sampleAiWorld(view,17);
+ expect(base.engine?.riftCannons).toBe(false);
+ expect(base.supplies.technology).not.toContain('rift-cannon');
+ expect(base.supplies.discovery).not.toContain('rift-conductor');
+});

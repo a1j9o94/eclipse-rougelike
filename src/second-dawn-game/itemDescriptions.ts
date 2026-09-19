@@ -5,7 +5,7 @@ import type { Technology } from '../../shared/eclipse/technologies';
 export function describeShipPart(id: ShipPartId): string {
   const part = getShipPart(id);
   const effects: string[] = [];
-  for (const weapon of part.weapons) effects.push(`${weapon.dice} ${weapon.dice === 1 ? 'die' : 'dice'} ${weapon.kind === 'missile' ? 'once at the start of each battle' : 'each combat round'}, ${weapon.damage} damage per hit`);
+  for (const weapon of part.weapons) effects.push(weapon.color==='magenta'?`${weapon.dice} Rift die each combat round: 0–3 damage, ignoring computers and shields. Hollow bursts inflict self-damage on your Rift-armed ships`:`${weapon.dice} ${weapon.dice === 1 ? 'die' : 'dice'} ${weapon.kind === 'missile' ? 'once at the start of each battle' : 'each combat round'}, ${weapon.damage} damage per hit`);
   if (part.movement) effects.push(`Move up to ${part.movement} ${part.movement === 1 ? 'sector' : 'sectors'} per ship activation`);
   if (part.hull) effects.push(`Survive ${part.hull} additional damage`);
   if (part.computer) effects.push(`+${part.computer} to attack rolls`);
@@ -39,5 +39,5 @@ export function describeTechnology(technology: Technology): string {
   }
 }
 export function describeWeapons(stats: ShipStats): string {
-  return stats.weapons.length ? stats.weapons.map(w => `${w.dice} × ${w.damage} ${w.kind === 'cannon' ? 'cannon' : 'missile'}`).join(' + ') : 'Unarmed';
+  return stats.weapons.length ? stats.weapons.map(w => w.color==='magenta'?`${w.dice} Rift die (0–3 damage; may backfire)`:`${w.dice} × ${w.damage} ${w.kind === 'cannon' ? 'cannon' : 'missile'}`).join(' + ') : 'Unarmed';
 }

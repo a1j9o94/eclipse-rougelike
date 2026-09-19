@@ -1,5 +1,6 @@
 import { getShipPart, type ShipPartId } from '../../shared/eclipse/parts';
 import './itemDetails.css';
+import EclipseDieFace from './EclipseDieFace';
 export type StatIconName = 'computer' | 'energy' | 'shield' | 'hull' | 'drive' | 'initiative' | 'cannon' | 'missile' | 'structure' | 'population' | 'influence' | 'portal' | 'discovery';
 const PATHS: Record<StatIconName, string> = {
  computer: 'M4 5h16v12H4z M8 21h8 M12 17v4 M8 9h8 M8 12h5',
@@ -22,7 +23,7 @@ export function StatBadge({ icon, value, label, explanation, color }: StatBadgeP
 export default function ShipPartStats({ partId }: { partId: ShipPartId }) {
  const p = getShipPart(partId);
  const badges: StatBadgeProps[] = [];
- for (const w of p.weapons) badges.push({icon:w.kind,value:`${w.dice} × ${w.damage}`,label:w.kind === 'cannon' ? 'dice × damage' : 'missile × damage',explanation:`Roll ${w.dice} ${w.color} dice ${w.kind === 'cannon' ? 'each combat round' : 'once at the start of battle'}; each hit deals ${w.damage} damage.`,color:({yellow:'#f0d477',orange:'#ffb076',blue:'#91c9ff',red:'#ff9391'})[w.color]});
+ for (const w of p.weapons) badges.push({icon:w.kind,value:w.color==='magenta'?`${w.dice} × 0–3`:`${w.dice} × ${w.damage}`,label:w.color==='magenta'?'rift damage':w.kind === 'cannon' ? 'dice × damage' : 'missile × damage',explanation:w.color==='magenta'?'Roll a Rift die each combat round. Ignores computers and shields; filled bursts damage the enemy, hollow bursts damage your Rift-armed ships.':`Roll ${w.dice} ${w.color} dice ${w.kind === 'cannon' ? 'each combat round' : 'once at the start of battle'}; each hit deals ${w.damage} damage.`,color:({yellow:'#f0d477',orange:'#ffb076',blue:'#91c9ff',red:'#ff9391',magenta:'#f094dc'})[w.color]});
  if(p.computer)badges.push({icon:'computer',value:`+${p.computer}`,label:'computer',explanation:'Add this bonus to attack rolls.'});
  if(p.shield)badges.push({icon:'shield',value:`−${p.shield}`,label:'shield',explanation:'Subtract from enemy attack rolls against this ship.'});
  if(p.hull)badges.push({icon:'hull',value:`+${p.hull}`,label:'hull',explanation:'Survive this much additional damage.'});
@@ -30,5 +31,5 @@ export default function ShipPartStats({ partId }: { partId: ShipPartId }) {
  if(p.initiative)badges.push({icon:'initiative',value:`+${p.initiative}`,label:'initiative',explanation:'Higher initiative fires earlier; defender wins ties.'});
  if(p.energyProduction)badges.push({icon:'energy',value:`+${p.energyProduction}`,label:'energy',explanation:'Energy produced to power installed parts.'});
  if(p.energyConsumption)badges.push({icon:'energy',value:`−${p.energyConsumption}`,label:'energy',explanation:'Energy consumed; total production must cover use.'});
- return <div className="dg-part-stats" role="group" aria-label={`${p.name} statistics`}>{badges.map((badge,i)=><StatBadge key={i} {...badge}/>)}</div>;
+ return <div className="dg-part-stats" role="group" aria-label={`${p.name} statistics`}>{badges.map((badge,i)=><StatBadge key={i} {...badge}/>)}{p.weapons.some(w=>w.color==='magenta')&&<div className="dg-rift-faces" role="group" aria-label="Six Rift die faces">{[1,2,3,4,5,6].map(face=><EclipseDieFace key={face} color="magenta" face={face}/>)}<small>Filled burst: enemy damage · Hollow burst: self-damage to Rift ships. Ignores computers and shields.</small></div>}</div>;
 }

@@ -27,6 +27,11 @@
 .dg-dice-skip:focus-visible { outline: 3px solid #ffe1a2; outline-offset: 3px; }
 .dg-dice-overflow { position: absolute; left: 16px; bottom: 86px; max-width: 50%; padding: 5px; color: #e8dcc6; background: #101d2aeb; font-size: 11px; }
 .dg-dice-static { display: flex; flex-wrap: wrap; gap: 7px; }
+.dg-eclipse-die {display:inline-flex;flex:0 0 40px;width:40px;height:40px;border-radius:7px;border:1px solid #ffffff60;box-shadow:inset 0 -3px 5px #0004,0 2px 4px #0005;color:#fff8e8;vertical-align:middle}
+.dg-eclipse-die svg {display:block;width:100%;height:100%;overflow:visible}
+.dg-eclipse-die text {fill:currentColor;font:bold 28px Arial,sans-serif}
+.dg-rift-faces {flex:1 0 100%;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.dg-rift-faces small {flex:1 0 100%;font-size:11px;line-height:1.45;color:#e6c7df}
 .dg-dice-static-face { display: inline-flex; width: 40px; height: 40px; border-radius: 7px; border: 1px solid #ffffff60; box-shadow: inset 0 -3px 5px #0004,0 2px 4px #0005; }
 .dg-dice-static-face svg { width: 100%; height: 100%; fill: #fff5dc; filter: drop-shadow(0 1px 1px #000b); }
 .dg-dice-screen-reader { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

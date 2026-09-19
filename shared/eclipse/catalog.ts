@@ -9,10 +9,13 @@ export const EXPANDED_RULES_VERSION = 'second-dawn-expanded-v1-2026-05-20' as co
 export const EXPANDED_CATALOG_VERSION = 'second-dawn-catalog-expanded-v1' as const;
 export type FactionProfile = 'base' | 'expanded-v1';
 export interface ProfileVersions { readonly rulesVersion: string; readonly catalogVersion: string }
-export function profileVersions(profile: FactionProfile): ProfileVersions {
-  return profile === 'base'
+export function profileVersions(profile: FactionProfile, riftCannons = false): ProfileVersions {
+  const base = profile === 'base'
     ? { rulesVersion: RULES_VERSION, catalogVersion: CATALOG_VERSION }
     : { rulesVersion: EXPANDED_RULES_VERSION, catalogVersion: EXPANDED_CATALOG_VERSION };
+  return riftCannons
+    ? { rulesVersion: `${base.rulesVersion}+rift-cannon-v1`, catalogVersion: `${base.catalogVersion}+rift-cannon-v1` }
+    : base;
 }
 export const RULEBOOK_URL =
   'https://www.dropbox.com/scl/fi/wfua8sx8lyp2axor71cjx/Eclipse2_rules-ENG_2021-04-27_small.pdf?rlkey=e6kaj8wow8rykg2esfbk8ixw0&dl=1';

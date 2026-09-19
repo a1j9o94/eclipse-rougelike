@@ -1,3 +1,4 @@
+import { aiWeaponValue } from "./aiWeaponValue";
 import {factionHasCapability,getFaction} from './catalog';
 import {deriveBlueprintStats} from './blueprints';
 import {publicBlueprint} from './legal';
@@ -52,7 +53,7 @@ const score=calculateScore({playerId:seat.id,faction:seat.faction,reputation:own
  for(const ship of view.ships.filter(s=>s.owner===seat.id)){
   const blueprint=seat.blueprints.find(b=>b.shipType===ship.type);if(!blueprint)continue;
   const stats=deriveBlueprintStats(seat.faction,publicBlueprint(blueprint));
-  const force=Math.max(0.2,stats.hull+1-ship.damage)*(1+stats.shield*.15)+stats.weapons.reduce((sum,w)=>sum+w.dice*w.damage*(w.kind==='missile'?.6:1)*(1+stats.computer*.16),0);
+  const force=Math.max(0.2,stats.hull+1-ship.damage)*(1+stats.shield*.15)+stats.weapons.reduce((sum,w)=>sum+aiWeaponValue(w,1+stats.computer*.16)*(w.kind==='missile'?.6:1),0);
   fleets.set(ship.sectorId,(fleets.get(ship.sectorId)??0)+force);
   const cost=faction.constructionCosts[blueprint.shipType];
   value+=Math.min(force*.23,cost*.45)*(0.5+remaining*.08);

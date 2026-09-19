@@ -1,10 +1,38 @@
-/** Numeric representation of the blank (1), four numbered faces and burst (6). */
+import type { WeaponColor } from './parts';
+
+/** Numeric representation of standard blank (1), numbered faces and burst (6).
+ * Rift dice use these as stable face indices, not printed numbers. */
 export type DieFace = 1 | 2 | 3 | 4 | 5 | 6;
+export interface RiftDieOutcome { damage: number; backfire: number }
+/** Publisher Rift Cannon rules p1: two blanks, 1, 2, 3+self, self. */
+export function riftDieOutcome(face: number): RiftDieOutcome {
+  if (!Number.isInteger(face) || face < 1 || face > 6) throw new RangeError('Invalid Rift die face.');
+  return { damage: face === 3 ? 1 : face === 4 ? 2 : face === 5 ? 3 : 0, backfire: face >= 5 ? 1 : 0 };
+}
+export function attackDieHits(die: { face: number; computer: number; weaponColor?: WeaponColor }, shield: number): boolean {
+  return die.weaponColor === 'magenta' ? riftDieOutcome(die.face).damage > 0 : dieHits(die.face as DieFace, die.computer, shield);
+}
+export interface RiftBackfireTarget { id: string; hp: number; size: number }
+/** Targets must already be restricted to friendly Rift-equipped ships in this sector.
+ * Damage is pooled: destroy largest killable ships before wounding largest survivors. */
+export function allocateRiftBackfire(targets: readonly RiftBackfireTarget[], amount: number): { targetId: string; damage: number }[] {
+  const remaining = targets.filter(t => t.hp > 0).map(t => ({...t})).sort((a,b) => b.size-a.size || a.id.localeCompare(b.id));
+  const result: {targetId: string; damage: number}[] = [];
+  while (amount > 0 && remaining.length) {
+    const index = remaining.findIndex(t => t.hp <= amount);
+    const target = remaining.splice(index < 0 ? 0 : index, 1)[0];
+    const damage = Math.min(amount, target.hp);
+    result.push({targetId: target.id, damage});
+    amount -= damage;
+  }
+  return result;
+}
 export interface AttackDie {
   readonly id: string;
   readonly face: DieFace;
   readonly damage: number;
   readonly computer: number;
+  readonly weaponColor?: WeaponColor;
 }
 export interface CombatTarget {
   readonly id: string;
@@ -68,7 +96,7 @@ export function resolveDamageAllocation(
         message: 'Assign dice to a surviving opponent ship in this battle.',
       };
     allocated.add(die.id);
-    if (dieHits(die.face, die.computer, target.shield))
+    if (attackDieHits(die, target.shield))
       damage.set(target.id, (damage.get(target.id) ?? 0) + die.damage);
   }
   if (dice.some((d) => !allocated.has(d.id)))

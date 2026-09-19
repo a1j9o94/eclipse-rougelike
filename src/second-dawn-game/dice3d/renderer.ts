@@ -1,7 +1,8 @@
-import { Color, CylinderGeometry, DirectionalLight, Group, HemisphereLight, Mesh, MeshStandardMaterial, PerspectiveCamera, PCFSoftShadowMap, PlaneGeometry, Quaternion, Scene, ShadowMaterial, Vector3, WebGLRenderer, SRGBColorSpace } from 'three';
+import { Color, CanvasTexture, DirectionalLight, Group, HemisphereLight, Mesh, MeshStandardMaterial, PerspectiveCamera, PCFSoftShadowMap, PlaneGeometry, Scene, ShadowMaterial, Vector3, WebGLRenderer, SRGBColorSpace } from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import {diceLayout, dieFaceNormal, pipPositions, presentationColor, throwPose, type PresentedDie} from './math';
+import {diceLayout, dieFaceNormal, presentationColor, throwPose, type PresentedDie} from './math';
+
+import {BURST_POINTS,eclipseDieFace} from './faces';
 
 import {DICE_THROW_DURATION_MS,DICE_SETTLED_MS,diceThrowDelay} from './timing';
 
@@ -24,24 +25,38 @@ export function createDiceThrow({canvas,rolls,onSettled,onStarted,onUnavailable}
   light.shadow.mapSize.set(512,512);light.shadow.bias=-.0003;light.shadow.normalBias=.02;scene.add(light);
   const rim=new DirectionalLight('#9acbff',1.2);rim.position.set(4,3,-5);scene.add(rim);
   const bodyGeometry=new RoundedBoxGeometry(1,1,1,3,.06);
-  const pipBase=new CylinderGeometry(.071,.071,.018,12);
-  const pipPieces=[];
-  for(let face=1;face<=6;face++) {
-    const normal=dieFaceNormal(face),orientation=new Quaternion().setFromUnitVectors(new Vector3(0,1,0),new Vector3(normal.x,normal.y,normal.z));
-    for(const [px,pz] of pipPositions[face]) {
-      const geometry=pipBase.clone();geometry.translate(px*.235,.497,pz*.235);geometry.applyQuaternion(orientation);pipPieces.push(geometry);
+  const markingGeometry=new PlaneGeometry(.88,.88);
+  const materials:MeshStandardMaterial[]=[],textures:CanvasTexture[]=[];
+  const markingMaterials=new Map<string,MeshStandardMaterial>();
+  function faceMaterial(color:string,face:number):MeshStandardMaterial {
+    const key=`${color}:${face}`,cached=markingMaterials.get(key);if(cached)return cached;
+    const faceCanvas=document.createElement('canvas');faceCanvas.width=256;faceCanvas.height=256;
+    const ctx=faceCanvas.getContext('2d');if(!ctx)throw new Error('Dice face drawing unavailable');
+    ctx.scale(6.4,6.4);ctx.fillStyle='#fff8e8';ctx.strokeStyle='#fff8e8';
+    const printed=eclipseDieFace(color,face);
+    if(printed.number!==undefined){ctx.font='bold 28px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(printed.number),20,21);}
+    const points=BURST_POINTS.split(' ').map(pair=>pair.split(',').map(Number));
+    const markScale=printed.marks.length>1?.76:1;
+    for(const mark of printed.marks) {
+      ctx.beginPath();points.forEach(([x,y],index)=>{if(index===0)ctx.moveTo(mark.x+x*markScale,mark.y+y*markScale);else ctx.lineTo(mark.x+x*markScale,mark.y+y*markScale);});ctx.closePath();
+      ctx.lineJoin='round';ctx.lineWidth=mark.kind==='backfire'?1.8:.6;
+      if(mark.kind==='hit')ctx.fill();ctx.stroke();
     }
+    const texture=new CanvasTexture(faceCanvas);texture.colorSpace=SRGBColorSpace;textures.push(texture);
+    const material=new MeshStandardMaterial({map:texture,transparent:true,roughness:.5,depthWrite:false});
+    markingMaterials.set(key,material);materials.push(material);return material;
   }
-  const pipGeometry=mergeGeometries(pipPieces);pipPieces.forEach(geometry=>geometry.dispose());pipBase.dispose();
-  const darkPips=new MeshStandardMaterial({color:'#17212b',roughness:.65}),lightPips=new MeshStandardMaterial({color:'#fff4d7',roughness:.5});
-  const materials:MeshStandardMaterial[]=[darkPips,lightPips];
   const rendered=rolls.slice(0,MAX_RENDERED_DICE);
   const dice=rendered.map(die=>{
     const group=new Group(),color=new Color(presentationColor(die.color));
     const material=new MeshStandardMaterial({color,metalness:.10,roughness:.28});materials.push(material);
     const body=new Mesh(bodyGeometry,material);body.castShadow=true;body.receiveShadow=true;group.add(body);
-    const lightColor=color.r*.2126+color.g*.7152+color.b*.0722>.35;
-    group.add(new Mesh(pipGeometry,lightColor?darkPips:lightPips));scene.add(group);return group;
+    for(let face=1;face<=6;face++) {
+      const normal=dieFaceNormal(face),marking=new Mesh(markingGeometry,faceMaterial(die.color,face));
+      marking.position.set(normal.x*.501,normal.y*.501,normal.z*.501);
+      marking.quaternion.setFromUnitVectors(new Vector3(0,0,1),new Vector3(normal.x,normal.y,normal.z));group.add(marking);
+    }
+    scene.add(group);return group;
   });
   const floorGeometry=new PlaneGeometry(1,1),floorMaterial=new ShadowMaterial({opacity:.24});
   const floor=new Mesh(floorGeometry,floorMaterial);floor.rotation.x=-Math.PI/2;floor.position.y=-.025;floor.receiveShadow=true;scene.add(floor);
@@ -59,7 +74,7 @@ export function createDiceThrow({canvas,rolls,onSettled,onStarted,onUnavailable}
   }
   function dispose() {
     if(disposed)return;disposed=true;cancelAnimationFrame(frame);observer?.disconnect();window.removeEventListener('resize',resize);canvas.removeEventListener('webglcontextlost',lostContext);
-    bodyGeometry.dispose();pipGeometry.dispose();floorGeometry.dispose();floorMaterial.dispose();materials.forEach(material=>material.dispose());light.shadow.map?.dispose();
+    bodyGeometry.dispose();markingGeometry.dispose();textures.forEach(texture=>texture.dispose());floorGeometry.dispose();floorMaterial.dispose();materials.forEach(material=>material.dispose());light.shadow.map?.dispose();
     renderer.dispose();renderer.forceContextLoss();scene.clear();
   }
   function lostContext(event:Event) {event.preventDefault();dispose();onUnavailable();}

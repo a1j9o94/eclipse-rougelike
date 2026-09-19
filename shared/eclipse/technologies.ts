@@ -40,6 +40,7 @@ export type TechnologyId =
   | 'improved-logistics'
   | 'sentient-hull'
   | 'soliton-cannon'
+  | 'rift-cannon'
   | 'transition-drive'
   | 'warp-portal'
   | 'flux-missile'
@@ -48,6 +49,7 @@ export type TechnologyId =
   | 'zero-point-source'
   | 'metasynthesis';
 export type ResearchedShipPart =
+  | 'rift-cannon'
   | 'plasma-cannon'
   | 'phase-shield'
   | 'tachyon-source'
@@ -89,6 +91,7 @@ export type TechnologyEffect =
   | { kind: 'place-warp-portal'; controlledSectorVp: 1 }
   | { kind: 'draw-discovery'; count: 1 };
 export interface Technology {
+  expansion?: 'rift-cannon';
   id: TechnologyId;
   name: string;
   track: TechnologyTrack | 'rare';
@@ -148,6 +151,7 @@ function part(
   });
 }
 export const TECHNOLOGIES: readonly Technology[] = [
+  { ...part('rift-cannon', 'Rift Cannon', 'rare', 9, 7), expansion: 'rift-cannon', inventorySource: 'https://www.lautapelit.fi/files/Online%20rules/Eclipse2_RC_rules_web.pdf' },
   tech('neutron-bombs', 'Neutron Bombs', 'military', 2, 2, {
     kind: 'automatic-population-bombardment',
   }),

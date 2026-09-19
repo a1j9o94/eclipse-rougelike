@@ -5,7 +5,7 @@ import {
   neutralBlueprint,
   type ShipBlueprint,
 } from "./blueprints";
-import { dieHits, type DieFace } from "./combat";
+import { attackDieHits, riftDieOutcome, allocateRiftBackfire } from "./combat";
 import { isShipPartId, type ShipPartId, type ShipStats } from "./parts";
 import { randomInt } from "./random";
 import {
@@ -291,7 +291,7 @@ function rollAttack(
         b.dice.push({
           id,
           face: roll.value + 1,
-          damage: weapon.damage,
+          damage: weapon.color === "magenta" ? riftDieOutcome(roll.value + 1).damage : weapon.damage,
           computer: s.computer,
           sourceShipId: ship.id,
           sourceShipType: ship.type,
@@ -314,7 +314,8 @@ function rollAttack(
   emit(
     events,
     neutral(group.owner) ? null : group.owner,
-    `${group.shipType} rolled ${b.dice.map((d) => d.face).join(", ")}.`,
+    `${group.shipType} rolled ${b.dice.map((d) => d.weaponColor === "magenta"
+      ? `Rift (${d.damage} damage, ${riftDieOutcome(d.face).backfire} backfire)` : d.face).join(", ")}.`,
     "combat",
   );
   const dice = b.dice.map((d) => {
@@ -328,12 +329,12 @@ function rollAttack(
       sourceShipType: d.sourceShipType,
       weaponKind: d.weaponKind,
       weaponColor: d.weaponColor,
-      hitTargets: targets.filter(t=>dieHits(d.face as DieFace,d.computer,stats(state,t).shield)).map(t=>t.id),
+      hitTargets: targets.filter(t=>attackDieHits(d,stats(state,t).shield)).map(t=>t.id),
       targets: targets
         .filter(
           (t) =>
-            !split ||
-            dieHits(d.face as DieFace, d.computer, stats(state, t).shield),
+            (d.weaponColor !== "magenta" || d.damage > 0) && (!split ||
+            attackDieHits(d, stats(state, t).shield)),
         )
         .map((t) => t.id),
       ...(split ? { split: true } : {}),
@@ -359,7 +360,7 @@ function neutralAllocations(
   const targets = ships(state, b, enemy).sort(
       (a, c) => SIZE[c.type] - SIZE[a.type] || a.id.localeCompare(c.id),
     ),
-    remaining = [...(b.dice ?? [])],
+    remaining = [...(b.dice ?? [])].filter(d => d.weaponColor !== "magenta" || d.damage > 0),
     result: { dieId: string; targetId: string }[] = [],
     destroyed = new Set<string>();
   for (const target of targets) {
@@ -367,7 +368,7 @@ function neutralAllocations(
       needed = s.hull + 1 - target.damage;
     const subsets = new Map<number, string[]>([[0, []]]);
     for (const die of remaining.filter((d) =>
-      dieHits(d.face as DieFace, d.computer, s.shield),
+      attackDieHits(d, s.shield),
     ))
       for (const [damage, ids] of [...subsets]) {
         const sum = damage + die.damage;
@@ -390,7 +391,7 @@ function neutralAllocations(
     const live = targets.filter((t) => !destroyed.has(t.id));
     const target =
       live.find((t) =>
-        dieHits(die.face as DieFace, die.computer, stats(state, t).shield),
+        attackDieHits(die, stats(state, t).shield),
       ) ??
       live[0] ??
       targets[0];
@@ -410,7 +411,9 @@ function applyAllocation(
   const enemy = b.attackingOwner === b.attacker ? b.defender : b.attacker,
     targets = ships(state, b, enemy),
     damage = new Map<string, number>(),
-    hpBefore = new Map(targets.map((target) => [target.id, Math.max(0, stats(state, target).hull + 1 - target.damage)])),
+    backfireTargets = ships(state, b, b.attackingOwner).filter(ship => stats(state, ship).weapons.some(w => w.color === "magenta")),
+    allTargets = [...targets, ...backfireTargets],
+    hpBefore = new Map(allTargets.map((target) => [target.id, Math.max(0, stats(state, target).hull + 1 - target.damage)])),
     impacts: NonNullable<GameEvent["combatVolley"]>["impacts"] = [];
   for (const a of allocations) {
     requireRule(
@@ -427,7 +430,7 @@ function applyAllocation(
       split = b.splitDice?.includes(die.id) ?? false;
     if (split) {
       const hittable = targets.filter((t) =>
-        dieHits(die.face as DieFace, die.computer, stats(state, t).shield),
+        attackDieHits(die, stats(state, t).shield),
       );
       requireRule(
         (hittable.length === 0 && assigned.length === 0) ||
@@ -446,6 +449,8 @@ function applyAllocation(
         damage.set(a.targetId, (damage.get(a.targetId) ?? 0) + amount);
         impacts.push({ dieId: die.id, targetId: a.targetId, damage: amount, hit: true });
       }
+    } else if (die.weaponColor === "magenta" && die.damage === 0) {
+      requireRule(assigned.length === 0, "A Rift miss or backfire-only face has no opposing target.");
     } else {
       requireRule(assigned.length === 1, "Assign each die exactly once.");
       const a = assigned[0],
@@ -455,21 +460,29 @@ function applyAllocation(
         "This weapon cannot split damage.",
       );
       if (
-        dieHits(die.face as DieFace, die.computer, stats(state, target).shield)
+        attackDieHits(die, stats(state, target).shield)
       ) {
         damage.set(a.targetId, (damage.get(a.targetId) ?? 0) + die.damage);
         impacts.push({ dieId: die.id, targetId: a.targetId, damage: die.damage, hit: true });
       } else impacts.push({ dieId: die.id, targetId: a.targetId, damage: 0, hit: false });
     }
   }
-  for (const target of targets) {
+  const backfireDice = (b.dice ?? []).filter(d => d.weaponColor === "magenta" && riftDieOutcome(d.face).backfire);
+  let backfireIndex = 0;
+  for (const allocation of allocateRiftBackfire(backfireTargets.map(target => ({ id: target.id, size: SIZE[target.type], hp: stats(state, target).hull + 1 - target.damage })), backfireDice.length)) {
+    damage.set(allocation.targetId, allocation.damage);
+    for (let i = 0; i < allocation.damage; i++) {
+      impacts.push({dieId: backfireDice[backfireIndex++].id, targetId: allocation.targetId, damage: 1, hit: true});
+    }
+  }
+  for (const target of allTargets) {
     target.damage += damage.get(target.id) ?? 0;
     if (target.damage > stats(state, target).hull) {
-      destroy(state, b, target, b.attackingOwner!);
+      destroy(state, b, target, target.owner === b.attackingOwner ? enemy : b.attackingOwner!);
       emit(
         events,
         b.attackingOwner!,
-        `${target.type} ${target.id} destroyed.`,
+        `${target.type} ${target.id} destroyed${target.owner === b.attackingOwner ? " by Rift backfire" : ""}.`,
         "combat",
       );
     }
@@ -478,14 +491,14 @@ function applyAllocation(
     type: "combat",
     seatId: b.attackingOwner!,
     visibility: "public",
-    message: `${impacts.filter((impact) => impact.hit).length} attack dice hit their targets.`,
+    message: `${new Set(impacts.filter(impact => impact.hit && targets.some(target => target.id === impact.targetId)).map(impact => impact.dieId)).size} attack dice hit their targets.${backfireDice.length ? ` Rift backfire dealt ${[...damage].filter(([id]) => backfireTargets.some(target => target.id === id)).reduce((sum, [, amount]) => sum + amount, 0)} damage to the firing fleet.` : ""}`,
     combatVolley: {
       battleId: b.id,
       sectorId: b.sectorId,
       attacker: b.attackingOwner!,
       dice: structuredClone(b.dice ?? []),
       impacts,
-      targets: targets.map((target) => {
+      targets: allTargets.filter(target => target.owner !== b.attackingOwner || damage.has(target.id)).map((target) => {
         const maximum = stats(state, target).hull + 1;
         const before = hpBefore.get(target.id) ?? 0;
         const applied = damage.get(target.id) ?? 0;
@@ -494,6 +507,7 @@ function applyAllocation(
     },
   });
   updatePenalty(state, b, enemy);
+  updatePenalty(state, b, b.attackingOwner!);
   b.dice = undefined;
   b.splitDice = undefined;
   b.attackingOwner = undefined;

@@ -4,7 +4,7 @@ export interface QuaternionValue extends Vec3 { w: number }
 export interface LandingPosition { x: number; z: number }
 export interface DiePose extends Vec3 { rotation: QuaternionValue }
 
-export const dieColors: Readonly<Record<string,string>> = { yellow:'#e8bd3e', orange:'#dd7435', blue:'#387dc5', red:'#bf404b' };
+export const dieColors: Readonly<Record<string,string>> = { yellow:'#e8bd3e', orange:'#dd7435', blue:'#387dc5', red:'#bf404b', magenta:'#c00082' };
 export function presentationColor(color: string): string { return dieColors[color] ?? (/^#[0-9a-f]{6}$/i.test(color) ? color : '#d2b977'); }
 export function dieFaceNormal(face: number): Vec3 {
   switch(face) {
