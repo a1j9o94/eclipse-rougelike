@@ -1,0 +1,148 @@
+{
+  "startedAt": "2026-09-19T01:49:22.763Z",
+  "environment": {
+    "node": "v20.19.6",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M2 Max"
+  },
+  "configuration": {
+    "counts": [
+      2
+    ],
+    "seeds": [
+      401
+    ],
+    "difficulties": [
+      "normal"
+    ],
+    "nodeLimits": {
+      "normal": 12,
+      "hard": 48,
+      "expert": 120
+    },
+    "matchBudgetMs": 180000,
+    "maxSteps": 5000,
+    "clock": "Fixed now() = 0: deterministic work budgets, measured external wall clock. Not production deadline behavior."
+  },
+  "sourceHashes": {
+    "ai.ts": "c7d5aabcf4c1d59bc0fee7d604ced48a659c7d763a2398b3e4c9ee384a883359",
+    "aiCandidates.ts": "e9a4caab83e4afd2d6ce6f2381d576031b7cb18b9f9ad3072449bb204038294c",
+    "aiSearch.ts": "af64eb296f7230550aaf5c8674d2b1ebd1c8fa3fa4e2ffbf1982e968d5271556",
+    "aiWorld.ts": "b3b79e22d8091d2296efb6194920bf902b9e91efeaf5851b6b8a840d22be7eb2",
+    "aiEvaluation.ts": "869706a301e1bd8c76930bc9e17899f873639ded089047c527d21134356309e9",
+    "aiConfig.ts": "9a6008d36cfb5ec57b233a56463e016135f6a1a7b61f89917b84860320c2a3eb",
+    "aiSimulation.ts": "52907f7ef647aa90bc7875060ff5d426b39cf90532313d093b3172c8e7590bc5",
+    "aiLegacy.ts": "fc32d15e191be315ff3c7607e19a6f1ecc1742b6d19b8059d907473caeb275f3",
+    "aiLegacySimulation.ts": "9593c499c070422f20f646e74c9fdb86fc1dedc997f9c12f4e33e6e4efaf45df",
+    "legal.ts": "9a583e5eae729b67870c024746b4f87cbe7ada9c32c02c818bfd3473705e6113"
+  },
+  "warmProfile": [
+    {
+      "difficulty": "normal",
+      "fixture": "two-seat opening",
+      "maxNodes": 12,
+      "latencyMs": {
+        "samples": 5,
+        "p50": 128.344875,
+        "p95": 132.660208,
+        "p99": 132.660208,
+        "max": 132.660208
+      }
+    }
+  ],
+  "results": [
+    {
+      "difficulty": "normal",
+      "count": 2,
+      "seed": 401,
+      "searchSeat": 0,
+      "faction": "mechanema",
+      "maxNodes": 12,
+      "finished": true,
+      "steps": 191,
+      "error": null,
+      "score": 10,
+      "margin": -10,
+      "win": false,
+      "tie": false,
+      "finalScores": [
+        {
+          "seat": "s0",
+          "total": 10,
+          "resourceTotal": 44
+        },
+        {
+          "seat": "s1",
+          "total": 20,
+          "resourceTotal": 14
+        }
+      ],
+      "round": 8,
+      "elapsedMs": 4614.926083,
+      "attacks": 5,
+      "researchCount": 0,
+      "buildCount": 9,
+      "bankruptcyChoices": 0,
+      "legacyFallbacks": 0,
+      "searchCalls": 32,
+      "deepestCompletedDepth": 1,
+      "latencyMs": {
+        "samples": 78,
+        "p50": 0.04129200000033961,
+        "p95": 195.87220799999977,
+        "p99": 255.10670800000025,
+        "max": 255.10670800000025
+      },
+      "searchLatencyMs": {
+        "samples": 32,
+        "p50": 130.90891699999997,
+        "p95": 202.32508300000063,
+        "p99": 255.10670800000025,
+        "max": 255.10670800000025
+      }
+    }
+  ],
+  "latencyMs": {
+    "normal": {
+      "allCommands": {
+        "samples": 78,
+        "p50": 0.04129200000033961,
+        "p95": 195.87220799999977,
+        "p99": 255.10670800000025,
+        "max": 255.10670800000025
+      },
+      "searchedCommands": {
+        "samples": 32,
+        "p50": 130.90891699999997,
+        "p95": 202.32508300000063,
+        "p99": 255.10670800000025,
+        "max": 255.10670800000025
+      },
+      "completedDepth": {
+        "samples": 32,
+        "p50": 1,
+        "p95": 1,
+        "p99": 1,
+        "max": 1
+      },
+      "nodes": {
+        "samples": 32,
+        "p50": 12,
+        "p95": 12,
+        "p99": 12,
+        "max": 12
+      }
+    }
+  },
+  "peakRssMb": 381.78125,
+  "limitations": [
+    "Local bounded exploratory search tournament; no hosted or concurrency/cost claim.",
+    "Seeds were selected separately from development fixtures and heuristic tuning seeds. They stop being held out if used for subsequent tuning.",
+    "One strategic seat faces frozen prior heuristic AI. Prior AI uses current shared legal generation; inherited illegal choices are rejected and next highest legacy-scored legal command selected, with fallback counts recorded.",
+    "Production search uses higher node limits. Normal 12 / Hard 48 here validate complete search-controlled matches economically, not full-strength certification.",
+    "Two or three sampled worlds and narrow beam search are approximations, not exhaustive minimax or complete hidden-state reconstruction."
+  ],
+  "finishedAt": "2026-09-19T01:49:28.578Z",
+  "sourceChangedDuringRun": []
+}

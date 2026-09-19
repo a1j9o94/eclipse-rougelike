@@ -1,0 +1,157 @@
+{
+  "startedAt": "2026-09-19T02:02:02.761Z",
+  "environment": {
+    "node": "v20.19.6",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M2 Max"
+  },
+  "configuration": {
+    "opponentPolicy": "fast",
+    "counts": [
+      2
+    ],
+    "seeds": [
+      1069
+    ],
+    "difficulties": [
+      "normal"
+    ],
+    "nodeLimits": {
+      "normal": 0,
+      "hard": 48,
+      "expert": 120
+    },
+    "matchBudgetMs": 180000,
+    "maxSteps": 5000,
+    "clock": "Fixed now() = 0: deterministic work budgets, measured external wall clock. Not production deadline behavior.",
+    "factionRing": [
+      "eridani",
+      "hydran",
+      "mechanema",
+      "orion",
+      "planta",
+      "draco"
+    ]
+  },
+  "sourceHashes": {
+    "ai.ts": "666b3e9f363bdaaa16c5e651f794e10a654f78cb9113db10d852474ce0386bf6",
+    "aiCandidates.ts": "f8bfa5a0fff5d70ae6aade029a731858a278e3225c1a55cf9d1eff013f12dd84",
+    "aiSearch.ts": "bb365a7ce2eea156a87cd398918d1acaf5052b1ba25e279a033f1b8065a6ea48",
+    "aiWorld.ts": "b3b79e22d8091d2296efb6194920bf902b9e91efeaf5851b6b8a840d22be7eb2",
+    "aiEvaluation.ts": "dc7e4fa4b73746059d9b6acd277b042db2ee040be81ffa4e819f97e41c650274",
+    "aiConfig.ts": "e2a71041abfbf7bf68e7ae04f9a1be05581182286dcbae9330b72e49beee2e1c",
+    "aiSimulation.ts": "52907f7ef647aa90bc7875060ff5d426b39cf90532313d093b3172c8e7590bc5",
+    "aiLegacy.ts": "fc32d15e191be315ff3c7607e19a6f1ecc1742b6d19b8059d907473caeb275f3",
+    "aiLegacySimulation.ts": "9593c499c070422f20f646e74c9fdb86fc1dedc997f9c12f4e33e6e4efaf45df",
+    "legal.ts": "2365effa9d1eccb31278aefb0e018f42ebf974ff668460374636c90880bfdabf"
+  },
+  "warmProfile": [
+    {
+      "difficulty": "normal",
+      "fixture": "two-seat opening",
+      "maxNodes": 0,
+      "latencyMs": {
+        "samples": 5,
+        "p50": 3.9244170000000054,
+        "p95": 6.358000000000004,
+        "p99": 6.358000000000004,
+        "max": 6.358000000000004
+      }
+    }
+  ],
+  "results": [
+    {
+      "difficulty": "normal",
+      "count": 2,
+      "seed": 1069,
+      "searchSeat": 0,
+      "faction": "hydran",
+      "maxNodes": 0,
+      "finished": true,
+      "steps": 200,
+      "error": null,
+      "score": 19,
+      "margin": 7,
+      "win": true,
+      "tie": false,
+      "finalScores": [
+        {
+          "seat": "s0",
+          "total": 19,
+          "resourceTotal": 13
+        },
+        {
+          "seat": "s1",
+          "total": 12,
+          "resourceTotal": 32
+        }
+      ],
+      "round": 8,
+      "elapsedMs": 455.900542,
+      "attacks": 6,
+      "researchCount": 9,
+      "buildCount": 7,
+      "bankruptcyChoices": 2,
+      "legacyFallbacks": 0,
+      "searchCalls": 0,
+      "deepestCompletedDepth": 0,
+      "latencyMs": {
+        "samples": 116,
+        "p50": 0.06974999999999909,
+        "p95": 7.089917000000014,
+        "p99": 9.133583000000044,
+        "max": 9.75629200000003
+      },
+      "searchLatencyMs": {
+        "samples": 0,
+        "p50": null,
+        "p95": null,
+        "p99": null,
+        "max": null
+      }
+    }
+  ],
+  "latencyMs": {
+    "normal": {
+      "allCommands": {
+        "samples": 116,
+        "p50": 0.06974999999999909,
+        "p95": 7.089917000000014,
+        "p99": 9.133583000000044,
+        "max": 9.75629200000003
+      },
+      "searchedCommands": {
+        "samples": 0,
+        "p50": null,
+        "p95": null,
+        "p99": null,
+        "max": null
+      },
+      "completedDepth": {
+        "samples": 0,
+        "p50": null,
+        "p95": null,
+        "p99": null,
+        "max": null
+      },
+      "nodes": {
+        "samples": 0,
+        "p50": null,
+        "p95": null,
+        "p99": null,
+        "max": null
+      }
+    }
+  },
+  "sampledPeakRssMb": 224.15625,
+  "limitations": [
+    "Local bounded exploratory search tournament; no hosted or concurrency/cost claim. Sampled RSS includes Vite SSR and the harness, not just the deployed planner.",
+    "Seeds were selected separately from development fixtures and heuristic tuning seeds. They stop being held out if used for subsequent tuning.",
+    "One strategic seat faces frozen prior heuristic AI. Prior AI uses current shared legal generation; inherited illegal choices are rejected and next highest legacy-scored legal command selected, with fallback counts recorded.",
+    "Exact work caps are recorded in configuration. Runs with reduced caps test search-controlled completion, not full-strength certification; fixed clocks do not test production deadline behavior.",
+    "Two or three sampled worlds and narrow beam search are approximations, not exhaustive minimax or complete hidden-state reconstruction."
+  ],
+  "finishedAt": "2026-09-19T02:02:03.623Z",
+  "sourceChangedDuringRun": []
+}

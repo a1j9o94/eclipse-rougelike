@@ -6,6 +6,11 @@ import {
 import { shuffle, type RandomState } from './random';
 import { getTechnology, TECHNOLOGIES, type TechnologyId } from './technologies';
 
+/** Reviewed base-box inventory, shared by setup and independent hypothetical AI worlds. */
+export function createReputationSupply():number[]{
+  return [...Array<number>(12).fill(1),...Array<number>(10).fill(2),...Array<number>(7).fill(3),...Array<number>(4).fill(4)];
+}
+
 export interface TechnologyTile {
   id: string;
   technology: TechnologyId;

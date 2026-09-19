@@ -1,4 +1,5 @@
 import { BASE_FACTIONS, type FactionId } from "./catalog";
+import type { AiDifficulty } from "./aiConfig";
 import type { GameState, SeatId } from "./types";
 
 export const MIN_MULTIPLAYER_HUMAN_SEATS = 2;
@@ -16,6 +17,7 @@ export interface MultiplayerRoomSettings {
   aiCount: number;
   timerMs: number;
   warpPortals: boolean;
+  aiDifficulty?: AiDifficulty;
 }
 
 /** This projection intentionally excludes a guest ID, credential, email, and private game state. */
@@ -85,7 +87,8 @@ export function isMultiplayerSettings(value: MultiplayerRoomSettings): boolean {
     value.aiCount >= 0 &&
     total >= MIN_MULTIPLAYER_HUMAN_SEATS &&
     total <= MAX_MULTIPLAYER_SEATS &&
-    isMultiplayerTimerMs(value.timerMs)
+    isMultiplayerTimerMs(value.timerMs) &&
+    (value.aiDifficulty === undefined || ["normal", "hard", "expert"].includes(value.aiDifficulty))
   );
 }
 
@@ -150,7 +153,7 @@ export function reconcileMultiplayerTimer(
   if (!target) return { timer: null, changed: previous !== null };
   if (
     previous &&
-    (previous.status === "active" || previous.status === "timed-out") &&
+    (previous.status === "active" || previous.status === "timed-out" || previous.status === "failed") &&
     previous.target.seatId === target.seatId
   ) {
     return {

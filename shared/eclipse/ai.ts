@@ -1,10 +1,11 @@
+import { generateAiCandidates } from "./aiCandidates";
+import { getFaction } from "./catalog";
+import { connectionBetween } from "./geometry";
+import { mapSector, movementAbilities } from "./rulesState";
+import { fundingOptions } from "./funding";
 import { reputationCapacity } from "./battleEngine";
 import { estimatePublicBattle } from "./aiSimulation";
-import {
-  legalCommands,
-  publicBlueprint,
-  type LegalCommandCandidate,
-} from "./legal";
+import { publicBlueprint, type LegalCommandCandidate } from "./legal";
 import { deriveBlueprintStats, neutralBlueprint } from "./blueprints";
 import {
   incomeForPopulationAway,
@@ -51,6 +52,160 @@ function fleetStrength(
       );
     }, 0);
 }
+/** Marginal value includes the actual nonlinear money and influence tracks. */
+export function sectorControlValue(view: PlayerView, id: string): number {
+  const seat = view.seats.find((s) => s.id === view.viewerSeatId)!;
+  const sector = view.sectors.find((s) => s.id === id),
+    definition = sector && sectorDefinition(Number(sector.tileId));
+  if (!sector || !definition) return -20;
+  const empty = Math.max(0, Math.min(13, 13 - seat.influenceOnTrack));
+  const marginal =
+    upkeepForEmptyInfluenceSlots(Math.min(13, empty + 1)) -
+    upkeepForEmptyInfluenceSlots(empty);
+  const balance =
+    seat.resources.money +
+    incomeForPopulationAway(seat.populationTracks.money) -
+    upkeepForEmptyInfluenceSlots(empty);
+  const turns = Math.max(1, 9 - view.round);
+  const techs = Object.values(seat.technologies).flat();
+  let money = 0,
+    moneyCubes = 0,
+    production = 0;
+  for (const p of definition.population) {
+    if (
+      p.advanced &&
+      !techs.includes("metasynthesis") &&
+      !techs.includes(
+        p.resource === "science"
+          ? "advanced-labs"
+          : p.resource === "materials"
+            ? "advanced-mining"
+            : "advanced-economy",
+      )
+    )
+      continue;
+    if (p.resource === "money") {
+      money +=
+        incomeForPopulationAway(
+          Math.min(11, seat.populationTracks.money + moneyCubes + 1),
+        ) -
+        incomeForPopulationAway(
+          Math.min(11, seat.populationTracks.money + moneyCubes),
+        );
+      moneyCubes++;
+    } else production += p.resource === "science" ? 2.4 : 2.2;
+  }
+  const usefulMoney = balance < 6 ? money * 2.5 : money * 0.4;
+  return (
+    definition.victoryPoints * 3 +
+    (production + usefulMoney - marginal * 1.6) * Math.min(3, turns) +
+    (sector.discovery ? 2 : 0) +
+    (seat.faction === "planta" ? 3 : 0)
+  );
+}
+function technologyValue(view: PlayerView, id: string): number {
+  const seat = view.seats.find((s) => s.id === view.viewerSeatId)!;
+  const own = view.ships.filter((s) => s.owner === seat.id);
+  const threatened = view.sectors.some(
+    (target) =>
+      target.owner &&
+      target.owner !== seat.id &&
+      target.population.length &&
+      view.sectors.some(
+        (from) =>
+          (from.owner === seat.id || own.some((s) => s.sectorId === from.id)) &&
+          connectionBetween(
+            mapSector(from),
+            mapSector(target),
+            movementAbilities(seat).wormholeGenerator,
+          ) !== "none",
+      ),
+  );
+  if (id === "improved-hull")
+    return view.round <= 3 && own.length && seat.influenceOnTrack >= 3
+      ? 30
+      : own.length
+        ? 16
+        : 8;
+  if (id === "neutron-bombs") return threatened && own.length >= 2 ? 23 : 7;
+  if (["advanced-labs", "advanced-mining", "advanced-economy"].includes(id)) {
+    const resource =
+      id === "advanced-labs"
+        ? "science"
+        : id === "advanced-mining"
+          ? "materials"
+          : "money";
+    const available = view.sectors
+      .filter((s) => s.owner === seat.id)
+      .reduce(
+        (n, s) =>
+          n +
+          (sectorDefinition(Number(s.tileId))?.population.filter(
+            (p, i) =>
+              p.advanced &&
+              (p.resource === resource || p.resource === "gray") &&
+              !s.population.some((c) => c.squareId === `p${i}`),
+          ).length ?? 0),
+        0,
+      );
+    return 6 + available * Math.min(6, 9 - view.round);
+  }
+  if (id === "monolith")
+    return view.round >= 5 && seat.resources.materials >= 10 ? 19 : 5;
+  if (id === "orbital") return view.round <= 4 ? 14 : 7;
+  return 11;
+}
+function shipBuildValue(
+  view: PlayerView,
+  type: string,
+  sectorId: string,
+): number {
+  const seat = view.seats.find((s) => s.id === view.viewerSeatId)!;
+  const own = view.ships.filter((s) => s.owner === seat.id),
+    enemy = view.ships.filter(
+      (s) =>
+        s.owner !== seat.id &&
+        !["ancient", "guardian", "gcds"].includes(s.type),
+    );
+  const sector = view.sectors.find((s) => s.id === sectorId)!;
+  const targets = view.sectors.filter(
+    (s) =>
+      s.owner !== seat.id &&
+      connectionBetween(
+        mapSector(sector),
+        mapSector(s),
+        movementAbilities(seat).wormholeGenerator,
+      ) !== "none",
+  );
+  const threat = targets.some((s) =>
+    view.ships.some((ship) => ship.sectorId === s.id && ship.owner !== seat.id),
+  );
+  const invasion = targets.some((s) =>
+    view.ships.some(
+      (ship) =>
+        ship.sectorId === s.id &&
+        ship.owner !== seat.id &&
+        view.seats.some((player) => player.id === ship.owner),
+    ),
+  );
+  if (type === "starbase")
+    return invasion
+      ? Math.max(0, 18 - fleetStrength(view, seat.id, sectorId) * 2)
+      : -12;
+  const stats = seat.blueprints.find((b) => b.shipType === type);
+  if (!stats) return 0;
+  const derived = deriveBlueprintStats(seat.faction, publicBlueprint(stats));
+  const quality =
+    derived.hull * 0.8 +
+    derived.computer +
+    derived.weapons.reduce((n, w) => n + w.damage * w.dice, 0);
+  return (
+    Math.max(2, 12 - own.length * 0.8 + Math.min(8, enemy.length * 0.7)) +
+    (threat ? 5 : 0) +
+    Math.min(6, quality) +
+    (view.round >= 7 ? -6 : 0)
+  );
+}
 export function evaluateAiCommand(
   view: PlayerView,
   command: GameCommand,
@@ -75,9 +230,59 @@ export function evaluateAiCommand(
         : seat.faction === "mechanema"
           ? 2.1
           : 1.6;
-  const discPenalty = view.actionProgress ? 0 : Math.max(0, 3 - balance) * 4;
+  const nextBalance =
+    seat.resources.money +
+    income -
+    upkeepForEmptyInfluenceSlots(
+      Math.min(
+        13,
+        Math.max(0, (view.actionProgress ? 13 : 14) - seat.influenceOnTrack),
+      ),
+    );
+  const discPenalty = view.actionProgress
+    ? 0
+    : Math.max(0, -nextBalance) * 12 + Math.max(0, 2 - nextBalance) * 2;
   switch (command.type) {
-    case "trade-and-act": return -100; // The normal AI generates ordinary trades, not funded wrappers.
+    case "trade-and-act": {
+      const option = fundingOptions(view, command.action).find(
+        (o) => JSON.stringify(o.trades) === JSON.stringify(command.trades),
+      );
+      if (!option) return -100;
+      const funded = {
+        ...view,
+        seats: view.seats.map((s) =>
+          s.id === seat.id
+            ? { ...s, resources: option.resourcesAfterTrade }
+            : s,
+        ),
+      };
+      const lost = command.trades.reduce(
+        (sum, t) =>
+          sum +
+          t.amount *
+            getFaction(seat.faction).tradeRatio *
+            utility(t.from) *
+            0.7,
+        0,
+      );
+      const reserve =
+        option.resourcesAfter.money +
+        income -
+        upkeepForEmptyInfluenceSlots(
+          Math.min(
+            13,
+            Math.max(
+              0,
+              (view.actionProgress ? 13 : 14) - seat.influenceOnTrack,
+            ),
+          ),
+        );
+      return (
+        evaluateAiCommand(funded, command.action) -
+        lost -
+        Math.max(0, -reserve) * 8
+      );
+    }
     case "pass":
       return balance < 0 ? 30 : balance < 3 ? 10 : 0;
     case "end-action":
@@ -101,14 +306,14 @@ export function evaluateAiCommand(
       );
     case "explore":
       return (
-        (view.round < 5 ? 18 : 9) +
+        (view.round < 5 ? (sectors.length < 3 ? 27 : 20) : 9) +
         (seat.faction === "planta" ? 4 : seat.faction === "draco" ? 3 : 0) -
         sectors.length -
         discPenalty
       );
     case "research":
       return (
-        11 +
+        technologyValue(view, command.tileId) +
         (seat.faction === "hydran" ? 4 : 0) +
         (command.tileId === "advanced-economy" && balance < 5 ? 5 : 0) +
         (command.tileId === "nanorobots" && seat.faction === "mechanema"
@@ -132,7 +337,7 @@ export function evaluateAiCommand(
                 ? view.round <= 5
                   ? 15
                   : 5
-                : Math.max(0, 14 - ownShips.length * 2) +
+                : shipBuildValue(view, b.component, b.sectorId) +
                   (seat.faction === "orion"
                     ? 3
                     : seat.faction === "mechanema"
@@ -148,18 +353,26 @@ export function evaluateAiCommand(
         const a = deriveBlueprintStats(seat.faction, publicBlueprint(prev)),
           b = deriveBlueprintStats(seat.faction, publicBlueprint(next));
         const value = (s: typeof a) =>
+          (s.weapons.length ? 0 : -12) +
           s.hull * 0.9 +
-          s.computer * 1.6 +
           s.shield * 1.1 +
-          s.movement * 1.3 +
-          s.weapons.reduce((n, w) => n + w.damage * w.dice * 1.5, 0) +
-          Math.max(0, s.energyProduction - s.energyConsumption) * 0.2;
+          s.movement * 1.1 +
+          s.weapons.reduce(
+            (n, w) =>
+              n +
+              w.damage *
+                w.dice *
+                (w.kind === "missile" ? 0.9 : 1.5) *
+                (1 + Math.min(4, s.computer) * 0.45),
+            0,
+          ) +
+          Math.max(0, s.energyProduction - s.energyConsumption) * 0.03;
         improvement +=
           (value(b) - value(a)) *
-          (1 + ownShips.filter((s) => s.type === next.shipType).length * 0.7);
+          (0.4 + ownShips.filter((s) => s.type === next.shipType).length * 0.7);
       }
       return (
-        improvement * 3 +
+        improvement * 5 +
         (seat.faction === "mechanema" ? 1 : 0) -
         discPenalty -
         4
@@ -167,13 +380,12 @@ export function evaluateAiCommand(
     }
     case "influence":
       return command.addSectorIds.length
-        ? 18 +
-            command.addSectorIds.reduce(
-              (n, id) =>
-                n +
-                sectorDefinition(
-                  Number(view.sectors.find((s) => s.id === id)!.tileId),
-                )!.victoryPoints,
+        ? command.addSectorIds.reduce(
+            (sum, id) => sum + sectorControlValue(view, id),
+            0,
+          ) -
+            command.removeSectorIds.reduce(
+              (sum, id) => sum + sectorControlValue(view, id),
               0,
             ) -
             discPenalty
@@ -183,33 +395,77 @@ export function evaluateAiCommand(
     case "offer-diplomacy":
       return seat.faction === "orion" ? 3 : 7;
     case "move": {
-      const move = command.moves[0],
-        ship = view.ships.find((s) => s.id === move.shipId)!;
-      const to = view.sectors.find((s) => s.id === move.path.at(-1))!;
-      const others = [
-        ...new Set(
-          view.ships
-            .filter(
-              (s) =>
-                s.sectorId === to.id &&
-                s.owner !== seat.id &&
-                !(seat.faction === "draco" && s.type === "ancient"),
-            )
-            .map((s) => s.owner),
-        ),
-      ];
-      const enemy = others.reduce(
-        (n, id) => n + fleetStrength(view, id, to.id),
-        0,
+      const final = new Map(
+        command.moves.map((m) => [m.shipId, m.path.at(-1)!]),
       );
-      const strength = fleetStrength(view, seat.id, ship.sectorId);
-      if (enemy && strength < enemy * 1.15) return -15 - discPenalty;
-      return (
-        (to.owner === seat.id ? -5 : to.owner === null ? 10 : 8) +
-        (enemy ? 4 : 0) +
-        sectorDefinition(Number(to.tileId))!.victoryPoints * 0.6 -
-        discPenalty
-      );
+      let value = 0;
+      for (const destination of new Set(final.values())) {
+        const to = view.sectors.find((s) => s.id === destination)!;
+        const projected = {
+          ...view,
+          ships: view.ships.map((s) =>
+            final.has(s.id) ? { ...s, sectorId: final.get(s.id)! } : s,
+          ),
+        };
+        const others = [
+          ...new Set(
+            view.ships
+              .filter(
+                (s) =>
+                  s.sectorId === destination &&
+                  s.owner !== seat.id &&
+                  !(seat.faction === "draco" && s.type === "ancient"),
+              )
+              .map((s) => s.owner),
+          ),
+        ];
+        const enemy = others.reduce(
+            (n, id) => n + fleetStrength(view, id, destination),
+            0,
+          ),
+          strength = fleetStrength(projected, seat.id, destination);
+        if (enemy && strength < enemy * 0.8) {
+          value -= 25;
+          continue;
+        }
+        const leader = view.seats
+          .filter((s) => s.id !== seat.id)
+          .sort(
+            (a, b) =>
+              view.sectors.filter((s) => s.owner === b.id).length -
+              view.sectors.filter((s) => s.owner === a.id).length,
+          )[0];
+        value +=
+          (to.owner === seat.id
+            ? -6
+            : sectorControlValue(view, destination) +
+              (to.owner === leader?.id ? 3 : 0)) + (enemy ? 5 : 0);
+        if (to.owner && seat.ambassadors.includes(to.owner)) value -= 18;
+        if (to.owner === seat.id && others.length === 0) {
+          const threats = view.sectors.filter(
+            (s) =>
+              s.owner !== seat.id &&
+              connectionBetween(
+                mapSector(to),
+                mapSector(s),
+                movementAbilities(seat).wormholeGenerator,
+              ) !== "none",
+          );
+          if (
+            threats.some((s) =>
+              view.ships.some(
+                (ship) =>
+                  ship.sectorId === s.id &&
+                  ship.owner !== seat.id &&
+                  view.seats.some((player) => player.id === ship.owner),
+              ),
+            ) &&
+            fleetStrength(view, seat.id, destination) < 8
+          )
+            value += 10;
+        }
+      }
+      return value - discPenalty;
     }
     case "resolve": {
       const c = command.choice;
@@ -228,7 +484,9 @@ export function evaluateAiCommand(
         case "ancient-part":
           return c.blueprint ? 15 : 3;
         case "control":
-          return c.accept ? (balance >= 1 ? 15 : 0) : 1;
+          return c.accept && view.pendingDecision?.kind === "control"
+            ? sectorControlValue(view, view.pendingDecision.sectorId)
+            : 1;
         case "diplomacy-window":
           if (!c.offerTo) return 0;
           if (
@@ -302,7 +560,7 @@ export function chooseAiCommand(
   view: PlayerView,
   simulationSeed: number,
 ): AiChoice | null {
-  const candidates = legalCommands(view);
+  const candidates = generateAiCandidates(view);
   if (!candidates.length) return null;
   let random = randomSeed(simulationSeed >>> 0);
   let best: AiChoice | null = null;
@@ -331,13 +589,17 @@ export function chooseAiCommand(
       evaluateAiCommand(view, candidate.command) + next.value / 10000;
     const command = candidate.command;
     if (command.type === "move") {
-      const move = command.moves[0],
-        destination = move.path.at(-1)!;
+      const destination = command.moves.at(-1)!.path.at(-1)!;
+      const arrivals = new Set(
+        command.moves
+          .filter((m) => m.path.at(-1) === destination)
+          .map((m) => m.shipId),
+      );
       const own = view.ships
         .filter(
           (s) =>
             s.owner === view.viewerSeatId &&
-            (s.id === move.shipId || s.sectorId === destination),
+            (arrivals.has(s.id) || s.sectorId === destination),
         )
         .map((s) => s.id);
       const enemy = view.ships
@@ -352,8 +614,22 @@ export function chooseAiCommand(
         )
         .map((s) => s.id);
       if (enemy.length) {
-        const chance = estimate(own, enemy);
-        evaluation += chance < 0.5 ? -35 : (chance - 0.5) * 20;
+        const owners = [
+          ...new Set(
+            enemy.map((id) => view.ships.find((s) => s.id === id)!.owner),
+          ),
+        ];
+        const chance = Math.min(
+          ...owners.map((owner) =>
+            estimate(
+              own,
+              enemy.filter(
+                (id) => view.ships.find((s) => s.id === id)!.owner === owner,
+              ),
+            ),
+          ),
+        );
+        evaluation += chance < 0.5 ? -35 : (chance - 0.5) * 24;
       }
     }
     if (
@@ -381,7 +657,8 @@ export function chooseAiCommand(
       const chance =
         view.battle.attacker === view.viewerSeatId
           ? estimate(own, enemy)
-          : 1 - estimate(enemy, own);
+          : estimatePublicBattle(view, enemy, own, simulationSeed, 16)
+              .defenderWinProbability;
       const retreat =
         command.choice.kind === "retreat"
           ? command.choice.destinationId

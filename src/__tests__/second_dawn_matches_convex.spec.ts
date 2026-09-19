@@ -1,3 +1,4 @@
+import {finishDispatchedAi} from './aiWorkerTestSupport';
 import { webcrypto } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { convexTest } from 'convex-test';
@@ -65,6 +66,7 @@ describe('Second Dawn authoritative match adapter', () => {
       await ctx.db.patch(job!._id,{status:'scheduled',expectedRevision:0});
     });
     await t.mutation(internal.eclipseMatches.runAi,{matchId,expectedRevision:0});
+    await finishDispatchedAi(t);
     const failed=await t.query(api.eclipseMatches.getMatchView,{...guest,matchId});
     expect(failed?.aiStatus).toMatchObject({status:'failed',attempts:1});
     expect(failed?.revision).toBe(0);
@@ -74,8 +76,10 @@ describe('Second Dawn authoritative match adapter', () => {
     await t.run(async ctx=>{const row=await ctx.db.get(matchId);const state=JSON.parse(row!.snapshotJson) as GameState;state.phase='action';state.pendingDecision=null;await ctx.db.patch(matchId,{phase:'action',snapshotJson:JSON.stringify(state)});});
     await t.mutation(api.eclipseMatches.retryAi,{...guest,matchId});
     await t.mutation(internal.eclipseMatches.runAi,{matchId,expectedRevision:0});
+    await finishDispatchedAi(t);
     expect((await t.query(api.eclipseMatches.getMatchView,{...guest,matchId}))?.revision).toBe(1);
     await t.mutation(internal.eclipseMatches.runAi,{matchId,expectedRevision:0});
+    await finishDispatchedAi(t);
     expect((await t.query(api.eclipseMatches.getMatchView,{...guest,matchId}))?.revision).toBe(1);
   });
   it('resumes an outstanding private decision exactly and keeps it away from unauthorized guests', async () => {

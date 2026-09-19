@@ -1,0 +1,605 @@
+{
+  "startedAt": "2026-09-19T01:49:54.766Z",
+  "environment": {
+    "node": "v20.19.6",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M2 Max"
+  },
+  "configuration": {
+    "opponentPolicy": "legacy",
+    "counts": [
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "seeds": [
+      401
+    ],
+    "difficulties": [
+      "normal",
+      "hard"
+    ],
+    "nodeLimits": {
+      "normal": 12,
+      "hard": 48,
+      "expert": 120
+    },
+    "matchBudgetMs": 180000,
+    "maxSteps": 5000,
+    "clock": "Fixed now() = 0: deterministic work budgets, measured external wall clock. Not production deadline behavior."
+  },
+  "sourceHashes": {
+    "ai.ts": "c7d5aabcf4c1d59bc0fee7d604ced48a659c7d763a2398b3e4c9ee384a883359",
+    "aiCandidates.ts": "e9a4caab83e4afd2d6ce6f2381d576031b7cb18b9f9ad3072449bb204038294c",
+    "aiSearch.ts": "af64eb296f7230550aaf5c8674d2b1ebd1c8fa3fa4e2ffbf1982e968d5271556",
+    "aiWorld.ts": "b3b79e22d8091d2296efb6194920bf902b9e91efeaf5851b6b8a840d22be7eb2",
+    "aiEvaluation.ts": "869706a301e1bd8c76930bc9e17899f873639ded089047c527d21134356309e9",
+    "aiConfig.ts": "9a6008d36cfb5ec57b233a56463e016135f6a1a7b61f89917b84860320c2a3eb",
+    "aiSimulation.ts": "52907f7ef647aa90bc7875060ff5d426b39cf90532313d093b3172c8e7590bc5",
+    "aiLegacy.ts": "fc32d15e191be315ff3c7607e19a6f1ecc1742b6d19b8059d907473caeb275f3",
+    "aiLegacySimulation.ts": "9593c499c070422f20f646e74c9fdb86fc1dedc997f9c12f4e33e6e4efaf45df",
+    "legal.ts": "9a583e5eae729b67870c024746b4f87cbe7ada9c32c02c818bfd3473705e6113"
+  },
+  "warmProfile": [
+    {
+      "difficulty": "normal",
+      "fixture": "two-seat opening",
+      "maxNodes": 12,
+      "latencyMs": {
+        "samples": 5,
+        "p50": 123.78358299999991,
+        "p95": 128.44074999999998,
+        "p99": 128.44074999999998,
+        "max": 128.44074999999998
+      }
+    },
+    {
+      "difficulty": "hard",
+      "fixture": "two-seat opening",
+      "maxNodes": 48,
+      "latencyMs": {
+        "samples": 5,
+        "p50": 307.91595800000005,
+        "p95": 327.78362500000003,
+        "p99": 327.78362500000003,
+        "max": 327.78362500000003
+      }
+    }
+  ],
+  "results": [
+    {
+      "difficulty": "normal",
+      "count": 2,
+      "seed": 401,
+      "searchSeat": 0,
+      "faction": "mechanema",
+      "maxNodes": 12,
+      "finished": true,
+      "steps": 191,
+      "error": null,
+      "score": 10,
+      "margin": -10,
+      "win": false,
+      "tie": false,
+      "finalScores": [
+        {
+          "seat": "s0",
+          "total": 10,
+          "resourceTotal": 44
+        },
+        {
+          "seat": "s1",
+          "total": 20,
+          "resourceTotal": 14
+        }
+      ],
+      "round": 8,
+      "elapsedMs": 4646.913957999999,
+      "attacks": 5,
+      "researchCount": 0,
+      "buildCount": 9,
+      "bankruptcyChoices": 0,
+      "legacyFallbacks": 0,
+      "searchCalls": 32,
+      "deepestCompletedDepth": 1,
+      "latencyMs": {
+        "samples": 78,
+        "p50": 0.08483299999988958,
+        "p95": 199.63174999999956,
+        "p99": 269.3631660000001,
+        "max": 269.3631660000001
+      },
+      "searchLatencyMs": {
+        "samples": 32,
+        "p50": 128.90175,
+        "p95": 212.03920900000048,
+        "p99": 269.3631660000001,
+        "max": 269.3631660000001
+      }
+    },
+    {
+      "difficulty": "normal",
+      "count": 2,
+      "seed": 401,
+      "searchSeat": 1,
+      "faction": "orion",
+      "maxNodes": 12,
+      "finished": true,
+      "steps": 197,
+      "error": null,
+      "score": 8,
+      "margin": -2,
+      "win": false,
+      "tie": false,
+      "finalScores": [
+        {
+          "seat": "s0",
+          "total": 10,
+          "resourceTotal": 11
+        },
+        {
+          "seat": "s1",
+          "total": 8,
+          "resourceTotal": 96
+        }
+      ],
+      "round": 8,
+      "elapsedMs": 5880.898875,
+      "attacks": 1,
+      "researchCount": 1,
+      "buildCount": 0,
+      "bankruptcyChoices": 0,
+      "legacyFallbacks": 0,
+      "searchCalls": 39,
+      "deepestCompletedDepth": 1,
+      "latencyMs": {
+        "samples": 67,
+        "p50": 109.71516700000029,
+        "p95": 200.28950000000077,
+        "p99": 209.2102500000001,
+        "max": 209.2102500000001
+      },
+      "searchLatencyMs": {
+        "samples": 39,
+        "p50": 148.7509169999994,
+        "p95": 202.71645800000078,
+        "p99": 209.2102500000001,
+        "max": 209.2102500000001
+      }
+    },
+    {
+      "difficulty": "normal",
+      "count": 3,
+      "seed": 401,
+      "searchSeat": 0,
+      "faction": "mechanema",
+      "maxNodes": 12,
+      "finished": true,
+      "steps": 253,
+      "error": null,
+      "score": 14,
+      "margin": -5,
+      "win": false,
+      "tie": false,
+      "finalScores": [
+        {
+          "seat": "s0",
+          "total": 14,
+          "resourceTotal": 12
+        },
+        {
+          "seat": "s1",
+          "total": 11,
+          "resourceTotal": 25
+        },
+        {
+          "seat": "s2",
+          "total": 19,
+          "resourceTotal": 47
+        }
+      ],
+      "round": 8,
+      "elapsedMs": 7876.014499999999,
+      "attacks": 6,
+      "researchCount": 0,
+      "buildCount": 9,
+      "bankruptcyChoices": 0,
+      "legacyFallbacks": 0,
+      "searchCalls": 35,
+      "deepestCompletedDepth": 1,
+      "latencyMs": {
+        "samples": 86,
+        "p50": 0.053334000000177184,
+        "p95": 307.23566700000083,
+        "p99": 380.7455829999999,
+        "max": 380.7455829999999
+      },
+      "searchLatencyMs": {
+        "samples": 35,
+        "p50": 208.0335410000007,
+        "p95": 356.2794999999969,
+        "p99": 380.7455829999999,
+        "max": 380.7455829999999
+      }
+    },
+    {
+      "difficulty": "normal",
+      "count": 3,
+      "seed": 401,
+      "searchSeat": 2,
+      "faction": "planta",
+      "maxNodes": 12,
+      "finished": true,
+      "steps": 256,
+      "error": null,
+      "score": 20,
+      "margin": 8,
+      "win": true,
+      "tie": false,
+      "finalScores": [
+        {
+          "seat": "s0",
+          "total": 10,
+          "resourceTotal": 8
+        },
+        {
+          "seat": "s1",
+          "total": 12,
+          "resourceTotal": 33
+        },
+        {
+          "seat": "s2",
+          "total": 20,
+          "resourceTotal": 63
+        }
+      ],
+      "round": 8,
+      "elapsedMs": 6450.344333000001,
+      "attacks": 2,
+      "researchCount": 0,
+      "buildCount": 1,
+      "bankruptcyChoices": 0,
+      "legacyFallbacks": 0,
+      "searchCalls": 35,
+      "deepestCompletedDepth": 2,
+      "latencyMs": {
+        "samples": 88,
+        "p50": 0.04804100000183098,
+        "p95": 232.1168749999997,
+        "p99": 332.5283329999984,
+        "max": 332.5283329999984
+      },
+      "searchLatencyMs": {
+        "samples": 35,
+        "p50": 174.39983399999983,
+        "p95": 303.0192919999972,
+        "p99": 332.5283329999984,
+        "max": 332.5283329999984
+      }
+    },
+    {
+      "difficulty": "normal",
+      "count": 4,
+      "seed": 401,
+      "searchSeat": 0,
+      "faction": "mechanema",
+      "maxNodes": 12,
+      "finished": true,
+      "steps": 440,
+      "error": null,
+      "score": 13,
+      "margin": -16,
+      "win": false,
+      "tie": false,
+      "finalScores": [
+        {
+          "seat": "s0",
+          "total": 13,
+          "resourceTotal": 54
+        },
+        {
+          "seat": "s1",
+          "total": 13,
+          "resourceTotal": 44
+        },
+        {
+          "seat": "s2",
+          "total": 21,
+          "resourceTotal": 57
+        },
+        {
+          "seat": "s3",
+          "total": 29,
+          "resourceTotal": 24
+        }
+      ],
+      "round": 8,
+      "elapsedMs": 15810.532416000002,
+      "attacks": 5,
+      "researchCount": 0,
+      "buildCount": 11,
+      "bankruptcyChoices": 0,
+      "legacyFallbacks": 0,
+      "searchCalls": 35,
+      "deepestCompletedDepth": 1,
+      "latencyMs": {
+        "samples": 82,
+        "p50": 0.18679100000008475,
+        "p95": 638.5619169999991,
+        "p99": 984.2995410000003,
+        "max": 984.2995410000003
+      },
+      "searchLatencyMs": {
+        "samples": 35,
+        "p50": 419.9477920000063,
+        "p95": 924.4733750000014,
+        "p99": 984.2995410000003,
+        "max": 984.2995410000003
+      }
+    },
+    {
+      "difficulty": "normal",
+      "count": 4,
+      "seed": 401,
+      "searchSeat": 3,
+      "faction": "draco",
+      "maxNodes": 12,
+      "finished": true,
+      "steps": 486,
+      "error": null,
+      "score": 22,
+      "margin": -3,
+      "win": false,
+      "tie": false,
+      "finalScores": [
+        {
+          "seat": "s0",
+          "total": 13,
+          "resourceTotal": 7
+        },
+        {
+          "seat": "s1",
+          "total": 25,
+          "resourceTotal": 49
+        },
+        {
+          "seat": "s2",
+          "total": 17,
+          "resourceTotal": 28
+        },
+        {
+          "seat": "s3",
+          "total": 22,
+          "resourceTotal": 99
+        }
+      ],
+      "round": 8,
+      "elapsedMs": 15640.697166999998,
+      "attacks": 0,
+      "researchCount": 1,
+      "buildCount": 5,
+      "bankruptcyChoices": 1,
+      "legacyFallbacks": 0,
+      "searchCalls": 37,
+      "deepestCompletedDepth": 1,
+      "latencyMs": {
+        "samples": 91,
+        "p50": 0.04754200000024866,
+        "p95": 679.346832999996,
+        "p99": 732.4977910000016,
+        "max": 732.4977910000016
+      },
+      "searchLatencyMs": {
+        "samples": 37,
+        "p50": 400.8975829999981,
+        "p95": 704.9884170000005,
+        "p99": 732.4977910000016,
+        "max": 732.4977910000016
+      }
+    },
+    {
+      "difficulty": "normal",
+      "count": 5,
+      "seed": 401,
+      "searchSeat": 0,
+      "faction": "mechanema",
+      "maxNodes": 12,
+      "finished": true,
+      "steps": 558,
+      "error": null,
+      "score": 4,
+      "margin": -27,
+      "win": false,
+      "tie": false,
+      "finalScores": [
+        {
+          "seat": "s0",
+          "total": 4,
+          "resourceTotal": 62
+        },
+        {
+          "seat": "s1",
+          "total": 11,
+          "resourceTotal": 79
+        },
+        {
+          "seat": "s2",
+          "total": 15,
+          "resourceTotal": 10
+        },
+        {
+          "seat": "s3",
+          "total": 31,
+          "resourceTotal": 48
+        },
+        {
+          "seat": "s4",
+          "total": 19,
+          "resourceTotal": 33
+        }
+      ],
+      "round": 8,
+      "elapsedMs": 21843.814791999997,
+      "attacks": 0,
+      "researchCount": 0,
+      "buildCount": 8,
+      "bankruptcyChoices": 0,
+      "legacyFallbacks": 0,
+      "searchCalls": 36,
+      "deepestCompletedDepth": 1,
+      "latencyMs": {
+        "samples": 58,
+        "p50": 474.77795799999876,
+        "p95": 759.0261670000036,
+        "p99": 777.9901670000036,
+        "max": 777.9901670000036
+      },
+      "searchLatencyMs": {
+        "samples": 36,
+        "p50": 642.1819170000017,
+        "p95": 771.914082999996,
+        "p99": 777.9901670000036,
+        "max": 777.9901670000036
+      }
+    },
+    {
+      "difficulty": "normal",
+      "count": 5,
+      "seed": 401,
+      "searchSeat": 4,
+      "faction": "eridani",
+      "maxNodes": 12,
+      "finished": true,
+      "steps": 500,
+      "error": null,
+      "score": 14,
+      "margin": -11,
+      "win": false,
+      "tie": false,
+      "finalScores": [
+        {
+          "seat": "s0",
+          "total": 11,
+          "resourceTotal": 16
+        },
+        {
+          "seat": "s1",
+          "total": 12,
+          "resourceTotal": 15
+        },
+        {
+          "seat": "s2",
+          "total": 15,
+          "resourceTotal": 57
+        },
+        {
+          "seat": "s3",
+          "total": 25,
+          "resourceTotal": 92
+        },
+        {
+          "seat": "s4",
+          "total": 14,
+          "resourceTotal": 68
+        }
+      ],
+      "round": 8,
+      "elapsedMs": 25292.473291999995,
+      "attacks": 0,
+      "researchCount": 0,
+      "buildCount": 6,
+      "bankruptcyChoices": 0,
+      "legacyFallbacks": 0,
+      "searchCalls": 38,
+      "deepestCompletedDepth": 1,
+      "latencyMs": {
+        "samples": 76,
+        "p50": 348.04462500000955,
+        "p95": 909.5931249999994,
+        "p99": 1211.4272080000082,
+        "max": 1211.4272080000082
+      },
+      "searchLatencyMs": {
+        "samples": 38,
+        "p50": 663.0429160000058,
+        "p95": 1039.5930419999931,
+        "p99": 1211.4272080000082,
+        "max": 1211.4272080000082
+      }
+    }
+  ],
+  "latencyMs": {
+    "normal": {
+      "allCommands": {
+        "samples": 626,
+        "p50": 0.1341249999968568,
+        "p95": 686.6727079999982,
+        "p99": 881.5095419999998,
+        "max": 1211.4272080000082
+      },
+      "searchedCommands": {
+        "samples": 287,
+        "p50": 281.03412500000195,
+        "p95": 759.0261670000036,
+        "p99": 984.2995410000003,
+        "max": 1211.4272080000082
+      },
+      "completedDepth": {
+        "samples": 287,
+        "p50": 1,
+        "p95": 1,
+        "p99": 1,
+        "max": 2
+      },
+      "nodes": {
+        "samples": 287,
+        "p50": 12,
+        "p95": 12,
+        "p99": 12,
+        "max": 12
+      }
+    },
+    "hard": {
+      "allCommands": {
+        "samples": 0,
+        "p50": null,
+        "p95": null,
+        "p99": null,
+        "max": null
+      },
+      "searchedCommands": {
+        "samples": 0,
+        "p50": null,
+        "p95": null,
+        "p99": null,
+        "max": null
+      },
+      "completedDepth": {
+        "samples": 0,
+        "p50": null,
+        "p95": null,
+        "p99": null,
+        "max": null
+      },
+      "nodes": {
+        "samples": 0,
+        "p50": null,
+        "p95": null,
+        "p99": null,
+        "max": null
+      }
+    }
+  },
+  "peakRssMb": 425.1875,
+  "limitations": [
+    "Local bounded exploratory search tournament; no hosted or concurrency/cost claim.",
+    "Seeds were selected separately from development fixtures and heuristic tuning seeds. They stop being held out if used for subsequent tuning.",
+    "One strategic seat faces frozen prior heuristic AI. Prior AI uses current shared legal generation; inherited illegal choices are rejected and next highest legacy-scored legal command selected, with fallback counts recorded.",
+    "Production search uses higher node limits. Normal 12 / Hard 48 here validate complete search-controlled matches economically, not full-strength certification.",
+    "Two or three sampled worlds and narrow beam search are approximations, not exhaustive minimax or complete hidden-state reconstruction."
+  ],
+  "interrupted": "Benchmark harness incorrectly mixed Terran Directorate and its alien physical-color counterpart in six-seat setup. Eight completed 2\u20135-seat games remain valid development observations; six-seat failure was setup harness error, not gameplay deadlock."
+}

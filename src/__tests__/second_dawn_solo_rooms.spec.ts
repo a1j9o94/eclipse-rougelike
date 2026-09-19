@@ -1,3 +1,4 @@
+import {finishDispatchedAi} from './aiWorkerTestSupport';
 import { webcrypto } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { convexTest } from "convex-test";
@@ -67,6 +68,7 @@ describe("Solo rooms wait for their human", () => {
     let steps = 0;
     while (view?.aiStatus?.status === "scheduled" && steps < 300) {
       await t.mutation(internal.eclipseMatches.runAi, { matchId: started.matchId, expectedRevision: view.revision });
+      await finishDispatchedAi(t);
       view = await t.query(api.eclipseMatches.getMatchView, { ...host, matchId: started.matchId });
       steps++;
     }

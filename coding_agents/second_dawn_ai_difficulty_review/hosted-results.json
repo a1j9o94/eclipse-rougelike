@@ -1,0 +1,97 @@
+[
+  {
+    "difficulty": "normal",
+    "players": 2,
+    "revision": 3,
+    "settingsSurvivedReload": true,
+    "states": [
+      "scheduled"
+    ],
+    "observedThinking": false,
+    "elapsedMs": 3060,
+    "diagnostics": [
+      {
+        "attempts": 0,
+        "difficulty": "normal",
+        "error": null,
+        "lastComputeMs": 4.599998474121094,
+        "lastPlanComputeMs": null,
+        "lastPlanCutoff": null,
+        "lastPlanDepth": null,
+        "lastPlanNodes": null,
+        "lastSearchCutoff": false,
+        "lastSearchDepth": 0,
+        "lastSearchNodes": 0,
+        "remainingBudgetMs": 500,
+        "revision": 3,
+        "status": "waiting",
+        "version": "strategic-v1"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "difficulty": "hard",
+    "players": 2,
+    "revision": 3,
+    "settingsSurvivedReload": true,
+    "states": [
+      "scheduled",
+      "thinking"
+    ],
+    "observedThinking": true,
+    "elapsedMs": 3636,
+    "diagnostics": [
+      {
+        "attempts": 0,
+        "difficulty": "hard",
+        "error": null,
+        "lastComputeMs": 0.40000152587890625,
+        "lastPlanComputeMs": 441.79999923706055,
+        "lastPlanCutoff": false,
+        "lastPlanDepth": 4,
+        "lastPlanNodes": 26,
+        "lastSearchCutoff": false,
+        "lastSearchDepth": 0,
+        "lastSearchNodes": 0,
+        "remainingBudgetMs": 2557.7999992370605,
+        "revision": 3,
+        "status": "scheduled",
+        "version": "strategic-v1"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "difficulty": "expert",
+    "players": 6,
+    "revision": 3,
+    "settingsSurvivedReload": true,
+    "states": [
+      "scheduled",
+      "thinking"
+    ],
+    "observedThinking": true,
+    "elapsedMs": 17592,
+    "diagnostics": [
+      {
+        "attempts": 0,
+        "difficulty": "expert",
+        "error": null,
+        "lastComputeMs": 14437.099998474121,
+        "lastPlanComputeMs": 14437.099998474121,
+        "lastPlanCutoff": false,
+        "lastPlanDepth": 5,
+        "lastPlanNodes": 88,
+        "lastSearchCutoff": false,
+        "lastSearchDepth": 5,
+        "lastSearchNodes": 88,
+        "remainingBudgetMs": 15562.900001525879,
+        "revision": 2,
+        "status": "thinking",
+        "version": "strategic-v1"
+      }
+    ],
+    "errors": []
+  }
+]

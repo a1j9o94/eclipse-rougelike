@@ -16,6 +16,7 @@ import {
   createTechnologyBag,
   drawTechnologies,
   prepareSectorStacks,
+  createReputationSupply,
 } from "./supplies";
 import { getTechnology, type TechnologyId } from "./technologies";
 import { requireSectorDefinition as sectorDefinition } from "./rulesState";
@@ -52,12 +53,7 @@ export function createGame(config: GameSetup): GameState {
     bag.random,
     createDiscoverySupply(config.warpPortals),
   );
-  const reputation = shuffle(discoveries.state, [
-    ...Array<number>(12).fill(1),
-    ...Array<number>(10).fill(2),
-    ...Array<number>(7).fill(3),
-    ...Array<number>(4).fill(4),
-  ]);
+  const reputation = shuffle(discoveries.state, createReputationSupply());
   const guardians = shuffle(
     reputation.state,
     BASE_COMPONENTS.sectorIds.guardians,

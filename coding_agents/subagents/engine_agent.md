@@ -269,3 +269,29 @@ Removed revision comparison and review callback from the shared draft provider/c
 
 ## September 18 — Empire and combat identity delivery
 Integrated public empire overview/navigation, saved presentation settings, contextual faction badges, original SVG faction ship families throughout screens, full-screen lazy Three.js combat effects, and actual-edge connection display. Explicit inspection mode prevents empire navigation from modifying saved builds. Fixed desktop inspector width and mobile roster direction found during real screenshot review. No engine, Convex schema, RNG or authoritative save changes.
+
+### 2026-09-18 — Public combat estimator for strategic AI
+
+Outcome: the AI evaluates duels with the right remaining weapon phase and distinguishes winning from an unresolved simulation.
+
+Implemented in `shared/eclipse/aiSimulation.ts`: separate attacker/defender/unresolved probabilities; compatibility `winProbability` remains attacker victory; surviving fleet counts for both sides; explicit unsupported multi-owner/non-opponent results instead of invented alliances; matching ongoing battles never refire spent missiles; independent bounded simulation RNG; Antimatter Splitter applies only to red cannons; forced unarmed retreat follows public connectivity/ownership and accounts for destruction when no retreat exists. A proposed attack evaluates retreat routes from the destination sector, not its original staging sector. Optional cannon horizons stop at 0–32 rounds. No authoritative rules changed.
+
+Decision log: voluntary retreats, tied initiative choice, and partial engagement firing order remain approximations. A current cannon fight restarts a cannon engagement using current damage; it does not restart its missile phase. Caller must model multi-owner battles as successive duels, not invert unresolved probability into defender success. No full state or authoritative RNG enters the estimator.
+
+Follow-ups: calibrate mixed-fleet hit assignment and voluntary-retreat choices if benchmark errors justify further complexity. Parent owns search/runtime integration, overall lint/build and independent review.
+
+## September 18, 2026 — bounded strategic AI worker
+Implemented optional match/room difficulty and version, exclusive leased dispatcher → filtered query → scheduled search action → atomic commit mutation, watchdog/retry and cumulative action budgets. Timeout takeover shares the safe worker and keeps solo waiting semantics. Visual difficulty cards and actual thinking status integrated. No authoritative game rule changes. See `coding_agents/second_dawn_ai_runtime.md`.
+
+## 2026-09-18 — Stronger fair AI fast policy and coordinated candidates
+- Outcome: opponents prepare mobile fleets, execute combined attacks, invest in useful technology/refits, and avoid spending the next action into an unseen upkeep shortfall.
+- Frozen the exact old controller and estimator in `shared/eclipse/aiLegacy.ts` and `aiLegacySimulation.ts` for comparisons. No authoritative rules or hidden-state access added.
+- Added `generateAiCandidates(view)` with multi-ship convergence, repeated movement activations, affordable/funded batch construction, paired refits and power-source + weapon combinations; capacity, sequential pinning, finite ship supply, technology, funding ratio and legal install order reuse existing rules.
+- Added optional `legalCommands(view, { perFamilyLimit })` for AI. Existing callers retain the old global 500 limit. AI preserves action families on crowded boards; regression first failed with Upgrade missing, then passed.
+- Policy now values early Improved Hull, neighboring populated targets for Neutron Bombs, nonlinear marginal sector income/upkeep, weapon/computer synergy, meaningful defense and useful mobile shipbuilding beyond seven ships. Safe homes no longer accumulate useless starbases. An old scoring defect that preferred removing the last cannon for computers now has a failing-first regression.
+- Updated queued population-return candidate filtering: a saved destination track can fill while earlier returns resolve; stale impossible choices are excluded.
+- Validation: 23 tests across new strategic cases, existing legal AI cases and existing old random-baseline tournament pass. Scoped ESLint and eclipse TypeScript pass. Parent owns whole-slice lint/build/test gates.
+- Held-out evidence: `coding_agents/second_dawn_ai_strategy_holdout.json`, 60 improved games plus 30 all-legacy references, all finish, seeds 901–906 cover all six faction families at every 2–6 seat count; details and limitations in `second_dawn_ai_strategy_validation.md`.
+- Result & next steps: fast policy frozen after held-out run. Parent integrates bounded search and scheduled runtime. Search superiority is a separate gate; no claim that deeper search automatically beats this stronger fast policy.
+
+- Follow-up correctness fix: funded continuation at zero influence now uses its already-spent action disc for upkeep preview, with bounded track indices. A failing-first regression caught the search rollout crash; 13 strategic tests now pass.

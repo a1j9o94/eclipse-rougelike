@@ -1,3 +1,4 @@
+import {finishDispatchedAi} from './aiWorkerTestSupport';
 import { webcrypto } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { convexTest } from "convex-test";
@@ -64,6 +65,7 @@ describe("Second Dawn multiplayer rooms", () => {
     await t.mutation(internal.eclipseRooms.syncRoomTimer, { matchId: started.matchId });
     await t.run(async (ctx) => await ctx.db.patch(sameOwner!._id, { deadlineAt: 0, status: "active" }));
     await t.mutation(internal.eclipseRooms.runRoomTimeout, { roomToken: room.roomToken, token: sameOwner!.token });
+    await finishDispatchedAi(t);
     const timerAfterTimeout = await t.run(async (ctx) => ctx.db.query("eclipseRoomTimersV1").withIndex("by_match", (q) => q.eq("matchId", started.matchId)).unique());
     const timeoutJournal = await t.run(async (ctx) => ctx.db.query("eclipseJournalV1").withIndex("by_match_revision", (q) => q.eq("matchId", started.matchId)).order("desc").first());
     const after = await t.query(api.eclipseMatches.getMatchView, { ...host, matchId: started.matchId });

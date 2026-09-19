@@ -201,6 +201,8 @@ export function getPlayerView(
     activeSeatId: state.activeSeatId,
     startSeatId: state.startSeatId,
     viewerSeatId,
+    firstPasser: state.firstPasser,
+    warpPortals: state.engine?.warpPortals ?? true,
     supplyCounts: {
       inner: state.supplies.inner.length + (state.engine?.discardedSectors.inner.length ?? 0),
       middle: state.supplies.middle.length + (state.engine?.discardedSectors.middle.length ?? 0),

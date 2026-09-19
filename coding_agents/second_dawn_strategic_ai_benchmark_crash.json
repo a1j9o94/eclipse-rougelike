@@ -1,0 +1,134 @@
+{
+  "startedAt": "2026-09-19T01:53:02.628Z",
+  "environment": {
+    "node": "v20.19.6",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M2 Max"
+  },
+  "configuration": {
+    "opponentPolicy": "fast",
+    "counts": [
+      2
+    ],
+    "seeds": [
+      997
+    ],
+    "difficulties": [
+      "normal"
+    ],
+    "nodeLimits": {
+      "normal": 36,
+      "hard": 48,
+      "expert": 120
+    },
+    "matchBudgetMs": 180000,
+    "maxSteps": 5000,
+    "clock": "Fixed now() = 0: deterministic work budgets, measured external wall clock. Not production deadline behavior."
+  },
+  "sourceHashes": {
+    "ai.ts": "c30b4ee84cd784ae6bef84fc6ae68557010f175d630814832d67e501546899a3",
+    "aiCandidates.ts": "f8bfa5a0fff5d70ae6aade029a731858a278e3225c1a55cf9d1eff013f12dd84",
+    "aiSearch.ts": "af64eb296f7230550aaf5c8674d2b1ebd1c8fa3fa4e2ffbf1982e968d5271556",
+    "aiWorld.ts": "b3b79e22d8091d2296efb6194920bf902b9e91efeaf5851b6b8a840d22be7eb2",
+    "aiEvaluation.ts": "6bb5a2c40d96e140c926fdfb8fff3e10b778191bec04a0e2811517ecb24869b9",
+    "aiConfig.ts": "9a6008d36cfb5ec57b233a56463e016135f6a1a7b61f89917b84860320c2a3eb",
+    "aiSimulation.ts": "52907f7ef647aa90bc7875060ff5d426b39cf90532313d093b3172c8e7590bc5",
+    "aiLegacy.ts": "fc32d15e191be315ff3c7607e19a6f1ecc1742b6d19b8059d907473caeb275f3",
+    "aiLegacySimulation.ts": "9593c499c070422f20f646e74c9fdb86fc1dedc997f9c12f4e33e6e4efaf45df",
+    "legal.ts": "2365effa9d1eccb31278aefb0e018f42ebf974ff668460374636c90880bfdabf"
+  },
+  "warmProfile": [
+    {
+      "difficulty": "normal",
+      "fixture": "two-seat opening",
+      "maxNodes": 36,
+      "latencyMs": {
+        "samples": 5,
+        "p50": 121.91466700000001,
+        "p95": 125.51291600000002,
+        "p99": 125.51291600000002,
+        "max": 125.51291600000002
+      }
+    }
+  ],
+  "results": [
+    {
+      "difficulty": "normal",
+      "count": 2,
+      "seed": 997,
+      "searchSeat": 0,
+      "faction": "hydran",
+      "maxNodes": 36,
+      "finished": false,
+      "steps": 154,
+      "error": "Empty influence-track slots must be an integer from 0 to 13.",
+      "errorStack": "RangeError: Empty influence-track slots must be an integer from 0 to 13.\n    at trackValue (/Users/oblet/Documents/GitHub/eclipse-rougelike/shared/eclipse/tracks.ts:14:11)\n    at upkeepForEmptyInfluenceSlots (/Users/oblet/Documents/GitHub/eclipse-rougelike/shared/eclipse/tracks.ts:29:10)\n    at evaluateAiCommand (/Users/oblet/Documents/GitHub/eclipse-rougelike/shared/eclipse/ai.ts:154:116)\n    at chooseAiCommand (/Users/oblet/Documents/GitHub/eclipse-rougelike/shared/eclipse/ai.ts:339:22)\n    at policy (/Users/oblet/Documents/GitHub/eclipse-rougelike/shared/eclipse/aiSearch.ts:43:61)\n    at advance (/Users/oblet/Documents/GitHub/eclipse-rougelike/shared/eclipse/aiSearch.ts:64:18)\n    at chooseStrategicAiCommand (/Users/oblet/Documents/GitHub/eclipse-rougelike/shared/eclipse/aiSearch.ts:122:22)\n    at file:///Users/oblet/Documents/GitHub/eclipse-rougelike/tools/second-dawn-strategic-ai-benchmark.mjs:226:19",
+      "round": 8,
+      "elapsedMs": 5565.088,
+      "attacks": 0,
+      "researchCount": 0,
+      "buildCount": 7,
+      "bankruptcyChoices": 0,
+      "legacyFallbacks": 0,
+      "searchCalls": 29,
+      "deepestCompletedDepth": 2,
+      "latencyMs": {
+        "samples": 74,
+        "p50": 0.03179100000033941,
+        "p95": 240.2589170000001,
+        "p99": 291.964833,
+        "max": 291.964833
+      },
+      "searchLatencyMs": {
+        "samples": 29,
+        "p50": 172.1731249999998,
+        "p95": 265.91162500000064,
+        "p99": 291.964833,
+        "max": 291.964833
+      }
+    }
+  ],
+  "latencyMs": {
+    "normal": {
+      "allCommands": {
+        "samples": 74,
+        "p50": 0.03179100000033941,
+        "p95": 240.2589170000001,
+        "p99": 291.964833,
+        "max": 291.964833
+      },
+      "searchedCommands": {
+        "samples": 29,
+        "p50": 172.1731249999998,
+        "p95": 265.91162500000064,
+        "p99": 291.964833,
+        "max": 291.964833
+      },
+      "completedDepth": {
+        "samples": 29,
+        "p50": 2,
+        "p95": 2,
+        "p99": 2,
+        "max": 2
+      },
+      "nodes": {
+        "samples": 29,
+        "p50": 14,
+        "p95": 14,
+        "p99": 14,
+        "max": 14
+      }
+    }
+  },
+  "peakRssMb": 390.953125,
+  "limitations": [
+    "Local bounded exploratory search tournament; no hosted or concurrency/cost claim.",
+    "Seeds were selected separately from development fixtures and heuristic tuning seeds. They stop being held out if used for subsequent tuning.",
+    "One strategic seat faces frozen prior heuristic AI. Prior AI uses current shared legal generation; inherited illegal choices are rejected and next highest legacy-scored legal command selected, with fallback counts recorded.",
+    "Production search uses higher node limits. Normal 12 / Hard 48 here validate complete search-controlled matches economically, not full-strength certification.",
+    "Two or three sampled worlds and narrow beam search are approximations, not exhaustive minimax or complete hidden-state reconstruction."
+  ],
+  "finishedAt": "2026-09-19T01:53:09.316Z",
+  "sourceChangedDuringRun": []
+}

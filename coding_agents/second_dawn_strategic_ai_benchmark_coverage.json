@@ -1,0 +1,411 @@
+{
+  "startedAt": "2026-09-19T01:58:14.574Z",
+  "environment": {
+    "node": "v20.19.6",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M2 Max"
+  },
+  "configuration": {
+    "opponentPolicy": "legacy",
+    "counts": [
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "seeds": [
+      1009
+    ],
+    "difficulties": [
+      "hard"
+    ],
+    "nodeLimits": {
+      "normal": 12,
+      "hard": 48,
+      "expert": 120
+    },
+    "matchBudgetMs": 180000,
+    "maxSteps": 5000,
+    "clock": "Fixed now() = 0: deterministic work budgets, measured external wall clock. Not production deadline behavior.",
+    "factionRing": [
+      "eridani",
+      "hydran",
+      "mechanema",
+      "orion",
+      "planta",
+      "draco"
+    ]
+  },
+  "sourceHashes": {
+    "ai.ts": "666b3e9f363bdaaa16c5e651f794e10a654f78cb9113db10d852474ce0386bf6",
+    "aiCandidates.ts": "f8bfa5a0fff5d70ae6aade029a731858a278e3225c1a55cf9d1eff013f12dd84",
+    "aiSearch.ts": "bb365a7ce2eea156a87cd398918d1acaf5052b1ba25e279a033f1b8065a6ea48",
+    "aiWorld.ts": "b3b79e22d8091d2296efb6194920bf902b9e91efeaf5851b6b8a840d22be7eb2",
+    "aiEvaluation.ts": "dc7e4fa4b73746059d9b6acd277b042db2ee040be81ffa4e819f97e41c650274",
+    "aiConfig.ts": "e2a71041abfbf7bf68e7ae04f9a1be05581182286dcbae9330b72e49beee2e1c",
+    "aiSimulation.ts": "52907f7ef647aa90bc7875060ff5d426b39cf90532313d093b3172c8e7590bc5",
+    "aiLegacy.ts": "fc32d15e191be315ff3c7607e19a6f1ecc1742b6d19b8059d907473caeb275f3",
+    "aiLegacySimulation.ts": "9593c499c070422f20f646e74c9fdb86fc1dedc997f9c12f4e33e6e4efaf45df",
+    "legal.ts": "2365effa9d1eccb31278aefb0e018f42ebf974ff668460374636c90880bfdabf"
+  },
+  "warmProfile": [
+    {
+      "difficulty": "hard",
+      "fixture": "two-seat opening",
+      "maxNodes": 48,
+      "latencyMs": {
+        "samples": 5,
+        "p50": 263.45341599999983,
+        "p95": 278.0645830000001,
+        "p99": 278.0645830000001,
+        "max": 278.0645830000001
+      }
+    }
+  ],
+  "results": [
+    {
+      "difficulty": "hard",
+      "count": 2,
+      "seed": 1009,
+      "searchSeat": 0,
+      "faction": "hydran",
+      "maxNodes": 48,
+      "finished": true,
+      "steps": 346,
+      "error": null,
+      "score": 26,
+      "margin": 11,
+      "win": true,
+      "tie": false,
+      "finalScores": [
+        {
+          "seat": "s0",
+          "total": 26,
+          "resourceTotal": 16
+        },
+        {
+          "seat": "s1",
+          "total": 15,
+          "resourceTotal": 18
+        }
+      ],
+      "round": 8,
+      "elapsedMs": 15613.690209,
+      "attacks": 23,
+      "researchCount": 6,
+      "buildCount": 10,
+      "bankruptcyChoices": 1,
+      "legacyFallbacks": 0,
+      "searchCalls": 41,
+      "deepestCompletedDepth": 4,
+      "latencyMs": {
+        "samples": 206,
+        "p50": 0.02858399999968242,
+        "p95": 459.3095830000002,
+        "p99": 572.8365420000009,
+        "max": 1088.9918750000006
+      },
+      "searchLatencyMs": {
+        "samples": 41,
+        "p50": 335.7331669999994,
+        "p95": 572.8365420000009,
+        "p99": 1088.9918750000006,
+        "max": 1088.9918750000006
+      }
+    },
+    {
+      "difficulty": "hard",
+      "count": 3,
+      "seed": 1009,
+      "searchSeat": 0,
+      "faction": "hydran",
+      "maxNodes": 48,
+      "finished": true,
+      "steps": 426,
+      "error": null,
+      "score": 26,
+      "margin": 11,
+      "win": true,
+      "tie": false,
+      "finalScores": [
+        {
+          "seat": "s0",
+          "total": 26,
+          "resourceTotal": 23
+        },
+        {
+          "seat": "s1",
+          "total": 7,
+          "resourceTotal": 18
+        },
+        {
+          "seat": "s2",
+          "total": 15,
+          "resourceTotal": 37
+        }
+      ],
+      "round": 8,
+      "elapsedMs": 24398.822666000004,
+      "attacks": 20,
+      "researchCount": 6,
+      "buildCount": 12,
+      "bankruptcyChoices": 2,
+      "legacyFallbacks": 0,
+      "searchCalls": 40,
+      "deepestCompletedDepth": 4,
+      "latencyMs": {
+        "samples": 222,
+        "p50": 0.03591700000106357,
+        "p95": 779.5418329999957,
+        "p99": 913.5354999999981,
+        "max": 995.1517919999969
+      },
+      "searchLatencyMs": {
+        "samples": 40,
+        "p50": 614.166792,
+        "p95": 915.7111250000016,
+        "p99": 995.1517919999969,
+        "max": 995.1517919999969
+      }
+    },
+    {
+      "difficulty": "hard",
+      "count": 4,
+      "seed": 1009,
+      "searchSeat": 0,
+      "faction": "hydran",
+      "maxNodes": 48,
+      "finished": true,
+      "steps": 532,
+      "error": null,
+      "score": 21,
+      "margin": 2,
+      "win": true,
+      "tie": false,
+      "finalScores": [
+        {
+          "seat": "s0",
+          "total": 21,
+          "resourceTotal": 30
+        },
+        {
+          "seat": "s1",
+          "total": 19,
+          "resourceTotal": 15
+        },
+        {
+          "seat": "s2",
+          "total": 10,
+          "resourceTotal": 34
+        },
+        {
+          "seat": "s3",
+          "total": 19,
+          "resourceTotal": 25
+        }
+      ],
+      "round": 8,
+      "elapsedMs": 38006.860875,
+      "attacks": 20,
+      "researchCount": 3,
+      "buildCount": 11,
+      "bankruptcyChoices": 0,
+      "legacyFallbacks": 0,
+      "searchCalls": 35,
+      "deepestCompletedDepth": 4,
+      "latencyMs": {
+        "samples": 222,
+        "p50": 0.037541999998211395,
+        "p95": 1240.323000000004,
+        "p99": 1472.1679169999989,
+        "max": 1708.158540999997
+      },
+      "searchLatencyMs": {
+        "samples": 35,
+        "p50": 1108.4942909999954,
+        "p95": 1551.038665999993,
+        "p99": 1708.158540999997,
+        "max": 1708.158540999997
+      }
+    },
+    {
+      "difficulty": "hard",
+      "count": 5,
+      "seed": 1009,
+      "searchSeat": 0,
+      "faction": "hydran",
+      "maxNodes": 48,
+      "finished": true,
+      "steps": 696,
+      "error": null,
+      "score": 11,
+      "margin": -17,
+      "win": false,
+      "tie": false,
+      "finalScores": [
+        {
+          "seat": "s0",
+          "total": 11,
+          "resourceTotal": 5
+        },
+        {
+          "seat": "s1",
+          "total": 18,
+          "resourceTotal": 37
+        },
+        {
+          "seat": "s2",
+          "total": 10,
+          "resourceTotal": 8
+        },
+        {
+          "seat": "s3",
+          "total": 19,
+          "resourceTotal": 86
+        },
+        {
+          "seat": "s4",
+          "total": 28,
+          "resourceTotal": 76
+        }
+      ],
+      "round": 8,
+      "elapsedMs": 62190.66608400001,
+      "attacks": 33,
+      "researchCount": 3,
+      "buildCount": 8,
+      "bankruptcyChoices": 0,
+      "legacyFallbacks": 0,
+      "searchCalls": 49,
+      "deepestCompletedDepth": 4,
+      "latencyMs": {
+        "samples": 188,
+        "p50": 0.10374999999476131,
+        "p95": 1561.474583999996,
+        "p99": 2096.6183329999913,
+        "max": 2407.8875830000034
+      },
+      "searchLatencyMs": {
+        "samples": 49,
+        "p50": 1256.6610409999994,
+        "p95": 1721.6717089999875,
+        "p99": 2407.8875830000034,
+        "max": 2407.8875830000034
+      }
+    },
+    {
+      "difficulty": "hard",
+      "count": 6,
+      "seed": 1009,
+      "searchSeat": 0,
+      "faction": "hydran",
+      "maxNodes": 48,
+      "finished": true,
+      "steps": 788,
+      "error": null,
+      "score": 25,
+      "margin": -1,
+      "win": false,
+      "tie": false,
+      "finalScores": [
+        {
+          "seat": "s0",
+          "total": 25,
+          "resourceTotal": 45
+        },
+        {
+          "seat": "s1",
+          "total": 8,
+          "resourceTotal": 10
+        },
+        {
+          "seat": "s2",
+          "total": 26,
+          "resourceTotal": 12
+        },
+        {
+          "seat": "s3",
+          "total": 13,
+          "resourceTotal": 113
+        },
+        {
+          "seat": "s4",
+          "total": 24,
+          "resourceTotal": 85
+        },
+        {
+          "seat": "s5",
+          "total": 16,
+          "resourceTotal": 75
+        }
+      ],
+      "round": 8,
+      "elapsedMs": 75097.49774999998,
+      "attacks": 25,
+      "researchCount": 2,
+      "buildCount": 9,
+      "bankruptcyChoices": 0,
+      "legacyFallbacks": 0,
+      "searchCalls": 39,
+      "deepestCompletedDepth": 4,
+      "latencyMs": {
+        "samples": 203,
+        "p50": 0.06283400001120754,
+        "p95": 2192.9117079999996,
+        "p99": 2820.2609159999993,
+        "max": 2976.2742089999956
+      },
+      "searchLatencyMs": {
+        "samples": 39,
+        "p50": 1915.4530830000003,
+        "p95": 2915.730791000009,
+        "p99": 2976.2742089999956,
+        "max": 2976.2742089999956
+      }
+    }
+  ],
+  "latencyMs": {
+    "hard": {
+      "allCommands": {
+        "samples": 1041,
+        "p50": 0.04616699999996854,
+        "p95": 1459.1381670000046,
+        "p99": 2243.1008750000037,
+        "max": 2976.2742089999956
+      },
+      "searchedCommands": {
+        "samples": 204,
+        "p50": 935.3941249999916,
+        "p95": 2243.1008750000037,
+        "p99": 2820.2609159999993,
+        "max": 2976.2742089999956
+      },
+      "completedDepth": {
+        "samples": 204,
+        "p50": 4,
+        "p95": 4,
+        "p99": 4,
+        "max": 4
+      },
+      "nodes": {
+        "samples": 204,
+        "p50": 26,
+        "p95": 26,
+        "p99": 26,
+        "max": 26
+      }
+    }
+  },
+  "sampledPeakRssMb": 389.296875,
+  "limitations": [
+    "Local bounded exploratory search tournament; no hosted or concurrency/cost claim. Sampled RSS includes Vite SSR and the harness, not just the deployed planner.",
+    "Seeds were selected separately from development fixtures and heuristic tuning seeds. They stop being held out if used for subsequent tuning.",
+    "One strategic seat faces frozen prior heuristic AI. Prior AI uses current shared legal generation; inherited illegal choices are rejected and next highest legacy-scored legal command selected, with fallback counts recorded.",
+    "Exact work caps are recorded in configuration. Runs with reduced caps test search-controlled completion, not full-strength certification; fixed clocks do not test production deadline behavior.",
+    "Two or three sampled worlds and narrow beam search are approximations, not exhaustive minimax or complete hidden-state reconstruction."
+  ],
+  "finishedAt": "2026-09-19T02:01:51.877Z",
+  "sourceChangedDuringRun": []
+}

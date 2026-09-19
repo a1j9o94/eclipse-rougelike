@@ -1,6 +1,6 @@
 import { projectHistoryEntry, type PublicHistoryPage } from '../shared/eclipse/history';
 import { v } from 'convex/values';
-import { internalMutation, mutation, query } from './_generated/server';
+import { internalAction, internalQuery, internalMutation, mutation, query } from './_generated/server';
 import type { MutationCtx, QueryCtx } from './_generated/server';
 import type { Doc, Id } from './_generated/dataModel';
 import { BASE_FACTIONS, CATALOG_VERSION, RULES_VERSION } from '../shared/eclipse/catalog';
@@ -11,7 +11,9 @@ import { processGameCommand } from '../shared/eclipse/engine';
 import type { CommandReceipt, GameState, JournalEntry, Phase, PlayerView, ValidationError } from '../shared/eclipse/types';
 import { reconcileMultiplayerTimer, timerTargetForState, type MultiplayerTimerPublic, type MultiplayerTurnTimer } from '../shared/eclipse/multiplayer';
 import { internal } from './_generated/api';
-import { chooseAiCommand } from '../shared/eclipse/ai';
+import { chooseStrategicAiCommand } from '../shared/eclipse/aiSearch';
+import { AI_BUDGETS, AI_VERSION, type AiDifficulty } from '../shared/eclipse/aiConfig';
+import { finishTimeoutAiCommand, validateTimeoutAi, retryFailedRoomTimeout } from './eclipseRooms';
 import { AI_DECISION_DELAY_MS } from '../shared/eclipse/pacing';
 import { factionValidator, gameCommandValidator } from './eclipseValidators';
 
@@ -93,12 +95,13 @@ export type MatchSubmission =
 export interface MatchPlayerView extends PlayerView {
   lastSeenRevision: number | null;
   playerNames?: Record<string, string>;
-  aiStatus: { status: 'scheduled' | 'waiting' | 'failed' | 'finished'; error: string | null; attempts: number } | null;
+  aiDifficulty?: AiDifficulty;
+  aiStatus: { status: 'thinking' | 'scheduled' | 'waiting' | 'failed' | 'finished'; error: string | null; attempts: number } | null;
   multiplayer: { roomToken: string; viewerIsHost: boolean; timer: MultiplayerTimerPublic | null } | null;
 }
 
 export const createMatch = mutation({
-  args: { credential: v.string(), aiCount: v.optional(v.number()), faction: v.optional(factionValidator), warpPortals: v.optional(v.boolean()) },
+  args: { credential: v.string(), aiCount: v.optional(v.number()), faction: v.optional(factionValidator), warpPortals: v.optional(v.boolean()), aiDifficulty: v.optional(v.union(v.literal('normal'), v.literal('hard'), v.literal('expert'))) },
   handler: async (ctx, args): Promise<{ matchId: Id<'eclipseMatchesV1'>; seatId: string }> => {
     const guest = await findGuest(ctx, args.credential);
     if (!guest) throw new Error('Guest session required.');
@@ -114,7 +117,7 @@ export const createMatch = mutation({
     const seats = [{ id: 'seat-1', faction: human.id, controller: 'human' as const }, ...opponents.map((faction, i) => ({ id: `seat-${i + 2}`, faction: faction.id, controller: 'ai' as const }))];
     const state = createGame({ seed, seats, warpPortals: args.warpPortals ?? true });
     const now = Date.now();
-    const matchId = await ctx.db.insert('eclipseMatchesV1', { snapshotJson: JSON.stringify(state), rulesVersion: state.rulesVersion, catalogVersion: state.catalogVersion, revision: state.revision, round: state.round, phase: state.phase, createdAt: now, updatedAt: now });
+    const matchId = await ctx.db.insert('eclipseMatchesV1', { snapshotJson: JSON.stringify(state), rulesVersion: state.rulesVersion, catalogVersion: state.catalogVersion, revision: state.revision, round: state.round, phase: state.phase, aiDifficulty: args.aiDifficulty ?? 'normal', aiVersion: AI_VERSION, createdAt: now, updatedAt: now });
     await ctx.db.insert('eclipseOwnershipV1', { matchId, guestId: guest._id, seatId: 'seat-1' });
     await scheduleAi(ctx, matchId, state);
     return { matchId, seatId: 'seat-1' };
@@ -159,6 +162,7 @@ export const getMatchView = query({
       ...view,
       lastSeenRevision: ownership.lastSeenRevision ?? null,
       playerNames,
+      aiDifficulty: match.aiDifficulty ?? 'normal',
       aiStatus: job ? { status: job.status, error: job.error, attempts: job.attempts } : null,
       multiplayer: room ? { roomToken: room.roomToken, viewerIsHost: room.hostGuestId === ownership.guestId, timer: timer ? { deadlineAt: timer.deadlineAt, targetSeatId: timer.targetSeatId, decisionId: timer.decisionId, status: timer.status, error: timer.error } : null } : null,
     } : null;
@@ -214,6 +218,7 @@ export const submitCommand = mutation({
     const state = readState(match);
     // Duplicate delivery returns its original receipt even if the current turn has since timed out.
     const original = await ctx.db.query('eclipseJournalV1').withIndex('by_match_command', q => q.eq('matchId', matchId).eq('commandId', request.commandId)).unique();
+    if (!original && /^(ai|timeout):/.test(request.commandId)) return {ok:false, error:{code:'INVALID_COMMAND', message:'This command ID prefix is reserved for server actions.', field:'commandId'}};
     const room = match.roomToken ? await ctx.db.query('eclipseRoomsV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique() : null;
     const timer = room && room.humanSeatCount > 1 ? await ctx.db.query('eclipseRoomTimersV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique() : null;
     if (!original && timer && timer.targetSeatId === ownership.seatId && (timer.status !== 'active' || timer.deadlineAt <= Date.now())) {
@@ -239,14 +244,25 @@ export async function scheduleAi(ctx: MutationCtx, matchId: Id<'eclipseMatchesV1
   const existing = await ctx.db.query('eclipseAiJobsV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique();
   const actor = state.pendingDecision?.owner ?? state.activeSeatId;
   const ai = state.phase !== 'finished' && state.seats.some(seat => seat.id === actor && seat.controller === 'ai' && !seat.eliminated);
-  const status = state.phase === 'finished' ? 'finished' as const : ai ? 'scheduled' as const : 'waiting' as const;
-  const patch = { status, expectedRevision: state.revision, attempts: 0, error: null, updatedAt: Date.now() };
+  const match = await ctx.db.get(matchId);
+  const timer = match?.roomToken ? await ctx.db.query('eclipseRoomTimersV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique() : null;
+  const timeout = timer?.status === 'timed-out' && actor === timer.targetSeatId && !!match && await validateTimeoutAi(ctx, match, timer.token, actor);
+  const failedTimeout = timer?.status === 'failed' && actor === timer.targetSeatId && existing?.timeoutToken === timer.token;
+  const status = state.phase === 'finished' ? 'finished' as const : failedTimeout ? 'failed' as const : ai || timeout ? 'scheduled' as const : 'waiting' as const;
+  // A diplomacy/other-player choice may temporarily own an unfinished action.
+  const budgetActor = state.engine?.action?.owner ?? state.activeSeatId ?? actor;
+  const preserveBudget = timeout || failedTimeout ? existing?.timeoutToken === timer?.token : existing?.budgetActor === budgetActor && existing?.budgetRound === state.round;
+  const interruptedSearch = preserveBudget && existing?.status === 'thinking' && existing.expectedRevision !== state.revision;
+  const patch = { status, expectedRevision: state.revision, attempts: failedTimeout ? existing.attempts : 0, error: failedTimeout ? timer.error : null, leaseToken: undefined, leaseExpiresAt: undefined, timeoutToken: timeout || failedTimeout ? timer!.token : undefined,
+    budgetActor: budgetActor ?? undefined, budgetRound: state.round,
+    remainingBudgetMs: interruptedSearch ? 0 : preserveBudget ? existing?.remainingBudgetMs ?? 0 : AI_BUDGETS[timeout ? 'normal' : match?.aiDifficulty ?? 'normal'].budgetMs,
+    updatedAt: Date.now() };
   if (existing) await ctx.db.patch(existing._id, patch);
   else await ctx.db.insert('eclipseAiJobsV1', { matchId, ...patch });
-  if (ai) await ctx.scheduler.runAfter(AI_DECISION_DELAY_MS, internal.eclipseMatches.runAi, { matchId, expectedRevision: state.revision });
+  if (ai || timeout) await ctx.scheduler.runAfter(AI_DECISION_DELAY_MS, internal.eclipseMatches.runAi, { matchId, expectedRevision: state.revision });
 }
 
-/** One bounded AI decision per durable job. Stale schedules are harmless and errors remain visible. */
+/** Claim before scheduling expensive work. Duplicate invocations cannot start another search. */
 export const runAi = internalMutation({
   args: { matchId: v.id('eclipseMatchesV1'), expectedRevision: v.number() },
   returns: v.null(),
@@ -254,24 +270,130 @@ export const runAi = internalMutation({
     const job = await ctx.db.query('eclipseAiJobsV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique();
     const match = await ctx.db.get(matchId);
     if (!job || !match || match.revision !== expectedRevision || job.expectedRevision !== expectedRevision || job.status !== 'scheduled') return null;
+    const leaseToken = roomTimerToken();
+    const leaseExpiresAt = Date.now() + AI_BUDGETS[match.aiDifficulty ?? 'normal'].budgetMs + 15_000;
+    await ctx.db.patch(job._id, { status: 'thinking', leaseToken, leaseExpiresAt, updatedAt: Date.now() });
+    await ctx.scheduler.runAfter(0, internal.eclipseMatches.thinkAi, { matchId, expectedRevision, leaseToken });
+    await ctx.scheduler.runAfter(leaseExpiresAt - Date.now(), internal.eclipseMatches.expireAiLease, { matchId, expectedRevision, leaseToken });
+    return null;
+  },
+});
+const aiWorkArgs = { matchId: v.id('eclipseMatchesV1'), expectedRevision: v.number(), leaseToken: v.string() };
+interface AiWork { view: PlayerView; seed: number; difficulty: AiDifficulty; budgetMs: number; maxNodes: number }
+export const getAiWork = internalQuery({
+  args: aiWorkArgs,
+  handler: async (ctx, {matchId, expectedRevision, leaseToken}): Promise<AiWork | null> => {
+    const job = await ctx.db.query('eclipseAiJobsV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique();
+    const match = await ctx.db.get(matchId);
+    if (!job || !match || job.status !== 'thinking' || job.leaseToken !== leaseToken || job.expectedRevision !== expectedRevision || match.revision !== expectedRevision || (job.leaseExpiresAt ?? 0) <= Date.now()) return null;
+    if (match.aiVersion && match.aiVersion !== AI_VERSION) throw new Error('This match requires an unavailable AI version.');
+    const state = readState(match);
+    const actor = state.pendingDecision?.owner ?? state.activeSeatId;
+    if (!actor || (job.timeoutToken ? !await validateTimeoutAi(ctx, match, job.timeoutToken, actor) : state.seats.find(seat => seat.id === actor)?.controller !== 'ai')) return null;
+    const view = getPlayerView(state, actor);
+    if (!view) return null;
+    let seed = expectedRevision >>> 0;
+    for (const character of matchId) seed = Math.imul(seed ^ character.charCodeAt(0), 16777619) >>> 0;
+    const difficulty = job.timeoutToken ? 'normal' : match.aiDifficulty ?? 'normal';
+    return { view, seed, difficulty, budgetMs: Math.max(0, job.remainingBudgetMs ?? AI_BUDGETS[difficulty].budgetMs), maxNodes: AI_BUDGETS[difficulty].maxNodes };
+  },
+});
+interface AiDiagnostics {
+  revision: number; difficulty: AiDifficulty; version: string;
+  status: Doc<'eclipseAiJobsV1'>['status'] | null; attempts: number; error: string | null;
+  remainingBudgetMs: number | null; lastComputeMs: number | null;
+  lastPlanComputeMs: number | null; lastPlanNodes: number | null; lastPlanDepth: number | null; lastPlanCutoff: boolean | null;
+  lastSearchNodes: number | null; lastSearchDepth: number | null; lastSearchCutoff: boolean | null;
+}
+/** Admin-only, one-match operational projection; never includes snapshots or credentials. */
+export const getAiDiagnostics = internalQuery({
+  args: {matchId:v.id('eclipseMatchesV1')},
+  handler: async (ctx, {matchId}): Promise<AiDiagnostics | null> => {
+    const match = await ctx.db.get(matchId);
+    if (!match) return null;
+    const job = await ctx.db.query('eclipseAiJobsV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique();
+    return {revision:match.revision, difficulty:match.aiDifficulty ?? 'normal', version:match.aiVersion ?? AI_VERSION,
+      status:job?.status ?? null, attempts:job?.attempts ?? 0, error:job?.error ?? null,
+      remainingBudgetMs:job?.remainingBudgetMs ?? null, lastComputeMs:job?.lastComputeMs ?? null,
+      lastPlanComputeMs:job?.lastPlanComputeMs ?? null, lastPlanNodes:job?.lastPlanNodes ?? null, lastPlanDepth:job?.lastPlanDepth ?? null, lastPlanCutoff:job?.lastPlanCutoff ?? null,
+      lastSearchNodes:job?.lastSearchNodes ?? null, lastSearchDepth:job?.lastSearchDepth ?? null, lastSearchCutoff:job?.lastSearchCutoff ?? null};
+  },
+});
+export const thinkAi = internalAction({
+  args: aiWorkArgs,
+  returns: v.null(),
+  handler: async (ctx, args): Promise<null> => {
     try {
-      const state = readState(match);
-      const actor = state.pendingDecision?.owner ?? state.activeSeatId;
-      if (!actor || state.seats.find(seat => seat.id === actor)?.controller !== 'ai') { await scheduleAi(ctx, matchId, state); return null; }
-      const view = getPlayerView(state, actor);
-      if (!view) throw new Error('AI seat has no public view.');
-      let seed = expectedRevision >>> 0;
-      for (const character of matchId) seed = (Math.imul(seed ^ character.charCodeAt(0), 16777619)) >>> 0;
-      const candidate = chooseAiCommand(view, seed);
+      const work: AiWork | null = await ctx.runQuery(internal.eclipseMatches.getAiWork, args);
+      if (!work) return null;
+      const started = performance.now();
+      const candidate = chooseStrategicAiCommand(work.view, work.seed, { difficulty: work.difficulty, budgetMs: work.budgetMs, maxNodes: work.budgetMs > 0 ? work.maxNodes : 0, now: () => performance.now() });
       if (!candidate) throw new Error('No legal AI candidate is available.');
-      const request = { commandId: `ai:${actor}:${expectedRevision}`, expectedRevision, command: candidate.command };
-      const result = commitCommand({ state, journal: [] }, actor, request, { rulesVersion: RULES_VERSION, catalogVersion: CATALOG_VERSION }, processGameCommand);
-      if (!result.ok) throw new Error(`${result.error.code}: ${result.error.message}`);
+      await ctx.runMutation(internal.eclipseMatches.commitAiWork, { ...args, command: candidate.command, elapsedMs: Math.max(0, performance.now() - started), searchNodes: candidate.search.nodes, searchDepth: candidate.search.completedDepth, searchCutoff: candidate.search.cutoff });
+    } catch (error) {
+      await ctx.runMutation(internal.eclipseMatches.failAiWork, { ...args, error: error instanceof Error ? error.message : 'Unexpected AI search failure.' });
+    }
+    return null;
+  },
+});
+export const commitAiWork = internalMutation({
+  args: { ...aiWorkArgs, command: gameCommandValidator, elapsedMs: v.number(), searchNodes: v.optional(v.number()), searchDepth: v.optional(v.number()), searchCutoff: v.optional(v.boolean()) },
+  returns: v.null(),
+  handler: async (ctx, {matchId, expectedRevision, leaseToken, command, elapsedMs, searchNodes, searchDepth, searchCutoff}): Promise<null> => {
+    const job = await ctx.db.query('eclipseAiJobsV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique();
+    const match = await ctx.db.get(matchId);
+    if (!job || !match || job.status !== 'thinking' || job.leaseToken !== leaseToken || job.expectedRevision !== expectedRevision || match.revision !== expectedRevision || (job.leaseExpiresAt ?? 0) <= Date.now()) return null;
+    const state = readState(match);
+    const actor = state.pendingDecision?.owner ?? state.activeSeatId;
+    if (!actor || (job.timeoutToken ? !await validateTimeoutAi(ctx, match, job.timeoutToken, actor) : state.seats.find(seat => seat.id === actor)?.controller !== 'ai')) return null;
+    const request = { commandId: `${job.timeoutToken ? 'timeout' : 'ai'}:${actor}:${expectedRevision}`, expectedRevision, command };
+    const original = await ctx.db.query('eclipseJournalV1').withIndex('by_match_command', q => q.eq('matchId', matchId).eq('commandId', request.commandId)).unique();
+    if (original) throw new Error('COMMAND_ID_REUSED: A stored command already uses this server action ID.');
+    const result = commitCommand({ state, journal: [] }, actor, request, { rulesVersion: RULES_VERSION, catalogVersion: CATALOG_VERSION }, processGameCommand);
+    if (!result.ok) throw new Error(`${result.error.code}: ${result.error.message}`);
+    const remainingBudgetMs = Math.max(0, (job.remainingBudgetMs ?? 0) - Math.max(0, elapsedMs));
+    await ctx.db.patch(job._id, { status:'waiting', remainingBudgetMs, lastComputeMs: elapsedMs, lastSearchNodes: searchNodes, lastSearchDepth: searchDepth, lastSearchCutoff: searchCutoff,
+      ...((searchNodes ?? 0) > 0 ? {lastPlanComputeMs:elapsedMs, lastPlanNodes:searchNodes, lastPlanDepth:searchDepth, lastPlanCutoff:searchCutoff} : {}),
+    });
+    if (job.timeoutToken) {
+      await finishTimeoutAiCommand(ctx, match, job.timeoutToken, actor, result.aggregate.state, result.aggregate.journal[0], state.round);
+    } else {
       await saveAccepted(ctx, matchId, result.aggregate.state, result.aggregate.journal[0], state.round);
       await reconcileRoomTimerAfterCommand(ctx, match, result.aggregate.state);
       await scheduleAi(ctx, matchId, result.aggregate.state);
-    } catch (error) {
-      await ctx.db.patch(job._id, { status: 'failed', attempts: job.attempts + 1, error: error instanceof Error ? error.message : 'Unexpected AI job failure.', updatedAt: Date.now() });
+      // Completion of the strategic action resets its budget, even if every opponent passed.
+      if (!result.aggregate.state.engine?.action && !result.aggregate.state.pendingDecision) {
+        const nextJob = await ctx.db.query('eclipseAiJobsV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique();
+        if (nextJob) await ctx.db.patch(nextJob._id, { remainingBudgetMs: AI_BUDGETS[match.aiDifficulty ?? 'normal'].budgetMs });
+      }
+    }
+    return null;
+  },
+});
+export const failAiWork = internalMutation({
+  args: { ...aiWorkArgs, error: v.string() }, returns: v.null(),
+  handler: async (ctx, args): Promise<null> => {
+    const job = await ctx.db.query('eclipseAiJobsV1').withIndex('by_match', q => q.eq('matchId', args.matchId)).unique();
+    if (job?.status === 'thinking' && job.leaseToken === args.leaseToken && job.expectedRevision === args.expectedRevision) {
+      await ctx.db.patch(job._id, {status:'failed', error:args.error.slice(0,500), attempts:job.attempts+1, remainingBudgetMs:0, updatedAt:Date.now()});
+      if (job.timeoutToken) {
+        const timer = await ctx.db.query('eclipseRoomTimersV1').withIndex('by_match', q => q.eq('matchId', args.matchId)).unique();
+        if (timer?.token === job.timeoutToken) await ctx.db.patch(timer._id, {status:'failed', error:args.error.slice(0,500), updatedAt:Date.now()});
+      }
+    }
+    return null;
+  },
+});
+export const expireAiLease = internalMutation({
+  args: aiWorkArgs, returns: v.null(),
+  handler: async (ctx, args): Promise<null> => {
+    const job = await ctx.db.query('eclipseAiJobsV1').withIndex('by_match', q => q.eq('matchId', args.matchId)).unique();
+    if (job?.status === 'thinking' && job.leaseToken === args.leaseToken && job.expectedRevision === args.expectedRevision && (job.leaseExpiresAt ?? 0) <= Date.now()) {
+      await ctx.db.patch(job._id, {status:'failed', error:'AI search was interrupted. Retry to continue.', attempts:job.attempts+1, remainingBudgetMs:0, updatedAt:Date.now()});
+      if (job.timeoutToken) {
+        const timer = await ctx.db.query('eclipseRoomTimersV1').withIndex('by_match', q => q.eq('matchId', args.matchId)).unique();
+        if (timer?.token === job.timeoutToken) await ctx.db.patch(timer._id, {status:'failed', error:'AI search was interrupted. Retry to continue.', updatedAt:Date.now()});
+      }
     }
     return null;
   },
@@ -284,6 +406,12 @@ export const retryAi = mutation({
     if (!await ownedSeat(ctx, credential, matchId)) throw new Error('This identity does not own a seat in this match.');
     const match = await ctx.db.get(matchId);
     if (!match) throw new Error('Match unavailable.');
+    const job = await ctx.db.query('eclipseAiJobsV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique();
+    if (job?.status === 'thinking' && (job.leaseExpiresAt ?? 0) > Date.now()) return null;
+    if (job?.timeoutToken) {
+      await retryFailedRoomTimeout(ctx, matchId, job.timeoutToken);
+      return null;
+    }
     await scheduleAi(ctx, matchId, readState(match));
     return null;
   },

@@ -412,6 +412,9 @@ export interface PlayerView {
   activeSeatId: SeatId | null;
   startSeatId: SeatId;
   viewerSeatId: SeatId;
+  /** Public turn order and optional-rule configuration, also used by fair AI rollouts. */
+  firstPasser?: SeatId | null;
+  warpPortals?: boolean;
   seats: Seat[];
   sectors: Sector[];
   ships: Ship[];

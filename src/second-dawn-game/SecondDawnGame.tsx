@@ -1,3 +1,5 @@
+import AiDifficultyPicker from './AiDifficultyPicker';
+import type { AiDifficulty } from '../../shared/eclipse/aiConfig';
 import { useEffect, useRef, useState } from "react";
 import {
   useAction,
@@ -106,6 +108,7 @@ function ConnectedGame() {
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
   const [aiCount, setAiCount] = useState(2);
+  const [aiDifficulty, setAiDifficulty] = useState<AiDifficulty>('normal');
   const [faction, setFaction] = useState<FactionId>("terran-directorate");
   const [warpPortals, setWarpPortals] = useState(true);
   const initialization = useRef<Promise<string> | null>(null);
@@ -209,7 +212,7 @@ function ConnectedGame() {
       const room = await createRoom({
         credential,
         faction,
-        settings:{humanSeatCount:1,aiCount,warpPortals,timerMs:DEFAULT_ROOM_SETTINGS.timerMs},
+        settings:{humanSeatCount:1,aiCount,aiDifficulty,warpPortals,timerMs:DEFAULT_ROOM_SETTINGS.timerMs},
       });
       await setRoomReady({credential,roomToken:room.roomToken,ready:true});
       const result=await startRoom({credential,roomToken:room.roomToken});
@@ -289,6 +292,9 @@ function ConnectedGame() {
         menuLabel={roomToken?'Game room':'Game menu'}
         onMenu={() => {if(roomToken)setRoomOverview(true);else setMatchId(null);}}
         turnClock={view.multiplayer?<TurnClock timer={view.multiplayer.timer} actorName={view.multiplayer.timer?.targetSeatId===view.viewerSeatId?'You':view.seats.find(s=>s.id===view.multiplayer?.timer?.targetSeatId)?getFaction(view.seats.find(s=>s.id===view.multiplayer?.timer?.targetSeatId)!.faction).name:'Opponent'} disabled={!connected||busy} onRetry={()=>{void roomAction(async()=>{await retryRoomTimer({credential:credential!,roomToken:view.multiplayer!.roomToken});});}}/>:undefined}
+        aiThinking={view.aiStatus?.status==='thinking'}
+        aiTakeover={view.multiplayer?.timer?.status==='timed-out'}
+        aiDifficulty={view.aiDifficulty}
         aiFailure={
           view.aiStatus?.status === "failed" ? view.aiStatus.error : null
         }
@@ -355,7 +361,7 @@ function ConnectedGame() {
               />
               Use base-game warp portals
             </label>
-            <p>Normal AI uses the same rules and visible information as you.</p>
+            <AiDifficultyPicker value={aiDifficulty} onChange={setAiDifficulty} disabled={busy}/>
             <button
               className="dg-primary"
               disabled={!connected || !credential || busy}

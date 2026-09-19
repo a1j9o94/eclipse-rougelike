@@ -1,3 +1,4 @@
+import {AI_DIFFICULTY_LABELS, type AiDifficulty} from '../../shared/eclipse/aiConfig';
 import EmpireOverview from './EmpireOverview';
 import GameSettingsPanel from './GameSettingsPanel';
 import {DiceRollScopeContext} from './presentationSettings';
@@ -84,6 +85,9 @@ interface Props {
   reviewMode?: boolean;
   initialSectorId?: string;
   history?: HistoryFeed;
+  aiDifficulty?: AiDifficulty;
+  aiThinking?: boolean;
+  aiTakeover?: boolean;
   aiFailure?: string | null;
   onRetryAi?: () => void;
   view: PlayerView;
@@ -121,6 +125,9 @@ function SecondDawnBoardContent({
   onMenu,
   onHome,
   onPlayAgain,
+  aiDifficulty='normal',
+  aiThinking=false,
+  aiTakeover=false,
   aiFailure,
   onRetryAi,
   reviewMode = false,
@@ -417,7 +424,7 @@ function SecondDawnBoardContent({
         </div>
         <div className="dg-save">
           {aiFailure && (
-            <button disabled={blocked} title={aiFailure} onClick={onRetryAi}>
+            <button disabled={!connected} title={aiFailure} onClick={onRetryAi}>
               AI paused · retry
             </button>
           )}
@@ -461,7 +468,7 @@ function SecondDawnBoardContent({
                     {seat.id === own.id
                       ? playerNames[seat.id]?`You · ${playerNames[seat.id]}`:"You"
                       : seat.controller === "ai"
-                        ? "Normal AI"
+                        ? `${AI_DIFFICULTY_LABELS[aiDifficulty]} AI`
                         : playerNames[seat.id]??"Human"}{" "}
                     ·{" "}
                     {seat.eliminated
@@ -477,8 +484,8 @@ function SecondDawnBoardContent({
               </button>
             ))}
           </div>
-          {compact&&aiFailure&&<div className="dg-mobile-ai-recovery" role="alert"><p>{aiFailure}</p><button disabled={blocked} onClick={onRetryAi}>AI paused · retry</button></div>}
-          <AiActivityBar following={followAi} onFollowChange={enabled=>{setFollowAi(enabled);setAiDismissed(false);if(!enabled)setReviewAi(false);}} humanDecision={!!view.pendingDecision} paused={!!aiFailure} actor={aiPresentation.actor} recent={aiPresentation.recent} humanTurn={!!view.pendingDecision||(!view.waitingFor&&view.activeSeatId===own.id)} finished={view.phase==='finished'} motionEnabled={motionEnabled} onMotionChange={changeMotion} onWatch={()=>{if(compact)setMobileSheet('peek');setFollowAi(true);setAiDismissed(false);setReviewAi(!aiPresentation.actor);setHistoryOpen(false);setScreen('Galaxy');setCamera(null);setFitRequest(n=>n+1);}}/>
+          {compact&&aiFailure&&<div className="dg-mobile-ai-recovery" role="alert"><p>{aiFailure}</p><button disabled={!connected} onClick={onRetryAi}>AI paused · retry</button></div>}
+          <AiActivityBar takeover={aiTakeover} thinking={aiThinking} following={followAi} onFollowChange={enabled=>{setFollowAi(enabled);setAiDismissed(false);if(!enabled)setReviewAi(false);}} humanDecision={!!view.pendingDecision} paused={!!aiFailure} actor={aiPresentation.actor} recent={aiPresentation.recent} humanTurn={!!view.pendingDecision||(!view.waitingFor&&view.activeSeatId===own.id)} finished={view.phase==='finished'} motionEnabled={motionEnabled} onMotionChange={changeMotion} onWatch={()=>{if(compact)setMobileSheet('peek');setFollowAi(true);setAiDismissed(false);setReviewAi(!aiPresentation.actor);setHistoryOpen(false);setScreen('Galaxy');setCamera(null);setFitRequest(n=>n+1);}}/>
         </aside>
         <section className="sd-main" ref={workspaceRef}>
           {diplomacyDecision&&<div className="sd-workspace dg-preserved-decision" hidden={screen!=='Decision'}>

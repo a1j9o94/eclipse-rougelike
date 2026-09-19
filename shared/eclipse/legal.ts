@@ -57,8 +57,14 @@ export function publicBlueprint(blueprint: Blueprint): ShipBlueprint {
     }),
   };
 }
+export interface LegalCommandLimits {
+  perFamilyLimit: number;
+}
 /** Bounded candidates are generated from the exact seat view used by humans; no hidden snapshot is reconstructed. */
-export function legalCommands(view: PlayerView): LegalCommandCandidate[] {
+export function legalCommands(
+  view: PlayerView,
+  limits?: LegalCommandLimits,
+): LegalCommandCandidate[] {
   const seat = view.seats.find((s) => s.id === view.viewerSeatId);
   if (
     !seat ||
@@ -68,8 +74,16 @@ export function legalCommands(view: PlayerView): LegalCommandCandidate[] {
   )
     return [];
   const result: LegalCommandCandidate[] = [];
+  const familyCounts = new Map<GameCommand["type"], number>();
+  const familyLimit = limits
+    ? Math.max(1, Math.min(128, Math.floor(limits.perFamilyLimit)))
+    : null;
   const add = (command: GameCommand, label: string, description: string) => {
-    if (result.length < 500) result.push({ command, label, description });
+    const count = familyCounts.get(command.type) ?? 0;
+    if (familyLimit === null ? result.length < 500 : count < familyLimit) {
+      result.push({ command, label, description });
+      familyCounts.set(command.type, count + 1);
+    }
   };
   const faction = getFaction(seat.faction);
   const techs = Object.values(seat.technologies)

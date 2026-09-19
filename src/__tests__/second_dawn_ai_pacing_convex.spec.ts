@@ -1,3 +1,4 @@
+import {finishDispatchedAi} from './aiWorkerTestSupport';
 import { webcrypto } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { convexTest } from 'convex-test';
@@ -29,6 +30,7 @@ describe('visible time between authoritative AI decisions', () => {
     const { matchId } = await t.mutation(api.eclipseRooms.startRoom, { ...host, roomToken: room.roomToken });
     vi.advanceTimersByTime(30_000);
     await t.finishInProgressScheduledFunctions();
+    await finishDispatchedAi(t);
     const after = await t.query(api.eclipseMatches.getMatchView, { ...host, matchId });
     expect(after?.revision).toBe(1);
     expect(after?.multiplayer?.timer).toMatchObject({ status: 'timed-out', targetSeatId: 'seat-1', deadlineAt: 31_000 });
@@ -39,9 +41,11 @@ describe('visible time between authoritative AI decisions', () => {
     expect(await t.mutation(api.eclipseMatches.submitCommand, { ...host, matchId, commandId: 'during-timeout-pause', expectedRevision: 1, command: { type: 'pass' } })).toMatchObject({ ok: false, error: { code: 'TURN_TIMEOUT' } });
     vi.advanceTimersByTime(1_199);
     await t.finishInProgressScheduledFunctions();
+    await finishDispatchedAi(t);
     expect((await t.query(api.eclipseMatches.getMatchView, { ...host, matchId }))?.revision).toBe(1);
     vi.advanceTimersByTime(1);
     await t.finishInProgressScheduledFunctions();
+    await finishDispatchedAi(t);
     expect((await t.query(api.eclipseMatches.getMatchView, { ...host, matchId }))?.revision).toBe(2);
   });
 
@@ -53,9 +57,11 @@ describe('visible time between authoritative AI decisions', () => {
     expect(scheduled.filter(job => job.name === 'eclipseMatches:runAi').map(job => job.scheduledTime)).toEqual([2_200]);
     vi.advanceTimersByTime(1_199);
     await t.finishInProgressScheduledFunctions();
+    await finishDispatchedAi(t);
     expect((await t.query(api.eclipseMatches.getMatchView, { ...host, matchId }))?.revision).toBe(1);
     vi.advanceTimersByTime(1);
     await t.finishInProgressScheduledFunctions();
+    await finishDispatchedAi(t);
     const after = await t.query(api.eclipseMatches.getMatchView, { ...host, matchId });
     expect(after?.revision).toBe(2);
     expect(after?.aiStatus?.status).toBe('scheduled');
@@ -63,9 +69,11 @@ describe('visible time between authoritative AI decisions', () => {
     expect(following.filter(job => job.name === 'eclipseMatches:runAi' && job.state.kind === 'pending').map(job => job.scheduledTime)).toEqual([3_400]);
     vi.advanceTimersByTime(1_199);
     await t.finishInProgressScheduledFunctions();
+    await finishDispatchedAi(t);
     expect((await t.query(api.eclipseMatches.getMatchView, { ...host, matchId }))?.revision).toBe(2);
     vi.advanceTimersByTime(1);
     await t.finishInProgressScheduledFunctions();
+    await finishDispatchedAi(t);
     expect((await t.query(api.eclipseMatches.getMatchView, { ...host, matchId }))?.revision).toBe(3);
   });
 
@@ -82,6 +90,7 @@ describe('visible time between authoritative AI decisions', () => {
     await t.mutation(api.eclipseMatches.retryAi, { ...host, matchId });
     vi.advanceTimersByTime(1_200);
     await t.finishInProgressScheduledFunctions();
+    await finishDispatchedAi(t);
     expect((await t.query(api.eclipseMatches.getMatchView, { ...host, matchId }))?.aiStatus).toMatchObject({ status: 'failed', attempts: 1 });
     await t.run(async ctx => {
       const match = await ctx.db.get(matchId);
@@ -96,9 +105,11 @@ describe('visible time between authoritative AI decisions', () => {
     expect((await t.query(api.eclipseMatches.getMatchView, { ...host, matchId }))?.revision).toBe(0);
     vi.advanceTimersByTime(1_199);
     await t.finishInProgressScheduledFunctions();
+    await finishDispatchedAi(t);
     expect((await t.query(api.eclipseMatches.getMatchView, { ...host, matchId }))?.revision).toBe(0);
     vi.advanceTimersByTime(1);
     await t.finishInProgressScheduledFunctions();
+    await finishDispatchedAi(t);
     expect((await t.query(api.eclipseMatches.getMatchView, { ...host, matchId }))?.revision).toBe(1);
     await t.mutation(internal.eclipseMatches.runAi, { matchId, expectedRevision: 0 });
     expect((await t.query(api.eclipseMatches.getMatchView, { ...host, matchId }))?.revision).toBe(1);

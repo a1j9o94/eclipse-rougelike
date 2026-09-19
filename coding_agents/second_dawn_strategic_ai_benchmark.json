@@ -1,0 +1,102 @@
+{
+  "recordedAt": "2026-09-19T02:05:15.568591+00:00",
+  "status": "complete",
+  "currentEvidence": {
+    "heldout": "second_dawn_strategic_ai_benchmark_heldout.json",
+    "coverage": "second_dawn_strategic_ai_benchmark_coverage.json",
+    "control": "second_dawn_strategic_ai_benchmark_heldout_control.json"
+  },
+  "completedGames": 10,
+  "coverage": {
+    "counts": [
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "completed": 5,
+    "wins": 3,
+    "allReachedDepth": 4,
+    "sourceUnchanged": true
+  },
+  "searchVsFast": {
+    "seed": 1069,
+    "completed": 4,
+    "hardWins": 1,
+    "hardGames": 2,
+    "expertWins": 2,
+    "expertGames": 2,
+    "sourceUnchanged": true,
+    "latencyMs": {
+      "hard": {
+        "allCommands": {
+          "samples": 167,
+          "p50": 0.03416600000127801,
+          "p95": 521.591375,
+          "p99": 560.702833000003,
+          "max": 566.9076249999998
+        },
+        "searchedCommands": {
+          "samples": 57,
+          "p50": 381.56604199999856,
+          "p95": 543.8093329999974,
+          "p99": 566.9076249999998,
+          "max": 566.9076249999998
+        },
+        "completedDepth": {
+          "samples": 57,
+          "p50": 4,
+          "p95": 4,
+          "p99": 4,
+          "max": 4
+        },
+        "nodes": {
+          "samples": 57,
+          "p50": 26,
+          "p95": 26,
+          "p99": 26,
+          "max": 26
+        }
+      },
+      "expert": {
+        "allCommands": {
+          "samples": 225,
+          "p50": 0.02858300000661984,
+          "p95": 2055.9659589999937,
+          "p99": 2550.014458000005,
+          "max": 2620.1490829999966
+        },
+        "searchedCommands": {
+          "samples": 62,
+          "p50": 1626.0564159999994,
+          "p95": 2537.7635829999927,
+          "p99": 2620.1490829999966,
+          "max": 2620.1490829999966
+        },
+        "completedDepth": {
+          "samples": 62,
+          "p50": 5,
+          "p95": 5,
+          "p99": 5,
+          "max": 5
+        },
+        "nodes": {
+          "samples": 62,
+          "p50": 88,
+          "p95": 88,
+          "p99": 88,
+          "max": 88
+        }
+      }
+    }
+  },
+  "developmentEvidence": [
+    "second_dawn_strategic_ai_benchmark_development.json",
+    "second_dawn_strategic_ai_benchmark_vs_fast.json",
+    "second_dawn_strategic_ai_benchmark_crash.json",
+    "second_dawn_strategic_ai_benchmark_vs_fast_final.json",
+    "second_dawn_strategic_ai_benchmark_fast_control.json"
+  ],
+  "conclusion": "All current-policy scenarios complete. Search strength remains provisional: Hard split its one paired seed; Expert won both. Local fixed-clock node-budget results are not hosted deadline, memory, cost, concurrency or broad win-rate certification."
+}
