@@ -3,7 +3,7 @@ import { internalMutation, mutation, query } from "./_generated/server";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
-import { BASE_FACTIONS, type FactionId } from "../shared/eclipse/catalog";
+import { BASE_FACTIONS, getFaction, type FactionId } from "../shared/eclipse/catalog";
 import { resolveGuest as findGuest, playerNameForGuest } from './eclipseIdentity';
 import {
   isMultiplayerSettings,
@@ -107,9 +107,7 @@ function requireSettings(settings: MultiplayerRoomSettings): void {
 }
 
 function colorOf(factionId: FactionId): string {
-  const faction = BASE_FACTIONS.find((candidate) => candidate.id === factionId);
-  if (!faction) throw new Error("Choose a base-game faction.");
-  return faction.color;
+  return getFaction(factionId).color;
 }
 
 async function resetReady(ctx: MutationCtx, roomId: Id<"eclipseRoomsV1">): Promise<void> {

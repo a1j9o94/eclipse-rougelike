@@ -1,5 +1,5 @@
 import { eligibleDiplomacyPartners } from './decisions';
-import { getFaction, SETUP_BY_PLAYER_COUNT, type PlayerCount } from './catalog';
+import { factionHasCapability, getFaction, SETUP_BY_PLAYER_COUNT, type PlayerCount } from './catalog';
 import { deriveBlueprintStats } from './blueprints';
 import { isShipPartId } from './parts';
 import { dieHits, type DieFace } from './combat';
@@ -77,9 +77,9 @@ function aftermath(state: GameState, events: GameEvent[]): void {
       const key = `bombardment:${sector.id}`; if (done(state, key)) continue; mark(state, key);
       const attacker = occupant(state, sector);
       if (!attacker || !sector.owner || sector.owner === attacker.id || !sector.population.length) continue;
-      if (player(state, sector.owner).faction === 'planta') {
+      if (factionHasCapability(player(state, sector.owner).faction, 'destroyed-population-when-occupied')) {
         destroyPopulation(state, sector, sector.population.map(cube => cube.squareId));
-        emit(events, attacker.id, 'Planta population destroyed by occupying opponent ships.', 'combat');
+        emit(events, attacker.id, `${getFaction(player(state, sector.owner).faction).name} population destroyed by occupying opponent ships.`, 'combat');
       } else {
         const hits = hasTech(attacker, 'neutron-bombs') && !hasTech(player(state, sector.owner), 'neutron-absorber') ? sector.population.length : bombardmentDamage(state, attacker, state.ships.filter(ship => ship.owner === attacker.id && ship.sectorId === sector.id), events);
         if (hits > 0) queueDecision(state, { id: uniqueId(state, 'bombardment'), owner: attacker.id, kind: 'bombardment', sectorId: sector.id, hits, squareIds: sector.population.map(cube => cube.squareId) });

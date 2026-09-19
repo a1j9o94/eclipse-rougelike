@@ -1,11 +1,10 @@
 import type { BlueprintShipType } from '../../shared/eclipse/blueprints';
-import { getFaction, type CivilizationColor, type FactionId } from '../../shared/eclipse/catalog';
+import { getFaction, type FactionId, type FactionVisualIdentity } from '../../shared/eclipse/catalog';
 
-export type ShipDesignFamily = 'eridani' | 'hydran' | 'planta' | 'draco' | 'mechanema' | 'orion';
+export type ShipDesignFamily = FactionVisualIdentity;
 export interface FactionShipDesign { hull: string; plating: string; cockpit: string; engines: string }
-const colorFamilies: Record<CivilizationColor, ShipDesignFamily> = { red: 'eridani', blue: 'hydran', green: 'planta', yellow: 'draco', white: 'mechanema', black: 'orion' };
 /** Original top-down silhouettes, nose toward the top; paired Terrans share the physical color family. */
-export function shipDesignFamily(faction: FactionId): ShipDesignFamily { return colorFamilies[getFaction(faction).color]; }
+export function shipDesignFamily(faction: FactionId): ShipDesignFamily { return getFaction(faction).shipDesignFamily; }
 
 const hulls: Record<ShipDesignFamily, Record<BlueprintShipType, string>> = {
   eridani: {

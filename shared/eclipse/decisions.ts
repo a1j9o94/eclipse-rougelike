@@ -2,7 +2,7 @@ import { queueAncientPart, resolveAncientPart } from "./ancientAcquisition";
 import { reputationCapacity } from "./battleEngine";
 import { shuffle } from "./random";
 import { connectionBetween, type HexEdge } from "./geometry";
-import { BASE_COMPONENTS } from "./catalog";
+import { BASE_COMPONENTS, getFaction } from "./catalog";
 import { getDiscovery, type DiscoveryId } from "./discoveries";
 import { ancientTechnologyChoices } from "./technologies";
 import { requireSectorDefinition as sectorDefinition } from "./rulesState";
@@ -64,7 +64,8 @@ export function validateDiplomacy(
     "Return a reputation tile before exchanging ambassadors.",
   );
   requireRule(
-    seat.ambassadors.length < 3 && other.ambassadors.length < 3,
+    seat.ambassadors.length < getFaction(seat.faction).capabilities.ambassadorSupply &&
+      other.ambassadors.length < getFaction(other.faction).capabilities.ambassadorSupply,
     "No ambassador tile is available.",
   );
   requireRule(

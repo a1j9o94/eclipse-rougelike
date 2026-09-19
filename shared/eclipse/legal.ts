@@ -1,5 +1,5 @@
 import { planBlueprintUpgrade } from "./upgradePlan";
-import { BASE_COMPONENTS, getFaction } from "./catalog";
+import { BASE_COMPONENTS, factionHasCapability, getFaction } from "./catalog";
 import {
   deriveBlueprintStats,
   effectiveBlueprintParts,
@@ -96,7 +96,7 @@ export function legalCommands(
       (s) =>
         s.sectorId === id &&
         s.owner !== seat.id &&
-        !(seat.faction === "draco" && s.type === "ancient"),
+        !(factionHasCapability(seat.faction, "ancient-coexistence") && s.type === "ancient"),
     );
   const mapped = view.sectors.map(mapSector);
   const abilities = movementAbilities(seat);

@@ -3,7 +3,7 @@ import { v } from 'convex/values';
 import { internalAction, internalQuery, internalMutation, mutation, query } from './_generated/server';
 import type { MutationCtx, QueryCtx } from './_generated/server';
 import type { Doc, Id } from './_generated/dataModel';
-import { BASE_FACTIONS, CATALOG_VERSION, RULES_VERSION } from '../shared/eclipse/catalog';
+import { BASE_FACTIONS, CATALOG_VERSION, RULES_VERSION, getFaction } from '../shared/eclipse/catalog';
 import { resolveGuest as findGuest, playerNameForGuest } from './eclipseIdentity';
 import { commitCommand, getPlayerView } from '../shared/eclipse/protocol';
 import { createGame } from '../shared/eclipse/setup';
@@ -109,8 +109,7 @@ export const createMatch = mutation({
     const aiCount = args.aiCount ?? 2;
     if (!Number.isInteger(aiCount) || aiCount < 1 || aiCount > 5) throw new Error('AI count must be an integer between 1 and 5.');
     const humanFaction = args.faction ?? 'terran-directorate';
-    const human = BASE_FACTIONS.find(faction => faction.id === humanFaction);
-    if (!human) throw new Error('Choose a base-game faction.');
+    const human = getFaction(humanFaction);
     const opponents = BASE_FACTIONS.filter(faction => faction.species === 'alien' && faction.color !== human.color).slice(0, aiCount);
     if (opponents.length !== aiCount) throw new Error('Not enough distinct faction boards.');
     // Convex provides replay-stable transaction randomness; credentials use independent crypto randomness.

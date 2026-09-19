@@ -10,7 +10,7 @@ import type {
 } from "./types";
 import { ancientTechnologyChoices } from "./technologies";
 import { getDiscovery, type DiscoveryId } from "./discoveries";
-import { getFaction } from "./catalog";
+import { factionHasCapability, getFaction } from "./catalog";
 import { sectorDefinition } from "./sectors";
 export function requireSectorDefinition(id: number) {
   const d = sectorDefinition(id);
@@ -113,7 +113,7 @@ export function movementAbilities(seat: Seat): MovementAbilities {
   return {
     wormholeGenerator: hasTech(seat, "wormhole-generator"),
     cloakingDevice: hasTech(seat, "cloaking-device"),
-    descendantsOfDraco: seat.faction === "draco",
+    descendantsOfDraco: factionHasCapability(seat.faction, "ancient-coexistence"),
   };
 }
 export function movementShips(state: GameState): MovementShip[] {
@@ -155,7 +155,7 @@ export function hasEnemy(
     (s) =>
       s.sectorId === sectorId &&
       s.owner !== seat.id &&
-      !(seat.faction === "draco" && s.type === "ancient"),
+      !(factionHasCapability(seat.faction, "ancient-coexistence") && s.type === "ancient"),
   );
 }
 export function capacity(seat: Seat, action: Action): number {

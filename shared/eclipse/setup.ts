@@ -172,7 +172,7 @@ export function createGame(config: GameSetup): GameState {
           square.resource !== "gray" &&
           remaining[square.resource] > 0 &&
           (!square.advanced ||
-            (owner.faction === "hydran" && square.resource === "science"))
+            getFaction(owner.faction).capabilities.advancedHomePopulation.includes(square.resource))
         ) {
           sector.population.push({
             squareId: `p${i}`,

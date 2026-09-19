@@ -1,4 +1,4 @@
-import type { CatalogResources, FactionId } from './catalog';
+import { getFaction, type CatalogResources, type FactionId } from './catalog';
 export interface ScoringSector {
   readonly id: string;
   readonly printedVp: number;
@@ -59,12 +59,12 @@ export function calculateScore(input: ScoringInput): ScoreBreakdown {
     (sum, n) => sum + researchTrackVp(n),
     0,
   );
-  const species =
-    input.faction === 'planta'
-      ? input.sectors.length
-      : input.faction === 'draco'
-        ? input.ancientsOnBoard
-        : 0;
+  const scoring = getFaction(input.faction).capabilities.endGameVp;
+  const species = scoring === 'controlled-sector'
+    ? input.sectors.length
+    : scoring === 'surviving-ancient'
+      ? input.ancientsOnBoard
+      : 0;
   return {
     playerId: input.playerId,
     reputation,

@@ -1,4 +1,5 @@
 import { bestReputation } from './reputation';
+import { factionHasCapability, getFaction } from './catalog';
 import {
   deriveBlueprintStats,
   neutralBlueprint,
@@ -81,9 +82,9 @@ function opponents(state: GameState, a: string, b: string): boolean {
     a !== b &&
     !(
       (a === "ancient" &&
-        state.seats.find((s) => s.id === b)?.faction === "draco") ||
+        !!state.seats.find((s) => s.id === b && factionHasCapability(s.faction, "ancient-coexistence"))) ||
       (b === "ancient" &&
-        state.seats.find((s) => s.id === a)?.faction === "draco")
+        !!state.seats.find((s) => s.id === a && factionHasCapability(s.faction, "ancient-coexistence")))
     )
   );
 }
@@ -208,20 +209,11 @@ function settleRetreats(state: GameState, b: BattleState): void {
 }
 /** Publisher pp.26–29: ambassador-only spaces never hold reputation tiles. */
 export function reputationCapacity(p: Seat): number {
-  const dedicatedAmbassador =
-    p.faction === "hydran" ||
-    p.faction === "planta" ||
-    p.faction.startsWith("terran-");
-  const reputationSlots =
-    p.faction === "orion"
-      ? 5
-      : p.faction === "hydran" || p.faction === "planta"
-        ? 3
-        : 4;
+  const track = getFaction(p.faction).capabilities;
   return Math.max(
     0,
-    reputationSlots -
-      Math.max(0, p.ambassadors.length - Number(dedicatedAmbassador)),
+    track.reputationSlots -
+      Math.max(0, p.ambassadors.length - track.dedicatedAmbassadorSlots),
   );
 }
 /** Settlement is private bookkeeping and never creates a user decision. */

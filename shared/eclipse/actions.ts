@@ -1,6 +1,6 @@
 import { interruptAutoPassForEntry } from './autoPass';
 import { planBlueprintUpgrade } from "./upgradePlan";
-import { BASE_COMPONENTS, getFaction } from "./catalog";
+import { BASE_COMPONENTS, factionHasCapability, getFaction } from "./catalog";
 import {
   validateBlueprint,
   deriveBlueprintStats,
@@ -327,7 +327,7 @@ export function performAction(
         position: p,
         drawnTileIds: drawn,
         placements,
-        ...(seat.faction === "draco" &&
+        ...(factionHasCapability(seat.faction, "choose-one-of-two-exploration-sectors") &&
         state.supplies[ring].length + e.discardedSectors[ring].length > 0
           ? { canDrawAnother: true }
           : {}),

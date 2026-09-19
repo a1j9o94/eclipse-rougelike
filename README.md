@@ -35,3 +35,11 @@ Tests run with one worker. `npm run test:batched` provides smaller sequential ba
 ## Release
 
 [Vercel](https://eclipse-rougelike.vercel.app/) deploys pushes to `main` through Git integration. Feature branches do not deploy. The live site intentionally uses the existing Convex development deployment. See [DEPLOYMENT.md](DEPLOYMENT.md) for the configured release process.
+
+## Community faction research and credits
+
+We are researching **Régis Étienne’s (@retienne) 24-faction collection**, using [his Google Drive files](https://drive.google.com/drive/folders/1pFDgHXE_gsLb2AT3hPptgiSuuM237KHR) as the source of truth. See his [faction overview](https://boardgamegeek.com/thread/3318132/my-24-factions-for-eclipse-second-dawn-for-the-gal), [balance variant](https://boardgamegeek.com/thread/3299146/less-random-and-more-balanced-games-variant), and [sector statistics](https://boardgamegeek.com/filepage/281330/eclipse-all-sectors-statistics-and-probabilities-f). Thanks to Régis and the many original designers, strategy authors, and playtesters who made this collection possible.
+
+The [research index](coding_agents/faction_research/README.md) includes faction abilities and implementation difficulty, AI strategy notes, a file inventory, and [full credits](coding_agents/faction_research/credits.md). The [complete original-file snapshot](https://github.com/a1j9o94/eclipse-rougelike/releases/tag/faction-sources-2026-09-19) is preserved as a GitHub release archive, keeping large artwork and editable templates out of the game bundle.
+
+The underlying Eclipse game is by **Touko Tahkokallio / Lautapelit.fi**. Community sources retain their original credits and notices. Research and archival inclusion do not mean those factions or house rules are enabled in the current game.

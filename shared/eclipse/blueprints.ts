@@ -1,4 +1,4 @@
-import type { FactionId } from './catalog';
+import { getFaction, type FactionBlueprintDefinition, type FactionId } from './catalog';
 import type { AncientShipPartId } from './discoveries';
 import type { TechnologyId } from './technologies';
 import { EMPTY_SHIP_STATS, getShipPart, sumShipStats, type ShipPartId, type ShipStats } from './parts';
@@ -10,37 +10,16 @@ export interface ShipBlueprint {
   parts: (ShipPartId | null)[];
   outsideParts: ShipPartId[];
 }
-export interface BlueprintDefinition {
-  shipType: BlueprintShipType;
-  preprinted: (ShipPartId | null)[];
-  permanent: ShipStats;
-  source: string;
-}
+export type BlueprintDefinition = FactionBlueprintDefinition;
 const TYPES: readonly BlueprintShipType[] = ['interceptor', 'cruiser', 'dreadnought', 'starbase'];
-const PRINTED: Record<BlueprintShipType, (ShipPartId | null)[]> = {
-  interceptor: ['ion-cannon', 'nuclear-source', 'nuclear-drive', null],
-  cruiser: ['electron-computer', 'ion-cannon', 'hull', 'nuclear-source', 'nuclear-drive', null],
-  dreadnought: ['electron-computer', 'ion-cannon', 'ion-cannon', 'hull', 'hull', 'nuclear-source', 'nuclear-drive', null],
-  starbase: ['electron-computer', 'ion-cannon', null, 'hull', 'hull'],
-};
-const PLANTA_PRINTED: Record<BlueprintShipType, (ShipPartId | null)[]> = {
-  interceptor: ['ion-cannon', 'nuclear-source', 'nuclear-drive'],
-  cruiser: ['ion-cannon', 'hull', 'nuclear-source', 'nuclear-drive', null],
-  dreadnought: ['ion-cannon', 'ion-cannon', 'hull', 'hull', 'nuclear-source', 'nuclear-drive', null],
-  starbase: ['electron-computer', 'ion-cannon', 'hull', 'hull'],
-};
-const NORMAL_INITIATIVE: Record<BlueprintShipType, number> = { interceptor: 2, cruiser: 1, dreadnought: 0, starbase: 3 };
-const ORION_ENERGY: Record<BlueprintShipType, number> = { interceptor: 1, cruiser: 2, dreadnought: 3, starbase: 3 };
 /** Index order is stable catalog order, not physical row-major positions. */
 export function blueprintDefinition(faction: FactionId, shipType: BlueprintShipType): BlueprintDefinition {
-  const preprinted = [...(faction === 'planta' ? PLANTA_PRINTED[shipType] : PRINTED[shipType])];
-  if (faction === 'orion') { const empty = preprinted.indexOf(null); preprinted[empty] = 'gauss-shield'; }
-  let energyProduction = shipType === 'starbase' ? 3 : 0;
-  if (faction === 'eridani' && shipType !== 'starbase') energyProduction = 1;
-  if (faction === 'orion') energyProduction = ORION_ENERGY[shipType];
-  if (faction === 'planta') energyProduction = shipType === 'starbase' ? 5 : 2;
-  const initiative = faction === 'planta' ? (shipType === 'starbase' ? 2 : 0) : NORMAL_INITIATIVE[shipType] + (faction === 'orion' ? 1 : 0);
-  return { shipType, preprinted, permanent: { ...EMPTY_SHIP_STATS, weapons: [], energyProduction, initiative, computer: faction === 'planta' ? 1 : 0 }, source: 'https://steamcommunity.com/sharedfiles/filedetails/?id=2414358241' };
+  const definition = getFaction(faction).blueprints[shipType];
+  return {
+    ...definition,
+    preprinted: [...definition.preprinted],
+    permanent: { ...definition.permanent, weapons: [...definition.permanent.weapons] },
+  };
 }
 export function initialBlueprints(faction: FactionId): ShipBlueprint[] {
   return TYPES.map(shipType => ({ shipType, parts: blueprintDefinition(faction, shipType).preprinted.map(() => null), outsideParts: [] }));

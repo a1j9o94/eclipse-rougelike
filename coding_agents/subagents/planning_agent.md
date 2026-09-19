@@ -561,3 +561,15 @@ Outcome: own fleet cards expose priced build shortcuts with clear blockers and c
 
 ## September 19, 2026 — Dice sound
 Outcome: tactile combat dice with synchronized clatter and persistent mute/volume. Acceptance, failing tests, risks and rollback: [dice sound plan](../second_dawn_dice_sound.md). Independent audio helper and settings work; supervisor owns animation integration and release verification.
+
+## September 19, 2026 — Faction registry foundation
+
+- Outcome: make existing faction behavior data-driven and ready for reviewed roster expansion without changing the base game or persisted matches.
+- Acceptance: canonical typed IDs/query APIs; registry-owned setup, capabilities, blueprints, provenance and visual identity; engine/AI/public consumers use capabilities; all twelve base factions and color constraints remain exact; saved shape and pinned versions remain exact.
+- Risks & rollback: behavior drift while moving conditionals; guard with characterization and capability tests. No migration is introduced, so a normal feature revert is sufficient.
+- Tests (failed first): new registry API/metadata/capability/blueprint checks failed four cases before implementation. Existing setup, rules, scoring, reputation, AI, UI, room/match and protocol suites preserve behavior. Full record: [faction registry implementation](../faction_registry_implementation.md).
+- Deferred: independent seat/player color needs an additive persisted seat field and coordinated room/view/UI compatibility defaults; explicit emblem and ship design fields prepare that separate slice.
+
+### September 19, 2026 — Drive faction research and archive
+
+Outcome: let the user choose new factions from source-backed ability/difficulty research, preserve all creator materials on GitHub, and prepare the existing engine without altering current matches. Acceptance: 24-option matrix, Drive authority/version decisions, all 190 originals archived and hashed, README credits, AI heuristic assessment, and behavior-preserving registry validation. Archive tests failed before implementation and now pass (4); registry tests also followed fail-first. Risks: conflicting source sheets and the broader ten-round variant must not silently change base saves. Rollback: ordinary code revert; no migration. Decisions and follow-ups: `coding_agents/faction_research/README.md` and `faction_registry_implementation.md`.

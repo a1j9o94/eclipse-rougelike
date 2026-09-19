@@ -1,4 +1,4 @@
-import {getFaction} from './catalog';
+import {factionHasCapability,getFaction} from './catalog';
 import {deriveBlueprintStats} from './blueprints';
 import {publicBlueprint} from './legal';
 import {sectorDefinition} from './sectors';
@@ -61,11 +61,11 @@ function empireValue(view:PlayerView,seat:Seat):number {
  // exposed to a nearby hostile fleet is a liability. Diplomacy is considered by the action policy.
  for(const sector of view.sectors){
   const force=fleets.get(sector.id)??0;
-  const hostile=view.ships.some(s=>s.sectorId===sector.id&&s.owner!==seat.id&&!(seat.faction==='draco'&&s.type==='ancient'));
+  const hostile=view.ships.some(s=>s.sectorId===sector.id&&s.owner!==seat.id&&!(factionHasCapability(seat.faction,'ancient-coexistence')&&s.type==='ancient'));
   if(force&&!hostile&&sector.owner!==seat.id)value+=(sectorDefinition(Number(sector.tileId))?.victoryPoints??0)*.65;
   if(force&&hostile&&sector.owner!==seat.id){
    const attackers=view.ships.filter(s=>s.sectorId===sector.id&&s.owner===seat.id).map(s=>s.id);
-   const defenders=view.ships.filter(s=>s.sectorId===sector.id&&s.owner!==seat.id&&!(seat.faction==='draco'&&s.type==='ancient')).map(s=>s.id);
+   const defenders=view.ships.filter(s=>s.sectorId===sector.id&&s.owner!==seat.id&&!(factionHasCapability(seat.faction,'ancient-coexistence')&&s.type==='ancient')).map(s=>s.id);
    const battle=estimatePublicBattle(view,attackers,defenders,113,8);
    const conquest=sector.population.length&&!technologies.includes('neutron-bombs')?.5:.85;
    value+=battle.attackerWinProbability*(sectorDefinition(Number(sector.tileId))?.victoryPoints??0)*conquest;

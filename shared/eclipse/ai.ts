@@ -1,5 +1,5 @@
 import { generateAiCandidates } from "./aiCandidates";
-import { getFaction } from "./catalog";
+import { factionHasCapability, getFaction } from "./catalog";
 import { connectionBetween } from "./geometry";
 import { mapSector, movementAbilities } from "./rulesState";
 import { fundingOptions } from "./funding";
@@ -100,7 +100,7 @@ export function sectorControlValue(view: PlayerView, id: string): number {
     definition.victoryPoints * 3 +
     (production + usefulMoney - marginal * 1.6) * Math.min(3, turns) +
     (sector.discovery ? 2 : 0) +
-    (seat.faction === "planta" ? 3 : 0)
+    getFaction(seat.faction).capabilities.ai.controlledSectorValue
   );
 }
 function technologyValue(view: PlayerView, id: string): number {
@@ -211,6 +211,7 @@ export function evaluateAiCommand(
   command: GameCommand,
 ): number {
   const seat = view.seats.find((s) => s.id === view.viewerSeatId)!;
+  const factionPolicy = getFaction(seat.faction).capabilities.ai;
   const income = incomeForPopulationAway(seat.populationTracks.money);
   const balance =
     seat.resources.money +
@@ -224,12 +225,8 @@ export function evaluateAiCommand(
         ? 5
         : 1
       : resource === "science"
-        ? seat.faction === "hydran"
-          ? 2.4
-          : 1.8
-        : seat.faction === "mechanema"
-          ? 2.1
-          : 1.6;
+        ? factionPolicy.scienceValue
+        : factionPolicy.materialsValue;
   const nextBalance =
     seat.resources.money +
     income -
@@ -309,17 +306,17 @@ export function evaluateAiCommand(
     case "explore":
       return (
         (view.round < 5 ? (sectors.length < 3 ? 27 : 20) : 9) +
-        (seat.faction === "planta" ? 4 : seat.faction === "draco" ? 3 : 0) -
+        factionPolicy.exploreBias -
         sectors.length -
         discPenalty
       );
     case "research":
       return (
         technologyValue(view, command.tileId) +
-        (seat.faction === "hydran" ? 4 : 0) +
+        factionPolicy.researchBias +
         (command.tileId === "advanced-economy" && balance < 5 ? 5 : 0) +
-        (command.tileId === "nanorobots" && seat.faction === "mechanema"
-          ? 4
+        (command.tileId === "nanorobots"
+          ? factionPolicy.nanorobotsBias
           : 0) +
         (view.round > 5 && seat.technologies[command.track].length >= 3
           ? 4
@@ -340,11 +337,7 @@ export function evaluateAiCommand(
                   ? 15
                   : 5
                 : shipBuildValue(view, b.component, b.sectorId) +
-                  (seat.faction === "orion"
-                    ? 3
-                    : seat.faction === "mechanema"
-                      ? 2
-                      : 0)),
+                  factionPolicy.shipBuildBias),
           0,
         ) - discPenalty
       );
@@ -375,7 +368,7 @@ export function evaluateAiCommand(
       }
       return (
         improvement * 5 +
-        (seat.faction === "mechanema" ? 1 : 0) -
+        factionPolicy.upgradeBias -
         discPenalty -
         4
       );
@@ -395,7 +388,7 @@ export function evaluateAiCommand(
           ? 15
           : -12;
     case "offer-diplomacy":
-      return seat.faction === "orion" ? 3 : 7;
+      return factionPolicy.diplomacyValue;
     case "move": {
       const final = new Map(
         command.moves.map((m) => [m.shipId, m.path.at(-1)!]),
@@ -416,7 +409,7 @@ export function evaluateAiCommand(
                 (s) =>
                   s.sectorId === destination &&
                   s.owner !== seat.id &&
-                  !(seat.faction === "draco" && s.type === "ancient"),
+                  !(factionHasCapability(seat.faction, "ancient-coexistence") && s.type === "ancient"),
               )
               .map((s) => s.owner),
           ),
@@ -478,9 +471,9 @@ export function evaluateAiCommand(
             : c.tileId === null
               ? -10
               : sectorDefinition(Number(c.tileId))!.victoryPoints * 3 +
-                sectorDefinition(Number(c.tileId))!.population.length * 2 -
+                sectorDefinition(Number(c.tileId))!.population.length * 2 +
                 sectorDefinition(Number(c.tileId))!.ancients *
-                  (seat.faction === "draco" ? -3 : 4);
+                  factionPolicy.ancientExplorationValue;
         case "discovery":
           return c.option === "use" && view.round < 7 ? 12 : 5;
         case "ancient-part":
@@ -610,8 +603,8 @@ export function chooseAiCommand(
             s.sectorId === destination &&
             s.owner !== view.viewerSeatId &&
             !(
-              view.seats.find((p) => p.id === view.viewerSeatId)?.faction ===
-                "draco" && s.type === "ancient"
+              !!view.seats.find((p) => p.id === view.viewerSeatId &&
+                factionHasCapability(p.faction, "ancient-coexistence")) && s.type === "ancient"
             ),
         )
         .map((s) => s.id);

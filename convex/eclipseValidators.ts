@@ -1,21 +1,10 @@
 import { v } from "convex/values";
 import type { Validator } from "convex/values";
-import type { FactionId } from "../shared/eclipse/catalog";
+import { FACTION_IDS, type FactionId } from "../shared/eclipse/catalog";
 import type { DecisionChoice, GameCommand } from "../shared/eclipse/types";
 
 export const factionValidator: Validator<FactionId> = v.union(
-  v.literal("eridani"),
-  v.literal("hydran"),
-  v.literal("planta"),
-  v.literal("draco"),
-  v.literal("mechanema"),
-  v.literal("orion"),
-  v.literal("terran-directorate"),
-  v.literal("terran-federation"),
-  v.literal("terran-union"),
-  v.literal("terran-republic"),
-  v.literal("terran-conglomerate"),
-  v.literal("terran-alliance"),
+  ...FACTION_IDS.map(id => v.literal(id)),
 );
 const resource = v.union(
   v.literal("money"),

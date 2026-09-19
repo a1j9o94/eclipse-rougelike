@@ -1,4 +1,5 @@
 import { deriveBlueprintStats, neutralBlueprint } from "./blueprints";
+import { factionHasCapability } from "./catalog";
 import { publicBlueprint } from "./legal";
 import { dieHits, type DieFace } from "./combat";
 import { connectionBetween } from "./geometry";
@@ -49,7 +50,7 @@ function canRetreat(view: PlayerView, ship: Ship, sectorId: string): boolean {
         (other) =>
           other.sectorId === sector.id &&
           other.owner !== seat.id &&
-          !(seat.faction === "draco" && other.type === "ancient"),
+          !(factionHasCapability(seat.faction, "ancient-coexistence") && other.type === "ancient"),
       ) &&
       connectionBetween(
         mapSector(source),
@@ -122,11 +123,9 @@ export function estimatePublicBattle(
     defenderOwner &&
     (attackerOwner === defenderOwner ||
       (attackerOwner === "ancient" &&
-        view.seats.find((seat) => seat.id === defenderOwner)?.faction ===
-          "draco") ||
+        !!view.seats.find((seat) => seat.id === defenderOwner && factionHasCapability(seat.faction, "ancient-coexistence"))) ||
       (defenderOwner === "ancient" &&
-        view.seats.find((seat) => seat.id === attackerOwner)?.faction ===
-          "draco"))
+        !!view.seats.find((seat) => seat.id === attackerOwner && factionHasCapability(seat.faction, "ancient-coexistence"))))
   )
     return staticResult(0, 0, 1, "non-opponents");
   if (!attackers.size || !defenders.size)
