@@ -217,3 +217,42 @@
 .dg-battle-overview .dg-battle-conditions summary { font-size: 10px; line-height: 1.2; }
 .dg-battle-overview .dg-battle-conditions p { margin: 5px 0; font-size: 11px; }
 .dg-combat-playback{display:grid;gap:8px;margin:8px 0 12px;padding:9px;border:1px solid #78683f;border-radius:7px;background:#0c1722}.dg-combat-playback>header{display:flex;align-items:center;justify-content:space-between;gap:10px}.dg-combat-playback>header div{display:grid}.dg-combat-playback>header span{font-size:9px;letter-spacing:.12em;color:#d5ba72}.dg-combat-playback>header button{min-height:36px}.dg-playback-volley{animation:dg-impact-arrive .7s ease both}@keyframes dg-impact-arrive{0%{opacity:.2;transform:translateY(-5px)}60%{transform:translateY(2px)}100%{opacity:1;transform:none}}.dg-combat-playback.is-fast .dg-playback-volley{animation-duration:.08s}.dg-playback-volley ul{display:grid;gap:4px;margin:6px 0 0;padding:0;list-style:none}.dg-playback-volley li{display:flex;align-items:center;gap:8px;font-size:10px;color:#bdcbd8}.dg-playback-volley li>b{color:#e89c91}.dg-playback-volley li>small{color:#e3c477}@media(prefers-reduced-motion:reduce){.dg-playback-volley{animation:none}}
+
+/* A recorded volley reads left-to-right even after its ships leave the board. */
+.dg-volley-scene {display:grid;grid-template-columns:minmax(84px,140px) minmax(170px,320px);justify-content:center;align-items:center;gap:12px;padding:14px 10px;margin-bottom:10px;border:1px solid #415566;border-radius:8px;background:radial-gradient(ellipse at 70% 45%,#253a4944,transparent 65%),#08121d;overflow:hidden}
+.dg-volley-firing {display:grid;justify-items:center;gap:7px;text-align:center;min-width:0}
+.dg-volley-firing>small {font-size:10px;color:#b7c8d6;line-height:1.35;overflow-wrap:anywhere}
+.dg-volley-firing>small:first-child {color:#e4c47e;letter-spacing:.12em}
+.dg-volley-source {display:grid;justify-items:center;gap:1px;min-width:0}
+.dg-volley-source strong {font-size:12px;color:#e6dcc7}
+.dg-volley-source>small {font-size:10px;color:#b7c8d6}
+.dg-volley-source-art {display:block;width:64px;height:64px;transform:rotate(90deg);animation:dg-volley-recoil .55s ease-out both}
+.dg-volley-source-art>svg {width:64px;height:64px}
+.dg-volley-impact-scene {display:grid;gap:12px;min-width:0}
+.dg-volley-scene-target {position:relative;display:grid;grid-template-columns:60px minmax(0,1fr);align-items:center;gap:8px;min-height:76px;padding-left:34px}
+.dg-volley-flight {position:absolute;left:0;top:calc(50% - 35px);width:42px;height:70px;overflow:visible}
+.dg-volley-flight path {fill:none;stroke:#bdcdda;stroke-width:2;stroke-dasharray:18 90;stroke-dashoffset:105;animation:dg-volley-projectile .65s ease-out both}
+.dg-volley-flight [data-weapon-color="yellow"] {stroke:#efd27b}.dg-volley-flight [data-weapon-color="orange"] {stroke:#eeb180}.dg-volley-flight [data-weapon-color="blue"] {stroke:#9bccef}.dg-volley-flight [data-weapon-color="red"] {stroke:#e99b9b}
+.dg-volley-flight [data-hit="false"] {stroke-width:1;opacity:.45}
+.dg-volley-scene-target-art {position:relative;display:block;width:60px;height:60px}
+.dg-volley-scene-target-art>svg {width:60px;height:60px;transform:rotate(-90deg)}
+.dg-volley-scene-target-copy {display:grid;gap:3px;min-width:0}
+.dg-volley-scene-target-copy strong {font-size:12px;color:#e6dcc7}.dg-volley-scene-target-copy b {font-size:11px;color:#d8c18a}.dg-volley-scene-target-copy small {font-size:10px;color:#bdcbd7}
+.dg-volley-impact-flash {position:absolute;inset:5px;border-radius:50%;pointer-events:none}
+.is-damaged .dg-volley-impact-flash,.is-destroyed .dg-volley-impact-flash {animation:dg-volley-flash .8s .35s ease-out both;background:radial-gradient(circle,#ffe2a5 0,#e7944777 25%,transparent 70%)}
+.is-destroyed .dg-volley-scene-target-art>svg {opacity:.38}.is-destroyed .dg-volley-scene-target-copy b {color:#ffb699}
+.dg-volley-wreck-mark {position:absolute;inset:0;display:grid;place-items:center;font-size:54px;line-height:1;color:#ffc09d;text-shadow:0 2px 5px #000;animation:dg-wreck-reveal .35s .45s both}
+.dg-volley-scene.is-still *, .dg-combat-playback.is-fast .dg-volley-scene * {animation:none!important}
+.dg-volley-scene.is-still .dg-volley-flight path {stroke-dasharray:4 5;stroke-dashoffset:0;opacity:.5}
+.dg-volley-scene.is-still .dg-volley-impact-flash {display:none}
+.dg-combat-turn-prompt {margin:0 0 12px;color:#bacbd9;font-size:13px;line-height:1.45}
+@keyframes dg-volley-projectile {0% {stroke-dashoffset:105;opacity:0}15% {opacity:1}85% {opacity:1}100% {stroke-dashoffset:-25;opacity:0}}
+@keyframes dg-volley-recoil {0%,100% {transform:rotate(90deg) translateY(0)}30% {transform:rotate(90deg) translateY(5px)}}
+@keyframes dg-volley-flash {0% {opacity:0;transform:scale(.3)}25% {opacity:.9;transform:scale(1.2)}100% {opacity:0;transform:scale(1.7)}}
+@keyframes dg-wreck-reveal {from {opacity:0;transform:scale(.6)}to {opacity:1;transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.dg-volley-scene * {animation:none!important}.dg-volley-flight path {stroke-dasharray:4 5;stroke-dashoffset:0;opacity:.5}.dg-volley-impact-flash {display:none}}
+@media(max-width:560px){.dg-volley-scene {grid-template-columns:minmax(76px,1fr) minmax(162px,2fr);gap:3px;padding:10px 5px}.dg-volley-source-art,.dg-volley-source-art>svg {width:54px;height:54px}.dg-volley-scene-target {grid-template-columns:48px minmax(0,1fr);padding-left:25px;gap:4px}.dg-volley-scene-target-art,.dg-volley-scene-target-art>svg {width:48px;height:48px}.dg-volley-flight {width:29px}.dg-volley-scene-target-copy strong {font-size:11px}.dg-volley-wreck-mark {font-size:44px}}
+.dg-volley-scene.is-awaiting-dice .dg-volley-source-art,
+.dg-volley-scene.is-awaiting-dice .dg-volley-flight path,
+.dg-volley-scene.is-awaiting-dice .dg-volley-impact-flash,
+.dg-volley-scene.is-awaiting-dice .dg-volley-wreck-mark {animation-play-state:paused}

@@ -1,0 +1,46 @@
+[
+  {
+    "engine": "chromium",
+    "width": 1440,
+    "savePreservesRun": true,
+    "quitCancelled": true,
+    "hostRequest": true,
+    "voteReopened": true,
+    "rejection": true,
+    "keyboardFocusTrapped": true,
+    "pageErrors": []
+  },
+  {
+    "engine": "chromium",
+    "width": 390,
+    "savePreservesRun": true,
+    "quitCancelled": true,
+    "hostRequest": true,
+    "voteReopened": true,
+    "rejection": true,
+    "keyboardFocusTrapped": true,
+    "pageErrors": []
+  },
+  {
+    "engine": "webkit",
+    "width": 1440,
+    "savePreservesRun": true,
+    "quitCancelled": true,
+    "hostRequest": true,
+    "voteReopened": true,
+    "rejection": true,
+    "keyboardFocusTrapped": true,
+    "pageErrors": []
+  },
+  {
+    "engine": "webkit",
+    "width": 390,
+    "savePreservesRun": true,
+    "quitCancelled": true,
+    "hostRequest": true,
+    "voteReopened": true,
+    "rejection": true,
+    "keyboardFocusTrapped": true,
+    "pageErrors": []
+  }
+]

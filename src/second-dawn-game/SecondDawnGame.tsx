@@ -31,6 +31,7 @@ import {useActivityRecap} from '../second-dawn-session/useActivityRecap';
 import {useForegroundMatch} from '../second-dawn-session/useForegroundMatch';
 import {useMobileLayout} from './mobileLayout';
 import ActivityRecap from './ActivityRecap';
+import {useGameRecoveryControls} from './useGameRecoveryControls';
 import "./game.css";
 import './mobileLauncher.css';
 const credentialKey = "eclipse.second-dawn.guest.v1";
@@ -104,7 +105,7 @@ function ConnectedGame() {
     return saved && isGuestCredential(saved) ? saved : null;
   });
   const [matchId, setMatchId] = useState<Id<"eclipseMatchesV1"> | null>(null);
-  const history = useMatchHistory(credential,matchId);
+
   const [creating, setCreating] = useState(false);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
@@ -115,6 +116,7 @@ function ConnectedGame() {
   const [pieceColor,setPieceColor]=useState<CivilizationColor>('red');
   const chooseProfile=(profile:FactionProfile)=>{setFactionProfile(profile);if(profile==='base'&&['rho-indi','magellan','midas','ragnarok'].includes(faction))setFaction('terran-directorate');};
   const [warpPortals, setWarpPortals] = useState(true);
+  const [showCombatOdds,setShowCombatOdds]=useState(false);
   const initialization = useRef<Promise<string> | null>(null);
   const lastRequest = useRef<{
     commandId: string;
@@ -133,6 +135,8 @@ function ConnectedGame() {
     api.eclipseMatches.getMatchView,
     credential && matchId ? { credential, matchId } : "skip",
   );
+  const gameControls=useGameRecoveryControls({credential,matchId,view,connected,busy,onHome:()=>openHome(),onRoom:roomToken?()=>setRoomOverview(true):undefined});
+  const history=useMatchHistory(credential,matchId,gameControls.rollbackRevision);
   const recap=useActivityRecap(matchId&&view?`${matchId}:${view.viewerSeatId}:${credential}`:null,view);
   const recovery=useForegroundMatch({
     key:credential&&matchId?`${credential}:${matchId}`:null,
@@ -217,7 +221,7 @@ function ConnectedGame() {
         credential,
         faction,
         pieceColor:factionProfile==='expanded-v1'?pieceColor:undefined,
-        settings:{humanSeatCount:1,aiCount,aiDifficulty,warpPortals,factionProfile,timerMs:DEFAULT_ROOM_SETTINGS.timerMs},
+        settings:{humanSeatCount:1,aiCount,aiDifficulty,warpPortals,showCombatOdds,factionProfile,timerMs:DEFAULT_ROOM_SETTINGS.timerMs},
       });
       await setRoomReady({credential,roomToken:room.roomToken,ready:true});
       const result=await startRoom({credential,roomToken:room.roomToken});
@@ -237,7 +241,7 @@ function ConnectedGame() {
     }
   }
   async function send(command: GameCommand) {
-    if (!credential || !matchId || !view || !recovery.ready || busy) return;
+    if (!credential || !matchId || !view || !recovery.ready || busy || gameControls.blockedReason || gameControls.working) return;
     setBusy(true);
     setStatus("Saving your command…");
     const prior = lastRequest.current;
@@ -276,26 +280,29 @@ function ConnectedGame() {
   const takeover=view?.multiplayer?.timer?.targetSeatId===view?.viewerSeatId&&(clockExpired||['timed-out','failed'].includes(view?.multiplayer?.timer?.status??''));
   if (matchId && view && !roomOverview)
     return (
-      <><SecondDawnBoard
-        key={`${matchId}:${view.viewerSeatId}`}
+      <>{gameControls.banner}<SecondDawnBoard
+        key={`${matchId}:${view.viewerSeatId}:${gameControls.rollbackRevision}`}
         matchId={matchId}
         lastAcceptedCommand={lastAcceptedCommand}
         recapOpen={compact&&!!recap.snapshot?.open}
         activityRecap={compact&&recap.snapshot?.open?<ActivityRecap baseline={recap.snapshot.baseline} throughRevision={recap.snapshot.throughRevision} feed={history} disabled={!recovery.ready} saving={recapSaving} error={recapError} onDismiss={()=>{void dismissRecap();}}/>:undefined}
         playerNames={view.playerNames}
         history={history}
+        historyRollback={gameControls.historyRollback}
+        showCombatOdds={view.showCombatOdds??false}
+        interactionBlockedReason={gameControls.blockedReason}
         view={view}
         candidates={legalCommands(view)}
         connected={recovery.ready}
-        busy={busy||takeover}
+        busy={busy||takeover||gameControls.working}
         status={recovery.checking?"Refreshing your saved galaxy…":status}
         onSubmit={(command) => {
           void send(command);
         }}
         onHome={()=>openHome()}
         onPlayAgain={()=>openHome(true)}
-        menuLabel={roomToken?'Game room':'Game menu'}
-        onMenu={() => {if(roomToken)setRoomOverview(true);else setMatchId(null);}}
+        menuLabel="Game menu"
+        onMenu={gameControls.openMenu}
         turnClock={view.multiplayer?<TurnClock timer={view.multiplayer.timer} actorName={view.multiplayer.timer?.targetSeatId===view.viewerSeatId?'You':view.seats.find(s=>s.id===view.multiplayer?.timer?.targetSeatId)?getFaction(view.seats.find(s=>s.id===view.multiplayer?.timer?.targetSeatId)!.faction).name:'Opponent'} disabled={!connected||busy} onRetry={()=>{void roomAction(async()=>{await retryRoomTimer({credential:credential!,roomToken:view.multiplayer!.roomToken});});}}/>:undefined}
         aiThinking={view.aiStatus?.status==='thinking'}
         aiTakeover={view.multiplayer?.timer?.status==='timed-out'}
@@ -311,7 +318,7 @@ function ConnectedGame() {
               ),
             );
         }}
-      />{recovery.error&&<div className="dg-foreground-warning" role="alert"><span>{recovery.error}</span><button onClick={recovery.retry}>Retry refresh</button></div>}</>
+      />{gameControls.dialogs}{recovery.error&&<div className="dg-foreground-warning" role="alert"><span>{recovery.error}</span><button onClick={recovery.retry}>Retry refresh</button></div>}</>
     );
   if(roomToken)return <><div className="dg-room-player-access"><ConnectionStatus connected={connected} browserOnline={browserOnline} sessionReady={Boolean(credential&&guest)} status={status}/>{playerAccess}</div>{room===undefined?<main className="dg-lobby"><p>Loading game room…</p></main>:room===null?<main className="dg-lobby"><h1>Room unavailable</h1><p>This room link is no longer available.</p><a href="/">All games</a></main>:<RoomLobby lobby={room} disabled={!connected||!credential||busy||guest===null} onJoin={(selected,color)=>{void roomAction(async()=>{await joinRoom({credential:credential!,roomToken,faction:selected,pieceColor:color});});}} onLeave={()=>{void roomAction(async()=>{await leaveRoom({credential:credential!,roomToken});window.location.assign('/');});}} onFaction={(selected,color)=>{void roomAction(async()=>{await chooseRoomFaction({credential:credential!,roomToken,faction:selected,pieceColor:color});});}} onReady={ready=>{void roomAction(async()=>{await setRoomReady({credential:credential!,roomToken,ready});});}} onSettings={settings=>{void roomAction(async()=>{await updateRoomSettings({credential:credential!,roomToken,settings});});}} onStart={()=>{void roomAction(async()=>{await startRoom({credential:credential!,roomToken});setRoomOverview(false);});}} onEnter={()=>setRoomOverview(false)}/>}</>;
   return (
@@ -366,6 +373,7 @@ function ConnectedGame() {
               />
               Use base-game warp portals
             </label>
+            <label className="dg-check"><input type="checkbox" checked={showCombatOdds} onChange={event=>setShowCombatOdds(event.target.checked)}/>Show estimated combat odds during movement</label>
             <AiDifficultyPicker value={aiDifficulty} onChange={setAiDifficulty} disabled={busy}/>
             <button
               className="dg-primary"

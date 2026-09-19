@@ -43,3 +43,6 @@ it('lets an expanded room change piece color without changing species',()=>{
  expect(screen.getByRole('button',{name:/Red pieces.*Chosen by/})).toBeDisabled();fireEvent.click(screen.getByRole('button',{name:'Yellow pieces'}));expect(handlers.onFaction).toHaveBeenCalledWith('magellan','yellow');
  expect(screen.getByRole('button',{name:'Hydran Progress',exact:true})).toBeEnabled();
 });
+it('lets the host agree to optional combat odds before the game starts',()=>{
+ const save=vi.fn();render(<RoomSettingsEditor settings={lobby.settings} disabled={false} onSave={save}/>);const toggle=screen.getByRole('checkbox',{name:/Show estimated combat odds/});expect(toggle).not.toBeChecked();fireEvent.click(toggle);fireEvent.click(screen.getByRole('button',{name:'Save room settings'}));expect(save).toHaveBeenCalledWith({...lobby.settings,showCombatOdds:true});
+});

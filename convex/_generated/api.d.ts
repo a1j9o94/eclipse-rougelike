@@ -18,6 +18,7 @@ import type * as eclipseIdentity from "../eclipseIdentity.js";
 import type * as eclipseMatches from "../eclipseMatches.js";
 import type * as eclipsePlayerStore from "../eclipsePlayerStore.js";
 import type * as eclipsePlayers from "../eclipsePlayers.js";
+import type * as eclipseRollback from "../eclipseRollback.js";
 import type * as eclipseRooms from "../eclipseRooms.js";
 import type * as eclipseValidators from "../eclipseValidators.js";
 
@@ -35,6 +36,7 @@ declare const fullApi: ApiFromModules<{
   eclipseMatches: typeof eclipseMatches;
   eclipsePlayerStore: typeof eclipsePlayerStore;
   eclipsePlayers: typeof eclipsePlayers;
+  eclipseRollback: typeof eclipseRollback;
   eclipseRooms: typeof eclipseRooms;
   eclipseValidators: typeof eclipseValidators;
 }>;

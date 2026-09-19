@@ -7,15 +7,17 @@ import ActionEconomy from './ActionEconomy';
 import { previewCommand } from '../../shared/eclipse/commandPreview';
 import { movementPlan, queuedMovementPlan, type MovementRoutePreview } from './movementPlanning';
 import './movementPlanner.css';
+import MovementBattlePreview from './MovementBattlePreview';
 export interface MovementSelection { sourceSectorId:string|null; shipIds:string[]; targetSectorId:string|null }
 export interface MovementPlannerProps {
  view:PlayerView; sourceSectorId:string|null; selectedTargetId:string|null; disabled:boolean;
+ showCombatOdds?:boolean;
  result?:string; onDone?:()=>void; onTargetsChange:(ids:string[])=>void; onClose:()=>void; onSubmit:(command:GameCommand)=>void;
  onChangeSource?:()=>void;
  onRoutePreview?:(routes:readonly MovementRoutePreview[])=>void;
  onSelectionChange?:(selection:MovementSelection)=>void;
 }
-export default function MovementPlanner({view,sourceSectorId,selectedTargetId,disabled,result,onDone,onTargetsChange,onClose,onSubmit,onRoutePreview,onSelectionChange,onChangeSource}:MovementPlannerProps){
+export default function MovementPlanner({view,sourceSectorId,selectedTargetId,disabled,result,onDone,onTargetsChange,onClose,onSubmit,onRoutePreview,onSelectionChange,onChangeSource,showCombatOdds=false}:MovementPlannerProps){
  const [draft,setDraft]=useActionDraftState('movement',{source:sourceSectorId,ids:[]});
  const [queuedRoutes,setQueuedRoutes]=useActionDraftState('movementRoutes',[]);
  const draftGuard=useActionDraftGuard();
@@ -47,6 +49,7 @@ export default function MovementPlanner({view,sourceSectorId,selectedTargetId,di
   {plan.message&&<p role="status">{plan.message}</p>}
   {!!ids.length&&!plan.message&&!destination&&<p role="status">{target?'That sector is outside the selected fleet’s legal routes.':'Choose a highlighted destination on the galaxy.'}</p>}
   {destination&&<div className="dg-movement-route"><h3>Destination · sector {target?.tileId}</h3>{ids.map(shipId=>{const moves=destination.command.moves.filter(move=>move.shipId===shipId);return <p key={shipId}><strong>{plan.ships.find(s=>s.id===shipId)?.label} <small>· {moves.length} {moves.length===1?'activation':'activations'}</small></strong><span>{[source?.tileId,...moves.flatMap(move=>move.path).map(id=>view.sectors.find(s=>s.id===id)?.tileId)].join(' → ')}</span></p>;})}</div>}
+  {showCombatOdds&&destination&&<MovementBattlePreview view={queued.projectedView} shipIds={ids} targetSectorId={destination.sectorId}/>}
   {routeMode&&queued.routes.length>0&&<section className="dg-movement-queue" aria-label="Queued movement routes"><h3>Queued routes · {queued.routes.length}</h3>{queued.routes.map((route,index)=>{const from=view.sectors.find(sector=>sector.id===route.draft.sourceSectorId);const to=view.sectors.find(sector=>sector.id===route.draft.destinationSectorId);return <div key={`${route.draft.sourceSectorId}:${route.draft.shipIds.join(',')}:${route.draft.destinationSectorId}:${index}`} className={route.status==='rejected'?'is-rejected':''}><span>{index+1}. {from?.tileId??'Unknown'} → {to?.tileId??'Unknown'} · {route.draft.shipIds.length} ship{route.draft.shipIds.length===1?'':'s'}</span>{route.message&&<small role="status">{route.message}</small>}<button type="button" disabled={disabled} onClick={()=>moveRoute(index,-1)} aria-label={`Move queued route ${index+1} earlier`}>↑</button><button type="button" disabled={disabled} onClick={()=>moveRoute(index,1)} aria-label={`Move queued route ${index+1} later`}>↓</button><button type="button" disabled={disabled} onClick={()=>removeRoute(index)}>Remove</button></div>;})}</section>}
   <ActionEconomy view={view} action="move" preview={routeMode&&execution.command.moves.length?previewCommand(view,execution.command):destination?previewCommand(view,destination.command):null}/>
   <div className="dg-movement-confirm">{routeMode?<><button type="button" disabled={disabled||draftGuard.stale||!destination} onClick={queueRoute}>Queue route{ids.length?` · ${ids.length} ${ids.length===1?'ship':'ships'}`:''}</button>{hasUnqueuedSelection&&<p role="status">Execute includes the selected route, or queue it to draft another departure.</p>}<button type="button" disabled={disabled||draftGuard.stale||execution.routes.some(route=>route.status==='rejected')||!execution.command.moves.length} onClick={()=>{if(!draftGuard.stale&&!execution.routes.some(route=>route.status==='rejected')&&execution.command.moves.length)onSubmit(execution.command);}}>Execute {executionRouteCount} {executionRouteCount===1?'route':'routes'} · {execution.command.moves.length} {execution.command.moves.length===1?'activation':'activations'}</button></>:<button type="button" disabled={disabled||draftGuard.stale||!destination} onClick={()=>{if(destination&&!draftGuard.stale)onSubmit(destination.command);}}>Confirm move{ids.length?` · ${ids.length} ${ids.length===1?'ship':'ships'}`:''}{destination?` · ${activations} ${activations===1?'activation':'activations'}`:''}</button>}{onDone&&<button type="button" disabled={disabled||draftGuard.stale} onClick={onDone}>Done moving</button>}</div>

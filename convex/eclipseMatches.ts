@@ -1,9 +1,10 @@
-import { projectHistoryEntry, type PublicHistoryPage } from '../shared/eclipse/history';
+import { projectHistoryEntry, type PublicHistoryEntry, type PublicHistoryPage } from '../shared/eclipse/history';
 import { v } from 'convex/values';
+import { supersededRevision } from './eclipseRollback';
 import { internalAction, internalQuery, internalMutation, mutation, query } from './_generated/server';
 import type { MutationCtx, QueryCtx } from './_generated/server';
 import type { Doc, Id } from './_generated/dataModel';
-import { factionAllowedForProfile, profileVersions, seatPieceColor } from '../shared/eclipse/catalog';
+import { getFaction, factionAllowedForProfile, profileVersions, seatPieceColor } from '../shared/eclipse/catalog';
 import { resolveGuest as findGuest, playerNameForGuest } from './eclipseIdentity';
 import { commitCommand, getPlayerView } from '../shared/eclipse/protocol';
 import { createGame } from '../shared/eclipse/setup';
@@ -39,8 +40,8 @@ function roomTimerToken(): string {
  * sync remains a harmless recovery path, but it cannot leave a new owner
  * looking at the previous owner's deadline between commands.
  */
-async function reconcileRoomTimerAfterCommand(ctx: MutationCtx, match: Doc<'eclipseMatchesV1'>, state: GameState): Promise<void> {
-  if (!match.roomToken) return;
+export async function reconcileRoomTimerAfterCommand(ctx: MutationCtx, match: Doc<'eclipseMatchesV1'>, state: GameState): Promise<void> {
+  if (!match.roomToken || match.rollbackPendingId) return;
   const room = await ctx.db.query('eclipseRoomsV1').withIndex('by_match', q => q.eq('matchId', match._id)).unique();
   if (!room || room.status !== 'playing') return;
   const current = await ctx.db.query('eclipseRoomTimersV1').withIndex('by_match', q => q.eq('matchId', match._id)).unique();
@@ -78,6 +79,16 @@ async function reconcileRoomTimerAfterCommand(ctx: MutationCtx, match: Doc<'ecli
   }
   if (next.changed) await ctx.scheduler.runAfter(Math.max(0, next.timer.deadlineAt - Date.now()), internal.eclipseRooms.runRoomTimeout, { roomToken: room.roomToken, token: next.timer.token });
 }
+export type MatchParticipation = 'active' | 'resigned' | 'abandoned';
+export type ResignationOutcome = 'resigned' | 'abandoned';
+export type ResignMatchResult =
+  | { ok: true; revision: number; outcome: ResignationOutcome; duplicate: boolean }
+  | { ok: false; error: ValidationError };
+
+function participation(match: Doc<'eclipseMatchesV1'>, ownership: Doc<'eclipseOwnershipV1'>): MatchParticipation {
+  return ownership.resignationOutcome ?? (match.lifecycle === 'abandoned' ? 'abandoned' : 'active');
+}
+
 export interface MatchSummary {
   matchId: Id<'eclipseMatchesV1'>;
   seatId: string;
@@ -88,12 +99,18 @@ export interface MatchSummary {
   lastSeenRevision: number | null;
   updatedAt: number;
   roomToken?: string;
+  participation?: MatchParticipation;
 }
 export type MatchSubmission =
   | { ok: true; receipt: CommandReceipt; duplicate: boolean }
   | { ok: false; error: ValidationError };
 
 export interface MatchPlayerView extends PlayerView {
+  showCombatOdds?:boolean;
+  participation?: MatchParticipation;
+  matchLifecycle?: 'active' | 'abandoned';
+  canResign?: boolean;
+  resignOutcome?: ResignationOutcome;
   lastSeenRevision: number | null;
   playerNames?: Record<string, string>;
   aiDifficulty?: AiDifficulty;
@@ -102,7 +119,7 @@ export interface MatchPlayerView extends PlayerView {
 }
 
 export const createMatch = mutation({
-  args: { credential: v.string(), aiCount: v.optional(v.number()), factionProfile: v.optional(factionProfileValidator), pieceColor: v.optional(pieceColorValidator), faction: v.optional(factionValidator), warpPortals: v.optional(v.boolean()), aiDifficulty: v.optional(v.union(v.literal('normal'), v.literal('hard'), v.literal('expert'))) },
+  args: { credential: v.string(), showCombatOdds:v.optional(v.boolean()), aiCount: v.optional(v.number()), factionProfile: v.optional(factionProfileValidator), pieceColor: v.optional(pieceColorValidator), faction: v.optional(factionValidator), warpPortals: v.optional(v.boolean()), aiDifficulty: v.optional(v.union(v.literal('normal'), v.literal('hard'), v.literal('expert'))) },
   handler: async (ctx, args): Promise<{ matchId: Id<'eclipseMatchesV1'>; seatId: string }> => {
     const guest = await findGuest(ctx, args.credential);
     if (!guest) throw new Error('Guest session required.');
@@ -118,7 +135,7 @@ export const createMatch = mutation({
     const seats = [human, ...opponents.map((opponent, i) => ({ id: `seat-${i + 2}`, ...opponent, controller: 'ai' as const }))];
     const state = createGame({ seed, seats, factionProfile, warpPortals: args.warpPortals ?? true, randomizeStartingPlayer: true });
     const now = Date.now();
-    const matchId = await ctx.db.insert('eclipseMatchesV1', { snapshotJson: JSON.stringify(state), rulesVersion: state.rulesVersion, catalogVersion: state.catalogVersion, revision: state.revision, round: state.round, phase: state.phase, aiDifficulty: args.aiDifficulty ?? 'normal', aiVersion: AI_VERSION, createdAt: now, updatedAt: now });
+    const matchId = await ctx.db.insert('eclipseMatchesV1', { snapshotJson: JSON.stringify(state), rulesVersion: state.rulesVersion, catalogVersion: state.catalogVersion, revision: state.revision, round: state.round, phase: state.phase, showCombatOdds:args.showCombatOdds??false, aiDifficulty: args.aiDifficulty ?? 'normal', aiVersion: AI_VERSION, createdAt: now, updatedAt: now });
     await ctx.db.insert('eclipseOwnershipV1', { matchId, guestId: guest._id, seatId: 'seat-1' });
     await scheduleAi(ctx, matchId, state);
     return { matchId, seatId: 'seat-1' };
@@ -136,7 +153,7 @@ export const listMyMatches = query({
       const match = await ctx.db.get(ownership.matchId);
       if (!match) continue;
       const state = readState(match);
-      results.push({ matchId: match._id, seatId: ownership.seatId, round: match.round, phase: match.phase, revision: match.revision, playerCount: state.seats.length, lastSeenRevision: ownership.lastSeenRevision ?? null, updatedAt: match.updatedAt, ...(match.roomToken ? { roomToken: match.roomToken } : {}) });
+      results.push({ participation: participation(match, ownership), matchId: match._id, seatId: ownership.seatId, round: match.round, phase: match.phase, revision: match.revision, playerCount: state.seats.length, lastSeenRevision: ownership.lastSeenRevision ?? null, updatedAt: match.updatedAt, ...(match.roomToken ? { roomToken: match.roomToken } : {}) });
     }
     return results.sort((a, b) => b.updatedAt - a.updatedAt);
   },
@@ -149,7 +166,8 @@ export const getMatchView = query({
     if (!ownership) return null;
     const match = await ctx.db.get(matchId);
     if (!match) return null;
-    const view = getPlayerView(readState(match), ownership.seatId);
+    const state = readState(match);
+    const view = getPlayerView(state, ownership.seatId);
     const owners = await ctx.db.query('eclipseOwnershipV1').withIndex('by_match_guest', q => q.eq('matchId', matchId)).collect();
     const playerNames: Record<string, string> = {};
     for (const owner of owners) {
@@ -161,6 +179,11 @@ export const getMatchView = query({
     const timer = room && room.humanSeatCount > 1 ? await ctx.db.query('eclipseRoomTimersV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique() : null;
     return view ? {
       ...view,
+      showCombatOdds:match.showCombatOdds??false,
+      participation: participation(match, ownership),
+      matchLifecycle: match.lifecycle ?? 'active',
+      canResign: ownership.resignedAt === undefined && match.lifecycle !== 'abandoned' && state.phase !== 'finished',
+      resignOutcome: state.seats.some(seat => seat.id !== ownership.seatId && seat.controller === 'human') ? 'resigned' : 'abandoned',
       lastSeenRevision: ownership.lastSeenRevision ?? null,
       playerNames,
       aiDifficulty: match.aiDifficulty ?? 'normal',
@@ -198,15 +221,86 @@ export const getMatchHistory = query({
     const rows = await ctx.db.query('eclipseJournalV1').withIndex('by_match_revision', q => beforeRevision === undefined ? q.eq('matchId',matchId) : q.eq('matchId',matchId).lt('revision',beforeRevision)).order('desc').take(count + 1);
     const historyState = readState(match);
     const seats = historyState.seats;
-    const entries = rows.slice(0,count).map(row => projectHistoryEntry({ actor:row.actor, receipt:row.receipt, request:JSON.parse(row.requestJson) as JournalEntry['request'], events:JSON.parse(row.eventsJson) as JournalEntry['events'] },seats,row.round,historyState));
-    return { entries, nextBeforeRevision: rows.length > count ? entries[entries.length - 1].revision : null };
+    const rollbacks = await ctx.db.query('eclipseRollbacksV1').withIndex('by_match_created', q => q.eq('matchId', matchId)).collect();
+    const lifecycle = await ctx.db.query('eclipseMatchLifecycleV1').withIndex('by_match_revision', q => beforeRevision === undefined ? q.eq('matchId', matchId) : q.eq('matchId', matchId).lt('revision', beforeRevision)).order('desc').take(count + 1);
+    const latestLifecycle = await ctx.db.query('eclipseMatchLifecycleV1').withIndex('by_match_revision', q => q.eq('matchId', matchId)).order('desc').first();
+    const projected: PublicHistoryEntry[] = rows.map(row => {
+      const supersededAtRevision = row.supersededAtRevision ?? supersededRevision(row.revision, rollbacks);
+      const reason = supersededAtRevision !== undefined ? 'This action belongs to an earlier, superseded timeline.' : !row.preSnapshotJson ? 'This older action has no saved checkpoint.' : latestLifecycle && row.revision <= latestLifecycle.revision ? 'Undo cannot cross a player resignation.' : match.lifecycle === 'abandoned' ? 'This game has ended by resignation.' : undefined;
+      return { ...projectHistoryEntry({ actor:row.actor, receipt:row.receipt, request:JSON.parse(row.requestJson) as JournalEntry['request'], events:JSON.parse(row.eventsJson) as JournalEntry['events'] },seats,row.round,historyState), rollbackAvailable: !reason, ...(reason ? { rollbackUnavailableReason: reason } : {}), ...(supersededAtRevision !== undefined ? { supersededAtRevision } : {}) };
+    });
+    const actorName = (seatId: string): string => { const seat = seats.find(candidate => candidate.id === seatId); return seat ? getFaction(seat.faction).name : 'Player'; };
+    for (const row of lifecycle) projected.push({ revision: row.revision, actorSeatId: row.actor, actorName: actorName(row.actor), round: null, summary: row.outcome === 'abandoned' ? 'Ended the game' : 'Resigned · AI took over', details: [], rollbackAvailable: false, rollbackUnavailableReason: 'A player resignation cannot be undone.' });
+    for (const row of rollbacks) {
+      const common = { actorSeatId: row.requestedBySeatId, actorName: actorName(row.requestedBySeatId), round: null, rollbackAvailable: false, rollbackUnavailableReason: 'Choose a game action to undo.' };
+      projected.push({ ...common, revision: row.expectedRevision + 1, summary: row.status === 'rejected' ? 'Undo declined' : row.status === 'cancelled' ? 'Undo cancelled' : 'Requested undo', details: [`Before action ${row.targetRevision}: ${row.targetSummary}`] });
+      if (row.appliedRevision !== undefined) projected.push({ ...common, revision: row.appliedRevision, summary: 'Restored an earlier position', details: [`Returned to before action ${row.targetRevision}: ${row.targetSummary}`, 'Later actions remain in history as superseded.'] });
+    }
+    const candidates = projected.filter(entry => beforeRevision === undefined || entry.revision < beforeRevision).sort((a,b) => b.revision - a.revision);
+    const entries = candidates.slice(0, count);
+    return { entries, nextBeforeRevision: candidates.length > count ? entries[entries.length - 1].revision : null };
   },
 });
 
 async function saveAccepted(ctx: MutationCtx, matchId: Id<'eclipseMatchesV1'>, state: GameState, entry: JournalEntry, actionRound: number): Promise<void> {
+  const previous = await ctx.db.get(matchId);
   await ctx.db.patch(matchId, { snapshotJson: JSON.stringify(state), revision: state.revision, round: state.round, phase: state.phase, updatedAt: Date.now() });
-  await ctx.db.insert('eclipseJournalV1', { matchId, round: actionRound, commandId: entry.request.commandId, actor: entry.actor, revision: entry.receipt.revision, requestJson: JSON.stringify(entry.request), eventsJson: JSON.stringify(entry.events), receipt: entry.receipt, createdAt: Date.now() });
+  await ctx.db.insert('eclipseJournalV1', { matchId, round: actionRound, commandId: entry.request.commandId, actor: entry.actor, revision: entry.receipt.revision, requestJson: JSON.stringify(entry.request), preSnapshotJson: previous?.snapshotJson, eventsJson: JSON.stringify(entry.events), receipt: entry.receipt, createdAt: Date.now() });
 }
+
+/** Leave permanently without changing the game's scoring rules or discarding pending choices. */
+export const resignMatch = mutation({
+  args: { credential: v.string(), matchId: v.id('eclipseMatchesV1'), commandId: v.string(), expectedRevision: v.number() },
+  handler: async (ctx, args): Promise<ResignMatchResult> => {
+    const ownership = await ownedSeat(ctx, args.credential, args.matchId);
+    const match = await ctx.db.get(args.matchId);
+    if (!ownership || !match) return { ok: false, error: { code: 'NOT_A_SEAT', message: 'This identity does not own a seat in this match.', field: null } };
+    if (!args.commandId.trim() || args.commandId.length > 200 || /^(ai|timeout):/.test(args.commandId) || !Number.isSafeInteger(args.expectedRevision) || args.expectedRevision < 0) {
+      return { ok: false, error: { code: 'INVALID_COMMAND', message: 'Provide a unique command ID and valid revision.', field: null } };
+    }
+    const original = await ctx.db.query('eclipseMatchLifecycleV1').withIndex('by_match_command', q => q.eq('matchId', args.matchId).eq('commandId', args.commandId)).unique();
+    const ruleCommand = await ctx.db.query('eclipseJournalV1').withIndex('by_match_command', q => q.eq('matchId', args.matchId).eq('commandId', args.commandId)).unique();
+    if (ruleCommand || (original && (original.actor !== ownership.seatId || original.expectedRevision !== args.expectedRevision))) {
+      return { ok: false, error: { code: 'COMMAND_ID_REUSED', message: 'This command ID already belongs to another request.', field: 'commandId' } };
+    }
+    if (original) return { ok: true, revision: original.revision, outcome: original.outcome, duplicate: true };
+    if (match.rollbackPendingId) return { ok: false, error: { code: 'ILLEGAL_ACTION', message: 'Resolve the shared undo request before resigning.', field: null } };
+    if (match.revision !== args.expectedRevision) return { ok: false, error: { code: 'STALE_REVISION', message: 'The game changed. Review the current position before leaving.', field: 'expectedRevision' } };
+    const state = readState(match);
+    if (match.lifecycle === 'abandoned' || match.rollbackPendingId || state.phase === 'finished' || ownership.resignedAt !== undefined) {
+      return { ok: false, error: { code: 'GAME_FINISHED', message: 'Your participation in this game has already ended.', field: null } };
+    }
+    const seat = state.seats.find(candidate => candidate.id === ownership.seatId);
+    if (!seat || seat.controller !== 'human') return { ok: false, error: { code: 'NOT_A_SEAT', message: 'This identity no longer controls a human seat.', field: null } };
+    const outcome: ResignationOutcome = state.seats.some(candidate => candidate.id !== seat.id && candidate.controller === 'human') ? 'resigned' : 'abandoned';
+    if (outcome === 'resigned') seat.controller = 'ai';
+    state.revision += 1;
+    const now = Date.now();
+    await ctx.db.patch(match._id, { snapshotJson: JSON.stringify(state), revision: state.revision, updatedAt: now, ...(outcome === 'abandoned' ? { lifecycle: 'abandoned' as const } : {}) });
+    await ctx.db.patch(ownership._id, { resignedAt: now, resignationOutcome: outcome });
+    await ctx.db.insert('eclipseMatchLifecycleV1', { matchId: match._id, actor: seat.id, commandId: args.commandId, expectedRevision: args.expectedRevision, revision: state.revision, outcome, createdAt: now });
+    if (outcome === 'abandoned') {
+      const room = await ctx.db.query('eclipseRoomsV1').withIndex('by_match', q => q.eq('matchId', match._id)).unique();
+      if (room) await ctx.db.patch(room._id, { status: 'closed', updatedAt: now });
+      const timer = await ctx.db.query('eclipseRoomTimersV1').withIndex('by_match', q => q.eq('matchId', match._id)).unique();
+      if (timer) await ctx.db.patch(timer._id, { status: 'finished', error: null, updatedAt: now });
+    } else {
+      const room = await ctx.db.query('eclipseRoomsV1').withIndex('by_match', q => q.eq('matchId', match._id)).unique();
+      if (room?.hostGuestId === ownership.guestId) {
+        const owners = await ctx.db.query('eclipseOwnershipV1').withIndex('by_match_guest', q => q.eq('matchId', match._id)).collect();
+        const successor = owners.find(owner => owner.resignedAt === undefined && state.seats.some(candidate => candidate.id === owner.seatId && candidate.controller === 'human'));
+        if (successor) {
+          await ctx.db.patch(room._id, { hostGuestId: successor.guestId, updatedAt: now });
+          const roomSeats = await ctx.db.query('eclipseRoomSeatsV1').withIndex('by_room', q => q.eq('roomId', room._id)).collect();
+          for (const roomSeat of roomSeats) await ctx.db.patch(roomSeat._id, { isHost: roomSeat.guestId === successor.guestId });
+        }
+      }
+      await reconcileRoomTimerAfterCommand(ctx, match, state);
+    }
+    await scheduleAi(ctx, match._id, state);
+    return { ok: true, revision: state.revision, outcome, duplicate: false };
+  },
+});
 
 export const submitCommand = mutation({
   args: { credential: v.string(), matchId: v.id('eclipseMatchesV1'), commandId: v.string(), expectedRevision: v.number(), command: gameCommandValidator },
@@ -216,9 +310,14 @@ export const submitCommand = mutation({
     if (!ownership) return unauthorized;
     const match = await ctx.db.get(matchId);
     if (!match) return unauthorized;
+    if (match.lifecycle === 'abandoned') return { ok: false, error: { code: 'GAME_FINISHED', message: 'This run has ended.', field: null } };
+    if (ownership.resignedAt !== undefined) return { ok: false, error: { code: 'NOT_A_SEAT', message: 'You resigned from this game. AI now controls your seat.', field: null } };
+    const lifecycleCommand = await ctx.db.query('eclipseMatchLifecycleV1').withIndex('by_match_command', q => q.eq('matchId', matchId).eq('commandId', request.commandId)).unique();
+    if (lifecycleCommand) return { ok: false, error: { code: 'COMMAND_ID_REUSED', message: 'This command ID already belongs to a resignation.', field: 'commandId' } };
     const state = readState(match);
     // Duplicate delivery returns its original receipt even if the current turn has since timed out.
     const original = await ctx.db.query('eclipseJournalV1').withIndex('by_match_command', q => q.eq('matchId', matchId).eq('commandId', request.commandId)).unique();
+    if (!original && match.rollbackPendingId) return { ok: false, error: { code: 'ILLEGAL_ACTION', message: 'The game is paused for a shared undo request.', field: null } };
     if (!original && /^(ai|timeout):/.test(request.commandId)) return {ok:false, error:{code:'INVALID_COMMAND', message:'This command ID prefix is reserved for server actions.', field:'commandId'}};
     const room = match.roomToken ? await ctx.db.query('eclipseRoomsV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique() : null;
     const timer = room && room.humanSeatCount > 1 ? await ctx.db.query('eclipseRoomTimersV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique() : null;
@@ -246,6 +345,11 @@ export async function scheduleAi(ctx: MutationCtx, matchId: Id<'eclipseMatchesV1
   const actor = state.pendingDecision?.owner ?? state.activeSeatId;
   const ai = state.phase !== 'finished' && state.seats.some(seat => seat.id === actor && seat.controller === 'ai' && !seat.eliminated);
   const match = await ctx.db.get(matchId);
+  if (match?.rollbackPendingId) return;
+  if (match?.lifecycle === 'abandoned') {
+    if (existing) await ctx.db.patch(existing._id, { status: 'finished', expectedRevision: state.revision, error: null, leaseToken: undefined, leaseExpiresAt: undefined, timeoutToken: undefined, remainingBudgetMs: 0, updatedAt: Date.now() });
+    return;
+  }
   const timer = match?.roomToken ? await ctx.db.query('eclipseRoomTimersV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique() : null;
   const timeout = timer?.status === 'timed-out' && actor === timer.targetSeatId && !!match && await validateTimeoutAi(ctx, match, timer.token, actor);
   const failedTimeout = timer?.status === 'failed' && actor === timer.targetSeatId && existing?.timeoutToken === timer.token;
@@ -272,7 +376,7 @@ export const runAi = internalMutation({
   handler: async (ctx, { matchId, expectedRevision }): Promise<null> => {
     const job = await ctx.db.query('eclipseAiJobsV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique();
     const match = await ctx.db.get(matchId);
-    if (!job || !match || match.revision !== expectedRevision || job.expectedRevision !== expectedRevision || job.status !== 'scheduled') return null;
+    if (!job || !match || match.lifecycle === 'abandoned' || match.rollbackPendingId || match.revision !== expectedRevision || job.expectedRevision !== expectedRevision || job.status !== 'scheduled') return null;
     const leaseToken = roomTimerToken();
     const leaseExpiresAt = Date.now() + AI_BUDGETS[match.aiDifficulty ?? 'normal'].budgetMs + 15_000;
     await ctx.db.patch(job._id, { status: 'thinking', leaseToken, leaseExpiresAt, updatedAt: Date.now() });
@@ -288,7 +392,7 @@ export const getAiWork = internalQuery({
   handler: async (ctx, {matchId, expectedRevision, leaseToken}): Promise<AiWork | null> => {
     const job = await ctx.db.query('eclipseAiJobsV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique();
     const match = await ctx.db.get(matchId);
-    if (!job || !match || job.status !== 'thinking' || job.leaseToken !== leaseToken || job.expectedRevision !== expectedRevision || match.revision !== expectedRevision || (job.leaseExpiresAt ?? 0) <= Date.now()) return null;
+    if (!job || !match || match.lifecycle === 'abandoned' || match.rollbackPendingId || job.status !== 'thinking' || job.leaseToken !== leaseToken || job.expectedRevision !== expectedRevision || match.revision !== expectedRevision || (job.leaseExpiresAt ?? 0) <= Date.now()) return null;
     if (match.aiVersion && match.aiVersion !== AI_VERSION) throw new Error('This match requires an unavailable AI version.');
     const state = readState(match);
     const actor = state.pendingDecision?.owner ?? state.activeSeatId;
@@ -345,7 +449,7 @@ export const commitAiWork = internalMutation({
   handler: async (ctx, {matchId, expectedRevision, leaseToken, command, elapsedMs, searchNodes, searchDepth, searchCutoff}): Promise<null> => {
     const job = await ctx.db.query('eclipseAiJobsV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique();
     const match = await ctx.db.get(matchId);
-    if (!job || !match || job.status !== 'thinking' || job.leaseToken !== leaseToken || job.expectedRevision !== expectedRevision || match.revision !== expectedRevision || (job.leaseExpiresAt ?? 0) <= Date.now()) return null;
+    if (!job || !match || match.lifecycle === 'abandoned' || match.rollbackPendingId || job.status !== 'thinking' || job.leaseToken !== leaseToken || job.expectedRevision !== expectedRevision || match.revision !== expectedRevision || (job.leaseExpiresAt ?? 0) <= Date.now()) return null;
     const state = readState(match);
     const actor = state.pendingDecision?.owner ?? state.activeSeatId;
     if (!actor || (job.timeoutToken ? !await validateTimeoutAi(ctx, match, job.timeoutToken, actor) : state.seats.find(seat => seat.id === actor)?.controller !== 'ai')) return null;
@@ -401,9 +505,12 @@ export const retryAi = mutation({
   args: { credential: v.string(), matchId: v.id('eclipseMatchesV1') },
   returns: v.null(),
   handler: async (ctx, { credential, matchId }): Promise<null> => {
-    if (!await ownedSeat(ctx, credential, matchId)) throw new Error('This identity does not own a seat in this match.');
+    const owner = await ownedSeat(ctx, credential, matchId);
+    if (!owner) throw new Error('This identity does not own a seat in this match.');
+    if (owner.resignedAt !== undefined) return null;
     const match = await ctx.db.get(matchId);
     if (!match) throw new Error('Match unavailable.');
+    if (match.lifecycle === 'abandoned' || match.rollbackPendingId) return null;
     const job = await ctx.db.query('eclipseAiJobsV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique();
     if (job?.status === 'thinking' && (job.leaseExpiresAt ?? 0) > Date.now()) return null;
     if (job?.timeoutToken) {

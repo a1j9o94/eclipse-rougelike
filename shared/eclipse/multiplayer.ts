@@ -17,6 +17,7 @@ export interface MultiplayerRoomSettings {
   aiCount: number;
   timerMs: number;
   warpPortals: boolean;
+  showCombatOdds?: boolean;
   aiDifficulty?: AiDifficulty;
   factionProfile?: FactionProfile;
 }
@@ -91,6 +92,7 @@ export function isMultiplayerSettings(value: MultiplayerRoomSettings): boolean {
     total <= MAX_MULTIPLAYER_SEATS &&
     isMultiplayerTimerMs(value.timerMs) &&
     (value.factionProfile === undefined || ["base", "expanded-v1"].includes(value.factionProfile)) &&
+    (value.showCombatOdds === undefined || typeof value.showCombatOdds === "boolean") &&
     (value.aiDifficulty === undefined || ["normal", "hard", "expert"].includes(value.aiDifficulty))
   );
 }

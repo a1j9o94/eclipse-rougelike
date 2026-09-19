@@ -11,7 +11,7 @@ import { CombatVolleyResult } from '../second-dawn-game/CombatDecisionVisuals';
 
 const preference = vi.hoisted(() => ({ enabled: true }));
 vi.mock('../second-dawn-game/presentationSettings', () => ({ useDice3dEnabled: () => [preference.enabled, vi.fn()] }));
-vi.mock('../second-dawn-game/DiceRoll3D', () => ({ default: ({ rolls, rollId, enabled, skipped, children }: { rolls: readonly { id: string; face: number; color: string }[]; rollId: string; enabled: boolean; skipped?: boolean; children?: ReactNode }) => <div data-testid="dice-presentation" data-roll-id={rollId} data-enabled={String(enabled)} data-skipped={String(skipped)} data-rolls={JSON.stringify(rolls)}>{children}</div> }));
+vi.mock('../second-dawn-game/DiceRoll3D', () => ({ default: ({ rolls, rollId, enabled, skipped, children, onComplete }: { rolls: readonly { id: string; face: number; color: string }[]; rollId: string; enabled: boolean; skipped?: boolean; children?: ReactNode; onComplete?: () => void }) => <div data-testid="dice-presentation" data-roll-id={rollId} data-enabled={String(enabled)} data-skipped={String(skipped)} data-rolls={JSON.stringify(rolls)}>{children}{onComplete&&<button onClick={onComplete}>Finish test throw</button>}</div> }));
 
 const decision: Extract<PendingDecision, { kind: 'combat-allocation' }> = {
   id: 'saved-roll', owner: 'a', kind: 'combat-allocation', battleId: 'battle',
@@ -77,4 +77,14 @@ it('animates opponents public volleys while keeping your already allocated roll 
   preference.enabled = true;
   rerender(<CombatPlayback view={view} volleys={[ownVolley]} />);
   expect(screen.getByTestId('dice-presentation')).toHaveAttribute('data-enabled', 'false');
+});
+
+
+it('starts the visible impact sequence after opponent dice settle without blocking result inspection', () => {
+  render(<CombatPlayback volleys={[{...volley,targets:[{id:'victim',hpBefore:2,hpAfter:0,destroyed:true,excess:0}]}]} />);
+  const scene=screen.getByRole('group',{name:'Volley firing and impacts'});
+  expect(scene).toHaveClass('is-awaiting-dice');
+  expect(scene).toHaveTextContent('Destroyed');
+  fireEvent.click(screen.getByRole('button',{name:'Finish test throw'}));
+  expect(scene).not.toHaveClass('is-awaiting-dice');
 });

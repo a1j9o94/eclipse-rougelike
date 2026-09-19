@@ -1,0 +1,54 @@
+[
+  {
+    "engine": "chromium",
+    "width": 1440,
+    "estimate": "≈50%\nestimated fleet win\n\n1 of your ships vs 1 enemy ship\n\nEstimate assumptions\n\n96 simulations · sampling range 38–58%. This is an estimate, not a guarantee.\n\nCurrent public loadouts and damage, with your fleet attacking. No voluntary retreats, later reinforcements or upgrades. Automatic hit allocation and tied ship order can differ from player choices.\n\nWinning means your fleet survives and the enemy fleet is destroyed. It does not predict taking control or destroying population.",
+    "benchmark": {
+      "elapsedMs": 96,
+      "heartbeats": 19,
+      "maxInputGapMs": 7,
+      "status": "estimate",
+      "trials": 96
+    },
+    "noPageErrors": true
+  },
+  {
+    "engine": "chromium",
+    "width": 390,
+    "estimate": "≈50%\nestimated fleet win\n\n1 of your ships vs 1 enemy ship\n\nEstimate assumptions\n\n96 simulations · sampling range 38–58%. This is an estimate, not a guarantee.\n\nCurrent public loadouts and damage, with your fleet attacking. No voluntary retreats, later reinforcements or upgrades. Automatic hit allocation and tied ship order can differ from player choices.\n\nWinning means your fleet survives and the enemy fleet is destroyed. It does not predict taking control or destroying population.",
+    "benchmark": {
+      "elapsedMs": 95,
+      "heartbeats": 18,
+      "maxInputGapMs": 6,
+      "status": "estimate",
+      "trials": 96
+    },
+    "noPageErrors": true
+  },
+  {
+    "engine": "webkit",
+    "width": 1440,
+    "estimate": "≈50%\nestimated fleet win\n\n1 of your ships vs 1 enemy ship\n\nEstimate assumptions\n\n96 simulations · sampling range 38–58%. This is an estimate, not a guarantee.\n\nCurrent public loadouts and damage, with your fleet attacking. No voluntary retreats, later reinforcements or upgrades. Automatic hit allocation and tied ship order can differ from player choices.\n\nWinning means your fleet survives and the enemy fleet is destroyed. It does not predict taking control or destroying population.",
+    "benchmark": {
+      "elapsedMs": 115,
+      "heartbeats": 16,
+      "maxInputGapMs": 9,
+      "status": "estimate",
+      "trials": 96
+    },
+    "noPageErrors": true
+  },
+  {
+    "engine": "webkit",
+    "width": 390,
+    "estimate": "≈50%\nestimated fleet win\n\n1 of your ships vs 1 enemy ship\n\nEstimate assumptions\n\n96 simulations · sampling range 38–58%. This is an estimate, not a guarantee.\n\nCurrent public loadouts and damage, with your fleet attacking. No voluntary retreats, later reinforcements or upgrades. Automatic hit allocation and tied ship order can differ from player choices.\n\nWinning means your fleet survives and the enemy fleet is destroyed. It does not predict taking control or destroying population.",
+    "benchmark": {
+      "elapsedMs": 116,
+      "heartbeats": 16,
+      "maxInputGapMs": 9,
+      "status": "estimate",
+      "trials": 96
+    },
+    "noPageErrors": true
+  }
+]

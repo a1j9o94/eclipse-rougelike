@@ -48,6 +48,14 @@ Game Settings provides independent dice sounds, game effects, and ambient music 
 
 Turn and upkeep notices draw attention when input is needed. Resource exchange is labeled **Convert**; reputation capacity choices remain within diplomacy rather than the main action menu.
 
+## Game recovery and combat guidance
+
+Open **Game menu** to save and return home, quit a solo run, or resign from multiplayer. Resignation permanently hands your civilization to AI; ended participation moves to Past games without inventing a final score.
+
+**Settings → History & undo** lets the room host choose an action and restore the game before it. Every other active human must agree; AI agrees automatically and solo undo is immediate. Voting pauses the game and survives reloads. Undo preserves a visible audit, restores saved randomness and private choices, and cannot cross a resignation. Actions recorded before checkpoint support are unavailable. It cannot erase information players have already seen.
+
+Enable **Show estimated combat odds during movement** in new-game or room setup for optional public-fleet estimates. They are approximate and omit voluntary retreats and future reinforcements. Combat retains manual Roll/Retreat choices and now shows firing ships, impacts and wrecks. Influence selects a destination first; withdrawal is a separate explicit choice. Successful actions show brief saved-result notifications.
+
 ## Community faction research and credits
 
 The expanded roster is drawn from **Régis Étienne’s (@retienne) 24-faction collection**, using [his Google Drive files](https://drive.google.com/drive/folders/1pFDgHXE_gsLb2AT3hPptgiSuuM237KHR) as the source of truth. See his [faction overview](https://boardgamegeek.com/thread/3318132/my-24-factions-for-eclipse-second-dawn-for-the-gal), [balance variant](https://boardgamegeek.com/thread/3299146/less-random-and-more-balanced-games-variant), and [sector statistics](https://boardgamegeek.com/filepage/281330/eclipse-all-sectors-statistics-and-probabilities-f). Thanks to Régis and the many original designers, strategy authors, and playtesters who made this collection possible.

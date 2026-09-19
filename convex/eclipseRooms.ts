@@ -34,6 +34,7 @@ const settingsValidator = v.object({
   aiDifficulty: v.optional(v.union(v.literal("normal"), v.literal("hard"), v.literal("expert"))),
   timerMs: v.number(),
   warpPortals: v.boolean(),
+  showCombatOdds: v.optional(v.boolean()),
 });
 type ReadContext = Pick<QueryCtx, "db">;
 
@@ -74,7 +75,7 @@ async function ownedRoomSeat(ctx: ReadContext, credential: string, room: Doc<"ec
 }
 
 function settingsFor(room: Doc<"eclipseRoomsV1">): MultiplayerRoomSettings {
-  return { factionProfile: room.factionProfile ?? "base", humanSeatCount: room.humanSeatCount, aiCount: room.aiCount, ...(room.aiDifficulty ? {aiDifficulty: room.aiDifficulty} : {}), timerMs: room.timerMs, warpPortals: room.warpPortals };
+  return { factionProfile: room.factionProfile ?? "base", humanSeatCount: room.humanSeatCount, aiCount: room.aiCount, ...(room.aiDifficulty ? {aiDifficulty: room.aiDifficulty} : {}), timerMs: room.timerMs, warpPortals: room.warpPortals, showCombatOdds:room.showCombatOdds??false };
 }
 
 function toLobbySeats(room: Doc<"eclipseRoomsV1">, seats: readonly Doc<"eclipseRoomSeatsV1">[]): MultiplayerLobbySeat[] {
@@ -126,8 +127,9 @@ async function findRoom(ctx: ReadContext, roomToken: string): Promise<Doc<"eclip
 }
 
 async function saveTimeoutCommand(ctx: MutationCtx, matchId: Id<"eclipseMatchesV1">, state: GameState, entry: JournalEntry, actionRound: number): Promise<void> {
+  const previous = await ctx.db.get(matchId);
   await ctx.db.patch(matchId, { snapshotJson: JSON.stringify(state), revision: state.revision, round: state.round, phase: state.phase, updatedAt: Date.now() });
-  await ctx.db.insert("eclipseJournalV1", { matchId, round: actionRound, commandId: entry.request.commandId, actor: entry.actor, revision: entry.receipt.revision, requestJson: JSON.stringify(entry.request), eventsJson: JSON.stringify(entry.events), receipt: entry.receipt, createdAt: Date.now() });
+  await ctx.db.insert("eclipseJournalV1", { matchId, round: actionRound, commandId: entry.request.commandId, actor: entry.actor, revision: entry.receipt.revision, requestJson: JSON.stringify(entry.request), preSnapshotJson: previous?.snapshotJson, eventsJson: JSON.stringify(entry.events), receipt: entry.receipt, createdAt: Date.now() });
 }
 
 async function scheduleTimeout(ctx: MutationCtx, room: Doc<"eclipseRoomsV1">, timer: MultiplayerTurnTimer): Promise<void> {
@@ -136,7 +138,7 @@ async function scheduleTimeout(ctx: MutationCtx, room: Doc<"eclipseRoomsV1">, ti
 
 /** Reconciles a room's timer after any match transition. Same owner retains the deadline/token. */
 async function synchronizeTimer(ctx: MutationCtx, room: Doc<"eclipseRoomsV1">, match: Doc<"eclipseMatchesV1">): Promise<void> {
-  if (!room.matchId || room.status !== "playing") return;
+  if (!room.matchId || room.status !== "playing" || match.lifecycle === "abandoned" || match.rollbackPendingId) return;
   const state = readState(match);
   const target = timerTargetForState(state);
   const current = await ctx.db.query("eclipseRoomTimersV1").withIndex("by_match", (q) => q.eq("matchId", match._id)).unique();
@@ -304,7 +306,7 @@ export const updateRoomSettings = mutation({
       if (!color || usedColors.has(color)) await ctx.db.patch(seat._id, { faction: null, pieceColor: undefined, ready: false });
       else { usedColors.add(color); await ctx.db.patch(seat._id, { pieceColor: color }); }
     }
-    await ctx.db.patch(room._id, { ...args.settings, factionProfile, updatedAt: Date.now() });
+    await ctx.db.patch(room._id, { ...args.settings, factionProfile, showCombatOdds:args.settings.showCombatOdds??room.showCombatOdds??false, updatedAt: Date.now() });
     await resetReady(ctx, room._id);
     const updated = await ctx.db.get(room._id);
     if (!updated) throw new Error("Room unavailable.");
@@ -352,7 +354,7 @@ export const startRoom = mutation({
     const seats = [...humans, ...opponents.map((opponent, index) => ({ id: `seat-${room.humanSeatCount + index + 1}`, ...opponent, controller: 'ai' as const }))];
     const state = createGame({ seed: Math.floor(Math.random() * 0x100000000), seats, factionProfile, warpPortals: room.warpPortals, randomizeStartingPlayer: true });
     const now = Date.now();
-    const matchId = await ctx.db.insert("eclipseMatchesV1", { snapshotJson: JSON.stringify(state), rulesVersion: state.rulesVersion, catalogVersion: state.catalogVersion, revision: state.revision, round: state.round, phase: state.phase, roomToken: room.roomToken, aiDifficulty: room.aiDifficulty ?? "normal", aiVersion: AI_VERSION, createdAt: now, updatedAt: now });
+    const matchId = await ctx.db.insert("eclipseMatchesV1", { snapshotJson: JSON.stringify(state), rulesVersion: state.rulesVersion, catalogVersion: state.catalogVersion, revision: state.revision, round: state.round, phase: state.phase, roomToken: room.roomToken, showCombatOdds:room.showCombatOdds??false, aiDifficulty: room.aiDifficulty ?? "normal", aiVersion: AI_VERSION, createdAt: now, updatedAt: now });
     await Promise.all(humanSeats.map((seat) => ctx.db.insert("eclipseOwnershipV1", { matchId, guestId: seat.guestId, seatId: `seat-${seat.slot}` })));
     await ctx.db.insert("eclipseAiJobsV1", { matchId, status: "waiting", expectedRevision: state.revision, attempts: 0, error: null, updatedAt: now });
     await ctx.db.patch(room._id, { status: "playing", matchId, updatedAt: now });
@@ -385,7 +387,7 @@ export const runRoomTimeout = internalMutation({
     if (!room?.matchId || room.status !== "playing" || room.humanSeatCount === 1) return null;
     const timer = await ctx.db.query("eclipseRoomTimersV1").withIndex("by_room", (q) => q.eq("roomId", room._id)).unique();
     const match = await ctx.db.get(room.matchId);
-    if (!timer || !match || timer.token !== args.token || (timer.status !== "active" && timer.status !== "timed-out") || (timer.status === "active" && timer.deadlineAt > Date.now())) return null;
+    if (!timer || !match || match.lifecycle === "abandoned" || match.rollbackPendingId || timer.token !== args.token || (timer.status !== "active" && timer.status !== "timed-out") || (timer.status === "active" && timer.deadlineAt > Date.now())) return null;
     const state = readState(match);
     const target = timerTargetForState(state);
     if (!target || target.seatId !== timer.targetSeatId || (timer.actionTurnSerial ?? 0) !== (state.actionTurnSerial ?? 0)) { await synchronizeTimer(ctx, room, match); return null; }
@@ -411,7 +413,7 @@ export const runRoomTimeout = internalMutation({
 export async function validateTimeoutAi(ctx: ReadContext, match: Doc<'eclipseMatchesV1'>, token: string, actor: string): Promise<boolean> {
   const room = await ctx.db.query('eclipseRoomsV1').withIndex('by_match', q => q.eq('matchId', match._id)).unique();
   const timer = await ctx.db.query('eclipseRoomTimersV1').withIndex('by_match', q => q.eq('matchId', match._id)).unique();
-  return !!room && room.status === 'playing' && room.humanSeatCount > 1 && !!timer && timer.token === token && timer.status === 'timed-out' && timer.targetSeatId === actor && (timer.actionTurnSerial ?? 0) === (readState(match).actionTurnSerial ?? 0) && timer.deadlineAt <= Date.now() && timer.timeoutSteps < 32;
+  return match.lifecycle !== 'abandoned' && !match.rollbackPendingId && !!room && room.status === 'playing' && room.humanSeatCount > 1 && !!timer && timer.token === token && timer.status === 'timed-out' && timer.targetSeatId === actor && (timer.actionTurnSerial ?? 0) === (readState(match).actionTurnSerial ?? 0) && timer.deadlineAt <= Date.now() && timer.timeoutSteps < 32;
 }
 export async function finishTimeoutAiCommand(ctx: MutationCtx, match: Doc<'eclipseMatchesV1'>, token: string, actor: string, state: GameState, committed: JournalEntry, actionRound: number): Promise<void> {
   const room = await ctx.db.query('eclipseRoomsV1').withIndex('by_match', q => q.eq('matchId', match._id)).unique();
@@ -441,6 +443,7 @@ export async function retryFailedRoomTimeout(ctx: MutationCtx, matchId: Id<'ecli
   const timer = await ctx.db.query('eclipseRoomTimersV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique();
   const match = await ctx.db.get(matchId);
   if (!room || !match || room.status !== 'playing' || room.humanSeatCount === 1) throw new Error('This room has no live timer.');
+  if (match.lifecycle === 'abandoned' || match.rollbackPendingId) throw new Error('The game is paused or ended.');
   if (!timer || (expectedToken && timer.token !== expectedToken)) throw new Error('This timeout is no longer current.');
   if (timer.status !== 'failed') return;
   const target = timerTargetForState(readState(match));
@@ -460,6 +463,8 @@ export const retryRoomTimer = mutation({
     const room = await findRoom(ctx, args.roomToken);
     if (!room?.matchId || room.status !== "playing" || room.humanSeatCount === 1) throw new Error("This room has no live timer.");
     if (!await ownedRoomSeat(ctx, args.credential, room)) throw new Error("This guest does not occupy a room seat.");
+    const match = await ctx.db.get(room.matchId);
+    if (match?.rollbackPendingId || match?.lifecycle === 'abandoned') throw new Error('The game is paused or ended.');
     const timer = await ctx.db.query("eclipseRoomTimersV1").withIndex("by_room", (q) => q.eq("roomId", room._id)).unique();
     if (!timer || timer.status !== "failed") throw new Error("No failed room timer is available to retry.");
     await retryFailedRoomTimeout(ctx, room.matchId, timer.token);

@@ -7,6 +7,7 @@ import { processGameCommand } from "../../shared/eclipse/engine";
 import type { GameCommand } from "../../shared/eclipse/types";
 import InfluencePlanner from "../second-dawn-game/InfluencePlanner";
 import ColonizationPlanner from "../second-dawn-game/ColonizationPlanner";
+import { ActionDraftProvider } from "../second-dawn-game/ActionDraftProvider";
 
 function influenceFixture() {
   const state = createGame({
@@ -50,64 +51,72 @@ function influenceFixture() {
 }
 
 describe("visual influence planner", () => {
-  it("leads with Claim, Release, and Transfer control intents and previews territorial stakes",()=>{const fixture=influenceFixture();render(<InfluencePlanner view={fixture.view} candidates={fixture.candidates} disabled={false} onSubmit={vi.fn()}/>);expect(screen.getByRole('heading',{name:'Shape your territory'})).toBeTruthy();expect(screen.getByText('Release sector')).toBeTruthy();fireEvent.click(screen.getByRole('button',{name:new RegExp(`Remove control from sector ${fixture.source.tileId}`)}));fireEvent.click(screen.getByRole('button',{name:new RegExp(`Place disc in sector ${fixture.target.tileId}`)}));expect(screen.getByRole('heading',{name:'Transfer control'})).toBeTruthy();expect(screen.getAllByText(/population.*return/i).length).toBeGreaterThan(0);expect(screen.getAllByText(/sector VP/i).length).toBeGreaterThan(0);});
-  it("stages a source and highlighted destination before submitting the exact legal transfer", () => {
-    const fixture = influenceFixture();
-    const submit = vi.fn();
-    const targets = vi.fn();
-    render(
-      <InfluencePlanner
-        view={fixture.view}
-        candidates={fixture.candidates}
-        disabled={false}
-        onSubmit={submit}
-        onLegalTargetIdsChange={targets}
-      />,
-    );
-    fireEvent.click(screen.getByRole("button", { name: new RegExp(`Remove control from sector ${fixture.source.tileId}`) }));
+  it("selects a destination first and explicitly identifies both sides of a legal transfer", () => {
+    const fixture = influenceFixture(), submit = vi.fn(), targets = vi.fn();
+    render(<InfluencePlanner view={fixture.view} candidates={fixture.candidates} disabled={false} onSubmit={submit} onLegalTargetIdsChange={targets}/>);
     expect(targets).toHaveBeenLastCalledWith([fixture.target.id]);
-    expect(screen.getByText(/Choose a connected uncontrolled sector/)).toBeVisible();
-    fireEvent.click(screen.getByRole("button", { name: new RegExp(`Place disc in sector ${fixture.target.tileId}`) }));
-    expect(screen.getByRole("heading", { name: "Transfer control" })).toBeVisible();
-    fireEvent.click(screen.getByRole("button", { name: "Confirm influence" }));
+    expect(screen.getByRole('heading', {name:'Choose a sector to control'})).toBeVisible();
+    fireEvent.click(screen.getByRole('button', {name:`Select sector ${fixture.target.tileId} to control`}));
+    expect(submit).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', {name:`Use disc from sector ${fixture.source.tileId}`}));
+    expect(screen.getByLabelText('Territory consequences')).toHaveTextContent(/population.*return/i);
+    fireEvent.click(screen.getByRole('button', {name:`Withdraw from ${fixture.source.tileId} and control ${fixture.target.tileId}`}));
     expect(submit).toHaveBeenCalledWith(fixture.candidates[1].command);
   });
-
-  it("keeps refresh a distinct visual choice and does not submit while disabled", () => {
-    const fixture = influenceFixture();
-    const submit = vi.fn();
-    render(<InfluencePlanner view={fixture.view} candidates={fixture.candidates} disabled onSubmit={submit} />);
-    expect(screen.queryByRole("combobox")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Refresh colony ships" }));
-    expect(screen.queryByRole("button", { name: "Confirm influence" })).toBeNull();
+  it("never stages withdrawal when a controlled sector is selected on the map", () => {
+    const fixture=influenceFixture(), submit=vi.fn();
+    const remove:GameCommand={type:'influence',removeSectorIds:[fixture.source.id],addSectorIds:[]};
+    render(<InfluencePlanner view={fixture.view} candidates={[...fixture.candidates,{command:remove,label:'Remove',description:'Remove'}]} disabled={false} selectedSectorId={fixture.source.id} onSubmit={submit}/>);
+    expect(screen.getByText('You already control this sector.')).toBeVisible();
+    expect(screen.queryByRole('button',{name:`Withdraw from sector ${fixture.source.tileId}`})).toBeNull();
+    fireEvent.click(screen.getByText('Withdraw control from a sector'));
+    fireEvent.click(screen.getByRole('button',{name:`Select sector ${fixture.source.tileId} to withdraw`}));
+    expect(screen.getByLabelText('Territory consequences')).toHaveTextContent('lose');
+    expect(submit).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button',{name:`Withdraw from sector ${fixture.source.tileId}`}));
+    expect(submit).toHaveBeenCalledWith(remove);
+  });
+  it("confirms control beside the selected sector without a generic influence confirmation", () => {
+    const fixture=influenceFixture(), submit=vi.fn();
+    const command:GameCommand={type:'influence',removeSectorIds:[],addSectorIds:[fixture.target.id]};
+    render(<InfluencePlanner view={fixture.view} candidates={[{command,label:'Control',description:'Control'}]} disabled={false} selectedSectorId={fixture.target.id} onSubmit={submit}/>);
+    expect(screen.getByRole('heading',{name:`Sector ${fixture.target.tileId}`})).toBeVisible();
+    expect(screen.queryByRole('button',{name:'Confirm influence'})).toBeNull();
+    fireEvent.click(screen.getByRole('button',{name:`Take control of sector ${fixture.target.tileId}`}));
+    expect(submit).toHaveBeenCalledWith(command);
+  });
+  it("clears a claim when map selection changes to an owned sector",()=>{
+    const fixture=influenceFixture(), submit=vi.fn();
+    const command:GameCommand={type:'influence',removeSectorIds:[],addSectorIds:[fixture.target.id]};
+    const props={view:fixture.view,candidates:[{command,label:'Control',description:'Control'}],disabled:false,onSubmit:submit};
+    const rendered=render(<InfluencePlanner {...props} selectedSectorId={fixture.target.id}/>);
+    rendered.rerender(<InfluencePlanner {...props} selectedSectorId={fixture.source.id}/>);
+    expect(screen.queryByRole('button',{name:`Take control of sector ${fixture.target.tileId}`})).toBeNull();
     expect(submit).not.toHaveBeenCalled();
   });
-
-  it("uses the selected galaxy sector as source then destination without creating a new command", () => {
-    const fixture = influenceFixture();
-    const submit = vi.fn();
-    const targets = vi.fn();
-    const props = {
-      view: fixture.view,
-      candidates: fixture.candidates,
-      disabled: false,
-      onSubmit: submit,
-      onLegalTargetIdsChange: targets,
-    };
-    const rendered = render(<InfluencePlanner {...props} selectedSectorId={fixture.source.id} />);
-    expect(targets).toHaveBeenLastCalledWith([fixture.target.id]);
-    rendered.rerender(<InfluencePlanner {...props} selectedSectorId={fixture.target.id} />);
-    fireEvent.click(screen.getByRole("button", { name: "Confirm influence" }));
-    expect(submit).toHaveBeenCalledWith(fixture.candidates[1].command);
+  it("identifies an opponent by faction and never offers taking their sector",()=>{
+    const fixture=influenceFixture(); const enemy=fixture.view.sectors.find(sector=>sector.owner==='b')!;
+    render(<InfluencePlanner view={fixture.view} candidates={fixture.candidates} disabled={false} selectedSectorId={enemy.id} onSubmit={vi.fn()}/>);
+    expect(screen.getByText(/Controlled by Hydran Progress/)).toBeVisible();
+    expect(screen.queryByRole('button',{name:/^Take control/})).toBeNull();
   });
-
-  it("uses a directly selected legal galaxy target when placing a new disc", () => {
-    const fixture = influenceFixture();
-    const add: GameCommand = { type: "influence", removeSectorIds: [], addSectorIds: [fixture.target.id] };
-    const submit = vi.fn();
-    render(<InfluencePlanner view={fixture.view} candidates={[{ command: add, label: "Control sector", description: "Place disc." }]} disabled={false} selectedSectorId={fixture.target.id} onSubmit={submit} />);
-    fireEvent.click(screen.getByRole("button", { name: "Confirm influence" }));
-    expect(submit).toHaveBeenCalledWith(add);
+  it("preserves an explicit saved transfer through remount and disables it when legality changes",()=>{
+    const fixture=influenceFixture(),submit=vi.fn();
+    const ui=(available=fixture.candidates)=><ActionDraftProvider matchId="influence-return-test" viewerSeatId="a" revision={fixture.view.revision}><InfluencePlanner view={fixture.view} candidates={available} disabled={false} selectedSectorId={fixture.target.id} onSubmit={submit}/></ActionDraftProvider>;
+    const first=render(ui());fireEvent.click(screen.getByRole('button',{name:`Use disc from sector ${fixture.source.tileId}`}));first.unmount();
+    const next=render(ui());const name=`Withdraw from ${fixture.source.tileId} and control ${fixture.target.tileId}`;
+    expect(screen.getByRole('button',{name})).toBeEnabled();
+    next.rerender(ui([]));expect(screen.getByRole('button',{name})).toBeDisabled();
+    fireEvent.click(screen.getByRole('button',{name}));expect(submit).not.toHaveBeenCalled();
+    next.unmount();localStorage.clear();
+  });
+  it("keeps refresh separate and never submits a disabled choice",()=>{
+    const fixture=influenceFixture(),submit=vi.fn();
+    const rendered=render(<InfluencePlanner view={fixture.view} candidates={fixture.candidates} disabled={false} onSubmit={submit}/>);
+    fireEvent.click(screen.getByRole('button',{name:'Refresh colony ships'}));
+    rendered.rerender(<InfluencePlanner view={fixture.view} candidates={fixture.candidates} disabled onSubmit={submit}/>);
+    fireEvent.click(screen.getByRole('button',{name:'Confirm refresh colony ships'}));
+    expect(submit).not.toHaveBeenCalled();
   });
 });
 

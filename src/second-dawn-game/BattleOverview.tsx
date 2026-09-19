@@ -28,6 +28,58 @@ const neutralNames = {
   gcds: "Galactic Center Defense System",
 };
 type PublicVolley = NonNullable<GameEvent["combatVolley"]>;
+/** Draw only recorded firing groups and impacts; old events stay deliberately generic. */
+function VolleyScene({ volley, view, knownShips, still, awaitingDice }: {
+  volley: PublicVolley;
+  view?: PlayerView;
+  knownShips: readonly Pick<Ship, "id" | "owner" | "type">[];
+  still: boolean;
+  awaitingDice: boolean;
+}) {
+  const firingSeat = view?.seats.find(seat => seat.id === volley.attacker);
+  const sourceType = (die: PublicVolley['dice'][number]) => die.sourceShipType ?? knownShips.find(ship => ship.id === die.sourceShipId)?.type ?? view?.ships.find(ship => ship.id === die.sourceShipId)?.type;
+  const sourceTypes = [...new Set(volley.dice.map(sourceType))];
+  const art = (type: Ship['type'], owner?: string) => type === 'ancient' || type === 'guardian' || type === 'gcds'
+    ? <NeutralShipSilhouette type={type}/>
+    : <ShipSilhouette type={type} faction={view?.seats.find(seat => seat.id === owner)?.faction}/>;
+  return <div className={`dg-volley-scene${still ? ' is-still' : ''}${awaitingDice ? ' is-awaiting-dice' : ''}`} role="group" aria-label="Volley firing and impacts">
+    <div className="dg-volley-firing">
+      <small>FIRING</small>
+      {sourceTypes.map(type => <div className="dg-volley-source" key={type ?? 'unknown'}>
+        <span className="dg-volley-source-art">{type ? art(type, volley.attacker) : <StatIcon kind="cannon"/>}</span>
+        <strong>{type ? names[type] : 'Firing fleet'}</strong>
+        <small>{volley.dice.filter(die => sourceType(die) === type).length} {volley.dice.filter(die => sourceType(die) === type).length === 1 ? 'die' : 'dice'}</small>
+      </div>)}
+      {firingSeat && <small>{getFaction(firingSeat.faction).name}</small>}
+    </div>
+    <div className="dg-volley-impact-scene">
+      {volley.targets.map(target => {
+        const known = knownShips.find(ship => ship.id === target.id) ?? view?.ships.find(ship => ship.id === target.id);
+        const type = target.shipType ?? known?.type;
+        const owner = target.owner ?? known?.owner;
+        const targetSeat = view?.seats.find(seat => seat.id === owner);
+        const ownerLabel = targetSeat ? getFaction(targetSeat.faction).name : owner === 'ancient' || owner === 'guardian' || owner === 'gcds' ? neutralNames[owner] : undefined;
+        const impacts = volley.impacts.filter(impact => impact.targetId === target.id);
+        const hits = impacts.filter(impact => impact.hit).length;
+        const misses = impacts.length - hits;
+        const outcome = target.destroyed ? 'destroyed' : target.hpAfter < target.hpBefore ? 'damaged' : 'unharmed';
+        const name = type ? names[type] : 'Ship';
+        const label = `${name}: ${hits} ${hits === 1 ? 'hit' : 'hits'}, ${misses} ${misses === 1 ? 'miss' : 'misses'}, ${outcome === 'unharmed' ? 'no damage' : outcome}`;
+        return <div key={target.id} className={`dg-volley-scene-target is-${outcome}`} aria-label={label}>
+          <svg className="dg-volley-flight" viewBox="0 0 100 70" preserveAspectRatio="none" aria-hidden="true">
+            {impacts.map((impact, index) => {
+              const die = volley.dice.find(candidate => candidate.id === impact.dieId);
+              const y = 20 + (index % 4) * 10;
+              return <path key={`${impact.dieId}:${index}`} data-weapon-color={die?.weaponColor} data-hit={impact.hit} d={impact.hit ? `M0 ${y} L100 35` : `M0 ${y} L100 ${index % 2 ? 67 : 3}`} style={{ animationDelay: `${Math.min(index, 8) * .06}s` }}/>;
+            })}
+          </svg>
+          <span className="dg-volley-scene-target-art">{type ? art(type, target.owner ?? known?.owner) : <StatIcon kind="hull"/>}<span className="dg-volley-impact-flash" aria-hidden="true"/>{target.destroyed && <b className="dg-volley-wreck-mark" aria-hidden="true">×</b>}</span>
+          <span className="dg-volley-scene-target-copy"><strong>{name}</strong>{ownerLabel && <small>{ownerLabel}</small>}<b>{target.destroyed ? 'Destroyed' : outcome === 'damaged' ? 'Damaged' : 'No damage'}</b><small>{target.hpBefore} → {target.hpAfter} HP</small></span>
+        </div>;
+      })}
+    </div>
+  </div>;
+}
 /** Public result cards survive the active fleet and battle being removed. */
 export function CombatPlayback({ volleys, view, knownShips = [], fast = false }: {
   volleys: readonly PublicVolley[];
@@ -36,12 +88,15 @@ export function CombatPlayback({ volleys, view, knownShips = [], fast = false }:
   fast?: boolean;
 }) {
   const [skipMotion, setSkipMotion] = useState(false);
+  const [settledRoll, setSettledRoll] = useState<string | null>(null);
   const [dice3dEnabled] = useDice3dEnabled();
   if (!volleys.length) return null;
   const destroyedCount = new Set(volleys.flatMap(volley => volley.targets.filter(target => target.destroyed).map(target => target.id))).size;
   const isFast = fast || skipMotion;
   const opponentVolleys = volleys.filter(volley => !view || volley.attacker !== view.viewerSeatId);
   const opponentRolls = opponentVolleys.flatMap(volley => volley.dice.map(die => ({ id: die.id, face: die.face, color: die.weaponColor ?? "#bac0ce" })));
+  const opponentRollId = JSON.stringify(opponentVolleys.map(volley => [volley.battleId, volley.dice.map(die => [die.id, die.face])]));
+  const awaitingDice = dice3dEnabled && !isFast && opponentRolls.length > 0 && settledRoll !== opponentRollId;
   return (
     <section className={`dg-combat-playback${isFast ? " is-fast" : ""}`} aria-label="Recent combat impacts">
       <header>
@@ -51,9 +106,10 @@ export function CombatPlayback({ volleys, view, knownShips = [], fast = false }:
         </div>
         <button type="button" onClick={() => setSkipMotion(true)} disabled={isFast}>{isFast ? "Fast playback on" : "Skip volley animation"}</button>
       </header>
-      <DiceRoll3D skipped={skipMotion} rolls={opponentRolls} rollId={JSON.stringify(opponentVolleys.map(volley => [volley.battleId, volley.dice.map(die => [die.id, die.face])]))} enabled={dice3dEnabled && !isFast && opponentRolls.length > 0}>
+      <DiceRoll3D skipped={skipMotion} rolls={opponentRolls} rollId={opponentRollId} onComplete={() => setSettledRoll(opponentRollId)} enabled={dice3dEnabled && !isFast && opponentRolls.length > 0}>
       {volleys.map((volley, index) => (
         <article className="dg-playback-volley" key={`${volley.battleId}:${volley.dice.map(die => die.id).join(",")}:${index}`}>
+          <VolleyScene volley={volley} view={view} knownShips={knownShips} still={isFast} awaitingDice={awaitingDice}/>
           <div className="dg-result-dice">{volley.dice.map(die => <span key={die.id} className={`is-${die.weaponColor ?? "unknown"}`} aria-label={`Roll ${die.face}, ${die.damage} damage`}><b>{die.face}</b><small>{die.weaponColor && die.weaponKind ? `${die.weaponColor} ${die.weaponKind}` : "weapon unavailable"}</small></span>)}</div>
           <ul className="dg-impact-targets">{volley.targets.map(target => {
             const knownShip = knownShips.find(ship => ship.id === target.id) ?? view?.ships.find(ship => ship.id === target.id);

@@ -34,9 +34,10 @@ function missingCursor(entries: PublicHistoryEntry[]): number | null {
 export function useMatchHistory(
   credential: string | null,
   matchId: Id<"eclipseMatchesV1"> | null,
+  resetRevision=0,
 ): HistoryFeed {
   const client = useConvex();
-  const key = credential && matchId ? `${credential}:${matchId}` : null;
+  const key = credential && matchId ? `${credential}:${matchId}:${resetRevision}` : null;
   const latest = useQuery(
     api.eclipseMatches.getMatchHistory,
     credential && matchId ? { credential, matchId, limit: 40 } : "skip",

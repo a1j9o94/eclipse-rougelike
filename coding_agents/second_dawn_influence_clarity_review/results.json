@@ -1,0 +1,34 @@
+[
+  {
+    "engine": "chromium",
+    "width": 1440,
+    "ownedClickDidNotWithdraw": true,
+    "claimCommitted": true,
+    "noPageErrors": true,
+    "documentWidth": 1440
+  },
+  {
+    "engine": "chromium",
+    "width": 390,
+    "ownedClickDidNotWithdraw": true,
+    "claimCommitted": true,
+    "noPageErrors": true,
+    "documentWidth": 390
+  },
+  {
+    "engine": "webkit",
+    "width": 1440,
+    "ownedClickDidNotWithdraw": true,
+    "claimCommitted": true,
+    "noPageErrors": true,
+    "documentWidth": 1440
+  },
+  {
+    "engine": "webkit",
+    "width": 390,
+    "ownedClickDidNotWithdraw": true,
+    "claimCommitted": true,
+    "noPageErrors": true,
+    "documentWidth": 390
+  }
+]

@@ -18,6 +18,7 @@ export default function CombatTurnDecision({decision,view,disabled,onSubmit}:{de
    {shipType&&['interceptor','cruiser','dreadnought','starbase'].includes(shipType)&&<ShipSilhouette type={shipType as 'interceptor'|'cruiser'|'dreadnought'|'starbase'} faction={view?.seats.find(seat=>seat.id===decision.owner)?.faction}/>}
    <div><p className="sd-eyebrow">{sector?`BATTLE · SECTOR ${sector.tileId}`:'BATTLE'}</p><h2>{forced?'Retreat required':shipType?`Your ${shipType}s are ready`:'Your fleet is ready'}</h2></div>
   </div>
+  {!forced&&decision.kind==='combat-turn'&&<p className="dg-combat-turn-prompt">Roll when you are ready, or declare a retreat.</p>}
   {!forced&&<div className="dg-combat-turn-actions">
    <button className="sd-primary" disabled={disabled} onClick={()=>submit(null)}>{decision.kind==='combat-turn'?'Roll dice':'Keep fighting'}</button>
    <button disabled={!decision.destinationIds.length} aria-expanded={choosingRetreat} onClick={()=>setChoosingRetreat(open=>!open)}>Retreat</button>

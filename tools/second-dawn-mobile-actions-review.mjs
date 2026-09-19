@@ -14,7 +14,7 @@ for(const action of['Explore','Research','Build','Move','Influence','Upgrade']){
  }else if(action==='Move'){
   await p.getByRole('button',{name:'Expand Move details'}).click();await p.getByRole('checkbox').first().check();await p.getByRole('button',{name:'Collapse Move details'}).click();await p.getByRole('button',{name:/^Inspect sector.*legal move destination/}).first().click();await p.getByRole('button',{name:/^Confirm move/}).click();
  }else if(action==='Influence'){
-  await p.getByRole('button',{name:'Expand Influence details'}).click();await p.getByRole('button',{name:'Refresh colony ships',exact:true}).click();await p.getByRole('button',{name:'Confirm influence',exact:true}).click();
+  await p.getByRole('button',{name:'Expand Influence details'}).click();await p.getByRole('button',{name:'Refresh colony ships',exact:true}).click();await p.getByRole('button',{name:'Confirm refresh colony ships',exact:true}).click();
  }else if(action==='Upgrade'){
   await p.getByRole('button',{name:'Interceptor',exact:true}).click();await p.getByRole('button',{name:/Slot 4:/}).click();await p.getByRole('button',{name:'Install Hull in slot 4',exact:true}).click();await p.getByRole('button',{name:'Confirm blueprint',exact:true}).click();
  }

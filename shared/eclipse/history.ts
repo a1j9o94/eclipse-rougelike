@@ -22,6 +22,9 @@ export interface HistoryPublicContext {
 }
 
 export interface PublicHistoryEntry {
+  rollbackAvailable?: boolean;
+  rollbackUnavailableReason?: string;
+  supersededAtRevision?: number;
   revision: number;
   actorSeatId: string;
   actorName: string;

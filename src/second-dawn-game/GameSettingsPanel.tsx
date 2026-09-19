@@ -4,10 +4,11 @@ import './presentationSettings.css';
 import SoundSettingsControls from './sound/SoundSettingsControls';
 export interface GameSettingsPanelProps {
  motionEnabled:boolean;onMotionChange:(enabled:boolean)=>void;onClose:()=>void;
+ onHistory?:()=>void;onGameMenu?:()=>void;
  followAi?:boolean;onFollowAiChange?:(enabled:boolean)=>void;
  autoPass?:{enabled:boolean;paused:boolean;disabled:boolean;disabledReason?:string;onChange:(enabled:boolean)=>void};
 }
-export default function GameSettingsPanel({motionEnabled,onMotionChange,onClose,followAi,onFollowAiChange,autoPass}:GameSettingsPanelProps){
+export default function GameSettingsPanel({motionEnabled,onMotionChange,onClose,followAi,onFollowAiChange,autoPass,onHistory,onGameMenu}:GameSettingsPanelProps){
  const [dice3d,setDice3d]=useDice3dEnabled();
  const [diceSound,setDiceSound]=useDiceSoundEnabled();
  const [diceVolume,setDiceVolume]=useDiceSoundVolume();
@@ -17,6 +18,7 @@ export default function GameSettingsPanel({motionEnabled,onMotionChange,onClose,
   if(event.key==='Escape'){event.stopPropagation();onClose();}
   if(event.key==='Tab'){const elements=Array.from(ref.current?.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled)')??[]);const first=elements[0],last=elements.at(-1);if(event.shiftKey&&(document.activeElement===first||document.activeElement===ref.current)){event.preventDefault();last?.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}}
  }}><header><div><small>MAKE YOURSELF AT HOME</small><h2>Game settings</h2></div><button onClick={onClose} aria-label="Close settings">×</button></header>
+ <div className="dg-settings-game-actions">{onHistory&&<button onClick={onHistory}>History &amp; undo</button>}{onGameMenu&&<button onClick={onGameMenu}>Leave or resign game</button>}</div>
  <label><span><strong>3D combat dice</strong><small>Dice tumble across the game screen. Turn off for instant results.</small></span><input type="checkbox" checked={dice3d} onChange={event=>setDice3d(event.target.checked)}/></label>
  <label><span><strong>Animations</strong><small>Movement, combat and action effects.</small></span><input type="checkbox" checked={motionEnabled} onChange={event=>onMotionChange(event.target.checked)}/></label>
  <label><span><strong>Dice sounds</strong><small>Hear the dice tumble and settle, even with animations off.</small></span><input type="checkbox" checked={diceSound} onChange={event=>setDiceSound(event.target.checked)}/></label>

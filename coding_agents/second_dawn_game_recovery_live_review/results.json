@@ -1,0 +1,13 @@
+{
+  "checkedAt": "2026-09-19T19:44:34.120Z",
+  "base": "http://127.0.0.1:5173",
+  "checks": [
+    "Vote survives guest reload",
+    "Shared approved undo restores resources and active turn with higher revision",
+    "Declining preserves current play",
+    "Save and return home preserves active game",
+    "Resignation hands seat to AI and archives it",
+    "Last human quits without invented scoring"
+  ],
+  "errors": []
+}

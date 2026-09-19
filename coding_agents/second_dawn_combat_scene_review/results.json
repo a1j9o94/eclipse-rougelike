@@ -1,0 +1,45 @@
+{
+  "site": "http://127.0.0.1:5173",
+  "results": [
+    {
+      "engine": "chromium",
+      "width": 1440,
+      "height": 900,
+      "rollVisibleWithoutScrolling": true,
+      "rollAccepted": true,
+      "retreatAccepted": true,
+      "casualtyText": "BATTLE RESULTS\n1 ship destroyed\nFast playback on\nFIRING\nFiring fleet\n2 dice\nDescendants of Draco\n×\nInterceptor\nMechanema\nDestroyed\n1 → 0 HP\n3\nweapon unavailable\n6\nweapon unavailable\nInterceptor\nMechanema\n1 → 0 HP\nDESTROYED",
+      "pageErrors": []
+    },
+    {
+      "engine": "chromium",
+      "width": 390,
+      "height": 844,
+      "rollVisibleWithoutScrolling": true,
+      "rollAccepted": true,
+      "retreatAccepted": true,
+      "casualtyText": "BATTLE RESULTS\n1 ship destroyed\nFast playback on\nFIRING\nFiring fleet\n2 dice\nDescendants of Draco\n×\nInterceptor\nMechanema\nDestroyed\n1 → 0 HP\n3\nweapon unavailable\n6\nweapon unavailable\nInterceptor\nMechanema\n1 → 0 HP\nDESTROYED",
+      "pageErrors": []
+    },
+    {
+      "engine": "webkit",
+      "width": 1440,
+      "height": 900,
+      "rollVisibleWithoutScrolling": true,
+      "rollAccepted": true,
+      "retreatAccepted": true,
+      "casualtyText": "BATTLE RESULTS\n1 ship destroyed\nFast playback on\nFIRING\nFiring fleet\n2 dice\nDescendants of Draco\n×\nInterceptor\nMechanema\nDestroyed\n1 → 0 HP\n3\nweapon unavailable\n6\nweapon unavailable\nInterceptor\nMechanema\n1 → 0 HP\nDESTROYED",
+      "pageErrors": []
+    },
+    {
+      "engine": "webkit",
+      "width": 390,
+      "height": 844,
+      "rollVisibleWithoutScrolling": true,
+      "rollAccepted": true,
+      "retreatAccepted": true,
+      "casualtyText": "BATTLE RESULTS\n1 ship destroyed\nFast playback on\nFIRING\nFiring fleet\n2 dice\nDescendants of Draco\n×\nInterceptor\nMechanema\nDestroyed\n1 → 0 HP\n3\nweapon unavailable\n6\nweapon unavailable\nInterceptor\nMechanema\n1 → 0 HP\nDESTROYED",
+      "pageErrors": []
+    }
+  ]
+}

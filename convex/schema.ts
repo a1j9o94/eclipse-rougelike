@@ -46,6 +46,10 @@ export default defineSchema({
   // Versioned full-game storage: no migration or mutation of legacy room data.
   eclipseMatchesV1: defineTable({
     snapshotJson: v.string(),
+    showCombatOdds: v.optional(v.boolean()),
+    /** Abandonment freezes a run without inventing final scoring. Missing means active. */
+    lifecycle: v.optional(v.literal('abandoned')),
+    rollbackPendingId: v.optional(v.id('eclipseRollbacksV1')),
     rulesVersion: v.string(),
     catalogVersion: v.string(),
     revision: v.number(),
@@ -58,14 +62,43 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   }),
+  /** Private checkpoint consent/audit. No snapshot fields are returned by public endpoints. */
+  eclipseRollbacksV1: defineTable({
+    matchId: v.id('eclipseMatchesV1'),
+    requestedBySeatId: v.string(),
+    targetRevision: v.number(),
+    targetSummary: v.string(),
+    expectedRevision: v.number(),
+    requiredSeatIds: v.array(v.string()),
+    approvedSeatIds: v.array(v.string()),
+    status: v.union(v.literal('pending'), v.literal('applied'), v.literal('rejected'), v.literal('cancelled')),
+    pausedTimerJson: v.optional(v.string()),
+    createdAt: v.number(),
+    resolvedAt: v.optional(v.number()),
+    appliedRevision: v.optional(v.number()),
+  }).index('by_match_created', ['matchId', 'createdAt']),
   eclipseOwnershipV1: defineTable({
     matchId: v.id('eclipseMatchesV1'),
     guestId: v.id('eclipseGuestsV1'),
     seatId: v.string(),
     /** Explicitly acknowledged public activity; never advances game state. */
     lastSeenRevision: v.optional(v.number()),
+    resignedAt: v.optional(v.number()),
+    resignationOutcome: v.optional(v.union(v.literal('resigned'), v.literal('abandoned'))),
   }).index('by_guest', ['guestId'])
     .index('by_match_guest', ['matchId', 'guestId']),
+  // Control/lifecycle commands are separate from rule commands, but share the
+  // authoritative revision sequence for replay and administration.
+  eclipseMatchLifecycleV1: defineTable({
+    matchId: v.id('eclipseMatchesV1'),
+    commandId: v.string(),
+    actor: v.string(),
+    expectedRevision: v.number(),
+    revision: v.number(),
+    outcome: v.union(v.literal('resigned'), v.literal('abandoned')),
+    createdAt: v.number(),
+  }).index('by_match_command', ['matchId', 'commandId'])
+    .index('by_match_revision', ['matchId', 'revision']),
   eclipseAiJobsV1: defineTable({
     matchId: v.id('eclipseMatchesV1'),
     status: v.union(v.literal('scheduled'), v.literal('thinking'), v.literal('waiting'), v.literal('failed'), v.literal('finished')),
@@ -96,6 +129,8 @@ export default defineSchema({
     actor: v.string(),
     revision: v.number(),
     requestJson: v.string(),
+    preSnapshotJson: v.optional(v.string()),
+    supersededAtRevision: v.optional(v.number()),
     eventsJson: v.string(),
     round: v.optional(v.number()),
     receipt: receiptValidator,
@@ -115,6 +150,7 @@ export default defineSchema({
     aiDifficulty: v.optional(v.union(v.literal('normal'), v.literal('hard'), v.literal('expert'))),
     timerMs: v.number(),
     warpPortals: v.boolean(),
+    showCombatOdds: v.optional(v.boolean()),
     matchId: v.optional(v.id('eclipseMatchesV1')),
     createdAt: v.number(),
     updatedAt: v.number(),
