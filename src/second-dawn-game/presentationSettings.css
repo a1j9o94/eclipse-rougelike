@@ -4,3 +4,10 @@
 .dg-presentation-settings label{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:20px 0;border-top:1px solid #ffffff1f;cursor:pointer}.dg-presentation-settings label span{display:grid;gap:6px}.dg-presentation-settings label small,.dg-presentation-settings p{color:#b8c5cf;font-size:13px;line-height:1.6}.dg-presentation-settings input{width:24px;height:24px;flex:0 0 24px;accent-color:#dfbc76;cursor:pointer}.dg-presentation-settings button{min-height:44px}.dg-presentation-settings input:focus-visible{outline:2px solid #e5c580;outline-offset:5px}
 /* Autosaved settings have one exit, which stays available while content scrolls. */
 .dg-presentation-settings > header{position:sticky;top:-24px;z-index:2;margin:-24px -24px 0;padding:24px 24px 0;background:#192635}.dg-presentation-settings > header button{flex-shrink:0}
+
+.dg-presentation-settings .dg-dice-volume input{width:min(200px,50%);height:32px;flex:0 1 200px;min-width:80px}.dg-presentation-settings input:disabled{opacity:.45;cursor:not-allowed}.dg-settings-auto-pass-status{display:flex;align-items:center;justify-content:space-between;gap:16px}.dg-settings-auto-pass-status button{flex-shrink:0}
+.dg-presentation-settings input[type=range]{appearance:none;background:transparent}
+.dg-presentation-settings input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:4px;background:#738291}
+.dg-presentation-settings input[type=range]::-webkit-slider-thumb{appearance:none;width:18px;height:18px;margin-top:-7px;border:2px solid #f2dba2;border-radius:50%;background:#d5b66f}
+.dg-presentation-settings input[type=range]::-moz-range-track{height:4px;border-radius:4px;background:#738291}
+.dg-presentation-settings input[type=range]::-moz-range-thumb{width:14px;height:14px;border:2px solid #f2dba2;border-radius:50%;background:#d5b66f}

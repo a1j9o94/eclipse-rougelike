@@ -3,12 +3,14 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import {diceLayout, dieFaceNormal, pipPositions, presentationColor, throwPose, type PresentedDie} from './math';
 
+import {DICE_THROW_DURATION_MS,DICE_SETTLED_MS,diceThrowDelay} from './timing';
+
 export interface DiceThrowController { dispose:()=>void }
-export interface DiceThrowOptions { canvas:HTMLCanvasElement; rolls:readonly PresentedDie[]; onSettled:()=>void; onUnavailable:()=>void }
+export interface DiceThrowOptions { canvas:HTMLCanvasElement; rolls:readonly PresentedDie[]; onSettled:()=>void; onStarted?:()=>void; onUnavailable:()=>void }
 export const MAX_RENDERED_DICE=24;
 
 /** A short, cosmetic 3D throw whose endpoint is the already-authoritative result. */
-export function createDiceThrow({canvas,rolls,onSettled,onUnavailable}:DiceThrowOptions):DiceThrowController {
+export function createDiceThrow({canvas,rolls,onSettled,onStarted,onUnavailable}:DiceThrowOptions):DiceThrowController {
   const context=canvas.getContext('webgl2',{alpha:true,antialias:true,powerPreference:'low-power'});
   if(!context)throw new Error('WebGL2 unavailable');
   const renderer=new WebGLRenderer({canvas,context,alpha:true,antialias:true,powerPreference:'low-power'});
@@ -66,14 +68,14 @@ export function createDiceThrow({canvas,rolls,onSettled,onUnavailable}:DiceThrow
   resize();
   function animate(now:number) {
     if(disposed)return;
-    startedAt??=now;const elapsed=now-startedAt;
+    if(startedAt===null){startedAt=now;onStarted?.();}const elapsed=now-startedAt;
     dice.forEach((group,index)=>{
-      const delay=Math.min(index*12,120),progress=Math.min(1,Math.max(0,(elapsed-delay)/1160));
+      const delay=diceThrowDelay(index),progress=Math.min(1,Math.max(0,(elapsed-delay)/DICE_THROW_DURATION_MS));
       const pose=throwPose(rendered[index],progress,layout.positions[index]);
       group.position.set(pose.x,pose.y,pose.z);group.quaternion.set(pose.rotation.x,pose.rotation.y,pose.rotation.z,pose.rotation.w);
     });
     try{renderer.render(scene,camera);}catch{dispose();onUnavailable();return;}
-    if(elapsed<1440)frame=requestAnimationFrame(animate);else onSettled();
+    if(elapsed<DICE_SETTLED_MS)frame=requestAnimationFrame(animate);else onSettled();
   }
   frame=requestAnimationFrame(animate);
   return {dispose};

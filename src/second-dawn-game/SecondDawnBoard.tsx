@@ -1,3 +1,4 @@
+import {useDiceAudioActivation} from './dice3d/useDiceRollSound';
 import ChoiceWorkspace from './ChoiceWorkspace';
 import AutoPassControl from './AutoPassControl';
 import ReputationSummary from './ReputationSummary';
@@ -123,6 +124,7 @@ const directTurnActions:GameCommand["type"][] = ["end-action","pass","finish-upk
 const humanize = (text: string) =>
   text.replaceAll("-", " ").replace(/^./, (c) => c.toUpperCase());
 export default function SecondDawnBoard(props:Props){
+ useDiceAudioActivation();
  return <DiceRollScopeContext.Provider value={`${props.matchId??'preview'}:${props.view.viewerSeatId}`}><ActionDraftProvider matchId={props.matchId} viewerSeatId={props.view.viewerSeatId} revision={props.view.revision} lastAcceptedCommand={props.lastAcceptedCommand}><PublicInspectionProvider><SecondDawnBoardContent {...props}/></PublicInspectionProvider></ActionDraftProvider></DiceRollScopeContext.Provider>;
 }
 function SecondDawnBoardContent({
@@ -165,7 +167,7 @@ function SecondDawnBoardContent({
   const [mobileActionMode,setMobileActionMode]=useState(false);
   const [mobileWorkspaceTop,setMobileWorkspaceTop]=useState(190);
   const [mobileBottomInset,setMobileBottomInset]=useState(62);
-  const [followAi,setFollowAi]=useState(true);
+  const [followAi,setFollowAi]=useState(()=>{try{return localStorage.getItem('eclipse.second-dawn.follow-ai.v1')!=='off';}catch{return true;}});
   const [aiDismissed,setAiDismissed]=useState(false);
   const [reviewAi,setReviewAi]=useState(false);
   const [fitRequest,setFitRequest]=useState(0);
@@ -175,6 +177,7 @@ function SecondDawnBoardContent({
   const aiPresentation=useAiPresentation(view,history?.entries??[],motionEnabled);
   useEffect(()=>{setReviewAi(false);},[aiPresentation.actor?.id]);
   const showAiPanel=followAi&&!aiDismissed&&!!aiPresentation.action&&(!!aiPresentation.actor||reviewAi)&&!view.pendingDecision;
+  const changeFollowAi=(enabled:boolean)=>{setFollowAi(enabled);try{localStorage.setItem('eclipse.second-dawn.follow-ai.v1',enabled?'on':'off');}catch{/* Keep the session preference when storage is blocked. */}setAiDismissed(false);if(!compact&&screen==='Galaxy'){if(enabled&&aiPresentation.action&&(aiPresentation.actor||reviewAi)){setInspectorOpen(true);openedForAi.current=true;}else if(!enabled&&showAiPanel){setInspectorOpen(false);openedForAi.current=false;}}if(!enabled)setReviewAi(false);};
   function changeMotion(enabled:boolean){setMotionEnabled(enabled);try{localStorage.setItem('eclipse.second-dawn.motion.v1',enabled?'on':'off');}catch{/* The preference still applies for this session. */}}
 
   const [buildOpen,setBuildOpen]=useActionDraftState('buildOpen',false);
@@ -533,7 +536,7 @@ function SecondDawnBoardContent({
             ))}
           </div>
           {compact&&aiFailure&&<div className="dg-mobile-ai-recovery" role="alert"><p>{aiFailure}</p><button disabled={!connected} onClick={onRetryAi}>AI paused · retry</button></div>}
-          <AiActivityBar takeover={aiTakeover} thinking={aiThinking} following={followAi} onFollowChange={enabled=>{setFollowAi(enabled);setAiDismissed(false);if(!compact&&screen==='Galaxy'){if(enabled&&aiPresentation.action&&(aiPresentation.actor||reviewAi)){setInspectorOpen(true);openedForAi.current=true;}else if(!enabled&&showAiPanel){setInspectorOpen(false);openedForAi.current=false;}}if(!enabled)setReviewAi(false);}} humanDecision={!!view.pendingDecision} paused={!!aiFailure} actor={aiPresentation.actor} recent={aiPresentation.recent} humanTurn={!!view.pendingDecision||(!view.waitingFor&&view.activeSeatId===own.id)} finished={view.phase==='finished'} motionEnabled={motionEnabled} onMotionChange={changeMotion} onWatch={()=>{setInspectorOpen(true);if(compact)setMobileSheet('peek');setFollowAi(true);setAiDismissed(false);setReviewAi(!aiPresentation.actor);setHistoryOpen(false);setScreen('Galaxy');setCamera(null);setFitRequest(n=>n+1);}}>
+          <AiActivityBar takeover={aiTakeover} thinking={aiThinking} following={followAi} onFollowChange={changeFollowAi} humanDecision={!!view.pendingDecision} paused={!!aiFailure} actor={aiPresentation.actor} recent={aiPresentation.recent} humanTurn={!!view.pendingDecision||(!view.waitingFor&&view.activeSeatId===own.id)} finished={view.phase==='finished'} motionEnabled={motionEnabled} onMotionChange={changeMotion} onWatch={()=>{setInspectorOpen(true);if(compact)setMobileSheet('peek');setFollowAi(true);setAiDismissed(false);setReviewAi(!aiPresentation.actor);setHistoryOpen(false);setScreen('Galaxy');setCamera(null);setFitRequest(n=>n+1);}}>
             {view.phase!=='finished'&&!own.eliminated&&<AutoPassControl enabled={own.autoPassUnlessAttacked??false} paused={own.autoPassPausedRound===view.round} disabled={!connected||busy} disabledReason={!connected?'Reconnect to change auto-pass.':busy?'Saving your change…':undefined} onChange={enabled=>onSubmit({type:'set-auto-pass',enabled})}/>}
             {screen==='Galaxy'&&<>
               {showAiPanel&&!historyOpen&&(compact?mobileSheet!=='closed':desktopInspectorVisible)&&<button className="dg-board-control" onClick={()=>{setAiDismissed(true);setReviewAi(false);inspectorRef.current?.focus({preventScroll:true});}}>Return to inspector</button>}
@@ -889,7 +892,7 @@ function SecondDawnBoardContent({
       </div>
 
       <PublicInspectionModal view={view}/>
-      {settingsOpen&&<GameSettingsPanel motionEnabled={motionEnabled} onMotionChange={changeMotion} onClose={()=>setSettingsOpen(false)}/>}
+      {settingsOpen&&<GameSettingsPanel motionEnabled={motionEnabled} onMotionChange={changeMotion} followAi={followAi} onFollowAiChange={changeFollowAi} autoPass={view.phase!=='finished'&&!own.eliminated?{enabled:own.autoPassUnlessAttacked??false,paused:own.autoPassPausedRound===view.round,disabled:!connected||busy,disabledReason:!connected?'Reconnect to change auto-pass.':busy?'Saving your change…':undefined,onChange:enabled=>onSubmit({type:'set-auto-pass',enabled})}:undefined} onClose={()=>setSettingsOpen(false)}/>}
       {inspectSector&&<FleetInspection view={view} sectorId={inspectSector} selectedShipIds={movementDraft.ids.length?movementDraft.ids:[...new Set(moveRoutePreviews.flatMap(route=>route.draft.shipIds))]} onClose={()=>{setInspectSector(null);setInspectDiplomacy(null);}} onDiplomacy={setInspectDiplomacy} diplomacy={inspectDiplomacy?<DiplomacyPanel view={view} candidates={candidates} inspectedSeatId={inspectDiplomacy} disabled={blocked} onSubmit={onSubmit}/>:undefined}/>}
       {compact&&status&&!/^(Saved|Saving|Applied to the isolated|Engine fixture review)/.test(status)&&<div className="dg-mobile-feedback" role="status" aria-live="polite">{status}</div>}
       {compact&&<MobileNavigation selected={mobileDestination} onSelect={mobileNavigate} onActions={!view.pendingDecision&&view.phase!=='finished'&&view.activeSeatId===own.id&&!mobileActionMode?()=>{setMobileActionsOpen(true);setMobileSheet('expanded');setHistoryOpen(false);setAiDismissed(true);}:undefined} pending={!!view.pendingDecision&&screen!=='Decision'} pendingLabel={view.pendingDecision?`Return to ${choiceLabel(view.pendingDecision)}`:undefined} onDecision={returnToChoice} onConfirm={mobileActionMode&&draft&&action!=='research'?{label:draft.command.type==='trade-and-act'?'Convert & confirm':'Confirm',disabled:blocked||draftGuard.stale||!stillLegal,submit:()=>onSubmit(draft.command)}:undefined} onEndAction={mobileActionMode&&!draft&&candidates.some(candidate=>candidate.command.type==='end-action')?()=>activate('end-action'):undefined} actionLabel={mobileActionMode?`${humanize(action)}${view.actionProgress?` · ${view.actionProgress.remaining} left`:''}`:undefined} onBack={()=>{setMobileActionMode(false);setMobileSheet('closed');setMobileActionsOpen(false);setScreen('Galaxy');}} onDetails={mobileActionMode&&!['research','upgrade','trade'].includes(action)?()=>{if(action==='build')setBuildOpen(true);else setMobileSheet('expanded');}:undefined}/>}

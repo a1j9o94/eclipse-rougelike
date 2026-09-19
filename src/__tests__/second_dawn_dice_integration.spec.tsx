@@ -11,7 +11,7 @@ import { CombatVolleyResult } from '../second-dawn-game/CombatDecisionVisuals';
 
 const preference = vi.hoisted(() => ({ enabled: true }));
 vi.mock('../second-dawn-game/presentationSettings', () => ({ useDice3dEnabled: () => [preference.enabled, vi.fn()] }));
-vi.mock('../second-dawn-game/DiceRoll3D', () => ({ default: ({ rolls, rollId, enabled, children }: { rolls: readonly { id: string; face: number; color: string }[]; rollId: string; enabled: boolean; children?: ReactNode }) => <div data-testid="dice-presentation" data-roll-id={rollId} data-enabled={String(enabled)} data-rolls={JSON.stringify(rolls)}>{children}</div> }));
+vi.mock('../second-dawn-game/DiceRoll3D', () => ({ default: ({ rolls, rollId, enabled, skipped, children }: { rolls: readonly { id: string; face: number; color: string }[]; rollId: string; enabled: boolean; skipped?: boolean; children?: ReactNode }) => <div data-testid="dice-presentation" data-roll-id={rollId} data-enabled={String(enabled)} data-skipped={String(skipped)} data-rolls={JSON.stringify(rolls)}>{children}</div> }));
 
 const decision: Extract<PendingDecision, { kind: 'combat-allocation' }> = {
   id: 'saved-roll', owner: 'a', kind: 'combat-allocation', battleId: 'battle',
@@ -55,6 +55,7 @@ it('shows AI public faces and skip stops the throw without hiding damage results
   expect(JSON.parse(presentation.dataset.rolls!)).toEqual([{ id: 'die-13', face: 1, color: 'red' }]);
   fireEvent.click(screen.getByRole('button', { name: 'Skip volley animation' }));
   expect(screen.getByTestId('dice-presentation')).toHaveAttribute('data-enabled', 'false');
+  expect(screen.getByTestId('dice-presentation')).toHaveAttribute('data-skipped','true');
   expect(screen.getByLabelText('Roll 1, 4 damage')).toBeVisible();
 });
 

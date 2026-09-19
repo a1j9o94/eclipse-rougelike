@@ -58,7 +58,7 @@ export function CombatPlayback({ volleys, view, knownShips = [], fast = false }:
         </div>
         <button type="button" onClick={() => setSkipMotion(true)} disabled={isFast}>{isFast ? "Fast playback on" : "Skip volley animation"}</button>
       </header>
-      <DiceRoll3D rolls={opponentRolls} rollId={JSON.stringify(opponentVolleys.map(volley => [volley.battleId, volley.dice.map(die => [die.id, die.face])]))} enabled={dice3dEnabled && !isFast && opponentRolls.length > 0}>
+      <DiceRoll3D skipped={skipMotion} rolls={opponentRolls} rollId={JSON.stringify(opponentVolleys.map(volley => [volley.battleId, volley.dice.map(die => [die.id, die.face])]))} enabled={dice3dEnabled && !isFast && opponentRolls.length > 0}>
       {volleys.map((volley, index) => (
         <article className="dg-playback-volley" key={`${volley.battleId}:${volley.dice.map(die => die.id).join(",")}:${index}`}>
           <div className="dg-result-dice">{volley.dice.map(die => <span key={die.id} className={`is-${die.weaponColor ?? "unknown"}`} aria-label={`Roll ${die.face}, ${die.damage} damage`}><b>{die.face}</b><small>{die.weaponColor && die.weaponKind ? `${die.weaponColor} ${die.weaponKind}` : "weapon unavailable"}</small></span>)}</div>

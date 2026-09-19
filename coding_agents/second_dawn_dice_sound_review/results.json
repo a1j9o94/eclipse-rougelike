@@ -1,0 +1,202 @@
+[
+  {
+    "browser": "chromium",
+    "scenario": "animated",
+    "starts": [
+      {
+        "time": 6455.89999999851,
+        "state": "running"
+      },
+      {
+        "time": 6712.39999999851,
+        "state": "running"
+      },
+      {
+        "time": 6791.30000000447,
+        "state": "running"
+      }
+    ],
+    "stops": 0,
+    "peak": 0.05474158376455307,
+    "pageErrors": []
+  },
+  {
+    "browser": "chromium",
+    "scenario": "sound-only",
+    "starts": [
+      {
+        "time": 992.1999999955297,
+        "state": "running"
+      },
+      {
+        "time": 1574.7999999970198,
+        "state": "running"
+      },
+      {
+        "time": 1664.6999999955297,
+        "state": "running"
+      }
+    ],
+    "stops": 0,
+    "peak": 0.22437365353107452,
+    "pageErrors": []
+  },
+  {
+    "browser": "chromium",
+    "scenario": "muted",
+    "starts": [],
+    "stops": 0,
+    "peak": 0,
+    "pageErrors": []
+  },
+  {
+    "browser": "chromium",
+    "scenario": "zero",
+    "starts": [],
+    "stops": 0,
+    "peak": 0,
+    "pageErrors": []
+  },
+  {
+    "browser": "chromium",
+    "scenario": "skip",
+    "starts": [
+      {
+        "time": 1497.5,
+        "state": "running"
+      }
+    ],
+    "stops": 0,
+    "peak": 0.11057613044977188,
+    "pageErrors": []
+  },
+  {
+    "browser": "chromium",
+    "scenario": "minimize",
+    "starts": [
+      {
+        "time": 1649,
+        "state": "running"
+      },
+      {
+        "time": 1945.0999999940395,
+        "state": "running"
+      }
+    ],
+    "stops": 1,
+    "peak": 0.21344375610351562,
+    "pageErrors": []
+  },
+  {
+    "browser": "chromium",
+    "width": 1440,
+    "settingsSaved": true
+  },
+  {
+    "browser": "chromium",
+    "width": 390,
+    "settingsSaved": true
+  },
+  {
+    "browser": "webkit",
+    "scenario": "animated",
+    "starts": [
+      {
+        "time": 1517,
+        "state": "running"
+      },
+      {
+        "time": 1849,
+        "state": "running"
+      },
+      {
+        "time": 2067,
+        "state": "running"
+      },
+      {
+        "time": 2183,
+        "state": "running"
+      }
+    ],
+    "stops": 0,
+    "peak": 0.13975360989570618,
+    "pageErrors": []
+  },
+  {
+    "browser": "webkit",
+    "scenario": "sound-only",
+    "starts": [
+      {
+        "time": 1418,
+        "state": "running"
+      },
+      {
+        "time": 1753,
+        "state": "running"
+      },
+      {
+        "time": 1986,
+        "state": "running"
+      },
+      {
+        "time": 2103,
+        "state": "running"
+      }
+    ],
+    "stops": 0,
+    "peak": 0.12089405953884125,
+    "pageErrors": []
+  },
+  {
+    "browser": "webkit",
+    "scenario": "muted",
+    "starts": [],
+    "stops": 0,
+    "peak": 0,
+    "pageErrors": []
+  },
+  {
+    "browser": "webkit",
+    "scenario": "zero",
+    "starts": [],
+    "stops": 0,
+    "peak": 0,
+    "pageErrors": []
+  },
+  {
+    "browser": "webkit",
+    "scenario": "skip",
+    "starts": [
+      {
+        "time": 1485,
+        "state": "running"
+      }
+    ],
+    "stops": 1,
+    "peak": 0.10231829434633255,
+    "pageErrors": []
+  },
+  {
+    "browser": "webkit",
+    "scenario": "minimize",
+    "starts": [
+      {
+        "time": 1489,
+        "state": "running"
+      }
+    ],
+    "stops": 1,
+    "peak": 0.1317284256219864,
+    "pageErrors": []
+  },
+  {
+    "browser": "webkit",
+    "width": 1440,
+    "settingsSaved": true
+  },
+  {
+    "browser": "webkit",
+    "width": 390,
+    "settingsSaved": true
+  }
+]

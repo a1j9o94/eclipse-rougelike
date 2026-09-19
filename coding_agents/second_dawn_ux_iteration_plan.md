@@ -404,3 +404,9 @@ Implemented the follow-up slice in `second_dawn_turn_order.md`: fair live initia
 
 ### September19 — command-center builds and consistent panel controls
 Added priced, draft-preserving ship build shortcuts with conversion/technology/supply/turn blockers. Consolidated inspector, diplomacy, movement and Settings navigation; public inspection headers stay visible. Auto-pass unless attacked remains in the shared toolbar through drafts and inspection, without preference saves navigating away. Corrected reaction disc/upkeep presentation to match the existing engine. 910 tests, lint/build and reviewed Chromium/WebKit desktop/mobile checks pass; audit `second_dawn_command_center_build.md`.
+
+### September 19, 2026 — Tactile dice sound and discoverable settings
+- Dice have varied, bounded Web Audio clacks at their bounce contacts. Sound and animations are independent preferences; mute and volume save automatically.
+- Settings includes 3D dice, animations, dice sounds/volume, Follow AI, and the existing server-backed auto-pass preference. Toolbar shortcuts continue reflecting the same choices. Follow AI now persists in this browser.
+- Explicit skips and minimized choices stop sound without affecting allocations or authoritative outcomes. Backgrounded rolls never accumulate delayed audio.
+- Engineering, browser, screenshot, and listening-evidence boundaries are recorded in [the dice-sound delivery record](second_dawn_dice_sound.md).
