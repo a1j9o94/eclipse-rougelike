@@ -1,6 +1,7 @@
+import { skipPassedReactionTurns } from './autoPass';
 import { FIRST_PASS_MONEY } from './passing';
 import { tradeResources, type ResourceKind } from './economy';
-import type { GameState, RuleResult, SeatId, ValidationError } from './types';
+import type { GameEvent, GameState, RuleResult, SeatId, ValidationError } from './types';
 
 const reject = (
   code: ValidationError['code'],
@@ -33,6 +34,7 @@ export function passTurn(input: GameState, actor: SeatId): RuleResult {
       'Money storage is outside its supported range.',
     );
   seat.passed = true;
+  state.actionTurnSerial = (state.actionTurnSerial ?? 0) + 1;
   if (first) {
     seat.resources.money += FIRST_PASS_MONEY;
     state.firstPasser = actor;
@@ -52,10 +54,7 @@ export function passTurn(input: GameState, actor: SeatId): RuleResult {
       }
     }
   }
-  return {
-    ok: true,
-    state,
-    events: [
+  const events: GameEvent[] = [
       {
         type: 'action',
         seatId: actor,
@@ -74,8 +73,9 @@ export function passTurn(input: GameState, actor: SeatId): RuleResult {
             },
           ]
         : []),
-    ],
-  };
+    ];
+  skipPassedReactionTurns(state, events);
+  return { ok: true, state, events };
 }
 
 /** Rulebook pp6,24: trade at the species ratio without spending discs or ending a turn. */

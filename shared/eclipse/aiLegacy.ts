@@ -78,6 +78,8 @@ export function evaluateLegacyAiCommand(
   const discPenalty = view.actionProgress ? 0 : Math.max(0, 3 - balance) * 4;
   switch (command.type) {
     case "trade-and-act": return -100; // The normal AI generates ordinary trades, not funded wrappers.
+    case "set-auto-pass":
+      return -Infinity; // A human preference is never an AI gameplay candidate.
     case "pass":
       return balance < 0 ? 30 : balance < 3 ? 10 : 0;
     case "end-action":
@@ -254,7 +256,7 @@ export function evaluateLegacyAiCommand(
         case "diplomacy":
           return c.accept ? 8 : 0;
         case "reputation":
-          return c.kept.reduce((n, v) => n + v, 0) * 10;
+          return (c.kept?.reduce((n, v) => n + v, 0) ?? 0) * 10;
         case "resource-reward":
           return c.resources.reduce((n, r) => n + utility(r), 0);
         case "population-return":

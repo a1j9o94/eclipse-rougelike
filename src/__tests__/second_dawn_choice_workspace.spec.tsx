@@ -92,11 +92,15 @@ it('stops the hidden combat choice from throwing dice across an inspection scree
  expect(screen.getAllByTestId('choice-dice').every(die=>die.dataset.enabled==='false')).toBe(true);
  expect(screen.getByRole('button',{name:'Return to combat allocation'})).toBeVisible();
 });
-it('keeps destruction feedback inside the active choice instead of behind its inert galaxy',()=>{
- const view=fixture();
+it('shows a fresh destruction result inside the active choice and clears it when play advances',()=>{
+ const initial=fixture();
+ const ui=render(<SecondDawnBoard {...props(initial)}/>);
+ const view={...initial,revision:initial.revision+1};
  const history={entries:[{revision:view.revision,actorSeatId:'b',actorName:'Hydran Progress',round:view.round,summary:'Resolved volley',details:[],combatVolley:{battleId:'finished',attacker:'b',dice:[],impacts:[],targets:[{id:'lost',shipType:'cruiser' as const,owner:'a',hpBefore:2,hpAfter:0,excess:0,destroyed:true}]}}],loading:false,hasOlder:false,loadingOlder:false,error:null,loadOlder:vi.fn()};
- render(<SecondDawnBoard {...props(view)} history={history}/>);
+ ui.rerender(<SecondDawnBoard {...props(view)} history={history}/>);
  expect(within(screen.getByRole('dialog',{name:'Discovery choice'})).getByRole('group',{name:'Cruiser destroyed'})).toBeVisible();
+ ui.rerender(<SecondDawnBoard {...props({...view,revision:view.revision+1})} history={history}/>);
+ expect(screen.queryByRole('button',{name:'Dismiss battle results'})).toBeNull();
 });
 
 it.each(['Research','Upgrade','Trade'])('keeps mobile %s controls in their workspace without a redundant Details button',action=>{
@@ -106,4 +110,24 @@ it.each(['Research','Upgrade','Trade'])('keeps mobile %s controls in their works
  fireEvent.click(within(screen.getByRole('group',{name:'Choose your action'})).getByRole('button',{name:new RegExp(`^${action}`)}));
  expect(screen.queryByRole('button',{name:'Details',exact:true})).toBeNull();
  expect(within(screen.getByRole('navigation',{name:'Current action'})).getByRole('button',{name:'Back'})).toBeVisible();
+});
+it('keeps details in the toolbar and consolidates fleet inspection inside sector details',()=>{
+ const view=fixture(false),p=props(view);
+ const sector=view.sectors.find(s=>s.owner===view.viewerSeatId)!;
+ const {container}=render(<SecondDawnBoard {...p} initialSectorId={sector.id}/>);
+ const follow=screen.getByRole('button',{name:'Follow AI',exact:true});
+ const bar=follow.closest('.dg-ai-activity');expect(bar).not.toBeNull();
+ const hide=screen.getByRole('button',{name:'Hide sector details'});
+ expect(hide.closest('.dg-ai-activity')).toBe(bar);
+ expect(screen.queryByRole('button',{name:'Inspect fleet in selected sector'})).toBeNull();
+ const inspector=screen.getByRole('complementary',{name:'Selection and action details'});
+ const inspect=within(inspector).getByRole('button',{name:'Inspect fleet',exact:true});
+ expect(within(inspector).queryByRole('button',{name:'Inspect capabilities'})).toBeNull();
+ expect(inspect.closest('.dg-ai-activity')).toBeNull();
+ expect(container.querySelector('.sd-map-heading button')).toBeNull();
+ fireEvent.click(inspect);expect(screen.getByRole('button',{name:'Return to plan'})).toBeVisible();
+ fireEvent.click(screen.getByRole('button',{name:'Return to plan'}));
+ fireEvent.click(hide);expect(screen.queryByRole('button',{name:'Inspect fleet',exact:true})).toBeNull();
+ fireEvent.click(screen.getByRole('button',{name:'Research',exact:true}));
+ expect(screen.queryByRole('button',{name:'Show sector details'})).toBeNull();
 });

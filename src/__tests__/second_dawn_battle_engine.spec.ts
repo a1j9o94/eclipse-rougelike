@@ -413,7 +413,8 @@ describe("persisted complete battles", () => {
     s.sectors = s.sectors.filter((x) => x.id === "s");
     advanceCombat(s, []);
     expect(s.ships.map((x) => x.owner)).toEqual(["a"]);
-    expect(s.pendingDecision?.kind).toBe("reputation");
+    expect(s.pendingDecision).toBeNull();
+    expect(s.privateSeats.find(p => p.seatId === "a")?.reputationSummary?.drawn).toHaveLength(1);
   });
   it("does not battle peaceful Draco and Ancients", () => {
     const s = fixture();
@@ -503,19 +504,14 @@ describe("persisted complete battles", () => {
     s.ships = s.ships.filter((x) => x.owner === "a");
     s.pendingDecision = null;
     advanceCombat(s, []);
-    const d = s.pendingDecision!;
-    expect(d.kind).toBe("reputation");
-    if (d.kind !== "reputation") throw new Error("expected reputation");
-    expect(d.drawn).toHaveLength(5);
-    expect(() =>
-      resolveCombatChoice(
-        s,
-        "a",
-        d,
-        { kind: "reputation", kept: d.drawn.slice(0, 2) },
-        [],
-      ),
-    ).toThrow();
+    expect(s.pendingDecision).toBeNull();
+    const summary = s.privateSeats.find(p => p.seatId === "a")!.reputationSummary!;
+    expect(summary.drawn).toHaveLength(5);
+    expect(summary.kept).toHaveLength(1);
+    expect(summary.selected).toBe(Math.max(...summary.drawn));
+    const oldSave = fixture();
+    const oldDecision = { id: "saved-reputation", owner: "a", kind: "reputation" as const, drawn: [3, 4], capacity: 4 };
+    expect(() => resolveCombatChoice(oldSave, "a", oldDecision, { kind: "reputation", kept: [3, 4] }, [])).toThrow();
   });
   it("cancels a retreat declared in the same engagement round the battle ends", () => {
     const s = fixture();

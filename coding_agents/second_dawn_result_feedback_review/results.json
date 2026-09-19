@@ -1,0 +1,46 @@
+[
+  {
+    "engine": "chromium",
+    "width": 1440,
+    "height": 900,
+    "automaticReputation": true,
+    "privateFixedViewer": true,
+    "noConfirmation": true,
+    "battleClearsOnAdvance": true,
+    "noOverflow": true,
+    "errors": []
+  },
+  {
+    "engine": "chromium",
+    "width": 390,
+    "height": 844,
+    "automaticReputation": true,
+    "privateFixedViewer": true,
+    "noConfirmation": true,
+    "battleClearsOnAdvance": true,
+    "noOverflow": true,
+    "errors": []
+  },
+  {
+    "engine": "webkit",
+    "width": 1440,
+    "height": 900,
+    "automaticReputation": true,
+    "privateFixedViewer": true,
+    "noConfirmation": true,
+    "battleClearsOnAdvance": true,
+    "noOverflow": true,
+    "errors": []
+  },
+  {
+    "engine": "webkit",
+    "width": 390,
+    "height": 844,
+    "automaticReputation": true,
+    "privateFixedViewer": true,
+    "noConfirmation": true,
+    "battleClearsOnAdvance": true,
+    "noOverflow": true,
+    "errors": []
+  }
+]

@@ -27,11 +27,11 @@ it('opens combat controls ahead of the fleet details without an extra entry clic
  expect(controls.compareDocumentPosition(fleet)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
  expect(screen.getByRole('button',{name:'Roll dice'})).toBeVisible();
 });
-it('keeps the final destruction visible after the battle disappears and through a follow-up decision',()=>{
+it('does not reopen old destruction notices after play advances to a follow-up decision',()=>{
  const view=fixture();view.battle=null;view.pendingDecision={id:'keep',owner:view.viewerSeatId,kind:'reputation',drawn:[1],capacity:1};view.revision=9;
  const history={entries:[{...entry(9,view.round),combatVolleys:undefined},entry(7,view.round)],loading:false,hasOlder:false,loadingOlder:false,error:null,loadOlder:vi.fn()};
  render(<SecondDawnBoard view={view} candidates={[]} history={history} connected busy={false} status="" onSubmit={vi.fn()} onMenu={vi.fn()}/>);
- expect(screen.getByRole('region',{name:'Recent combat impacts'})).toHaveTextContent('1 ship destroyed');
+ expect(screen.queryByRole('region',{name:'Recent combat impacts'})).not.toBeInTheDocument();
 });
 
 it('preserves the final casualty when automatic cleanup advances to the next round',()=>{

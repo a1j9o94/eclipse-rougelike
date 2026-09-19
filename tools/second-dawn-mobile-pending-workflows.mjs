@@ -21,7 +21,7 @@ try{
   try{
    if(position==='control'){await tap(page.getByRole('radio',{name:'Place influence disc',exact:true}));steps.push(await confirm(position,'Confirm control'));}
    if(position==='bankruptcy'||position==='portal-placement'){await tap(page.getByRole('group',{name:'Eligible sectors'}).getByRole('button').first());steps.push(await confirm(position,position==='bankruptcy'?'Abandon selected sector':'Place warp portal'));}
-   if(position==='reputation'){await tap(page.getByRole('checkbox',{name:'Keep 2 VP reputation'}));steps.push(await confirm(position,'Confirm reputation'));}
+   if(position==='reputation'){let after=await publicState();for(let attempt=0;attempt<30&&after.decision==='reputation';attempt++){await page.waitForTimeout(50);after=await publicState();}assert.notEqual(after.decision,'reputation');assert.ok(after.revision>0);await page.screenshot({path:`${directory}/${position}-accepted.png`,animations:'disabled'});steps.push({after,automatic:true});}
    if(position==='resource-reward'||position==='population-return'){
     const label=position==='resource-reward'?'Confirm reward':'Confirm population return';
     for(let count=0;count<12&&await page.getByRole('button',{name:label,exact:true}).isDisabled();count++)await tap(page.getByRole('button',{name:'Add money allocation',exact:true}));

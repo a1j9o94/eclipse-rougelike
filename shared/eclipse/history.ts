@@ -54,6 +54,8 @@ function actionSummary(command: GameCommand): string {
       const shipCount = new Set(command.moves.map(move => move.shipId)).size;
       return `Moved ${shipCount} ship${shipCount === 1 ? "" : "s"}${command.moves.length > shipCount ? ` · ${command.moves.length} activations` : ''}`;
     }
+    case "set-auto-pass":
+      return command.enabled ? "Enabled auto-pass unless attacked" : "Disabled auto-pass unless attacked";
     case "pass":
       return "Passed";
     case "end-action":

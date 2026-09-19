@@ -320,3 +320,21 @@ Implemented `ChoiceWorkspace`, named desktop/mobile returns, stable same-ID moun
 ### 2026-09-19 — Restore intentional Follow AI presentation after inspector collapse
 
 Reproduced final-suite regression, then restored one-time automatic opening for fresh public AI action entries on Galaxy. Manual close/inspection remains respected across revisions and different AI seats; explicit Follow does not open empty details during the human turn. Added four behavior regressions, retained existing Follow test. Final related batch 37/37; scoped ESLint/TypeScript pass; two-size browser walkthrough and screenshot review pass. Full follow-up recorded in `second_dawn_minimizable_choices.md`. Board implementation handed back; no commit/deploy.
+
+### 2026-09-19 — Fair live-match initial starter
+
+Audited why solo humans/room hosts always began: both creators assign host slot1, setup hardcoded slot1. Added opt-in `GameSetup.randomizeStartingPlayer`, enabled at both live Convex creation paths. Selection consumes the existing unbiased persisted RNG after component setup and changes only initial active/start seat plus RNG cursor. Documented random selection as digital adaptation of publisher's youngest-player convention; confirmed next-round first-pass +2/start behavior.
+
+Fail-first new tests:8red/2green; final domain/setup35pass and live adapter62pass across14files. New integration cases execute initial AI in wait-for-me solo and multiplayer rooms. Existing host-first adapter scenarios pin setup seed32 only via test fixture module; randomized integration remains unmocked. Lint and TypeScript pass. Evidence `second_dawn_random_starter.md`; parent owns roster display/final gates. No commit/deployment or saved-game migration.
+
+## Auto-pass unless attacked — September 19, 2026
+
+Added optional persistent seat preference and paused-round status, revisioned authenticated settings command, pure bounded reaction skipping, hostile-entry/betrayal interruption, explicit resume, public log descriptions, and action-turn serial for independent timer/budget integration. TDD recorded 10 initial failures and separate explicit-resume failure. Adapter cross-device/ownership/duplicate/stale/handoff tests pass. Implementation preserves saved decisions, open actions, initial pass bonus and transaction rollback. See `coding_agents/second_dawn_auto_pass.md` for decisions and validation artifacts. No commit/deploy performed.
+
+## 2026-09-19 — Auto-pass timer and AI budget boundaries
+
+Independent review found same-owner turn wrap reused the old timer and could keep timeout AI active. Added optional persisted serial metadata to existing timer/job rows and used the engine action-turn serial in atomic reconciliation, recovery synchronization, timeout validation/completion and AI budget renewal. Five new Convex cases plus existing bounded batches pass (22 + 26 tests); full lint, TypeScript and Vercel build pass. See `coding_agents/second_dawn_auto_pass_scheduling.md`. No Board/engine changes in this slice; no commits or deployment.
+
+## Automatic reputation — September 19, 2026
+
+Fresh combat draws now settle the highest-value legal reputation holding without a manual choice, preserving at most one newly drawn tile, faction/ambassador capacity, finite supply and draw order. Added optional owner-only ReputationSummary and backwards-compatible omitted-kept resolution for saved decisions. Initial 19 behavior cases failed first; expanded 29 cases pass. Bounded engine/conservation/replay batch 95/95 and Convex restore/privacy/idempotency batch 13/13 pass. Details/source link: `coding_agents/second_dawn_auto_reputation.md`. Parent owns UI notice/legacy auto-submit and final release gates. No commit or deployment.

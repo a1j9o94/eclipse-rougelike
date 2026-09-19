@@ -26,13 +26,27 @@ try{
   const initial=await getView();assert.equal(initial.aiDifficulty,difficulty);
   await page.reload();await page.getByRole('button',{name:/^Game (menu|room)$/}).waitFor();
   assert.equal((await getView()).aiDifficulty,difficulty);
-  await page.getByRole('button',{name:/^Pass(?: \+2 money| for this round)?$/}).click();
+  // A random starter can put several Expert seats ahead of the human in a six-seat match.
+  const pass=page.getByRole('button',{name:/^Pass(?: \+2 money| for this round)?$/});
+  await pass.click({trial:true,timeout:180_000});
+  let autoPassSurvivedReload=false;
+  if(difficulty==='normal'){
+   await page.getByRole('checkbox',{name:'Auto-pass unless attacked'}).check();
+   const savedAt=Date.now();
+   while(!(await getView()).seats.find(seat=>seat.id===initial.viewerSeatId).autoPassUnlessAttacked){
+    assert.ok(Date.now()-savedAt<15_000,'Auto-pass preference saved');await new Promise(resolve=>setTimeout(resolve,100));
+   }
+   await page.reload();await page.getByRole('button',{name:/^Game (menu|room)$/}).waitFor();
+   autoPassSurvivedReload=await page.getByRole('checkbox',{name:'Auto-pass unless attacked'}).isChecked();assert.ok(autoPassSurvivedReload);
+  }
+  const beforePass=await getView();
+  await pass.click({timeout:180_000});
   const started=Date.now(),diagnostics=[],states=new Set();let progressed=false,thinkingImage=false;
   while(Date.now()-started<100_000){
    const view=await getView();states.add(view.aiStatus?.status);
    assert.notEqual(view.aiStatus?.status,'failed','Hosted AI job failed; inspect targeted diagnostics.');
    if(view.aiStatus?.status==='thinking'&&!thinkingImage){await page.screenshot({path:`${output}/${difficulty}-thinking.png`});thinkingImage=true;}
-   if(view.revision>1&&view.aiStatus?.status!=='thinking'){
+   if(view.revision>beforePass.revision+1&&view.aiStatus?.status!=='thinking'){
     const raw=execFileSync('npx',['convex','run','--deployment-name','ideal-nightingale-55','eclipseMatches:getAiDiagnostics',JSON.stringify({matchId:identity.matchId})],{encoding:'utf8',stdio:['ignore','pipe','pipe']});
     const report=JSON.parse(raw);diagnostics.push(report);
     await writeFile(`${output}/${difficulty}-diagnostics.json`,JSON.stringify(diagnostics,null,2));
@@ -44,7 +58,7 @@ try{
   await page.screenshot({path:`${output}/${difficulty}-accepted.png`});
   assert.deepEqual(errors,[]);
   const current=await getView();
-  results.push({difficulty,players:initial.seats.length,matchId:identity.matchId,revision:current.revision,settingsSurvivedReload:true,states:[...states],observedThinking:thinkingImage,elapsedMs:Date.now()-started,diagnostics,errors});
+  results.push({difficulty,players:initial.seats.length,matchId:identity.matchId,initialStarter:initial.startSeatId,humanSeat:initial.viewerSeatId,revision:current.revision,settingsSurvivedReload:true,autoPassSurvivedReload,states:[...states],observedThinking:thinkingImage,elapsedMs:Date.now()-started,diagnostics,errors});
   await writeFile(`${output}/results.json`,JSON.stringify(results,null,2));
   console.log(`${difficulty}: ${initial.seats.length} seats, revision ${current.revision}, no page/job errors.`);
   await page.close();

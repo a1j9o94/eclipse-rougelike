@@ -61,7 +61,8 @@ async function reconcileRoomTimerAfterCommand(ctx: MutationCtx, match: Doc<'ecli
     if (current) await ctx.db.delete(current._id);
     return;
   }
-  const previous: MultiplayerTurnTimer | null = current ? {
+  const actionTurnSerial = state.actionTurnSerial ?? 0;
+  const previous: MultiplayerTurnTimer | null = current && (current.actionTurnSerial ?? 0) === actionTurnSerial ? {
     token: current.token,
     deadlineAt: current.deadlineAt,
     target: { seatId: current.targetSeatId, decisionId: current.decisionId },
@@ -71,9 +72,9 @@ async function reconcileRoomTimerAfterCommand(ctx: MutationCtx, match: Doc<'ecli
   const next = reconcileMultiplayerTimer(previous, state, Date.now(), room.timerMs, roomTimerToken);
   if (!next.timer) return;
   if (current) {
-    await ctx.db.patch(current._id, { token: next.timer.token, deadlineAt: next.timer.deadlineAt, targetSeatId: next.timer.target.seatId, decisionId: next.timer.target.decisionId, status: next.timer.status, error: next.timer.error, timeoutSteps: next.changed ? 0 : current.timeoutSteps, updatedAt: Date.now() });
+    await ctx.db.patch(current._id, { token: next.timer.token, deadlineAt: next.timer.deadlineAt, actionTurnSerial, targetSeatId: next.timer.target.seatId, decisionId: next.timer.target.decisionId, status: next.timer.status, error: next.timer.error, timeoutSteps: next.changed ? 0 : current.timeoutSteps, updatedAt: Date.now() });
   } else {
-    await ctx.db.insert('eclipseRoomTimersV1', { roomId: room._id, matchId: match._id, token: next.timer.token, deadlineAt: next.timer.deadlineAt, targetSeatId: next.timer.target.seatId, decisionId: next.timer.target.decisionId, status: next.timer.status, error: next.timer.error, timeoutSteps: 0, updatedAt: Date.now() });
+    await ctx.db.insert('eclipseRoomTimersV1', { roomId: room._id, matchId: match._id, token: next.timer.token, deadlineAt: next.timer.deadlineAt, actionTurnSerial, targetSeatId: next.timer.target.seatId, decisionId: next.timer.target.decisionId, status: next.timer.status, error: next.timer.error, timeoutSteps: 0, updatedAt: Date.now() });
   }
   if (next.changed) await ctx.scheduler.runAfter(Math.max(0, next.timer.deadlineAt - Date.now()), internal.eclipseRooms.runRoomTimeout, { roomToken: room.roomToken, token: next.timer.token });
 }
@@ -115,7 +116,7 @@ export const createMatch = mutation({
     // Convex provides replay-stable transaction randomness; credentials use independent crypto randomness.
     const seed = Math.floor(Math.random() * 0x100000000);
     const seats = [{ id: 'seat-1', faction: human.id, controller: 'human' as const }, ...opponents.map((faction, i) => ({ id: `seat-${i + 2}`, faction: faction.id, controller: 'ai' as const }))];
-    const state = createGame({ seed, seats, warpPortals: args.warpPortals ?? true });
+    const state = createGame({ seed, seats, warpPortals: args.warpPortals ?? true, randomizeStartingPlayer: true });
     const now = Date.now();
     const matchId = await ctx.db.insert('eclipseMatchesV1', { snapshotJson: JSON.stringify(state), rulesVersion: state.rulesVersion, catalogVersion: state.catalogVersion, revision: state.revision, round: state.round, phase: state.phase, aiDifficulty: args.aiDifficulty ?? 'normal', aiVersion: AI_VERSION, createdAt: now, updatedAt: now });
     await ctx.db.insert('eclipseOwnershipV1', { matchId, guestId: guest._id, seatId: 'seat-1' });
@@ -251,10 +252,12 @@ export async function scheduleAi(ctx: MutationCtx, matchId: Id<'eclipseMatchesV1
   const status = state.phase === 'finished' ? 'finished' as const : failedTimeout ? 'failed' as const : ai || timeout ? 'scheduled' as const : 'waiting' as const;
   // A diplomacy/other-player choice may temporarily own an unfinished action.
   const budgetActor = state.engine?.action?.owner ?? state.activeSeatId ?? actor;
-  const preserveBudget = timeout || failedTimeout ? existing?.timeoutToken === timer?.token : existing?.budgetActor === budgetActor && existing?.budgetRound === state.round;
+  const actionTurnSerial = state.actionTurnSerial ?? 0;
+  const sameActionTurn = (existing?.budgetActionTurnSerial ?? 0) === actionTurnSerial;
+  const preserveBudget = sameActionTurn && (timeout || failedTimeout ? existing?.timeoutToken === timer?.token : existing?.budgetActor === budgetActor && existing?.budgetRound === state.round);
   const interruptedSearch = preserveBudget && existing?.status === 'thinking' && existing.expectedRevision !== state.revision;
   const patch = { status, expectedRevision: state.revision, attempts: failedTimeout ? existing.attempts : 0, error: failedTimeout ? timer.error : null, leaseToken: undefined, leaseExpiresAt: undefined, timeoutToken: timeout || failedTimeout ? timer!.token : undefined,
-    budgetActor: budgetActor ?? undefined, budgetRound: state.round,
+    budgetActor: budgetActor ?? undefined, budgetRound: state.round, budgetActionTurnSerial: actionTurnSerial,
     remainingBudgetMs: interruptedSearch ? 0 : preserveBudget ? existing?.remainingBudgetMs ?? 0 : AI_BUDGETS[timeout ? 'normal' : match?.aiDifficulty ?? 'normal'].budgetMs,
     updatedAt: Date.now() };
   if (existing) await ctx.db.patch(existing._id, patch);
@@ -361,11 +364,6 @@ export const commitAiWork = internalMutation({
       await saveAccepted(ctx, matchId, result.aggregate.state, result.aggregate.journal[0], state.round);
       await reconcileRoomTimerAfterCommand(ctx, match, result.aggregate.state);
       await scheduleAi(ctx, matchId, result.aggregate.state);
-      // Completion of the strategic action resets its budget, even if every opponent passed.
-      if (!result.aggregate.state.engine?.action && !result.aggregate.state.pendingDecision) {
-        const nextJob = await ctx.db.query('eclipseAiJobsV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique();
-        if (nextJob) await ctx.db.patch(nextJob._id, { remainingBudgetMs: AI_BUDGETS[match.aiDifficulty ?? 'normal'].budgetMs });
-      }
     }
     return null;
   },

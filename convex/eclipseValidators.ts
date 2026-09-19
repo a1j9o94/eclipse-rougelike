@@ -65,7 +65,7 @@ const choice: Validator<DecisionChoice, "required", string> = v.union(
     kind: v.literal("retreat"),
     destinationId: v.union(v.string(), v.null()),
   }),
-  v.object({ kind: v.literal("reputation"), kept: v.array(v.number()) }),
+  v.object({ kind: v.literal("reputation"), kept: v.optional(v.array(v.number())) }),
   v.object({ kind: v.literal("bankruptcy"), abandonSectorId: v.string() }),
   v.object({
     kind: v.literal("population-return"),
@@ -184,6 +184,7 @@ export const gameCommandValidator: Validator<GameCommand, "required", string> =
       ),
     }),
     v.object({ type: v.literal("pass") }),
+    v.object({ type: v.literal("set-auto-pass"), enabled: v.boolean() }),
     v.object({
       type: v.literal("discard-reputation"),
       values: v.array(v.number()),

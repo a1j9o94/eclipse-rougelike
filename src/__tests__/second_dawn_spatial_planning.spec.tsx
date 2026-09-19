@@ -16,7 +16,7 @@ it('assembles first, places on two map sectors, inspects safely and submits one 
  fireEvent.click(screen.getByRole('button',{name:new RegExp(`^Inspect sector ${own.tileId},`)}));
  fireEvent.click(screen.getByRole('button',{name:new RegExp(`^Inspect sector ${other.tileId},`)}));
  expect(screen.getByText(/2 placed · 0 unplaced/)).toBeInTheDocument();
- fireEvent.click(screen.getByRole('button',{name:'Inspect fleet in selected sector'}));
+ fireEvent.click(within(screen.getByRole('group',{name:'Galaxy map'})).getByRole('button',{name:'Terran Directorate: 1 Interceptor'}));
  fireEvent.click(within(screen.getByRole('dialog',{name:/Fleet inspection/})).getByRole('button',{name:'Return to plan'}));
  expect(screen.getByText(/2 placed · 0 unplaced/)).toBeInTheDocument();
  fireEvent.click(screen.getByRole('button',{name:/^Build 2/}));

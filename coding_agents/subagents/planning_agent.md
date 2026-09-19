@@ -552,3 +552,6 @@ Outcome: credible fleet threats and profitable conquest within bounded server th
 
 ## September 19 — Action flow and Second Dawn-only cleanup
 Outcome: remove exhausted-action bookkeeping, make mobile ship fitting a continuous slot/picker workflow, and remove the legacy roguelike. Acceptance, failing-first tests, risks/rollback and ownership: [delivery plan](../second_dawn_action_flow_cleanup.md). User explicitly supersedes earlier preserve-legacy and mandatory Done behavior. Feature branch after clean fetch/pull; npm ci passed. Full-suite runs remain memory bounded.
+
+## September 19 — visible turn order
+Outcome: fair initial live starter and readable upcoming clockwise roster. Acceptance, fail-first tests, ownership and rollback: `coding_agents/second_dawn_turn_order.md`. Engine agent owns live seeded setup/scheduling; supervisor owns visual roster and release. Existing saved matches stay intact.

@@ -27,6 +27,8 @@
 .dg-mobile-board.dg-tabletop .sd-layout { display: flex; flex: 1; flex-direction: column; min-height: 0; overflow: hidden; }
 .dg-mobile-board .sd-players { padding: 0 10px; flex-shrink: 0; }
 .dg-mobile-board .sd-player-list { display: none; }
+.dg-mobile-board .dg-turn-order-label { display: none; }
+.dg-mobile-board[data-mobile-screen=Players] .dg-turn-order-label { display: block; }
 .dg-mobile-board[data-mobile-screen=Players] .sd-player-list { display: flex; overflow-x: auto; padding: 6px 0; gap: 6px; }
 .dg-mobile-board[data-mobile-screen=Players] .sd-player { flex: 0 0 190px; min-height: 54px; }
 .dg-mobile-board .dg-ai-activity { border-top: 0; flex-wrap: wrap; gap: 3px 5px; padding: 3px 0; }
@@ -156,7 +158,7 @@
 }
 .dg-review:has(.dg-mobile-board) > .dg-review-bar { max-width: 100%; overflow-x: auto; overflow-y: hidden; flex-wrap: nowrap; justify-content: flex-start; padding: 0 8px; }
 .dg-review:has(.dg-mobile-board) > .dg-review-bar > * { flex-shrink: 0; }
-.dg-mobile-board .dg-ai-activity:not(.is-computer-turn) button { display: none; }
+.dg-mobile-board .dg-ai-activity:not(.is-computer-turn) button:not(.dg-board-control) { display: none; }
 .dg-mobile-header .dg-upkeep-summary { margin: 0; }
 .dg-mobile-board .sd-inspector.dg-mobile-sheet { max-height: calc(100dvh - var(--mobile-sheet-top,190px) - var(--mobile-footer-height) ); }
 .dg-mobile-board .dg-mobile-sheet-body { max-height: calc(100dvh - var(--mobile-sheet-top,190px) - var(--mobile-footer-height) - 60px ); }

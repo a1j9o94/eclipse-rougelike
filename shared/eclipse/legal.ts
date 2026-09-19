@@ -339,24 +339,9 @@ export function legalCommands(
             `Declare retreat to ${retreatTo}`,
           );
         break;
-      case "reputation": {
-        const original = [...view.private.reputation].sort((a, b) => b - a);
-        resolve(
-          { kind: "reputation", kept: original.slice(0, decision.capacity) },
-          "Keep existing reputation",
-        );
-        for (const drawn of [...new Set(decision.drawn)].sort((a, b) => b - a))
-          resolve(
-            {
-              kind: "reputation",
-              kept: [...original, drawn]
-                .sort((a, b) => b - a)
-                .slice(0, decision.capacity),
-            },
-            `Keep a ${drawn}-point reputation tile`,
-          );
+      case "reputation":
+        resolve({ kind: "reputation" }, "Keep best reputation automatically");
         break;
-      }
       case "bankruptcy":
         trades();
         for (const abandonSectorId of decision.abandonableSectorIds)

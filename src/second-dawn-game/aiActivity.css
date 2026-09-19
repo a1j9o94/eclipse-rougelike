@@ -2,3 +2,7 @@
 /* Keep turn narration present without taking a second toolbar's height. */
 .dg-app .dg-ai-activity { min-height: 28px; padding: 2px 0; }
 .dg-app .dg-ai-activity button { min-height: 0; padding: 4px 8px; font-size: 12px; line-height: 20px; }
+
+/* Board controls stay in the toolbar and wrap together on narrow layouts. */
+.dg-app .dg-ai-activity { flex-wrap: wrap; }
+.dg-app .dg-ai-activity > [role=status] { flex: 1 1 220px; }

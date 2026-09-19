@@ -12,12 +12,12 @@
   "losses": 0,
   "vpMargins": [
     24,
-    21,
-    18,
-    26,
+    25,
+    17,
+    28,
     12,
-    22,
-    27,
+    19,
+    24,
     18
   ],
   "baseline": "Uniform random legal main action; colonize when possible; finish one activation; random persisted choices",

@@ -73,6 +73,8 @@ export default defineSchema({
     leaseExpiresAt: v.optional(v.number()),
     budgetActor: v.optional(v.string()),
     budgetRound: v.optional(v.number()),
+    /** Completed action-turn counter; missing on older jobs means zero. */
+    budgetActionTurnSerial: v.optional(v.number()),
     remainingBudgetMs: v.optional(v.number()),
     lastComputeMs: v.optional(v.number()),
     lastPlanComputeMs: v.optional(v.number()),
@@ -136,6 +138,8 @@ export default defineSchema({
     token: v.string(),
     deadlineAt: v.number(),
     targetSeatId: v.string(),
+    /** Distinguishes consecutive turns owned by the same seat after auto-passing. */
+    actionTurnSerial: v.optional(v.number()),
     decisionId: v.union(v.string(), v.null()),
     status: v.union(v.literal('active'), v.literal('timed-out'), v.literal('failed'), v.literal('finished')),
     error: v.union(v.string(), v.null()),

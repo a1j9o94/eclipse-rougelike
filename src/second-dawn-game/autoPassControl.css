@@ -1,0 +1,7 @@
+.dg-auto-pass-control{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:#d8d3c4}
+.dg-auto-pass-control label{display:flex;align-items:center;gap:6px;min-height:30px;cursor:pointer}
+.dg-auto-pass-control input{width:16px;height:16px;accent-color:#d8bb78;flex-shrink:0}
+.dg-auto-pass-control input:focus-visible{outline:2px solid #aadef1;outline-offset:3px}
+.dg-auto-pass-control label:has(input:disabled){opacity:.55;cursor:default}
+.dg-auto-pass-paused{color:#efc985}
+.dg-mobile-board .dg-auto-pass-control label{min-height:36px}

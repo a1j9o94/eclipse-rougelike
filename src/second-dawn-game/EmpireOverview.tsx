@@ -4,6 +4,7 @@ import type {BlueprintShipType} from '../../shared/eclipse/blueprints';
 import {TECHNOLOGIES,type TechnologyId} from '../../shared/eclipse/technologies';
 import type {PlayerView,Resource} from '../../shared/eclipse/types';
 import FactionSymbol from './FactionSymbol';
+import ReputationSummary from './ReputationSummary';
 import {FACTION_COLORS} from './factionColors';
 import {factionPresentation} from './factionPresentation';
 import {empireOverviewModel} from './empireOverviewModel';
@@ -27,6 +28,8 @@ export default function EmpireOverview({view,seatId,onSector,onNavigate,onBluepr
  const seat=view.seats.find(seat=>seat.id===seatId)!;
  const faction=getFaction(seat.faction),presentation=factionPresentation(seat.faction),model=empireOverviewModel(view,seatId);
  const [planetGroup,setPlanetGroup]=useState<Resource|'gray'>('science');
+ const [showReputation,setShowReputation]=useState(false);
+ const canReviewReputation=seatId===view.viewerSeatId&&view.private.seatId===view.viewerSeatId&&!!view.private.reputationSummary;
  const [selectedTech,setSelectedTech]=useState<TechnologyId|null>(null);
  const researched=Object.values(seat.technologies).flat();
  const technology=TECHNOLOGIES.find(tech=>tech.id===selectedTech&&researched.includes(tech.id));
@@ -40,6 +43,7 @@ export default function EmpireOverview({view,seatId,onSector,onNavigate,onBluepr
    </div>
    <button className="eo-score" onClick={()=>onNavigate('Scoring')} aria-label={`View ${view.phase==='finished'?'final':'public'} score: ${model.score} VP`}><strong>{model.score}</strong><span>{view.phase==='finished'?'Final':'Public'} VP</span><small>Score breakdown ↗</small></button>
   </header>
+  {canReviewReputation&&<div className="eo-reputation-recap"><button aria-expanded={showReputation} onClick={()=>setShowReputation(open=>!open)}>Latest reputation draw</button>{showReputation&&<ReputationSummary view={view} onDismiss={()=>setShowReputation(false)}/>}</div>}
   <div className="eo-economy" aria-label="Empire resources">
    {model.resources.map(resource=><article key={resource.resource} className={`eo-resource eo-${resource.resource}`}><ResourceSymbol resource={resource.resource}/><div><h2>{names[resource.resource]}</h2><strong>{resource.stock}</strong></div><div className="eo-production"><b>+{resource.income}</b><small>round income</small><span>{resource.cubes} cubes available</span></div></article>)}
   </div>

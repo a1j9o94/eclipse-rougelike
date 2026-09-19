@@ -8,7 +8,7 @@ const results=[];
 async function inspect(page,tile){
  await page.getByRole('button',{name:new RegExp(`^Inspect sector ${tile},`)}).click();
  // The ship glyph itself also opens the same inspector; map-scale hit regions vary.
- if(!await page.getByRole('dialog',{name:/Fleet inspection/}).count())await page.getByRole('button',{name:'Inspect fleet in selected sector'}).click();
+ if(!await page.getByRole('dialog',{name:/Fleet inspection/}).count())await page.getByRole('button',{name:'Inspect fleet',exact:true}).click();
  await page.getByRole('dialog',{name:/Fleet inspection/}).waitFor();
 }
 try{

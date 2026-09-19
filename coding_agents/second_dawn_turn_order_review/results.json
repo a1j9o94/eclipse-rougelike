@@ -1,0 +1,58 @@
+[
+  {
+    "engine": "chromium",
+    "width": 1440,
+    "height": 900,
+    "clockwiseRoster": true,
+    "updatesOnTurn": true,
+    "inspectionPreserved": true,
+    "firstPassMarker": true,
+    "autoPassHandsOff": true,
+    "singleFleetButton": true,
+    "toolbarControls": true,
+    "noDocumentOverflow": true,
+    "errors": []
+  },
+  {
+    "engine": "chromium",
+    "width": 390,
+    "height": 844,
+    "clockwiseRoster": true,
+    "updatesOnTurn": true,
+    "inspectionPreserved": true,
+    "firstPassMarker": true,
+    "autoPassHandsOff": true,
+    "singleFleetButton": true,
+    "toolbarControls": true,
+    "noDocumentOverflow": true,
+    "errors": []
+  },
+  {
+    "engine": "webkit",
+    "width": 1440,
+    "height": 900,
+    "clockwiseRoster": true,
+    "updatesOnTurn": true,
+    "inspectionPreserved": true,
+    "firstPassMarker": true,
+    "autoPassHandsOff": true,
+    "singleFleetButton": true,
+    "toolbarControls": true,
+    "noDocumentOverflow": true,
+    "errors": []
+  },
+  {
+    "engine": "webkit",
+    "width": 390,
+    "height": 844,
+    "clockwiseRoster": true,
+    "updatesOnTurn": true,
+    "inspectionPreserved": true,
+    "firstPassMarker": true,
+    "autoPassHandsOff": true,
+    "singleFleetButton": true,
+    "toolbarControls": true,
+    "noDocumentOverflow": true,
+    "errors": []
+  }
+]

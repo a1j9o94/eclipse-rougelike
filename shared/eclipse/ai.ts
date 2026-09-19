@@ -283,6 +283,8 @@ export function evaluateAiCommand(
         Math.max(0, -reserve) * 8
       );
     }
+    case "set-auto-pass":
+      return -Infinity; // A human preference is never an AI gameplay candidate.
     case "pass":
       return balance < 0 ? 30 : balance < 3 ? 10 : 0;
     case "end-action":
@@ -512,7 +514,7 @@ export function evaluateAiCommand(
         case "diplomacy":
           return c.accept ? 8 : 0;
         case "reputation":
-          return c.kept.reduce((n, v) => n + v, 0) * 10;
+          return (c.kept?.reduce((n, v) => n + v, 0) ?? 0) * 10;
         case "resource-reward":
           return c.resources.reduce((n, r) => n + utility(r), 0);
         case "population-return":

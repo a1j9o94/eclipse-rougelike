@@ -64,6 +64,8 @@ export interface Seat {
   actionDiscs: Record<Action, number>;
   colonyShipsAvailable: number;
   passed: boolean;
+  autoPassUnlessAttacked?: boolean;
+  autoPassPausedRound?: number;
   eliminated: boolean;
   technologies: Record<Track, string[]>;
   blueprints: Blueprint[];
@@ -73,10 +75,21 @@ export interface Seat {
   storedParts?: string[];
   ambassadorResources?: { from: SeatId; resource: Resource }[];
 }
+export interface ReputationSummary {
+  id: string;
+  round: number;
+  battleId: string | null;
+  sectorId: string | null;
+  drawn: number[];
+  selected: number | null;
+  kept: number[];
+  returned: number[];
+}
 export interface PrivateSeat {
   seatId: SeatId;
   reputation: number[];
   discoveriesKept: string[];
+  reputationSummary?: ReputationSummary;
 }
 
 interface DecisionBase {
@@ -191,7 +204,7 @@ export type DecisionChoice =
       allocations: { dieId: string; targetId: string; damage?: number }[];
     }
   | { kind: "retreat"; destinationId: string | null }
-  | { kind: "reputation"; kept: number[] }
+  | { kind: "reputation"; kept?: number[] }
   | { kind: "bankruptcy"; abandonSectorId: string }
   | { kind: "population-return"; resources: Resource[] }
   | { kind: "control"; accept: boolean }
@@ -233,6 +246,7 @@ export type GameCommand =
   | { type: "move"; moves: { shipId: string; path: string[] }[] }
   | { type: "discard-reputation"; values: number[] }
   | { type: "pass" }
+  | { type: "set-auto-pass"; enabled: boolean }
   | { type: "end-action" }
   | { type: "finish-upkeep" }
   | { type: "trade"; from: Resource; to: Resource; amount: number }
@@ -252,6 +266,8 @@ export interface GameState {
   activeSeatId: SeatId | null;
   startSeatId: SeatId;
   firstPasser: SeatId | null;
+  /** Persisted action-turn boundary; absent in older saves means zero. */
+  actionTurnSerial?: number;
   seats: Seat[];
   sectors: Sector[];
   ships: Ship[];

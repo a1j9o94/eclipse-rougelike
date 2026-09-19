@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import type {ReactNode} from 'react';
+import type {CSSProperties,ReactNode} from 'react';
 import type {DecisionChoice,GameCommand,PendingDecision,PlayerView,Resource,Track} from '../../shared/eclipse/types';
 import type {LegalCommandCandidate} from '../../shared/eclipse/legal';
 import {getFaction} from '../../shared/eclipse/catalog';
@@ -16,7 +16,10 @@ import SectorFleet from './SectorFleet';
 import GalaxyBoard from './GalaxyBoard';
 import ActionEconomy from './ActionEconomy';
 import {StatIcon} from './ShipPartStats';
+import FactionSymbol from './FactionSymbol';
+import {FACTION_COLORS} from './factionColors';
 import './economyDecision.css';
+import './reputationSummary.css';
 
 export type EconomyChoice = Extract<PendingDecision,{kind:'control'|'bankruptcy'|'portal-placement'|'free-technology'|'population-return'|'resource-reward'|'diplomacy'|'diplomacy-window'|'reputation'}>;
 export interface EconomyDecisionProps {decision:EconomyChoice;view?:PlayerView;candidates:readonly LegalCommandCandidate[];reputation:number[];disabled:boolean;onSubmit:(command:GameCommand)=>void}
@@ -53,13 +56,7 @@ function FreeTechnology(props:EconomyDecisionProps&{decision:Extract<EconomyChoi
 }
 
 function ReputationChoice(props:EconomyDecisionProps&{decision:Extract<EconomyChoice,{kind:'reputation'}>}){
- const [kept,setKept]=useState(()=>props.reputation.map((_,i)=>i));
- const tiles=[...props.reputation,...props.decision.drawn],existing=props.reputation.length;
- const toggle=(i:number)=>setKept(ids=>ids.includes(i)?ids.filter(id=>id!==i):[...ids,i]);
- return <DecisionFrame {...props} title="Choose reputation to keep" label="Confirm reputation" choice={{kind:'reputation',kept:kept.map(i=>tiles[i])}} valid={kept.length<=props.decision.capacity&&kept.filter(i=>i>=existing).length<=1}>
-  <p>Private to you · {kept.length} / {props.decision.capacity} spaces used · keep at most one newly drawn tile.</p>
-  {['Currently held reputation','Newly drawn reputation'].map((label,group)=><section key={label}><h3>{label}</h3><div className="dg-reputation-choice-tray" role="group" aria-label={label}>{tiles.map((points,i)=>(i<existing)===(group===0)?<button key={i} role="checkbox" aria-checked={kept.includes(i)} aria-label={`Keep ${points} VP reputation`} disabled={props.disabled||(!kept.includes(i)&&(kept.length>=props.decision.capacity||(i>=existing&&kept.some(id=>id>=existing))))} onClick={()=>toggle(i)}><StatIcon kind="discovery"/><strong>{points}</strong><small>VP</small>{kept.includes(i)&&<b>✓</b>}</button>:null)}</div></section>)}
- </DecisionFrame>;
+ return <section className="dg-reputation-auto" aria-label="Automatic reputation"><StatIcon kind="discovery"/><div><p role="status">Keeping your best reputation…</p><small>At most one drawn tile is kept. Your reputation stays private.</small></div><button type="button" disabled={props.disabled} onClick={()=>props.onSubmit({type:'resolve',decisionId:props.decision.id,choice:{kind:'reputation'}})}>Finish keeping best reputation</button></section>;
 }
 
 function DiplomacyChoice(props:EconomyDecisionProps&{decision:Extract<EconomyChoice,{kind:'diplomacy'|'diplomacy-window'}>}){
@@ -68,12 +65,14 @@ function DiplomacyChoice(props:EconomyDecisionProps&{decision:Extract<EconomyCho
  const choices=props.candidates.flatMap(c=>c.command.type==='resolve'?[c.command.choice]:[]);
  const seat=view?.seats.find(s=>s.id===decision.owner);
  const factionName=(id:string)=>{const s=view?.seats.find(s=>s.id===id);return s?getFaction(s.faction).name:'Civilization';};
+ const proposer=decision.kind==='diplomacy'?view?.seats.find(s=>s.id===decision.proposer):undefined;
+ const proposerFaction=proposer?getFaction(proposer.faction):undefined;
  const offering=decision.kind==='diplomacy-window'?partner!=='finish':response==='yes';
  const sources=decision.populationSources.filter(r=>!props.candidates.length||choices.some(c=>decision.kind==='diplomacy-window'?c.kind==='diplomacy-window'&&c.offerTo===partner&&c.resource===r:c.kind==='diplomacy'&&c.accept&&c.resource===r));
  const selectedResource=sources.includes(resource)?resource:sources[0]??resource;
  const choice:DecisionChoice=decision.kind==='diplomacy-window'?{kind:decision.kind,offerTo:partner==='finish'?null:partner,resource:selectedResource}:{kind:decision.kind,accept:response==='yes',resource:selectedResource};
  return <DecisionFrame {...props} title={decision.kind==='diplomacy'?'Ambassador exchange':'Post-combat diplomacy'} label={decision.kind==='diplomacy-window'?(offering?'Offer ambassadors':'Finish diplomacy'):(offering?'Accept ambassadors':'Decline offer')} choice={choice} valid={!offering||sources.length>0}>
-  {decision.kind==='diplomacy-window'?<ChoiceCards label="Diplomacy partner" value={partner} onChange={setPartner} disabled={props.disabled} options={[{value:'finish',label:'Finish diplomacy',description:'No exchange',visual:<StatIcon kind="influence"/>},...decision.eligibleSeatIds.map(id=>({value:id,label:factionName(id),description:'Exchange ambassadors · 1 VP each',visual:<span className="dg-faction-choice-mark">{(view?.seats.findIndex(s=>s.id===id)??0)+1}</span>}))]}/>:<><p>{factionName(decision.proposer)} offers an ambassador{decision.proposerResource?` with a ${decision.proposerResource} population cube`:''}.</p><ChoiceCards label="Diplomatic response" value={response} onChange={setResponse} disabled={props.disabled} options={[{value:'yes',label:'Accept exchange',visual:<StatIcon kind="population"/>},{value:'no',label:'Decline exchange',visual:<StatIcon kind="shield"/>}]}/></>}
+  {decision.kind==='diplomacy-window'?<ChoiceCards label="Diplomacy partner" value={partner} onChange={setPartner} disabled={props.disabled} options={[{value:'finish',label:'Finish diplomacy',description:'No exchange',visual:<StatIcon kind="influence"/>},...decision.eligibleSeatIds.map(id=>({value:id,label:factionName(id),description:'Exchange ambassadors · 1 VP each',visual:<span className="dg-faction-choice-mark">{(view?.seats.findIndex(s=>s.id===id)??0)+1}</span>}))]}/>:<><div className="dg-ambassador-offer" role="group" aria-label={`Ambassador offer from ${factionName(decision.proposer)}`} style={proposerFaction?{'--ambassador-faction':FACTION_COLORS[proposerFaction.color]} as CSSProperties:undefined}>{proposer&&<FactionSymbol faction={proposer.faction}/>}<div><small>AMBASSADOR OFFER FROM</small><h3>{factionName(decision.proposer)}</h3><p>Offers an ambassador{decision.proposerResource?` with a ${decision.proposerResource} population cube`:''}.</p></div></div><ChoiceCards label="Diplomatic response" value={response} onChange={setResponse} disabled={props.disabled} options={[{value:'yes',label:'Accept exchange',visual:<StatIcon kind="population"/>},{value:'no',label:'Decline exchange',visual:<StatIcon kind="shield"/>}]}/></>}
   {offering&&<section><h3>Choose your ambassador’s population cube</h3>{sources.length?<ResourceChoiceChips label="Ambassador population" resources={sources} value={selectedResource} disabled={props.disabled} onChange={setResource}/>:<p>Return reputation tiles to free an ambassador slot before accepting.</p>}{seat&&sources.length>0&&<p>{names[selectedResource]} income: {incomeForPopulationAway(seat.populationTracks[selectedResource])} → {incomeForPopulationAway(Math.min(11,seat.populationTracks[selectedResource]+1))} · 1 VP ambassador</p>}</section>}
   <p>Reputation values remain private. Betraying a partner later gives you the traitor card (−2 VP).</p>
  </DecisionFrame>;

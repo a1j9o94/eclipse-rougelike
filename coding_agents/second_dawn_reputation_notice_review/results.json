@@ -1,0 +1,62 @@
+[
+  {
+    "width": 1440,
+    "height": 900,
+    "improved": true,
+    "horizontalOverflow": false,
+    "dismissed": true,
+    "empireReview": true,
+    "opponentPrivateResultHidden": true,
+    "pageErrors": []
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "improved": false,
+    "horizontalOverflow": false,
+    "dismissed": true,
+    "empireReview": false,
+    "opponentPrivateResultHidden": true,
+    "pageErrors": []
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "improved": true,
+    "horizontalOverflow": false,
+    "dismissed": true,
+    "empireReview": true,
+    "opponentPrivateResultHidden": true,
+    "pageErrors": []
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "improved": false,
+    "horizontalOverflow": false,
+    "dismissed": true,
+    "empireReview": false,
+    "opponentPrivateResultHidden": true,
+    "pageErrors": []
+  },
+  {
+    "width": 360,
+    "height": 800,
+    "improved": true,
+    "horizontalOverflow": false,
+    "dismissed": true,
+    "empireReview": true,
+    "opponentPrivateResultHidden": true,
+    "pageErrors": []
+  },
+  {
+    "width": 360,
+    "height": 800,
+    "improved": false,
+    "horizontalOverflow": false,
+    "dismissed": true,
+    "empireReview": false,
+    "opponentPrivateResultHidden": true,
+    "pageErrors": []
+  }
+]

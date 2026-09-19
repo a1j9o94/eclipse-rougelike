@@ -1,0 +1,25 @@
+import './hostStartingSeed';
+import {webcrypto} from 'node:crypto';
+import {afterEach,beforeEach,expect,it,vi} from 'vitest';
+import {convexTest} from 'convex-test';
+import schema from '../../convex/schema';
+import {api} from '../../convex/_generated/api';
+import type {GameState} from '../../shared/eclipse/types';
+const modules=import.meta.glob('../../convex/**/*.{ts,js}');
+beforeEach(()=>{vi.stubGlobal('crypto',webcrypto);vi.useFakeTimers();});
+afterEach(()=>{vi.unstubAllGlobals();vi.useRealTimers();});
+it('restores and authoritatively settles an old reputation decision without querying writes or exposing values',async()=>{
+ const t=convexTest(schema,modules),guest=await t.action(api.eclipseGuests.createGuestSession,{}),{matchId}=await t.mutation(api.eclipseMatches.createMatch,{...guest,aiCount:1});
+ await t.run(async ctx=>{const row=(await ctx.db.get(matchId))!,state=JSON.parse(row.snapshotJson) as GameState;state.privateSeats[0].reputation=[1,2];state.pendingDecision={id:'old-reputation',kind:'reputation',owner:'seat-1',capacity:4,drawn:[1,4,3]};await ctx.db.patch(matchId,{snapshotJson:JSON.stringify(state)});});
+ const before=await t.run(ctx=>ctx.db.get(matchId));
+ const initial=await t.query(api.eclipseMatches.getMatchView,{...guest,matchId});
+ expect(initial?.pendingDecision?.kind).toBe('reputation');expect(await t.run(ctx=>ctx.db.get(matchId))).toEqual(before);
+ const request={...guest,matchId,expectedRevision:0,commandId:'resolve-saved-reputation',command:{type:'resolve' as const,decisionId:'old-reputation',choice:{kind:'reputation' as const}}};
+ expect(await t.mutation(api.eclipseMatches.submitCommand,request)).toMatchObject({ok:true,duplicate:false});
+ const after=await t.query(api.eclipseMatches.getMatchView,{...guest,matchId});expect(after?.pendingDecision).toBeNull();expect(after?.private.reputation).toEqual([4,2,1]);
+ expect(after?.private.reputationSummary).toMatchObject({drawn:[1,4,3],selected:4,kept:[4,2,1],returned:[1,3]});
+ const saved=await t.run(ctx=>ctx.db.get(matchId));expect(await t.mutation(api.eclipseMatches.submitCommand,request)).toMatchObject({ok:true,duplicate:true});expect(await t.run(ctx=>ctx.db.get(matchId))).toEqual(saved);
+ expect(await t.query(api.eclipseMatches.getMatchView,{...guest,matchId})).toEqual(after);
+ const history=await t.query(api.eclipseMatches.getMatchHistory,{...guest,matchId});expect(history?.entries).toHaveLength(1);
+ expect(JSON.stringify(history)).not.toContain('Drew reputation');expect(JSON.stringify(history)).not.toContain('Selected 4');expect(JSON.stringify(history)).not.toContain('reputationSummary');
+});

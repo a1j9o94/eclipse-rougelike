@@ -386,6 +386,8 @@
   overflow: visible;
   padding: 7px 0;
 }
+.dg-turn-order-label { padding-top: 4px; font-size: 10px; letter-spacing: .08em; color: #c9b486; }
+.dg-next-starter { color: #eed293; }
 .dg-app.dg-tabletop .sd-player { padding: 5px 8px !important; }
 .dg-app.dg-tabletop .sd-player strong { font-size: 11px; }
 .dg-app.dg-tabletop .sd-player small { font-size: 10px; color: #b9b5ab; }
@@ -699,3 +701,5 @@
 /* The empire is a complete board; its own panels replace the action inspector. */
 .dg-app.dg-tabletop.dg-empire-mode:not(.dg-mobile-board) .sd-layout{grid-template-columns:minmax(0,1fr)}
 .dg-tabletop.dg-empire-mode .sd-inspector{display:none}
+
+.dg-reputation-notice { padding: 8px 0; }

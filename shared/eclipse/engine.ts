@@ -1,3 +1,4 @@
+import { pauseAutoPass, skipPassedReactionTurns } from './autoPass';
 import { FIRST_PASS_MONEY } from './passing';
 import { fundingActionCost } from "./funding";
 import { getFaction } from "./catalog";
@@ -37,8 +38,13 @@ function nextSeat(state: GameState, seat: Seat): void {
   }
   state.activeSeatId = null;
 }
-function finishAction(state: GameState, seat: Seat): void {
+function finishAction(state: GameState, seat: Seat, events: GameEvent[]): void {
+  const partners = [...seat.ambassadors];
   breakAggressiveRelations(state, seat);
+  for (const partner of partners) {
+    if (!seat.ambassadors.includes(partner)) pauseAutoPass(state, partner, events);
+  }
+  state.actionTurnSerial = (state.actionTurnSerial ?? 0) + 1;
   continuation(state).action = null;
   nextSeat(state, seat);
 }
@@ -48,9 +54,10 @@ function advance(state: GameState, events: GameEvent[]): void {
   if (state.phase === "action" && action?.remaining === 0) {
     // Resolve all committed draws/rewards first, then use the same boundary as
     // an explicit finish. A responding opponent never becomes the turn origin.
-    finishAction(state, player(state, action.owner));
+    finishAction(state, player(state, action.owner), events);
     if (presentNextDecision(state)) return;
   }
+  skipPassedReactionTurns(state, events);
   if (state.phase === "combat") {
     if (!advanceCombat(state, events) || presentNextDecision(state)) return;
     advanceRound(state, events);
@@ -75,7 +82,17 @@ export function processGameCommand(
       "GAME_FINISHED",
     );
     requireRule(!seat.eliminated, "This seat has been eliminated.");
-    if (command.type === "trade-and-act") {
+    if (command.type === "set-auto-pass") {
+      requireRule(typeof command.enabled === "boolean", "Choose whether automatic passing is enabled.", "INVALID_COMMAND");
+      seat.autoPassUnlessAttacked = command.enabled;
+      if (command.enabled) delete seat.autoPassPausedRound;
+      emit(events, actor, command.enabled ? "Enabled auto-pass unless attacked." : "Disabled auto-pass unless attacked.");
+      // Preferences never resolve choices, run combat, or advance another seat.
+      if (command.enabled && state.activeSeatId === actor && seat.passed && state.phase === "action") {
+        skipPassedReactionTurns(state, events);
+      }
+      return { ok: true, state, events };
+    } else if (command.type === "trade-and-act") {
       requireRule(
         !state.pendingDecision,
         "Resolve the outstanding choice first.",
@@ -253,13 +270,14 @@ export function processGameCommand(
           state.phase === "action" && !!e.action && e.action.owner === actor,
           "There is no open action to finish.",
         );
-        finishAction(state, seat);
+        finishAction(state, seat, events);
       } else if (command.type === "pass") {
         requireRule(
           state.phase === "action" && !e.action,
           "Finish your open action before passing.",
         );
         seat.passed = true;
+        state.actionTurnSerial = (state.actionTurnSerial ?? 0) + 1;
         if (state.firstPasser === null) {
           state.firstPasser = actor;
           state.startSeatId = actor;

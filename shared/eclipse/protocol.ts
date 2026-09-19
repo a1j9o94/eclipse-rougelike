@@ -115,7 +115,7 @@ export function commitCommand(
       'This seat can no longer submit gameplay commands.',
     );
   const pending = state.pendingDecision;
-  if (pending) {
+  if (pending && request.command.type !== 'set-auto-pass') {
     const diplomacyReturn=request.command.type==='discard-reputation'&&(pending.kind==='diplomacy'||pending.kind==='diplomacy-window');
     if (pending.owner !== actor&&!diplomacyReturn)
       return reject(
@@ -142,7 +142,7 @@ export function commitCommand(
         'That decision is no longer outstanding.',
       );
     // Trading is allowed at any time; its precise economy constraints remain rules-owned.
-    if (state.activeSeatId !== actor && request.command.type !== 'trade' && request.command.type !== 'discard-reputation')
+    if (state.activeSeatId !== actor && request.command.type !== 'trade' && request.command.type !== 'discard-reputation' && request.command.type !== 'set-auto-pass')
       return reject('NOT_YOUR_TURN', 'Wait for your turn.');
   }
   const result = process(

@@ -1,3 +1,4 @@
+import { bestReputation } from './reputation';
 import {
   deriveBlueprintStats,
   neutralBlueprint,
@@ -223,6 +224,24 @@ export function reputationCapacity(p: Seat): number {
       Math.max(0, p.ambassadors.length - Number(dedicatedAmbassador)),
   );
 }
+/** Settlement is private bookkeeping and never creates a user decision. */
+function settleReputation(state: GameState, owner: string, drawn: number[], capacity: number, events: GameEvent[]): void {
+  const hidden = state.privateSeats.find(seat => seat.seatId === owner)!;
+  const result = bestReputation(hidden.reputation, drawn, capacity);
+  const battle = continuation(state).battle;
+  hidden.reputationSummary = {
+    id: uniqueId(state, "reputation"), round: state.round,
+    battleId: battle?.id ?? null, sectorId: battle?.sectorId ?? null,
+    drawn: [...drawn], ...result,
+  };
+  hidden.reputation = [...result.kept];
+  state.supplies.reputation.push(...result.returned);
+  events.push({
+    type: "draw", seatId: owner, visibility: { seatId: owner },
+    message: `Drew reputation tiles: ${drawn.join(", ")}. ${result.selected === null ? "Kept existing reputation; no improvement." : `Selected ${result.selected}.`} Kept: ${result.kept.join(", ") || "none"}.`,
+  });
+  emit(events, owner, "Reputation awarded automatically.", "combat");
+}
 function nextReputation(
   state: GameState,
   b: BattleState,
@@ -245,20 +264,7 @@ function nextReputation(
       drawn.push(...state.supplies.reputation.splice(roll.value, 1));
     }
     if (!drawn.length) continue;
-    state.pendingDecision = {
-      id: uniqueId(state, "reputation"),
-      kind: "reputation",
-      owner,
-      drawn,
-      capacity: reputationCapacity(player(state, owner)),
-    };
-    events.push({
-      type: "draw",
-      seatId: owner,
-      visibility: { seatId: owner },
-      message: `Drew reputation tiles: ${drawn.join(", ")}.`,
-    });
-    return false;
+    settleReputation(state, owner, drawn, reputationCapacity(player(state, owner)), events);
   }
   return true;
 }
@@ -686,6 +692,30 @@ export function resolveCombatChoice(
     decision.kind === choice.kind,
     "Choose an option for the current decision.",
   );
+  if (decision.kind === "reputation" && choice.kind === "reputation") {
+    // Old saves and older clients may still submit a selection. Validate its
+    // provenance, then retain the best legal holding regardless of that draft.
+    if (choice.kept) {
+      const hidden = state.privateSeats.find(seat => seat.seatId === actor)!;
+      const remaining = [...hidden.reputation, ...decision.drawn];
+      requireRule(choice.kept.length <= decision.capacity, "Your reputation track has too few free spaces.");
+      for (const value of choice.kept) {
+        const index = remaining.indexOf(value);
+        requireRule(index >= 0, "Only owned or drawn reputation tiles may be kept.");
+        remaining.splice(index, 1);
+      }
+      const owned = [...hidden.reputation];
+      let newlyKept = 0;
+      for (const value of choice.kept) {
+        const index = owned.indexOf(value);
+        if (index >= 0) owned.splice(index, 1); else newlyKept++;
+      }
+      requireRule(newlyKept <= 1, "Keep at most one newly drawn reputation tile.");
+    }
+    state.pendingDecision = null;
+    settleReputation(state, actor, decision.drawn, Math.min(decision.capacity, reputationCapacity(player(state, actor))), events);
+    return;
+  }
   const b = continuation(state).battle;
   requireRule(!!b, "No active battle.");
   state.pendingDecision = null;
@@ -758,35 +788,6 @@ export function resolveCombatChoice(
       "Only the attacking ship owner allocates these dice.",
     );
     applyAllocation(state, b!, choice.allocations, events);
-    return;
-  }
-  if (decision.kind === "reputation" && choice.kind === "reputation") {
-    const privateSeat = state.privateSeats.find((s) => s.seatId === actor)!;
-    const available = [...privateSeat.reputation, ...decision.drawn],
-      remaining = [...available];
-    requireRule(
-      choice.kept.length <= decision.capacity,
-      "Your reputation track has too few free spaces.",
-    );
-    for (const value of choice.kept) {
-      const index = remaining.indexOf(value);
-      requireRule(
-        index >= 0,
-        "Only owned or drawn reputation tiles may be kept.",
-      );
-      remaining.splice(index, 1);
-    }
-    const old = [...privateSeat.reputation];
-    let newCount = 0;
-    for (const value of choice.kept) {
-      const index = old.indexOf(value);
-      if (index >= 0) old.splice(index, 1);
-      else newCount++;
-    }
-    requireRule(newCount <= 1, "Keep at most one newly drawn reputation tile.");
-    state.supplies.reputation.push(...remaining);
-    privateSeat.reputation = [...choice.kept];
-    emit(events, actor, "Finished selecting a reputation tile.", "combat");
     return;
   }
   requireRule(false, "Unsupported battle decision.");

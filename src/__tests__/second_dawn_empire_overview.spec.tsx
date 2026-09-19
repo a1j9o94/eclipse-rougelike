@@ -84,3 +84,20 @@ it('planet selection navigates to its actual sector and does not mutate the view
  fireEvent.click(screen.getByRole('button',{name:`Inspect sector ${gray.tileId}, advanced Flexible planet, research required`}));
  expect(onSector).toHaveBeenCalledWith('flex');expect(JSON.stringify(view)).toBe(before);
 });
+it('reopens the latest private reputation result only on the viewer’s own empire',()=>{
+ const view=fixture();view.private.reputationSummary={id:'saved-reputation',round:1,battleId:'battle1',sectorId:'own',drawn:[2,4],selected:4,kept:[4],returned:[2]};
+ const callbacks={onSector:vi.fn(),onNavigate:vi.fn(),onBlueprints:vi.fn()};
+ const ui=render(<EmpireOverview view={view} seatId="a" {...callbacks}/>);
+ expect(screen.queryByRole('region',{name:'Your reputation result'})).toBeNull();
+ fireEvent.click(screen.getByRole('button',{name:'Latest reputation draw'}));
+ expect(screen.getByRole('status')).toHaveTextContent('Selected 4 VP');
+ fireEvent.click(screen.getByRole('button',{name:'Dismiss reputation result'}));
+ expect(screen.queryByRole('region',{name:'Your reputation result'})).toBeNull();
+ fireEvent.click(screen.getByRole('button',{name:'Latest reputation draw'}));
+ ui.rerender(<EmpireOverview view={view} seatId="b" {...callbacks}/>);
+ expect(screen.queryByRole('button',{name:'Latest reputation draw'})).toBeNull();
+ expect(screen.queryByRole('region',{name:'Your reputation result'})).toBeNull();
+ expect(screen.queryByText('Selected 4 VP')).toBeNull();
+ view.private.seatId='b';ui.rerender(<EmpireOverview view={view} seatId="a" {...callbacks}/>);
+ expect(screen.queryByRole('button',{name:'Latest reputation draw'})).toBeNull();
+});

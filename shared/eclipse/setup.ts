@@ -11,7 +11,7 @@ import {
 } from "./catalog";
 import { initialBlueprints } from "./blueprints";
 import { createDiscoverySupply } from "./discoveries";
-import { randomSeed, shuffle } from "./random";
+import { randomInt, randomSeed, shuffle } from "./random";
 import {
   createTechnologyBag,
   drawTechnologies,
@@ -26,6 +26,8 @@ export interface GameSetup {
   seed: number;
   seats: { id: string; faction: FactionId; controller: "human" | "ai" }[];
   warpPortals: boolean;
+  /** Live matches opt in; omitted preserves historical deterministic fixture setup. */
+  randomizeStartingPlayer?: boolean;
 }
 export function createGame(config: GameSetup): GameState {
   const count = config.seats.length as PlayerCount;
@@ -225,6 +227,12 @@ export function createGame(config: GameSetup): GameState {
       slot.r,
       seat,
     );
+  }
+  if (config.randomizeStartingPlayer) {
+    const starter = randomInt(state.random, seats.length);
+    state.random = starter.state;
+    state.activeSeatId = seats[starter.value].id;
+    state.startSeatId = seats[starter.value].id;
   }
   return state;
 }

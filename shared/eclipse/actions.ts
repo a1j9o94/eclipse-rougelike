@@ -1,3 +1,4 @@
+import { interruptAutoPassForEntry } from './autoPass';
 import { planBlueprintUpgrade } from "./upgradePlan";
 import { BASE_COMPONENTS, getFaction } from "./catalog";
 import {
@@ -494,6 +495,7 @@ export function performAction(
           abilities: movementAbilities(seat),
         });
         requireRule(result.ok, result.ok ? "" : result.message);
+        interruptAutoPassForEntry(state, seat, move.path, events);
         const ship = state.ships.find((s) => s.id === move.shipId)!;
         ship.sectorId = move.path[move.path.length - 1];
         ship.arrival = continuation(state).nextId++;

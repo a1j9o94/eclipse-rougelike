@@ -1,3 +1,4 @@
+import './hostStartingSeed';
 import {webcrypto} from 'node:crypto';
 import {beforeEach,afterEach,it,expect,vi} from 'vitest';
 import {convexTest} from 'convex-test';
