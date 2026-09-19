@@ -1,7 +1,8 @@
 import {useCallback,useContext,useEffect,useRef,useState,type ReactNode} from 'react';
 import {createPortal} from 'react-dom';
 import {useDiceRollScope} from './presentationSettings';
-import {pipPositions,presentationColor,type PresentedDie} from './dice3d/math';
+import {type PresentedDie} from './dice3d/math';
+import EclipseDieFace from './EclipseDieFace';
 import type {DiceThrowController} from './dice3d/renderer';
 import './dice3d/dice3d.css';
 import {DicePresentationVisibilityContext} from './dice3d/visibility';
@@ -48,7 +49,7 @@ export default function DiceRoll3D({rolls,rollId,enabled,skipped=false,onComplet
   },[activeKey,key,allowed,notify,startSound]);
   function skip() {stopSound();remember(key);setActiveKey(null);notify(key);}
   return <>
-    {children??<div className="dg-dice-static" role="group" aria-label="Dice results">{rolls.map(die=><span key={die.id} className="dg-dice-static-face" role="img" aria-label={`${die.color.charAt(0).toUpperCase()+die.color.slice(1)} die: ${die.face}`} style={{backgroundColor:presentationColor(die.color)}}><svg viewBox="0 0 40 40" aria-hidden="true">{(pipPositions[die.face]??[]).map(([x,y],index)=><circle key={index} cx={20+x*10} cy={20+y*10} r="3.2"/>)}</svg><span className="dg-dice-screen-reader">{die.face}</span></span>)}</div>}
+    {children??<div className="dg-dice-static" role="group" aria-label="Dice results">{rolls.map(die=><span key={die.id} role="img" aria-label={`${die.color.charAt(0).toUpperCase()+die.color.slice(1)} die: ${die.face}`}><EclipseDieFace color={die.color} face={die.face} decorative/></span>)}</div>}
     {activeKey===key&&allowed&&createPortal(<div className={`dg-dice-overlay${fading?' is-settled':''}`} data-roll-id={rollId}>
       <canvas ref={canvas} aria-hidden="true"/>
       <button type="button" className="dg-dice-skip" onClick={skip}>Skip dice animation</button>

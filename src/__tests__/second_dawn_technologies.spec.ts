@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
-  TECHNOLOGIES,
+  TECHNOLOGIES as ALL_TECHNOLOGIES,
   getTechnology,
   researchCost,
   type ResearchEntry,
 } from '../../shared/eclipse/technologies';
+
+const TECHNOLOGIES = ALL_TECHNOLOGIES.filter(item => !item.expansion);
 
 describe('Second Dawn technology catalog and research pricing', () => {
   it('contains all 24 regular and 15 singleton rare technologies with separately attributed regular supplies', () => {

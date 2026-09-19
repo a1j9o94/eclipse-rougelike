@@ -256,3 +256,4 @@
 .dg-volley-scene.is-awaiting-dice .dg-volley-flight path,
 .dg-volley-scene.is-awaiting-dice .dg-volley-impact-flash,
 .dg-volley-scene.is-awaiting-dice .dg-volley-wreck-mark {animation-play-state:paused}
+.dg-volley-flight [data-weapon-color="magenta"] {stroke:#f094dc}

@@ -44,7 +44,7 @@ export function recoverHistoryCheckpoint(input: HistoryRecoveryInput): HistoryRe
   const { anchor, entries, targetRevision } = input;
   if (!Number.isSafeInteger(targetRevision) || targetRevision < 1 || targetRevision > anchor.revision)
     return { ok: false, reason: 'invalid-target' };
-  const pin = profileVersions(anchor.factionProfile ?? 'base');
+  const pin = profileVersions(anchor.factionProfile ?? 'base', anchor.engine?.riftCannons);
   if (anchor.rulesVersion !== pin.rulesVersion || anchor.catalogVersion !== pin.catalogVersion)
     return { ok: false, reason: 'unsupported-version' };
   const random = anchor.random;
@@ -65,7 +65,7 @@ export function recoverHistoryCheckpoint(input: HistoryRecoveryInput): HistoryRe
     try {
       let state = createGame({
         seed, factionProfile: anchor.factionProfile ?? 'base',
-        warpPortals: anchor.engine.warpPortals, randomizeStartingPlayer,
+        warpPortals: anchor.engine.warpPortals, riftCannons: anchor.engine.riftCannons, randomizeStartingPlayer,
         seats: anchor.seats.map(({ id, faction, controller, pieceColor }) => ({ id, faction, controller, pieceColor })),
       });
       let checkpoint: GameState | null = null;

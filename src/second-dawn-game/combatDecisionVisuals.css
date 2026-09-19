@@ -61,3 +61,7 @@
 .dg-combat-aftermath-heading {display:flex;align-items:center;justify-content:space-between;gap:10px;color:#e5d3b9}
 .dg-combat-aftermath-heading button {min-height:44px}
 .dg-combat-turn+.dg-battle-overview,.dg-combat-allocation+.dg-battle-overview {margin-top:14px}
+.dg-volley-die.is-magenta {border-color:#d981c0}
+.dg-target-dice .dg-eclipse-die {width:26px;height:26px;flex-basis:26px}
+.dg-result-dice .dg-eclipse-die {padding:0;min-width:40px;min-height:40px;border-radius:7px}
+@media(max-width:600px){.dg-dice-tray{display:flex}.dg-volley-die{flex:1 1 140px}}

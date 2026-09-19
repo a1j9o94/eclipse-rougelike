@@ -9,6 +9,8 @@ import ShipSilhouette from "./ShipSilhouette";
 import { NeutralShipSilhouette } from "./BattleOverview";
 import { PlanetIcon } from "./SectorPlanets";
 import DiceRoll3D from "./DiceRoll3D";
+import EclipseDieFace from "./EclipseDieFace";
+import {eclipseDieFace} from "./dice3d/faces";
 import { useDice3dEnabled } from "./presentationSettings";
 import "./combatDecisionVisuals.css";
 
@@ -49,6 +51,7 @@ export function CombatVolleyAllocator({ view, decision, targetLabels, values, se
   };
   const hitFor = (die: AllocationDecision["dice"][number], targetId: string, shield?: number): boolean | undefined => {
     if (die.hitTargets !== undefined) return die.hitTargets.includes(targetId);
+    if (die.weaponColor === "magenta") return die.damage > 0;
     if (die.face === 1) return false;
     if (die.face === 6) return true;
     return die.computer !== undefined && shield !== undefined ? die.face + die.computer - shield >= 6 : undefined;
@@ -61,12 +64,12 @@ export function CombatVolleyAllocator({ view, decision, targetLabels, values, se
       for (const die of decision.dice.filter(candidate => candidate.split)) assignedDamage += Number(values[`${die.id}/${targetId}`] ?? "0");
       const hp = stats && ship ? Math.max(0, stats.hull + 1 - ship.damage) : undefined;
       const hit = selected ? hitFor(selected, targetId, stats?.shield) : undefined;
-      const explanation = selected ? selected.face === 1 ? "Natural 1 always misses." : selected.face === 6 ? "Natural 6 always hits." : hit === undefined ? `Roll ${selected.face}; computer or shield provenance is unavailable, so this legacy hit preview is unknown.` : `${selected.face} + ${selected.computer} computer vs shield ${stats?.shield} ${hit ? "hits" : "misses"}.` : "Select a die to preview this target.";
+      const explanation = selected ? selected.weaponColor === "magenta" ? `${eclipseDieFace("magenta",selected.face).label}. Rift damage ignores computers and shields.` : selected.face === 1 ? "Natural 1 always misses." : selected.face === 6 ? "Natural 6 always hits." : hit === undefined ? `Roll ${selected.face}; computer or shield provenance is unavailable, so this legacy hit preview is unknown.` : `${selected.face} + ${selected.computer} computer vs shield ${stats?.shield} ${hit ? "hits" : "misses"}.` : "Select a die to preview this target.";
       return <article className={`dg-volley-target${hit === false ? " is-miss" : ""}`} key={targetId}>
         <ShipCard view={view} targetId={targetId} label={targetLabels[targetId] ?? targetId} selected={false} hit={hit} onClick={() => selected && !selected.split && selected.hitTargets?.length !== 0 && setValue(selected.id, targetId)}/>
         <div className="dg-target-projection"><span>{hp === undefined ? "HP unknown" : uncertainDamage ? `${hp} HP → unknown` : `${hp} HP → ${Math.max(0, hp-assignedDamage)} HP`}</span><span>{assignedDamage} assigned{uncertainDamage ? ` · +${uncertainDamage} uncertain` : hp !== undefined && assignedDamage > hp ? ` · ${assignedDamage-hp} excess` : ""}</span></div>
         <p>{explanation}</p>
-        <div className="dg-target-dice">{dice.map((die) => <button type="button" key={die.id} aria-label={`Remove die ${decision.dice.indexOf(die)+1} from ${targetLabels[targetId] ?? targetId}`} onClick={() => setValue(die.id, "")}><b>{die.face}</b> ×</button>)}</div>
+        <div className="dg-target-dice">{dice.map((die) => <button type="button" key={die.id} aria-label={`Remove die ${decision.dice.indexOf(die)+1} from ${targetLabels[targetId] ?? targetId}`} onClick={() => setValue(die.id, "")}><EclipseDieFace color={die.weaponColor??"#bac0ce"} face={die.face} decorative/> ×</button>)}</div>
       </article>;
     })}
   </div>;
@@ -77,21 +80,21 @@ export function CombatVolleyAllocator({ view, decision, targetLabels, values, se
       {decision.dice.map((die, index) => {
         const assigned = !die.split && values[die.id];
         const weapon = die.weaponKind && die.weaponColor ? `${die.weaponColor} ${die.weaponKind}` : "Unknown weapon";
-        const label = `Die ${index + 1}, roll ${die.face}, ${weapon}, ${die.damage} damage${assigned ? `, assigned to ${targetLabels[assigned] ?? assigned}` : ""}`;
+        const label = `Die ${index + 1}, roll ${die.face}, ${weapon}, ${die.damage} damage${die.weaponColor==="magenta"&&(die.face===5||die.face===6)?", 1 self-damage":""}${assigned ? `, assigned to ${targetLabels[assigned] ?? assigned}` : ""}`;
         return <button type="button" key={die.id} className={`dg-volley-die is-${die.weaponColor ?? "unknown"}${selectedId === die.id ? " is-selected" : ""}${assigned ? " is-assigned" : ""}${die.hitTargets?.length === 0 ? " is-auto-miss" : ""}`} aria-label={label} aria-pressed={selectedId === die.id} onClick={() => die.hitTargets?.length !== 0 && setValue("__selectedDie", die.id)}>
-          <span className="dg-die-face" aria-hidden="true">{die.face}</span><span><strong>{weapon}</strong><small>{die.damage} damage · {die.computer === undefined ? "computer unknown" : `computer +${die.computer}`}</small></span>
+          <EclipseDieFace color={die.weaponColor??"#bac0ce"} face={die.face} decorative/><span><strong>{die.weaponColor==="magenta"?"Rift cannon":weapon}</strong><small>{die.weaponColor==="magenta"?`${eclipseDieFace("magenta",die.face).label.replace("Rift die: ","")} · ignores shields`: `${die.damage} damage · ${die.computer === undefined ? "computer unknown" : `computer +${die.computer}`}`}</small></span>
         </button>;
       })}
-      {decision.dice.some((die) => die.hitTargets?.length === 0) && <p className="dg-all-miss-note">Miss tray · these dice cannot hit any target and need no target choice.</p>}
+      {decision.dice.some((die) => die.hitTargets?.length === 0) && <p className="dg-all-miss-note">No enemy target needed · blank rolls miss; hollow Rift bursts cause self-damage automatically.</p>}
     </div>
     </DiceRoll3D>
-    {!selected ? <p className="dg-all-miss-note">No hit. Every die misses all opposing ships; no allocation is needed.</p> : selected.split && selected.hitTargets?.length !== 0 ? <><SplitDamageCards view={view} targetLabels={targetLabels} dieNumber={decision.dice.indexOf(selected) + 1} targets={selected.targets} damage={selected.damage} values={Object.fromEntries(selected.targets.map((target) => [target, Number(values[`${selected.id}/${target}`] ?? "0")]))} onChange={(target, next) => setValue(`${selected.id}/${target}`, String(next))}/>{targetGrid}</> : targetGrid}
+    {!selected ? <p className="dg-all-miss-note">{decision.dice.some(die=>die.weaponColor==="magenta")?"No enemy damage to assign. Any Rift backfire is resolved automatically on your Rift-armed ships.":"No hit. Every die misses all opposing ships; no allocation is needed."}</p> : selected.split && selected.hitTargets?.length !== 0 ? <><SplitDamageCards view={view} targetLabels={targetLabels} dieNumber={decision.dice.indexOf(selected) + 1} targets={selected.targets} damage={selected.damage} values={Object.fromEntries(selected.targets.map((target) => [target, Number(values[`${selected.id}/${target}`] ?? "0")]))} onChange={(target, next) => setValue(`${selected.id}/${target}`, String(next))}/>{targetGrid}</> : targetGrid}
   </div>;
 }
 
 export function CombatVolleyResult({ volley }: { volley: NonNullable<import("../../shared/eclipse/types").GameEvent["combatVolley"]> }) {
   return <div className="dg-volley-result" aria-label="Resolved combat volley">
-    <div className="dg-result-dice">{volley.dice.map((die) => <span key={die.id} className={`is-${die.weaponColor ?? "unknown"}`} aria-label={`Roll ${die.face}, ${die.damage} damage`}><b>{die.face}</b><small>{die.weaponColor && die.weaponKind ? `${die.weaponColor} ${die.weaponKind}` : "weapon unavailable"}</small></span>)}</div>
+    <div className="dg-result-dice">{volley.dice.map((die) => <span key={die.id} className={`is-${die.weaponColor ?? "unknown"}`} aria-label={die.weaponColor==="magenta"?eclipseDieFace("magenta",die.face).label:`Roll ${die.face}, ${die.damage} damage`}><EclipseDieFace color={die.weaponColor??"#bac0ce"} face={die.face} decorative/><small>{die.weaponColor && die.weaponKind ? `${die.weaponColor} ${die.weaponKind}` : "weapon unavailable"}</small></span>)}</div>
     <ul>{volley.targets.map((target) => <li key={target.id}><strong>{target.id}</strong><span>{target.hpBefore} → {target.hpAfter} HP</span>{target.destroyed && <b>Destroyed</b>}{target.excess > 0 && <small>{target.excess} excess</small>}</li>)}</ul>
   </div>;
 }

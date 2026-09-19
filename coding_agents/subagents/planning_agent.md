@@ -609,3 +609,6 @@ Outcome: rewind through the remaining game history with agreed truncation; draw 
 
 ### September 19 — Wooden galaxy and paper play-area asset studies
 Outcome: give the user concrete reusable art references for carved sector tiles, three-dimensional ship figurines and paper actions, plus full-board/combat/research/blueprint compositions. Six built-in image generations and their exact prompts are saved in `coding_agents/art_direction/wood-and-paper-v1/`. Acceptance and visual review are in its README; read-only PNG integrity/alpha checks and hashes are in validation.json. No app code/rules changed. Lint/build pass. Production sprite slicing, camera/edge verification and live state overlays remain a later integration task; no approval of these studies is assumed.
+
+## 2026-09-19 — Rift Cannons and printed dice
+Outcome: new matches include the official Rift mini-expansion and combat dice show actual Eclipse faces. Acceptance, source references, fail-first coverage, rollout isolation and rollback are recorded in `coding_agents/rift_cannons_plan.md`. Engine/catalog/UI/AI work was delegated in separate file scopes. Additional Drive heuristics and wooden-atlas redesign use separate worktrees/branches and are excluded from this release.

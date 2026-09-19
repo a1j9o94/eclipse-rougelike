@@ -1,7 +1,12 @@
 import { deriveBlueprintStats, neutralBlueprint } from "./blueprints";
 import { factionHasCapability } from "./catalog";
 import { publicBlueprint } from "./legal";
-import { dieHits, type DieFace } from "./combat";
+import {
+  allocateRiftBackfire,
+  attackDieHits,
+  riftDieOutcome,
+  type DieFace,
+} from "./combat";
 import { connectionBetween } from "./geometry";
 import { mapSector, movementAbilities } from "./rulesState";
 import { randomInt, randomSeed } from "./random";
@@ -30,6 +35,7 @@ export interface CombatEstimateOptions {
 interface SimulatedShip {
   id: string;
   owner: string;
+  type: Ship["type"];
   defender: boolean;
   damage: number;
   stats: ShipStats;
@@ -50,7 +56,10 @@ function canRetreat(view: PlayerView, ship: Ship, sectorId: string): boolean {
         (other) =>
           other.sectorId === sector.id &&
           other.owner !== seat.id &&
-          !(factionHasCapability(seat.faction, "ancient-coexistence") && other.type === "ancient"),
+          !(
+            factionHasCapability(seat.faction, "ancient-coexistence") &&
+            other.type === "ancient"
+          ),
       ) &&
       connectionBetween(
         mapSector(source),
@@ -123,9 +132,17 @@ export function estimatePublicBattle(
     defenderOwner &&
     (attackerOwner === defenderOwner ||
       (attackerOwner === "ancient" &&
-        !!view.seats.find((seat) => seat.id === defenderOwner && factionHasCapability(seat.faction, "ancient-coexistence"))) ||
+        !!view.seats.find(
+          (seat) =>
+            seat.id === defenderOwner &&
+            factionHasCapability(seat.faction, "ancient-coexistence"),
+        )) ||
       (defenderOwner === "ancient" &&
-        !!view.seats.find((seat) => seat.id === attackerOwner && factionHasCapability(seat.faction, "ancient-coexistence"))))
+        !!view.seats.find(
+          (seat) =>
+            seat.id === attackerOwner &&
+            factionHasCapability(seat.faction, "ancient-coexistence"),
+        )))
   )
     return staticResult(0, 0, 1, "non-opponents");
   if (!attackers.size || !defenders.size)
@@ -168,6 +185,7 @@ export function estimatePublicBattle(
       return {
         id: ship.id,
         owner: ship.owner,
+        type: ship.type,
         defender: defenders.has(ship.id),
         damage: ship.damage,
         stats,
@@ -186,6 +204,20 @@ export function estimatePublicBattle(
         a.id.localeCompare(b.id),
     );
 
+  // Resolve each ship-class volley together so simultaneous Rift backfire cannot
+  // suppress another die that was already fired by that class.
+  const groups = [
+    ...new Set(templates.map((ship) => `${ship.owner}/${ship.type}`)),
+  ];
+  const size: Record<Ship["type"], number> = {
+    interceptor: 1,
+    starbase: 2,
+    cruiser: 3,
+    dreadnought: 4,
+    ancient: 0,
+    guardian: 0,
+    gcds: 0,
+  };
   let random = randomSeed(simulationSeed >>> 0),
     attackerWins = 0,
     defenderWins = 0,
@@ -215,46 +247,82 @@ export function estimatePublicBattle(
         forcedRetreat = true;
         break;
       }
-      for (const ship of fleet) {
-        if (!alive(ship)) continue;
+      for (const group of groups) {
+        const firing = fleet.filter(
+          (ship) => `${ship.owner}/${ship.type}` === group && alive(ship),
+        );
+        if (!firing.length) continue;
         const targets = fleet.filter(
-          (target) => target.defender !== ship.defender && alive(target),
+          (target) => target.defender !== firing[0].defender && alive(target),
         );
         if (!targets.length) break;
-        for (const weapon of ship.stats.weapons.filter(
-          (weapon) => weapon.kind === (round < 0 ? "missile" : "cannon"),
-        ))
-          for (let die = 0; die < weapon.dice; die++) {
-            const roll = randomInt(random, 6);
-            random = roll.state;
-            const face = (roll.value + 1) as DieFace;
-            let remaining = weapon.damage;
-            const split =
-              ship.splitter &&
-              weapon.kind === "cannon" &&
-              weapon.color === "red";
-            do {
-              const target = targets
-                .filter(
-                  (candidate) =>
-                    alive(candidate) &&
-                    dieHits(face, ship.stats.computer, candidate.stats.shield),
-                )
-                .sort(
-                  (a, b) =>
-                    a.stats.hull +
-                      1 -
-                      a.damage -
-                      (b.stats.hull + 1 - b.damage) || a.id.localeCompare(b.id),
-                )[0];
-              if (!target) break;
-              const damage = split
-                ? Math.min(remaining, target.stats.hull + 1 - target.damage)
-                : remaining;
-              target.damage += damage;
-              remaining -= damage;
-            } while (split && remaining > 0);
+        let backfire = 0;
+        for (const ship of firing) {
+          for (const weapon of ship.stats.weapons.filter(
+            (weapon) => weapon.kind === (round < 0 ? "missile" : "cannon"),
+          ))
+            for (let die = 0; die < weapon.dice; die++) {
+              const roll = randomInt(random, 6);
+              random = roll.state;
+              const face = (roll.value + 1) as DieFace;
+              const rift =
+                weapon.color === "magenta" ? riftDieOutcome(face) : null;
+              backfire += rift?.backfire ?? 0;
+              let remaining = rift?.damage ?? weapon.damage;
+              const split =
+                ship.splitter &&
+                weapon.kind === "cannon" &&
+                weapon.color === "red";
+              do {
+                const target = targets
+                  .filter(
+                    (candidate) =>
+                      alive(candidate) &&
+                      attackDieHits(
+                        {
+                          face,
+                          computer: ship.stats.computer,
+                          weaponColor: weapon.color,
+                        },
+                        candidate.stats.shield,
+                      ),
+                  )
+                  .sort(
+                    (a, b) =>
+                      a.stats.hull +
+                        1 -
+                        a.damage -
+                        (b.stats.hull + 1 - b.damage) ||
+                      a.id.localeCompare(b.id),
+                  )[0];
+                if (!target) break;
+                const damage = split
+                  ? Math.min(remaining, target.stats.hull + 1 - target.damage)
+                  : remaining;
+                target.damage += damage;
+                remaining -= damage;
+              } while (split && remaining > 0);
+            }
+        }
+        if (backfire && firing.length) {
+          const riftShips = fleet.filter(
+            (ship) =>
+              ship.owner === firing[0].owner &&
+              alive(ship) &&
+              ship.stats.weapons.some((weapon) => weapon.color === "magenta"),
+          );
+          for (const hit of allocateRiftBackfire(
+            riftShips.map((ship) => ({
+              id: ship.id,
+              hp: ship.stats.hull + 1 - ship.damage,
+              size: size[ship.type],
+            })),
+            backfire,
+          )) {
+            fleet.find((ship) => ship.id === hit.targetId)!.damage +=
+              hit.damage;
           }
+        }
       }
     }
     const own = fleet.filter((ship) => !ship.defender && alive(ship));

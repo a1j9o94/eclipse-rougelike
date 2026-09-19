@@ -24,7 +24,7 @@ it('persists independently colored expanded factions and accepts commands with t
   await t.mutation(api.eclipseRooms.setRoomReady, { ...guest, roomToken: room.roomToken, ready: true });
   const { matchId } = await t.mutation(api.eclipseRooms.startRoom, { ...host, roomToken: room.roomToken });
   const view = await t.query(api.eclipseMatches.getMatchView, { ...host, matchId });
-  expect(view).toMatchObject({ ...profileVersions('expanded-v1'), factionProfile: 'expanded-v1', seats: [{ faction: 'midas', pieceColor: 'blue' }, { faction: 'ragnarok', pieceColor: 'red' }] });
+  expect(view).toMatchObject({ riftCannons: true, ...profileVersions('expanded-v1', true), factionProfile: 'expanded-v1', seats: [{ faction: 'midas', pieceColor: 'blue' }, { faction: 'ragnarok', pieceColor: 'red' }] });
   const command = { ...host, matchId, commandId: 'expanded-pass', expectedRevision: 0, command: { type: 'pass' as const } };
   expect(await t.mutation(api.eclipseMatches.submitCommand, command)).toMatchObject({ ok: true, duplicate: false });
   expect(await t.mutation(api.eclipseMatches.submitCommand, command)).toMatchObject({ ok: true, duplicate: true });
@@ -49,6 +49,7 @@ it('creates every supported solo size with unique colors and preserves the expan
   for (const aiCount of [1, 2, 3, 4, 5]) {
     const { matchId } = await t.mutation(api.eclipseMatches.createMatch, { ...host, aiCount, factionProfile: 'expanded-v1', faction: 'rho-indi', pieceColor: 'white' });
     const view = await t.query(api.eclipseMatches.getMatchView, { ...host, matchId });
+    expect(view?.riftCannons).toBe(true);
     expect(view?.seats).toHaveLength(aiCount + 1);
     expect(new Set(view?.seats.map(seat => seat.faction)).size).toBe(aiCount + 1);
     expect(new Set(view?.seats.map(seat => seat.pieceColor)).size).toBe(aiCount + 1);
@@ -86,7 +87,7 @@ it('commits an expanded AI decision under the saved version pin and rejects stal
   });
   await t.mutation(internal.eclipseMatches.runAi, { matchId, expectedRevision: 0 });
   await finishDispatchedAi(t);
-  expect(await t.query(api.eclipseMatches.getMatchView, { ...host, matchId })).toMatchObject({ revision: 1, factionProfile: 'expanded-v1', ...profileVersions('expanded-v1') });
+  expect(await t.query(api.eclipseMatches.getMatchView, { ...host, matchId })).toMatchObject({ revision: 1, factionProfile: 'expanded-v1', ...profileVersions('expanded-v1', true) });
   await t.mutation(internal.eclipseMatches.runAi, { matchId, expectedRevision: 0 });
   await finishDispatchedAi(t);
   expect((await t.query(api.eclipseMatches.getMatchView, { ...host, matchId }))?.revision).toBe(1);
@@ -115,8 +116,13 @@ it('continues a pre-expansion snapshot with no profile or piece-color fields', a
     const row = await ctx.db.get(matchId);
     const state = JSON.parse(row!.snapshotJson) as GameState;
     delete state.factionProfile;
+    delete state.engine!.riftCannons;
+    Object.assign(state, profileVersions('base'));
+    state.technologyMarket=state.technologyMarket.filter(id=>id!=='rift-cannon');
+    state.supplies.technology=state.supplies.technology.filter(id=>id!=='rift-cannon');
+    state.supplies.discovery=state.supplies.discovery.filter(id=>!id.startsWith('rift-conductor'));
     for (const seat of state.seats) delete seat.pieceColor;
-    await ctx.db.patch(matchId, { snapshotJson: JSON.stringify(state) });
+    await ctx.db.patch(matchId, { ...profileVersions('base'), snapshotJson: JSON.stringify(state) });
   });
   expect(await t.mutation(api.eclipseMatches.submitCommand, { ...host, matchId, commandId: 'old-save-pass', expectedRevision: 0, command: { type: 'pass' } })).toMatchObject({ ok: true });
   expect(await t.query(api.eclipseMatches.getMatchView, { ...host, matchId })).toMatchObject({ revision: 1, ...profileVersions('base') });

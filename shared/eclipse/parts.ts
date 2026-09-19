@@ -3,7 +3,7 @@ import type { AncientShipPartId } from './discoveries';
 
 export type DefaultShipPartId = 'ion-cannon' | 'nuclear-source' | 'nuclear-drive' | 'hull' | 'electron-computer';
 export type ShipPartId = DefaultShipPartId | ResearchedShipPart | AncientShipPartId;
-export type WeaponColor = 'yellow' | 'orange' | 'blue' | 'red';
+export type WeaponColor = 'yellow' | 'orange' | 'blue' | 'red' | 'magenta';
 export interface ShipWeapon { kind: 'cannon' | 'missile'; color: WeaponColor; dice: number; damage: 1 | 2 | 3 | 4 }
 export interface ShipStats {
   energyProduction: number;
@@ -18,12 +18,13 @@ export interface ShipStats {
   weapons: ShipWeapon[];
 }
 export interface ShipPart extends ShipStats {
+  expansion?: 'rift-cannon';
   id: ShipPartId;
   name: string;
   placement: 'grid' | 'outside';
   access: { kind: 'default' } | { kind: 'technology'; technology: TechnologyId } | { kind: 'ancient' };
   source: string;
-  verification: 'component-scan-crosschecked-rulebook';
+  verification: 'component-scan-crosschecked-rulebook' | 'publisher-rulebook';
 }
 export const EMPTY_SHIP_STATS: ShipStats = { energyProduction: 0, energyConsumption: 0, initiative: 0, movement: 0, computer: 0, shield: 0, hull: 0, weapons: [] };
 const SCANS = 'https://steamcommunity.com/sharedfiles/filedetails/?id=2414358241';
@@ -34,11 +35,14 @@ function standard(id: DefaultShipPartId, stats: Partial<ShipStats>): ShipPart { 
 function researched(id: ResearchedShipPart, stats: Partial<ShipStats>): ShipPart { return part(id, { kind: 'technology', technology: id }, stats); }
 function ancient(id: AncientShipPartId, stats: Partial<ShipStats>, placement: ShipPart['placement'] = 'grid'): ShipPart { return part(id, { kind: 'ancient' }, stats, placement); }
 function weapon(color: WeaponColor, dice = 1, kind: ShipWeapon['kind'] = 'cannon'): ShipWeapon[] {
-  const damage: Record<WeaponColor, ShipWeapon['damage']> = { yellow: 1, orange: 2, blue: 3, red: 4 };
+  // Magenta uses face-dependent Rift damage in combat; this nominal value is not its roll result.
+  const damage: Record<WeaponColor, ShipWeapon['damage']> = { yellow: 1, orange: 2, blue: 3, red: 4, magenta: 1 };
   return [{ color, dice, kind, damage: damage[color] }];
 }
-/** Base-box components only. Source tiers and individual scan URLs in second_dawn_ship_audit.md. */
+/** Base-box components and explicitly marked Rift expansion parts. */
 export const SHIP_PARTS: readonly ShipPart[] = [
+  { ...researched('rift-cannon', { energyConsumption: 2, weapons: weapon('magenta') }), expansion: 'rift-cannon', verification: 'publisher-rulebook', source: 'https://www.lautapelit.fi/files/Online%20rules/Eclipse2_RC_rules_web.pdf' },
+  { ...ancient('rift-conductor', { hull: 1, energyConsumption: 1, weapons: weapon('magenta') }), expansion: 'rift-cannon', verification: 'publisher-rulebook', source: 'https://www.lautapelit.fi/files/Online%20rules/Eclipse2_RC_rules_web.pdf' },
   standard('ion-cannon', { energyConsumption: 1, weapons: weapon('yellow') }),
   standard('nuclear-source', { energyProduction: 3 }),
   standard('nuclear-drive', { energyConsumption: 1, movement: 1, initiative: 1 }),
