@@ -209,6 +209,11 @@ export function getPlayerView(
     firstPasser: state.firstPasser,
     warpPortals: state.engine?.warpPortals ?? true,
     riftCannons: state.engine?.riftCannons ?? false,
+    sectorDeckCounts: {
+      inner: {drawPile: state.supplies.inner.length, discardPile: state.engine?.discardedSectors.inner.length ?? 0},
+      middle: {drawPile: state.supplies.middle.length, discardPile: state.engine?.discardedSectors.middle.length ?? 0},
+      outer: {drawPile: state.supplies.outer.length, discardPile: state.engine?.discardedSectors.outer.length ?? 0},
+    },
     supplyCounts: {
       inner: state.supplies.inner.length + (state.engine?.discardedSectors.inner.length ?? 0),
       middle: state.supplies.middle.length + (state.engine?.discardedSectors.middle.length ?? 0),

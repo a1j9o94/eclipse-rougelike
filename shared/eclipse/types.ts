@@ -434,6 +434,11 @@ export type SubmissionResult =
     }
   | { ok: false; aggregate: MatchAggregate; error: ValidationError };
 
+export interface SectorDeckCount {
+  drawPile: number;
+  discardPile: number;
+}
+
 export interface PlayerView {
   rulesVersion: string;
   catalogVersion: string;
@@ -462,6 +467,8 @@ export interface PlayerView {
     reputation: number;
     discoveriesKept: number;
   }[];
+  /** Public pile sizes only; never tile identities or draw order. */
+  sectorDeckCounts?: Record<'inner' | 'middle' | 'outer', SectorDeckCount>;
   supplyCounts?: {
     inner: number;
     middle: number;

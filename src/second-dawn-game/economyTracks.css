@@ -1,0 +1,28 @@
+.eo-economy-tracks { margin-bottom:16px; }
+.eo-track { min-width:0; margin-top:14px; }
+.eo-influence { --resource-color:#a8c9d7; }
+.eo-track > header { display:flex; flex-wrap:wrap; align-items:center; gap:6px 14px; margin-bottom:7px; }
+.eo-track > header h3 { display:flex; align-items:center; gap:7px; min-width:152px; margin:0; color:var(--resource-color); font-size:13px; }
+.eo-track > header svg { width:21px; height:21px; }
+.eo-track > header strong { color:#e7e7e2; font-size:13px; }
+.eo-track > header > span { margin-left:auto; font-size:12px; color:#b9c7d0; }
+.eo-track ol { display:grid; grid-template-columns:repeat(var(--track-count),minmax(0,1fr)); gap:5px; list-style:none; padding:0; margin:0; }
+.eo-track li { min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; border:1px solid #53606c; background:#0b1621; border-radius:5px; padding:5px 2px 3px; color:#d1dce1; }
+.eo-track li > strong { font-size:18px; line-height:1.2; font-variant-numeric:tabular-nums; }
+.eo-track li > small { font-size:10px; line-height:1.2; min-height:12px; color:#aabcc5; }
+.eo-track li.eo-track-past { background:color-mix(in srgb,var(--resource-color) 6%,#0b1621); }
+.eo-track li.eo-track-next { border:1px dashed var(--resource-color); }
+.eo-track li.eo-track-current { border:2px solid var(--resource-color); padding:4px 1px 2px; color:var(--resource-color); background:color-mix(in srgb,var(--resource-color) 18%,#0b1621); }
+.eo-track li.eo-track-current > small { color:var(--resource-color); font-weight:700; }
+.eo-overview .eo-track-explanation { margin:9px 0 0; font-size:11px; line-height:1.5; color:#afbdc7; }
+.eo-track.eo-influence { border-top:1px solid #455665; padding-top:14px; }
+@media(max-width:700px) {
+ .eo-economy-tracks { margin-bottom:12px; }
+ .eo-track ol { grid-template-columns:repeat(var(--track-mobile-count),minmax(0,1fr)); gap:4px; }
+ .eo-track > header { gap:4px 8px; }
+ .eo-track > header h3 { min-width:0; margin-right:auto; }
+ .eo-track > header > span { width:100%; margin:0; font-size:11px; }
+ .eo-track li > strong { font-size:16px; }
+ .eo-track li { padding-top:4px; padding-bottom:2px; }
+ .eo-track li.eo-track-current { padding-top:3px; padding-bottom:1px; }
+}

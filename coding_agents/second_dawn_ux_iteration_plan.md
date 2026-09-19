@@ -420,3 +420,7 @@ Replaced the source-first Influence flow with map-first control selection. Owned
 
 ### September 19 — Colonize from upkeep review
 Upkeep notice and review now expose legal Colonize opportunities and open the existing planet planner. Back to upkeep preserves explicit confirmation and refreshes the economic preview after placement. Eight new cases plus related regressions (34 tests) passed; actual desktop/mobile component renders reviewed. [Implementation and evidence](second_dawn_upkeep_colonize_entry.md). Human playtest feedback remains pending.
+
+- Sector decks + neutral identification: count-only ring draw/discard projection, persistent deck counters and mobile details; standard neutral blueprint labels, full GCDS name, visual weapon dice. Relevant tests and reviewed screenshots recorded in [sector decks/neutral validation](sector_decks_neutral_fleets.md). No advanced-profile activation or hidden tile identities exposed.
+
+- Command-center economy tracks: full Money/Science/Materials income curves and influence upkeep curve, current/next markers and per-disc increases; resource income and action/reaction costs remain distinct. Fourteen focused tests pass, desktop/mobile images reviewed. [Evidence and source notes](second_dawn_empire_economy_tracks.md). No global board strip or rules changes.

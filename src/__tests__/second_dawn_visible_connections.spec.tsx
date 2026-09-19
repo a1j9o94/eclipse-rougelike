@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import {cleanup,render} from '@testing-library/react';
+import {cleanup,fireEvent,render} from '@testing-library/react';
 import {afterEach,expect,it,vi} from 'vitest';
 import {createGame} from '../../shared/eclipse/setup';
 import {getPlayerView} from '../../shared/eclipse/protocol';
@@ -23,4 +23,30 @@ it('renders solid unconnected edges normally and visible openings in placement m
  const {view}=fixture();const props={view,candidates:[],selected:null,onSelect:vi.fn(),onExplore:vi.fn()};const ui=render(<GalaxyBoard {...props}/>);
  expect(ui.container.querySelectorAll('[data-wormhole-edge]')).toHaveLength(0);
  ui.rerender(<GalaxyBoard {...props} showPrintedWormholes/>);expect(ui.container.querySelectorAll('[data-wormhole-edge]').length).toBeGreaterThan(6);
+});
+
+it('reveals every rotated printed opening on the selected sector only',()=>{
+ const {view,from}=fixture();from.rotation=2;const before=JSON.stringify(view);
+ const props={view,candidates:[],onSelect:vi.fn(),onExplore:vi.fn()};
+ const ui=render(<GalaxyBoard {...props} selected={from.id}/>);
+ expect(ui.container.querySelector('[data-galaxy-target="sector:from"]')!.querySelectorAll('[data-wormhole-edge]')).toHaveLength(6);
+ expect(ui.container.querySelector('[data-galaxy-target="sector:to"]')!.querySelectorAll('[data-wormhole-edge]')).toHaveLength(0);
+ ui.rerender(<GalaxyBoard {...props} selected={null}/>);
+ expect(ui.container.querySelectorAll('[data-wormhole-edge]')).toHaveLength(0);
+ expect(JSON.stringify(view)).toBe(before);
+});
+it('reveals openings on pointer hover and keyboard focus without selecting or moving',()=>{
+ const {view}=fixture(),onSelect=vi.fn();const ui=render(<GalaxyBoard view={view} candidates={[]} selected={null} onSelect={onSelect} onExplore={vi.fn()}/>);
+ const tile=ui.container.querySelector('[data-galaxy-target="sector:from"]')!;
+ fireEvent.pointerEnter(tile,{pointerType:'mouse'});expect(tile.querySelectorAll('[data-wormhole-edge]')).toHaveLength(6);
+ fireEvent.pointerLeave(tile);expect(tile.querySelectorAll('[data-wormhole-edge]')).toHaveLength(0);
+ fireEvent.focus(tile);expect(tile.querySelectorAll('[data-wormhole-edge]')).toHaveLength(6);
+ fireEvent.blur(tile);expect(tile.querySelectorAll('[data-wormhole-edge]')).toHaveLength(0);
+ expect(onSelect).not.toHaveBeenCalled();
+});
+it('keeps real connections distinct from unconnected printed openings when highlighted',()=>{
+ const {view,from,to}=fixture();to.tileId='1';
+ const holes=displayedWormholes(view,from,true);
+ expect(holes).toContainEqual({edge:0,kind:'wormhole'});
+ expect(holes.filter(hole=>hole.kind==='printed')).toHaveLength(5);
 });

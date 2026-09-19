@@ -24,7 +24,7 @@ function FleetBlueprintCard({view,ships}:{view:PlayerView;ships:PublicShipProfil
  return <article className="dg-inspection-blueprint" style={{'--fleet-color':seat?seatColor(seat):'#cab88d'} as CSSProperties} aria-label={`${p.ownerName} ${p.name} fleet`}>
   <header className="dg-inspection-identity">
    <div className="dg-inspection-silhouette">{neutral?<NeutralShipSilhouette type={p.ship.type as 'ancient'|'guardian'|'gcds'}/>:<ShipSilhouette type={p.ship.type as 'interceptor'|'cruiser'|'dreadnought'|'starbase'} faction={seat?.faction}/>}</div>
-   <div><span className="dg-inspection-owner">{seat&&<FactionSymbol faction={seat.faction}/>}<span>{p.ownerName}</span></span><h3>{p.name}</h3><small>{neutral?'Defender blueprint':'Public blueprint'}</small></div><strong className="dg-inspection-count" aria-label={`${ships.length} ships`}>×{ships.length}</strong>
+   <div><span className="dg-inspection-owner">{seat&&<FactionSymbol faction={seat.faction}/>}<span>{p.ownerName}</span></span><h3>{p.name}</h3><small>{neutral?'Standard defender blueprint':'Public blueprint'}</small></div><strong className="dg-inspection-count" aria-label={`${ships.length} ships`}>×{ships.length}</strong>
   </header>
   <ShipCapabilities stats={p.stats} neutral={neutral}/>
   {seat&&blueprint&&<BlueprintLoadout faction={seat.faction} blueprint={publicBlueprint(blueprint)}/>}

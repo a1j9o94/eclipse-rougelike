@@ -141,3 +141,28 @@ it('offers Convert without a standalone reputation discard action',()=>{
  expect(screen.getByRole('heading',{name:'Convert resources'})).toBeVisible();
  expect(screen.getByRole('button',{name:'Confirm conversion'})).toBeVisible();
 });
+
+it('lets Research browse the market after minimizing discovery without buying or losing the reward draft',()=>{
+ const view=fixture();view.technologyMarket=['improved-hull'];view.seats[0].resources.science=100;
+ const p=props(view);render(<SecondDawnBoard {...p}/>);
+ fireEvent.click(screen.getByRole('radio',{name:'Keep for 2 VP'}));
+ fireEvent.click(screen.getByRole('button',{name:'Minimize discovery'}));
+ const research=screen.getByRole('button',{name:'Research',exact:true});expect(research).toBeEnabled();fireEvent.click(research);
+ expect(screen.getByRole('heading',{name:'Available technologies'})).toBeVisible();
+ fireEvent.click(within(screen.getByRole('article',{name:'Improved Hull technology'})).getByRole('button'));
+ expect(screen.getByText('Finish your pending decision before researching.')).toBeVisible();
+ expect(document.querySelector('.dg-research-buy:not(:disabled)')).toBeNull();
+ fireEvent.click(screen.getByRole('button',{name:'Return to discovery'}));
+ expect(screen.getByRole('radio',{name:'Keep for 2 VP'})).toBeChecked();expect(p.onSubmit).not.toHaveBeenCalled();
+});
+it.each([false,true])('offers a direct market shortcut from discovery, including mobile=%s',mobile=>{
+ if(mobile)vi.stubGlobal('matchMedia',vi.fn((query:string)=>({matches:query.includes('max-width'),media:query,addEventListener:vi.fn(),removeEventListener:vi.fn()})));
+ const view=fixture();view.technologyMarket=['improved-hull'];const p=props(view);render(<SecondDawnBoard {...p}/>);
+ fireEvent.click(screen.getByRole('radio',{name:'Keep for 2 VP'}));
+ fireEvent.click(screen.getByRole('button',{name:'Browse technologies'}));
+ expect(screen.getByRole('heading',{name:'Available technologies'})).toBeVisible();
+ fireEvent.click(within(screen.getByRole('article',{name:'Improved Hull technology'})).getByRole('button'));
+ expect(screen.queryByRole('navigation',{name:'Current action'})).toBeNull();
+ fireEvent.click(screen.getByRole('button',{name:'Return to discovery'}));
+ expect(screen.getByRole('radio',{name:'Keep for 2 VP'})).toBeChecked();expect(p.onSubmit).not.toHaveBeenCalled();
+});

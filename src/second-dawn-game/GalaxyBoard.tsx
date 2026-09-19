@@ -80,6 +80,8 @@ export default function GalaxyBoard({
   useEffect(()=>{const query=window.matchMedia?.('(max-width: 760px)');if(!query)return;const changed=()=>setSmallScreen(query.matches);query.addEventListener('change',changed);return()=>query.removeEventListener('change',changed);},[]);
   const compact=compactProp??smallScreen;
   const [sectorListOpen,setSectorListOpen]=useState(false);
+  const [hoveredSector,setHoveredSector]=useState<string|null>(null);
+  const [focusedSector,setFocusedSector]=useState<string|null>(null);
   const listRef=useRef<HTMLElement>(null),listToggleRef=useRef<HTMLButtonElement>(null);
   useEffect(()=>{if(sectorListOpen)listRef.current?.focus();},[sectorListOpen]);
   const svgRef=useRef<SVGSVGElement>(null);
@@ -230,6 +232,10 @@ export default function GalaxyBoard({
                 role="button"
                 tabIndex={0}
                 data-galaxy-target={`sector:${s.id}`}
+                onPointerEnter={event=>{if(event.pointerType!=='touch')setHoveredSector(s.id);}}
+                onPointerLeave={()=>setHoveredSector(null)}
+                onFocus={()=>setFocusedSector(s.id)}
+                onBlur={()=>setFocusedSector(null)}
                 className={`sd-sector dg-tile ${detail ? "dg-tile-detailed" : "dg-tile-overview"} ${selected === s.id ? "is-selected" : ""} ${activity?.affectedSectorIds.includes(s.id) ? "dg-tile-activity" : ""}`}
                 aria-label={`Inspect sector ${s.tileId}, ${owner.name}, ${fleets.length} ships${legalTargetIds.includes(s.id) ? `, ${targetLabel}` : ""}`}
                 onClick={() => {
@@ -270,7 +276,7 @@ export default function GalaxyBoard({
                 {legalTargetIds.includes(s.id) && (
                   <polygon className="dg-move-target-ring" points={hex} transform="scale(.88)" fill="none" stroke="#a1ebee" strokeWidth="2.5" strokeDasharray="6 4" pointerEvents="none"><title>{targetLabel}</title></polygon>
                 )}
-                {displayedWormholes(view,s,showPrintedWormholes).map(({edge,kind}) => {
+                {displayedWormholes(view,s,showPrintedWormholes||selected===s.id||hoveredSector===s.id||focusedSector===s.id).map(({edge,kind}) => {
                   const p = wormholePoint(edge, 0);
                   return (
                     <circle
@@ -281,11 +287,12 @@ export default function GalaxyBoard({
                       cy={p.y}
                       r="5"
                       fill="#11222f"
-                      stroke={kind==='generator'?'#8cd8e5':'#e8c881'}
+                      stroke={kind==='printed'?'#d5e0e7':kind==='generator'?'#8cd8e5':'#e8c881'}
+                      strokeDasharray={kind==='printed'?'2 2':undefined}
                       strokeWidth="2"
                     >
                       <title>
-                        {kind==='printed'?'Printed opening; align with a neighbor when placing.':kind==='generator'?'Connection enabled by your Wormhole Generator.':'Connected wormholes.'}
+                        {kind==='printed'?'Printed wormhole opening; no usable connection to a placed neighbor.':kind==='generator'?'Connection enabled by your Wormhole Generator.':'Connected wormholes.'}
                       </title>
                     </circle>
                   );
@@ -527,6 +534,7 @@ export default function GalaxyBoard({
           <i className="dg-key-portal" />
           Warp portal
         </span>
+        {(showPrintedWormholes||selected||hoveredSector||focusedSector)&&<span>Dashed: unconnected printed openings</span>}
         <span>Fleet: ship class × count · select for details</span>
         <span>
           {detail

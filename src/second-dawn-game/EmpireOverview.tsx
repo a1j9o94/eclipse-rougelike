@@ -6,6 +6,7 @@ import {TECHNOLOGIES,type TechnologyId} from '../../shared/eclipse/technologies'
 import type {PlayerView,Resource} from '../../shared/eclipse/types';
 import FactionSymbol from './FactionSymbol';
 import ReputationSummary from './ReputationSummary';
+import EmpireEconomyTracks from './EconomyTracks';
 import {factionPresentation} from './factionPresentation';
 import {empireOverviewModel} from './empireOverviewModel';
 import {empireBuildOptions} from './empireBuildOptions';
@@ -53,6 +54,7 @@ export default function EmpireOverview({view,seatId,onSector,onNavigate,onBluepr
    {model.resources.map(resource=><article key={resource.resource} className={`eo-resource eo-${resource.resource}`}><ResourceSymbol resource={resource.resource}/><div><h2>{names[resource.resource]}</h2><strong>{resource.stock}</strong></div><div className="eo-production"><b>+{resource.income}</b><small>round income</small><span>{resource.cubes} cubes available</span></div></article>)}
   </div>
   <div className="eo-economy-footer"><span><StatIcon kind="influence"/><b>{model.influence}</b> influence discs available</span><span>Round upkeep <b>{model.upkeep} money</b></span>{model.own&&<button onClick={()=>onNavigate('Trade')}>Convert resources <b>{faction.tradeRates?'Faction rates':`${model.tradeRatio}:1`}</b></button>}</div>
+  <EmpireEconomyTracks seat={seat}/>
   <div className="eo-main-grid">
    <section className="eo-panel eo-colonies" aria-label="Colonization opportunities">
     <header><div><p className="sd-eyebrow">GROW YOUR ECONOMY</p><h2>Empty planets</h2></div><div className="eo-colony-ships"><StatIcon kind="population"/><strong>{model.colonyShips}<small> / {model.colonyShipCapacity}</small></strong><span>colony ships</span></div></header>

@@ -1,0 +1,18 @@
+.dg-app .dg-sector-decks-toggle{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.dg-sector-deck-counter{display:inline-flex;align-items:center;gap:3px;color:#ecd29b;font-variant-numeric:tabular-nums}
+.dg-sector-deck-counter svg{width:21px;height:24px}
+.dg-sector-deck-counter b{font-size:14px;min-width:1ch}
+.dg-sector-decks-dialog{width:min(680px,calc(100vw - 24px))}
+.dg-sector-decks-dialog .dg-sector-deck-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:20px 0}
+.dg-sector-decks-dialog .dg-sector-deck-grid section{border:1px solid #736346;background:#17232e;border-radius:8px;padding:16px;text-align:center}
+.dg-sector-decks-dialog .dg-sector-deck-grid section>svg{display:block;margin:0 auto;width:48px;height:54px;color:#e8c785}
+.dg-sector-decks-dialog .dg-sector-deck-grid h3{margin:8px 0 16px;color:#eddbb4;font-size:18px}
+.dg-sector-decks-dialog .dg-sector-deck-grid h3 small{display:block;font-size:12px;font-weight:400;color:#c7ccd0;margin-top:5px}
+.dg-sector-decks-dialog .dg-sector-deck-grid dl{margin:0;display:grid;grid-template-columns:1fr;gap:12px}
+.dg-sector-decks-dialog .dg-sector-deck-grid dl>div{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.dg-sector-decks-dialog .dg-sector-deck-grid dt{font-size:13px;color:#c7ccd0}
+.dg-sector-decks-dialog .dg-sector-deck-grid dd{margin:0;font-size:25px;color:#eddbb4;font-variant-numeric:tabular-nums}
+.dg-sector-deck-empty{font-size:12px;color:#eed097;margin:12px 0 0}
+@media(max-width:600px){.dg-sector-decks-dialog .dg-sector-deck-grid{gap:8px}.dg-sector-decks-dialog .dg-sector-deck-grid section{padding:10px 6px}.dg-sector-decks-dialog .dg-sector-deck-grid h3{font-size:16px}.dg-sector-decks-dialog .dg-sector-deck-grid dl>div{flex-direction:column;gap:1px}.dg-sector-decks-dialog .dg-sector-deck-grid dt{font-size:12px}}
+/* Mobile hides most desktop toolbar buttons; deck information stays available. */
+.dg-mobile-board .dg-ai-activity .dg-sector-decks-toggle{display:flex;min-height:36px}

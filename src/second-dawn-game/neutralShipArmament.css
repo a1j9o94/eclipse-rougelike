@@ -1,0 +1,8 @@
+.dg-neutral-armament {display:grid;gap:8px;width:100%;grid-column:1/-1}
+.dg-neutral-weapon {display:flex;align-items:center;flex-wrap:wrap;gap:9px;padding:9px;border:1px solid #85734888;border-radius:6px;background:#20303b}
+.dg-neutral-weapon-dice {display:flex;gap:4px;flex-wrap:wrap}
+.dg-neutral-weapon-dice .dg-eclipse-die {width:28px;height:28px;flex-basis:28px;border-radius:5px}
+.dg-neutral-weapon>div:last-child {display:grid;gap:2px;font-size:11px;color:#e3dac6}
+.dg-neutral-weapon strong {font-size:12px}
+.dg-neutral-weapon small {font-size:10px;color:#c3ced9}
+.dg-neutral-blueprint-label {display:block;margin:3px 0 7px;color:#d2bd82;font-size:10px}

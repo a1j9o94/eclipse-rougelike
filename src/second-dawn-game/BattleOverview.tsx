@@ -14,6 +14,7 @@ import type { GameEvent } from "../../shared/eclipse/types";
 import { useState } from "react";
 import DiceRoll3D from "./DiceRoll3D";
 import EclipseDieFace from "./EclipseDieFace";
+import NeutralShipArmament from "./NeutralShipArmament";
 import {eclipseDieFace} from "./dice3d/faces";
 import { useDice3dEnabled } from "./presentationSettings";
 const names: Record<Ship["type"], string> = {
@@ -301,9 +302,10 @@ export default function BattleOverview({ view, recentVolleys = [], knownShips = 
                       </div>
                       <div className="dg-battle-class-info">
                         <strong>
-                          {names[type]}
+                          {type==="gcds"?"Galactic Center Defense System":names[type]}
                           {ships.length > 1 ? ` ×${ships.length}` : ""}
                         </strong>
+                        {(type==="ancient"||type==="guardian"||type==="gcds")&&<small className="dg-neutral-blueprint-label">Standard defender blueprint</small>}
                         {stats ? (
                           <>
                             <div className="dg-battle-stats">
@@ -332,7 +334,7 @@ export default function BattleOverview({ view, recentVolleys = [], knownShips = 
                                 explanation="Higher initiative fires earlier. Defender wins ties."
                               />
                             </div>
-                            <div className="dg-battle-weapons">
+                            {type==="ancient"||type==="guardian"||type==="gcds"?<NeutralShipArmament weapons={stats.weapons}/>:<div className="dg-battle-weapons">
                               {stats.weapons.map((weapon, i) => (
                                 <span
                                   key={i}
@@ -352,7 +354,7 @@ export default function BattleOverview({ view, recentVolleys = [], knownShips = 
                                   {weapon.dice}×{weapon.color==="magenta"?"0–3":weapon.damage}
                                 </span>
                               ))}
-                            </div>
+                            </div>}
                           </>
                         ) : (
                           <small>Blueprint unavailable</small>

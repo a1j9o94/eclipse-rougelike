@@ -602,3 +602,6 @@ Outcome: give the user concrete reusable art references for carved sector tiles,
 
 ## 2026-09-19 — Rift Cannons and printed dice
 Outcome: new matches include the official Rift mini-expansion and combat dice show actual Eclipse faces. Acceptance, source references, fail-first coverage, rollout isolation and rollback are recorded in `coding_agents/rift_cannons_plan.md`. Engine/catalog/UI/AI work was delegated in separate file scopes. Additional Drive heuristics and wooden-atlas redesign use separate worktrees/branches and are excluded from this release.
+
+## Sector decks and neutral fleet recognition — 2026-09-19
+Outcome and acceptance: see ../sector_decks_neutral_fleets.md. Fail-first coverage for count-only public piles, draw updates, UI details/fallback and neutral identification. Additive optional projection; revert presentation/projection to roll back. Existing gameplay rules and atlas branch unchanged.

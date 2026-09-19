@@ -6,6 +6,7 @@ import {useCombatVolleySounds} from './sound/useCombatVolleySounds';
 import {useGameSoundFeedback} from './sound/useGameSoundFeedback';
 import ChoiceWorkspace from './ChoiceWorkspace';
 import AutoPassControl from './AutoPassControl';
+import SectorDecks from './SectorDecks';
 import ReputationSummary from './ReputationSummary';
 import {useAutomaticReputation} from './useAutomaticReputation';
 import {choiceLabel} from './choiceLabels';
@@ -341,7 +342,9 @@ function SecondDawnBoardContent({
     setReviewAi(false);setAiDismissed(true);setHistoryOpen(false);setInspectorOpen(false);
   };
   const returnToChoice=()=>{setScreen('Decision');setEmpireMapSeat(null);setMobileSheet('closed');setMobileActionsOpen(false);setMobileActionMode(false);setHistoryOpen(false);};
+  const browseTechnologies=()=>{setScreen('Research');setEmpireMapSeat(null);setInspectorOpen(false);setHistoryOpen(false);setReviewAi(false);setAiDismissed(true);setMobileSheet('closed');setMobileActionsOpen(false);setMobileActionMode(false);};
   const activate = (type: GameCommand["type"]) => {
+    if(type==='research'&&view.pendingDecision){browseTechnologies();return;}
     setEmpireMapSeat(null);
     setInspectorOpen(['explore','influence','move','colonize','build','end-action'].includes(type));
     if(diplomacyDecision && type === 'explore'){showDecisionMap();return;}
@@ -477,8 +480,8 @@ function SecondDawnBoardContent({
               <button
                 key={type}
                 aria-pressed={action === type && !view.pendingDecision && view.phase === "action"}
-                title={diplomacyDecision && type === "explore" ? "Inspect the galaxy before responding to the ambassador exchange." : unavailableAfterPassing(type) ? "Passed this round: only Upgrade, Build and Move reactions remain." : view.pendingDecision ? "Resolve the pending decision first." : undefined}
-                disabled={!!interactionBlockedReason || view.phase === "finished" || (unavailableAfterPassing(type)&&!(diplomacyDecision&&type==='explore')) || (directTurnActions.includes(type) && blocked) || (!(diplomacyDecision && type === "explore") && ["explore", "influence", "research", "upgrade", "build", "move"].includes(type) && (Boolean(view.pendingDecision) || view.phase !== "action"))}
+                title={type==='research'&&view.pendingDecision?"Browse available technologies without resolving your choice.":diplomacyDecision && type === "explore" ? "Inspect the galaxy before responding to the ambassador exchange." : unavailableAfterPassing(type) ? "Passed this round: only Upgrade, Build and Move reactions remain." : view.pendingDecision ? "Resolve the pending decision first." : undefined}
+                disabled={type==='research'&&!!view.pendingDecision?!!interactionBlockedReason:!!interactionBlockedReason || view.phase === "finished" || (unavailableAfterPassing(type)&&!(diplomacyDecision&&type==='explore')) || (directTurnActions.includes(type) && blocked) || (!(diplomacyDecision && type === "explore") && ["explore", "influence", "research", "upgrade", "build", "move"].includes(type) && (Boolean(view.pendingDecision) || view.phase !== "action"))}
                 onClick={() => activate(type)}
               >
                 {actionLabel(type)}
@@ -552,6 +555,7 @@ function SecondDawnBoardContent({
           </div>
           {compact&&aiFailure&&<div className="dg-mobile-ai-recovery" role="alert"><p>{aiFailure}</p><button disabled={!connected} onClick={onRetryAi}>AI paused · retry</button></div>}
           <AiActivityBar currentAction={view.actionProgress?.owner===own.id&&!view.pendingDecision?(view.actionProgress.budgets?`Build & move: ${view.actionProgress.budgets.build??0} build · ${view.actionProgress.budgets.move??0} move remaining. No extra action disc.`:`Continue ${view.actionProgress.action}: ${view.actionProgress.remaining} activations remaining.`):undefined} takeover={aiTakeover} thinking={aiThinking} following={followAi} onFollowChange={changeFollowAi} humanDecision={!!view.pendingDecision} paused={!!aiFailure} actor={aiPresentation.actor} recent={aiPresentation.recent} humanTurn={!!view.pendingDecision||(!view.waitingFor&&view.activeSeatId===own.id)} finished={view.phase==='finished'} motionEnabled={motionEnabled} onMotionChange={changeMotion} onWatch={()=>{setInspectorOpen(true);if(compact)setMobileSheet('peek');setFollowAi(true);setAiDismissed(false);setReviewAi(!aiPresentation.actor);setHistoryOpen(false);setScreen('Galaxy');setCamera(null);setFitRequest(n=>n+1);}}>
+            <SectorDecks view={view}/>
             {view.phase!=='finished'&&!own.eliminated&&<AutoPassControl enabled={own.autoPassUnlessAttacked??false} paused={own.autoPassPausedRound===view.round} disabled={!connected||busy} disabledReason={!connected?'Reconnect to change auto-pass.':busy?'Saving your change…':undefined} onChange={enabled=>onSubmit({type:'set-auto-pass',enabled})}/>}
             {screen==='Galaxy'&&<>
               {showAiPanel&&!historyOpen&&(compact?mobileSheet!=='closed':desktopInspectorVisible)&&<button className="dg-board-control" onClick={()=>{setAiDismissed(true);setReviewAi(false);inspectorRef.current?.focus({preventScroll:true});}}>Return to inspector</button>}
@@ -567,7 +571,7 @@ function SecondDawnBoardContent({
         </aside>
         <section className="sd-main" ref={workspaceRef}>
           {view.pendingDecision&&<ChoiceWorkspace key={view.pendingDecision.id} decision={view.pendingDecision} open={screen==='Decision'} onMinimize={showDecisionMap}>
-            {selected&&view.pendingDecision.kind!=='exploration'&&<div className="dg-decision-location"><strong>Sector {sector?.tileId??selected}</strong><button onClick={()=>setInspectSector(selected)}>Inspect location</button></div>}
+            {(selected&&view.pendingDecision.kind!=='exploration'||view.pendingDecision.kind==='discovery')&&<div className="dg-decision-location">{selected&&<><strong>Sector {sector?.tileId??selected}</strong><button onClick={()=>setInspectSector(selected)}>Inspect location</button></>}{view.pendingDecision.kind==='discovery'&&<button type="button" onClick={browseTechnologies}>Browse technologies</button>}</div>}
             {screen==='Decision'&&combatAftermath}
             {pendingDecisionPanel}
             {view.battle&&<BattleOverview soundEligible={!!playback&&sound.combatLive(playback.revision)} view={view} fastPlayback={!motionEnabled||screen!=='Decision'} recentVolleys={playback?.volleys.some(volley=>volley.targets.some(target=>target.destroyed))?[]:playback?.volleys??[]} knownShips={[...knownShips.current.values()]}/>}
@@ -722,7 +726,7 @@ function SecondDawnBoardContent({
               </p>
             </div>
           ) : screen === "Research" ? (
-            <ResearchWorkspace view={view} purchases={purchases} selected={researchSelection as TechnologyId|null} draft={draft} disabled={blocked} stale={draftGuard.stale} stillLegal={!!stillLegal} acquired={acquiredResearch} onSelect={(id,owned)=>{setResearchSelection(id);if(compact){setMobileSheet('closed');setMobileActionsOpen(false);setMobileActionMode(!owned);}if(inspectorRef.current)inspectorRef.current.scrollTop=0;}} onDraft={setDraft} onSubmit={onSubmit}/>
+            <ResearchWorkspace view={view} purchases={purchases} selected={researchSelection as TechnologyId|null} draft={draft} disabled={blocked||!!view.pendingDecision} stale={draftGuard.stale} stillLegal={!!stillLegal} acquired={acquiredResearch} onSelect={(id,owned)=>{setResearchSelection(id);if(compact){setMobileSheet('closed');setMobileActionsOpen(false);setMobileActionMode(!owned&&!view.pendingDecision);}if(inspectorRef.current)inspectorRef.current.scrollTop=0;}} onDraft={next=>{if(!view.pendingDecision)setDraft(next);}} onSubmit={onSubmit}/>
           ) : (
             <>
               <div className="sd-map-heading">
