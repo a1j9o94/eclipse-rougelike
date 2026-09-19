@@ -424,3 +424,5 @@ Upkeep notice and review now expose legal Colonize opportunities and open the ex
 - Sector decks + neutral identification: count-only ring draw/discard projection, persistent deck counters and mobile details; standard neutral blueprint labels, full GCDS name, visual weapon dice. Relevant tests and reviewed screenshots recorded in [sector decks/neutral validation](sector_decks_neutral_fleets.md). No advanced-profile activation or hidden tile identities exposed.
 
 - Command-center economy tracks: full Money/Science/Materials income curves and influence upkeep curve, current/next markers and per-disc increases; resource income and action/reaction costs remain distinct. Fourteen focused tests pass, desktop/mobile images reviewed. [Evidence and source notes](second_dawn_empire_economy_tracks.md). No global board strip or rules changes.
+
+- Research progression: each owned technology group now shows its complete discount curve, current reduction, next reduction and full-track state, using canonical price discounts. Seventeen focused tests passed; desktop/mobile screenshots reviewed. [Validation](second_dawn_research_discount_tracks.md).

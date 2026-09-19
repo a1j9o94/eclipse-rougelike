@@ -605,3 +605,6 @@ Outcome: new matches include the official Rift mini-expansion and combat dice sh
 
 ## Sector decks and neutral fleet recognition — 2026-09-19
 Outcome and acceptance: see ../sector_decks_neutral_fleets.md. Fail-first coverage for count-only public piles, draw updates, UI details/fallback and neutral identification. Additive optional projection; revert presentation/projection to roll back. Existing gameplay rules and atlas branch unchanged.
+
+## Research market order — 2026-09-19
+Outcome: available technology in each market group is ordered cheapest first. Acceptance: current science cost ascending, stable base-price/name tie breaks, duplicates grouped, draw state unchanged. Risk/rollback: presentation only; revert ResearchWorkspace ordering. Fail-first test: shuffled market across all four groups, duplicate count and view immutability; then research/discount regression batch.

@@ -79,7 +79,12 @@ function actionSummary(command: GameCommand): string {
     case "discard-reputation":
       return "Returned reputation tiles";
     case "resolve": {
-      // Choice payloads include private draws/kept reputation. Only the kind is public.
+      // The acquired technology is public once this command is accepted. Other
+      // choice payloads include private draws/kept reputation and remain opaque.
+      if (command.choice.kind === "free-technology") {
+        const technologyId = command.choice.technologyId;
+        return `Received ${TECHNOLOGIES.find((technology) => technology.id === technologyId)?.name ?? "a technology"} from discovery`;
+      }
       return command.choice.kind === "reputation"
         ? "Selected reputation"
         : `Resolved ${command.choice.kind.replaceAll("-", " ")}`;
@@ -109,9 +114,13 @@ function actionPresentation(command: GameCommand, context?: HistoryPublicContext
     case 'influence': return { kind: 'influence', sectorIds: sectors([...command.removeSectorIds, ...command.addSectorIds]) };
     case 'colonize': return { kind: 'colonize', sectorIds: sectors(command.placements.map(placement => placement.sectorId)) };
     case 'resolve': {
-      // Only the chosen tile already visible on the galaxy is eligible. A second
-      // draw, discarded sector, private discovery or reputation selection stays opaque.
+      // Acquired technologies and placed sectors are public after acceptance.
+      // Hidden draws, kept discoveries and reputation selections stay opaque.
       const choice = command.choice;
+      if (choice.kind === 'free-technology') {
+        const technology = TECHNOLOGIES.find(tech => tech.id === choice.technologyId);
+        return technology ? { kind: 'research', technologyId: technology.id } : undefined;
+      }
       if (choice.kind === 'exploration' && !choice.drawAnother && choice.tileId !== null) {
         const sector = context?.sectors.find(candidate => candidate.tileId === choice.tileId);
         return sector ? { kind: 'explore', sectorIds: [sector.id] } : undefined;
