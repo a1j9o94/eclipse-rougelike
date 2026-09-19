@@ -7,6 +7,7 @@ import type {PlayerView,Resource} from '../../shared/eclipse/types';
 import FactionSymbol from './FactionSymbol';
 import ReputationSummary from './ReputationSummary';
 import EmpireEconomyTracks from './EconomyTracks';
+import ResearchDiscountTrack from './ResearchDiscountTrack';
 import {factionPresentation} from './factionPresentation';
 import {empireOverviewModel} from './empireOverviewModel';
 import {empireBuildOptions} from './empireBuildOptions';
@@ -85,7 +86,8 @@ export default function EmpireOverview({view,seatId,onSector,onNavigate,onBluepr
    {presentation.constraints.length>0&&<div className="eo-constraints">{presentation.constraints.map(constraint=><p key={constraint}>{constraint}</p>)}</div>}
   </section>
   <div className="eo-bottom-grid"><section className="eo-panel eo-research"><header><div><p className="sd-eyebrow">KNOWLEDGE & CAPABILITIES</p><h2>Researched technologies</h2></div>{model.own&&<button onClick={()=>onNavigate('Research')}>Research technology</button>}</header>
-   {(['military','grid','nano'] as const).map(track=><div key={track} className="eo-tech-track"><h3>{title(track)} <span>{seat.technologies[track].length} / 7</span></h3><div>{seat.technologies[track].length?seat.technologies[track].map(id=>{const tech=TECHNOLOGIES.find(tech=>tech.id===id);return tech?<button key={id} onClick={()=>setSelectedTech(tech.id)} aria-label={`Inspect ${tech.name}`} aria-pressed={selectedTech===tech.id}><strong>{tech.name}</strong><TechnologyStats technology={tech}/></button>:null;}):<small className="eo-muted">No technologies</small>}</div></div>)}
+   {(['military','grid','nano'] as const).map(track=><div key={track} className="eo-tech-track"><h3>{title(track)} <span>{seat.technologies[track].length} / 7</span></h3><ResearchDiscountTrack track={track} count={seat.technologies[track].length}/><div className="eo-tech-tiles">{seat.technologies[track].length?seat.technologies[track].map(id=>{const tech=TECHNOLOGIES.find(tech=>tech.id===id);return tech?<button key={id} onClick={()=>setSelectedTech(tech.id)} aria-label={`Inspect ${tech.name}`} aria-pressed={selectedTech===tech.id}><strong>{tech.name}</strong><TechnologyStats technology={tech}/></button>:null;}):<small className="eo-muted">No technologies</small>}</div></div>)}
+   <p className="eo-muted">Discounts reduce science costs on that track, never below a technology’s minimum price.</p>
    {technology&&<div className="eo-tech-effect" role="status"><h3>{technology.name}</h3><p>{describeTechnology(technology)}</p></div>}
   </section><section className="eo-panel eo-diplomacy"><header><div><p className="sd-eyebrow">RELATIONS</p><h2>Diplomacy</h2></div></header>
    <div className="eo-ambassadors">{seat.ambassadors.length?seat.ambassadors.map(id=>{const partner=view.seats.find(player=>player.id===id);return partner?<div key={id}><FactionSymbol faction={partner.faction}/><span>{getFaction(partner.faction).name}</span></div>:null;}):<p className="eo-muted">No ambassadors exchanged.</p>}</div>

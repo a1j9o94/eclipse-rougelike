@@ -101,3 +101,15 @@ it('reopens the latest private reputation result only on the viewer’s own empi
  view.private.seatId='b';ui.rerender(<EmpireOverview view={view} seatId="a" {...callbacks}/>);
  expect(screen.queryByRole('button',{name:'Latest reputation draw'})).toBeNull();
 });
+it('shows the shared research discount progression on each command-center technology track',()=>{
+ const view=fixture();view.seats[0].technologies={military:[],grid:['improved-hull'],nano:['nanorobots','fusion-drive']};
+ render(<EmpireOverview view={view} seatId="a" onSector={vi.fn()} onNavigate={vi.fn()} onBlueprints={vi.fn()}/>);
+ for(const [name,current,next] of [['Military',0,1],['Grid',1,2],['Nano',2,3]] as const){
+  const track=screen.getByRole('group',{name:`${name} research discounts`});
+  expect(within(track).getByText(`Current discount: ${current} science`)).toBeVisible();
+  expect(within(track).getByText(`After next research: ${next} science discount`)).toBeVisible();
+  expect(within(track).getAllByRole('listitem').map(item=>item.querySelector('strong')?.textContent)).toEqual(['0','−1','−2','−3','−4','−6','−8']);
+ }
+ fireEvent.click(screen.getByRole('button',{name:'Inspect Improved Hull'}));
+ expect(screen.getByRole('status')).toHaveTextContent('Improved Hull');
+});
