@@ -218,7 +218,7 @@ export function SplitDamageCards({
 }) {
   const allocated = targets.reduce((sum, target) => sum + (values[target] ?? 0), 0);
   return (
-    <div className="dg-combat-target-cards" role="group" aria-label={`Split damage from die ${dieNumber}`}>
+    <div className="dg-combat-target-cards dg-split-targets" role="group" aria-label={`Split damage from die ${dieNumber}`}>
       {targets.map((target) => {
         const amount = values[target] ?? 0;
         const label = targetLabels[target] ?? target;
@@ -226,7 +226,7 @@ export function SplitDamageCards({
         return (
           <article className={`dg-combat-split-card${amount ? " is-selected" : ""}`} key={target}>
             {ship && <span className="dg-combat-ship-art"><ShipArt type={ship.type} faction={view?.seats.find(seat => seat.id === ship.owner)?.faction} /></span>}
-            <div><strong>{ship ? shipNames[ship.type] : label}</strong><small>{ship ? ownerName(view, ship.owner) : label}</small></div>
+            <div className="dg-split-target-copy"><strong>{ship ? shipNames[ship.type] : label}</strong><small>{ship ? ownerName(view, ship.owner) : label}</small></div>
             <div className="dg-damage-stepper" aria-label={`Damage allocated to ${label}`}>
               <button type="button" aria-label={`Decrease damage from die ${dieNumber} to ${label}`} disabled={amount === 0} onClick={() => onChange(target, amount - 1)}>−</button>
               <output aria-label={`Damage from die ${dieNumber} to ${label}`}>{amount}</output>

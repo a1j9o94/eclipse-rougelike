@@ -13,7 +13,12 @@
 .dg-combat-card-copy strong,.dg-combat-split-card strong,.dg-retreat-card strong,.dg-fight-card strong,.dg-initiative-card strong,.dg-planet-target strong { font-size:12px; }
 .dg-combat-card-copy small,.dg-combat-split-card small,.dg-retreat-card small,.dg-fight-card small,.dg-initiative-card small,.dg-planet-target small { color:#a9bdcf; font-size:10px; }
 .dg-combat-hit-mark { margin-left:auto; color:#e9c66f; font-size:9px; letter-spacing:.8px; }
-.dg-combat-split-card { display:flex; align-items:center; gap:8px; padding:8px; }
+.dg-split-targets { grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr)); }
+.dg-combat-split-card { display:grid; grid-template-columns:42px minmax(0,1fr); align-items:center; gap:10px 8px; padding:10px; }
+.dg-split-target-copy { grid-column:2; min-width:0; overflow-wrap:anywhere; }
+.dg-combat-split-card > .dg-damage-stepper { grid-column:1/-1; display:flex; justify-content:center; gap:12px; margin:0; padding-top:8px; border-top:1px solid #46566c; }
+.dg-combat-split-card .dg-damage-stepper button { flex:0 0 44px; width:44px; height:44px; padding:0; }
+.dg-combat-split-card .dg-damage-stepper output { min-width:28px; font-size:18px; }
 .dg-damage-stepper { display:flex; align-items:center; gap:4px; margin-left:auto; }
 .dg-damage-stepper button { width:26px; height:26px; margin:0; border:1px solid #53677e; background:#101e2d; color:#dce8f4; font:inherit; cursor:pointer; }
 .dg-damage-stepper button:disabled { cursor:not-allowed; opacity:.4; }
