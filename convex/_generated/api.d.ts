@@ -16,6 +16,8 @@ import type {
 import type * as eclipseGuests from "../eclipseGuests.js";
 import type * as eclipseHistoryRecovery from "../eclipseHistoryRecovery.js";
 import type * as eclipseIdentity from "../eclipseIdentity.js";
+import type * as eclipseLeaderboard from "../eclipseLeaderboard.js";
+import type * as eclipseLeaderboardStore from "../eclipseLeaderboardStore.js";
 import type * as eclipseMaintenance from "../eclipseMaintenance.js";
 import type * as eclipseMatches from "../eclipseMatches.js";
 import type * as eclipsePlayerStore from "../eclipsePlayerStore.js";
@@ -37,6 +39,8 @@ declare const fullApi: ApiFromModules<{
   eclipseGuests: typeof eclipseGuests;
   eclipseHistoryRecovery: typeof eclipseHistoryRecovery;
   eclipseIdentity: typeof eclipseIdentity;
+  eclipseLeaderboard: typeof eclipseLeaderboard;
+  eclipseLeaderboardStore: typeof eclipseLeaderboardStore;
   eclipseMaintenance: typeof eclipseMaintenance;
   eclipseMatches: typeof eclipseMatches;
   eclipsePlayerStore: typeof eclipsePlayerStore;

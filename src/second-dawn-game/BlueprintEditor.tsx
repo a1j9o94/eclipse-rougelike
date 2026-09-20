@@ -1,3 +1,4 @@
+import {OutsideGridModule, ShipCapabilities} from './BlueprintLoadout';
 import { describeShipPart, describeWeapons } from "./itemDescriptions";
 import "./itemDetails.css";
 import ShipPartStats from "./ShipPartStats";
@@ -124,8 +125,15 @@ export default function BlueprintEditor({
     <section className="dg-blueprint-editor">
       <header className="dg-shipyard-header">
         <ShipSilhouette type={blueprint.shipType} faction={faction} />
-        <div className="dg-shipyard-identity"><span className="dg-yard-eyebrow">Shipyard · configuration</span><h2>Edit {blueprint.shipType}</h2><p>Fit your ship below. Every ship of this class uses this blueprint.</p></div>
-        <div className={`dg-reactor-readout ${stats.energyProduction < stats.energyConsumption ? "dg-danger" : ""}`}><span>Reactor balance</span><strong>{stats.energyProduction - stats.energyConsumption} energy available</strong><small>{stats.energyProduction} generated / {stats.energyConsumption} used</small></div>
+        <div className="dg-shipyard-identity">
+          <span className="dg-yard-eyebrow">Shipyard · configuration</span>
+          <div className="dg-shipyard-heading-row">
+            <h2>Edit {blueprint.shipType}</h2>
+            <div className={`dg-reactor-readout ${stats.energyProduction < stats.energyConsumption ? "dg-danger" : ""}`}><span>Reactor balance</span><strong>{stats.energyProduction - stats.energyConsumption} energy available</strong><small>{stats.energyProduction} generated / {stats.energyConsumption} used</small></div>
+          </div>
+          <ShipCapabilities stats={stats} showEnergy={false} showWeapons/>
+          <p>Fit your ship below. Every ship of this class uses this blueprint.</p>
+        </div>
       </header>
       <section className="dg-blueprint-canvas" aria-label="Blueprint hardpoints">
         <div className="dg-blueprint-canvas-heading">
@@ -151,29 +159,18 @@ export default function BlueprintEditor({
             </button>;
           })}
         </div>
+        {availableOutside.length>0&&<div className="dg-outside-loadout" role="group" aria-label="Outside-grid parts">
+          {availableOutside.map(part=><OutsideGridModule key={part.id} partId={part.id}>
+            <label className="dg-outside-install">
+              <input type="checkbox" aria-label={`${part.name} ${blueprint.outsideParts.includes(part.id)?'installed permanently':'installation'}`} disabled={disabled||blueprint.outsideParts.includes(part.id)} checked={draft.outsideParts.includes(part.id)}
+                onChange={event=>setDraft(current=>({...current,outsideParts:event.target.checked?[...current.outsideParts,part.id]:current.outsideParts.filter(id=>id!==part.id)}))}/>
+              <span>{blueprint.outsideParts.includes(part.id)?'Installed · Permanent':draft.outsideParts.includes(part.id)?'In draft':'Install module'}</span>
+            </label>
+          </OutsideGridModule>)}
+        </div>}
       </section>
       {pickerOpen&&<UpgradePartPicker blueprint={blueprint} draft={draft} slot={selectedSlot} printed={selectedPrinted} inventory={inventory} disabled={disabled} returnFocus={slotTrigger.current} onSelect={part=>{installPart(part);setPickerOpen(false);}} onClose={()=>setPickerOpen(false)}/>}
       <p className="dg-part-effect" data-testid={`slot-effect-${selectedSlot + 1}`}>{selectedEffectivePart ? describeShipPart(selectedEffectivePart) : "Empty slot: install a part here without covering a printed part."}</p>
-      {availableOutside
-        .map((p) => (
-          <label className="dg-check" key={p.id}>
-            <input
-              type="checkbox"
-              disabled={disabled||blueprint.outsideParts.includes(p.id)}
-              checked={draft.outsideParts.includes(p.id)}
-              onChange={(e) =>
-                setDraft((d) => ({
-                  ...d,
-                  outsideParts: e.target.checked
-                    ? [...d.outsideParts, p.id]
-                    : d.outsideParts.filter((id) => id !== p.id),
-                }))
-              }
-            />
-            {p.name} · {describeShipPart(p.id)}
-            {blueprint.outsideParts.includes(p.id) ? " · permanent" : ""}
-          </label>
-        ))}
       <table className="dg-stat-comparison">
         <caption>Ship performance before confirmation</caption>
         <thead><tr><th scope="col">Statistic</th><th scope="col">Current</th><th scope="col">Draft</th></tr></thead>

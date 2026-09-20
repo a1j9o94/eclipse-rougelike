@@ -2,11 +2,13 @@
 .dg-owned-research > details > summary { cursor: pointer; padding: .7rem .85rem; color: #e5c98e; }
 .dg-app .dg-owned-research summary h2 { display: inline; font: 1.1rem Georgia,serif; margin: 0 .8rem 0 .2rem; }
 .dg-owned-research summary > span { color: #bac5ce; font-size: .75rem; }
-.dg-owned-tracks { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .7rem; padding: 0 .85rem .85rem; }
+.dg-app .dg-owned-research .dg-owned-tracks { display: grid; grid-template-columns: minmax(0,1fr); gap: .7rem; padding: 0 .85rem .85rem; }
 .dg-app .dg-owned-tracks h3 { font-size: .8rem; margin: .2rem 0 .45rem; display: flex; justify-content: space-between; color: #d6d2c6; }
 .dg-owned-tracks h3 > span { color: #aeb9c4; font-size: .7rem; font-weight: 400; }
-.dg-owned-tiles { display: grid; gap: .4rem; }
-.dg-app .dg-owned-tile { width: 100%; min-width: 0; padding: .5rem .6rem; text-align: left; border: 1px solid #595344; border-radius: 2px; background: linear-gradient(135deg,#292d2d,#16222c); }
+.dg-owned-tiles { display:flex; flex-wrap:wrap; gap:.5rem; }
+.dg-owned-tracks > section { min-width:0; padding-bottom:.7rem; border-bottom:1px solid #a7b4bd24; }
+.dg-owned-tracks > section:last-child { border-bottom:0; padding-bottom:0; }
+.dg-app .dg-owned-tile { width: auto; flex:0 1 190px; min-width: 0; padding: .5rem .6rem; text-align: left; border: 1px solid #595344; border-radius: 2px; background: linear-gradient(135deg,#292d2d,#16222c); }
 .dg-owned-tile > strong { font-size: .78rem; color: #ead4a6; }
 .dg-owned-tile .dg-part-stats { margin: .4rem 0 0; gap: .4rem .65rem; }
 .dg-owned-tile .dg-stat-badge { min-width: 48px; grid-template-columns: 20px auto; grid-template-rows: 22px 12px; gap: 0 .2rem; }
@@ -28,4 +30,13 @@
   .dg-app.dg-tabletop .dg-owned-tiles > .dg-owned-tile { padding: .3rem .5rem; line-height: 1.2; }
   .dg-app.dg-tabletop .dg-owned-tile > strong { font-size: .8rem; line-height: 1.2; }
   .dg-app.dg-tabletop .dg-owned-tile .dg-part-stats { margin-top: .2rem; }
+}
+/* One civilization-board row per track: discounts beside the installed tiles. */
+.dg-owned-tracks > section { display:grid; grid-template-columns:minmax(260px,340px) minmax(0,1fr); gap:8px 14px; align-items:start; }
+.dg-owned-tracks > section > h3 { grid-column:1 / -1; }
+.dg-owned-tracks > section > .dg-research-discounts { margin:0; }
+.dg-owned-tiles { align-items:flex-start; }
+@media(max-width:700px) {
+ .dg-owned-tracks > section { grid-template-columns:minmax(0,1fr); }
+ .dg-app .dg-owned-tile { flex:1 1 140px; }
 }

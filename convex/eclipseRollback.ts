@@ -1,3 +1,4 @@
+import {syncLeaderboardResult} from './eclipseLeaderboardStore';
 import { v } from 'convex/values';
 import { mutation, query, type MutationCtx, type QueryCtx } from './_generated/server';
 import type { Doc, Id } from './_generated/dataModel';
@@ -102,6 +103,7 @@ async function finish(ctx: MutationCtx, match: Doc<'eclipseMatchesV1'>, row: Doc
     appliedRevision = match.revision + 1;
     restored.revision = appliedRevision;
     await ctx.db.patch(match._id, { snapshotJson: JSON.stringify(restored), revision: appliedRevision, round: restored.round, phase: restored.phase, updatedAt: Date.now() });
+    await syncLeaderboardResult(ctx,match._id,restored);
   }
   await ctx.db.patch(row._id, { status: outcome, resolvedAt: Date.now(), appliedRevision });
   await ctx.db.patch(match._id, { rollbackPendingId: undefined });

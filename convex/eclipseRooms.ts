@@ -1,3 +1,4 @@
+import {syncLeaderboardResult} from './eclipseLeaderboardStore';
 import {synchronizeUpkeepTimer,roomTimerTarget} from './eclipseUpkeepTimer';
 import { v } from "convex/values";
 import { internalMutation, mutation, query } from "./_generated/server";
@@ -131,6 +132,7 @@ async function findRoom(ctx: ReadContext, roomToken: string): Promise<Doc<"eclip
 async function saveTimeoutCommand(ctx: MutationCtx, matchId: Id<"eclipseMatchesV1">, state: GameState, entry: JournalEntry, actionRound: number): Promise<void> {
   const previous = await ctx.db.get(matchId);
   await ctx.db.patch(matchId, { snapshotJson: JSON.stringify(state), revision: state.revision, round: state.round, phase: state.phase, updatedAt: Date.now() });
+  await syncLeaderboardResult(ctx,matchId,state);
   await ctx.db.insert("eclipseJournalV1", { matchId, round: actionRound, commandId: entry.request.commandId, actor: entry.actor, revision: entry.receipt.revision, requestJson: JSON.stringify(entry.request), preSnapshotJson: previous?.snapshotJson, eventsJson: JSON.stringify(entry.events), receipt: entry.receipt, createdAt: Date.now() });
 }
 

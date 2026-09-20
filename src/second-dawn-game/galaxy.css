@@ -166,3 +166,13 @@
 .dg-galaxy-compact .dg-map-key span:nth-child(n+3){display:none}
 .dg-mobile-overview .dg-sector-id,.dg-mobile-overview .dg-sector-world{display:none}
 .dg-galaxy-compact>.dg-map-sector-list{inset:4px 6px 65px}
+/* Open exits are visible edge cuts; a solid gold gateway means a usable pair. */
+.dg-wormhole-gate{pointer-events:none}
+.dg-influence-disc{pointer-events:none}
+.dg-key-opening{height:4px;width:18px;border-top:3px dotted #e2eaf0;display:inline-block}
+.dg-map-key .dg-sector-feature-icon{width:15px;height:15px;flex:none}
+.dg-map-key .dg-sector-feature-discovery{color:#f3cd78}
+.dg-map-key .dg-sector-feature-artifact{color:#becbe6}
+.dg-map-key{max-width:calc(100% - 32px);gap:5px 12px}
+.dg-galaxy-compact .dg-map-key .dg-key-exits{display:inline-flex}
+.dg-galaxy-compact .dg-map-key{font-size:10px;max-width:calc(100% - 8px)}

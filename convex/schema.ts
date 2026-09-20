@@ -61,7 +61,19 @@ export default defineSchema({
     aiVersion: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
-  }),
+  }).index('by_phase_updated', ['phase', 'updatedAt']),
+  eclipsePlayerStatsV1: defineTable({
+    guestId: v.id('eclipseGuestsV1'),
+    rating: v.number(), games: v.number(), wins: v.number(), winRate: v.number(),
+    factionWins: v.array(v.object({faction: factionValidator, games: v.number(), wins: v.number()})),
+    updatedAt: v.number(),
+  }).index('by_guest', ['guestId']).index('by_rating', ['rating']).index('by_wins', ['wins']).index('by_win_rate', ['winRate']),
+  /** One reversible contribution per finished multiplayer match. Never includes hidden game state. */
+  eclipseRatingResultsV1: defineTable({
+    matchId: v.id('eclipseMatchesV1'),
+    revision: v.number(), awardedAt: v.number(),
+    contributions: v.array(v.object({guestId: v.id('eclipseGuestsV1'), faction: factionValidator, ratingDelta: v.number(), wins: v.number()})),
+  }).index('by_match', ['matchId']),
   /** Private checkpoint consent/audit. No snapshot fields are returned by public endpoints. */
   eclipseRollbacksV1: defineTable({
     matchId: v.id('eclipseMatchesV1'),

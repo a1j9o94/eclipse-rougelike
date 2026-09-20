@@ -6,6 +6,7 @@ import {TECHNOLOGIES,type TechnologyId} from '../../shared/eclipse/technologies'
 import type {PlayerView,Resource} from '../../shared/eclipse/types';
 import FactionSymbol from './FactionSymbol';
 import ReputationSummary from './ReputationSummary';
+import ReputationTile from './ReputationTile';
 import EmpireEconomyTracks from './EconomyTracks';
 import ResearchDiscountTrack from './ResearchDiscountTrack';
 import {AcquiredMinorSpecies} from './MinorSpeciesMarket';
@@ -52,15 +53,25 @@ export default function EmpireOverview({view,seatId,onSector,onNavigate,onBluepr
    </div>
    <button className="eo-score" onClick={()=>onNavigate('Scoring')} aria-label={`View ${view.phase==='finished'?'final':'public'} score: ${model.score} VP`}><strong>{model.score}</strong><span>{view.phase==='finished'?'Final':'Public'} VP</span><small>Score breakdown ↗</small></button>
   </header>
-  {canReviewReputation&&<div className="eo-reputation-recap"><button aria-expanded={showReputation} onClick={()=>setShowReputation(open=>!open)}>Latest reputation draw</button>{showReputation&&<ReputationSummary view={view} onDismiss={()=>setShowReputation(false)}/>}</div>}
+
   <div className="eo-economy" aria-label="Empire resources">
    {model.resources.map(resource=><article key={resource.resource} className={`eo-resource eo-${resource.resource}`}><ResourceSymbol resource={resource.resource}/><div><h2>{names[resource.resource]}</h2><strong>{resource.stock}</strong></div><div className="eo-production"><b>+{resource.income}</b><small>round income</small><span>{resource.cubes} cubes available</span></div></article>)}
   </div>
   <div className="eo-economy-footer"><span><StatIcon kind="influence"/><b>{model.influence}</b> influence discs available</span><span>Round upkeep <b>{model.upkeep} money</b></span>{model.own&&<button disabled={upkeepComplete} title={upkeepComplete?'You have completed upkeep.':undefined} onClick={()=>onNavigate('Trade')}>Convert resources <b>{faction.tradeRates?'Faction rates':`${model.tradeRatio}:1`}</b></button>}</div>
+  <div className="eo-quick-status">
+   {model.own&&view.private.seatId===view.viewerSeatId&&<section className="eo-panel eo-reputation" aria-label="Your reputation tiles"><header><h2>Your reputation</h2><small>{view.phase==='finished'?'Final score':'Private · only you can see these'}</small></header><div className="eo-held-reputation">{view.private.reputation.length?view.private.reputation.map((points,index)=><ReputationTile key={index} points={points}/>):<p className="eo-muted">No reputation tiles yet.</p>}</div>
+  {canReviewReputation&&<div className="eo-reputation-recap"><button aria-expanded={showReputation} onClick={()=>setShowReputation(open=>!open)}>Latest reputation draw</button>{showReputation&&<ReputationSummary view={view} onDismiss={()=>setShowReputation(false)}/>}</div>}
+   </section>}
+   <section className="eo-panel eo-colony-supply" aria-label="Colony ships available"><header><h2>Colony ships</h2></header><div className="eo-colony-ships"><StatIcon kind="population"/><strong>{model.colonyShips}<small> / {model.colonyShipCapacity}</small></strong><span>available</span></div>{model.own&&<button className="sd-primary" disabled={upkeepComplete} title={upkeepComplete?'You have completed upkeep.':undefined} onClick={()=>onNavigate('colonize')}>Colonize planets</button>}</section>
+  </div>
   <EmpireEconomyTracks seat={seat}/>
-  <div className="eo-main-grid">
-   <section className="eo-panel eo-colonies" aria-label="Colonization opportunities">
-    <header><div><p className="sd-eyebrow">GROW YOUR ECONOMY</p><h2>Empty planets</h2></div><div className="eo-colony-ships"><StatIcon kind="population"/><strong>{model.colonyShips}<small> / {model.colonyShipCapacity}</small></strong><span>colony ships</span></div></header>
+  <section className="eo-panel eo-research"><header><div><p className="sd-eyebrow">KNOWLEDGE & CAPABILITIES</p><h2>Researched technologies</h2></div>{model.own&&<button onClick={()=>onNavigate('Research')}>Research technology</button>}</header>
+   {(['military','grid','nano'] as const).map(track=><div key={track} className="eo-tech-track"><h3>{title(track)} <span>{seat.technologies[track].length} / 7</span></h3><ResearchDiscountTrack track={track} count={seat.technologies[track].length} minorSpecies={seat.minorSpecies}/><div className="eo-tech-tiles">{seat.technologies[track].length?seat.technologies[track].map(id=>{const tech=TECHNOLOGIES.find(tech=>tech.id===id);return tech?<button key={id} onClick={()=>setSelectedTech(tech.id)} aria-label={`Inspect ${tech.name}`} aria-pressed={selectedTech===tech.id}><strong>{tech.name}</strong><TechnologyStats technology={tech}/></button>:null;}):<small className="eo-muted">No technologies</small>}</div></div>)}
+   <p className="eo-muted">Discounts reduce science costs on that track, never below a technology’s minimum price.</p>
+   {technology&&<div className="eo-tech-effect" role="status"><h3>{technology.name}</h3><p>{describeTechnology(technology)}</p></div>}
+  </section>
+  <div className="eo-planning-stack">
+   <details className="eo-panel eo-colonies" aria-label="Colonization opportunities"><summary><strong>Empty planets</strong><span>{readyCount} technology ready · view locations</span></summary>
     <div className="eo-planet-groups">{(['money','science','materials','gray'] as const).map(resource=>{
      const group=model.planets.filter(planet=>resource==='gray'?planet.resource==='gray'||planet.resource==='orbital':planet.resource===resource),ready=group.filter(planet=>planet.readyResources.length>0).length;
      return <button key={resource} className={`eo-${resource}${planetGroup===resource?' eo-selected':''}`} onClick={()=>setPlanetGroup(resource)} aria-pressed={planetGroup===resource} aria-label={`${names[resource]} planets: ${ready} technology ready, ${group.length-ready} locked`}><ResourceSymbol resource={resource}/><strong>{ready}<small> / {group.length}</small></strong><span>{names[resource]}</span><small>{group.length-ready>0?`${group.length-ready} locked`:'technology ready'}</small></button>;
@@ -70,8 +81,8 @@ export default function EmpireOverview({view,seatId,onSector,onNavigate,onBluepr
       <span className="eo-planet-orb"><ResourceSymbol resource={planet.resource}/>{planet.advanced&&<span role="img" aria-label="Advanced planet">★</span>}</span><span><strong>Sector {planet.tileId}</strong><small>{planet.readyResources.length?(planet.resource==='gray'||planet.resource==='orbital'?planet.readyResources.map(resource=>names[resource]).join(' / '):'Technology ready'):'Research required'}</small></span><span aria-hidden="true">↗</span>
      </button>)}
     </div>
-    <footer><p>{readyCount} empty {readyCount===1?'space meets':'spaces meet'} technology requirements. Each population needs a colony ship and a matching cube; turn and sector restrictions still apply.</p>{model.own&&<button className="sd-primary" disabled={upkeepComplete} title={upkeepComplete?'You have completed upkeep.':undefined} onClick={()=>onNavigate('colonize')}>Colonize planets</button>}</footer>
-   </section>
+    <footer><p>{readyCount} empty {readyCount===1?'space meets':'spaces meet'} technology requirements. Each population needs a colony ship and a matching cube; turn and sector restrictions still apply.</p></footer>
+   </details>
    <section className="eo-panel eo-fleet"><header><div><p className="sd-eyebrow">SHIPS IN THE GALAXY</p><h2>Fleet & blueprints</h2></div><span className="eo-muted">Select a hull to inspect</span></header>
     <div className="eo-fleet-grid">{model.fleets.map(fleet=>{const option=buildOptions.find(option=>option.shipType===fleet.type),reason=buildUnavailableReason??option?.disabledReason,conversion=!!option?.requiresConversion&&!reason;return <div key={fleet.type} className="eo-fleet-card" role="group" aria-label={`${title(fleet.type)} fleet`}>
      <button className="eo-fleet-hull" aria-label={`Inspect ${title(fleet.type)} blueprint`} onClick={()=>onBlueprints(fleet.type)}><ShipSilhouette type={fleet.type} faction={seat.faction}/><strong className="eo-fleet-count">×{fleet.count}</strong><span>{title(fleet.type)}</span></button>
@@ -87,11 +98,7 @@ export default function EmpireOverview({view,seatId,onSector,onNavigate,onBluepr
    <p className="eo-muted eo-capacity-note">{seat.passed?'After passing: one activation per Upgrade, Build or Move reaction.':'Activations per action, including researched bonuses.'}</p>
    {presentation.constraints.length>0&&<div className="eo-constraints">{presentation.constraints.map(constraint=><p key={constraint}>{constraint}</p>)}</div>}
   </section>
-  <div className="eo-bottom-grid"><section className="eo-panel eo-research"><header><div><p className="sd-eyebrow">KNOWLEDGE & CAPABILITIES</p><h2>Researched technologies</h2></div>{model.own&&<button onClick={()=>onNavigate('Research')}>Research technology</button>}</header>
-   {(['military','grid','nano'] as const).map(track=><div key={track} className="eo-tech-track"><h3>{title(track)} <span>{seat.technologies[track].length} / 7</span></h3><ResearchDiscountTrack track={track} count={seat.technologies[track].length} minorSpecies={seat.minorSpecies}/><div className="eo-tech-tiles">{seat.technologies[track].length?seat.technologies[track].map(id=>{const tech=TECHNOLOGIES.find(tech=>tech.id===id);return tech?<button key={id} onClick={()=>setSelectedTech(tech.id)} aria-label={`Inspect ${tech.name}`} aria-pressed={selectedTech===tech.id}><strong>{tech.name}</strong><TechnologyStats technology={tech}/></button>:null;}):<small className="eo-muted">No technologies</small>}</div></div>)}
-   <p className="eo-muted">Discounts reduce science costs on that track, never below a technology’s minimum price.</p>
-   {technology&&<div className="eo-tech-effect" role="status"><h3>{technology.name}</h3><p>{describeTechnology(technology)}</p></div>}
-  </section><section className="eo-panel eo-diplomacy"><header><div><p className="sd-eyebrow">RELATIONS</p><h2>Diplomacy</h2></div></header>
+  <div className="eo-relations"><section className="eo-panel eo-diplomacy"><header><div><p className="sd-eyebrow">RELATIONS</p><h2>Diplomacy</h2></div></header>
    <AcquiredMinorSpecies seat={seat}/>
    <div className="eo-ambassadors">{seat.ambassadors.length?seat.ambassadors.map(id=>{const partner=view.seats.find(player=>player.id===id);return partner?<div key={id}><FactionSymbol faction={partner.faction}/><span>{getFaction(partner.faction).name}</span></div>:null;}):<p className="eo-muted">No ambassadors exchanged.</p>}</div>
    <p>{seat.ambassadors.length} ambassador {seat.ambassadors.length===1?'tile':'tiles'}</p>{seat.traitor&&<p className="eo-traitor"><StatIcon kind="shield"/><strong>Traitor · {faction.special?.ignoresTraitorPenalty?'0':'−2'} VP</strong><span>Cannot form diplomatic relations while holding the traitor tile.</span></p>}

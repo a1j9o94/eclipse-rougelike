@@ -30,3 +30,13 @@
 @media(max-width:480px){
  .dg-ship-capabilities { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); }
 }
+
+/* Outside modules attach below the grid; they never resemble numbered slots. */
+.dg-outside-loadout > .dg-outside-module { flex: 0 1 420px; min-height: 0; display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 10px 18px; border-left: 4px solid #baa378; background: linear-gradient(100deg,#343b36,#18252b); }
+.dg-outside-module-identity { display: grid; gap: 6px; min-width: 0; }
+.dg-outside-module-identity strong { color: #ede3cb; font-size: 14px; }
+.dg-outside-module .dg-part-stats { margin-top: 0; }
+.dg-outside-install { grid-column: 1 / -1; display: flex; align-items: center; gap: 9px; min-height: 36px; border-top: 1px solid #80755766; padding-top: 6px; font-size: 12px; color: #d3d9d7; }
+.dg-outside-install input { width: 17px; height: 17px; accent-color: #d9bf82; flex-shrink: 0; }
+.dg-outside-install:has(input:enabled) { cursor: pointer; }
+.dg-unarmed-summary { align-self: center; color: #b4c1c8; font-size: 12px; }

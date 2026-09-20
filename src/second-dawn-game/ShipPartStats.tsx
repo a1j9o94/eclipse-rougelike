@@ -1,7 +1,8 @@
+import {SECTOR_FEATURE_PATHS} from './sectorFeaturePaths';
 import { getShipPart, type ShipPartId } from '../../shared/eclipse/parts';
 import './itemDetails.css';
 import EclipseDieFace from './EclipseDieFace';
-export type StatIconName = 'computer' | 'energy' | 'shield' | 'hull' | 'drive' | 'initiative' | 'cannon' | 'missile' | 'structure' | 'population' | 'influence' | 'portal' | 'discovery';
+export type StatIconName = 'computer' | 'energy' | 'shield' | 'hull' | 'drive' | 'initiative' | 'cannon' | 'missile' | 'structure' | 'population' | 'influence' | 'portal' | 'discovery' | 'artifact';
 const PATHS: Record<StatIconName, string> = {
  computer: 'M4 5h16v12H4z M8 21h8 M12 17v4 M8 9h8 M8 12h5',
  energy: 'M13 2 5 14h6l-1 8 9-13h-7z',
@@ -15,7 +16,8 @@ const PATHS: Record<StatIconName, string> = {
  population: 'M8 8a4 4 0 1 0 8 0a4 4 0 1 0-8 0 M4 22v-4c0-6 16-6 16 0v4',
  influence: 'M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0 M7 12a5 5 0 1 0 10 0a5 5 0 1 0-10 0',
  portal: 'M7 12a5 10 0 1 0 10 0a5 10 0 1 0-10 0 M1 12h22 M18 8l5 4-5 4',
- discovery: 'M12 2 15 9 22 12 15 15 12 22 9 15 2 12 9 9z',
+ discovery: SECTOR_FEATURE_PATHS.discovery,
+ artifact: SECTOR_FEATURE_PATHS.artifact,
 };
 export function StatIcon({ kind }: { kind: StatIconName }) { return <svg viewBox="0 0 24 24" aria-hidden="true" className="dg-stat-icon"><path d={PATHS[kind]} /></svg>; }
 export interface StatBadgeProps { icon: StatIconName; value: string | number; label: string; explanation: string; color?: string }

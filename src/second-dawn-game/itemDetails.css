@@ -82,3 +82,20 @@
 .dg-stat-badge small { grid-column: 1 / -1; color: #c2c9ce; font-size: .65rem; text-transform: uppercase; letter-spacing: .035em; }
 .dg-part-rules { margin-top: .55rem; font-size: .75rem; color: #b7c0c8; }
 .dg-part-rules summary { cursor: pointer; }
+
+/* Keep reactor accounting with the identity and the live fitting summary. */
+.dg-blueprint-editor .dg-shipyard-identity { min-width: 0; }
+.dg-blueprint-editor .dg-shipyard-heading-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 22px; }
+.dg-blueprint-editor .dg-shipyard-heading-row .dg-reactor-readout { margin-left: 0; min-width: 0; flex: 0 1 auto; }
+.dg-blueprint-editor .dg-shipyard-identity .dg-ship-capabilities { padding: 10px 0 2px; gap: 9px 17px; }
+.dg-blueprint-editor .dg-shipyard-identity .dg-stat-badge { min-width: 0; grid-template-columns: 19px auto; grid-template-rows: 23px 13px; }
+.dg-blueprint-editor .dg-shipyard-identity .dg-stat-badge strong { font-size: 17px; }
+.dg-blueprint-editor .dg-shipyard-identity .dg-stat-icon { width: 19px; height: 19px; }
+@media(max-width:600px){
+ .dg-blueprint-editor .dg-shipyard-header { align-items: start; gap: 8px; }
+ .dg-blueprint-editor .dg-shipyard-heading-row { gap: 6px; }
+ .dg-blueprint-editor .dg-shipyard-heading-row .dg-reactor-readout { flex-basis: 100%; border-left: 0; border-top: 1px solid #635e4c; padding: 6px 0 0; flex-direction: row; flex-wrap: wrap; gap: 3px 10px; }
+ .dg-blueprint-editor .dg-shipyard-identity .dg-ship-capabilities { display: flex; gap: 8px 13px; }
+ .dg-blueprint-editor .dg-shipyard-identity .dg-stat-badge strong { font-size: 15px; }
+ .dg-blueprint-editor .dg-blueprints { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}

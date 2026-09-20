@@ -1,3 +1,4 @@
+import SectorFeatureIcon from './SectorFeatureIcon';
 import {seatColor} from './factionColors';
 import {displayedWormholes} from './visibleConnections';
 import type {BuildOrderItem} from './buildPlanning';
@@ -6,7 +7,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { PlayerView, Ship } from "../../shared/eclipse/types";
 import { getFaction } from "../../shared/eclipse/catalog";
 import { sectorDefinition } from "../../shared/eclipse/sectors";
-import { connectionBetween } from "../../shared/eclipse/geometry";
+import { adjacentPosition, connectionBetween } from "../../shared/eclipse/geometry";
 import { mapSector,movementAbilities } from "../../shared/eclipse/rulesState";
 import type { CommandCandidate } from "./SecondDawnBoard";
 import { galaxyPoint, TILE_RADIUS, wormholePoint } from "./galaxyGeometry";
@@ -87,6 +88,12 @@ export default function GalaxyBoard({
   const svgRef=useRef<SVGSVGElement>(null);
   const [mapSize,setMapSize]=useState({width:0,height:0});
   useLayoutEffect(()=>{const svg=svgRef.current;if(!svg)return;const measure=()=>{const rect=svg.getBoundingClientRect();setMapSize({width:rect.width,height:rect.height});};measure();if(typeof ResizeObserver==='undefined')return;const observer=new ResizeObserver(measure);observer.observe(svg);return()=>observer.disconnect();},[]);
+  const revealedNeighborhood=new Set<string>();
+  for(const id of [selected,hoveredSector,focusedSector]){
+    const source=view.sectors.find(sector=>sector.id===id);if(!source)continue;
+    revealedNeighborhood.add(source.id);
+    for(const edge of [0,1,2,3,4,5] as const){const position=adjacentPosition(source.position,edge);const neighbor=view.sectors.find(sector=>sector.position.q===position.q&&sector.position.r===position.r);if(neighbor)revealedNeighborhood.add(neighbor.id);}
+  }
   const frontiers = candidates.filter((c) => c.command.type === "explore");
   const points = [
     ...view.sectors.map((s) => s.position),
@@ -160,14 +167,6 @@ export default function GalaxyBoard({
               opacity=".17"
             />
           </pattern>
-          {["#d5b27a", "#6fa9be", "#b59080", "#9bad7e"].map((tone, i) => (
-            <radialGradient key={tone} id={`dg-world-${i}`} cx="30%" cy="25%">
-              <stop stopColor="#f1e5be" />
-              <stop offset=".3" stopColor={tone} />
-              <stop offset=".8" stopColor="#26313a" />
-              <stop offset="1" stopColor="#07101a" />
-            </radialGradient>
-          ))}
           {Object.entries(territoryTones).map(([color, tones]) => (
             <radialGradient id={`dg-sector-owner-${color}`} key={color}>
               <stop stopColor={tones[0]} />
@@ -177,11 +176,6 @@ export default function GalaxyBoard({
           <radialGradient id="dg-sector-space">
             <stop stopColor="#25394a" />
             <stop offset="1" stopColor="#10202d" />
-          </radialGradient>
-          <radialGradient id="dg-planet">
-            <stop stopColor="#ece0b0" />
-            <stop offset=".5" stopColor="#ad8c54" />
-            <stop offset="1" stopColor="#4a4030" />
           </radialGradient>
         </defs>
         <g
@@ -276,62 +270,33 @@ export default function GalaxyBoard({
                 {legalTargetIds.includes(s.id) && (
                   <polygon className="dg-move-target-ring" points={hex} transform="scale(.88)" fill="none" stroke="#a1ebee" strokeWidth="2.5" strokeDasharray="6 4" pointerEvents="none"><title>{targetLabel}</title></polygon>
                 )}
-                {displayedWormholes(view,s,showPrintedWormholes||selected===s.id||hoveredSector===s.id||focusedSector===s.id).map(({edge,kind}) => {
+                {displayedWormholes(view,s,showPrintedWormholes||revealedNeighborhood.has(s.id)).map(({edge,kind}) => {
                   const p = wormholePoint(edge, 0);
-                  return (
-                    <circle
-                      key={edge}
-                      data-wormhole-edge={edge}
-                      data-wormhole-kind={kind}
-                      cx={p.x}
-                      cy={p.y}
-                      r="5"
-                      fill="#11222f"
-                      stroke={kind==='printed'?'#d5e0e7':kind==='generator'?'#8cd8e5':'#e8c881'}
-                      strokeDasharray={kind==='printed'?'2 2':undefined}
-                      strokeWidth="2"
-                    >
-                      <title>
-                        {kind==='printed'?'Printed wormhole opening; no usable connection to a placed neighbor.':kind==='generator'?'Connection enabled by your Wormhole Generator.':'Connected wormholes.'}
-                      </title>
-                    </circle>
-                  );
+                  const label=kind==='printed'?'Open wormhole; no matching exit on a placed neighbor.':kind==='generator'?'Connected by your Wormhole Generator.':'Connected wormhole pair.';
+                  return <g key={edge} data-wormhole-edge={edge} data-wormhole-kind={kind} transform={`translate(${p.x} ${p.y}) rotate(${-edge*60})`} className="dg-wormhole-gate" role="img" aria-label={label}>
+                    <path d="M0 -11V11" stroke="#0b1822" strokeWidth="6"/>
+                    <path className={kind==='printed'?'dg-wormhole-opening':'dg-wormhole-connected'} d="M0 -11V11" fill="none" stroke={kind==='printed'?'#e2eaf0':kind==='generator'?'#8cd8e5':'#efca77'} strokeWidth={kind==='printed'?3:4} strokeDasharray={kind==='printed'?'1 4':kind==='generator'?'5 3':undefined} strokeLinecap="round"/>
+                    <path d="M-4 -12H3 M-4 12H3" stroke={kind==='printed'?'#c8d9e3':kind==='generator'?'#8cd8e5':'#efca77'} strokeWidth="2"/>
+                    <title>{label}</title>
+                  </g>;
                 })}
                 <text
                   x="0"
-                  y="-33"
+                  y="-45"
                   textAnchor="middle"
                   className="dg-sector-id"
                 >
                   {s.tileId}
                 </text>
                 {owner.faction && (
-                  <g transform="translate(-30 -24)" color={owner.color}>
-                    <circle r="11" fill="#08121b" stroke={owner.color}/>
-                    <g transform="translate(-8 -8) scale(.667)"><FactionSymbol faction={owner.faction.id}/></g>
+                  <g transform="translate(0 -24)" className="dg-influence-disc" role="img" aria-label={`${owner.name} influence disc`}>
+                    <circle cy="2" r="15" fill="#061019" opacity=".85"/>
+                    <circle r="14" fill={owner.color} stroke="#e7e5d6" strokeWidth="1"/>
+                    <circle r="11.5" fill="none" stroke="#10212c" strokeWidth=".9" opacity=".5"/>
+                    <g transform="translate(-10 -10) scale(.8333)" color="#10202c"><FactionSymbol faction={owner.faction.id}/></g>
+                    <title>Controlled by {owner.name}</title>
                   </g>
                 )}
-                <circle
-                  className="dg-sector-world"
-                  cx="4"
-                  cy="-23"
-                  r={definition.gcds ? 10 : 9}
-                  fill={`url(#dg-world-${Number(s.tileId) % 4})`}
-                  opacity=".85"
-                />
-                <text
-                  x="30"
-                  y="-21"
-                  textAnchor="middle"
-                  className="dg-sector-vp"
-                  opacity={detail ? 1 : 0}
-                >
-                  {definition.victoryPoints}
-                  <title>
-                    {definition.victoryPoints} victory points for controlling
-                    this sector
-                  </title>
-                </text>
                 {visibleGroups.map((group,index)=>{
                   const info=ownerInfo(group.owner), two=groups.length>1;
                   const fx=two?(index%2?21:-21):0,fy=Math.floor(index/2)*20;
@@ -348,7 +313,7 @@ export default function GalaxyBoard({
                 })}
                 {compact&&!detail&&fleets.length>0&&<g className="dg-mobile-fleet" transform="translate(0 8)" role="img" aria-label={`${fleets.length} ships; select sector for ship types`}><rect x="-29" y="-14" width="58" height="28" rx="6" fill="#07111d" stroke={ownerInfo(groups[0].owner).color} strokeWidth="2"/><path d="M-24 7 -17 -7 -10 7 -17 3Z M-13 3 -6 -11 1 3 -6 -1Z" fill={ownerInfo(groups[0].owner).color}/>{tilePixels>=40?<text x="14" y="7" textAnchor="middle" fill="#f0e3bc" fontSize="23" fontWeight="700">{fleets.length}</text>:<circle cx="15" r="6" fill="#f0e3bc"/>}</g>}
                 {(!compact||detail)&&groups.length>4&&<g transform="translate(21 20)" className="dg-map-fleet-overflow"><rect x="-20" y="-9" width="40" height="18" rx="3" fill="#152331" stroke="#93a7b8"/><text y="3" textAnchor="middle" fill="#e9dcc2" fontSize="8">+{groups.length-3} types</text><title>Select sector to inspect all {groups.length} fleet groups</title></g>}
-                {detail &&
+                {(detail||!compact||tilePixels>=70) &&
                   definition.population.map((square, index) => (
                     <g
                       key={index}
@@ -396,7 +361,7 @@ export default function GalaxyBoard({
                     </g>
                   ))}
                 {portal && (
-                  <g transform="translate(30 -10)">
+                  <g transform="translate(32 18)">
                     <circle
                       r="6"
                       fill="#122f42"
@@ -411,14 +376,17 @@ export default function GalaxyBoard({
                   </g>
                 )}
                 {s.discovery && (
-                  <g transform="translate(-30 -10)">
-                    <path d="M0 -5 L5 0 L0 5 L-5 0 Z" fill="#e8c881" />
-                    <title>
-                      Discovery tile: explore its reward after clearing
-                      defending ships.
-                    </title>
+                  <g transform="translate(-32 -17)" color="#f3cd78" role="img" aria-label="Discovery reward available">
+                    <circle r="9" fill="#14222c" stroke="#f3cd78" strokeWidth=".7"/>
+                    <svg x="-7" y="-7" width="14" height="14" viewBox="0 0 24 24"><SectorFeatureIcon kind="discovery"/></svg>
+                    <title>Discovery reward: claim after clearing defenders.</title>
                   </g>
                 )}
+                {definition.artifacts>0&&<g transform="translate(25 -24)" color="#becbe6" role="img" aria-label={`${definition.artifacts} artifact${definition.artifacts===1?'':'s'}`}>
+                  <svg x="-7" y="-8" width="14" height="14" viewBox="0 0 24 24"><SectorFeatureIcon kind="artifact"/></svg>
+                  <text x="8" y="3" textAnchor="start" fill="currentColor" fontSize="9" fontWeight="700">×{definition.artifacts}</text>
+                  <title>{definition.artifacts} printed artifact{definition.artifacts===1?'':'s'}; Artifact Key grants resources when researched.</title>
+                </g>}
                 {s.orbital && (
                   <ellipse
                     cx="-29"
@@ -453,6 +421,8 @@ export default function GalaxyBoard({
           {frontiers.map((candidate, index) => {
             if (candidate.command.type !== "explore") return null;
             const p = galaxyPoint(candidate.command.position);
+            const {q,r}=candidate.command.position,distance=Math.max(Math.abs(q),Math.abs(r),Math.abs(q+r));
+            const ring=distance===1?'I':distance===2?'II':'III';
             return (
               <g
                 key={index}
@@ -461,7 +431,7 @@ export default function GalaxyBoard({
                 tabIndex={0}
                 className="sd-frontier"
                 data-galaxy-target={`frontier:${index}`}
-                aria-label={candidate.label}
+                aria-label={`${candidate.label} · Ring ${ring}`}
                 onClick={() => {
                   onExplore(candidate);
                 }}
@@ -479,6 +449,7 @@ export default function GalaxyBoard({
                   stroke="#82b9a0"
                   strokeDasharray="3 7"
                 />
+                <text textAnchor="middle" y="-21" fill="#b7d5c4" fontSize="12" fontWeight="700">RING {ring}</text>
                 <text textAnchor="middle" y="4" fill="#b7d5c4" fontSize="20">
                   +
                 </text>
@@ -530,11 +501,12 @@ export default function GalaxyBoard({
           <i className="dg-key-wormhole" />
           {hasGenerator?'Connections · dashed: your Generator':'Connected wormholes'}
         </span>
+        {(showPrintedWormholes||selected||hoveredSector||focusedSector)&&<span className="dg-key-exits"><i className="dg-key-opening"/>Dotted edge: open exit, unconnected</span>}
         <span>
           <i className="dg-key-portal" />
           Warp portal
         </span>
-        {(showPrintedWormholes||selected||hoveredSector||focusedSector)&&<span>Dashed: unconnected printed openings</span>}
+        <span><SectorFeatureIcon kind="discovery"/>Discovery reward</span><span><SectorFeatureIcon kind="artifact"/>Artifacts × count</span>
         <span>Fleet: ship class × count · select for details</span>
         <span>
           {detail

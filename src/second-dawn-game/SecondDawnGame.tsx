@@ -1,3 +1,4 @@
+import Leaderboard from './Leaderboard';
 import {submitWithUpkeepRetry} from './upkeepSubmission';
 import AiDifficultyPicker from './AiDifficultyPicker';
 import type { AiDifficulty } from '../../shared/eclipse/aiConfig';
@@ -58,7 +59,6 @@ export default function SecondDawnGame() {
           The game saves its authoritative state to Convex. Connect the
           application to its game server, then return here.
         </p>
-        <a href="#second-dawn-preview">Explore the playable preview</a>
       </main>
     );
   return <ConnectedGame />;
@@ -87,6 +87,7 @@ function ConnectedGame() {
   const [roomToken,setRoomToken]=useState(()=>{const match=window.location.pathname.match(/^\/room\/([a-zA-Z0-9_-]+)\/?$/);return match?.[1]??null;});
   const [roomOverview,setRoomOverview]=useState(false);
   const [creatingRoom,setCreatingRoom]=useState(false);
+  const [showLeaderboard,setShowLeaderboard]=useState(false);
   const [clockExpired,setClockExpired]=useState(false);
   const connection = useConvexConnectionState();
   const [browserOnline, setBrowserOnline] = useState(() => navigator.onLine);
@@ -323,6 +324,7 @@ function ConnectedGame() {
       />{gameControls.dialogs}{recovery.error&&<div className="dg-foreground-warning" role="alert"><span>{recovery.error}</span><button onClick={recovery.retry}>Retry refresh</button></div>}</>
     );
   if(roomToken)return <><div className="dg-room-player-access"><ConnectionStatus connected={connected} browserOnline={browserOnline} sessionReady={Boolean(credential&&guest)} status={status}/>{playerAccess}</div>{room===undefined?<main className="dg-lobby"><p>Loading game room…</p></main>:room===null?<main className="dg-lobby"><h1>Room unavailable</h1><p>This room link is no longer available.</p><a href="/">All games</a></main>:<RoomLobby lobby={room} disabled={!connected||!credential||busy||guest===null} onJoin={(selected,color)=>{void roomAction(async()=>{await joinRoom({credential:credential!,roomToken,faction:selected,pieceColor:color});});}} onLeave={()=>{void roomAction(async()=>{await leaveRoom({credential:credential!,roomToken});window.location.assign('/');});}} onFaction={(selected,color)=>{void roomAction(async()=>{await chooseRoomFaction({credential:credential!,roomToken,faction:selected,pieceColor:color});});}} onReady={ready=>{void roomAction(async()=>{await setRoomReady({credential:credential!,roomToken,ready});});}} onSettings={settings=>{void roomAction(async()=>{await updateRoomSettings({credential:credential!,roomToken,settings});});}} onStart={()=>{void roomAction(async()=>{await startRoom({credential:credential!,roomToken});setRoomOverview(false);});}} onEnter={()=>setRoomOverview(false)}/>}</>;
+  if(showLeaderboard)return <Leaderboard onClose={()=>setShowLeaderboard(false)}/>;
   return (
     <main className="dg-lobby">
       <div className="dg-lobby-inner">
@@ -402,13 +404,13 @@ function ConnectedGame() {
               New game
             </button>
             <button disabled={!connected||!credential} onClick={()=>setCreatingRoom(true)}>Create multiplayer room</button>
+            <button onClick={()=>setShowLeaderboard(true)}>Leaderboard</button>
             <SavedGames matches={matches} rooms={rooms} onOpen={match=>{
               store(matchKey,match.matchId);setMatchId(match.matchId);setStatus('');
             }}/>
 
           </>
         )}
-        <a href="#second-dawn-preview">Playable preview · sample positions</a>
       </div>
     </main>
   );

@@ -30,7 +30,7 @@ npm run test:second-dawn
 npm run build
 ```
 
-Tests run with one worker. `npm run test:batched` provides smaller sequential batches. Browser walkthroughs and deterministic visual tools are under `tools/second-dawn-*.mjs`; the public preview is `/#second-dawn-preview`.
+Tests run with one worker. `npm run test:batched` provides smaller sequential batches. Browser walkthroughs and deterministic visual tools are under `tools/second-dawn-*.mjs`. Public sample-position routes have been retired; fixtures remain for internal component tests and isolated local browser harnesses. Older walkthrough scripts that navigate to the retired preview need a local harness before reuse.
 
 ## Release
 

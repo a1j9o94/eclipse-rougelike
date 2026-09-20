@@ -1,3 +1,4 @@
+import SectorFeatureIcon from './SectorFeatureIcon';
 import type {FactionId} from '../../shared/eclipse/catalog';
 import { useState } from 'react';
 import { DISCOVERIES, type DiscoveryEffect } from '../../shared/eclipse/discoveries';
@@ -69,7 +70,7 @@ export default function DiscoveryDecision({ decision, view, disabled, onSubmit }
   const sector = view?.sectors.find(candidate => candidate.id === decision.sectorId);
   return <section className="dg-discovery-decision">
     <span className="dg-yard-eyebrow">Discovery revealed{sector ? ` · Sector ${sector.tileId}` : ''}</span>
-    <h2>{discovery.name}</h2>
+    <h2><SectorFeatureIcon kind="discovery"/> {discovery.name}</h2>
     <div className="dg-discovery-alternatives" role="radiogroup" aria-label="Discovery reward">
       <section className={`dg-discovery-reward ${option === 'use' ? 'dg-discovery-selected' : ''}`}>
         <label className="dg-discovery-side"><input type="radio" name={`discovery-${decision.id}`} checked={option==='use'} disabled={disabled || !useAvailable} onChange={()=>setOption('use')}/>Use {discovery.name}</label>

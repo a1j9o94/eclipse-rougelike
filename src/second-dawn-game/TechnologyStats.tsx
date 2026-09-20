@@ -15,7 +15,7 @@ export default function TechnologyStats({ technology }: { technology: Technology
  case 'extra-activation': return <div className="dg-part-stats">{badge({icon:effect.action==='move'?'drive':effect.action==='build'?'structure':'hull',value:`+${effect.amount}`,label:effect.action})}</div>;
  case 'gain-influence': return <div className="dg-part-stats">{badge({icon:'influence',value:`+${effect.amount}`,label:'influence'})}</div>;
  case 'wormhole-generator': return <div className="dg-part-stats">{badge({icon:'portal',value:'1',label:'opening needed'})}</div>;
- case 'artifact-resources': return <div className="dg-part-stats">{badge({icon:'discovery',value:'+5',label:'per artifact'})}</div>;
+ case 'artifact-resources': return <div className="dg-part-stats">{badge({icon:'artifact',value:'+5',label:'per artifact'})}</div>;
  case 'split-antimatter-damage': return <div className="dg-part-stats">{badge({icon:'cannon',value:'4 →',label:'split damage'})}</div>;
  case 'ignore-neutron-bombs': return <div className="dg-part-stats">{badge({icon:'shield',value:'✓',label:'population'})}</div>;
  case 'cloaking': return <div className="dg-part-stats">{badge({icon:'drive',value:'2:1',label:'ships to pin'})}</div>;

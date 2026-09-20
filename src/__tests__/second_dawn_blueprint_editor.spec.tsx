@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, fireEvent, cleanup } from "@testing-library/react";
+import { render, screen, fireEvent, cleanup, within } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import BlueprintEditor from "../second-dawn-game/BlueprintEditor";
 import { initialBlueprints } from "../../shared/eclipse/blueprints";
@@ -108,4 +108,30 @@ it('keeps a permanent outside-grid Ancient visible without treating it as a grid
  render(<BlueprintEditor faction="terran-directorate" blueprint={blueprint} technologies={[]} storedParts={[]} capacity={2} disabled={false} onSubmit={vi.fn()}/>);
  expect(screen.getByRole('checkbox',{name:/Muon Source/})).toBeChecked();
  expect(screen.getByRole('checkbox',{name:/Muon Source/})).toBeDisabled();
+});
+
+
+it('renders Muon Source as a module inside the blueprint without consuming a hardpoint', () => {
+  const blueprint = initialBlueprints('terran-directorate')[0];
+  blueprint.outsideParts = ['muon-source'];
+  render(<BlueprintEditor faction="terran-directorate" blueprint={blueprint} technologies={[]} storedParts={[]} capacity={2} disabled={false} onSubmit={vi.fn()} />);
+  const canvas = screen.getByRole('region', {name: 'Blueprint hardpoints'});
+  const module = within(canvas).getByRole('group', {name: 'Muon Source outside-grid module'});
+  expect(within(module).getByText(/No slot used/)).toBeInTheDocument();
+  expect(within(module).getByRole('group', {name: 'Muon Source statistics'})).toBeInTheDocument();
+  expect(within(canvas).getAllByRole('button', {name: /^Slot /})).toHaveLength(4);
+  expect(screen.getByText('5 generated / 2 used')).toBeInTheDocument();
+});
+
+it('keeps reactor and live capabilities beside the editor title without repeating energy in the summary', () => {
+  render(<BlueprintEditor faction="terran-directorate" blueprint={initialBlueprints('terran-directorate')[0]} technologies={['plasma-cannon']} storedParts={[]} capacity={2} disabled={false} onSubmit={vi.fn()} />);
+  const header = screen.getByRole('heading', {name: 'Edit interceptor'}).closest('header')!;
+  const summary = within(header).getByRole('group', {name: 'Blueprint totals'});
+  expect(within(summary).getByRole('img', {name: /^hit points: 1/})).toBeInTheDocument();
+  expect(within(summary).getByRole('img', {name: /cannon.*1 × 1/})).toBeInTheDocument();
+  expect(within(summary).queryByRole('img', {name: /energy/})).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', {name: 'Slot 1: Ion Cannon'}));
+  fireEvent.click(screen.getByRole('button', {name: 'Install Plasma Cannon in slot 1'}));
+  expect(within(summary).getByRole('img', {name: /cannon.*1 × 2/})).toBeInTheDocument();
+  expect(within(header).getByText('0 energy available')).toBeInTheDocument();
 });

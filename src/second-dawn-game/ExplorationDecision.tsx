@@ -1,4 +1,5 @@
-import {useLayoutEffect,useRef,useState} from 'react';
+import SectorFeatureIcon from './SectorFeatureIcon';
+import {useLayoutEffect,useMemo,useRef,useState} from 'react';
 import type {GameCommand,PendingDecision,PlayerView} from '../../shared/eclipse/types';
 import {sectorDefinition} from '../../shared/eclipse/sectors';
 import {getFaction} from '../../shared/eclipse/catalog';
@@ -25,17 +26,25 @@ export default function ExplorationDecision({view,decision,disabled,onSubmit}:Pr
  const mapped=createExplorationMapView(view,decision,tileId,rotation)!;
  const [selected,setSelected]=useState(mapped.sector.id);
  const inspector=useRef<HTMLElement>(null);
+ const focusPositionKey=JSON.stringify([decision.position,...preview.neighbors.flatMap(neighbor=>neighbor.sector?[neighbor.position]:[])]);
+ const focusPositions=useMemo(()=>JSON.parse(focusPositionKey) as {q:number;r:number}[],[focusPositionKey]);
  const focusPoints=[galaxyPoint(decision.position),...preview.neighbors.flatMap(neighbor=>neighbor.sector?[galaxyPoint(neighbor.position)]:[])];
  const nearbyCamera:GalaxyCamera={center:{x:(Math.min(...focusPoints.map(p=>p.x))+Math.max(...focusPoints.map(p=>p.x)))/2,y:(Math.min(...focusPoints.map(p=>p.y))+Math.max(...focusPoints.map(p=>p.y)))/2},zoom:3};
  const [camera,setCamera]=useState<GalaxyCamera>(nearbyCamera);
- const mapStage=useRef<HTMLDivElement>(null),cameraFitted=useRef(false),focusCamera=useRef(nearbyCamera);
+ const mapStage=useRef<HTMLDivElement>(null),focusCamera=useRef(nearbyCamera);
  useLayoutEffect(()=>{
-  if(cameraFitted.current)return;
   const svg=mapStage.current?.querySelector<SVGSVGElement>('.dg-galaxy>svg');if(!svg)return;
-  const box=svg.getBoundingClientRect(),bounds=svg.getAttribute('viewBox')?.split(' ').map(Number);
-  if(!box.width||!box.height||!bounds||bounds.length!==4)return;
-  cameraFitted.current=true;focusCamera.current=fitExplorationCamera([decision.position,...preview.neighbors.flatMap(neighbor=>neighbor.sector?[neighbor.position]:[])],{width:box.width,height:box.height,viewWidth:bounds[2],viewHeight:bounds[3]},compact);setCamera(focusCamera.current);
- },[compact,decision.position,preview.neighbors]);
+  let measured='';
+  const fit=()=>{
+   const box=svg.getBoundingClientRect(),bounds=svg.getAttribute('viewBox')?.split(' ').map(Number);
+   if(!box.width||!box.height||!bounds||bounds.length!==4)return;
+   const size=`${box.width}:${box.height}:${bounds.join(',')}`;if(size===measured)return;measured=size;
+   focusCamera.current=fitExplorationCamera(focusPositions,{width:box.width,height:box.height,viewWidth:bounds[2],viewHeight:bounds[3]},compact);setCamera(focusCamera.current);
+  };
+  fit();const frame=requestAnimationFrame(fit);
+  const observer=typeof ResizeObserver==='undefined'?null:new ResizeObserver(fit);observer?.observe(svg);
+  return()=>{cancelAnimationFrame(frame);observer?.disconnect();};
+ },[compact,focusPositions]);
  const inspected=mapped.view.sectors.find(sector=>sector.id===selected)??mapped.sector;
  const neighbors=preview.neighbors.filter(n=>n.sector);
  const factionFor=(owner:string|null)=>{const seat=view.seats.find(seat=>seat.id===owner);return seat?getFaction(seat.faction):null;};
@@ -43,7 +52,7 @@ export default function ExplorationDecision({view,decision,disabled,onSubmit}:Pr
  const resolve=(selectedTile:string|null,drawAnother=false)=>onSubmit({type:'resolve',decisionId:decision.id,choice:{kind:'exploration',tileId:selectedTile,rotation:selectedTile?rotation:0,...(drawAnother?{drawAnother:true}:{})}});
  const chooseTile=(id:string)=>{setTileId(id);setRotation(decision.placements.find(p=>p.tileId===id)?.rotation??0);setSelected(mapped.sector.id);};
  return <section className="dg-exploration-decision">
-  <header className="dg-explore-heading"><div><h2>Exploration</h2><p>Rotate the new sector on your galaxy. Select a neighbor to inspect its planets and fleet.</p></div><span>Drawn sector <strong>{tileId}</strong> · preview</span></header>
+  <header className="dg-explore-heading"><div><h2>Exploration</h2><p>Rotate to align an exit with a neighboring exit. Solid gold edges connect; dotted edges are open but unmatched. Select any sector for its contents.</p></div><span>Drawn sector <strong>{tileId}</strong> · preview</span></header>
   {decision.drawnTileIds.length>1&&<nav className="dg-drawn-choices" aria-label="Drawn sectors">{decision.drawnTileIds.map(id=><button key={id} aria-pressed={tileId===id} onClick={()=>chooseTile(id)}>Sector {id}<small>{sectorDefinition(Number(id))!.victoryPoints} VP · {sectorDefinition(Number(id))!.population.length} planets</small></button>)}</nav>}
   <div className="dg-placement-verdict" data-legal={preview.legal} role="status"><strong>{preview.legal?'✓ Ready to place':'× Cannot place this orientation'}</strong><span>{preview.legal?`Connected exploration source: ${preview.connectedSourceIds.map(id=>{const source=view.sectors.find(sector=>sector.id===id)!;return `${factionFor(source.owner)?.name??'Uncontrolled'} · sector ${source.tileId}`;}).join('; ')}`:'Align a wormhole with an exploration source.'}</span></div>
   <div className="dg-explore-layout">
@@ -53,10 +62,11 @@ export default function ExplorationDecision({view,decision,disabled,onSubmit}:Pr
      <span title="Sector victory points" aria-label={`${preview.tile!.victoryPoints} victory points`}><strong>{preview.tile!.victoryPoints}</strong> VP</span>
      {preview.tile!.population.map((planet,index)=><span key={index} className="dg-drawn-planet" role="img" title={`${planet.advanced?'Advanced':'Standard'} ${planet.resource==='gray'?'any resource':planet.resource} planet`} aria-label={`${planet.advanced?'Advanced':'Standard'} ${planet.resource==='gray'?'any resource':planet.resource} planet`} style={{color:({money:'#e7bd67',science:'#b397da',materials:'#b89675',gray:'#b5c3cd'})[planet.resource]}}><svg viewBox="0 0 20 20" aria-hidden="true"><PlanetIcon resource={planet.resource}/></svg>{planet.advanced&&<svg className="dg-drawn-advanced" viewBox="0 0 16 16" aria-hidden="true"><path d="m8 1 2 4 5 1-3.5 3.5.8 5-4.3-2.4-4.3 2.4.8-5L1 6l5-1Z" fill="#e6ce91" stroke="#101c27"/></svg>}</span>)}
      {preview.tile!.ancients>0&&<span title="Ancient defenders" aria-label={`${preview.tile!.ancients} Ancient defenders`}><NeutralShipSilhouette type="ancient"/><strong>×{preview.tile!.ancients}</strong></span>}
-     {preview.tile!.discovery&&<span title="Discovery tile" aria-label="Discovery tile"><StatIcon kind="discovery"/></span>}
-     {preview.tile!.artifacts>0&&<span title="Artifacts" aria-label={`${preview.tile!.artifacts} artifacts`}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 9 5v10l-9 5-9-5V7Z m0 0v20 M3 7l18 10 M21 7 3 17" fill="none" stroke="currentColor" strokeWidth="1.5"/></svg><strong>{preview.tile!.artifacts}</strong></span>}
+     {preview.tile!.discovery&&<span title="Discovery tile" aria-label="Discovery tile"><SectorFeatureIcon kind="discovery"/></span>}
+     {preview.tile!.artifacts>0&&<span title="Artifacts" aria-label={`${preview.tile!.artifacts} artifacts`}><SectorFeatureIcon kind="artifact"/><strong>{preview.tile!.artifacts}</strong></span>}
      {preview.tile!.warpPortal&&<span title="Warp portal" aria-label="Warp portal"><StatIcon kind="portal"/></span>}
     </div>
+    <div className="dg-placement-edge-key" aria-label="Wormhole legend"><span><i className="dg-key-wormhole"/>Connected pair</span><span><i className="dg-key-opening"/>Open exit · unmatched</span></div>
     <GalaxyBoard showPrintedWormholes view={mapped.view} candidates={[]} selected={selected} legalTargetIds={[mapped.sector.id]} targetLabel="new sector preview" compact={compact} camera={camera} onCameraChange={setCamera} onSelect={inspect} onInspectFleet={inspect} onExplore={()=>{}}/>
    </div>
    <aside ref={inspector} className="dg-placement-notes" aria-label="Exploration sector inspection">

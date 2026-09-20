@@ -25,12 +25,12 @@ it('renders solid unconnected edges normally and visible openings in placement m
  ui.rerender(<GalaxyBoard {...props} showPrintedWormholes/>);expect(ui.container.querySelectorAll('[data-wormhole-edge]').length).toBeGreaterThan(6);
 });
 
-it('reveals every rotated printed opening on the selected sector only',()=>{
+it('reveals every rotated printed opening on the selected sector and its neighbors',()=>{
  const {view,from}=fixture();from.rotation=2;const before=JSON.stringify(view);
  const props={view,candidates:[],onSelect:vi.fn(),onExplore:vi.fn()};
  const ui=render(<GalaxyBoard {...props} selected={from.id}/>);
  expect(ui.container.querySelector('[data-galaxy-target="sector:from"]')!.querySelectorAll('[data-wormhole-edge]')).toHaveLength(6);
- expect(ui.container.querySelector('[data-galaxy-target="sector:to"]')!.querySelectorAll('[data-wormhole-edge]')).toHaveLength(0);
+ expect(ui.container.querySelector('[data-galaxy-target="sector:to"]')!.querySelectorAll('[data-wormhole-edge]').length).toBeGreaterThan(0);
  ui.rerender(<GalaxyBoard {...props} selected={null}/>);
  expect(ui.container.querySelectorAll('[data-wormhole-edge]')).toHaveLength(0);
  expect(JSON.stringify(view)).toBe(before);

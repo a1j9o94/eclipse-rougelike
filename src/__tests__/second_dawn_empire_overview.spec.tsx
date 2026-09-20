@@ -113,3 +113,22 @@ it('shows the shared research discount progression on each command-center techno
  fireEvent.click(screen.getByRole('button',{name:'Inspect Improved Hull'}));
  expect(screen.getByRole('status')).toHaveTextContent('Improved Hull');
 });
+it('puts current private reputation and colony supply before planning tracks, with planets collapsed',()=>{
+ const view=fixture();view.private.reputation=[2,4];
+ render(<EmpireOverview view={view} seatId="a" onSector={vi.fn()} onNavigate={vi.fn()} onBlueprints={vi.fn()}/>);
+ const reputation=screen.getByRole('region',{name:'Your reputation tiles'});
+ expect(within(reputation).getByRole('img',{name:'4 VP reputation'})).toBeVisible();
+ expect(within(reputation).getByRole('img',{name:'2 VP reputation'})).toBeVisible();
+ expect(reputation.compareDocumentPosition(screen.getByRole('heading',{name:'Income & upkeep tracks'}))&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+ expect(screen.getByLabelText('Colony ships available')).toHaveTextContent(String(view.seats[0].colonyShipsAvailable));
+ const planner=screen.getByText('Empty planets',{exact:true}).closest('details');expect(planner).not.toHaveAttribute('open');
+ expect(screen.getByRole('button',{name:'Colonize planets'})).toBeVisible();
+ expect(screen.queryByText('GROW YOUR ECONOMY')).toBeNull();
+});
+it('never shows own private reputation when inspecting another empire or mismatched private data',()=>{
+ const view=fixture();view.private.reputation=[987];
+ const ui=render(<EmpireOverview view={view} seatId="b" onSector={vi.fn()} onNavigate={vi.fn()} onBlueprints={vi.fn()}/>);
+ expect(screen.queryByRole('region',{name:'Your reputation tiles'})).toBeNull();expect(screen.queryByRole('img',{name:'987 VP reputation'})).toBeNull();
+ view.private.seatId='b';ui.rerender(<EmpireOverview view={view} seatId="a" onSector={vi.fn()} onNavigate={vi.fn()} onBlueprints={vi.fn()}/>);
+ expect(screen.queryByRole('img',{name:'987 VP reputation'})).toBeNull();
+});

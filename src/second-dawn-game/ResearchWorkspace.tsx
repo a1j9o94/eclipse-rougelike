@@ -27,8 +27,9 @@ export default function ResearchWorkspace({view,purchases,selected,draft,disable
  const seat=view.seats.find(s=>s.id===view.viewerSeatId)!;
  const owned=new Set(Object.values(seat.technologies).flat());
  const market=TECHNOLOGIES.filter(tech=>view.technologyMarket.includes(tech.id)).map(tech=>{
-  const costs=tracks.flatMap(track=>{const cost=researchCostForSeat(tech.id,track,seat);return cost.ok?[cost.scienceCost]:[];});
-  return {tech,costs,sortCost:costs.length?Math.min(...costs):tech.baseCost};
+  const prices=tracks.flatMap(track=>{const cost=researchCostForSeat(tech.id,track,seat);return cost.ok?[cost]:[];}).sort((a,b)=>a.scienceCost-b.scienceCost||b.discount-a.discount);
+  const costs=prices.map(price=>price.scienceCost);
+  return {tech,costs,bestPrice:prices[0],sortCost:costs.length?Math.min(...costs):tech.baseCost};
  }).sort((a,b)=>a.sortCost-b.sortCost||a.tech.baseCost-b.tech.baseCost||a.tech.name.localeCompare(b.tech.name));
  const selectedTech=selected?TECHNOLOGIES.find(t=>t.id===selected):undefined;
  const draftId=techIdOf(draft??undefined) as TechnologyId|null;
@@ -67,9 +68,11 @@ export default function ResearchWorkspace({view,purchases,selected,draft,disable
   <ResearchedTechnologies view={view} selectedId={selected} seat={seat} onInspect={id=>onSelect(id,true)}/>
   {selectedTech&&(owned.has(selectedTech.id)||!view.technologyMarket.includes(selectedTech.id))&&selectedPanel}
   <h2 className="dg-market-heading">Available technologies</h2>
-  <div className="sd-tech-grid">{['military','grid','nano','rare'].map(track=><section key={track}><h2>{humanize(track)}</h2>{market.filter(({tech})=>tech.track===track).map(({tech,costs})=>{const id=tech.id;
+  <div className="sd-tech-grid">{['military','grid','nano','rare'].map(track=><section key={track}><h2>{humanize(track)}</h2>{market.filter(({tech})=>tech.track===track).map(({tech,costs,bestPrice})=>{const id=tech.id;
+   const exactPrice=selected===id&&draftId===id&&chosenCost?.ok?chosenCost:null;
+   const displayedPrice=exactPrice??bestPrice;
    const candidate=purchases.find(c=>techIdOf(c)===id);
-   return <article className={`dg-research-card${selected===id?' is-selected':''}`} aria-label={`${tech.name} technology`} key={id}><button className="sd-tech" title={describeTechnology(tech)} aria-pressed={selected===id} key={id} onClick={()=>{onSelect(id,false);if(!draftId||draftId===id)onDraft(candidate??null);}}><strong>{tech.name} ×{view.technologyMarket.filter(t=>t===id).length}</strong>{!(selected===id&&draftId===id&&scienceCost!==null)&&<ResearchCost cost={costs.length?Math.min(...costs):null} available={seat.resources.science} owned={owned.has(id)} from={new Set(costs).size>1}/>}<TechnologyStats technology={tech}/><AdvancedPopulationPreview view={view} technology={tech}/>{candidate?.command.type==='trade-and-act'&&<small className="dg-conversion-available">Conversion available</small>}</button>{selected===id&&!owned.has(id)&&selectedPanel}</article>;
+   return <article className={`dg-research-card${selected===id?' is-selected':''}`} aria-label={`${tech.name} technology`} key={id}><button className="sd-tech" title={describeTechnology(tech)} aria-pressed={selected===id} key={id} onClick={()=>{onSelect(id,false);if(!draftId||draftId===id)onDraft(candidate??null);}}><strong>{tech.name} ×{view.technologyMarket.filter(t=>t===id).length}</strong><ResearchCost cost={displayedPrice?.scienceCost??null} available={seat.resources.science} owned={owned.has(id)} from={!exactPrice&&new Set(costs).size>1} pricing={{base:tech.baseCost,minimum:tech.minimumCost,discount:displayedPrice?.discount??null}}/><TechnologyStats technology={tech}/><AdvancedPopulationPreview view={view} technology={tech}/>{candidate?.command.type==='trade-and-act'&&<small className="dg-conversion-available">Conversion available</small>}</button>{selected===id&&!owned.has(id)&&selectedPanel}</article>;
   })}</section>)}</div>
  </div>;
 }

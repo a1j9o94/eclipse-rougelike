@@ -20,3 +20,15 @@
 .eo-build-button:disabled .eo-build-price { opacity:.65; }
 .eo-build-reason,.eo-build-conversion { font-size:11px; line-height:1.4; color:#b7c1c8; }
 .eo-build-conversion { color:#e2bf78; }
+
+/* Current holdings first; optional colony planning stays compact. */
+.eo-quick-status{display:grid;grid-template-columns:minmax(0,2fr) minmax(230px,1fr);gap:16px;margin:0 0 18px}
+.eo-reputation header{flex-wrap:wrap;gap:8px}.eo-reputation header small{color:#b6c2cc;font-size:12px}
+.eo-held-reputation{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.eo-held-reputation p{margin:0}
+.eo-colony-supply{display:flex;align-items:center;gap:16px;flex-wrap:wrap}.eo-colony-supply header{width:100%;margin-bottom:0}.eo-colony-supply button{margin-left:auto}
+.eo-planning-stack{display:grid;gap:16px;margin-top:16px}.eo-relations{margin-top:16px}
+.eo-colonies>summary{cursor:pointer;display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-height:44px;color:#ead7a7}
+.eo-colonies>summary:before{content:'▸'}.eo-colonies[open]>summary:before{content:'▾'}.eo-colonies>summary>span{font-size:12px;color:#b9c7cf}.eo-colonies[open]>summary{margin-bottom:16px}
+.eo-colonies>summary:focus-visible{outline:2px solid #f7d997;outline-offset:3px}
+.eo-research{margin-top:16px}
+@media(max-width:700px){.eo-quick-status{grid-template-columns:1fr;gap:12px}.eo-colony-supply{gap:12px}.eo-colony-supply header{width:auto;flex:1}.eo-colony-supply button{width:100%;margin:0}.eo-colonies>summary>span{width:100%;padding-left:18px}}

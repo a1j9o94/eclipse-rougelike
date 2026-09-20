@@ -1,3 +1,4 @@
+import SectorFeatureIcon from './SectorFeatureIcon';
 import {seatColor} from './factionColors';
 import type { PlayerView, Resource, Sector } from "../../shared/eclipse/types";
 import { sectorDefinition } from "../../shared/eclipse/sectors";
@@ -302,7 +303,7 @@ export default function SectorPlanets({ sector, view, candidates }: Props) {
           <dd>{definition.victoryPoints} VP</dd>
         </div>
         <div>
-          <dt>Artifacts</dt>
+          <dt><SectorFeatureIcon kind="artifact"/> Artifacts</dt>
           <dd>{definition.artifacts}</dd>
         </div>
       </dl>
@@ -319,7 +320,7 @@ export default function SectorPlanets({ sector, view, candidates }: Props) {
       )}
       {sector.discovery && (
         <p className="dg-feature-note">
-          <strong>Discovery tile</strong> · Resolve its reward after defending
+          <strong><SectorFeatureIcon kind="discovery"/> Discovery tile</strong> · Resolve its reward after defending
           ships are cleared.
         </p>
       )}
