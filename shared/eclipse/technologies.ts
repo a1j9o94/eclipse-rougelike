@@ -47,7 +47,9 @@ export type TechnologyId =
   | 'pico-modulator'
   | 'ancient-labs'
   | 'zero-point-source'
-  | 'metasynthesis';
+  | 'metasynthesis'
+  | 'optimal-logistics' | 'picobots' | 'femtobots'
+  | 'regular-flux-missile' | 'advanced-colony-ships' | 'ancient-research-facility';
 export type ResearchedShipPart =
   | 'rift-cannon'
   | 'plasma-cannon'
@@ -70,6 +72,8 @@ export type ResearchedShipPart =
   | 'flux-missile'
   | 'zero-point-source';
 export type TechnologyEffect =
+  | { kind: 'multi-activation'; actions: ('build' | 'move' | 'upgrade')[]; amount: 1 }
+  | { kind: 'gain-colony-ship'; amount: 1 }
   | { kind: 'ship-part'; part: ResearchedShipPart }
   | { kind: 'construct'; piece: 'starbase' | 'orbital' | 'monolith' }
   | {
@@ -91,7 +95,7 @@ export type TechnologyEffect =
   | { kind: 'place-warp-portal'; controlledSectorVp: 1 }
   | { kind: 'draw-discovery'; count: 1 };
 export interface Technology {
-  expansion?: 'rift-cannon';
+  expansion?: 'rift-cannon' | 'less-random';
   id: TechnologyId;
   name: string;
   track: TechnologyTrack | 'rare';
@@ -150,7 +154,17 @@ function part(
     part: id,
   });
 }
+export const LESS_RANDOM_CONTENT_SOURCE = 'https://drive.google.com/file/d/1m0gtkWfJx1YywlCvoDWABSlawyCZTHr_/view';
+function variantTech(id: TechnologyId, name: string, track: Technology['track'], baseCost: number, minimumCost: number, copies: number, effect: TechnologyEffect): Technology {
+  return { id, name, track, baseCost, minimumCost, copies, effect, expansion: 'less-random', inventorySource: LESS_RANDOM_CONTENT_SOURCE, inventoryVerification: 'community-inventory' };
+}
 export const TECHNOLOGIES: readonly Technology[] = [
+  variantTech('optimal-logistics', 'Optimal Logistics', 'rare', 11, 8, 1, {kind:'multi-activation',actions:['move','build'],amount:1}),
+  variantTech('picobots', 'Picobots', 'rare', 7, 6, 1, {kind:'multi-activation',actions:['upgrade','build'],amount:1}),
+  variantTech('femtobots', 'Femtobots', 'rare', 15, 10, 1, {kind:'multi-activation',actions:['upgrade','build','move'],amount:1}),
+  variantTech('regular-flux-missile', 'Flux Missile', 'military', 11, 8, 3, {kind:'ship-part',part:'flux-missile'}),
+  variantTech('advanced-colony-ships', 'Advanced Colony Ships', 'grid', 9, 7, 4, {kind:'gain-colony-ship',amount:1}),
+  variantTech('ancient-research-facility', 'Ancient Research Facility', 'nano', 11, 8, 3, {kind:'draw-discovery',count:1}),
   { ...part('rift-cannon', 'Rift Cannon', 'rare', 9, 7), expansion: 'rift-cannon', inventorySource: 'https://www.lautapelit.fi/files/Online%20rules/Eclipse2_RC_rules_web.pdf' },
   tech('neutron-bombs', 'Neutron Bombs', 'military', 2, 2, {
     kind: 'automatic-population-bombardment',
@@ -297,8 +311,14 @@ export function researchCost(
 }
 
 /** Lowest printed-price regular tiles first; a full track never licenses a costlier reward. */
-export function ancientTechnologyChoices(market:readonly string[],tracks:Record<TechnologyTrack,readonly string[]>):TechnologyId[] {
-  const available=TECHNOLOGIES.filter(t=>t.track!=='rare'&&market.includes(t.id)&&!Object.values(tracks).some(ids=>ids.includes(t.id)));
+export function ancientTechnologyChoices(market:readonly string[],tracks:Record<TechnologyTrack,readonly string[]>,outsideTechnologies:readonly string[]=[]):TechnologyId[] {
+  const available=TECHNOLOGIES.filter(t=>t.track!=='rare'&&market.includes(t.id)&&!outsideTechnologies.includes(t.id)&&!Object.values(tracks).some(ids=>ids.includes(t.id)));
   const lowest=Math.min(...available.map(t=>t.baseCost));
   return available.filter(t=>t.baseCost===lowest&&t.track!=='rare'&&tracks[t.track].length<7).map(t=>t.id);
+}
+
+/** Owned technologies include the one extra slot supplied by Quantum Labs. */
+export function researchedTechnologyIds(seat: { technologies: Record<TechnologyTrack, readonly string[]>; developments?: readonly { technologyId?: string }[] }): TechnologyId[] {
+  const ids = [...Object.values(seat.technologies).flat(), ...(seat.developments ?? []).flatMap(d => d.technologyId ? [d.technologyId] : [])];
+  return ids.filter((id): id is TechnologyId => TECHNOLOGIES.some(t => t.id === id));
 }

@@ -1,3 +1,4 @@
+import { researchedTechnologyIds } from '../../shared/eclipse/technologies';
 import {seatColor} from './factionColors';
 import {useEffect,useRef,type CSSProperties,type ReactNode} from 'react';
 import {getFaction} from '../../shared/eclipse/catalog';
@@ -61,7 +62,7 @@ export default function FleetInspection({view,sectorId,selectedShipIds,onClose,o
     <div className="dg-initiative-comparison"><StatIcon kind="initiative"/><b>{source.stats.initiative} : {target.stats.initiative}</b><span>{source.stats.initiative>target.stats.initiative?'Your initiative is higher':source.stats.initiative<target.stats.initiative?'Enemy initiative is higher':'Tie: defender fires first'}</span></div>
    </div>))}</div><details className="dg-comparison-rules"><summary>How to read this comparison</summary><p>Highlighted faces hit. Natural 1 always misses; natural 6 always hits. Initiative compares firing groups within the same phase: missiles fire before cannons. Defender wins initiative ties. Each ship uses the installed weapons shown on its blueprint.</p></details></section>
   </>:<p className="dg-inspection-hint">Select your moving ships to compare their blueprints and attack rolls here.</p>}
-  <div className="dg-inspection-civilizations">{owners.map(id=>{const seat=view.seats.find(s=>s.id===id);if(!seat)return null;const own=view.seats.find(s=>s.id===view.viewerSeatId)!;return <section key={id} className="dg-inspection-civilization"><h3><FactionSymbol faction={seat.faction}/>{getFaction(seat.faction).name}</h3><p>{id===own.id?'Your civilization':own.ambassadors.includes(id)?'Diplomatic partner':'No diplomatic relationship'}{seat.traitor?' · Traitor':''}</p><details><summary>Public technologies</summary><p>{Object.values(seat.technologies).flat().map(tech=>TECHNOLOGIES.find(t=>t.id===tech)?.name??tech).join(' · ')||'None'}</p></details>{id!==own.id&&onDiplomacy&&<button onClick={()=>onDiplomacy(id)}>View diplomatic options</button>}</section>;})}</div>
+  <div className="dg-inspection-civilizations">{owners.map(id=>{const seat=view.seats.find(s=>s.id===id);if(!seat)return null;const own=view.seats.find(s=>s.id===view.viewerSeatId)!;return <section key={id} className="dg-inspection-civilization"><h3><FactionSymbol faction={seat.faction}/>{getFaction(seat.faction).name}</h3><p>{id===own.id?'Your civilization':own.ambassadors.includes(id)?'Diplomatic partner':'No diplomatic relationship'}{seat.traitor?' · Traitor':''}</p><details><summary>Public technologies</summary><p>{researchedTechnologyIds(seat).map(tech=>TECHNOLOGIES.find(t=>t.id===tech)?.name??tech).join(' · ')||'None'}</p></details>{id!==own.id&&onDiplomacy&&<button onClick={()=>onDiplomacy(id)}>View diplomatic options</button>}</section>;})}</div>
   {diplomacy}
  </section></div>;
 }

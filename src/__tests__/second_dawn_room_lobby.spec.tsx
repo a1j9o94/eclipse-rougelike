@@ -53,3 +53,11 @@ it('offers Minor Species as an optional default-off room agreement',()=>{
  cleanup();render(<RoomLobby lobby={{...lobby,settings:{...lobby.settings,minorSpecies:true}}} disabled={false} {...callbacks()}/>);
  expect(within(screen.getByRole('region',{name:'Agreed room rules'})).getByText('Minor Species enabled')).toBeVisible();
 });
+it('offers the less random rules agreement and locks warp portals off',()=>{
+ const save=vi.fn();render(<RoomSettingsEditor settings={lobby.settings} disabled={false} onSave={save}/>);
+ fireEvent.click(screen.getByRole('radio',{name:/Régis’s Less Random/}));
+ expect(screen.getByText(/10 rounds.*open technology.*public discoveries/i)).toBeVisible();
+ expect(screen.getByRole('checkbox',{name:/Base-game warp portals/})).toBeDisabled();
+ fireEvent.click(screen.getByRole('button',{name:'Save room settings'}));
+ expect(save).toHaveBeenCalledWith({...lobby.settings,rulesMode:'less-random-v1',warpPortals:false});
+});

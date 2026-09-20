@@ -1,3 +1,6 @@
+import { researchedTechnologyIds } from './technologies';
+import { isLessRandom } from './lessRandom';
+import { getDiscovery, type DiscoveryId } from './discoveries';
 import {evaluateMinorSpeciesPurchase} from './aiMinorSpecies';
 import { aiWeaponValue } from "./aiWeaponValue";
 import { generateAiCandidates } from "./aiCandidates";
@@ -68,8 +71,8 @@ export function sectorControlValue(view: PlayerView, id: string): number {
     seat.resources.money +
     incomeForPopulationAway(seat.populationTracks.money) -
     upkeepForEmptyInfluenceSlots(empty);
-  const turns = Math.max(1, 9 - view.round);
-  const techs = Object.values(seat.technologies).flat();
+  const turns = Math.max(1, (isLessRandom(view) ? 11 : 9) - view.round);
+  const techs = researchedTechnologyIds(seat);
   let money = 0,
     moneyCubes = 0,
     production = 0;
@@ -150,7 +153,7 @@ function technologyValue(view: PlayerView, id: string): number {
           ).length ?? 0),
         0,
       );
-    return 6 + available * Math.min(6, 9 - view.round);
+    return 6 + available * Math.min(6, (isLessRandom(view) ? 11 : 9) - view.round);
   }
   if (id === "monolith")
     return view.round >= 5 && seat.resources.materials >= 10 ? 19 : 5;
@@ -258,7 +261,7 @@ export function evaluateAiCommand(
       const lost = command.trades.reduce(
         (sum, t) =>
           sum +
-          (tradeQuote(seat.faction, t.from, t.to, t.amount)?.input ?? Number.POSITIVE_INFINITY) *
+          (tradeQuote(seat.faction, t.from, t.to, t.amount, view.rulesMode)?.input ?? Number.POSITIVE_INFINITY) *
             utility(t.from) *
             0.7,
         0,
@@ -315,6 +318,10 @@ export function evaluateAiCommand(
         sectors.length -
         discPenalty
       );
+    case "research-development":
+      return (command.developmentId === 'quantum-labs' ? (view.round <= 7 ? 13 : 4) : 10) - discPenalty;
+    case "quantum-research":
+      return technologyValue(view, command.tileId) + 4 - discPenalty;
     case "research":
       return (
         technologyValue(view, command.tileId) +
@@ -471,6 +478,7 @@ export function evaluateAiCommand(
       const c = command.choice;
       switch (c.kind) {
         case "exploration":
+          if (c.redraw) return view.pendingDecision?.kind === 'exploration' && view.pendingDecision.placements.length === 0 ? 6 : -10;
           return c.drawAnother
             ? 30
             : c.tileId === null
@@ -479,8 +487,20 @@ export function evaluateAiCommand(
                 sectorDefinition(Number(c.tileId))!.population.length * 2 +
                 sectorDefinition(Number(c.tileId))!.ancients *
                   factionPolicy.ancientExplorationValue;
-        case "discovery":
-          return c.option === "use" && view.round < 7 ? 12 : 5;
+        case "discovery": {
+          if (!isLessRandom(view)) return c.option === 'use' && view.round < 7 ? 12 : 5;
+          if (c.option === 'keep') return 8;
+          const tileId = c.discoveryId ?? (view.pendingDecision?.kind === 'discovery' ? view.pendingDecision.tileId : '');
+          if (!tileId) return -Infinity;
+          const effect = getDiscovery(tileId as DiscoveryId).effect;
+          if (effect.kind === 'resources') return Object.entries(effect.resources).reduce((sum,[r,n])=>sum+n*utility(r as Resource),0);
+          if (effect.kind === 'choice-resources') return effect.money*utility('money')+effect.amount*Math.max(...(['money','science','materials'] as const).map(utility));
+          if (effect.kind === 'end-game-bonus') return effect.bonus === 'reputation' ? Math.floor(view.private.reputation.reduce((a,b)=>a+b,0)/3)*4 : sectors.reduce((sum,s)=>sum+(sectorDefinition(Number(s.tileId))?.artifacts??0),0)*4;
+          if (effect.kind === 'ancient-ship-part') return view.round < 9 ? 16 : 4;
+          if (effect.kind === 'place-unbuilt-ship') return 17;
+          if (effect.kind === 'free-technology') return 14;
+          return 10;
+        }
         case "ancient-part":
           return c.blueprint ? 15 : 3;
         case "control":
@@ -513,6 +533,10 @@ export function evaluateAiCommand(
           return c.accept ? 8 : 0;
         case "reputation":
           return (c.kept?.reduce((n, v) => n + v, 0) ?? 0) * 10;
+        case "less-random-reputation":
+          return c.actions.length * 10;
+        case "super-joker":
+          return c.action === "table" ? 10 : c.action === "reroll" ? 2 : 0;
         case "resource-reward":
           return c.resources.reduce((n, r) => n + utility(r), 0);
         case "population-return":

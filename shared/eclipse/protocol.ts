@@ -205,6 +205,8 @@ export function getPlayerView(
     rulesVersion: state.rulesVersion,
     catalogVersion: state.catalogVersion,
     ...(state.factionProfile ? { factionProfile: state.factionProfile } : {}),
+    ...(state.rulesMode ? { rulesMode: state.rulesMode } : {}),
+    ...(state.lessRandom ? { lessRandom: state.lessRandom } : {}),
     revision: state.revision,
     actionTurnSerial: state.actionTurnSerial ?? 0,
     round: state.round,
@@ -248,7 +250,7 @@ export function getPlayerView(
     ...(state.engine ? {
       actionProgress: state.engine.action,
       scores: state.engine.scores?.map(score =>
-        state.phase === 'finished' || score.playerId === viewerSeatId
+        state.phase === 'finished' || state.rulesMode === 'less-random-v1' || score.playerId === viewerSeatId
           ? score
           : { ...score, reputation: 0, total: score.total - score.reputation }
       ) ?? null,

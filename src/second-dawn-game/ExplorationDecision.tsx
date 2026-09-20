@@ -49,7 +49,7 @@ export default function ExplorationDecision({view,decision,disabled,onSubmit}:Pr
  const neighbors=preview.neighbors.filter(n=>n.sector);
  const factionFor=(owner:string|null)=>{const seat=view.seats.find(seat=>seat.id===owner);return seat?getFaction(seat.faction):null;};
  const inspect=(id:string)=>{setSelected(id);if(compact)inspector.current?.scrollIntoView({behavior:'auto',block:'start'});else if(inspector.current)inspector.current.scrollTop=0;};
- const resolve=(selectedTile:string|null,drawAnother=false)=>onSubmit({type:'resolve',decisionId:decision.id,choice:{kind:'exploration',tileId:selectedTile,rotation:selectedTile?rotation:0,...(drawAnother?{drawAnother:true}:{})}});
+ const resolve=(selectedTile:string|null,drawAnother=false,redraw=false)=>onSubmit({type:'resolve',decisionId:decision.id,choice:{kind:'exploration',tileId:selectedTile,rotation:selectedTile?rotation:0,...(drawAnother?{drawAnother:true}:{}),...(redraw?{redraw:true}:{})}});
  const chooseTile=(id:string)=>{setTileId(id);setRotation(decision.placements.find(p=>p.tileId===id)?.rotation??0);setSelected(mapped.sector.id);};
  return <section className="dg-exploration-decision">
   <header className="dg-explore-heading"><div><h2>Exploration</h2><p>Rotate to align an exit with a neighboring exit. Solid gold edges connect; dotted edges are open but unmatched. Select any sector for its contents.</p></div><span>Drawn sector <strong>{tileId}</strong> · preview</span></header>
@@ -83,7 +83,7 @@ export default function ExplorationDecision({view,decision,disabled,onSubmit}:Pr
   </div>
   <footer className="dg-exploration-controls">
    <div className="dg-rotation-controls"><button data-sound="detent" aria-label="Rotate counterclockwise" onClick={()=>setRotation(r=>(r+1)%6)}><RotateIcon clockwise={false}/> Rotate left</button><span aria-label={`Orientation ${rotation+1} of 6`}>{Array.from({length:6},(_,i)=><i key={i} className={i===rotation?'active':''}/>)}</span><button data-sound="detent" aria-label="Rotate clockwise" onClick={()=>setRotation(r=>(r+5)%6)}>Rotate right <RotateIcon clockwise/></button></div>
-   <div className="dg-placement-actions"><button className="sd-primary" disabled={disabled||!preview.legal} onClick={()=>resolve(tileId)}>Place sector</button><button disabled={disabled} onClick={()=>resolve(null)}>Discard sector</button>{decision.canDrawAnother&&<button disabled={disabled} onClick={()=>resolve(null,true)}>Draw second Draco sector</button>}</div>
+   <div className="dg-placement-actions"><button className="sd-primary" disabled={disabled||!preview.legal} onClick={()=>resolve(tileId)}>Place sector</button><button disabled={disabled} onClick={()=>resolve(null)}>Discard sector</button>{decision.redrawAvailable&&<button disabled={disabled} onClick={()=>resolve(null,false,true)}>Use exploration joker · redraw</button>}{decision.canDrawAnother&&<button disabled={disabled} onClick={()=>resolve(null,true)}>Draw second Draco sector</button>}</div>
    <p className="dg-exploration-save-note">Saved draw · placement does not spend an influence disc or colony ship.</p>
   </footer>
  </section>;

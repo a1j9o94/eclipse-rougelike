@@ -58,8 +58,8 @@ export function fundingOptions(
   );
   const possible = Array.from({ length: shortfall + 1 }, (_, first) => first).filter(first => {
     const second = shortfall - first;
-    const firstQuote = first ? tradeQuote(seat.faction, sources[0], resource, first) : { input: 0 };
-    const secondQuote = second ? tradeQuote(seat.faction, sources[1], resource, second) : { input: 0 };
+    const firstQuote = first ? tradeQuote(seat.faction, sources[0], resource, first, view.rulesMode) : { input: 0 };
+    const secondQuote = second ? tradeQuote(seat.faction, sources[1], resource, second, view.rulesMode) : { input: 0 };
     return !!firstQuote && !!secondQuote && firstQuote.input <= seat.resources[sources[0]] && secondQuote.input <= seat.resources[sources[1]];
   });
   if (!possible.length) return [];
@@ -88,6 +88,7 @@ export function fundingOptions(
         trade.from,
         trade.to,
         trade.amount,
+        view.rulesMode,
       );
       if (!result.ok) throw Error("Generated funding allocation is invalid.");
       resourcesAfterTrade = result.resources;

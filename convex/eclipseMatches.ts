@@ -18,7 +18,7 @@ import { chooseStrategicAiCommand } from '../shared/eclipse/aiSearch';
 import { AI_BUDGETS, AI_VERSION, type AiDifficulty } from '../shared/eclipse/aiConfig';
 import { finishTimeoutAiCommand, validateTimeoutAi, retryFailedRoomTimeout } from './eclipseRooms';
 import { AI_DECISION_DELAY_MS } from '../shared/eclipse/pacing';
-import { factionValidator, factionProfileValidator, pieceColorValidator, gameCommandValidator } from './eclipseValidators';
+import { factionValidator, factionProfileValidator, pieceColorValidator, gameCommandValidator, rulesModeValidator } from './eclipseValidators';
 
 type ReadContext = Pick<QueryCtx, 'db'>;
 async function ownedSeat(ctx: ReadContext, credential: string, matchId: Id<'eclipseMatchesV1'>): Promise<Doc<'eclipseOwnershipV1'> | null> {
@@ -102,6 +102,7 @@ export interface MatchSummary {
   lastSeenRevision: number | null;
   updatedAt: number;
   roomToken?: string;
+  rulesMode?: 'standard' | 'less-random-v1';
   participation?: MatchParticipation;
 }
 export type MatchSubmission =
@@ -122,7 +123,7 @@ export interface MatchPlayerView extends PlayerView {
 }
 
 export const createMatch = mutation({
-  args: { credential: v.string(), showCombatOdds:v.optional(v.boolean()), minorSpecies:v.optional(v.boolean()), aiCount: v.optional(v.number()), factionProfile: v.optional(factionProfileValidator), pieceColor: v.optional(pieceColorValidator), faction: v.optional(factionValidator), warpPortals: v.optional(v.boolean()), aiDifficulty: v.optional(v.union(v.literal('normal'), v.literal('hard'), v.literal('expert'))) },
+  args: { credential: v.string(), showCombatOdds:v.optional(v.boolean()), minorSpecies:v.optional(v.boolean()), aiCount: v.optional(v.number()), factionProfile: v.optional(factionProfileValidator), pieceColor: v.optional(pieceColorValidator), faction: v.optional(factionValidator), bannedFaction:v.optional(factionValidator), warpPortals: v.optional(v.boolean()), rulesMode:v.optional(rulesModeValidator), aiDifficulty: v.optional(v.union(v.literal('normal'), v.literal('hard'), v.literal('expert'))) },
   handler: async (ctx, args): Promise<{ matchId: Id<'eclipseMatchesV1'>; seatId: string }> => {
     const guest = await findGuest(ctx, args.credential);
     if (!guest) throw new Error('Guest session required.');
@@ -131,14 +132,20 @@ export const createMatch = mutation({
     const humanFaction = args.faction ?? 'terran-directorate';
     const factionProfile = args.factionProfile ?? 'base';
     if (!factionAllowedForProfile(humanFaction, factionProfile)) throw new Error('Choose a faction available in this profile.');
-    const human = { id: 'seat-1', faction: humanFaction, pieceColor: seatPieceColor({ faction: humanFaction, ...(factionProfile === 'base' ? {} : { pieceColor: args.pieceColor }) }), controller: 'human' as const };
-    const opponents = roomAiSelections([human], aiCount, factionProfile, Math.random);
+    if (args.rulesMode === 'less-random-v1') {
+      if (getFaction(humanFaction).species === 'terran') {
+        if (!args.bannedFaction || !factionAllowedForProfile(args.bannedFaction,factionProfile) || getFaction(args.bannedFaction).species !== 'alien') throw new Error('A Terran civilization must ban one available alien species.');
+      } else if (args.bannedFaction) throw new Error('Only a Terran civilization bans an alien species.');
+    }
+    const human = { id: 'seat-1', faction: humanFaction, ...(args.rulesMode==='less-random-v1'&&args.bannedFaction?{bannedFaction:args.bannedFaction}:{}), pieceColor: seatPieceColor({ faction: humanFaction, ...(factionProfile === 'base' ? {} : { pieceColor: args.pieceColor }) }), controller: 'human' as const };
+    const opponents = roomAiSelections([human], aiCount, factionProfile, Math.random,args.rulesMode);
     // Convex provides replay-stable transaction randomness; credentials use independent crypto randomness.
     const seed = Math.floor(Math.random() * 0x100000000);
     const seats = [human, ...opponents.map((opponent, i) => ({ id: `seat-${i + 2}`, ...opponent, controller: 'ai' as const }))];
-    const state = createGame({ seed, seats, factionProfile, warpPortals: args.warpPortals ?? true, riftCannons: true, minorSpecies: args.minorSpecies??false, randomizeStartingPlayer: true });
+    if (args.rulesMode === 'less-random-v1' && args.warpPortals !== false) throw new Error('Less Random games do not use warp portals.');
+    const state = createGame({ seed, seats, factionProfile, ...(args.rulesMode ? {rulesMode:args.rulesMode} : {}), warpPortals: args.rulesMode === 'less-random-v1' ? false : args.warpPortals ?? true, riftCannons: args.rulesMode !== 'less-random-v1', minorSpecies: args.minorSpecies??false, randomizeStartingPlayer: true });
     const now = Date.now();
-    const matchId = await ctx.db.insert('eclipseMatchesV1', { snapshotJson: JSON.stringify(state), rulesVersion: state.rulesVersion, catalogVersion: state.catalogVersion, revision: state.revision, round: state.round, phase: state.phase, showCombatOdds:args.showCombatOdds??false, aiDifficulty: args.aiDifficulty ?? 'normal', aiVersion: AI_VERSION, createdAt: now, updatedAt: now });
+    const matchId = await ctx.db.insert('eclipseMatchesV1', { snapshotJson: JSON.stringify(state), rulesVersion: state.rulesVersion, catalogVersion: state.catalogVersion, revision: state.revision, round: state.round, phase: state.phase, ...(args.rulesMode?{rulesMode:args.rulesMode}:{}), showCombatOdds:args.showCombatOdds??false, aiDifficulty: args.aiDifficulty ?? 'normal', aiVersion: AI_VERSION, createdAt: now, updatedAt: now });
     await ctx.db.insert('eclipseOwnershipV1', { matchId, guestId: guest._id, seatId: 'seat-1' });
     await scheduleAi(ctx, matchId, state);
     return { matchId, seatId: 'seat-1' };
@@ -156,7 +163,7 @@ export const listMyMatches = query({
       const match = await ctx.db.get(ownership.matchId);
       if (!match) continue;
       const state = readState(match);
-      results.push({ participation: participation(match, ownership), matchId: match._id, seatId: ownership.seatId, round: match.round, phase: match.phase, revision: match.revision, playerCount: state.seats.length, lastSeenRevision: ownership.lastSeenRevision ?? null, updatedAt: match.updatedAt, ...(match.roomToken ? { roomToken: match.roomToken } : {}) });
+      results.push({ participation: participation(match, ownership), matchId: match._id, seatId: ownership.seatId, round: match.round, phase: match.phase, revision: match.revision, playerCount: state.seats.length, lastSeenRevision: ownership.lastSeenRevision ?? null, updatedAt: match.updatedAt, ...(match.roomToken ? { roomToken: match.roomToken } : {}), ...(state.rulesMode?{rulesMode:state.rulesMode}:{}) });
     }
     return results.sort((a, b) => b.updatedAt - a.updatedAt);
   },

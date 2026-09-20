@@ -8,7 +8,8 @@ import type {
   Sector,
   ValidationError,
 } from "./types";
-import { ancientTechnologyChoices } from "./technologies";
+import { ancientTechnologyChoices, researchedTechnologyIds } from "./technologies";
+import { getTechnology } from './technologies';
 import { getDiscovery, type DiscoveryId } from "./discoveries";
 import { factionHasCapability, getFaction } from "./catalog";
 import { sectorDefinition } from "./sectors";
@@ -62,7 +63,8 @@ export function player(state: GameState, id: string): Seat {
   return found!;
 }
 export function hasTech(seat: Seat, id: string): boolean {
-  return Object.values(seat.technologies).some((track) => track.includes(id));
+  return Object.values(seat.technologies).some((track) => track.includes(id)) ||
+    seat.developments?.some(development => development.technologyId === id) === true;
 }
 export function emit(
   events: GameEvent[],
@@ -82,16 +84,27 @@ export function queueDecision(
   continuation(state).decisions.push(decision);
 }
 export function presentNextDecision(state: GameState): boolean {
-  if (!state.pendingDecision)
-    state.pendingDecision = continuation(state).decisions.shift() ?? null;
+  const e = continuation(state);
+  if (!state.pendingDecision) {
+    while (!state.pendingDecision && e.decisions.length) {
+      const next = e.decisions.shift()!;
+      if (next.kind === 'discovery' && next.availableTileIds) {
+        next.availableTileIds = next.availableTileIds.filter(id => state.lessRandom?.discoverySupply.includes(id));
+        if (!next.availableTileIds.length) continue;
+      }
+      state.pendingDecision = next;
+    }
+  }
   const decision = state.pendingDecision;
   if (
     decision?.kind === "discovery" &&
+    !decision.availableTileIds &&
     getDiscovery(decision.tileId as DiscoveryId).effect.kind ===
       "free-technology" &&
     ancientTechnologyChoices(
       state.technologyMarket,
       player(state, decision.owner).technologies,
+      researchedTechnologyIds(player(state,decision.owner)),
     ).length === 0
   )
     decision.options = ["keep"];
@@ -166,12 +179,13 @@ export function capacity(seat: Seat, action: Action): number {
     );
     return 1;
   }
-  return (
-    getFaction(seat.faction).activations[action] +
-    (action === "build" && hasTech(seat, "nanorobots") ? 1 : 0) +
-    (action === "move" && hasTech(seat, "improved-logistics") ? 1 : 0) +
-    (action === "upgrade" && hasTech(seat, "pico-modulator") ? 2 : 0)
-  );
+  const ids = [...Object.values(seat.technologies).flat(), ...(seat.developments ?? []).flatMap(development => development.technologyId ? [development.technologyId] : [])];
+  const bonus = ids.reduce((total, id) => {
+    const effect = getTechnology(id as import('./technologies').TechnologyId).effect;
+    if (effect.kind === 'extra-activation' && effect.action === action) return total + effect.amount;
+    return effect.kind === 'multi-activation' && effect.actions.includes(action as 'build' | 'move' | 'upgrade') ? total + effect.amount : total;
+  }, 0);
+  return getFaction(seat.faction).activations[action] + bonus;
 }
 export function beginAction(
   state: GameState,

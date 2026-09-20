@@ -5,6 +5,7 @@ import {
 } from './catalog';
 import { shuffle, type RandomState } from './random';
 import { getTechnology, TECHNOLOGIES, type TechnologyId } from './technologies';
+import { removedTechnologyIds } from './lessRandom';
 
 /** Reviewed base-box inventory, shared by setup and independent hypothetical AI worlds. */
 export function createReputationSupply():number[]{
@@ -26,9 +27,13 @@ export function createTechnologyBag(
   random: RandomState,
   warpPortals = true,
   riftCannons = false,
+  lessRandom = false,
 ): TechnologyBag {
   const tiles: TechnologyTile[] = [];
   for (const technology of TECHNOLOGIES) {
+    if (!lessRandom && technology.expansion === 'less-random') continue;
+    if (lessRandom && technology.expansion === 'rift-cannon') continue;
+    if (lessRandom && removedTechnologyIds.has(technology.id)) continue;
     if (technology.expansion === 'rift-cannon' && !riftCannons) continue;
     if (
       technology.copies === null ||
@@ -46,7 +51,7 @@ export function createTechnologyBag(
       });
     }
   }
-  if (tiles.length !== BASE_COMPONENTS.physical.technologyTiles + (riftCannons ? 1 : 0))
+  if (!lessRandom && tiles.length !== BASE_COMPONENTS.physical.technologyTiles + (riftCannons ? 1 : 0))
     throw new Error('Technology inventory does not match the selected modules.');
   const excluded: TechnologyTile[] = warpPortals
     ? []
@@ -96,6 +101,7 @@ export function prepareSectorStacks(
   random: RandomState,
   count: PlayerCount,
   warpPortals: boolean,
+  allOuter = false,
 ): SectorStacks {
   if (!Number.isInteger(count) || count < 2 || count > 6)
     throw new RangeError('Second Dawn requires two to six players.');
@@ -112,7 +118,7 @@ export function prepareSectorStacks(
     middle.state,
     BASE_COMPONENTS.sectorIds.outer.filter(allowed),
   );
-  const limit = SETUP_BY_PLAYER_COUNT[count].outerSectors;
+  const limit = allOuter ? outer.items.length : SETUP_BY_PLAYER_COUNT[count].outerSectors;
   return {
     inner: inner.items,
     middle: middle.items,

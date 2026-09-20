@@ -57,7 +57,7 @@ export default function TurnAttentionNotice({view,matchScope='current-match',con
  return <GameDialog title={upkeep?'Upkeep is ready':'Your turn'} onClose={dismiss} dismissOnBackdrop={false} closeLabel={upkeep?'Dismiss upkeep notice':'Dismiss turn notice'} className="dg-turn-attention" focusPrimary>
   {seat&&<div className="dg-turn-attention-civilization">
    <span className="dg-turn-attention-emblem" style={{color:seatColor(seat)}}><FactionSymbol faction={seat.faction}/></span>
-   <div><small>Round {view.round} / 8</small><strong>{getFaction(seat.faction).name}</strong></div>
+   <div><small>Round {view.round} / {view.rulesMode==='less-random-v1'?10:8}</small><strong>{getFaction(seat.faction).name}</strong></div>
   </div>}
   <p>{upkeep?'Review your production and upkeep, then confirm when you are ready.':seat?.passed?'You have passed. Choose a reaction or continue passing.':'Choose your next action and lead your civilization forward.'}</p>
   <button type="button" className="dg-primary dg-turn-attention-action" onClick={()=>{dismiss();if(upkeep)onReviewUpkeep();else onOpenTurn();}}>{upkeep?'Review upkeep':'View turn'}</button>

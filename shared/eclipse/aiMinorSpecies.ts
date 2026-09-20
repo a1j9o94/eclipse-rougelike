@@ -1,3 +1,4 @@
+import { researchedTechnologyIds } from './technologies';
 import {getFaction} from './catalog';
 import {getMinorSpecies,minorSpeciesPoints} from './minorSpecies';
 import {incomeForPopulationAway,upkeepForEmptyInfluenceSlots} from './tracks';
@@ -5,8 +6,8 @@ import type {GameCommand,PlayerView,Seat} from './types';
 
 /** Conservative future savings in estimated VP units, using public plans and income only. */
 export function minorSpeciesFutureValue(view:PlayerView,seat:Seat):number {
- const rounds=Math.max(0,8-view.round),horizon=Math.min(3,rounds);
- const techs=Object.values(seat.technologies).flat();
+ const rounds=Math.max(0,(view.rulesMode==='less-random-v1'?10:8)-view.round),horizon=Math.min(3,rounds);
+ const techs=researchedTechnologyIds(seat);
  return (seat.minorSpecies??[]).reduce((value,tile)=>{
   if(tile.id==='researchers'){
    const openSlots=21-techs.length;

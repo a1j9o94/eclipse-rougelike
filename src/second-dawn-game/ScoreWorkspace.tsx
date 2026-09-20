@@ -17,6 +17,7 @@ const categories:{id:PublicScoreCategory;label:string;color:string;path:string}[
  {id:'monoliths',label:'Monoliths',color:'#a2b4ce',path:'M8 3 16 1v20l-8 2Z M8 3l5 2v17 M13 5l3-4'},
  {id:'portals',label:'Portals',color:'#80cad0',path:'M7 12a5 10 0 1 0 10 0a5 10 0 1 0-10 0 M1 12h22 M18 8l5 4-5 4'},
  {id:'species',label:'Faction bonus',color:'#dfa884',path:'M12 2 22 12 12 22 2 12Z M7 12l5-5 5 5-5 5Z'},
+ {id:'variant',label:'Variant bonuses',color:'#b8dab2',path:'M12 2 22 12 12 22 2 12Z M8 12h8 M12 8v8'},
  {id:'traitor',label:'Traitor',color:'#eb979c',path:'M12 2 21 6v6c0 5-9 10-9 10S3 17 3 12V6Z M8 8l8 8 M16 8l-8 8'},
 ];
 interface Props {
@@ -26,15 +27,16 @@ interface Props {
 }
 export default function ScoreWorkspace({view,scores,playerNames,onInspect,onHome,onPlayAgain,onGalaxy}:Props){
  const final=view.phase==='finished';
- const visibleCategories=categories.filter(category=>category.id!=='minorSpecies'||view.minorSpecies||view.seats.some(seat=>seat.minorSpecies?.length));
+ const publicReputation=final||view.rulesMode==='less-random-v1';
+ const visibleCategories=categories.filter(category=>(category.id!=='variant'||view.rulesMode==='less-random-v1')&&(category.id!=='minorSpecies'||view.minorSpecies||view.seats.some(seat=>seat.minorSpecies?.length)));
  const ranks=rankScores(scores);
  const sorted=ranks.flatMap(rank=>rank.players.map(id=>({score:scores.find(score=>score.playerId===id)!,rank})));
  const winners=ranks[0]?.players??[];
  const name=(id:string)=>getFaction(view.seats.find(seat=>seat.id===id)!.faction).name;
  return <div className="sd-workspace dg-score-workspace">
   <header className="dg-score-heading">
-   <div><p className="sd-eyebrow">{final?'THE EIGHTH DAWN':'YOUR EMPIRE’S PROGRESS'}</p><h1>{final?'Final standings':'Public victory points'}</h1>
-    <p>{final?'Every discovery, alliance and conquest has left its mark.':'Your empire, one achievement at a time. Reputation stays hidden until the game ends.'}</p>
+   <div><p className="sd-eyebrow">{final?(view.rulesMode==='less-random-v1'?'THE TENTH DAWN':'THE EIGHTH DAWN'):'YOUR EMPIRE’S PROGRESS'}</p><h1>{final?'Final standings':'Public victory points'}</h1>
+    <p>{final?'Every discovery, alliance and conquest has left its mark.':(publicReputation?'All reputation and variant bonuses are public.':'Your empire, one achievement at a time. Reputation stays hidden until the game ends.')}</p>
    </div>
    {final&&<div className="dg-endgame-actions"><button className="sd-primary" onClick={onPlayAgain}>Play again</button><button onClick={onHome}>Return home</button><button onClick={onGalaxy}>View final galaxy</button></div>}
   </header>
@@ -45,7 +47,7 @@ export default function ScoreWorkspace({view,scores,playerNames,onInspect,onHome
   <section aria-label="Standings" className="dg-score-cards">
    {sorted.map(({score,rank})=>{
     const seat=view.seats.find(seat=>seat.id===score.playerId)!;const faction=getFaction(seat.faction);
-    const positiveTotal=visibleCategories.reduce((sum,c)=>sum+Math.max(0,c.id==='reputation'&&!final?0:score[c.id]??0),0);
+    const positiveTotal=visibleCategories.reduce((sum,c)=>sum+Math.max(0,c.id==='reputation'&&!publicReputation?0:score[c.id]??0),0);
     const winner=final&&rank.place===1;
     return <article key={seat.id} className={`dg-score-card${winner?' dg-score-winner':''}`} aria-label={`${faction.name} score`} style={{'--score-faction':seatColor(seat)} as CSSProperties}>
      <header className="dg-score-card-heading">
@@ -53,14 +55,14 @@ export default function ScoreWorkspace({view,scores,playerNames,onInspect,onHome
       <div className="dg-score-civilization"><h2>{faction.name}</h2><small>{seat.id===view.viewerSeatId?'You':playerNames[seat.id]??(seat.controller==='ai'?'Computer':'Player')}{seat.eliminated?' · eliminated':''}</small>{winner&&<span className="dg-score-winner-label">{rank.players.length>1?'Joint winner':'Winner'}</span>}</div>
       <div className="dg-score-medallion" aria-label={`${final?'Final':'Public'} score: ${score.total} VP`}><strong>{score.total}</strong><span>VP</span></div>
      </header>
-     <div className="dg-score-contributions" aria-hidden="true">{visibleCategories.filter(c=>(c.id!=='reputation'||final)&&(score[c.id]??0)>0).map(c=><span key={c.id} style={{flex:(score[c.id]??0)/Math.max(1,positiveTotal),background:c.color}} title={`${c.label}: ${score[c.id]} VP`}/>)}</div>
+     <div className="dg-score-contributions" aria-hidden="true">{visibleCategories.filter(c=>(c.id!=='reputation'||publicReputation)&&(score[c.id]??0)>0).map(c=><span key={c.id} style={{flex:(score[c.id]??0)/Math.max(1,positiveTotal),background:c.color}} title={`${c.label}: ${score[c.id]} VP`}/>)}</div>
      <div className="dg-score-tokens">{visibleCategories.map(c=>{
-      const hidden=c.id==='reputation'&&!final,value=score[c.id]??0;
+      const hidden=c.id==='reputation'&&!publicReputation,value=score[c.id]??0;
       return <button key={c.id} className={`dg-score-token${hidden?' dg-score-secret':value<0?' dg-score-penalty':value===0?' dg-score-zero':''}`} style={{'--score-category':c.color} as CSSProperties} aria-label={`${c.label}: ${hidden?'Hidden until game end':`${value} VP`}`} onClick={()=>onInspect(seat.id,c.id)}>
        <svg viewBox="0 0 24 24" aria-hidden="true"><path d={c.path}/></svg><strong>{hidden?'?':value<0?`−${Math.abs(value)}`:value}</strong><span>{c.label}</span>{hidden&&<small>Hidden</small>}
       </button>;
      })}</div>
-     <footer><span>{final?`${score.resourceTotal} resources`:'Public points only'}</span><small>{final?'Tiebreak':'Reputation excluded'} · select a symbol for details</small></footer>
+     <footer><span>{final?`${score.resourceTotal} resources`:'Public points only'}</span><small>{final?'Tiebreak':publicReputation?'Reputation included':'Reputation excluded'} · select a symbol for details</small></footer>
     </article>;
    })}
   </section>

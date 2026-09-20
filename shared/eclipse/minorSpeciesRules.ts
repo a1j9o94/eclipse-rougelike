@@ -82,6 +82,10 @@ export function buyMinorSpecies(
     requireRule(index >= 0, "You do not own this reputation tile.");
     hidden.reputation.splice(index, 1);
     state.supplies.reputation.push(value);
+    if (state.lessRandom) {
+      state.lessRandom.reputationBySeat[seat.id] = [...hidden.reputation];
+      state.lessRandom.reputationSupply.push(value);
+    }
   }
   seat.resources.money -= tile.cost;
   seat.minorSpecies = after;

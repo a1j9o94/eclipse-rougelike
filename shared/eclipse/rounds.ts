@@ -1,4 +1,5 @@
 import { upkeepDecisionForSeat, upkeepSeatUnfinished } from './upkeep';
+import { discoveryAt } from './actions';
 import { eligibleDiplomacyPartners } from './decisions';
 import { factionHasCapability, getFaction, SETUP_BY_PLAYER_COUNT, type PlayerCount } from './catalog';
 import { deriveBlueprintStats } from './blueprints';
@@ -26,7 +27,9 @@ export function scoreSeat(state: GameState, seat: Seat): ScoreBreakdown {
     discoveriesKeptForVp: hidden?.discoveriesKept.length ?? 0, traitor: seat.traitor,
     researchTracks: [seat.technologies.military.length, seat.technologies.grid.length, seat.technologies.nano.length],
     ancientsOnBoard: state.ships.filter(ship => ship.type === 'ancient').length,
-    minorSpecies: seat.minorSpecies, ancientPartsUsed: seat.ancientPartsUsed, resources: seat.resources });
+    minorSpecies: seat.minorSpecies, ancientPartsUsed: seat.ancientPartsUsed,
+    variantVp: (state.lessRandom?.explorationJokers[seat.id] ? 2 : 0) + (seat.developments?.some(development => development.id === 'quantum-labs' && development.technologyId) ? 1 : 0) + (seat.discoveryBonuses ?? []).reduce((sum, bonus) => sum + (bonus === 'artifacts' ? state.sectors.filter(sector => sector.owner === seat.id).reduce((count, sector) => count + requireSectorDefinition(Number(sector.tileId)).artifacts, 0) : Math.floor((state.lessRandom?.reputationBySeat[seat.id] ?? hidden?.reputation ?? []).reduce((total, value) => total + value, 0) / 3)), 0),
+    resources: seat.resources });
 }
 function eliminate(state: GameState, seat: Seat, events: GameEvent[]): void {
   if (seat.eliminated) return;
@@ -121,6 +124,11 @@ function aftermath(state: GameState, events: GameEvent[]): void {
       if (!sector.discovery || state.ships.some(ship => ship.sectorId === sector.id && ['ancient', 'guardian', 'gcds'].includes(ship.type))) continue;
       const seat = occupant(state, sector) ?? (sector.owner ? player(state, sector.owner) : undefined);
       if (!seat) continue;
+      if (state.rulesMode === 'less-random-v1') {
+        discoveryAt(state, seat, sector);
+        if (presentNextDecision(state)) return;
+        continue;
+      }
       const tile = e.sectorDiscoveries.find(discovery => discovery.sectorId === sector.id);
       if (tile) {
         sector.discovery = false;
@@ -151,10 +159,10 @@ function finishGame(state: GameState, events: GameEvent[]): void {
   const e = continuation(state);
   e.scores = [...(e.scores ?? []).filter(score => player(state, score.playerId).eliminated), ...living(state).map(seat => scoreSeat(state, seat))];
   state.phase = 'finished'; state.activeSeatId = null;
-  emit(events, null, 'The eighth round is complete. Final scoring is ready.', 'score');
+  emit(events, null, `The ${state.round}th round is complete. Final scoring is ready.`, 'score');
 }
 function cleanup(state: GameState, events: GameEvent[]): void {
-  if (state.round === 8 || living(state).length === 0) { finishGame(state, events); return; }
+  if (state.round === (state.rulesMode === 'less-random-v1' ? 10 : 8) || living(state).length === 0) { finishGame(state, events); return; }
   const e = continuation(state);
   if (!done(state, 'cleanup')) {
     mark(state, 'cleanup');
@@ -170,13 +178,14 @@ function cleanup(state: GameState, events: GameEvent[]): void {
         if (seat.graveyard) seat.graveyard[resource] = 0;
         for (let cube = 0; cube < count; cube++) enqueueCubeReturn(state, seat.id, [resource]);
       }
-      seat.colonyShipsAvailable = getFaction(seat.faction).colonyShips; seat.passed = false;
+      seat.colonyShipsAvailable = getFaction(seat.faction).colonyShips + (hasTech(seat, 'advanced-colony-ships') ? 1 : 0); seat.passed = false;
     }
   }
   if (presentNextDecision(state)) return;
   state.startSeatId = living(state).some(seat => seat.id === state.firstPasser) ? state.firstPasser! : living(state).some(seat => seat.id === state.startSeatId) ? state.startSeatId : living(state)[0].id;
   state.activeSeatId = state.startSeatId; state.firstPasser = null; state.round++; state.phase = 'action';
   e.action = null; e.aftermath = undefined; e.aftermathDone = []; e.upkeepDone = []; e.diplomacyDone = []; e.diplomacyDeclined = []; e.battleSectors = []; e.battle = null; e.combatInitialized = false;
+  if (state.lessRandom) state.lessRandom.outerPlacementsThisRound = Object.fromEntries(living(state).map(seat => [seat.id, 0]));
   emit(events, null, `Round ${state.round}: action phase.`, 'phase');
 }
 /** Called after every resolved decision; never consumes a outstanding player choice. */

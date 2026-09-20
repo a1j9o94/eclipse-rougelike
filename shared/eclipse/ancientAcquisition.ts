@@ -1,7 +1,7 @@
 import { validateBlueprint, type ShipBlueprint } from './blueprints';
 import type { AncientShipPartId } from './discoveries';
 import { getShipPart, isShipPartId, type ShipPartId } from './parts';
-import { TECHNOLOGIES } from './technologies';
+import { researchedTechnologyIds } from './technologies';
 import { queueDecision, requireRule, uniqueId } from './rulesState';
 import type { Blueprint, DecisionChoice, GameState, PendingDecision, Seat } from './types';
 
@@ -42,7 +42,7 @@ export function resolveAncientPart(state: GameState, seat: Seat, decision: Pendi
     requireRule(next.outsideParts.length === previous.outsideParts.length && next.outsideParts.every((part, slot) => part === previous.outsideParts[slot]), 'Permanent outside-grid parts cannot be removed or replaced.');
   }
   const ownedAncients = [...previous.parts, ...previous.outsideParts].filter((part): part is ShipPartId => part !== null).filter(part => getShipPart(part).access.kind === 'ancient').map(ancientId);
-  const researched = TECHNOLOGIES.filter(tech => Object.values(seat.technologies).some(track => track.includes(tech.id))).map(tech => tech.id);
+  const researched = researchedTechnologyIds(seat);
   const issues = validateBlueprint(seat.faction, next, researched, [...ownedAncients, id], previous);
   requireRule(issues.length === 0, issues.map(issue => issue.message).join(' '));
   seat.blueprints[index] = { shipType: next.shipType, parts: [...next.parts], outsideParts: [...next.outsideParts] };

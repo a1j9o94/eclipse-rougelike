@@ -1,3 +1,4 @@
+import { shipPartResearched } from '../../shared/eclipse/parts';
 import type { ShipBlueprint } from '../../shared/eclipse/blueprints';
 import type { AncientShipPartId } from '../../shared/eclipse/discoveries';
 import { SHIP_PARTS, type ShipPart, type ShipPartId } from '../../shared/eclipse/parts';
@@ -18,7 +19,7 @@ export function fittingInventory({blueprint,draft,technologies,storedParts,insta
  const parts=SHIP_PARTS.map(part=>{
   if(part.placement!=='grid')return {id:part.id,available:false,availableCopies:0,reason:'This component installs outside the blueprint grid.'};
   if(part.access.kind==='default')return {id:part.id,available:true,availableCopies:Infinity,reason:null};
-  if(part.access.kind==='technology')return technologies.includes(part.access.technology)?{id:part.id,available:true,availableCopies:Infinity,reason:null}:{id:part.id,available:false,availableCopies:0,reason:`Research ${part.name} before installing it.`};
+  if(part.access.kind==='technology')return shipPartResearched(part, technologies)?{id:part.id,available:true,availableCopies:Infinity,reason:null}:{id:part.id,available:false,availableCopies:0,reason:`Research ${part.name} before installing it.`};
   const original=count(allParts(blueprint),part.id), drafted=count(allParts(draft),part.id), stored=storedParts.filter(id=>id===part.id).length;
   const availableCopies=Math.max(0,stored-Math.max(0,drafted-original));
   if(original>0)return {id:part.id,available:false,availableCopies:0,reason:`${part.name} is installed on this blueprint and cannot be relocated.`};

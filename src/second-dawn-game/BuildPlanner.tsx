@@ -1,3 +1,4 @@
+import { researchedTechnologyIds } from '../../shared/eclipse/technologies';
 import {constructionCostForSeat} from '../../shared/eclipse/minorSpecies';
 import {continuesAction} from './actionCapacity';
 import { useEffect, useMemo, useRef } from 'react';
@@ -34,7 +35,7 @@ export default function BuildPlanner({ view, sectorId, defaultPlacementSectorId=
   useEffect(()=>onPlacementPreview?.(selected?{itemId:selected.id,component:selected.component,sectorId:selected.sectorId,legalSectorIds:targets,items:draft.items,selectedItemId:selected.id}:null),[draft.items,onPlacementPreview,selected,targets]);
   useEffect(()=>{if(!placementRequest||handledPlacement.current===placementRequest.serial)return;handledPlacement.current=placementRequest.serial;if(selected&&targets.includes(placementRequest.sectorId))setDraft(current=>placeBuildItem(current,selected.id,placementRequest.sectorId));},[placementRequest,selected,setDraft,targets]);
   if(!own)return null;
-  const technologies=Object.values(own.technologies).flat(), total=draft.items.length, action=analysis.command;
+  const technologies: readonly string[]=researchedTechnologyIds(own), total=draft.items.length, action=analysis.command;
   const plans=total&&analysis.unplacedCount===0?fundingOptions(view,action):[], funded=plans.find(plan=>JSON.stringify(plan.trades)===draft.fundingKey)??plans[0];
   const command:GameCommand=analysis.cost>own.resources.materials&&funded?funded.command:action;
   const turnReason=own.eliminated?'This civilization has been eliminated.':view.waitingFor||view.pendingDecision?'Resolve the pending decision first.':view.phase!=='action'||view.activeSeatId!==own.id?'Wait for your action turn.':view.actionProgress&&(!continuesAction(view,'build'))?'Finish your current action first.':!view.actionProgress&&own.influenceOnTrack<1?'No influence discs remain.':analysis.limit<1?'No Build activations remain.':null;

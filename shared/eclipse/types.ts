@@ -22,6 +22,19 @@ export type Phase =
   | "upkeep"
   | "cleanup"
   | "finished";
+/** Missing from historical matches is always interpreted as the base rules. */
+export type RulesMode = "standard" | "less-random-v1";
+/** Public bookkeeping required by the Less Random and Fairer Games variant. */
+export interface LessRandomState {
+  explorationJokers: Record<SeatId, boolean>;
+  outerPlacementsThisRound: Record<SeatId, number>;
+  /** These are face-up, selectable supplies rather than hidden draw piles. */
+  discoverySupply: string[];
+  reputationSupply: number[];
+  /** Face-up reputation tracks in this mode. */
+  reputationBySeat: Record<SeatId, number[]>;
+  reservedDiscoveries: Record<SeatId, string | null>;
+}
 export interface Coordinate {
   q: number;
   r: number;
@@ -61,6 +74,8 @@ export interface Seat {
   faction: FactionId;
   controller: "human" | "ai";
   pieceColor?: CivilizationColor;
+  /** Less Random setup: a Terran excludes this alien civilization. */
+  bannedFaction?: FactionId;
   resources: Resources;
   populationTracks: Resources;
   influenceOnTrack: number;
@@ -79,6 +94,11 @@ export interface Seat {
   ambassadorResources?: { from: SeatId; resource: Resource }[];
   /** Historical count retained for faction scoring even after an ancient part is removed. */
   ancientPartsUsed?: number;
+  /** End-game modifiers granted by Less Random discoveries. */
+  discoveryBonuses?: ("artifacts" | "reputation")[];
+  developments?: { id: "ancient-labs-development" | "quantum-labs"; technologyId?: string }[];
+  /** Remaining one-use combat controls in Less Random mode. */
+  superJokers?: number;
 }
 export interface ReputationSummary {
   id: string;
@@ -112,6 +132,10 @@ export type PendingDecision = DecisionBase &
         position: Coordinate;
         drawnTileIds: string[];
         canDrawAnother?: boolean;
+        /** Ring is persisted so a redraw cannot be redirected by a stale client. */
+        ring?: "inner" | "middle" | "outer";
+        /** The once-per-game Exploration Joker redraw. */
+        redrawAvailable?: boolean;
         placements: { tileId: string; rotation: number }[];
       }
     | {
@@ -119,6 +143,9 @@ export type PendingDecision = DecisionBase &
         tileId: string;
         options: ("keep" | "use")[];
         sectorId?: string;
+        /** Face-up choices used by Less Random discovery tokens. */
+        availableTileIds?: string[];
+        reserveForFourthTechnology?: boolean;
       }
     | {
         kind: "colonization";
@@ -159,12 +186,19 @@ export type PendingDecision = DecisionBase &
         }[];
       }
     | {
+        kind: "super-joker";
+        battleId: string;
+        dice: NonNullable<BattleState["dice"]>;
+        remaining: number;
+      }
+    | {
         kind: "retreat";
         battleId: string;
         shipIds: string[];
         destinationIds: string[];
       }
     | { kind: "reputation"; drawn: number[]; capacity: number }
+    | { kind: "less-random-reputation"; draws: number; capacity: number }
     | { kind: "bankruptcy"; shortfall: number; abandonableSectorIds: string[] }
     | {
         kind: "population-return";
@@ -199,8 +233,9 @@ export type DecisionChoice =
       tileId: string | null;
       rotation: number;
       drawAnother?: boolean;
+      redraw?: boolean;
     }
-  | { kind: "discovery"; option: "keep" | "use" }
+  | { kind: "discovery"; option: "keep" | "use"; discoveryId?: string }
   | {
       kind: "colonization";
       placements: { sectorId: string; squareId: string; resource: Resource }[];
@@ -211,8 +246,13 @@ export type DecisionChoice =
       kind: "combat-allocation";
       allocations: { dieId: string; targetId: string; damage?: number }[];
     }
+  | { kind: "super-joker"; action: "accept" | "reroll" | "table" }
   | { kind: "retreat"; destinationId: string | null }
   | { kind: "reputation"; kept?: number[] }
+  | {
+      kind: "less-random-reputation";
+      actions: ({ type: "add" } | { type: "upgrade"; from: 1 | 2 | 3 })[];
+    }
   | { kind: "bankruptcy"; abandonSectorId: string }
   | { kind: "population-return"; resources: Resource[] }
   | { kind: "control"; accept: boolean }
@@ -239,6 +279,8 @@ export interface FundingTrade {
   amount: number;
 }
 export type GameCommand =
+  | { type: "research-development"; developmentId: "ancient-labs-development" | "quantum-labs" }
+  | { type: "quantum-research"; tileId: string; track: Track }
   | { type: "buy-minor-species"; minorSpeciesId: MinorSpeciesId; resource?: Resource; returnReputation?: number[] }
   | { type: "trade-and-act"; trades: FundingTrade[]; action: FundableAction }
   | { type: "explore"; position: Coordinate }
@@ -274,6 +316,9 @@ export interface GameState {
   catalogVersion: string;
   /** Missing on historical snapshots and therefore interpreted as the base profile. */
   factionProfile?: FactionProfile;
+  /** Omitted snapshots use standard rules. */
+  rulesMode?: RulesMode;
+  lessRandom?: LessRandomState;
   revision: number;
   round: number;
   phase: Phase;
@@ -450,6 +495,8 @@ export interface PlayerView {
   rulesVersion: string;
   catalogVersion: string;
   factionProfile?: FactionProfile;
+  rulesMode?: RulesMode;
+  lessRandom?: LessRandomState;
   revision: number;
   /** Public turn boundary; distinguishes turns when a client misses intermediate AI updates. */
   actionTurnSerial?: number;

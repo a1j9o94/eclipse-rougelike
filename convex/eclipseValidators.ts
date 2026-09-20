@@ -8,6 +8,7 @@ export const factionValidator: Validator<FactionId> = v.union(
   ...FACTION_IDS.map(id => v.literal(id)),
 );
 export const factionProfileValidator = v.union(v.literal('base'), v.literal('expanded-v1'));
+export const rulesModeValidator = v.union(v.literal('standard'), v.literal('less-random-v1'));
 export const pieceColorValidator = v.union(v.literal('red'), v.literal('blue'), v.literal('green'), v.literal('yellow'), v.literal('white'), v.literal('black'));
 export const minorSpeciesValidator: Validator<MinorSpeciesId> = v.union(...MINOR_SPECIES.map(tile => v.literal(tile.id)));
 const action = v.union(v.literal('explore'), v.literal('influence'), v.literal('research'), v.literal('upgrade'), v.literal('build'), v.literal('move'));
@@ -33,9 +34,11 @@ const choice: Validator<DecisionChoice, "required", string> = v.union(
     tileId: v.union(v.string(), v.null()),
     rotation: v.number(),
     drawAnother: v.optional(v.boolean()),
+    redraw: v.optional(v.boolean()),
   }),
   v.object({
     kind: v.literal("discovery"),
+    discoveryId: v.optional(v.string()),
     option: v.union(v.literal("keep"), v.literal("use")),
   }),
   v.object({ kind: v.literal("colonization"), placements: v.array(placement) }),
@@ -60,6 +63,8 @@ const choice: Validator<DecisionChoice, "required", string> = v.union(
     destinationId: v.union(v.string(), v.null()),
   }),
   v.object({ kind: v.literal("reputation"), kept: v.optional(v.array(v.number())) }),
+  v.object({ kind: v.literal("less-random-reputation"), actions: v.array(v.union(v.object({type:v.literal('add')}),v.object({type:v.literal('upgrade'),from:v.union(v.literal(1),v.literal(2),v.literal(3))}))) }),
+  v.object({ kind: v.literal("super-joker"), action: v.union(v.literal('accept'),v.literal('reroll'),v.literal('table')) }),
   v.object({ kind: v.literal("bankruptcy"), abandonSectorId: v.string() }),
   v.object({
     kind: v.literal("population-return"),
@@ -100,6 +105,8 @@ const choice: Validator<DecisionChoice, "required", string> = v.union(
 /** Exact structural validation; numeric ranges and catalog membership remain engine-owned. */
 export const gameCommandValidator: Validator<GameCommand, "required", string> =
   v.union(
+    v.object({type:v.literal("research-development"),developmentId:v.union(v.literal("ancient-labs-development"),v.literal("quantum-labs"))}),
+    v.object({type:v.literal("quantum-research"),tileId:v.string(),track:v.union(v.literal("military"),v.literal("grid"),v.literal("nano"))}),
     v.object({type:v.literal("buy-minor-species"),minorSpeciesId:minorSpeciesValidator,resource:v.optional(resource),returnReputation:v.optional(v.array(v.number()))}),
     v.object({
       type: v.literal("trade-and-act"),

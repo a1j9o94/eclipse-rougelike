@@ -14,7 +14,7 @@ import {
   type PlayerCount,
 } from "./catalog";
 import { initialBlueprints } from "./blueprints";
-import { createDiscoverySupply } from "./discoveries";
+import { createDiscoverySupply, createLessRandomDiscoverySupply } from "./discoveries";
 import { randomInt, randomSeed, shuffle } from "./random";
 import {
   createTechnologyBag,
@@ -24,12 +24,13 @@ import {
 } from "./supplies";
 import { getTechnology, type TechnologyId } from "./technologies";
 import { requireSectorDefinition as sectorDefinition } from "./rulesState";
-import type { GameState, Resource, Seat, Sector } from "./types";
+import type { GameState, PendingDecision, Resource, Seat, Sector } from "./types";
+import { LESS_RANDOM_MODE } from './lessRandom';
 
 export interface GameSetup {
   minorSpecies?: boolean;
   seed: number;
-  seats: { id: string; faction: FactionId; controller: "human" | "ai"; pieceColor?: CivilizationColor }[];
+  seats: { id: string; faction: FactionId; controller: "human" | "ai"; pieceColor?: CivilizationColor; bannedFaction?: FactionId }[];
   /** Omitted means the original base roster and pinned base versions. */
   factionProfile?: FactionProfile;
   warpPortals: boolean;
@@ -37,11 +38,18 @@ export interface GameSetup {
   riftCannons?: boolean;
   /** Live matches opt in; omitted preserves historical deterministic fixture setup. */
   randomizeStartingPlayer?: boolean;
+  /** Omitted preserves the standard game, including historical deterministic setups. */
+  rulesMode?: "standard" | "less-random-v1";
 }
 export function createGame(config: GameSetup): GameState {
+  const lessRandom = config.rulesMode === LESS_RANDOM_MODE;
   const count = config.seats.length as PlayerCount;
   const profile = config.factionProfile ?? 'base';
   const invalidFactions = config.seats.some(seat => !factionAllowedForProfile(seat.faction, profile));
+  const selectedFactions = new Set(config.seats.map(seat => seat.faction));
+  const terranBans = config.seats.filter(seat => lessRandom && getFaction(seat.faction).species === 'terran').map(seat => seat.bannedFaction);
+  const invalidTerranBans = terranBans.some(ban => !ban || !factionAllowedForProfile(ban, profile) || getFaction(ban).species !== 'alien' || selectedFactions.has(ban)) || new Set(terranBans).size !== terranBans.length;
+  const invalidUnexpectedBans = config.seats.some(seat => seat.bannedFaction !== undefined && (!lessRandom || getFaction(seat.faction).species !== 'terran'));
   const selectionErrors = profile === 'base'
     ? validateFactionSelection(config.seats.map(seat => seat.faction))
     : validateFactionSelection(
@@ -54,7 +62,7 @@ export function createGame(config: GameSetup): GameState {
     new Set(config.seats.map((s) => s.id)).size !== count ||
     new Set(config.seats.map((s) => s.faction)).size !== count ||
     config.seats.some((s) => !s.id) ||
-    invalidFactions || selectionErrors.length
+    invalidFactions || invalidTerranBans || invalidUnexpectedBans || selectionErrors.length
   )
     throw new Error(
       "Choose two to six distinct seats and physical faction colors.",
@@ -62,18 +70,19 @@ export function createGame(config: GameSetup): GameState {
   const stacks = prepareSectorStacks(
     randomSeed(config.seed),
     count,
-    config.warpPortals,
+    lessRandom ? false : config.warpPortals,
+    lessRandom,
   );
-  const bag = createTechnologyBag(stacks.random, config.warpPortals, config.riftCannons);
-  const tech = drawTechnologies(
-    bag.tiles,
-    SETUP_BY_PLAYER_COUNT[count].initialRegularTechs,
-  );
+  const bag = createTechnologyBag(stacks.random, lessRandom ? false : config.warpPortals, lessRandom ? false : config.riftCannons, lessRandom);
+  const tech = lessRandom ? { drawn: bag.tiles, remaining: [], regularDrawn: bag.tiles.length } : drawTechnologies(bag.tiles, SETUP_BY_PLAYER_COUNT[count].initialRegularTechs);
   const discoveries = shuffle(
     bag.random,
-    createDiscoverySupply(config.warpPortals, config.riftCannons),
+    lessRandom ? createLessRandomDiscoverySupply() : createDiscoverySupply(config.warpPortals, config.riftCannons),
   );
-  const reputation = shuffle(discoveries.state, createReputationSupply());
+  // Face-up reputation starts deterministically from the public 1-VP group.
+  const reputation = lessRandom
+    ? { state: discoveries.state, items: createReputationSupply() }
+    : shuffle(discoveries.state, createReputationSupply());
   const guardians = shuffle(
     reputation.state,
     BASE_COMPONENTS.sectorIds.guardians,
@@ -111,6 +120,7 @@ export function createGame(config: GameSetup): GameState {
       blueprints: initialBlueprints(s.faction),
       ambassadors: [],
       traitor: false,
+      ...(lessRandom ? { superJokers: 5, discoveryBonuses: [], developments: [] } : {}),
       graveyard: { money: 0, science: 0, materials: 0 },
       storedParts: [],
       ambassadorResources: [],
@@ -119,6 +129,7 @@ export function createGame(config: GameSetup): GameState {
   const state: GameState = {
     ...profileVersions(profile, config.riftCannons, config.minorSpecies),
     ...(profile === 'expanded-v1' ? { factionProfile: profile } : {}),
+    ...(lessRandom ? { rulesMode: LESS_RANDOM_MODE } : {}),
     revision: 0,
     round: 1,
     phase: "action",
@@ -133,10 +144,10 @@ export function createGame(config: GameSetup): GameState {
     privateSeats: seats.map((s) => {
       const privateSeat: GameState['privateSeats'][number] = {
         seatId: s.id,
-        reputation: reputation.items.splice(0, getFaction(s.faction).startingReputationDraws),
+        reputation: lessRandom ? [] : reputation.items.splice(0, getFaction(s.faction).startingReputationDraws),
         discoveriesKept: [],
       };
-      if (getFaction(s.faction).special?.privateInitialDiscovery) {
+      if (!lessRandom && getFaction(s.faction).special?.privateInitialDiscovery) {
         const storedDiscovery = discoveries.items.shift();
         if (storedDiscovery) privateSeat.storedDiscovery = storedDiscovery;
       }
@@ -151,9 +162,10 @@ export function createGame(config: GameSetup): GameState {
       discovery: discoveries.items,
       reputation: reputation.items,
     },
+    ...(lessRandom ? { lessRandom: { explorationJokers: Object.fromEntries(seats.map(seat => [seat.id, true])), outerPlacementsThisRound: Object.fromEntries(seats.map(seat => [seat.id, 0])), discoverySupply: [...discoveries.items], reputationSupply: [...reputation.items], reputationBySeat: {}, reservedDiscoveries: Object.fromEntries(seats.map(seat => [seat.id, null])) } } : {}),
     engine: {
       ...(config.riftCannons ? { riftCannons: true } : {}),
-      warpPortals: config.warpPortals,
+      warpPortals: lessRandom ? false : config.warpPortals,
       action: null,
       decisions: [],
       sectorDiscoveries: [],
@@ -167,6 +179,21 @@ export function createGame(config: GameSetup): GameState {
       nextId: 1,
     },
   };
+  if (lessRandom)
+    for (const hidden of state.privateSeats)
+      state.lessRandom!.reputationBySeat[hidden.seatId] = [...hidden.reputation];
+  if (lessRandom) {
+    const setupDecisions: PendingDecision[] = [];
+    for (const seat of seats) {
+      const faction = getFaction(seat.faction);
+      if (faction.startingReputationDraws)
+        setupDecisions.push({ id: `setup-reputation-${seat.id}`, owner: seat.id, kind: 'less-random-reputation', draws: faction.startingReputationDraws, capacity: faction.capabilities.reputationSlots });
+      else if (faction.special?.privateInitialDiscovery)
+        setupDecisions.push({ id: `setup-discovery-${seat.id}`, owner: seat.id, kind: 'discovery', tileId: '', availableTileIds: [...state.lessRandom!.discoverySupply], reserveForFourthTechnology: true, options: ['use'] });
+    }
+    state.pendingDecision = setupDecisions.shift() ?? null;
+    state.engine!.decisions.push(...setupDecisions);
+  }
   function add(tile: number, q: number, r: number, owner: Seat | null): void {
     const d = sectorDefinition(tile);
     const inward = [
@@ -230,7 +257,7 @@ export function createGame(config: GameSetup): GameState {
         arrival: 0,
       });
     }
-    if (d.discovery) {
+    if (d.discovery && !lessRandom) {
       const id = state.supplies.discovery.shift();
       if (id)
         state.engine!.sectorDiscoveries.push({

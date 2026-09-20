@@ -157,6 +157,7 @@ export function researchCostForSeat(
   track: Track,
   seat: Seat,
 ): ResearchCostResult {
+  if (seat.developments?.some(d => d.technologyId === id)) return {ok:false,code:'already-researched'};
   const result = researchCost(
     id,
     track,

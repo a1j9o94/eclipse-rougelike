@@ -1,3 +1,4 @@
+import { researchedTechnologyIds } from '../../shared/eclipse/technologies';
 import {remainingAction,continuesAction} from './actionCapacity';
 import type { BlueprintShipType } from '../../shared/eclipse/blueprints';
 import { BASE_COMPONENTS, getFaction, STANDARD_CONSTRUCTION_COSTS } from '../../shared/eclipse/catalog';
@@ -36,7 +37,7 @@ export function empireBuildOptions(view: PlayerView, draft: BuildOrderDraft = em
     let sample = addBuildItem(draft, shipType);
     const analysis = analyzeBuildOrder(view, sample);
     if (sample.items.length > analysis.limit) return unavailable(`This order exceeds the ${analysis.limit} piece Build limit.`);
-    const technologies = Object.values(own.technologies).flat();
+    const technologies: readonly string[] = researchedTechnologyIds(own);
     for (const item of sample.items) {
       if (['starbase', 'orbital', 'monolith'].includes(item.component) && !technologies.includes(item.component)) {
         return unavailable(`Research ${item.component} first.`);

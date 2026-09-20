@@ -19,6 +19,8 @@ export function describeShipPart(id: ShipPartId): string {
 export function describeTechnology(technology: Technology): string {
   const effect = technology.effect;
   switch (effect.kind) {
+    case 'multi-activation': return `One extra activation for ${effect.actions.join(', ')} actions. Mixed actions increase their main type only; reactions remain one activation.`;
+    case 'gain-colony-ship': return 'Gain one additional colony ship, available now and refreshed each round.';
     case 'ship-part': return `Unlocks this part for Upgrade; research does not install it. ${describeShipPart(effect.part)}`;
     case 'construct': return {
       starbase: 'Unlocks Starbases for Build: stationary combat ships that defend a sector using your Starbase blueprint.',

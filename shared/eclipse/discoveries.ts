@@ -4,6 +4,7 @@ import type { CatalogResources } from './catalog';
 export const DISCOVERY_SOURCE =
   'https://rules.dized.com/game/dS7ANw3JR-O-HIg-7k5qVA/R2QHlAXtT2GyP-v4XJNiWA/discovery-tiles-1';
 export type AncientShipPartId =
+  | 'less-random-ion-missile' | 'less-random-antimatter-missile' | 'less-random-soliton-missile'
   | 'rift-conductor'
   | 'ion-disruptor'
   | 'ion-turret'
@@ -21,6 +22,7 @@ export type AncientShipPartId =
   | 'soliton-missile'
   | 'muon-source';
 export type DiscoveryId =
+  | 'money-choice' | 'accelerated-evolution' | 'artifact-codex' | 'ancient-might'
   | 'materials'
   | 'science'
   | 'money'
@@ -32,6 +34,8 @@ export type DiscoveryId =
   | 'ancient-warp-portal'
   | AncientShipPartId;
 export type DiscoveryEffect =
+  | { kind: 'choice-resources'; money: number; amount: number }
+  | { kind: 'end-game-bonus'; bonus: 'artifacts' | 'reputation' }
   | { kind: 'resources'; resources: CatalogResources }
   | {
       kind: 'free-technology';
@@ -53,7 +57,7 @@ export type DiscoveryEffect =
     }
   | { kind: 'place-warp-portal'; controlledSectorVp: 2 };
 export interface Discovery {
-  expansion?: 'rift-cannon';
+  expansion?: 'rift-cannon' | 'less-random';
   id: DiscoveryId;
   name: string;
   copies: number;
@@ -84,6 +88,13 @@ function ancientPart(id: AncientShipPartId, name: string): Discovery {
  * and requires taking the VP alternative if it is not controlled (p30 FAQ).
  */
 export const DISCOVERIES: readonly Discovery[] = [
+  {...discovery('money-choice','Money & Resource Cache',2,{kind:'choice-resources',money:3,amount:3}),expansion:'less-random'},
+  {...discovery('accelerated-evolution','Accelerated Evolution',1,{kind:'choice-resources',money:0,amount:5}),expansion:'less-random'},
+  {...discovery('artifact-codex','Artifact Codex',1,{kind:'end-game-bonus',bonus:'artifacts'}),expansion:'less-random'},
+  {...discovery('ancient-might','Ancient Might',1,{kind:'end-game-bonus',bonus:'reputation'}),expansion:'less-random'},
+  {...ancientPart('less-random-ion-missile','Ion Missile'),expansion:'less-random'},
+  {...ancientPart('less-random-antimatter-missile','Antimatter Missile'),expansion:'less-random'},
+  {...ancientPart('less-random-soliton-missile','Soliton Missile'),expansion:'less-random'},
   { ...ancientPart('rift-conductor', 'Rift Conductor'), expansion: 'rift-cannon' },
   discovery('materials', 'Materials Cache', 3, {
     kind: 'resources',
@@ -148,6 +159,13 @@ export function getDiscovery(id: DiscoveryId): Discovery {
 /** Fresh unshuffled base-box inventory; the authoritative seeded shuffle chooses order. */
 export function createDiscoverySupply(warpPortals = true, riftCannons = false): DiscoveryId[] {
   return DISCOVERIES.filter(
-    (tile) => (riftCannons || tile.expansion !== 'rift-cannon') && (warpPortals || tile.id !== 'ancient-warp-portal'),
+    (tile) => tile.expansion !== 'less-random' && (riftCannons || tile.expansion !== 'rift-cannon') && (warpPortals || tile.id !== 'ancient-warp-portal'),
   ).flatMap((tile) => Array.from({ length: tile.copies }, () => tile.id));
+}
+
+/** Exact May 2026 forty-tile inventory; revised missiles have distinct IDs so old blueprints stay intact. */
+export function createLessRandomDiscoverySupply(): DiscoveryId[] {
+  const excluded: readonly string[] = ['ancient-warp-portal','ion-missile','antimatter-missile','soliton-missile'];
+  return DISCOVERIES.filter(tile => tile.expansion !== 'rift-cannon' && !excluded.includes(tile.id))
+    .flatMap(tile => Array.from({length:tile.copies}, () => tile.id));
 }

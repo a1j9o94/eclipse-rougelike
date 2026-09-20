@@ -1,3 +1,4 @@
+import type { RulesMode } from './types';
 /** Reviewed against publisher-linked 2021-04-27 rulebook, pp. 3–5, 26–29.
  * Scope: verified setup/faction constants, not a complete sector/technology catalog.
  */
@@ -580,9 +581,14 @@ export function tradeRates(
   faction: FactionId,
   from: keyof CatalogResources,
   to: keyof CatalogResources,
+  rulesMode?: RulesMode,
 ): readonly TradeRate[] {
   if (from === to) return [];
   const definition = getFaction(faction);
+  if (rulesMode === 'less-random-v1') {
+    if (definition.species === 'terran' || faction === 'eridani' && from === 'money') return [{from,to,input:2,output:1},{from,to,input:3,output:2}];
+    if (faction === 'eridani' || faction === 'mechanema') return [{from,to,input:2,output:1}];
+  }
   return definition.tradeRates?.filter(rate => rate.from === from && rate.to === to)
     ?? [{ from, to, input: definition.tradeRatio, output: 1 }];
 }
@@ -592,9 +598,10 @@ export function tradeQuote(
   from: keyof CatalogResources,
   to: keyof CatalogResources,
   receive: number,
+  rulesMode?: RulesMode,
 ): { readonly input: number; readonly output: number } | null {
   if (!Number.isSafeInteger(receive) || receive < 1) return null;
-  const rates = tradeRates(faction, from, to);
+  const rates = tradeRates(faction, from, to, rulesMode);
   const one = Math.min(...rates.filter(rate => rate.output === 1).map(rate => rate.input));
   const two = Math.min(...rates.filter(rate => rate.output === 2).map(rate => rate.input));
   let input: number;

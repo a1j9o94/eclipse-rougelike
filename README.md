@@ -1,6 +1,6 @@
 # Eclipse · Second Dawn
 
-A browser adaptation of Eclipse: Second Dawn with solo AI games, multiplayer rooms, resumable player profiles, and an interactive preview using the same board and command engine.
+A browser adaptation of Eclipse: Second Dawn with solo AI games, multiplayer rooms, resumable player profiles, and an authoritative shared rules engine.
 
 ## Run locally
 
@@ -9,12 +9,12 @@ npm ci
 npm run second-dawn:local
 ```
 
-The local launcher starts an isolated Convex backend and Vite. To use an already configured backend, set `VITE_CONVEX_URL` in an ignored environment file and run `npm run dev`. Saved solo and multiplayer games require Convex; the playable preview runs from deterministic fixtures.
+The local launcher starts an isolated Convex backend and Vite. To use an already configured backend, set `VITE_CONVEX_URL` in an ignored environment file and run `npm run dev`. Saved solo and multiplayer games require Convex.
 
 ## Code map
 
 - `shared/eclipse/`: typed rules, catalog, deterministic command processor, public views and AI planning.
-- `src/second-dawn-game/`: game board, launcher, decision workflows and fixture preview.
+- `src/second-dawn-game/`: game board, launcher and decision workflows.
 - `src/second-dawn-session/`: identity, connection recovery, saved games and activity synchronization.
 - `convex/eclipse*.ts`: guest/profile identity, matches, rooms, authoritative persistence and scheduled AI work.
 - `src/__tests__/second_dawn*`: game, persistence, UI and AI regression tests.
@@ -40,7 +40,19 @@ Tests run with one worker. `npm run test:batched` provides smaller sequential ba
 
 New games default to **Expanded civilizations**: the base roster plus Rho Indi Syndicate, Wardens of Magellan, Legion of Midas, and Heralds of Ragnarok. Choose **Base only** to use the original roster. Expanded games let each player choose a unique piece color independently of their faction. Existing saves and rooms retain their original roster and rules version.
 
-The four additions follow the faction sheets and explicit trade amendments in the source Drive. Games still use eight rounds, private reputation, the existing technology market and random exploration/discovery; the collection's full house-rule variant is not enabled. Base factions retain their original trade rates.
+The four additions follow the faction sheets and explicit trade amendments in the source Drive. Standard games retain eight rounds, private reputation, the existing technology market and random exploration/discovery. Base factions retain their original trade rates in Standard.
+
+## Régis’s Less Random
+
+Select **Régis’s Less Random** under Rules when creating a solo game or multiplayer room. Existing games keep their original rules. This separate, versioned mode follows Régis Étienne’s [May 20, 2026 rules](https://drive.google.com/file/d/1m0gtkWfJx1YywlCvoDWABSlawyCZTHr_/view), with the currently supported factions:
+
+- Ten rounds; all 124 technology tiles and two outside-track developments available from setup.
+- Choose among two exploration tiles (three for Draco), with one single-use Exploration Joker per player; unused Joker scores 2 VP. Outer placement limits still apply.
+- Choose discoveries from a finite, public 40-tile supply. Reputation is public and combat draws buy or upgrade tiles.
+- Five single-use Super Jokers per player: reroll an entire own-unit volley or take its displayed table result.
+- Variant trade rates, Terran alien bans, revised ancient missiles, custom technologies and discovery bonuses.
+
+Warp portals and Rift Cannons are excluded from this mode’s source inventory. The separately optional slower/less-aggressive variant and larger outer-sector caps are not enabled. For mixed-color volleys, table faces follow persisted die order; the full colored result is previewed before committing. Combat win estimates exclude Super Joker use. See the [implementation and verification record](coding_agents/less_random_mode_plan.md) for scope and source interpretations.
 
 ## Sound and navigation
 
@@ -62,7 +74,7 @@ The expanded roster is drawn from **Régis Étienne’s (@retienne) 24-faction c
 
 The [research index](coding_agents/faction_research/README.md) includes faction abilities and implementation difficulty, AI strategy notes, a file inventory, and [full credits](coding_agents/faction_research/credits.md). The [complete original-file snapshot](https://github.com/a1j9o94/eclipse-rougelike/releases/tag/faction-sources-2026-09-19) is preserved as a GitHub release archive, keeping large artwork and editable templates out of the game bundle.
 
-The underlying Eclipse game is by **Touko Tahkokallio / Lautapelit.fi**. Community sources retain their original credits and notices. Only the four additions listed above are playable; the rest of the archived factions and house rules remain research material.
+The underlying Eclipse game is by **Touko Tahkokallio / Lautapelit.fi**. Community sources retain their original credits and notices. Only the four additions listed above are playable; the remaining archived factions remain research material.
 
 ## Minor Species
 

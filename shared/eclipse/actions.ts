@@ -1,3 +1,4 @@
+import { researchedTechnologyIds } from './technologies';
 import { upkeepSeatUnfinished } from './upkeep';
 import { researchCostForSeat, constructionCostForSeat } from "./minorSpecies";
 import { interruptAutoPassForEntry } from './autoPass';
@@ -40,6 +41,7 @@ import {
   unpinned,
   consumeActivations,
 } from "./rulesState";
+import { isLessRandom } from './lessRandom';
 import type {
   Blueprint,
   Coordinate,
@@ -98,10 +100,14 @@ export function discoveryAt(
     )
   )
     return;
-  const e = continuation(state),
-    index = e.sectorDiscoveries.findIndex((d) => d.sectorId === sector.id);
-  if (index < 0) return;
-  const [{ discoveryId }] = e.sectorDiscoveries.splice(index, 1);
+  if (isLessRandom(state) && !(state.lessRandom?.discoverySupply.length)) {
+    sector.discovery = false;
+    return;
+  }
+  const e = continuation(state);
+  const index = e.sectorDiscoveries.findIndex((d) => d.sectorId === sector.id);
+  if (!isLessRandom(state) && index < 0) return;
+  const discoveryId = isLessRandom(state) ? '' : e.sectorDiscoveries.splice(index, 1)[0].discoveryId;
   sector.discovery = false;
   queueDecision(state, {
     id: uniqueId(state, "discovery"),
@@ -110,6 +116,7 @@ export function discoveryAt(
     tileId: discoveryId,
     sectorId: sector.id,
     options: ["keep", "use"],
+    ...(isLessRandom(state) ? { availableTileIds: [...(state.lessRandom?.discoverySupply ?? [])] } : {}),
   });
 }
 export function researchTechnology(
@@ -118,37 +125,41 @@ export function researchTechnology(
   tileId: string,
   track: Track,
   free = false,
+  outsideTrack = false,
 ): void {
   const definition = TECHNOLOGIES.find((t) => t.id === tileId);
   requireRule(
     !!definition && state.technologyMarket.includes(tileId),
     "This technology is not available in the market.",
   );
+  requireRule(!hasTech(seat, tileId), 'Technology is already researched.');
   const cost = researchCostForSeat(definition!.id, track, seat);
   requireRule(
-    cost.ok,
+    outsideTrack ? definition!.track === 'rare' || definition!.track === track : cost.ok,
     "Technology already researched, track full, or wrong track.",
   );
+  const scienceCost = cost.ok ? cost.scienceCost : definition!.baseCost;
   if (!free) {
     requireRule(
-      seat.resources.science >= cost.scienceCost,
-      `Research requires ${cost.scienceCost} science.`,
+      seat.resources.science >= scienceCost,
+      `Research requires ${scienceCost} science.`,
       "INSUFFICIENT_RESOURCES",
     );
-    seat.resources.science -= cost.scienceCost;
+    seat.resources.science -= scienceCost;
   }
   state.technologyMarket.splice(state.technologyMarket.indexOf(tileId), 1);
-  seat.technologies[track].push(tileId);
+  if (!outsideTrack) seat.technologies[track].push(tileId);
   const faction = getFaction(seat.faction);
   const hidden = state.privateSeats.find(candidate => candidate.seatId === seat.id);
   if (
     faction.special?.fourthTechnologyDiscovery &&
-    seat.technologies[track].length === 4 &&
+    !outsideTrack && seat.technologies[track].length === 4 &&
     hidden?.storedDiscovery &&
     !hidden.storedDiscoveryResolved
   ) {
     const discoveryId = hidden.storedDiscovery;
     hidden.storedDiscoveryResolved = true;
+    if (isLessRandom(state)) state.lessRandom!.reservedDiscoveries[seat.id] = null;
     const home = state.sectors.find(s => Number(s.tileId) === faction.homeSector && s.owner === seat.id);
     const placement = ["place-unbuilt-ship", "place-structure", "place-warp-portal"].includes(
       getDiscovery(discoveryId as DiscoveryId).effect.kind,
@@ -161,6 +172,7 @@ export function researchTechnology(
   }
   const effect = definition!.effect;
   if (effect.kind === "gain-influence") seat.influenceOnTrack += effect.amount;
+  if (effect.kind === 'gain-colony-ship') seat.colonyShipsAvailable += effect.amount;
   if (effect.kind === "artifact-resources") {
     const count = state.sectors
       .filter((s) => s.owner === seat.id)
@@ -304,7 +316,8 @@ export function performAction(
         distance === 1 ? "inner" : distance === 2 ? "middle" : "outer";
       const drawn: string[] = [];
       const e = continuation(state);
-      for (let i = 0; i < 1; i++) {
+      const drawCount = isLessRandom(state) ? (factionHasCapability(seat.faction, "choose-one-of-two-exploration-sectors") ? 3 : 2) : 1;
+      for (let i = 0; i < drawCount; i++) {
         if (!state.supplies[ring].length && e.discardedSectors[ring].length) {
           const shuffled = shuffle(state.random, e.discardedSectors[ring]);
           state.random = shuffled.state;
@@ -345,6 +358,7 @@ export function performAction(
         position: p,
         drawnTileIds: drawn,
         placements,
+        ...(isLessRandom(state) ? { ring, redrawAvailable: state.lessRandom?.explorationJokers[seat.id] === true } : {}),
         ...(factionHasCapability(seat.faction, "choose-one-of-two-exploration-sectors") &&
         state.supplies[ring].length + e.discardedSectors[ring].length > 0
           ? { canDrawAnother: true }
@@ -440,7 +454,7 @@ export function performAction(
         const issues = validateBlueprint(
           seat.faction,
           draft,
-          Object.values(seat.technologies).flat() as TechnologyId[],
+          researchedTechnologyIds(seat) as TechnologyId[],
           available,
           previous,
         );
@@ -452,7 +466,7 @@ export function performAction(
           seat.faction,
           previous,
           draft,
-          Object.values(seat.technologies).flat() as TechnologyId[],
+          researchedTechnologyIds(seat) as TechnologyId[],
           available,
         );
         requireRule(plan.ok, plan.ok ? "" : plan.message);
@@ -593,7 +607,7 @@ export function performAction(
       }
       if (!progress.coloniesRefreshed) {
         seat.colonyShipsAvailable = Math.min(
-          getFaction(seat.faction).colonyShips,
+          getFaction(seat.faction).colonyShips + (hasTech(seat,'advanced-colony-ships')?1:0),
           seat.colonyShipsAvailable + 2,
         );
         progress.coloniesRefreshed = true;

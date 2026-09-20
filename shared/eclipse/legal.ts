@@ -1,18 +1,21 @@
+import { researchedTechnologyIds } from './technologies';
+import { DEVELOPMENTS, developmentAvailable, quantumResearchCost } from './developments';
+import { isLessRandom, outerPlacementLimit } from './lessRandom';
 import { researchCostForSeat, constructionCostForSeat, minorSpeciesPurchaseOptions, getMinorSpecies, hasEmptyAmbassadorSpace } from "./minorSpecies";
 import { planBlueprintUpgrade } from "./upgradePlan";
-import { BASE_COMPONENTS, factionHasCapability, getFaction, tradeQuote } from "./catalog";
+import { BASE_COMPONENTS, SETUP_BY_PLAYER_COUNT, type PlayerCount, factionHasCapability, getFaction, tradeQuote } from "./catalog";
 import {
   deriveBlueprintStats,
   effectiveBlueprintParts,
   validateBlueprint,
   type ShipBlueprint,
 } from "./blueprints";
-import { SHIP_PARTS, type ShipPartId } from "./parts";
+import { SHIP_PARTS, shipPartResearched, type ShipPartId } from "./parts";
 import {
-  TECHNOLOGIES,
+  TECHNOLOGIES, ancientTechnologyChoices,
   type TechnologyId,
 } from "./technologies";
-import type { AncientShipPartId } from "./discoveries";
+import { getDiscovery, type DiscoveryId, type AncientShipPartId } from "./discoveries";
 import {
   adjacentPosition,
   connectionBetween,
@@ -43,7 +46,7 @@ export interface LegalCommandCandidate {
 const RESOURCES: Resource[] = ["money", "science", "materials"];
 const TRACKS: Track[] = ["military", "grid", "nano"];
 const has = (seat: Seat, id: string) =>
-  Object.values(seat.technologies).some((track) => track.includes(id));
+  researchedTechnologyIds(seat).includes(id as TechnologyId);
 export function publicBlueprint(blueprint: Blueprint): ShipBlueprint {
   return {
     shipType: blueprint.shipType,
@@ -88,8 +91,7 @@ export function legalCommands(
     }
   };
   const faction = getFaction(seat.faction);
-  const techs = Object.values(seat.technologies)
-    .flat()
+  const techs = researchedTechnologyIds(seat)
     .filter((id): id is TechnologyId => TECHNOLOGIES.some((t) => t.id === id));
   const ownShips = view.ships.filter((s) => s.owner === seat.id);
   const controlled = view.sectors.filter((s) => s.owner === seat.id);
@@ -130,7 +132,7 @@ export function legalCommands(
       for (const to of RESOURCES) {
         if (from === to) continue;
         for (let amount = 1; amount <= 16; amount++) {
-          const quote = tradeQuote(seat.faction, from, to, amount);
+          const quote = tradeQuote(seat.faction, from, to, amount, view.rulesMode);
           if (!quote || quote.input > seat.resources[from]) continue;
           add(
             { type: "trade", from, to, amount },
@@ -180,6 +182,7 @@ export function legalCommands(
       );
     switch (decision.kind) {
       case "exploration":
+        if (decision.redrawAvailable && decision.ring && (view.supplyCounts?.[decision.ring] ?? 0) >= decision.drawnTileIds.length) resolve({kind:"exploration",tileId:null,rotation:0,redraw:true}, "Use Exploration Joker");
         if (decision.canDrawAnother)
           resolve(
             {
@@ -201,13 +204,14 @@ export function legalCommands(
         );
         break;
       case "discovery":
-        for (const option of decision.options)
-          resolve(
-            { kind: "discovery", option },
-            option === "keep"
-              ? "Keep discovery for 2 VP"
-              : "Use discovery effect",
-          );
+        for (const tileId of decision.availableTileIds ?? [decision.tileId]) {
+          const tile = getDiscovery(tileId as DiscoveryId);
+          for (const option of decision.options) {
+            if (option === 'use' && ['place-unbuilt-ship','place-structure','place-warp-portal'].includes(tile.effect.kind) && !decision.sectorId) continue;
+            if (option === 'use' && tile.effect.kind === 'free-technology' && ancientTechnologyChoices(view.technologyMarket,seat.technologies,researchedTechnologyIds(seat)).length === 0) continue;
+            resolve({kind:'discovery', option, ...(decision.availableTileIds ? {discoveryId:tileId} : {})}, option === 'keep' ? `Keep ${tile.name} for 2 VP` : `Use ${tile.name}`);
+          }
+        }
         break;
       case "ancient-part": {
         resolve(
@@ -366,6 +370,27 @@ export function legalCommands(
       case "reputation":
         resolve({ kind: "reputation" }, "Keep best reputation automatically");
         break;
+      case "super-joker":
+        resolve({kind:"super-joker",action:"accept"}, "Accept this volley");
+        resolve({kind:"super-joker",action:"reroll"}, "Spend a Super Joker to reroll every die");
+        if (decision.dice.length <= 50)
+          resolve({kind:"super-joker",action:"table"}, "Spend a Super Joker for the table result");
+        break;
+      case "less-random-reputation": {
+        resolve({kind:"less-random-reputation",actions:[]}, "Leave reputation draws unspent");
+        const supply = view.lessRandom?.reputationSupply ?? [];
+        const additions = Math.min(
+          decision.draws,
+          decision.capacity - view.private.reputation.length,
+          supply.filter(value => value === 1).length,
+        );
+        if (additions > 0)
+          resolve({kind:"less-random-reputation",actions:Array.from({length:additions},()=>({type:"add" as const}))}, `Add ${additions} reputation tile${additions === 1 ? "" : "s"}`);
+        for (const from of [1,2,3] as const)
+          if (from <= decision.draws && view.private.reputation.includes(from) && supply.includes(from + 1))
+            resolve({kind:"less-random-reputation",actions:[{type:"upgrade",from}]}, `Upgrade ${from} VP reputation to ${from + 1} VP`);
+        break;
+      }
       case "bankruptcy":
         trades();
         for (const abandonSectorId of decision.abandonableSectorIds)
@@ -586,6 +611,7 @@ export function legalCommands(
         const ring =
           distance <= 1 ? "inner" : distance === 2 ? "middle" : "outer";
         if (view.supplyCounts?.[ring] === 0) continue;
+        if (ring === 'outer' && isLessRandom(view) && ((view.lessRandom?.outerPlacementsThisRound[seat.id] ?? 0) >= outerPlacementLimit(view,seat) || view.sectors.filter(s => BASE_COMPONENTS.sectorIds.outer.some(id => String(id) === s.tileId)).length >= SETUP_BY_PLAYER_COUNT[view.seats.length as PlayerCount].outerSectors)) continue;
         const key = `${position.q},${position.r}`;
         if (
           seen.has(key) ||
@@ -604,11 +630,15 @@ export function legalCommands(
     }
   }
   if (can("research")) {
+    for (const development of DEVELOPMENTS) if (developmentAvailable(view,development.id) && seat.resources[development.resource] >= development.cost)
+      add({type:'research-development',developmentId:development.id}, `Acquire ${development.name}`, `${development.cost} ${development.resource}. ${development.description}`);
     for (const tileId of [...new Set(view.technologyMarket)]) {
       if (tileId === "warp-portal" && controlled.length === 0) continue;
       const technology = TECHNOLOGIES.find((t) => t.id === tileId);
       if (!technology) continue;
       for (const track of TRACKS) {
+        const quantum = isLessRandom(view) ? quantumResearchCost(seat,technology.id,track) : null;
+        if (quantum !== null && seat.resources.science >= quantum) add({type:'quantum-research',tileId,track},`Research ${technology.name} in Quantum Labs`,`${quantum} science; outside your research tracks.`);
         const cost = researchCostForSeat(technology.id, track, seat);
         if (cost.ok && seat.resources.science >= cost.scienceCost)
           add(
@@ -803,7 +833,7 @@ export function legalCommands(
         p.placement === "grid" &&
         (p.access.kind === "default" ||
           (p.access.kind === "technology" &&
-            techs.includes(p.access.technology)) ||
+            shipPartResearched(p, techs)) ||
           (p.access.kind === "ancient" &&
             ancient.includes(p.id as AncientShipPartId))),
     );

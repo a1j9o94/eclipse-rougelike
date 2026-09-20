@@ -1,6 +1,7 @@
 import type {PendingDecision} from '../../shared/eclipse/types';
 
 const labels:Record<PendingDecision['kind'],string>={
+ 'super-joker':'combat roll', 'less-random-reputation':'reputation upgrades',
  exploration:'sector placement',discovery:'discovery',colonization:'colonization',
  'diplomacy-window':'ambassador exchange',diplomacy:'ambassador exchange',
  'combat-allocation':'combat allocation','combat-turn':'combat',retreat:'retreat',

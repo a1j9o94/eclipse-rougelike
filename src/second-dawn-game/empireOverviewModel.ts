@@ -49,7 +49,7 @@ export function empireOverviewModel(view:PlayerView,seatId:string):EmpireOvervie
    locations:[...new Set(ships.map(ship=>ship.sectorId))].map(sectorId=>({sectorId,tileId:view.sectors.find(sector=>sector.id===sectorId)?.tileId??sectorId,count:ships.filter(ship=>ship.sectorId===sectorId).length,damaged:ships.filter(ship=>ship.sectorId===sectorId&&ship.damage>0).length}))}];
  });
  return {own:seatId===view.viewerSeatId,score:runningScore(view,seatId).breakdown.total,sectorCount:sectors.length,
-  colonyShips:seat.colonyShipsAvailable,colonyShipCapacity:faction.colonyShips,influence:seat.influenceOnTrack,upkeep:upkeepForEmptyInfluenceSlots(Math.max(0,13-seat.influenceOnTrack)),tradeRatio:faction.tradeRatio,
+  colonyShips:seat.colonyShipsAvailable,colonyShipCapacity:faction.colonyShips+(seat.technologies.grid.includes('advanced-colony-ships')||seat.developments?.some(d=>d.technologyId==='advanced-colony-ships')?1:0),influence:seat.influenceOnTrack,upkeep:upkeepForEmptyInfluenceSlots(Math.max(0,13-seat.influenceOnTrack)),tradeRatio:faction.tradeRatio,
   resources:resources.map(resource=>({resource,stock:seat.resources[resource],income:incomeForPopulationAway(seat.populationTracks[resource]),cubes:Math.max(0,11-seat.populationTracks[resource])})),
   planets,fleets,capacities:actions.map(action=>({action,amount:seat.passed&&!['upgrade','build','move'].includes(action)?0:capacity(seat,action)}))};
 }

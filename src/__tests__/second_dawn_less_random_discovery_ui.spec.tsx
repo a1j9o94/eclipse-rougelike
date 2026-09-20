@@ -1,0 +1,12 @@
+// @vitest-environment jsdom
+import {afterEach,expect,it,vi} from 'vitest';
+import {cleanup,fireEvent,render,screen} from '@testing-library/react';
+import DiscoveryDecision from '../second-dawn-game/DiscoveryDecision';
+import type {PendingDecision} from '../../shared/eclipse/types';
+import {createGame} from '../../shared/eclipse/setup';
+import {getPlayerView} from '../../shared/eclipse/protocol';
+afterEach(cleanup);
+const publicPool=(reserveForFourthTechnology=false):Extract<PendingDecision,{kind:'discovery'}>=>({id:'pool',owner:'a',kind:'discovery',tileId:'',availableTileIds:['money-choice','ancient-might'],options:['use'],reserveForFourthTechnology});
+it('uses compact visual public cards and confirms the selected discovery in place',()=>{const submit=vi.fn();render(<DiscoveryDecision decision={publicPool()} disabled={false} onSubmit={submit}/>);const pool=screen.getByRole('radiogroup',{name:'Public discovery pool'});expect(pool.querySelectorAll('[role=radio]')).toHaveLength(2);fireEvent.click(screen.getByRole('radio',{name:/Ancient Might/}));expect(screen.getByText(/every 3 reputation VP/i)).toBeTruthy();fireEvent.click(screen.getByRole('button',{name:/Keep end-game bonus/}));expect(submit).toHaveBeenCalledWith({type:'resolve',decisionId:'pool',choice:{kind:'discovery',option:'use',discoveryId:'ancient-might'}});});
+it('reserves Wardens’ selected starting discovery instead of applying it',()=>{const submit=vi.fn();render(<DiscoveryDecision decision={publicPool(true)} disabled={false} onSubmit={submit}/>);expect(screen.getByText(/Reserve starting discovery/i)).toBeTruthy();fireEvent.click(screen.getByRole('radio',{name:/Money & Resource Cache/}));fireEvent.click(screen.getByRole('button',{name:/Reserve Money & Resource Cache/}));expect(submit).toHaveBeenCalledWith({type:'resolve',decisionId:'pool',choice:{kind:'discovery',option:'use',discoveryId:'money-choice'}});});
+it('disables an unavailable selected public effect but leaves a reserve usable',()=>{const state=createGame({seed:1,warpPortals:false,seats:[{id:'a',faction:'planta',controller:'human'},{id:'b',faction:'hydran',controller:'ai'}]});state.technologyMarket=[];const decision:Extract<PendingDecision,{kind:'discovery'}>={...publicPool(),availableTileIds:['ancient-tech'],options:['use']};render(<DiscoveryDecision view={getPlayerView(state,'a')} decision={decision} disabled={false} onSubmit={vi.fn()}/>);expect(screen.getByRole('button',{name:/Choose free technology/})).toBeDisabled();});

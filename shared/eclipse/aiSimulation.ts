@@ -8,7 +8,7 @@ import {
   type DieFace,
 } from "./combat";
 import { connectionBetween } from "./geometry";
-import { mapSector, movementAbilities } from "./rulesState";
+import { hasTech, mapSector, movementAbilities } from "./rulesState";
 import { randomInt, randomSeed } from "./random";
 import type { ShipStats } from "./parts";
 import type { PlayerView, Ship } from "./types";
@@ -191,9 +191,7 @@ export function estimatePublicBattle(
         stats,
         splitter:
           !!seat &&
-          Object.values(seat.technologies).some((track) =>
-            track.includes("antimatter-splitter"),
-          ),
+          hasTech(seat, "antimatter-splitter"),
         canRetreat: canRetreat(view, ship, encounterSectorId ?? ship.sectorId),
       };
     })

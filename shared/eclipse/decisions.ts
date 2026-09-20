@@ -3,9 +3,9 @@ import { queueAncientPart, resolveAncientPart } from "./ancientAcquisition";
 import { reputationCapacity } from "./battleEngine";
 import { shuffle } from "./random";
 import { connectionBetween, type HexEdge } from "./geometry";
-import { BASE_COMPONENTS, getFaction } from "./catalog";
+import { BASE_COMPONENTS, getFaction, SETUP_BY_PLAYER_COUNT, type PlayerCount } from "./catalog";
 import { getDiscovery, type DiscoveryId } from "./discoveries";
-import { ancientTechnologyChoices } from "./technologies";
+import { ancientTechnologyChoices, researchedTechnologyIds } from "./technologies";
 import { requireSectorDefinition as sectorDefinition } from "./rulesState";
 import {
   discoveryAt,
@@ -35,6 +35,8 @@ import type {
   Seat,
   Sector,
 } from "./types";
+import { isLessRandom, outerPlacementLimit } from './lessRandom';
+import { applyVariantDiscoveryEffect } from './developmentEffects';
 
 export function validateDiplomacy(
   state: GameState,
@@ -165,6 +167,31 @@ export function resolveGeneralChoice(
     "WRONG_DECISION",
   );
   if (d.kind === "exploration" && c.kind === "exploration") {
+    if (c.redraw) {
+      requireRule(isLessRandom(state) && d.redrawAvailable === true && state.lessRandom?.explorationJokers[seat.id] === true, 'Your Exploration Joker is unavailable.');
+      const ring = d.ring;
+      requireRule(!!ring, 'This exploration cannot be redrawn.');
+      const previous = [...d.drawnTileIds];
+      if (state.supplies[ring!].length < previous.length && e.discardedSectors[ring!].length) {
+        const shuffled = shuffle(state.random, e.discardedSectors[ring!]);
+        state.random = shuffled.state;
+        state.supplies[ring!] = [...state.supplies[ring!], ...shuffled.items];
+        e.discardedSectors[ring!] = [];
+      }
+      requireRule(state.supplies[ring!].length >= previous.length, 'Not enough sector tiles remain for a full redraw.');
+      d.drawnTileIds = state.supplies[ring!].splice(0, previous.length);
+      e.discardedSectors[ring!].push(...previous);
+      d.placements = [];
+      const sources = explorationSources(state, seat, d.position);
+      for (const tileId of d.drawnTileIds) {
+        const def = sectorDefinition(Number(tileId));
+        for (const rotation of [0, 1, 2, 3, 4, 5]) if (sources.some(s => connectionBetween(mapSector(s), { id: 'new', ...d.position, rotation: rotation as HexEdge, wormholes: def.wormholes, warpPortal: def.warpPortal, controller: null }, hasTech(seat, 'wormhole-generator')) !== 'none')) d.placements.push({ tileId, rotation });
+      }
+      state.lessRandom!.explorationJokers[seat.id] = false;
+      d.redrawAvailable = false;
+      state.pendingDecision = d;
+      return true;
+    }
     if (c.drawAnother) {
       requireRule(!!d.canDrawAnother, "A second sector draw is not available.");
       const distance = Math.max(
@@ -223,6 +250,13 @@ export function resolveGeneralChoice(
         ].push(tile);
       }
     if (c.tileId !== null) {
+      if (isLessRandom(state) && d.ring === 'outer') {
+        const placed = state.lessRandom!.outerPlacementsThisRound[seat.id] ?? 0;
+        requireRule(placed < outerPlacementLimit(state, seat), 'You have already placed the maximum Outer sector this round.');
+        const boardOuter = state.sectors.filter(sector => BASE_COMPONENTS.sectorIds.outer.includes(Number(sector.tileId))).length;
+        requireRule(boardOuter < SETUP_BY_PLAYER_COUNT[state.seats.length as PlayerCount].outerSectors, 'The board already has its maximum number of Outer sectors.');
+        state.lessRandom!.outerPlacementsThisRound[seat.id] = placed + 1;
+      }
       const def = sectorDefinition(Number(c.tileId));
       const sector: Sector = {
         id: c.tileId,
@@ -251,7 +285,7 @@ export function resolveGeneralChoice(
           arrival: 0,
         });
       }
-      if (def.discovery) {
+      if (def.discovery && !isLessRandom(state)) {
         const id = state.supplies.discovery.shift();
         if (id)
           e.sectorDiscoveries.push({ sectorId: sector.id, discoveryId: id });
@@ -286,11 +320,27 @@ export function resolveGeneralChoice(
       d.options.includes(c.option),
       "This discovery option is unavailable.",
     );
+    // Older AI clients selected the decision's concrete tile ID rather than
+    // echoing it in discoveryId; retain that deterministic compatibility.
+    const discoveryId = c.discoveryId ?? d.tileId;
+    if (isLessRandom(state) && d.availableTileIds) {
+      requireRule(!!(discoveryId && d.availableTileIds?.includes(discoveryId) && state.lessRandom?.discoverySupply.includes(discoveryId)), 'Choose one available face-up discovery tile.');
+      state.lessRandom!.discoverySupply.splice(state.lessRandom!.discoverySupply.indexOf(discoveryId), 1);
+      state.supplies.discovery.splice(state.supplies.discovery.indexOf(discoveryId), 1);
+    }
     const privateSeat = state.privateSeats.find((p) => p.seatId === seat.id)!;
-    if (c.option === "keep") privateSeat.discoveriesKept.push(d.tileId);
+    if (d.reserveForFourthTechnology) {
+      requireRule(c.option === 'use', 'Reserve the selected discovery for your fourth technology.');
+      privateSeat.storedDiscovery = discoveryId;
+      privateSeat.storedDiscoveryResolved = false;
+      state.lessRandom!.reservedDiscoveries[seat.id] = discoveryId;
+      return true;
+    }
+    if (c.option === "keep") privateSeat.discoveriesKept.push(discoveryId);
     else {
-      const effect = getDiscovery(d.tileId as DiscoveryId).effect;
+      const effect = getDiscovery(discoveryId as DiscoveryId).effect;
       const sector = state.sectors.find((s) => s.id === d.sectorId);
+      applyVariantDiscoveryEffect(state, seat, effect);
       if (effect.kind === "resources")
         for (const resource of ["money", "science", "materials"] as Resource[])
           seat.resources[resource] += effect.resources[resource];
@@ -327,6 +377,7 @@ export function resolveGeneralChoice(
         const ids = ancientTechnologyChoices(
           state.technologyMarket,
           seat.technologies,
+          researchedTechnologyIds(seat),
         );
         requireRule(
           ids.length > 0,
@@ -340,7 +391,7 @@ export function resolveGeneralChoice(
             technologyIds: ids,
           });
       }
-      e.discardedDiscoveries.push(d.tileId);
+      e.discardedDiscoveries.push(discoveryId);
     }
   } else if (d.kind === "ancient-part" && c.kind === "ancient-part") {
     resolveAncientPart(state, seat, d, c);

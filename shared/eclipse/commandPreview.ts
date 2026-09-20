@@ -1,3 +1,4 @@
+import {DEVELOPMENTS,quantumResearchCost} from './developments';
 import { researchCostForSeat, constructionCostForSeat, getMinorSpecies } from "./minorSpecies";
 import { tradeQuote } from "./catalog";
 import { capacity, paidActivationCost } from "./rulesState";
@@ -33,7 +34,7 @@ export function previewCommand(
     if (!fundingSeat) throw Error("A command preview needs an owned seat.");
     for (const trade of command.trades) {
       fundingSeat.resources[trade.from] -=
-        (tradeQuote(fundingSeat.faction, trade.from, trade.to, trade.amount)?.input ?? 0);
+        (tradeQuote(fundingSeat.faction, trade.from, trade.to, trade.amount, view.rulesMode)?.input ?? 0);
       fundingSeat.resources[trade.to] += trade.amount;
     }
     return previewCommand(converted, command.action);
@@ -52,8 +53,10 @@ export function previewCommand(
     "move",
     "influence",
   ];
-  if (actions.some((a) => a === command.type) && !view.actionProgress)
+  if ((actions.some((a) => a === command.type) || command.type === 'research-development' || command.type === 'quantum-research') && !view.actionProgress)
     influence--;
+  if(command.type === 'research-development') { const d=DEVELOPMENTS.find(d=>d.id===command.developmentId)!;resources[d.resource]-=d.cost; }
+  if(command.type === 'quantum-research') resources.science-=quantumResearchCost(seat,command.tileId as TechnologyId,command.track)??0;
   if (command.type === "build")
     for (const build of command.builds)
       resources.materials -= constructionCostForSeat(seat,build.component);
@@ -62,7 +65,7 @@ export function previewCommand(
     if (getMinorSpecies(command.minorSpeciesId).effect.kind === "population" && command.resource) population[command.resource]++;
   }
   if (command.type === "trade") {
-    resources[command.from] -= (tradeQuote(seat.faction, command.from, command.to, command.amount)?.input ?? 0);
+    resources[command.from] -= (tradeQuote(seat.faction, command.from, command.to, command.amount, view.rulesMode)?.input ?? 0);
     resources[command.to] += command.amount;
   }
   if (command.type === "research") {

@@ -1,3 +1,6 @@
+import ReputationTile from './ReputationTile';
+import { researchedTechnologyIds } from '../../shared/eclipse/technologies';
+import './lessRandomDecisions.css';
 import { useState } from "react";
 import type { ReactElement } from "react";
 import type { LegalCommandCandidate } from "../../shared/eclipse/legal";
@@ -18,6 +21,9 @@ import {
   CombatVolleyAllocator,
   InitiativeQueue,
 } from "./CombatDecisionVisuals";
+import EclipseDieFace from "./EclipseDieFace";
+import { substituteSuperJokerDice } from "../../shared/eclipse/lessRandomCombat";
+import { applyLessRandomReputation, type LessRandomReputationAction } from "../../shared/eclipse/reputation";
 interface Props {
   view?: PlayerView;
   targetLabels?: Record<string, string>;
@@ -28,11 +34,29 @@ interface Props {
   motionEnabled?: boolean;
   onSubmit: (command: GameCommand) => void;
 }
+function DicePreview({label,dice}:{label:string;dice:Extract<PendingDecision,{kind:'super-joker'}>["dice"]}){
+ return <div><strong>{label}</strong><div className="dg-result-dice" role="group" aria-label={label}>{dice.map((die,index)=><span key={`${die.id}-${index}`} className={`is-${die.weaponColor??"unknown"}`} aria-label={`${die.weaponColor??"unknown"} die ${index+1}: face ${die.face}, ${die.damage} damage`}><EclipseDieFace color={die.weaponColor??"#bac0ce"} face={die.face} decorative/><small>{die.weaponColor??"unknown"} · {die.damage} damage</small></span>)}</div></div>;
+}
+function SuperJokerDecision({decision,disabled,onSubmit}:{decision:Extract<PendingDecision,{kind:'super-joker'}>;disabled:boolean;onSubmit:(command:GameCommand)=>void}){
+ const tableDice=decision.dice.length>=1&&decision.dice.length<=50?substituteSuperJokerDice(decision.dice):null;
+ return <section className="dg-decision"><p className="sd-eyebrow">COMBAT JOKER · {decision.remaining} LEFT</p><h2>Replace this roll?</h2><p>Compare every colored die before spending a Joker. Reroll replaces the entire group; the table uses the exact preview below.</p><div className="dg-joker-preview"><DicePreview label="Current volley" dice={decision.dice}/>{tableDice&&<DicePreview label="Super Joker table result" dice={tableDice}/>}</div><div className="dg-placement-actions"><button className="sd-primary" disabled={disabled} onClick={()=>onSubmit({type:'resolve',decisionId:decision.id,choice:{kind:'super-joker',action:'accept'}})}>Accept roll</button><button disabled={disabled} onClick={()=>onSubmit({type:'resolve',decisionId:decision.id,choice:{kind:'super-joker',action:'reroll'}})}>Reroll all dice</button><button disabled={disabled||!tableDice} onClick={()=>onSubmit({type:'resolve',decisionId:decision.id,choice:{kind:'super-joker',action:'table'}})}>Use shown table result</button></div></section>;
+}
+function LessRandomReputationDecision({decision,view,reputation,disabled,onSubmit}:{decision:Extract<PendingDecision,{kind:'less-random-reputation'}>;view?:PlayerView;reputation:number[];disabled:boolean;onSubmit:(command:GameCommand)=>void}){
+ const [actions,setActions]=useState<LessRandomReputationAction[]>([]);
+ const cost=actions.reduce((sum,action)=>sum+(action.type==='add'?1:action.from),0);
+ const supply=view?.lessRandom?.reputationSupply??[];
+ const owned=view?.lessRandom?.reputationBySeat[decision.owner]??reputation;
+ const preview=(draft:readonly LessRandomReputationAction[])=>{try{return applyLessRandomReputation(owned,supply,decision.capacity,decision.draws,draft);}catch{return null;}};
+ const result=preview(actions);
+ const canAdd=(action:LessRandomReputationAction)=>!disabled&&preview([...actions,action])!==null;
+ const canSpendMore=preview([...actions,{type:'add'}])!==null||([1,2,3] as const).some(from=>preview([...actions,{type:'upgrade',from}])!==null);
+ return <section className="dg-decision"><p className="sd-eyebrow">PUBLIC REPUTATION · {decision.draws} DRAWS</p><h2>Build your reputation</h2><p>{decision.draws-cost} draws left. Add a 1 VP tile, or spend draws to upgrade a tile.</p><div className="dg-reputation-draft" aria-label="Reputation draft"><span className="sr-only">Track: {(result?.kept??owned).join(', ')||'empty'}</span><div className="dg-reputation-draft-tiles">{(result?.kept??owned).map((points,index)=><ReputationTile key={index} points={points}/>)}{Array.from({length:Math.max(0,decision.capacity-(result?.kept??owned).length)},(_,i)=><span key={`empty-${i}`} className="dg-reputation-empty" aria-label="Empty reputation slot">+</span>)}</div><div className="dg-reputation-supply" aria-label="Public reputation supply">{([1,2,3,4] as const).map(points=><span key={points}><ReputationTile points={points}/><strong>×{(result?.supply??supply).filter(value=>value===points).length}</strong></span>)}</div></div><div className="dg-placement-actions"><button disabled={!canAdd({type:'add'})} onClick={()=>setActions(current=>[...current,{type:'add'}])}>Add 1 VP · 1 draw</button>{([1,2,3] as const).map(from=><button key={from} disabled={!canAdd({type:'upgrade',from})} onClick={()=>setActions(current=>[...current,{type:'upgrade',from}])}>Upgrade {from}→{from+1} · {from}</button>)}</div><div className="dg-placement-actions"><button disabled={disabled||actions.length===0} onClick={()=>setActions(current=>current.slice(0,-1))}>Undo last reputation step</button><button disabled={disabled||actions.length===0} onClick={()=>setActions([])}>Reset reputation draft</button><button className="sd-primary" disabled={disabled||!result||canSpendMore} onClick={()=>onSubmit({type:'resolve',decisionId:decision.id,choice:{kind:'less-random-reputation',actions}})}>Confirm reputation</button></div></section>;
+}
 function activeNeutronBombs(view: PlayerView | undefined, decision: Extract<PendingDecision, { kind: "bombardment" }>): boolean {
   const sector = view?.sectors.find(candidate => candidate.id === decision.sectorId);
   const attacker = view?.seats.find(candidate => candidate.id === decision.owner);
   const defender = view?.seats.find(candidate => candidate.id === sector?.owner);
-  const has = (seat: typeof attacker, technology: string) => seat ? Object.values(seat.technologies).some(track => track.includes(technology)) : false;
+  const has = (seat: typeof attacker, technology: string) => seat ? researchedTechnologyIds(seat).some(id=>id===technology) : false;
   return has(attacker, "neutron-bombs") && !has(defender, "neutron-absorber");
 }
 /** Local state is an editable draft only. The outstanding decision lives in the authoritative view. */
@@ -61,9 +85,13 @@ export default function DecisionPanel({
   let fields: ReactElement;
   switch (decision.kind) {
     case "exploration":
-      return view ? <ExplorationDecision key={decision.id} view={view} decision={decision} disabled={disabled} onSubmit={onSubmit}/> : <p role="alert">The galaxy view is needed to preview this exploration. Reconnect to restore it.</p>;
+      return view ? <ExplorationDecision key={`${decision.id}:${decision.drawnTileIds.join(',')}`} view={view} decision={decision} disabled={disabled} onSubmit={onSubmit}/> : <p role="alert">The galaxy view is needed to preview this exploration. Reconnect to restore it.</p>;
     case "discovery":
       return <DiscoveryDecision key={decision.id} view={view} decision={decision} disabled={disabled} onSubmit={onSubmit}/>;
+    case "super-joker":
+      return <SuperJokerDecision key={decision.id} decision={decision} disabled={disabled} onSubmit={onSubmit}/>;
+    case "less-random-reputation":
+      return <LessRandomReputationDecision key={decision.id} decision={decision} view={view} reputation={reputation} disabled={disabled} onSubmit={onSubmit}/>;
     case "ancient-part":
       return view ? <AncientPartDecision key={decision.id} view={view} decision={decision} candidates={candidates} disabled={disabled} onSubmit={onSubmit}/> : <p role="alert">Reconnect to restore your ship blueprints for this installation.</p>;
     case "control":

@@ -1,6 +1,6 @@
 import { factionAllowedForProfile, getFaction, seatPieceColor, listFactionsForProfile, type CivilizationColor, type FactionProfile, type FactionId } from "./catalog";
 import type { AiDifficulty } from "./aiConfig";
-import type { GameState, SeatId } from "./types";
+import type { GameState, SeatId, RulesMode } from "./types";
 
 export const MIN_MULTIPLAYER_HUMAN_SEATS = 2;
 /** A solo room has one human and at least one AI. Its human always waits without a timer. */
@@ -17,6 +17,8 @@ export interface MultiplayerRoomSettings {
   aiCount: number;
   timerMs: number;
   warpPortals: boolean;
+  /** Missing on an existing room means standard rules. */
+  rulesMode?: RulesMode;
   showCombatOdds?: boolean;
   minorSpecies?: boolean;
   aiDifficulty?: AiDifficulty;
@@ -28,6 +30,7 @@ export interface MultiplayerLobbySeat {
   slot: number;
   username?: string | null;
   faction: FactionId | null;
+  bannedFaction?: FactionId;
   pieceColor?: CivilizationColor;
   ready: boolean;
   isHost: boolean;
@@ -95,6 +98,8 @@ export function isMultiplayerSettings(value: MultiplayerRoomSettings): boolean {
     total >= MIN_MULTIPLAYER_HUMAN_SEATS &&
     total <= MAX_MULTIPLAYER_SEATS &&
     isMultiplayerTimerMs(value.timerMs) &&
+    (value.rulesMode === undefined || value.rulesMode === "standard" || value.rulesMode === "less-random-v1") &&
+    (value.rulesMode !== "less-random-v1" || value.warpPortals === false) &&
     (value.factionProfile === undefined || ["base", "expanded-v1"].includes(value.factionProfile)) &&
     (value.showCombatOdds === undefined || typeof value.showCombatOdds === "boolean") &&
     (value.minorSpecies === undefined || typeof value.minorSpecies === "boolean") &&
@@ -109,27 +114,54 @@ export function roomFactionsAreDistinct(seats: readonly MultiplayerLobbySeat[], 
   return new Set(selected.map(seat => seat.faction)).size === selected.length && new Set(colors).size === colors.length;
 }
 
+export function roomTerranBansAreValid(seats: readonly MultiplayerLobbySeat[], mode: RulesMode | undefined, profile: FactionProfile = 'base'): boolean {
+  if (mode !== 'less-random-v1') return true;
+  const selected = new Set(seats.flatMap(seat => seat.faction ? [seat.faction] : []));
+  const bans = seats.flatMap(seat => seat.faction && getFaction(seat.faction).species === 'terran' ? [seat.bannedFaction] : []);
+  const definedBans = bans.filter((ban): ban is FactionId => ban !== undefined);
+  return definedBans.length === bans.length && definedBans.every(ban => factionAllowedForProfile(ban,profile) && getFaction(ban).species === 'alien' && !selected.has(ban)) && new Set(definedBans).size === definedBans.length;
+}
+
 /** Assign each computer an unused faction and piece color. Random is supplied by the authoritative caller. */
-export function roomAiSelections(humans: readonly { faction: FactionId; pieceColor?: CivilizationColor }[], count: number, profile: FactionProfile, random: () => number): Array<{ faction: FactionId; pieceColor: CivilizationColor }> {
+export function roomAiSelections(humans: readonly { faction: FactionId; pieceColor?: CivilizationColor; bannedFaction?: FactionId }[], count: number, profile: FactionProfile, random: () => number, rulesMode?: RulesMode): Array<{ faction: FactionId; pieceColor: CivilizationColor; bannedFaction?: FactionId }> {
   const colors: CivilizationColor[] = ['red', 'blue', 'green', 'yellow', 'white', 'black'];
   const usedColors = new Set(humans.map(seat => profile === 'base' ? getFaction(seat.faction).color : seatPieceColor(seat)));
   const usedFactions = new Set(humans.map(seat => seat.faction));
-  const candidates = listFactionsForProfile(profile).filter(faction => faction.species === 'alien' && !usedFactions.has(faction.id));
+  const banned = new Set(rulesMode === 'less-random-v1' ? humans.flatMap(seat => seat.bannedFaction ? [seat.bannedFaction] : []) : []);
+  const candidates = listFactionsForProfile(profile).filter(faction => (rulesMode === 'less-random-v1' || faction.species === 'alien') && !usedFactions.has(faction.id) && !banned.has(faction.id));
   if (profile !== 'base') {
     for (let i = candidates.length - 1; i > 0; i--) {
       const j = Math.floor(random() * (i + 1));
       [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
     }
   }
-  const result: Array<{ faction: FactionId; pieceColor: CivilizationColor }> = [];
-  for (const faction of candidates) {
-    if (result.length === count) break;
-    const pieceColor = profile === 'base' ? faction.color : colors.find(color => !usedColors.has(color));
-    if (!pieceColor || usedColors.has(pieceColor)) continue;
-    usedColors.add(pieceColor);
-    result.push({ faction: faction.id, pieceColor });
-  }
+  const result: Array<{ faction: FactionId; pieceColor: CivilizationColor; bannedFaction?: FactionId }> = [];
+  const choose = (index: number): boolean => {
+    if (result.length === count) {
+      if (rulesMode !== 'less-random-v1') return true;
+      const used = new Set([...usedFactions,...result.map(seat=>seat.faction),...banned]);
+      const availableAliens = listFactionsForProfile(profile).filter(faction=>faction.species==='alien'&&!used.has(faction.id)).length;
+      return availableAliens >= result.filter(seat=>getFaction(seat.faction).species==='terran').length;
+    }
+    for (let i=index;i<candidates.length;i++) {
+      const faction=candidates[i],pieceColor=profile==='base'?faction.color:colors.find(color=>!usedColors.has(color));
+      if (!pieceColor||usedColors.has(pieceColor)) continue;
+      usedColors.add(pieceColor);result.push({faction:faction.id,pieceColor});
+      if (choose(i+1)) return true;
+      result.pop();usedColors.delete(pieceColor);
+    }
+    return false;
+  };
+  choose(0);
   if (result.length !== count) throw new Error('Not enough unused faction board colors for AI seats.');
+  if (rulesMode === 'less-random-v1') {
+    const used = new Set([...usedFactions,...result.map(seat=>seat.faction)]);
+    for (const seat of result) if (getFaction(seat.faction).species === 'terran') {
+      const ban = listFactionsForProfile(profile).find(faction => faction.species === 'alien' && !used.has(faction.id) && !banned.has(faction.id));
+      if (!ban) throw new Error('Not enough unselected alien factions for a Terran ban.');
+      seat.bannedFaction = ban.id; banned.add(ban.id);
+    }
+  }
   return result;
 }
 
@@ -138,7 +170,8 @@ export function roomCanStart(input: {
   humanSeatCount: number;
   aiCount: number;
   factionProfile?: FactionProfile;
-  seats: readonly Pick<MultiplayerLobbySeat, "slot" | "faction" | "pieceColor" | "ready" | "occupied">[];
+  rulesMode?: RulesMode;
+  seats: readonly Pick<MultiplayerLobbySeat, "slot" | "faction" | "pieceColor" | "bannedFaction" | "ready" | "occupied">[];
 }): boolean {
   const humanSeats = input.seats.filter((seat) => seat.slot <= input.humanSeatCount);
   const settings = {
@@ -151,7 +184,8 @@ export function roomCanStart(input: {
     isMultiplayerSettings(settings) &&
     humanSeats.length === input.humanSeatCount &&
     humanSeats.every((seat) => seat.occupied && seat.ready && seat.faction !== null) &&
-    roomFactionsAreDistinct(humanSeats.map((seat) => ({ ...seat, isHost: false })), input.factionProfile)
+    roomFactionsAreDistinct(humanSeats.map((seat) => ({ ...seat, isHost: false })), input.factionProfile) &&
+    roomTerranBansAreValid(humanSeats.map((seat) => ({ ...seat, isHost: false })), input.rulesMode, input.factionProfile)
   );
 }
 

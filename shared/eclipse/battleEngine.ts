@@ -1,5 +1,6 @@
 import { reputationCapacityWithMinorSpecies } from "./minorSpecies";
-import { bestReputation } from './reputation';
+import { applyLessRandomReputation, bestReputation } from './reputation';
+import { substituteSuperJokerDice, superJokerFaces } from './lessRandomCombat';
 import { factionHasCapability, reputationDrawMoney } from './catalog';
 import {
   deriveBlueprintStats,
@@ -245,6 +246,19 @@ function nextReputation(
         .reduce((n, k) => n + k.value, 0) +
         (b.participationEligible!.includes(owner) ? 1 : 0),
     );
+    if (state.rulesMode === "less-random-v1") {
+      if (!count) continue;
+      const gained = reputationDrawMoney(player(state, owner).faction, count);
+      if (gained) {
+        player(state, owner).resources.money += gained;
+        emit(events, owner, `Gained ${gained} money from reputation draws.`, "resource");
+      }
+      state.pendingDecision = {
+        id: uniqueId(state, "reputation"), owner, kind: "less-random-reputation",
+        draws: count, capacity: reputationCapacity(player(state, owner)),
+      };
+      return false;
+    }
     const drawn: number[] = [];
     for (let i = 0; i < count && state.supplies.reputation.length; i++) {
       const roll = randomInt(state.random, state.supplies.reputation.length);
@@ -268,10 +282,8 @@ function rollAttack(
   events: GameEvent[],
 ): void {
   const firing = ships(state, b, group.owner).filter(
-      (s) => s.type === group.shipType,
-    ),
-    enemy = group.owner === b.attacker ? b.defender : b.attacker;
-  const targets = ships(state, b, enemy);
+    (s) => s.type === group.shipType,
+  );
   b.dice = [];
   b.splitDice = [];
   b.attackingOwner = group.owner;
@@ -310,11 +322,29 @@ function rollAttack(
   emit(
     events,
     neutral(group.owner) ? null : group.owner,
-    `${group.shipType} rolled ${b.dice.map((d) => d.weaponColor === "magenta"
-      ? `Rift (${d.damage} damage, ${riftDieOutcome(d.face).backfire} backfire)` : d.face).join(", ")}.`,
+    `${group.shipType} rolled ${b.dice.map(describeDie).join(", ")}.`,
     "combat",
   );
-  const dice = b.dice.map((d) => {
+  if (state.rulesMode === "less-random-v1" && !neutral(group.owner) && (player(state, group.owner).superJokers ?? 0) > 0) {
+    state.pendingDecision = {
+      id: uniqueId(state, "super-joker"), kind: "super-joker", owner: group.owner,
+      battleId: b.id, dice: structuredClone(b.dice), remaining: player(state, group.owner).superJokers ?? 0,
+    };
+    return;
+  }
+  offerAllocation(state, b, events);
+}
+
+function describeDie(die: NonNullable<BattleState["dice"]>[number]): string | number {
+  return die.weaponColor === "magenta"
+    ? `Rift ${die.face} (${die.damage} damage, ${riftDieOutcome(die.face).backfire} backfire)`
+    : die.face;
+}
+
+function offerAllocation(state: GameState, b: BattleState, events: GameEvent[]): void {
+  const enemy = b.attackingOwner === b.attacker ? b.defender : b.attacker;
+  const targets = ships(state, b, enemy);
+  const dice = (b.dice ?? []).map((d) => {
     const split = b.splitDice!.includes(d.id);
     return {
       id: d.id,
@@ -336,14 +366,14 @@ function rollAttack(
       ...(split ? { split: true } : {}),
     };
   });
-  if (neutral(group.owner)) {
+  if (neutral(b.attackingOwner!)) {
     applyAllocation(state, b, neutralAllocations(state, b), events);
     return;
   }
   state.pendingDecision = {
     id: uniqueId(state, "allocation"),
     kind: "combat-allocation",
-    owner: group.owner,
+    owner: b.attackingOwner!,
     battleId: b.id,
     dice,
   };
@@ -723,6 +753,31 @@ export function resolveCombatChoice(
     settleReputation(state, actor, decision.drawn, Math.min(decision.capacity, reputationCapacity(player(state, actor))), events);
     return;
   }
+  if (decision.kind === "less-random-reputation" && choice.kind === "less-random-reputation") {
+    const hidden = state.privateSeats.find(seat => seat.seatId === actor)!;
+    const supply = state.lessRandom?.reputationSupply ?? state.supplies.reputation;
+    const owned = state.lessRandom?.reputationBySeat[actor] ?? hidden.reputation;
+    let result: ReturnType<typeof applyLessRandomReputation>;
+    try {
+      result = applyLessRandomReputation(
+        owned, supply,
+        Math.min(decision.capacity, reputationCapacity(player(state, actor))),
+        decision.draws, choice.actions,
+      );
+    } catch (error) {
+      requireRule(false, error instanceof Error ? error.message : "Invalid reputation actions.");
+      throw error;
+    }
+    hidden.reputation = result.kept;
+    if (state.lessRandom) {
+      state.lessRandom.reputationSupply = result.supply;
+      state.lessRandom.reputationBySeat[actor] = [...result.kept];
+    }
+    state.supplies.reputation = [...result.supply];
+    state.pendingDecision = null;
+    emit(events, actor, `${actor} spent ${result.spent} of ${decision.draws} reputation draws.`, "combat");
+    return;
+  }
   const b = continuation(state).battle;
   requireRule(!!b, "No active battle.");
   state.pendingDecision = null;
@@ -731,6 +786,42 @@ export function resolveCombatChoice(
       decision.battleId === b!.id,
       "This decision belongs to another battle.",
     );
+  if (
+    decision.kind === "super-joker" && choice.kind === "super-joker"
+  ) {
+    requireRule(b!.attackingOwner === actor, "Only the firing player may use a Super Joker.");
+    requireRule((player(state, actor).superJokers ?? 0) === decision.remaining, "Super Joker count changed.");
+    requireRule(JSON.stringify(b!.dice) === JSON.stringify(decision.dice), "The saved volley changed.");
+    if (choice.action === "accept") {
+      state.pendingDecision = null;
+      offerAllocation(state, b!, events);
+      return;
+    }
+    requireRule(decision.remaining > 0, "No Super Jokers remain.");
+    const owner = player(state, actor);
+    owner.superJokers = decision.remaining - 1;
+    if (choice.action === "table") {
+      requireRule(superJokerFaces(b!.dice!.length) !== null, "The Super Joker table supports volleys of 1 to 50 dice.");
+      b!.dice = substituteSuperJokerDice(b!.dice!);
+      state.pendingDecision = null;
+      emit(events, actor, `${actor} substituted the Super Joker table result: ${b!.dice.map(describeDie).join(", ")}.`, "combat");
+      offerAllocation(state, b!, events);
+      return;
+    }
+    b!.dice = b!.dice!.map(die => {
+      const roll = randomInt(state.random, 6);
+      state.random = roll.state;
+      const face = roll.value + 1;
+      return { ...die, face, damage: die.weaponColor === "magenta" ? riftDieOutcome(face).damage : die.damage };
+    });
+    emit(events, actor, `${actor} rerolled the whole volley with a Super Joker: ${b!.dice.map(describeDie).join(", ")}.`, "combat");
+    state.pendingDecision = owner.superJokers > 0 ? {
+      id: uniqueId(state, "super-joker"), kind: "super-joker", owner: actor,
+      battleId: b!.id, dice: structuredClone(b!.dice), remaining: owner.superJokers,
+    } : null;
+    if (!state.pendingDecision) offerAllocation(state, b!, events);
+    return;
+  }
   if (
     decision.kind === "initiative-order" &&
     choice.kind === "initiative-order"

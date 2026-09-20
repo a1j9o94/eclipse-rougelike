@@ -1,3 +1,4 @@
+import { researchedTechnologyIds } from '../../shared/eclipse/technologies';
 import { getFaction, type FactionId } from "../../shared/eclipse/catalog";
 import { deriveBlueprintStats, neutralBlueprint } from "../../shared/eclipse/blueprints";
 import { connectionBetween } from "../../shared/eclipse/geometry";
@@ -276,7 +277,7 @@ export function RetreatCards({
         const sectorLabel = `Sector ${sector?.tileId ?? id}`;
         const origin = view?.battle ? view.sectors.find((candidate) => candidate.id === view.battle?.sectorId) : undefined;
         const viewer = view?.seats.find((candidate) => candidate.id === view.viewerSeatId);
-        const hasGenerator = viewer ? Object.values(viewer.technologies).flat().includes("wormhole-generator") : false;
+        const hasGenerator = viewer ? researchedTechnologyIds(viewer).includes("wormhole-generator") : false;
         const connection = origin && sector ? connectionBetween(mapSector(origin), mapSector(sector), hasGenerator) : "none";
         const connectionLabel = connection === "warp" ? "Warp portal link" : connection === "generator" ? "Wormhole generator route" : connection === "wormhole" ? "Paired wormholes" : "Connected retreat route";
         return (

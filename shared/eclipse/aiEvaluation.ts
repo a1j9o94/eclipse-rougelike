@@ -1,3 +1,5 @@
+import { researchedTechnologyIds } from './technologies';
+import {isLessRandom} from './lessRandom';
 import {minorSpeciesFutureValue} from './aiMinorSpecies';
 import { aiWeaponValue } from "./aiWeaponValue";
 import {factionHasCapability,getFaction} from './catalog';
@@ -15,16 +17,16 @@ function empireValue(view:PlayerView,seat:Seat):number {
  const sectors=view.sectors.filter(s=>s.owner===seat.id);
  const own=seat.id===view.viewerSeatId;
  const hidden=view.hiddenTileCounts.find(s=>s.seatId===seat.id);
-const score=calculateScore({playerId:seat.id,faction:seat.faction,reputation:own?view.private.reputation:[],ambassadors:seat.ambassadors.length,minorSpecies:seat.minorSpecies,reputationTileCount:own?view.private.reputation.length:hidden?.reputation??0,sectors:sectors.map(s=>({id:s.id,printedVp:sectorDefinition(Number(s.tileId))?.victoryPoints??0,monoliths:Number(s.monolith),portalVp:s.portalVp??0})),discoveriesKeptForVp:own?view.private.discoveriesKept.length:hidden?.discoveriesKept??0,traitor:seat.traitor,researchTracks:[seat.technologies.military.length,seat.technologies.grid.length,seat.technologies.nano.length],ancientsOnBoard:view.ships.filter(s=>s.type==='ancient').length,ancientPartsUsed:seat.ancientPartsUsed,resources:seat.resources});
+const score=calculateScore({playerId:seat.id,faction:seat.faction,reputation:own?view.private.reputation:isLessRandom(view)?view.lessRandom?.reputationBySeat[seat.id]??[]:[],ambassadors:seat.ambassadors.length,minorSpecies:seat.minorSpecies,reputationTileCount:own?view.private.reputation.length:hidden?.reputation??0,sectors:sectors.map(s=>({id:s.id,printedVp:sectorDefinition(Number(s.tileId))?.victoryPoints??0,monoliths:Number(s.monolith),portalVp:s.portalVp??0})),discoveriesKeptForVp:own?view.private.discoveriesKept.length:hidden?.discoveriesKept??0,traitor:seat.traitor,researchTracks:[seat.technologies.military.length,seat.technologies.grid.length,seat.technologies.nano.length],ancientsOnBoard:view.ships.filter(s=>s.type==='ancient').length,ancientPartsUsed:seat.ancientPartsUsed,variantVp:isLessRandom(view)?(view.lessRandom?.explorationJokers[seat.id]?2:0)+(seat.developments?.some(d=>d.id==='quantum-labs'&&d.technologyId)?1:0)+(seat.discoveryBonuses??[]).reduce((sum,b)=>sum+(b==='artifacts'?sectors.reduce((n,s)=>n+(sectorDefinition(Number(s.tileId))?.artifacts??0),0):Math.floor((view.lessRandom?.reputationBySeat[seat.id]??[]).reduce((a,b)=>a+b,0)/3)),0):0,resources:seat.resources});
  // Hidden reputation is an expectation based on count, never sampled opponent values.
- let value=score.total+(own?0:(hidden?.reputation??0)*2.5)+minorSpeciesFutureValue(view,seat);
- const remaining=Math.max(0,8-view.round),income={money:incomeForPopulationAway(seat.populationTracks.money),science:incomeForPopulationAway(seat.populationTracks.science),materials:incomeForPopulationAway(seat.populationTracks.materials)};
+ let value=score.total+(own||isLessRandom(view)?0:(hidden?.reputation??0)*2.5)+minorSpeciesFutureValue(view,seat);
+ const remaining=Math.max(0,(isLessRandom(view)?10:8)-view.round),income={money:incomeForPopulationAway(seat.populationTracks.money),science:incomeForPopulationAway(seat.populationTracks.science),materials:incomeForPopulationAway(seat.populationTracks.materials)};
  const upkeep=upkeepForEmptyInfluenceSlots(Math.max(0,13-seat.influenceOnTrack));
  const balance=seat.resources.money+income.money-upkeep;
  value-=Math.max(0,-balance)*1.3;
  // Discount long-range production; finite useful spending stops resource hoarding dominating VP.
  const horizon=Math.min(3,remaining);
- const technologies=Object.values(seat.technologies).flat();
+ const technologies=researchedTechnologyIds(seat);
  // Technology access and discounts retain value before the next blueprint refit;
  // actual track VP is already included above and is not counted twice.
  value+=technologies.length*.15*horizon;

@@ -25,12 +25,12 @@ export default function TradePanel({view,candidates,disabled,onSubmit}:TradePane
  const draftGuard=useActionDraftGuard();
  const seat=view.seats.find(candidate=>candidate.id===view.viewerSeatId);
  if(!seat)return <p role="alert">Reconnect to restore your resources.</p>;
- const rates=tradeRates(seat.faction,from,to);
+ const rates=tradeRates(seat.faction,from,to,view.rulesMode);
  const minimum=Math.min(...rates.map(rate=>rate.output));
- const received=tradeQuote(seat.faction,from,to,amount)?amount:Number.isFinite(minimum)?minimum:1;
- const quote=tradeQuote(seat.faction,from,to,received);
- const nextAmount=Array.from({length:Math.max(1,...rates.map(rate=>rate.output))},(_,i)=>received+i+1).find(value=>{const q=tradeQuote(seat.faction,from,to,value);return q&&q.input<=seat.resources[from];});
- const previousAmount=Array.from({length:Math.min(received-1,Math.max(1,...rates.map(rate=>rate.output)))},(_,i)=>received-i-1).find(value=>tradeQuote(seat.faction,from,to,value));
+ const received=tradeQuote(seat.faction,from,to,amount,view.rulesMode)?amount:Number.isFinite(minimum)?minimum:1;
+ const quote=tradeQuote(seat.faction,from,to,received,view.rulesMode);
+ const nextAmount=Array.from({length:Math.max(1,...rates.map(rate=>rate.output))},(_,i)=>received+i+1).find(value=>{const q=tradeQuote(seat.faction,from,to,value,view.rulesMode);return q&&q.input<=seat.resources[from];});
+ const previousAmount=Array.from({length:Math.min(received-1,Math.max(1,...rates.map(rate=>rate.output)))},(_,i)=>received-i-1).find(value=>tradeQuote(seat.faction,from,to,value,view.rulesMode));
  const legalPair=pairs.some(pair=>pair.from===from&&pair.to===to);
 
  const result=tradeResources(seat.resources,seat.faction,from,to,received);

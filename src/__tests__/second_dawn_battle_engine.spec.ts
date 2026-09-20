@@ -163,6 +163,51 @@ function attackThrough(s: GameState, max = 250): void {
   throw new Error("did not finish");
 }
 describe("persisted complete battles", () => {
+  it("spends Less Random reputation draws from the public supply and mirrors scoring state", () => {
+    const s = fixture();
+    s.rulesMode = "less-random-v1";
+    s.privateSeats[0].reputation = [1];
+    s.lessRandom = {
+      explorationJokers:{a:true,b:true,c:true}, outerPlacementsThisRound:{a:0,b:0,c:0},
+      discoverySupply:[], reputationSupply:[1,2,3,4], reputationBySeat:{a:[1],b:[],c:[]},
+    };
+    const decision = {id:"rep",owner:"a",kind:"less-random-reputation" as const,draws:2,capacity:4};
+    s.pendingDecision = decision;
+    resolveCombatChoice(s,"a",decision,{kind:"less-random-reputation",actions:[{type:"upgrade",from:1},{type:"add"}]},[]);
+    expect(s.lessRandom.reputationBySeat.a).toEqual([2,1]);
+    expect(s.privateSeats[0].reputation).toEqual([2,1]);
+    expect(s.lessRandom.reputationSupply).toEqual([3,4,1]);
+  });
+  it("pauses a Less Random player volley before allocation until its result is accepted", () => {
+    const s = fixture();
+    s.rulesMode = "less-random-v1";
+    s.seats[0].superJokers = 5;
+    advanceCombat(s, []);
+    expect(s.pendingDecision?.kind).toBe("combat-turn");
+    choose(s, { kind:"combat-turn", retreatTo:null });
+    expect(s.pendingDecision).toMatchObject({kind:"super-joker",owner:"a",remaining:5});
+    expect(s.ships).toHaveLength(2);
+    choose(s, {kind:"super-joker",action:"table"});
+    expect(s.seats[0].superJokers).toBe(4);
+    expect(s.pendingDecision?.kind).toBe("combat-allocation");
+  });
+  it("rerolls the whole persisted volley and offers remaining Super Jokers again", () => {
+    const s = fixture();
+    s.rulesMode = "less-random-v1";
+    s.seats[0].superJokers = 2;
+    advanceCombat(s, []);
+    choose(s, {kind:"combat-turn",retreatTo:null});
+    const first = s.pendingDecision;
+    expect(first?.kind).toBe("super-joker");
+    const randomBefore = structuredClone(s.random);
+    choose(s, {kind:"super-joker",action:"reroll"});
+    expect(s.random).not.toEqual(randomBefore);
+    expect(s.seats[0].superJokers).toBe(1);
+    expect(s.pendingDecision).toMatchObject({kind:"super-joker",remaining:1});
+    choose(s, {kind:"super-joker",action:"accept"});
+    expect(s.seats[0].superJokers).toBe(1);
+    expect(s.pendingDecision?.kind).toBe("combat-allocation");
+  });
   it("lets the owner choose tied activation order again in each engagement round", () => {
     const s = fixture();
     s.ships.push({

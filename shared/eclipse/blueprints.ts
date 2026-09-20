@@ -1,3 +1,4 @@
+import { shipPartResearched } from './parts';
 import { getFaction, type FactionBlueprintDefinition, type FactionId } from './catalog';
 import type { AncientShipPartId } from './discoveries';
 import type { TechnologyId } from './technologies';
@@ -46,7 +47,7 @@ export function validateBlueprint(faction: FactionId, blueprint: ShipBlueprint, 
   const check = (id: ShipPartId, placement: 'grid' | 'outside', slot: number | null): void => {
     const part = getShipPart(id);
     if (part.placement !== placement) issue('PART_PLACEMENT', `${part.name} must be placed ${part.placement === 'outside' ? 'outside the grid' : 'in a grid slot'}.`, id, slot);
-    if (part.access.kind === 'technology' && !researched.includes(part.access.technology)) issue('TECHNOLOGY_REQUIRED', `Research ${part.name} before installing this part.`, id, slot);
+    if (part.access.kind === 'technology' && !shipPartResearched(part, researched)) issue('TECHNOLOGY_REQUIRED', `Research ${part.name} before installing this part.`, id, slot);
     if (part.access.kind === 'ancient') {
       const count = (ancientUsed.get(id) ?? 0) + 1; ancientUsed.set(id, count);
       if (count > availableAncientParts.filter(owned => owned === id).length || count > 1) issue('ANCIENT_PART_UNAVAILABLE', `No available ${part.name} discovery part.`, id, slot);

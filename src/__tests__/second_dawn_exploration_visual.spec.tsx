@@ -32,6 +32,13 @@ it('disables commitment offline while still allowing rotation inspection',()=>{
  const view=getPlayerView(fixture(),'a')!;render(<DecisionPanel view={view} decision={view.pendingDecision!} reputation={[]} disabled onSubmit={vi.fn()}/>);
  fireEvent.click(screen.getByRole('button',{name:'Rotate clockwise'}));expect(screen.getByRole('button',{name:'Place sector'})).toBeDisabled();expect(screen.getByRole('button',{name:'Discard sector'})).toBeDisabled();
 });
+it('resets the displayed tile when a joker redraw keeps the same decision id',()=>{
+ const view=getPlayerView(fixture(),'a')!;const decision=view.pendingDecision!;if(decision.kind!=='exploration')throw Error('fixture');
+ const replacement=decision.drawnTileIds[0]==='101'?'102':'101';const redrawn={...decision,drawnTileIds:[replacement],placements:[{tileId:replacement,rotation:0}]};
+ const rendered=render(<DecisionPanel view={view} decision={decision} reputation={[]} disabled={false} onSubmit={vi.fn()}/>);
+ rendered.rerender(<DecisionPanel view={view} decision={redrawn} reputation={[]} disabled={false} onSubmit={vi.fn()}/>);
+ expect(screen.getByText((_,element)=>element?.textContent===`Drawn sector ${replacement} · preview`)).toBeTruthy();
+});
 it('keeps both saved Draco draws available and commits the chosen tile at its displayed rotation',()=>{
  const setup=createGame({seed:543,warpPortals:true,seats:[{id:'a',faction:'draco',controller:'human'},{id:'b',faction:'hydran',controller:'ai'}]});
  const explore=legalCommands(getPlayerView(setup,'a')!).find(c=>c.command.type==='explore')!;

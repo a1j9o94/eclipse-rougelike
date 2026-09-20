@@ -18,7 +18,7 @@ export interface ShipStats {
   weapons: ShipWeapon[];
 }
 export interface ShipPart extends ShipStats {
-  expansion?: 'rift-cannon';
+  expansion?: 'rift-cannon' | 'less-random';
   id: ShipPartId;
   name: string;
   placement: 'grid' | 'outside';
@@ -41,6 +41,9 @@ function weapon(color: WeaponColor, dice = 1, kind: ShipWeapon['kind'] = 'cannon
 }
 /** Base-box components and explicitly marked Rift expansion parts. */
 export const SHIP_PARTS: readonly ShipPart[] = [
+  {...ancient('less-random-ion-missile',{weapons:weapon('yellow',3,'missile'),energyConsumption:1}),name:'Ion Missile',expansion:'less-random'},
+  {...ancient('less-random-antimatter-missile',{weapons:weapon('red',1,'missile'),energyConsumption:2}),name:'Antimatter Missile',expansion:'less-random'},
+  {...ancient('less-random-soliton-missile',{weapons:weapon('blue',1,'missile'),energyConsumption:1}),name:'Soliton Missile',expansion:'less-random'},
   { ...researched('rift-cannon', { energyConsumption: 2, weapons: weapon('magenta') }), expansion: 'rift-cannon', verification: 'publisher-rulebook', source: 'https://www.lautapelit.fi/files/Online%20rules/Eclipse2_RC_rules_web.pdf' },
   { ...ancient('rift-conductor', { hull: 1, energyConsumption: 1, weapons: weapon('magenta') }), expansion: 'rift-cannon', verification: 'publisher-rulebook', source: 'https://www.lautapelit.fi/files/Online%20rules/Eclipse2_RC_rules_web.pdf' },
   standard('ion-cannon', { energyConsumption: 1, weapons: weapon('yellow') }),
@@ -98,4 +101,10 @@ export function sumShipStats(parts: readonly ShipStats[]): ShipStats {
     total.weapons.push(...stats.weapons.map(weapon => ({ ...weapon })));
   }
   return total;
+}
+
+/** The variant prints Flux Missile on a regular Military tile; both unlock the same part. */
+export function shipPartResearched(part: ShipPart, technologies: readonly string[]): boolean {
+  return part.access.kind !== 'technology' || technologies.includes(part.access.technology) ||
+    (part.access.technology === 'flux-missile' && technologies.includes('regular-flux-missile'));
 }

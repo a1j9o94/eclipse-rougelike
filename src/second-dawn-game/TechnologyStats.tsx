@@ -21,5 +21,7 @@ export default function TechnologyStats({ technology }: { technology: Technology
  case 'cloaking': return <div className="dg-part-stats">{badge({icon:'drive',value:'2:1',label:'ships to pin'})}</div>;
  case 'place-warp-portal': return <div className="dg-part-stats">{badge({icon:'portal',value:'+1',label:'warp portal'})}{badge({icon:'discovery',value:'+1',label:'sector VP'})}</div>;
  case 'draw-discovery': return <div className="dg-part-stats">{badge({icon:'discovery',value:'+1',label:'discovery'})}</div>;
+ case 'multi-activation': return <div className="dg-part-stats">{effect.actions.map(action=><span key={action}>{badge({icon:action==='move'?'drive':action==='build'?'structure':'hull',value:`+${effect.amount}`,label:action})}</span>)}</div>;
+ case 'gain-colony-ship': return <div className="dg-part-stats">{badge({icon:'population',value:`+${effect.amount}`,label:'colony ship'})}</div>;
  }
 }

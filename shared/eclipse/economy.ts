@@ -1,4 +1,6 @@
 import { tradeQuote, type CatalogResources, type FactionId } from "./catalog";
+import { lessRandomTradeInput } from './lessRandom';
+import type { RulesMode } from './types';
 export type ResourceKind = keyof CatalogResources;
 const nonnegativeInteger = (n: number): boolean =>
   Number.isSafeInteger(n) && n >= 0;
@@ -190,6 +192,7 @@ export function tradeResources(
   from: ResourceKind,
   to: ResourceKind,
   quantity: number,
+  rulesMode?: RulesMode,
 ): TradeResult {
   if (!validResources(resources))
     return {
@@ -209,7 +212,8 @@ export function tradeResources(
       code: "invalid-quantity",
       message: "Trade a positive whole number of times.",
     };
-  const quote = tradeQuote(faction, from, to, quantity);
+  const variantInput = rulesMode === 'less-random-v1' ? lessRandomTradeInput(faction, from, to, quantity) : null;
+  const quote = variantInput === null ? tradeQuote(faction, from, to, quantity) : { input: variantInput, output: quantity };
   if (!quote)
     return {
       ok: false,

@@ -1,0 +1,50 @@
+import './hostStartingSeed';
+import {webcrypto} from 'node:crypto';
+import {beforeEach,afterEach,it,expect,vi} from 'vitest';
+import {convexTest} from 'convex-test';
+import schema from '../../convex/schema';
+import {api} from '../../convex/_generated/api';
+const modules=import.meta.glob('../../convex/**/*.{ts,js}');
+beforeEach(()=>{vi.stubGlobal('crypto',webcrypto);vi.useFakeTimers();});
+afterEach(()=>{vi.unstubAllGlobals();vi.useRealTimers();});
+it('persists room mode and public reputation choices with seat ownership, reconnect, duplicate and stale protection',async()=>{
+ const t=convexTest(schema,modules);
+ const host=await t.action(api.eclipseGuests.createGuestSession,{}),guest=await t.action(api.eclipseGuests.createGuestSession,{});
+ const {roomToken}=await t.mutation(api.eclipseRooms.createRoom,{...host,faction:'eridani',settings:{humanSeatCount:2,aiCount:0,timerMs:30000,warpPortals:false,rulesMode:'less-random-v1'}});
+ await t.mutation(api.eclipseRooms.joinRoom,{...guest,roomToken,faction:'hydran'});
+ await t.mutation(api.eclipseRooms.setRoomReady,{...host,roomToken,ready:true});await t.mutation(api.eclipseRooms.setRoomReady,{...guest,roomToken,ready:true});
+ const {matchId}=await t.mutation(api.eclipseRooms.startRoom,{...host,roomToken});
+ const before=await t.query(api.eclipseMatches.getMatchView,{...host,matchId});
+ expect(before?.rulesMode).toBe('less-random-v1');expect(before?.pendingDecision?.kind).toBe('less-random-reputation');
+ expect(await t.query(api.eclipseMatches.getMatchView,{...host,matchId})).toEqual(before);
+ expect(before).not.toHaveProperty('random');expect(before).not.toHaveProperty('privateSeats');
+ const request={...host,matchId,commandId:'rep-once',expectedRevision:before!.revision,command:{type:'resolve' as const,decisionId:before!.pendingDecision!.id,choice:{kind:'less-random-reputation' as const,actions:[{type:'add' as const},{type:'upgrade' as const,from:1 as const}]}}};
+ expect(await t.mutation(api.eclipseMatches.submitCommand,{...request,...guest})).toMatchObject({ok:false});
+ expect(await t.mutation(api.eclipseMatches.submitCommand,request)).toMatchObject({ok:true,duplicate:false});
+ expect(await t.mutation(api.eclipseMatches.submitCommand,request)).toMatchObject({ok:true,duplicate:true});
+ expect(await t.mutation(api.eclipseMatches.submitCommand,{...request,commandId:'stale-new'})).toMatchObject({ok:false,error:{code:'STALE_REVISION'}});
+ const other=await t.query(api.eclipseMatches.getMatchView,{...guest,matchId});
+ expect(other?.lessRandom?.reputationBySeat['seat-1']).toEqual([2]);
+ expect((await t.query(api.eclipseMatches.listMyMatches,host))[0].rulesMode).toBe('less-random-v1');
+ const journal=await t.run(ctx=>ctx.db.query('eclipseJournalV1').collect());expect(journal).toHaveLength(1);
+});
+it('accepts both development commands through the deployed argument validator and saves the outside-track technology',async()=>{
+ const t=convexTest(schema,modules),host=await t.action(api.eclipseGuests.createGuestSession,{});
+ const {matchId}=await t.mutation(api.eclipseMatches.createMatch,{...host,faction:'hydran',aiCount:1,rulesMode:'less-random-v1',warpPortals:false});
+ await t.run(async ctx=>{const match=(await ctx.db.get(matchId))!;const state=JSON.parse(match.snapshotJson) as import('../../shared/eclipse/types').GameState;state.pendingDecision=null;state.engine!.decisions=[];await ctx.db.patch(matchId,{snapshotJson:JSON.stringify(state)});});
+ const first=await t.mutation(api.eclipseMatches.submitCommand,{...host,matchId,commandId:'buy-lab',expectedRevision:0,command:{type:'research-development',developmentId:'quantum-labs'}});
+ // Hydran starts with enough materials to convert, but this fixture specifically tests the protocol shape;
+ // add resources through the authoritative snapshot fixture before the successful retry.
+ expect(first).toMatchObject({ok:false,error:{code:'INSUFFICIENT_RESOURCES'}});
+ await t.run(async ctx=>{const match=(await ctx.db.get(matchId))!;const state=JSON.parse(match.snapshotJson) as import('../../shared/eclipse/types').GameState;state.seats[0].resources.materials=7;await ctx.db.patch(matchId,{snapshotJson:JSON.stringify(state)});});
+ expect(await t.mutation(api.eclipseMatches.submitCommand,{...host,matchId,commandId:'buy-funded-lab',expectedRevision:0,command:{type:'research-development',developmentId:'quantum-labs'}})).toMatchObject({ok:true});
+ expect(await t.mutation(api.eclipseMatches.submitCommand,{...host,matchId,commandId:'fill-lab',expectedRevision:1,command:{type:'quantum-research',tileId:'improved-hull',track:'grid'}})).toMatchObject({ok:true});
+ const view=await t.query(api.eclipseMatches.getMatchView,{...host,matchId});expect(view?.seats[0].developments).toContainEqual({id:'quantum-labs',technologyId:'improved-hull'});
+});
+it('accepts a named public discovery choice at the same boundary, and keeps the reserved tile visible after reconnect',async()=>{
+ const t=convexTest(schema,modules),host=await t.action(api.eclipseGuests.createGuestSession,{});
+ const {matchId}=await t.mutation(api.eclipseMatches.createMatch,{...host,faction:'magellan',pieceColor:'blue',factionProfile:'expanded-v1',aiCount:1,rulesMode:'less-random-v1',warpPortals:false});
+ const view=await t.query(api.eclipseMatches.getMatchView,{...host,matchId});expect(view?.pendingDecision).toMatchObject({kind:'discovery',reserveForFourthTechnology:true});
+ expect(await t.mutation(api.eclipseMatches.submitCommand,{...host,matchId,commandId:'reserve-named-discovery',expectedRevision:0,command:{type:'resolve',decisionId:view!.pendingDecision!.id,choice:{kind:'discovery',option:'use',discoveryId:'ancient-might'}}})).toMatchObject({ok:true});
+ const restored=await t.query(api.eclipseMatches.getMatchView,{...host,matchId});expect(restored?.lessRandom?.reservedDiscoveries['seat-1']).toBe('ancient-might');expect(restored?.lessRandom?.discoverySupply).not.toContain('ancient-might');
+});

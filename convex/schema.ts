@@ -1,6 +1,6 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
-import { factionProfileValidator, pieceColorValidator, factionValidator, phaseValidator, receiptValidator } from "./eclipseValidators";
+import { factionProfileValidator, pieceColorValidator, factionValidator, phaseValidator, receiptValidator, rulesModeValidator } from "./eclipseValidators";
 
 /**
  * Eclipse: Second Dawn - Complete Data Schema
@@ -47,6 +47,7 @@ export default defineSchema({
   eclipseMatchesV1: defineTable({
     snapshotJson: v.string(),
     showCombatOdds: v.optional(v.boolean()),
+    rulesMode: v.optional(rulesModeValidator),
     /** Abandonment freezes a run without inventing final scoring. Missing means active. */
     lifecycle: v.optional(v.literal('abandoned')),
     rollbackPendingId: v.optional(v.id('eclipseRollbacksV1')),
@@ -157,6 +158,7 @@ export default defineSchema({
     hostGuestId: v.id('eclipseGuestsV1'),
     status: v.union(v.literal('waiting'), v.literal('playing'), v.literal('finished'), v.literal('closed')),
     factionProfile: v.optional(factionProfileValidator),
+    rulesMode: v.optional(rulesModeValidator),
     humanSeatCount: v.number(),
     aiCount: v.number(),
     aiDifficulty: v.optional(v.union(v.literal('normal'), v.literal('hard'), v.literal('expert'))),
@@ -175,6 +177,7 @@ export default defineSchema({
     guestId: v.id('eclipseGuestsV1'),
     slot: v.number(),
     faction: v.union(factionValidator, v.null()),
+    bannedFaction: v.optional(factionValidator),
     pieceColor: v.optional(pieceColorValidator),
     ready: v.boolean(),
     isHost: v.boolean(),

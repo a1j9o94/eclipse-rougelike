@@ -110,6 +110,8 @@ export function evaluateLegacyAiCommand(
         sectors.length -
         discPenalty
       );
+    case "research-development": return 4;
+    case "quantum-research": return 8;
     case "research":
       return (
         11 +
@@ -257,6 +259,10 @@ export function evaluateLegacyAiCommand(
           return c.accept ? 8 : 0;
         case "reputation":
           return (c.kept?.reduce((n, v) => n + v, 0) ?? 0) * 10;
+        case "less-random-reputation":
+          return c.actions.length * 10;
+        case "super-joker":
+          return c.action === "table" ? 10 : c.action === "reroll" ? 2 : 0;
         case "resource-reward":
           return c.resources.reduce((n, r) => n + utility(r), 0);
         case "population-return":

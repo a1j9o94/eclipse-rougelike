@@ -1,3 +1,4 @@
+import { researchedTechnologyIds } from '../../shared/eclipse/technologies';
 import {needsUpkeep,upkeepReadyCount} from './upkeepParticipation';
 import FactionAbilityControls from './FactionAbilityControls';
 import {remainingAction,continuesAction} from './actionCapacity';
@@ -321,7 +322,7 @@ function SecondDawnBoardContent({
   useLayoutEffect(() => { if (inspectorRef.current) inspectorRef.current.scrollTop = 0; }, [screen, selected, researchSelection]);
   useLayoutEffect(()=>{if(!actionFocus||historyOpen)return;const inspector=inspectorRef.current,panel=actionPanelRef.current;if(inspector&&panel)inspector.scrollTop+=panel.getBoundingClientRect().top-inspector.getBoundingClientRect().top-14;},[actionFocus,historyOpen]);
   const own = view.seats.find((s) => s.id === view.viewerSeatId)!;
-  const ownedTechnologyKey=Object.values(own.technologies).flat().join('|');
+  const ownedTechnologyKey=researchedTechnologyIds(own).join('|');
   useEffect(()=>{const submitted=submittedResearch.current;if(!submitted||!lastAcceptedCommand||!['research','trade-and-act'].includes(lastAcceptedCommand.type)||!ownedTechnologyKey.split('|').includes(submitted.id))return;submittedResearch.current=null;setAcquiredResearch(submitted.id);setDraft(current=>current&&JSON.stringify(current.command)===submitted.command?null:current);},[lastAcceptedCommand,ownedTechnologyKey,setDraft]);
   const liveScores = view.seats.map(seat => runningScore(view, seat.id).breakdown);
   const ownScore = liveScores.find(score => score.playerId === own.id)!;
@@ -450,7 +451,7 @@ function SecondDawnBoardContent({
           </div>
         </div>
         <div className="sd-turn">
-          <small>ROUND {view.round} / 8</small>
+          <small>ROUND {view.round} / {view.rulesMode==='less-random-v1'?10:8}</small>
           <strong>
             {view.phase === "finished"
               ? "Final results"
@@ -471,7 +472,7 @@ function SecondDawnBoardContent({
           </div>
         ))}
         <UpkeepSummary view={view}/>
-        <button className="dg-running-score" onClick={() => setScreen("Scoring")} title="Open the scoring breakdown. Reputation is excluded until game end.">
+        <button className="dg-running-score" onClick={() => setScreen("Scoring")} title={view.rulesMode==='less-random-v1'?'Open the scoring breakdown, including public reputation.':'Open the scoring breakdown. Reputation is excluded until game end.'}>
           <small>{view.phase === "finished" ? "Your final score" : "Your public VP"}</small><strong>{ownScore.total}<span>VP</span></strong>
         </button>
         <div className="sd-actions" aria-label="Available actions">
@@ -555,10 +556,11 @@ function SecondDawnBoardContent({
                         : seat.id === view.activeSeatId
                           ? "active"
                           : "waiting"}
-                    {view.round<8&&view.phase!=='finished'&&seat.id===view.firstPasser&&!seat.eliminated&&<span className="dg-next-starter" title="Passed first: gained 2 money and starts the next round."> · Next round first</span>}
+                    {view.round<(view.rulesMode==='less-random-v1'?10:8)&&view.phase!=='finished'&&seat.id===view.firstPasser&&!seat.eliminated&&<span className="dg-next-starter" title="Passed first: gained 2 money and starts the next round."> · Next round first</span>}
+                    {view.rulesMode==='less-random-v1'&&<span> · Reputation {view.lessRandom?.reputationBySeat[seat.id]?.reduce((total,value)=>total+value,0)??0} VP</span>}
                   </small>
                 </div>
-                <span className="dg-roster-vp" title={view.phase === "finished" ? "Final victory points" : "Public victory points; reputation excluded"}>{liveScores.find(score => score.playerId === seat.id)!.total}<small>VP</small></span>
+                <span className="dg-roster-vp" title={view.phase === "finished" ? "Final victory points" : view.rulesMode==='less-random-v1'?`Public victory points, including ${view.lessRandom?.reputationBySeat[seat.id]?.reduce((total,value)=>total+value,0)??0} reputation`:'Public victory points; reputation excluded'}>{liveScores.find(score => score.playerId === seat.id)!.total}<small>VP</small></span>
               </button>
             ))}
           </div>
@@ -623,7 +625,7 @@ function SecondDawnBoardContent({
                     own.blueprints.find((bp) => bp.shipType === editing)!,
                   )}
                   technologies={
-                    Object.values(own.technologies).flat() as TechnologyId[]
+                    researchedTechnologyIds(own) as TechnologyId[]
                   }
                   storedParts={(own.storedParts ?? []) as AncientShipPartId[]}
                   installedAncientParts={own.blueprints.flatMap(candidate=>{const blueprint=publicBlueprint(candidate);return [...blueprint.parts,...blueprint.outsideParts];}).filter((id):id is AncientShipPartId=>id!==null&&getShipPart(id).access.kind==='ancient')}
@@ -634,8 +636,7 @@ function SecondDawnBoardContent({
                         ? 1
                         : getFaction(own.faction)
                             .activations.upgrade +
-                          (Object.values(own.technologies)
-                            .flat()
+                          (researchedTechnologyIds(own)
                             .includes("pico-modulator")
                             ? 2
                             : 0)

@@ -1,3 +1,5 @@
+import { researchedTechnologyIds } from './technologies';
+import { shipPartResearched } from './parts';
 import { aiWeaponValue } from "./aiWeaponValue";
 import { BASE_COMPONENTS, getFaction } from "./catalog";
 import { deriveBlueprintStats, effectiveBlueprintParts } from "./blueprints";
@@ -75,7 +77,7 @@ export function generateAiCandidates(
       });
     }
   };
-  const techs = Object.values(seat.technologies).flat() as TechnologyId[];
+  const techs = researchedTechnologyIds(seat) as TechnologyId[];
   const upgradeLegal = (command: Extract<GameCommand, { type: "upgrade" }>) => {
     let installations = 0;
     for (const next of command.blueprints) {
@@ -306,7 +308,7 @@ export function generateAiCandidates(
           p.placement === "grid" &&
           (p.access.kind === "default" ||
             (p.access.kind === "technology" &&
-              techs.includes(p.access.technology))),
+              shipPartResearched(p, techs))),
       );
       const source = accessible
         .filter((p) => p.energyProduction > 3)

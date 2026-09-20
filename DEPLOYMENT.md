@@ -7,13 +7,13 @@ The Vercel project deploys `main` from this repository through its Git integrati
 - Frontend backend URL: `https://ideal-nightingale-55.convex.cloud`
 - Convex dashboard: https://dashboard.convex.dev/t/adrian-obleton/eclipse-rougelike/ideal-nightingale-55
 
-The live site intentionally uses the development Convex environment. Backend and frontend versions must remain compatible. Backend publishing is guarded by `tools/check-convex-release.mjs`, which checks the Vercel environment, deployment selection, URL and development deploy-key prefix without printing secrets. `tools/second-dawn-live-build.mjs` contains the coordinated backend/frontend build; Vercel's configured Git build remains the release entry point.
+The live site intentionally uses the development Convex environment. Backend and frontend versions must remain compatible. Vercel’s current `build:vercel` builds only the frontend; it does not publish Convex functions. Publish backward-compatible backend changes to the explicitly selected development deployment before releasing the frontend on `main`:
 
-Environment values required by the coordinated release:
+```sh
+CONVEX_DEPLOYMENT=dev:ideal-nightingale-55 npx convex dev --once --typecheck enable --tail-logs disable
+```
 
-- `VITE_CONVEX_URL=https://ideal-nightingale-55.convex.cloud`
-- `CONVEX_DEPLOYMENT=dev:ideal-nightingale-55`
-- `CONVEX_DEPLOY_KEY`: a key for that development deployment, stored in the hosting environment rather than Git.
+Check that no deploy-key or self-hosted environment override selects another backend. The older `check-convex-release.mjs` script belongs to a previous coordinated-build configuration. `second-dawn-live-build.mjs` is a browser smoke test, not a deployment script.
 
 For local checks, `npm run build` regenerates Convex API types, checks TypeScript and produces `dist/`. `npm run build:vercel` checks types and builds the frontend using the configured environment.
 

@@ -24,6 +24,8 @@ export interface ScoringInput {
   readonly researchTracks: readonly [number, number, number];
   readonly ancientsOnBoard: number;
   readonly ancientPartsUsed?: number;
+  /** Less Random end-game awards: unused Exploration Joker and public discoveries. */
+  readonly variantVp?: number;
   readonly resources: CatalogResources;
 }
 export interface ScoreBreakdown {
@@ -38,6 +40,7 @@ export interface ScoreBreakdown {
   readonly traitor: number;
   readonly research: number;
   readonly species: number;
+  readonly variant?: number;
   readonly total: number;
   readonly resourceTotal: number;
 }
@@ -74,6 +77,7 @@ export function calculateScore(input: ScoringInput): ScoreBreakdown {
       ? input.ancientsOnBoard
       : 0;
   const species = speciesBase + (input.ancientPartsUsed ?? 0) * (faction.special?.ancientPartVp ?? 0);
+  const variant = input.variantVp ?? 0;
   return {
     ...(input.minorSpecies?.length ? {minorSpecies} : {}),
     playerId: input.playerId,
@@ -86,6 +90,7 @@ export function calculateScore(input: ScoringInput): ScoreBreakdown {
     traitor,
     research,
     species,
+    ...(variant ? { variant } : {}),
     total:
       reputation +
       ambassadors +
@@ -95,7 +100,7 @@ export function calculateScore(input: ScoringInput): ScoreBreakdown {
       discoveries +
       traitor +
       research +
-      species + minorSpecies,
+      species + variant + minorSpecies,
     resourceTotal:
       input.resources.materials +
       input.resources.science +

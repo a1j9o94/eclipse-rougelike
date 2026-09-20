@@ -1,3 +1,4 @@
+import { performDevelopment } from './developments';
 import { focusUpkeepDecision, upkeepSeatUnfinished } from './upkeep';
 import { buyMinorSpecies } from "./minorSpeciesRules";
 import { pauseAutoPass, skipPassedReactionTurns } from './autoPass';
@@ -180,6 +181,7 @@ export function processGameCommand(
           trade.from,
           trade.to,
           trade.amount,
+          state.rulesMode,
         );
         requireRule(
           result.ok,
@@ -190,7 +192,7 @@ export function processGameCommand(
         emit(
           events,
           actor,
-          `${getFaction(seat.faction).name} gains ${trade.amount} ${trade.to} by trading ${tradeQuote(seat.faction, trade.from, trade.to, trade.amount)!.input} ${trade.from}.`,
+          `${getFaction(seat.faction).name} gains ${trade.amount} ${trade.to} by trading ${tradeQuote(seat.faction, trade.from, trade.to, trade.amount, state.rulesMode)!.input} ${trade.from}.`,
           "resource",
         );
       }
@@ -212,6 +214,7 @@ export function processGameCommand(
         command.from,
         command.to,
         command.amount,
+        state.rulesMode,
       );
       requireRule(
         result.ok,
@@ -272,6 +275,10 @@ export function processGameCommand(
         requireRule(index >= 0, "You do not own this reputation tile.");
         hidden.reputation.splice(index, 1);
         state.supplies.reputation.push(value);
+        if (state.lessRandom) {
+          state.lessRandom.reputationBySeat[actor] = [...hidden.reputation];
+          state.lessRandom.reputationSupply.push(value);
+        }
       }
       emit(
         events,
@@ -313,7 +320,9 @@ export function processGameCommand(
         "Wait for your turn.",
         "NOT_YOUR_TURN",
       );
-      if (command.type === "colonize")
+      if (command.type === "research-development" || command.type === "quantum-research")
+        performDevelopment(state, seat, command, events);
+      else if (command.type === "colonize")
         colonize(state, seat, command.placements);
       else if (command.type === "buy-activation") {
         const progress = e.action;

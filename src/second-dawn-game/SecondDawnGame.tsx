@@ -1,3 +1,5 @@
+import {ChoiceCards} from './DecisionChoicePrimitives';
+import FactionSymbol from './FactionSymbol';
 import Leaderboard from './Leaderboard';
 import {submitWithUpkeepRetry} from './upkeepSubmission';
 import AiDifficultyPicker from './AiDifficultyPicker';
@@ -12,12 +14,12 @@ import {
 } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
-import { getFaction } from "../../shared/eclipse/catalog";
+import { getFaction, listFactionsForProfile } from "../../shared/eclipse/catalog";
 import type { FactionId, FactionProfile, CivilizationColor } from "../../shared/eclipse/catalog";
 import { loadOrCreateGuestCredential } from "../second-dawn-session/guestStorage";
 import { isGuestCredential } from "../../shared/eclipse/guest";
 import { legalCommands } from "../../shared/eclipse/legal";
-import type { GameCommand } from "../../shared/eclipse/types";
+import type { GameCommand, RulesMode } from "../../shared/eclipse/types";
 import SecondDawnBoard from "./SecondDawnBoard";
 import SavedGames from "./SavedGames";
 import FactionProfilePicker from "./FactionProfilePicker";
@@ -116,10 +118,12 @@ function ConnectedGame() {
   const [faction, setFaction] = useState<FactionId>("terran-directorate");
   const [factionProfile,setFactionProfile]=useState<FactionProfile>('expanded-v1');
   const [pieceColor,setPieceColor]=useState<CivilizationColor>('red');
-  const chooseProfile=(profile:FactionProfile)=>{setFactionProfile(profile);if(profile==='base'&&['rho-indi','magellan','midas','ragnarok'].includes(faction))setFaction('terran-directorate');};
+  const chooseProfile=(profile:FactionProfile)=>{setFactionProfile(profile);if(!listFactionsForProfile(profile).some(f=>f.id===bannedFaction))setBannedFaction('eridani');if(profile==='base'&&['rho-indi','magellan','midas','ragnarok'].includes(faction))setFaction('terran-directorate');};
   const [warpPortals, setWarpPortals] = useState(true);
   const [showCombatOdds,setShowCombatOdds]=useState(false);
   const [minorSpecies,setMinorSpecies]=useState(false);
+  const [rulesMode,setRulesMode]=useState<RulesMode>('standard');
+  const [bannedFaction,setBannedFaction]=useState<FactionId>('eridani');
   const initialization = useRef<Promise<string> | null>(null);
   const lastRequest = useRef<{
     commandId: string;
@@ -190,7 +194,7 @@ function ConnectedGame() {
     try{await action();}catch(error){setStatus(error instanceof Error?error.message:'The room could not be updated.');}finally{setBusy(false);}
   }
   function newRoom(settings:MultiplayerRoomSettings){
-    void roomAction(async()=>{const result=await createRoom({credential:credential!,settings:{...settings,factionProfile},faction,pieceColor:factionProfile==='expanded-v1'?pieceColor:undefined});window.location.assign(roomInvitePath(result.roomToken));});
+    void roomAction(async()=>{const result=await createRoom({credential:credential!,settings:{...settings,factionProfile},faction,...(settings.rulesMode==='less-random-v1'&&getFaction(faction).species==='terran'?{bannedFaction}:{}),pieceColor:factionProfile==='expanded-v1'?pieceColor:undefined});window.location.assign(roomInvitePath(result.roomToken));});
   }
   useEffect(() => {
     if (credential) return;
@@ -223,8 +227,9 @@ function ConnectedGame() {
       const room = await createRoom({
         credential,
         faction,
+        ...(rulesMode==='less-random-v1'&&getFaction(faction).species==='terran'?{bannedFaction}:{}),
         pieceColor:factionProfile==='expanded-v1'?pieceColor:undefined,
-        settings:{humanSeatCount:1,aiCount,aiDifficulty,warpPortals,showCombatOdds,minorSpecies,factionProfile,timerMs:DEFAULT_ROOM_SETTINGS.timerMs},
+        settings:{humanSeatCount:1,aiCount,aiDifficulty,rulesMode,warpPortals:rulesMode==='less-random-v1'?false:warpPortals,showCombatOdds,minorSpecies,factionProfile,timerMs:DEFAULT_ROOM_SETTINGS.timerMs},
       });
       await setRoomReady({credential,roomToken:room.roomToken,ready:true});
       const result=await startRoom({credential,roomToken:room.roomToken});
@@ -323,7 +328,7 @@ function ConnectedGame() {
         }}
       />{gameControls.dialogs}{recovery.error&&<div className="dg-foreground-warning" role="alert"><span>{recovery.error}</span><button onClick={recovery.retry}>Retry refresh</button></div>}</>
     );
-  if(roomToken)return <><div className="dg-room-player-access"><ConnectionStatus connected={connected} browserOnline={browserOnline} sessionReady={Boolean(credential&&guest)} status={status}/>{playerAccess}</div>{room===undefined?<main className="dg-lobby"><p>Loading game room…</p></main>:room===null?<main className="dg-lobby"><h1>Room unavailable</h1><p>This room link is no longer available.</p><a href="/">All games</a></main>:<RoomLobby lobby={room} disabled={!connected||!credential||busy||guest===null} onJoin={(selected,color)=>{void roomAction(async()=>{await joinRoom({credential:credential!,roomToken,faction:selected,pieceColor:color});});}} onLeave={()=>{void roomAction(async()=>{await leaveRoom({credential:credential!,roomToken});window.location.assign('/');});}} onFaction={(selected,color)=>{void roomAction(async()=>{await chooseRoomFaction({credential:credential!,roomToken,faction:selected,pieceColor:color});});}} onReady={ready=>{void roomAction(async()=>{await setRoomReady({credential:credential!,roomToken,ready});});}} onSettings={settings=>{void roomAction(async()=>{await updateRoomSettings({credential:credential!,roomToken,settings});});}} onStart={()=>{void roomAction(async()=>{await startRoom({credential:credential!,roomToken});setRoomOverview(false);});}} onEnter={()=>setRoomOverview(false)}/>}</>;
+  if(roomToken)return <><div className="dg-room-player-access"><ConnectionStatus connected={connected} browserOnline={browserOnline} sessionReady={Boolean(credential&&guest)} status={status}/>{playerAccess}</div>{room===undefined?<main className="dg-lobby"><p>Loading game room…</p></main>:room===null?<main className="dg-lobby"><h1>Room unavailable</h1><p>This room link is no longer available.</p><a href="/">All games</a></main>:<RoomLobby lobby={room} disabled={!connected||!credential||busy||guest===null} onJoin={(selected,color,bannedFaction)=>{void roomAction(async()=>{await joinRoom({credential:credential!,roomToken,faction:selected,pieceColor:color,bannedFaction});});}} onLeave={()=>{void roomAction(async()=>{await leaveRoom({credential:credential!,roomToken});window.location.assign('/');});}} onFaction={(selected,color,bannedFaction)=>{void roomAction(async()=>{await chooseRoomFaction({credential:credential!,roomToken,faction:selected,pieceColor:color,bannedFaction});});}} onReady={ready=>{void roomAction(async()=>{await setRoomReady({credential:credential!,roomToken,ready});});}} onSettings={settings=>{void roomAction(async()=>{await updateRoomSettings({credential:credential!,roomToken,settings});});}} onStart={()=>{void roomAction(async()=>{await startRoom({credential:credential!,roomToken});setRoomOverview(false);});}} onEnter={()=>setRoomOverview(false)}/>}</>;
   if(showLeaderboard)return <Leaderboard onClose={()=>setShowLeaderboard(false)}/>;
   return (
     <main className="dg-lobby">
@@ -352,10 +357,10 @@ function ConnectedGame() {
         ) : creating ? (
           <section className="dg-setup">
             <h2>New game</h2><FactionProfilePicker value={factionProfile} onChange={chooseProfile} disabled={busy}/>
-            <p>Includes the Rift Cannon expansion.</p>
+            {rulesMode==='standard'&&<p>Includes the Rift Cannon expansion.</p>}<fieldset className="dg-rules-mode"><legend>Rules</legend><label><input type="radio" name="solo-rules-mode" checked={rulesMode==='standard'} disabled={busy} onChange={()=>setRulesMode('standard')}/>Standard Eclipse</label><label><input type="radio" name="solo-rules-mode" checked={rulesMode==='less-random-v1'} disabled={busy} onChange={()=>setRulesMode('less-random-v1')}/>Régis’s Less Random</label>{rulesMode==='less-random-v1'&&<p>10 rounds · open technology · public discoveries and reputation · 1 exploration joker and 5 combat jokers each. Warp portals and Rift Cannons are removed.</p>}</fieldset>
             <p className="dg-solo-wait">Solo · Wait for me. No turn timer; your game waits until you return.</p>
             <div className="dg-solo-setup-grid">
-            <FactionPicker selected={faction} onSelect={setFaction} disabled={busy} profile={factionProfile} pieceColor={pieceColor} onPieceColorChange={setPieceColor}/>
+            <FactionPicker selected={faction} onSelect={setFaction} disabled={busy} profile={factionProfile} pieceColor={pieceColor} onPieceColorChange={setPieceColor}/>{rulesMode==='less-random-v1'&&getFaction(faction).species==='terran'&&<section className="dg-field"><strong>Alien species ban</strong><ChoiceCards label="Alien species ban" value={bannedFaction} disabled={busy} onChange={value=>setBannedFaction(value as FactionId)} options={listFactionsForProfile(factionProfile).filter(f=>f.species==='alien').map(f=>({value:f.id,label:f.name,visual:<FactionSymbol faction={f.id}/>}))}/></section>}
             <aside className="dg-solo-controls">
             <label className="dg-field">
               AI opponents
@@ -373,7 +378,8 @@ function ConnectedGame() {
             <label className="dg-check">
               <input
                 type="checkbox"
-                checked={warpPortals}
+                checked={rulesMode==='less-random-v1'?false:warpPortals}
+                disabled={rulesMode==='less-random-v1'}
                 onChange={(e) => setWarpPortals(e.target.checked)}
               />
               Use base-game warp portals

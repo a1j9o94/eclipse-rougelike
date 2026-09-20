@@ -608,3 +608,7 @@ Outcome and acceptance: see ../sector_decks_neutral_fleets.md. Fail-first covera
 
 ## Research market order — 2026-09-19
 Outcome: available technology in each market group is ordered cheapest first. Acceptance: current science cost ascending, stable base-price/name tie breaks, duplicates grouped, draw state unchanged. Risk/rollback: presentation only; revert ResearchWorkspace ordering. Fail-first test: shuffled market across all four groups, duplicate count and view immutability; then research/discount regression batch.
+
+
+## Less Random mode — 2026-09-20
+Outcome: opt-in ten-round Régis variant, fully saved and available to humans/AI. Acceptance, source decisions, risks/rollback and failing-first tests: [plan](../less_random_mode_plan.md). Terra owns core and UI; Sol owns combat and ban audits; supervisor integrates source catalog, developments, protocol tests, browser review and release.

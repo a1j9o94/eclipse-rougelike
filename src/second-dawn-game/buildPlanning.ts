@@ -1,3 +1,4 @@
+import { researchedTechnologyIds } from '../../shared/eclipse/technologies';
 import {remainingAction} from './actionCapacity';
 import { BASE_COMPONENTS, getFaction } from '../../shared/eclipse/catalog';
 import { capacity } from '../../shared/eclipse/rulesState';
@@ -49,7 +50,7 @@ export function analyzeBuildOrder(view: PlayerView, draft: BuildOrderDraft): Bui
   const own = view.seats.find(seat => seat.id === view.viewerSeatId);
   if (!own) return { command: { type: 'build', builds: [] }, cost: 0, limit: 0, placedCount: 0, unplacedCount: draft.items.length, issues: ['Player is unavailable.'], legalSectorIdsByItem: {} };
   const owned = view.sectors.filter(sector => sector.owner === own.id);
-  const technologies = Object.values(own.technologies).flat();
+  const technologies: readonly string[] = researchedTechnologyIds(own);
   const progress = view.actionProgress;
   const limit = progress ? remainingAction(view,'build') : capacity(own, 'build');
   const legalSectorIdsByItem: Record<string, readonly string[]> = {};

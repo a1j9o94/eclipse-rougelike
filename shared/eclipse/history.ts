@@ -50,6 +50,8 @@ function actionSummary(command: GameCommand): string {
       return "Explored a frontier";
     case "influence":
       return "Changed influence";
+    case "research-development": return `Acquired ${command.developmentId === 'quantum-labs' ? 'Quantum Labs' : 'Ancient Labs'}`;
+    case "quantum-research": return `Researched ${TECHNOLOGIES.find(t => t.id === command.tileId)?.name ?? 'technology'} in Quantum Labs`;
     case "research":
       return `Researched ${TECHNOLOGIES.find((t) => t.id === command.tileId)?.name ?? "a technology"}`;
     case "upgrade":
@@ -102,6 +104,7 @@ function actionPresentation(command: GameCommand, context?: HistoryPublicContext
   switch (command.type) {
     case 'trade-and-act': return actionPresentation(command.action, context);
     case 'buy-minor-species': return { kind: 'minor-species', minorSpeciesId: command.minorSpeciesId };
+    case 'quantum-research':
     case 'research': {
       const technology = TECHNOLOGIES.find(tech => tech.id === command.tileId);
       return technology ? { kind: 'research', technologyId: technology.id } : undefined;

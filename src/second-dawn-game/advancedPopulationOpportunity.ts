@@ -1,3 +1,4 @@
+import { researchedTechnologyIds } from '../../shared/eclipse/technologies';
 import { sectorDefinition } from '../../shared/eclipse/sectors';
 import type { Technology } from '../../shared/eclipse/technologies';
 import type { PlayerView, Resource } from '../../shared/eclipse/types';
@@ -22,7 +23,7 @@ export function advancedPopulationOpportunity(view: PlayerView, technology: Tech
   const seat = view.seats.find(candidate => candidate.id === view.viewerSeatId);
   if (effect.kind !== 'colonize-advanced' || !seat) return null;
   const targetResources = effect.resource === 'all' ? resources : [effect.resource];
-  const owned = Object.values(seat.technologies).flat();
+  const owned: readonly string[] = researchedTechnologyIds(seat);
   const unlocked = (resource: Resource) => owned.includes('metasynthesis') || owned.includes(technologyFor[resource]);
   const squares = view.sectors.filter(sector => sector.owner === seat.id).flatMap(sector =>
     (sectorDefinition(Number(sector.tileId))?.population ?? []).flatMap((square, index) => {
