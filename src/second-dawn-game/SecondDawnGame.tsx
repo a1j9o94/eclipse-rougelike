@@ -1,3 +1,4 @@
+import {submitWithUpkeepRetry} from './upkeepSubmission';
 import AiDifficultyPicker from './AiDifficultyPicker';
 import type { AiDifficulty } from '../../shared/eclipse/aiConfig';
 import { useEffect, useRef, useState } from "react";
@@ -256,7 +257,7 @@ function ConnectedGame() {
           };
     lastRequest.current = request;
     try {
-      const result = await submit({ credential, matchId, ...request });
+      const result = await submitWithUpkeepRetry(view,request,next=>submit({credential,matchId,...next}),()=>client.query(api.eclipseMatches.getMatchView,{credential,matchId}),next=>{lastRequest.current=next;});
       if (result.ok) {
         lastRequest.current = null;
         setLastAcceptedCommand({revision:result.receipt.revision,type:command.type});

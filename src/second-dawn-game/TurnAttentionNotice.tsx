@@ -1,6 +1,7 @@
 import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
 import type {PlayerView} from '../../shared/eclipse/types';
 import {getFaction} from '../../shared/eclipse/catalog';
+import {needsUpkeep} from './upkeepParticipation';
 import GameDialog from './GameDialog';
 import FactionSymbol from './FactionSymbol';
 import {seatColor} from './factionColors';
@@ -32,11 +33,11 @@ export default function TurnAttentionNotice({view,matchScope='current-match',con
  const seat=view.seats.find(candidate=>candidate.id===view.viewerSeatId);
  const kind=view.phase==='upkeep'?'upkeep':'turn';
  const effectiveOwner=view.waitingFor?.owner??view.pendingDecision?.owner??view.activeSeatId;
- const ownsTurn=seat?.controller==='human'&&!seat.eliminated&&effectiveOwner===view.viewerSeatId&&(view.phase==='action'||view.phase==='upkeep');
+ const ownsTurn=seat?.controller==='human'&&!seat.eliminated&&(view.phase==='upkeep'?needsUpkeep(view):effectiveOwner===view.viewerSeatId&&view.phase==='action');
  const decisionActive=Boolean(view.pendingDecision||view.waitingFor);
  const actionInProgress=view.actionProgress?.owner===view.viewerSeatId;
  const ownDecision=view.pendingDecision?.owner===view.viewerSeatId||view.waitingFor?.owner===view.viewerSeatId;
- const boundary=JSON.stringify([matchScope,view.viewerSeatId,view.round,view.phase,view.actionTurnSerial??null]);
+ const boundary=JSON.stringify([matchScope,view.viewerSeatId,view.round,view.phase,view.phase==='upkeep'?null:view.actionTurnSerial??null]);
  const previous=useRef({boundary:'',ownsTurn:false});
  const acknowledged=useRef(false);
  const [message,setMessage]=useState<AttentionMessage|null>(null);

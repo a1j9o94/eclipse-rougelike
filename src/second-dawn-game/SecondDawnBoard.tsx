@@ -1,3 +1,4 @@
+import {needsUpkeep,upkeepReadyCount} from './upkeepParticipation';
 import FactionAbilityControls from './FactionAbilityControls';
 import {remainingAction,continuesAction} from './actionCapacity';
 import {seatColor} from './factionColors';
@@ -183,7 +184,7 @@ function SecondDawnBoardContent({
   const [motionEnabled,setMotionEnabled]=useState(()=>{try{const saved=localStorage.getItem('eclipse.second-dawn.motion.v1');return saved?saved==='on':!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;}catch{return false;}});
   const aiPresentation=useAiPresentation(view,history?.entries??[],motionEnabled);
   useEffect(()=>{setReviewAi(false);},[aiPresentation.actor?.id]);
-  const showAiPanel=followAi&&!aiDismissed&&!!aiPresentation.action&&(!!aiPresentation.actor||reviewAi)&&!view.pendingDecision;
+  const showAiPanel=(!needsUpkeep(view)||reviewAi)&&followAi&&!aiDismissed&&!!aiPresentation.action&&(!!aiPresentation.actor||reviewAi)&&!view.pendingDecision;
   const changeFollowAi=(enabled:boolean)=>{setFollowAi(enabled);try{localStorage.setItem('eclipse.second-dawn.follow-ai.v1',enabled?'on':'off');}catch{/* Keep the session preference when storage is blocked. */}setAiDismissed(false);if(!compact&&screen==='Galaxy'){if(enabled&&aiPresentation.action&&(aiPresentation.actor||reviewAi)){setInspectorOpen(true);openedForAi.current=true;}else if(!enabled&&showAiPanel){setInspectorOpen(false);openedForAi.current=false;}}if(!enabled)setReviewAi(false);};
   function changeMotion(enabled:boolean){setMotionEnabled(enabled);try{localStorage.setItem('eclipse.second-dawn.motion.v1',enabled?'on':'off');}catch{/* The preference still applies for this session. */}}
 
@@ -258,11 +259,11 @@ function SecondDawnBoardContent({
     if(pendingId||view.phase==='finished'){submittedTurnHandoff.current=null;return;}
     const controlOwner=view.waitingFor?.owner??view.activeSeatId;
     submittedTurnHandoff.current=null;
-    if(controlOwner===view.viewerSeatId)return;
+    if(lastAcceptedCommand.type!=='finish-upkeep'&&((controlOwner===view.viewerSeatId&&view.phase!=='upkeep')||needsUpkeep(view)))return;
     // This is the one acknowledged transfer of control; later activity must not undo navigation.
     setAiDismissed(false);setReviewAi(false);setScreen('Galaxy');setInspectorOpen(false);
     if(compact){setMobileSheet('closed');setMobileActionMode(false);}
-  },[compact,lastAcceptedCommand,pendingId,setScreen,view.activeSeatId,view.phase,view.revision,view.viewerSeatId,view.waitingFor]);
+  },[compact,lastAcceptedCommand,pendingId,setScreen,view.activeSeatId,view.phase,view.revision,view.viewerSeatId,view.waitingFor,view]);
 
   useEffect(()=>{if(!pendingId&&screen==='Decision')setScreen('Galaxy');},[pendingId,screen,setScreen]);
   useEffect(()=>{if(view.phase==='finished'){setScreen('Scoring');setMobileSheet('closed');setMobileActionMode(false);}},[view.phase,setScreen]);
@@ -453,7 +454,7 @@ function SecondDawnBoardContent({
           <strong>
             {view.phase === "finished"
               ? "Final results"
-              : `${humanize(view.phase)} · ${view.pendingDecision ? "your decision" : view.waitingFor ? 'opponent decision' : view.activeSeatId === own.id ? "your turn" : "opponent turn"}`}
+              : `${humanize(view.phase)} · ${view.pendingDecision ? "your decision" : view.waitingFor ? 'opponent decision' : view.phase==='upkeep'?(needsUpkeep(view)?'your upkeep':'upkeep complete'):view.activeSeatId === own.id ? "your turn" : "opponent turn"}`}
           </strong>
           {turnClock}
         </div>
@@ -487,7 +488,7 @@ function SecondDawnBoardContent({
                 key={type}
                 aria-pressed={action === type && !view.pendingDecision && view.phase === "action"}
                 title={type==='research'&&researchReadOnly?"Browse available technologies and discounts.":diplomacyDecision && type === "explore" ? "Inspect the galaxy before responding to the ambassador exchange." : unavailableAfterPassing(type) ? "Passed this round: only Upgrade, Build and Move reactions remain." : view.pendingDecision ? "Resolve the pending decision first." : undefined}
-                disabled={type==='research'?!!interactionBlockedReason:!!interactionBlockedReason || view.phase === "finished" || (unavailableAfterPassing(type)&&!(diplomacyDecision&&type==='explore')) || (directTurnActions.includes(type) && blocked) || (!(diplomacyDecision && type === "explore") && ["explore", "influence", "research", "upgrade", "build", "move"].includes(type) && (Boolean(view.pendingDecision) || view.phase !== "action"))}
+                disabled={type==='research'?!!interactionBlockedReason:!!interactionBlockedReason || (view.phase==='upkeep'&&!needsUpkeep(view)&&type==='trade') || view.phase === "finished" || (unavailableAfterPassing(type)&&!(diplomacyDecision&&type==='explore')) || (directTurnActions.includes(type) && blocked) || (!(diplomacyDecision && type === "explore") && ["explore", "influence", "research", "upgrade", "build", "move"].includes(type) && (Boolean(view.pendingDecision) || view.phase !== "action"))}
                 onClick={() => activate(type)}
               >
                 {actionLabel(type)}
@@ -526,7 +527,7 @@ function SecondDawnBoardContent({
           >
             {rosterTurnOrder(view).map((seat) => (
               <button
-                className={`sd-player ${seat.id === view.activeSeatId ? "sd-active" : ""}`}
+                className={`sd-player ${(view.phase==='upkeep'?needsUpkeep(view,seat.id):seat.id === view.activeSeatId) ? "sd-active" : ""}`}
                 key={seat.id}
                 style={{ "--owner": color(seat.id) } as CSSProperties}
                 onClick={() => {
@@ -547,7 +548,9 @@ function SecondDawnBoardContent({
                     ·{" "}
                     {seat.eliminated
                       ? "eliminated"
-                      : seat.passed
+                      : view.phase==='upkeep'
+                        ? view.upkeepDone?.includes(seat.id)?'upkeep complete':'preparing upkeep'
+                        : seat.passed
                         ? "passed"
                         : seat.id === view.activeSeatId
                           ? "active"
@@ -560,7 +563,8 @@ function SecondDawnBoardContent({
             ))}
           </div>
           {compact&&aiFailure&&<div className="dg-mobile-ai-recovery" role="alert"><p>{aiFailure}</p><button disabled={!connected} onClick={onRetryAi}>AI paused · retry</button></div>}
-          <AiActivityBar currentAction={view.actionProgress?.owner===own.id&&!view.pendingDecision?(view.actionProgress.budgets?`Build & move: ${view.actionProgress.budgets.build??0} build · ${view.actionProgress.budgets.move??0} move remaining. No extra action disc.`:`Continue ${view.actionProgress.action}: ${view.actionProgress.remaining} activations remaining.`):undefined} takeover={aiTakeover} thinking={aiThinking} following={followAi} onFollowChange={changeFollowAi} humanDecision={!!view.pendingDecision} paused={!!aiFailure} actor={aiPresentation.actor} recent={aiPresentation.recent} humanTurn={!!view.pendingDecision||(!view.waitingFor&&view.activeSeatId===own.id)} finished={view.phase==='finished'} motionEnabled={motionEnabled} onMotionChange={changeMotion} onWatch={()=>{setInspectorOpen(true);if(compact)setMobileSheet('peek');setFollowAi(true);setAiDismissed(false);setReviewAi(!aiPresentation.actor);setHistoryOpen(false);setScreen('Galaxy');setCamera(null);setFitRequest(n=>n+1);}}>
+          <AiActivityBar upkeep={view.phase==='upkeep'?(needsUpkeep(view)?'preparing':'complete'):undefined} currentAction={view.actionProgress?.owner===own.id&&!view.pendingDecision?(view.actionProgress.budgets?`Build & move: ${view.actionProgress.budgets.build??0} build · ${view.actionProgress.budgets.move??0} move remaining. No extra action disc.`:`Continue ${view.actionProgress.action}: ${view.actionProgress.remaining} activations remaining.`):undefined} takeover={aiTakeover} thinking={aiThinking} following={followAi} onFollowChange={changeFollowAi} humanDecision={!!view.pendingDecision} paused={!!aiFailure} actor={aiPresentation.actor} recent={aiPresentation.recent} humanTurn={!!view.pendingDecision||(!view.waitingFor&&(view.phase==='upkeep'?needsUpkeep(view):view.activeSeatId===own.id))} finished={view.phase==='finished'} motionEnabled={motionEnabled} onMotionChange={changeMotion} onWatch={()=>{setInspectorOpen(true);if(compact)setMobileSheet('peek');setFollowAi(true);setAiDismissed(false);setReviewAi(!aiPresentation.actor);setHistoryOpen(false);setScreen('Galaxy');setCamera(null);setFitRequest(n=>n+1);}}>
+            {view.phase==='upkeep'&&<span className="dg-upkeep-progress" role="status">{upkeepReadyCount(view)}</span>}
             <SectorDecks view={view}/>
             {(screen!=='Galaxy'&&screen!=='Decision'||view.phase==='upkeep')&&<button className="dg-board-control" onClick={browseGalaxy}>View galaxy</button>}
             {view.phase==='upkeep'&&(screen!=='Galaxy'||browsingUpkeep||action==='colonize')&&candidates.some(candidate=>candidate.command.type==='finish-upkeep')&&<button className="dg-board-control" onClick={reviewUpkeep}>Back to upkeep</button>}
@@ -889,7 +893,7 @@ function SecondDawnBoardContent({
                   <p>
                     {view.pendingDecision
                       ? "Finish your current decision first."
-                      : view.activeSeatId !== own.id
+                      : view.activeSeatId !== own.id&&!needsUpkeep(view)
                         ? "Waiting for your turn."
                         : "No legal options. Check resources, technology, range, pinning, and remaining activations."}
                   </p>
@@ -928,7 +932,7 @@ function SecondDawnBoardContent({
       {settingsOpen&&<GameSettingsPanel onHistory={()=>{setSettingsOpen(false);setHistoryOpen(true);setInspectorOpen(true);if(compact){setScreen("Activity");setMobileSheet("closed");setMobileActionMode(false);}}} onGameMenu={()=>{setSettingsOpen(false);onMenu();}} motionEnabled={motionEnabled} onMotionChange={changeMotion} followAi={followAi} onFollowAiChange={changeFollowAi} autoPass={view.phase!=='finished'&&!own.eliminated?{enabled:own.autoPassUnlessAttacked??false,paused:own.autoPassPausedRound===view.round,disabled:blocked,disabledReason:interactionBlockedReason??(!connected?'Reconnect to change auto-pass.':busy?'Saving your change…':undefined),onChange:enabled=>onSubmit({type:'set-auto-pass',enabled})}:undefined} onClose={()=>setSettingsOpen(false)}/>}
       {inspectSector&&<FleetInspection showCombatOdds={showCombatOdds} view={view} sectorId={inspectSector} selectedShipIds={movementDraft.ids.length?movementDraft.ids:[...new Set(moveRoutePreviews.flatMap(route=>route.draft.shipIds))]} onClose={()=>{setInspectSector(null);setInspectDiplomacy(null);}} onDiplomacy={setInspectDiplomacy} diplomacy={inspectDiplomacy?<DiplomacyPanel view={view} candidates={candidates} inspectedSeatId={inspectDiplomacy} disabled={blocked} onSubmit={onSubmit}/>:undefined}/>}
       {compact&&status&&!/^(Saved|Saving|Applied to the isolated|Engine fixture review)/.test(status)&&<div className="dg-mobile-feedback" role="status" aria-live="polite">{status}</div>}
-      {compact&&<MobileNavigation selected={mobileDestination} onSelect={mobileNavigate} onActions={!view.pendingDecision&&view.phase!=='finished'&&view.activeSeatId===own.id&&!mobileActionMode?()=>{setMobileActionsOpen(true);setMobileSheet('expanded');setHistoryOpen(false);setAiDismissed(true);}:undefined} pending={!!view.pendingDecision&&screen!=='Decision'} pendingLabel={view.pendingDecision?`Return to ${choiceLabel(view.pendingDecision)}`:undefined} onDecision={returnToChoice} onConfirm={mobileActionMode&&draft&&action!=='research'?{label:draft.command.type==='trade-and-act'?'Convert & confirm':draft.command.type==='finish-upkeep'?'Finish upkeep':'Confirm',disabled:blocked||draftGuard.stale||!stillLegal,submit:()=>onSubmit(draft.command)}:undefined} onEndAction={mobileActionMode&&!draft&&candidates.some(candidate=>candidate.command.type==='end-action')?()=>activate('end-action'):undefined} actionLabel={mobileActionMode?`${actionLabel(action)}${view.actionProgress?` · ${view.actionProgress.budgets?.[action as import("../../shared/eclipse/types").Action]??view.actionProgress.remaining} left`:''}`:undefined} onBack={()=>{setMobileActionMode(false);setMobileSheet('closed');setMobileActionsOpen(false);setScreen('Galaxy');}} onDetails={mobileActionMode&&!['research','upgrade','trade'].includes(action)?()=>{if(action==='build')setBuildOpen(true);else setMobileSheet('expanded');}:undefined}/>}
+      {compact&&<MobileNavigation selected={mobileDestination} onSelect={mobileNavigate} onActions={!view.pendingDecision&&view.phase!=='finished'&&(view.phase==='upkeep'?needsUpkeep(view):view.activeSeatId===own.id)&&!mobileActionMode?()=>{setMobileActionsOpen(true);setMobileSheet('expanded');setHistoryOpen(false);setAiDismissed(true);}:undefined} pending={!!view.pendingDecision&&screen!=='Decision'} pendingLabel={view.pendingDecision?`Return to ${choiceLabel(view.pendingDecision)}`:undefined} onDecision={returnToChoice} onConfirm={mobileActionMode&&draft&&action!=='research'?{label:draft.command.type==='trade-and-act'?'Convert & confirm':draft.command.type==='finish-upkeep'?'Finish upkeep':'Confirm',disabled:blocked||draftGuard.stale||!stillLegal,submit:()=>onSubmit(draft.command)}:undefined} onEndAction={mobileActionMode&&!draft&&candidates.some(candidate=>candidate.command.type==='end-action')?()=>activate('end-action'):undefined} actionLabel={mobileActionMode?`${actionLabel(action)}${view.actionProgress?` · ${view.actionProgress.budgets?.[action as import("../../shared/eclipse/types").Action]??view.actionProgress.remaining} left`:''}`:undefined} onBack={()=>{setMobileActionMode(false);setMobileSheet('closed');setMobileActionsOpen(false);setScreen('Galaxy');}} onDetails={mobileActionMode&&!['research','upgrade','trade'].includes(action)?()=>{if(action==='build')setBuildOpen(true);else setMobileSheet('expanded');}:undefined}/>}
     </main>
   );
 }

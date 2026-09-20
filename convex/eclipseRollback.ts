@@ -77,7 +77,7 @@ async function resume(ctx: MutationCtx, matchId: Id<'eclipseMatchesV1'>, row: Do
     const original = JSON.parse(row.pausedTimerJson) as Doc<'eclipseRoomTimersV1'>;
     const newToken = token();
     const deadlineAt = Date.now() + Math.max(0, original.deadlineAt - row.createdAt);
-    await ctx.db.insert('eclipseRoomTimersV1', { roomId: original.roomId, matchId, token: newToken, deadlineAt, targetSeatId: original.targetSeatId, actionTurnSerial: original.actionTurnSerial, decisionId: original.decisionId, status: original.status, error: original.error, timeoutSteps: original.timeoutSteps, updatedAt: Date.now() });
+    await ctx.db.insert('eclipseRoomTimersV1', { roomId: original.roomId, matchId, token: newToken, deadlineAt, targetSeatId: original.targetSeatId, actionTurnSerial: original.actionTurnSerial, upkeepRound:original.upkeepRound,upkeepSeatIds:original.upkeepSeatIds, decisionId: original.decisionId, status: original.status, error: original.error, timeoutSteps: original.timeoutSteps, updatedAt: Date.now() });
     const room = await ctx.db.get(original.roomId);
     if (room && (original.status === 'active' || original.status === 'timed-out')) await ctx.scheduler.runAfter(Math.max(0, deadlineAt - Date.now()), internal.eclipseRooms.runRoomTimeout, { roomToken: room.roomToken, token: newToken });
     if (original.status === 'failed') {

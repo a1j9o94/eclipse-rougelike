@@ -1,3 +1,4 @@
+import { focusUpkeepDecision, upkeepSeatUnfinished } from './upkeep';
 import { buyMinorSpecies } from "./minorSpeciesRules";
 import { pauseAutoPass, skipPassedReactionTurns } from './autoPass';
 import { FIRST_PASS_MONEY } from './passing';
@@ -54,6 +55,11 @@ function finishAction(state: GameState, seat: Seat, events: GameEvent[]): void {
   nextSeat(state, seat);
 }
 function advance(state: GameState, events: GameEvent[]): void {
+  if (state.phase === 'upkeep') {
+    advanceRound(state, events);
+    presentNextDecision(state);
+    return;
+  }
   if (presentNextDecision(state)) return;
   const action = continuation(state).action;
   if (state.phase === "action" && action?.budgets && action.remaining > 0) {
@@ -85,7 +91,7 @@ function advance(state: GameState, events: GameEvent[]): void {
   if (state.phase === "combat") {
     if (!advanceCombat(state, events) || presentNextDecision(state)) return;
     advanceRound(state, events);
-  } else if (state.phase === "upkeep" || state.phase === "cleanup")
+  } else if (state.phase === "cleanup")
     advanceRound(state, events);
   presentNextDecision(state);
 }
@@ -106,6 +112,10 @@ export function processGameCommand(
       "GAME_FINISHED",
     );
     requireRule(!seat.eliminated, "This seat has been eliminated.");
+    if (state.phase === 'upkeep' && command.type !== 'set-auto-pass') {
+      requireRule(upkeepSeatUnfinished(state, actor) || command.type === 'resolve', 'You have already completed upkeep.');
+      focusUpkeepDecision(state, actor);
+    }
     if (command.type === "buy-minor-species") {
       buyMinorSpecies(state, seat, command, events);
     } else if (command.type === "set-auto-pass") {
@@ -125,7 +135,7 @@ export function processGameCommand(
         "DECISION_PENDING",
       );
       requireRule(
-        state.activeSeatId === actor,
+        state.activeSeatId === actor || upkeepSeatUnfinished(state, actor),
         "Wait for your turn.",
         "NOT_YOUR_TURN",
       );
@@ -228,7 +238,7 @@ export function processGameCommand(
         "Resolve the pending choice before converting a colony ship.",
         "DECISION_PENDING",
       );
-      requireRule(state.activeSeatId === actor, "Wait for your turn.", "NOT_YOUR_TURN");
+      requireRule(state.activeSeatId === actor || upkeepSeatUnfinished(state, actor), "Wait for your turn.", "NOT_YOUR_TURN");
       requireRule(
         (state.phase === "action" || state.phase === "upkeep") &&
           !!getFaction(seat.faction).special?.convertColonyShipToResource,
@@ -299,7 +309,7 @@ export function processGameCommand(
         "DECISION_PENDING",
       );
       requireRule(
-        state.activeSeatId === actor,
+        state.activeSeatId === actor || upkeepSeatUnfinished(state, actor),
         "Wait for your turn.",
         "NOT_YOUR_TURN",
       );

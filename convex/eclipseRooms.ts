@@ -1,3 +1,4 @@
+import {synchronizeUpkeepTimer,roomTimerTarget} from './eclipseUpkeepTimer';
 import { v } from "convex/values";
 import { internalMutation, mutation, query } from "./_generated/server";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
@@ -101,7 +102,7 @@ async function lobbyFor(ctx: ReadContext, room: Doc<"eclipseRoomsV1">, credentia
     viewerSlot: viewer?.seat.slot ?? null,
     viewerIsHost: viewer?.seat.isHost ?? false,
     matchId: room.matchId ?? null,
-    timer: timer && room.humanSeatCount > 1 ? timerPublicView(timerFromRow(timer)) : null,
+    timer: timer && room.humanSeatCount > 1 ? {...timerPublicView(timerFromRow(timer)),...(timer.upkeepRound!==undefined?{upkeepRound:timer.upkeepRound,upkeepSeatIds:timer.upkeepSeatIds??[]}: {})} : null,
   };
 }
 
@@ -143,6 +144,7 @@ async function synchronizeTimer(ctx: MutationCtx, room: Doc<"eclipseRoomsV1">, m
   const state = readState(match);
   const target = timerTargetForState(state);
   const current = await ctx.db.query("eclipseRoomTimersV1").withIndex("by_match", (q) => q.eq("matchId", match._id)).unique();
+  if(await synchronizeUpkeepTimer(ctx,room,match,state,current,randomToken)){await scheduleAi(ctx,match._id,state);return;}
   if (!target) {
     if (current) await ctx.db.patch(current._id, { status: "finished", error: null, updatedAt: Date.now() });
     await ctx.db.patch(room._id, { status: "finished", updatedAt: Date.now() });
@@ -163,12 +165,12 @@ async function synchronizeTimer(ctx: MutationCtx, room: Doc<"eclipseRoomsV1">, m
     return;
   }
   const actionTurnSerial = state.actionTurnSerial ?? 0;
-  const sameActionTurn = current && (current.actionTurnSerial ?? 0) === actionTurnSerial;
+  const sameActionTurn = current && current.upkeepRound===undefined && (current.actionTurnSerial ?? 0) === actionTurnSerial;
   const reconciled = reconcileMultiplayerTimer(sameActionTurn ? timerFromRow(current) : null, state, Date.now(), room.timerMs, randomToken);
   if (!reconciled.timer) return;
   const next = reconciled.timer;
   if (current) {
-    await ctx.db.patch(current._id, { token: next.token, deadlineAt: next.deadlineAt, actionTurnSerial, targetSeatId: next.target.seatId, decisionId: next.target.decisionId, status: next.status, error: next.error, timeoutSteps: reconciled.changed ? 0 : current.timeoutSteps, updatedAt: Date.now() });
+    await ctx.db.patch(current._id, { upkeepRound:undefined,upkeepSeatIds:undefined,token: next.token, deadlineAt: next.deadlineAt, actionTurnSerial, targetSeatId: next.target.seatId, decisionId: next.target.decisionId, status: next.status, error: next.error, timeoutSteps: reconciled.changed ? 0 : current.timeoutSteps, updatedAt: Date.now() });
   } else {
     await ctx.db.insert("eclipseRoomTimersV1", { roomId: room._id, matchId: match._id, token: next.token, deadlineAt: next.deadlineAt, actionTurnSerial, targetSeatId: next.target.seatId, decisionId: next.target.decisionId, status: next.status, error: next.error, timeoutSteps: 0, updatedAt: Date.now() });
   }
@@ -390,7 +392,7 @@ export const runRoomTimeout = internalMutation({
     const match = await ctx.db.get(room.matchId);
     if (!timer || !match || match.lifecycle === "abandoned" || match.rollbackPendingId || timer.token !== args.token || (timer.status !== "active" && timer.status !== "timed-out") || (timer.status === "active" && timer.deadlineAt > Date.now())) return null;
     const state = readState(match);
-    const target = timerTargetForState(state);
+    const target = roomTimerTarget(state,timer);
     if (!target || target.seatId !== timer.targetSeatId || (timer.actionTurnSerial ?? 0) !== (state.actionTurnSerial ?? 0)) { await synchronizeTimer(ctx, room, match); return null; }
     if (timer.timeoutSteps >= 32) {
       await ctx.db.patch(timer._id, { status: "failed", error: "Timed-out AI reached its 32-command safety limit.", updatedAt: Date.now() });
@@ -414,7 +416,7 @@ export const runRoomTimeout = internalMutation({
 export async function validateTimeoutAi(ctx: ReadContext, match: Doc<'eclipseMatchesV1'>, token: string, actor: string): Promise<boolean> {
   const room = await ctx.db.query('eclipseRoomsV1').withIndex('by_match', q => q.eq('matchId', match._id)).unique();
   const timer = await ctx.db.query('eclipseRoomTimersV1').withIndex('by_match', q => q.eq('matchId', match._id)).unique();
-  return match.lifecycle !== 'abandoned' && !match.rollbackPendingId && !!room && room.status === 'playing' && room.humanSeatCount > 1 && !!timer && timer.token === token && timer.status === 'timed-out' && timer.targetSeatId === actor && (timer.actionTurnSerial ?? 0) === (readState(match).actionTurnSerial ?? 0) && timer.deadlineAt <= Date.now() && timer.timeoutSteps < 32;
+  return match.lifecycle !== 'abandoned' && !match.rollbackPendingId && !!room && room.status === 'playing' && room.humanSeatCount > 1 && !!timer && timer.token === token && timer.status === 'timed-out' && timer.targetSeatId === actor && roomTimerTarget(readState(match),timer)?.seatId===actor && (timer.actionTurnSerial ?? 0) === (readState(match).actionTurnSerial ?? 0) && timer.deadlineAt <= Date.now() && timer.timeoutSteps < 32;
 }
 export async function finishTimeoutAiCommand(ctx: MutationCtx, match: Doc<'eclipseMatchesV1'>, token: string, actor: string, state: GameState, committed: JournalEntry, actionRound: number): Promise<void> {
   const room = await ctx.db.query('eclipseRoomsV1').withIndex('by_match', q => q.eq('matchId', match._id)).unique();
@@ -422,7 +424,7 @@ export async function finishTimeoutAiCommand(ctx: MutationCtx, match: Doc<'eclip
   if (!room || !timer || timer.token !== token) throw new Error('Timeout lease changed.');
   const timeoutEntry: JournalEntry = { ...committed, receipt: {...committed.receipt, eventCount: committed.events.length + 1}, events:[...committed.events, {type:'action', seatId:actor, visibility:'public', message:TIMEOUT_AI_HISTORY_MARKER}] };
   await saveTimeoutCommand(ctx, match._id, state, timeoutEntry, actionRound);
-  const nextTarget = timerTargetForState(state);
+  const nextTarget = roomTimerTarget(state,timer);
   if (nextTarget?.seatId === actor && (timer.actionTurnSerial ?? 0) === (state.actionTurnSerial ?? 0)) {
     await ctx.db.patch(timer._id, {status:'timed-out', targetSeatId:actor, decisionId:nextTarget.decisionId, timeoutSteps:timer.timeoutSteps + 1, error:null, updatedAt:Date.now()});
     const job = await ctx.db.query('eclipseAiJobsV1').withIndex('by_match', q => q.eq('matchId', match._id)).unique();
@@ -447,11 +449,11 @@ export async function retryFailedRoomTimeout(ctx: MutationCtx, matchId: Id<'ecli
   if (match.lifecycle === 'abandoned' || match.rollbackPendingId) throw new Error('The game is paused or ended.');
   if (!timer || (expectedToken && timer.token !== expectedToken)) throw new Error('This timeout is no longer current.');
   if (timer.status !== 'failed') return;
-  const target = timerTargetForState(readState(match));
+  const target = roomTimerTarget(readState(match),timer);
   if (!target || target.seatId !== timer.targetSeatId) { await synchronizeTimer(ctx, room, match); return; }
   await ctx.db.patch(timer._id, {status:'timed-out', error:null, timeoutSteps:0, updatedAt:Date.now()});
   const job = await ctx.db.query('eclipseAiJobsV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique();
-  const patch = {status:'scheduled' as const, error:null, leaseToken:undefined, leaseExpiresAt:undefined, timeoutToken:timer.token, remainingBudgetMs:0, expectedRevision:match.revision, attempts:0, updatedAt:Date.now()};
+  const patch = {status:'scheduled' as const, error:null, leaseToken:undefined, leaseExpiresAt:undefined, timeoutToken:timer.token, budgetActor:target.seatId, budgetRound:readState(match).round, budgetActionTurnSerial:readState(match).actionTurnSerial??0, remainingBudgetMs:0, expectedRevision:match.revision, attempts:0, updatedAt:Date.now()};
   if (job) await ctx.db.patch(job._id, patch);
   else await ctx.db.insert('eclipseAiJobsV1', {matchId, ...patch});
   await ctx.scheduler.runAfter(AI_DECISION_DELAY_MS, internal.eclipseMatches.runAi, {matchId, expectedRevision:match.revision});

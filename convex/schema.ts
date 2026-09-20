@@ -179,6 +179,8 @@ export default defineSchema({
     targetSeatId: v.string(),
     /** Distinguishes consecutive turns owned by the same seat after auto-passing. */
     actionTurnSerial: v.optional(v.number()),
+    upkeepRound: v.optional(v.number()),
+    upkeepSeatIds: v.optional(v.array(v.string())),
     decisionId: v.union(v.string(), v.null()),
     status: v.union(v.literal('active'), v.literal('timed-out'), v.literal('failed'), v.literal('finished')),
     error: v.union(v.string(), v.null()),

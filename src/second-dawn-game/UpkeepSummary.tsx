@@ -1,7 +1,9 @@
 import type {PlayerView} from '../../shared/eclipse/types';
 import {affordableActionCapacity,upkeepForecast} from './upkeepForecast';
 import './upkeep.css';
+import {upkeepReadyCount} from './upkeepParticipation';
 export default function UpkeepSummary({view}:{view:PlayerView}){
+ if(view.phase==='upkeep'&&view.upkeepDone?.includes(view.viewerSeatId))return <div className="sd-upkeep"><small>Upkeep complete</small><strong>{upkeepReadyCount(view)}</strong></div>;
  if(view.phase==='finished')return <div className="sd-upkeep"><small>Game complete</small><strong>Final</strong></div>;
  const f=upkeepForecast(view),capacity=affordableActionCapacity(f);const progress=view.actionProgress?.owner===view.viewerSeatId?view.actionProgress:null;
  const reactionsOnly=view.phase==='action'&&f.passed&&!f.eliminated;

@@ -1,3 +1,4 @@
+import {synchronizeUpkeepTimer,workerActor} from './eclipseUpkeepTimer';
 import { projectHistoryEntry, type PublicHistoryEntry, type PublicHistoryPage } from '../shared/eclipse/history';
 import { v } from 'convex/values';
 import { retainedHistoryRanges, supersededRevision } from './eclipseRollback';
@@ -45,6 +46,7 @@ export async function reconcileRoomTimerAfterCommand(ctx: MutationCtx, match: Do
   const room = await ctx.db.query('eclipseRoomsV1').withIndex('by_match', q => q.eq('matchId', match._id)).unique();
   if (!room || room.status !== 'playing') return;
   const current = await ctx.db.query('eclipseRoomTimersV1').withIndex('by_match', q => q.eq('matchId', match._id)).unique();
+  if(await synchronizeUpkeepTimer(ctx,room,match,state,current,roomTimerToken))return;
   const target = timerTargetForState(state);
   if (!target) {
     if (current) await ctx.db.patch(current._id, { status: 'finished', error: null, updatedAt: Date.now() });
@@ -63,7 +65,7 @@ export async function reconcileRoomTimerAfterCommand(ctx: MutationCtx, match: Do
     return;
   }
   const actionTurnSerial = state.actionTurnSerial ?? 0;
-  const previous: MultiplayerTurnTimer | null = current && (current.actionTurnSerial ?? 0) === actionTurnSerial ? {
+  const previous: MultiplayerTurnTimer | null = current && current.upkeepRound===undefined && (current.actionTurnSerial ?? 0) === actionTurnSerial ? {
     token: current.token,
     deadlineAt: current.deadlineAt,
     target: { seatId: current.targetSeatId, decisionId: current.decisionId },
@@ -73,7 +75,7 @@ export async function reconcileRoomTimerAfterCommand(ctx: MutationCtx, match: Do
   const next = reconcileMultiplayerTimer(previous, state, Date.now(), room.timerMs, roomTimerToken);
   if (!next.timer) return;
   if (current) {
-    await ctx.db.patch(current._id, { token: next.timer.token, deadlineAt: next.timer.deadlineAt, actionTurnSerial, targetSeatId: next.timer.target.seatId, decisionId: next.timer.target.decisionId, status: next.timer.status, error: next.timer.error, timeoutSteps: next.changed ? 0 : current.timeoutSteps, updatedAt: Date.now() });
+    await ctx.db.patch(current._id, { upkeepRound:undefined,upkeepSeatIds:undefined,token: next.timer.token, deadlineAt: next.timer.deadlineAt, actionTurnSerial, targetSeatId: next.timer.target.seatId, decisionId: next.timer.target.decisionId, status: next.timer.status, error: next.timer.error, timeoutSteps: next.changed ? 0 : current.timeoutSteps, updatedAt: Date.now() });
   } else {
     await ctx.db.insert('eclipseRoomTimersV1', { roomId: room._id, matchId: match._id, token: next.timer.token, deadlineAt: next.timer.deadlineAt, actionTurnSerial, targetSeatId: next.timer.target.seatId, decisionId: next.timer.target.decisionId, status: next.timer.status, error: next.timer.error, timeoutSteps: 0, updatedAt: Date.now() });
   }
@@ -188,7 +190,7 @@ export const getMatchView = query({
       playerNames,
       aiDifficulty: match.aiDifficulty ?? 'normal',
       aiStatus: job ? { status: job.status, error: job.error, attempts: job.attempts } : null,
-      multiplayer: room ? { roomToken: room.roomToken, viewerIsHost: room.hostGuestId === ownership.guestId, timer: timer ? { deadlineAt: timer.deadlineAt, targetSeatId: timer.targetSeatId, decisionId: timer.decisionId, status: timer.status, error: timer.error } : null } : null,
+      multiplayer: room ? { roomToken: room.roomToken, viewerIsHost: room.hostGuestId === ownership.guestId, timer: timer ? { deadlineAt: timer.deadlineAt, targetSeatId: timer.upkeepSeatIds?.includes(ownership.seatId)?ownership.seatId:timer.targetSeatId, decisionId: timer.upkeepSeatIds?.includes(ownership.seatId)?view.pendingDecision?.id??null:timer.decisionId, status: timer.status, error: timer.error, ...(timer.upkeepRound!==undefined?{upkeepRound:timer.upkeepRound,upkeepSeatIds:timer.upkeepSeatIds??[]}: {}) } : null } : null,
     } : null;
   },
 });
@@ -345,7 +347,7 @@ export const submitCommand = mutation({
     if (!original && /^(ai|timeout):/.test(request.commandId)) return {ok:false, error:{code:'INVALID_COMMAND', message:'This command ID prefix is reserved for server actions.', field:'commandId'}};
     const room = match.roomToken ? await ctx.db.query('eclipseRoomsV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique() : null;
     const timer = room && room.humanSeatCount > 1 ? await ctx.db.query('eclipseRoomTimersV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique() : null;
-    if (!original && timer && timer.targetSeatId === ownership.seatId && (timer.status !== 'active' || timer.deadlineAt <= Date.now())) {
+    if (!original && timer && (timer.upkeepSeatIds?timer.upkeepSeatIds.includes(ownership.seatId):timer.targetSeatId === ownership.seatId) && (timer.status !== 'active' || timer.deadlineAt <= Date.now())) {
       return { ok: false, error: { code: 'TURN_TIMEOUT', message: 'This turn has timed out and is being completed by Normal AI.', field: null } };
     }
     // Read the unique command key in the same transaction as insertion, so concurrent retries conflict safely.
@@ -366,8 +368,7 @@ export const submitCommand = mutation({
 
 export async function scheduleAi(ctx: MutationCtx, matchId: Id<'eclipseMatchesV1'>, state: GameState): Promise<void> {
   const existing = await ctx.db.query('eclipseAiJobsV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique();
-  const actor = state.pendingDecision?.owner ?? state.activeSeatId;
-  const ai = state.phase !== 'finished' && state.seats.some(seat => seat.id === actor && seat.controller === 'ai' && !seat.eliminated);
+
   const match = await ctx.db.get(matchId);
   if (match?.rollbackPendingId) return;
   if (match?.lifecycle === 'abandoned') {
@@ -375,11 +376,13 @@ export async function scheduleAi(ctx: MutationCtx, matchId: Id<'eclipseMatchesV1
     return;
   }
   const timer = match?.roomToken ? await ctx.db.query('eclipseRoomTimersV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique() : null;
+  const actor = workerActor(state,timer?.status==='timed-out'||timer?.status==='failed'?timer.targetSeatId:undefined);
+  const ai = state.phase !== 'finished' && state.seats.some(seat => seat.id === actor && seat.controller === 'ai' && !seat.eliminated);
   const timeout = timer?.status === 'timed-out' && actor === timer.targetSeatId && !!match && await validateTimeoutAi(ctx, match, timer.token, actor);
   const failedTimeout = timer?.status === 'failed' && actor === timer.targetSeatId && existing?.timeoutToken === timer.token;
   const status = state.phase === 'finished' ? 'finished' as const : failedTimeout ? 'failed' as const : ai || timeout ? 'scheduled' as const : 'waiting' as const;
   // A diplomacy/other-player choice may temporarily own an unfinished action.
-  const budgetActor = state.engine?.action?.owner ?? state.activeSeatId ?? actor;
+  const budgetActor = state.phase==='upkeep'?actor:state.engine?.action?.owner ?? state.activeSeatId ?? actor;
   const actionTurnSerial = state.actionTurnSerial ?? 0;
   const sameActionTurn = (existing?.budgetActionTurnSerial ?? 0) === actionTurnSerial;
   const preserveBudget = sameActionTurn && (timeout || failedTimeout ? existing?.timeoutToken === timer?.token : existing?.budgetActor === budgetActor && existing?.budgetRound === state.round);
@@ -419,7 +422,7 @@ export const getAiWork = internalQuery({
     if (!job || !match || match.lifecycle === 'abandoned' || match.rollbackPendingId || job.status !== 'thinking' || job.leaseToken !== leaseToken || job.expectedRevision !== expectedRevision || match.revision !== expectedRevision || (job.leaseExpiresAt ?? 0) <= Date.now()) return null;
     if (match.aiVersion && match.aiVersion !== AI_VERSION) throw new Error('This match requires an unavailable AI version.');
     const state = readState(match);
-    const actor = state.pendingDecision?.owner ?? state.activeSeatId;
+    const actor = workerActor(state,job.timeoutToken?job.budgetActor:undefined);
     if (!actor || (job.timeoutToken ? !await validateTimeoutAi(ctx, match, job.timeoutToken, actor) : state.seats.find(seat => seat.id === actor)?.controller !== 'ai')) return null;
     const view = getPlayerView(state, actor);
     if (!view) return null;
@@ -475,7 +478,7 @@ export const commitAiWork = internalMutation({
     const match = await ctx.db.get(matchId);
     if (!job || !match || match.lifecycle === 'abandoned' || match.rollbackPendingId || job.status !== 'thinking' || job.leaseToken !== leaseToken || job.expectedRevision !== expectedRevision || match.revision !== expectedRevision || (job.leaseExpiresAt ?? 0) <= Date.now()) return null;
     const state = readState(match);
-    const actor = state.pendingDecision?.owner ?? state.activeSeatId;
+    const actor = workerActor(state,job.timeoutToken?job.budgetActor:undefined);
     if (!actor || (job.timeoutToken ? !await validateTimeoutAi(ctx, match, job.timeoutToken, actor) : state.seats.find(seat => seat.id === actor)?.controller !== 'ai')) return null;
     const request = { commandId: `${job.timeoutToken ? 'timeout' : 'ai'}:${actor}:${expectedRevision}`, expectedRevision, command };
     const original = await ctx.db.query('eclipseJournalV1').withIndex('by_match_command', q => q.eq('matchId', matchId).eq('commandId', request.commandId)).unique();

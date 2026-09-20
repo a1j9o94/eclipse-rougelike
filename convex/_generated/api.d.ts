@@ -22,6 +22,7 @@ import type * as eclipsePlayerStore from "../eclipsePlayerStore.js";
 import type * as eclipsePlayers from "../eclipsePlayers.js";
 import type * as eclipseRollback from "../eclipseRollback.js";
 import type * as eclipseRooms from "../eclipseRooms.js";
+import type * as eclipseUpkeepTimer from "../eclipseUpkeepTimer.js";
 import type * as eclipseValidators from "../eclipseValidators.js";
 
 /**
@@ -42,6 +43,7 @@ declare const fullApi: ApiFromModules<{
   eclipsePlayers: typeof eclipsePlayers;
   eclipseRollback: typeof eclipseRollback;
   eclipseRooms: typeof eclipseRooms;
+  eclipseUpkeepTimer: typeof eclipseUpkeepTimer;
   eclipseValidators: typeof eclipseValidators;
 }>;
 export declare const api: FilterApi<

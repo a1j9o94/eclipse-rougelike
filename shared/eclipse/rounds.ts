@@ -1,3 +1,4 @@
+import { upkeepDecisionForSeat, upkeepSeatUnfinished } from './upkeep';
 import { eligibleDiplomacyPartners } from './decisions';
 import { factionHasCapability, getFaction, SETUP_BY_PLAYER_COUNT, type PlayerCount } from './catalog';
 import { deriveBlueprintStats } from './blueprints';
@@ -180,21 +181,32 @@ function cleanup(state: GameState, events: GameEvent[]): void {
 }
 /** Called after every resolved decision; never consumes a outstanding player choice. */
 export function advanceRound(state: GameState, events: GameEvent[]): void {
-  if (state.pendingDecision || presentNextDecision(state)) return;
-  if (state.phase === 'combat') aftermath(state, events);
-  if (state.pendingDecision) return;
   if (state.phase === 'upkeep') {
     const e = continuation(state);
     const remaining = living(state).filter(seat => !e.upkeepDone.includes(seat.id));
-    if (!remaining.length) { state.phase = 'cleanup'; cleanup(state, events); return; }
-    state.activeSeatId = remaining[0].id;
-    if (done(state, `upkeep-payment:${remaining[0].id}`)) finishUpkeep(state, remaining[0].id, events);
-  } else if (state.phase === 'cleanup') cleanup(state, events);
+    state.activeSeatId = remaining[0]?.id ?? null;
+    // An abandoned sector's cube returns must finish before recalculating that
+    // seat's income; another civilization's choices never block its payment.
+    const ready = remaining.find(seat => done(state, `upkeep-payment:${seat.id}`) && !upkeepDecisionForSeat(state, seat.id));
+    if (ready) { finishUpkeep(state, ready.id, events); return; }
+    if (!remaining.length && !state.pendingDecision && !e.decisions.length) {
+      state.phase = 'cleanup'; cleanup(state, events); return;
+    }
+    presentNextDecision(state);
+    return;
+  }
+  if (state.pendingDecision || presentNextDecision(state)) return;
+  if (state.phase === 'combat') {
+    aftermath(state, events);
+    if (!state.pendingDecision) advanceRound(state, events);
+    return;
+  }
+  if (state.phase === 'cleanup') cleanup(state, events);
 }
 export function finishUpkeep(state: GameState, seatId: string, events: GameEvent[]): void {
   const seat = player(state, seatId); const e = continuation(state);
-  requireRule(state.phase === 'upkeep' && !seat.eliminated && !e.upkeepDone.includes(seatId) && state.activeSeatId === seatId, 'Wait for your uncompleted upkeep.');
-  requireRule(!state.pendingDecision, 'Resolve the outstanding upkeep choice.');
+  requireRule(upkeepSeatUnfinished(state, seatId), 'Wait for your uncompleted upkeep.');
+  requireRule(!upkeepDecisionForSeat(state, seatId), 'Resolve the outstanding upkeep choice.');
   const balance = upkeepBalance(seat);
   if (balance < 0) {
     if (!done(state, `upkeep-payment:${seatId}`)) mark(state, `upkeep-payment:${seatId}`);

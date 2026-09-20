@@ -1,3 +1,4 @@
+import { upkeepDecisionForSeat, upkeepSeatUnfinished } from './upkeep';
 import type {
   CommandRequest,
   GameEvent,
@@ -114,7 +115,9 @@ export function commitCommand(
       'GAME_FINISHED',
       'This seat can no longer submit gameplay commands.',
     );
-  const pending = state.pendingDecision;
+  if (state.phase === 'upkeep' && !upkeepSeatUnfinished(state, actor) && request.command.type !== 'resolve' && request.command.type !== 'set-auto-pass')
+    return reject('ILLEGAL_ACTION', 'You have already completed upkeep.');
+  const pending = state.phase === 'upkeep' ? upkeepDecisionForSeat(state, actor) : state.pendingDecision;
   if (pending && request.command.type !== 'set-auto-pass') {
     const diplomacyReturn=request.command.type==='discard-reputation'&&(pending.kind==='diplomacy'||pending.kind==='diplomacy-window');
     if (pending.owner !== actor&&!diplomacyReturn)
@@ -124,7 +127,7 @@ export function commitCommand(
       );
     // Trading remains possible during bankruptcy; all other concurrent decisions are serialized.
     const bankruptcyTrade =
-      pending.kind === 'bankruptcy' && request.command.type === 'trade';
+      pending.kind === 'bankruptcy' && (request.command.type === 'trade' || request.command.type === 'convert-colony-ship');
     if (
       !bankruptcyTrade && !diplomacyReturn &&
       (request.command.type !== 'resolve' ||
@@ -142,7 +145,7 @@ export function commitCommand(
         'That decision is no longer outstanding.',
       );
     // Trading is allowed at any time; its precise economy constraints remain rules-owned.
-    if (state.activeSeatId !== actor && request.command.type !== 'trade' && request.command.type !== 'discard-reputation' && request.command.type !== 'set-auto-pass')
+    if (!upkeepSeatUnfinished(state, actor) && state.activeSeatId !== actor && request.command.type !== 'trade' && request.command.type !== 'discard-reputation' && request.command.type !== 'set-auto-pass')
       return reject('NOT_YOUR_TURN', 'Wait for your turn.');
   }
   const result = process(
@@ -195,7 +198,9 @@ export function getPlayerView(
   const visibleOwn = { ...own };
   if (visibleOwn.storedDiscovery && !visibleOwn.storedDiscoveryResolved)
     delete visibleOwn.storedDiscovery;
+  const visiblePending = state.phase === 'upkeep' ? upkeepDecisionForSeat(state, viewerSeatId) : state.pendingDecision;
   return structuredClone({
+    ...(state.phase === 'upkeep' ? { upkeepDone: [...(state.engine?.upkeepDone ?? [])] } : {}),
     ...(state.minorSpecies ? {minorSpecies:structuredClone(state.minorSpecies)} : {}),
     rulesVersion: state.rulesVersion,
     catalogVersion: state.catalogVersion,
@@ -229,11 +234,11 @@ export function getPlayerView(
     technologyMarket: state.technologyMarket,
     private: visibleOwn,
     pendingDecision:
-      state.pendingDecision?.owner === viewerSeatId
-        ? state.pendingDecision
+      visiblePending?.owner === viewerSeatId
+        ? visiblePending
         : null,
-    waitingFor: state.pendingDecision
-      ? { owner: state.pendingDecision.owner, kind: state.pendingDecision.kind }
+    waitingFor: visiblePending
+      ? { owner: visiblePending.owner, kind: visiblePending.kind }
       : null,
     hiddenTileCounts: state.privateSeats.map((seat) => ({
       seatId: seat.seatId,

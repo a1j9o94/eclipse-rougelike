@@ -444,6 +444,8 @@ export interface SectorDeckCount {
 }
 
 export interface PlayerView {
+  /** Seats that have paid this upkeep; all other living seats may prepare independently. */
+  upkeepDone?: SeatId[];
   minorSpecies?: MinorSpeciesState;
   rulesVersion: string;
   catalogVersion: string;

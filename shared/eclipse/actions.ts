@@ -1,3 +1,4 @@
+import { upkeepSeatUnfinished } from './upkeep';
 import { researchCostForSeat, constructionCostForSeat } from "./minorSpecies";
 import { interruptAutoPassForEntry } from './autoPass';
 import { planBlueprintUpgrade } from "./upgradePlan";
@@ -214,8 +215,7 @@ export function colonize(
   placements: Extract<GameCommand, { type: "colonize" }>["placements"],
 ): void {
   requireRule(
-    (state.phase === "action" || state.phase === "upkeep") &&
-      state.activeSeatId === seat.id,
+    (state.phase === "action" && state.activeSeatId === seat.id) || upkeepSeatUnfinished(state, seat.id),
     "Colonize during your turn or upkeep.",
     "NOT_YOUR_TURN",
   );

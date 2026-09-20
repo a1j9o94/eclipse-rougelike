@@ -72,6 +72,9 @@ export function legalCommands(
     view.phase === "setup"
   )
     return [];
+  const upkeepPaid = view.phase === 'upkeep' && (view.upkeepDone ?? []).includes(seat.id);
+  if (upkeepPaid && !view.pendingDecision) return [];
+  const ownUpkeep = view.phase === 'upkeep' && !upkeepPaid;
   const result: LegalCommandCandidate[] = [];
   const familyCounts = new Map<GameCommand["type"], number>();
   const familyLimit = limits
@@ -153,7 +156,7 @@ export function legalCommands(
   if (
     faction.special?.convertColonyShipToResource &&
     seat.colonyShipsAvailable > 0 &&
-    view.activeSeatId === seat.id &&
+    (view.activeSeatId === seat.id || ownUpkeep) &&
     (view.phase === "action" || view.phase === "upkeep") &&
     (!decision || decision.kind === "bankruptcy")
   )
@@ -468,7 +471,7 @@ export function legalCommands(
   if (view.waitingFor) return result;
   trades();
 
-  if (view.activeSeatId !== seat.id) return result;
+  if (view.activeSeatId !== seat.id && !ownUpkeep) return result;
   if (view.phase !== "action" && view.phase !== "upkeep") return result;
   const progress = view.actionProgress;
   const can = (action: Action) =>

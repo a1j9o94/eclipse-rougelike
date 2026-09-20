@@ -61,6 +61,9 @@ export interface MultiplayerTurnTimer {
 }
 
 export interface MultiplayerTimerPublic {
+  /** All unfinished humans share one deadline during simultaneous upkeep. */
+  upkeepRound?: number;
+  upkeepSeatIds?: SeatId[];
   deadlineAt: number;
   targetSeatId: SeatId;
   decisionId: string | null;
