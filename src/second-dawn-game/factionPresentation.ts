@@ -1,6 +1,7 @@
 import { getFaction, type FactionId } from "../../shared/eclipse/catalog";
 import { blueprintDefinition } from "../../shared/eclipse/blueprints";
 import type { StatIconName } from "./ShipPartStats";
+import type { RulesMode } from '../../shared/eclipse/types';
 
 export interface FactionEffect {
   icon: StatIconName;
@@ -85,16 +86,25 @@ function terranPresentation(): Omit<FactionPresentation, "startingShip" | "bluep
 }
 
 /** Human-readable effects are derived from reviewed catalog values and actual rules branches. */
-export function factionPresentation(id: FactionId): FactionPresentation {
+export function factionPresentation(id: FactionId, rulesMode?: RulesMode): FactionPresentation {
   const faction = getFaction(id);
   const blueprint = blueprintDefinition(id, faction.startingShip);
   const permanent = blueprint.permanent;
   const ship = faction.startingShip[0].toUpperCase() + faction.startingShip.slice(1);
   const energy = permanent.energyProduction ? ` · ${permanent.energyProduction} permanent energy` : "";
   const computer = permanent.computer ? ` · +${permanent.computer} computer` : "";
+  const base=presentations[id];const benefits=[...common,...base.benefits],constraints=[...base.constraints];
+  if(rulesMode==='less-random-v1'){
+    if(id==='eridani') benefits[benefits.length-1]={icon:'discovery',value:'2',label:'public reputation draws',detail:'Begin with two public reputation draws. Reputation tiles remain visible to every player.'};
+    if(id==='eridani') constraints.push('Trade 2 resources for 1; 3 Money can instead buy 2 Science or Materials.');
+    if(id==='mechanema') constraints[0]='Your strength is production; trade 2 resources for 1.';
+    if(id==='draco') constraints[1]='For each Explore activation, draw three sectors and choose one or discard all three.';
+    if(faction.species==='terran'){benefits[1]={icon:'population',value:'3:2',label:'trade',detail:'Trade 3 of one resource for 2 of another, or use the normal 2:1 trade when needed.'};constraints.push('At setup, ban one unchosen alien species from this game.');}
+  }
   return {
-    ...presentations[id],
-    benefits: [...common, ...presentations[id].benefits],
+    ...base,
+    benefits,
+    constraints,
     startingShip: faction.startingShip,
     blueprintSummary: `${ship} start · initiative ${permanent.initiative}${energy}${computer}`,
   };

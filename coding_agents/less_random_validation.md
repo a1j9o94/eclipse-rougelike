@@ -24,3 +24,11 @@ These are agent walkthroughs, not user playtests or a subjective attractiveness 
 
 ## Release
 Release configuration: main-only Vercel Git integration; explicitly selected existing Convex development backend `ideal-nightingale-55`. No existing match is migrated.
+
+### Live verification
+- Feature commit `e886660` fast-forwarded and pushed to `main`.
+- Explicit `convex dev --once --typecheck enable --tail-logs disable` published successfully to `ideal-nightingale-55`; no migration. CLI removed the obsolete local `convex.json` during its config cleanup; restored the tracked file to avoid unrelated changes.
+- Vercel Git deployment `dpl_B4nzGx1dWvjZdw4u2W7Lgtr6zpfG` became Ready and received the canonical alias. GitHub reports success for the intended commit.
+- Fresh browser guest created a Less Random solo room as Eridani versus Draco. Round 1/10 and public setup reputation rendered. Add → upgrade → confirm produced a public 2 VP reputation tile and 7 total VP; reload restored it.
+- On the live board, purchased the Ancient Labs development and selected Money Cache from the public supply. Both commands completed; AI advanced and control returned to the human. No browser runtime errors or visible alerts.
+- Follow-up faction wording now receives the selected mode: public Eridani reputation, variant Terran/Eridani/Mechanema conversion rates, Terran ban, and Draco’s three-sector draw. Additional faction/lobby/mobile tests: 20 passed; lint/build passed.

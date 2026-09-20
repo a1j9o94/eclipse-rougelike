@@ -35,7 +35,7 @@ function ResourceSymbol({resource}:{resource:PlanetResource}){return <svg viewBo
 const title=(text:string)=>text[0].toUpperCase()+text.slice(1);
 export default function EmpireOverview({view,seatId,onSector,onNavigate,onBlueprints,onBuild,buildOrder=emptyBuildOrder(),buildUnavailableReason}:EmpireOverviewProps){
  const seat=view.seats.find(seat=>seat.id===seatId)!;
- const faction=getFaction(seat.faction),presentation=factionPresentation(seat.faction),model=empireOverviewModel(view,seatId);
+ const faction=getFaction(seat.faction),presentation=factionPresentation(seat.faction,view.rulesMode),model=empireOverviewModel(view,seatId);
  const buildOptions=model.own&&onBuild?empireBuildOptions(view,buildOrder):[];
  const upkeepComplete=view.phase==='upkeep'&&view.upkeepDone?.includes(seatId);
  const [planetGroup,setPlanetGroup]=useState<Resource|'gray'>('science');

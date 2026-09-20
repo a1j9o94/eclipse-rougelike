@@ -38,4 +38,7 @@ it("keeps the presentation facts aligned with the actual catalog/engine exceptio
   expect(factionPresentation("planta").constraints.join(" ")).toMatch(/end of combat.*occupy/i);
   expect(factionPresentation("orion").startingShip).toBe("cruiser");
   expect(factionPresentation("terran-alliance").benefits).toContainEqual(expect.objectContaining({ value: "3", label: "Move activations" }));
+  expect(factionPresentation('eridani','less-random-v1').benefits).toContainEqual(expect.objectContaining({label:'public reputation draws'}));
+  expect(factionPresentation('terran-directorate','less-random-v1').benefits).toContainEqual(expect.objectContaining({value:'3:2',label:'trade'}));
+  expect(factionPresentation('draco','less-random-v1').constraints.join(' ')).toMatch(/three sectors/i);
 });
