@@ -1,0 +1,12 @@
+.dg-rules-mode { min-width: 0; margin: 20px 0; padding: 0; border: 0; }
+.dg-rules-mode legend { padding: 0; margin-bottom: 10px; color: #e4d0a2; font-weight: 600; }
+.dg-rules-options { display: grid; gap: 10px; }
+.dg-rules-options > label { display: flex; align-items: flex-start; gap: 12px; min-width: 0; min-height: 64px; padding: 14px 16px; border: 1px solid #526174; border-radius: 8px; background: #192536; cursor: pointer; }
+.dg-rules-options > label.is-selected { border-color: #dabb76; background: #3b3529; }
+.dg-rules-options > label:focus-within { outline: 2px solid #f0d59d; outline-offset: 3px; }
+.dg-rules-options input { flex: 0 0 18px; width: 18px; height: 18px; margin: 3px 0 0; accent-color: #dec181; }
+.dg-rules-options > label > span { display: grid; gap: 5px; min-width: 0; }
+.dg-rules-options strong { font-size: 16px; line-height: 1.4; color: #e4e9f2; }
+.dg-rules-options small { font-size: 13px; line-height: 1.5; color: #bac6cf; }
+.dg-rules-mode > p { margin: 10px 0 0; font-size: 13px; line-height: 1.5; color: #bac6cf; }
+.dg-rules-mode:disabled label { cursor: default; opacity: .65; }

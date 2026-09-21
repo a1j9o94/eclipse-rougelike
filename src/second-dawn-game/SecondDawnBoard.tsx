@@ -1,3 +1,4 @@
+import {TradeResourceIcon} from './TradePanel';
 import { researchedTechnologyIds } from '../../shared/eclipse/technologies';
 import {needsUpkeep,upkeepReadyCount} from './upkeepParticipation';
 import FactionAbilityControls from './FactionAbilityControls';
@@ -460,8 +461,8 @@ function SecondDawnBoardContent({
           {turnClock}
         </div>
         {(["money", "science", "materials"] as const).map((resource) => (
-          <div className="sd-resource" key={resource}>
-            <small>{humanize(resource)}</small>
+          <div className="sd-resource" key={resource} role="group" aria-label={`${humanize(resource)}: ${own.resources[resource]}, income ${incomeForPopulationAway(own.populationTracks[resource])}`} title={`${humanize(resource)} · ${own.resources[resource]} held · +${incomeForPopulationAway(own.populationTracks[resource])} income`}>
+            <TradeResourceIcon resource={resource}/>
             <strong>
               {own.resources[resource]}
               <em>

@@ -11,6 +11,6 @@ export default function TurnClock({timer,actorName,onRetry,disabled=false}:{time
  if(!timer||timer.status==='finished')return null;
  const expired=timer.deadlineAt<=now;
  return <div className={`dg-turn-clock ${expired?'is-expired':''}`} aria-label="Turn timer" title={`${timer.upkeepRound!==undefined?'Everyone’s upkeep':actorName} · AI finishes this turn if time runs out. Deadline ${new Date(timer.deadlineAt).toLocaleString()}`}>
-  {timer.status==='failed'?<><span>AI takeover paused</span><button disabled={disabled} title={timer.error??undefined} onClick={onRetry}>Retry takeover</button></>:timer.status==='timed-out'?<span>AI finishing {actorName==='You'?'your turn':`${actorName}’s turn`}</span>:expired?<span>Time expired · waiting for AI</span>:<><time dateTime={new Date(timer.deadlineAt).toISOString()}>{formatTimeRemaining(timer.deadlineAt-now)}</time><span>{timer.upkeepRound!==undefined?'upkeep deadline':actorName==='You'?'your clock':actorName}</span></>}
+  {timer.status==='failed'?<><span>AI takeover paused</span><button disabled={disabled} title={timer.error??undefined} onClick={onRetry}>Retry takeover</button></>:timer.status==='timed-out'?<span>AI finishing {actorName==='You'?'your turn':`${actorName}’s turn`}</span>:expired?<span>Time expired · waiting for AI</span>:<><time dateTime={new Date(timer.deadlineAt).toISOString()}>{formatTimeRemaining(timer.deadlineAt-now)}</time><span title={actorName}>{timer.upkeepRound!==undefined?'upkeep deadline':actorName==='You'?'your clock':actorName}</span></>}
  </div>;
 }

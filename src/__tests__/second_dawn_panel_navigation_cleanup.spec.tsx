@@ -17,7 +17,7 @@ it('keeps standalone movement usable without a departure callback',()=>{
 });
 it('has one settings exit in its header while toggles continue saving immediately',()=>{
  const close=vi.fn(),motion=vi.fn();render(<GameSettingsPanel motionEnabled onMotionChange={motion} onClose={close}/>);
- const dialog=screen.getByRole('dialog',{name:'Game settings'}),buttons=within(dialog).getAllByRole('button');expect(buttons).toHaveLength(1);
+ const dialog=screen.getByRole('dialog',{name:'Game settings'}),buttons=within(dialog.querySelector('header')!).getAllByRole('button');expect(buttons).toHaveLength(1);
  expect(within(dialog.querySelector('header')!).getByRole('button',{name:'Close settings'})).toBe(buttons[0]);expect(screen.queryByRole('button',{name:'Back to game'})).not.toBeInTheDocument();
  fireEvent.click(screen.getByRole('checkbox',{name:/Animations/}));expect(motion).toHaveBeenCalledWith(false);expect(close).not.toHaveBeenCalled();fireEvent.click(buttons[0]);expect(close).toHaveBeenCalledTimes(1);
 });

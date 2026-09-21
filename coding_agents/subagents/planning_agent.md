@@ -612,3 +612,13 @@ Outcome: available technology in each market group is ordered cheapest first. Ac
 
 ## Less Random mode — 2026-09-20
 Outcome: opt-in ten-round Régis variant, fully saved and available to humans/AI. Acceptance, source decisions, risks/rollback and failing-first tests: [plan](../less_random_mode_plan.md). Terra owns core and UI; Sol owns combat and ban audits; supervisor integrates source catalog, developments, protocol tests, browser review and release.
+
+## September 20, 2026 — Rules setup, discovery reference, and compact header
+- Outcome: players can comfortably choose rules, browse all Less Random discovery rewards in Command Center, and read resources alongside long faction names.
+- Acceptance: separate touch/keyboard-friendly rules rows in solo and room setup; read-only Less Random discovery catalog with canonical effects and public stock; no catalog/private supply leakage in standard mode; resource symbols with accessible names and faction text constrained to its own header space.
+- Risks & rollback: inaccurate reward descriptions or stock, inaccessible icon labels, responsive overflow. Reuse canonical definitions/public view; UI-only changes can be reverted independently.
+- Tests (must fail first): rules description association and selection/save behavior; header named resource symbols and faction identity; discovery availability/effects, exhausted supply, standard-mode absence, and no command submission.
+- Verification: bounded related suites, lint/build, desktop/mobile browser screenshots. Human newcomer/expert playtests remain pending; suggested tasks are choosing a ruleset and comparing discovery rewards without instructions.
+- Decision log: use existing resource icons; retain full faction identity through its accessible title; show a read-only discovery reference rather than issuing a reward command while browsing.
+- Follow-ups: record actual validation and delivery evidence after integration.
+- Result: all requested UI changes complete; 60 related tests, lint and build passed. Reviewed actual desktop/mobile browser images and measured an 8px timer/resource gap. See coding_agents/second_dawn_ux_clarity.md and the updated delivery ledger; human playtests and deployment remain outside this delivery.

@@ -21,6 +21,7 @@ import ShipSilhouette from './ShipSilhouette';
 import {StatIcon,type StatIconName} from './ShipPartStats';
 import TechnologyStats from './TechnologyStats';
 import {describeTechnology} from './itemDescriptions';
+import DiscoveryReference from './DiscoveryReference';
 import './empireOverview.css';
 
 export type EmpireDestination='Research'|'Scoring'|'Diplomacy'|'Trade'|'colonize';
@@ -65,6 +66,7 @@ export default function EmpireOverview({view,seatId,onSector,onNavigate,onBluepr
    </section>}
    <section className="eo-panel eo-colony-supply" aria-label="Colony ships available"><header><h2>Colony ships</h2></header><div className="eo-colony-ships"><StatIcon kind="population"/><strong>{model.colonyShips}<small> / {model.colonyShipCapacity}</small></strong><span>available</span></div>{model.own&&<button className="sd-primary" disabled={upkeepComplete} title={upkeepComplete?'You have completed upkeep.':undefined} onClick={()=>onNavigate('colonize')}>Colonize planets</button>}</section>
   </div>
+  <DiscoveryReference view={view}/>
   <EmpireEconomyTracks seat={seat}/>
   <section className="eo-panel eo-research"><header><div><p className="sd-eyebrow">KNOWLEDGE & CAPABILITIES</p><h2>Researched technologies</h2></div>{model.own&&<button onClick={()=>onNavigate('Research')}>Research technology</button>}</header>
    {(['military','grid','nano'] as const).map(track=><div key={track} className="eo-tech-track"><h3>{title(track)} <span>{seat.technologies[track].length} / 7</span></h3><ResearchDiscountTrack track={track} count={seat.technologies[track].length} minorSpecies={seat.minorSpecies}/><div className="eo-tech-tiles">{seat.technologies[track].length?seat.technologies[track].map(id=>{const tech=TECHNOLOGIES.find(tech=>tech.id===id);return tech?<button key={id} onClick={()=>setSelectedTech(tech.id)} aria-label={`Inspect ${tech.name}`} aria-pressed={selectedTech===tech.id}><strong>{tech.name}</strong><TechnologyStats technology={tech}/></button>:null;}):<small className="eo-muted">No technologies</small>}</div></div>)}

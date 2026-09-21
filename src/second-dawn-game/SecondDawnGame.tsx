@@ -1,3 +1,4 @@
+import RulesModePicker from './RulesModePicker';
 import {ChoiceCards} from './DecisionChoicePrimitives';
 import FactionSymbol from './FactionSymbol';
 import Leaderboard from './Leaderboard';
@@ -357,7 +358,7 @@ function ConnectedGame() {
         ) : creating ? (
           <section className="dg-setup">
             <h2>New game</h2><FactionProfilePicker value={factionProfile} onChange={chooseProfile} disabled={busy}/>
-            {rulesMode==='standard'&&<p>Includes the Rift Cannon expansion.</p>}<fieldset className="dg-rules-mode"><legend>Rules</legend><label><input type="radio" name="solo-rules-mode" checked={rulesMode==='standard'} disabled={busy} onChange={()=>setRulesMode('standard')}/>Standard Eclipse</label><label><input type="radio" name="solo-rules-mode" checked={rulesMode==='less-random-v1'} disabled={busy} onChange={()=>setRulesMode('less-random-v1')}/>Régis’s Less Random</label>{rulesMode==='less-random-v1'&&<p>10 rounds · open technology · public discoveries and reputation · 1 exploration joker and 5 combat jokers each. Warp portals and Rift Cannons are removed.</p>}</fieldset>
+            {rulesMode==='standard'&&<p>Includes the Rift Cannon expansion.</p>}<RulesModePicker value={rulesMode} disabled={busy} onChange={setRulesMode}/>
             <p className="dg-solo-wait">Solo · Wait for me. No turn timer; your game waits until you return.</p>
             <div className="dg-solo-setup-grid">
             <FactionPicker rulesMode={rulesMode} selected={faction} onSelect={setFaction} disabled={busy} profile={factionProfile} pieceColor={pieceColor} onPieceColorChange={setPieceColor}/>{rulesMode==='less-random-v1'&&getFaction(faction).species==='terran'&&<section className="dg-field"><strong>Alien species ban</strong><ChoiceCards label="Alien species ban" value={bannedFaction} disabled={busy} onChange={value=>setBannedFaction(value as FactionId)} options={listFactionsForProfile(factionProfile).filter(f=>f.species==='alien').map(f=>({value:f.id,label:f.name,visual:<FactionSymbol faction={f.id}/>}))}/></section>}

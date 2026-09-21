@@ -710,3 +710,15 @@
 .dg-tabletop.dg-empire-mode .sd-inspector{display:none}
 
 .dg-reputation-notice { padding: 8px 0; }
+
+/* Keep clock identity inside the turn area, even for the longest faction names. */
+.dg-tabletop:not(.dg-mobile-board) .sd-turn { align-items: center; flex: 0 0 auto; max-width: 320px; min-width: 0; }
+.dg-tabletop:not(.dg-mobile-board) .sd-turn > strong { min-width: 0; flex: 0 1 auto; }
+.dg-tabletop:not(.dg-mobile-board) .sd-turn .dg-turn-clock { min-width: 0; max-width: 170px; flex: 0 1 auto; margin-top: 0; }
+.dg-tabletop:not(.dg-mobile-board) .dg-turn-clock time { flex-shrink: 0; }
+.dg-tabletop:not(.dg-mobile-board) .dg-turn-clock span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dg-tabletop:not(.dg-mobile-board) .sd-resource { align-items: center; gap: 5px; }
+.dg-tabletop:not(.dg-mobile-board) .sd-resource .dg-trade-icon { width: 20px; height: 20px; flex: 0 0 20px; }
+@media (max-width: 1200px) {
+ .dg-tabletop:not(.dg-mobile-board) .sd-turn { max-width: 260px; }
+}

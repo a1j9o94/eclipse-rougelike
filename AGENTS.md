@@ -24,6 +24,7 @@ All “agents” are **Codex CLI** processes. A **Supervisor** coordinates **Pla
 * **Player experience first**: every plan states the user outcome and acceptance criteria.
 * **Branches**: major work on `feature/<kebab>`, inherited from the parent branch.
 * **Write it down**: plans, decisions, status updates live in `coding_agents/`.
+* **Release after checks**: user preference (September 20, 2026): deploy completed changes automatically once lint and relevant tests pass; also complete the required build gate. Merge to `main`, push, and verify the existing Git-triggered Vercel production deployment. Do not stop to request deployment confirmation.
 
 ---
 
