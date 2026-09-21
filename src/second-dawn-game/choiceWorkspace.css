@@ -38,3 +38,23 @@
 .dg-choice-placement .dg-exploration-decision { width: 100%; flex: 1; height: auto; }
 .dg-mobile-board .dg-choice-placement { height: calc(100% - 12px); }
 .dg-mobile-board .dg-choice-placement .dg-choice-body { display: block; overflow: auto; }
+/* Spatial choices use the existing inspector alongside the one live galaxy. */
+.dg-map-choice-controls[hidden]{display:none!important}
+.dg-map-choice-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #aa915d66}
+.dg-map-choice-header strong{text-transform:capitalize;color:#e5d39d;font-size:16px}
+.dg-map-choice-header button{min-height:44px;white-space:nowrap}
+.dg-map-choice-controls .dg-decision{padding:0;border:0;background:transparent}
+.dg-map-choice-controls h2{font-size:24px;line-height:1.2}
+.dg-mobile-board.dg-spatial-decision .dg-map-choice-header{display:none}
+.dg-mobile-board.dg-spatial-decision .sd-map.dg-galaxy-compact{min-height:0;padding-top:30px;padding-bottom:46px}
+.dg-map-choice-controls .dg-explore-heading p{font-size:12px;line-height:1.5;margin:4px 0}
+.dg-map-choice-controls .dg-placement-verdict{font-size:12px;padding:8px;gap:4px}
+.dg-map-choice-controls .dg-placement-verdict span{line-height:1.4}
+.dg-mobile-board.dg-spatial-decision .sd-players{display:none}
+.dg-mobile-board.dg-spatial-decision .sd-inspector.dg-mobile-sheet[data-sheet-state=expanded]{max-height:min(42dvh,355px)}
+.dg-mobile-board.dg-spatial-decision:has(.dg-mobile-sheet[data-sheet-state=expanded]) .sd-map{height:calc(100% - min(42dvh,355px))}
+@media(min-width:600px) and (max-height:550px){
+ .dg-mobile-board.dg-spatial-decision .sd-inspector.dg-mobile-sheet[data-sheet-state=expanded]{left:auto;right:0;width:48%;top:var(--mobile-sheet-top);max-height:none;border-radius:12px 0 0 0}
+ .dg-mobile-board.dg-spatial-decision:has(.dg-mobile-sheet[data-sheet-state=expanded]) .sd-map{height:100%;width:52%}
+ .dg-mobile-board.dg-spatial-decision .sd-map-heading{max-width:52%}
+}

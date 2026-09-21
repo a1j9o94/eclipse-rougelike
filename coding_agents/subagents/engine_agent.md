@@ -361,3 +361,6 @@ Final review: `factionPresentation.ts` accepts full RuleConfiguration while reta
 
 ## September 20 — Action confirmation notices
 Implemented reusable ActionConfirmationNotice with session-only turn-scoped acknowledgments and existing GameDialog focus/escape behavior. BlueprintEditor, BuildPlanner, and MovementPlanner surface full valid plans with exact command confirmation and material consequences. No engine, API, or save-schema changes. Read-only rules review confirmed ordinary spent actions already advance and cautioned against treating Midas/Ragnarok continuation choices as automatic finish.
+
+## September 20 — Shared-map decisions
+Added typed DecisionMapContext bridge, reused the existing inspector/mobile sheet in SecondDawnBoard, and adapted exploration, control/bankruptcy/portal, and automatic colonization controls to publish previews/highlights instead of rendering another galaxy. Camera/selection use the board's existing controls; same-decision drafts remain mounted during browsing. Explicit commands, legal validation, public/private state, and backend schemas are unchanged.

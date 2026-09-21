@@ -92,3 +92,7 @@ Final review follow-up: two faction description tests failed first. Full configu
 
 ## September 20 — Action confirmation notices
 Observed missing-notice failures before implementation. Added 14 readiness/explicit-confirmation/dismissal/visibility/overlay/funding/betrayal tests across three suites; 110 tests across 15 relevant suites pass. Existing turn/upkeep attention, action draft recovery, movement, build, upgrade plan, and auto-advance regression suites remain green. Browser checked desktop and mobile (390×844): final upgrade selection opens prompt, focus lands on Apply, no command until explicit click, no horizontal overflow. Runtime artifacts are in coding_agents/logs/action-confirmation-*.
+
+## September 20 — Shared-map decisions
+Failing-first tests demonstrated duplicate maps and absent inspector controls. Added 12 shared-map regression cases across exploration, economy, and board integration. Updated upkeep command-center scroll regression to assert retained hidden controls rather than a retained duplicate map. Final 95 tests across 17 targeted suites pass; lint/build pass. Browser artifacts main-map-* cover desktop, 390×844 portrait, 844×390 landscape, rotation/legal placement gating, upkeep selection, scrollable controls, and no overflow/errors.
+- Final review added failing-first regressions for real fleet inspection during upkeep choices and an AI-follow handoff hiding the decision inspector. Both fixed; 13 focused shared-map/AI-follow tests pass. The 95-test total counts unique tests across the bounded runs.

@@ -1,5 +1,6 @@
 import {seatColor} from './factionColors';
-import {useState} from 'react';
+import {useContext,useEffect,useMemo,useRef,useState} from 'react';
+import {DecisionMapContext} from './decisionMapContext';
 import type {CSSProperties,ReactNode} from 'react';
 import type {DecisionChoice,GameCommand,PendingDecision,PlayerView,Resource,Track} from '../../shared/eclipse/types';
 import type {LegalCommandCandidate} from '../../shared/eclipse/legal';
@@ -80,8 +81,17 @@ function DiplomacyChoice(props:EconomyDecisionProps&{decision:Extract<EconomyCho
 
 function SectorDecision(props:EconomyDecisionProps&{decision:Extract<EconomyChoice,{kind:'control'|'bankruptcy'|'portal-placement'}>}){
  const {decision,view}=props;
- const eligible=decision.kind==='control'?[decision.sectorId]:decision.kind==='bankruptcy'?decision.abandonableSectorIds:decision.sectorIds;
+ const sharedMap=useContext(DecisionMapContext);
+ const eligible=useMemo(()=>decision.kind==='control'?[decision.sectorId]:decision.kind==='bankruptcy'?decision.abandonableSectorIds:decision.sectorIds,[decision]);
  const [selected,setSelected]=useState(decision.kind==='control'?decision.sectorId:''),[accept,setAccept]=useState('');
+ const mapSelection=sharedMap?.selectedSectorId;
+ const previousMapSelection=useRef(mapSelection);
+ useEffect(()=>{
+  if(mapSelection===previousMapSelection.current)return;
+  previousMapSelection.current=mapSelection;
+  if(decision.kind!=='control')setSelected(mapSelection&&eligible.includes(mapSelection)?mapSelection:'');
+ },[mapSelection,eligible,decision.kind]);
+ const selectSector=(id:string)=>{if(!eligible.includes(id))return;setSelected(id);sharedMap?.selectSector(id);sharedMap?.focusSector(id);};
  const sector=view?.sectors.find(s=>s.id===selected),seat=view?.seats.find(s=>s.id===decision.owner);
  const [trading,setTrading]=useState(false);
  const choice:DecisionChoice=decision.kind==='control'?{kind:'control',accept:accept==='yes'}:decision.kind==='bankruptcy'?{kind:'bankruptcy',abandonSectorId:selected}:{kind:'portal-placement',sectorId:selected};
@@ -89,7 +99,9 @@ function SectorDecision(props:EconomyDecisionProps&{decision:Extract<EconomyChoi
  const preview=view&&decision.kind==='control'?previewCommand(view,{type:'resolve',decisionId:decision.id,choice}):null;
  const title=decision.kind==='control'?'Control this sector':decision.kind==='bankruptcy'?'Resolve upkeep shortfall':'Place your warp portal';
  const portalTargets=view?.sectors.filter(s=>s.id!==selected&&(s.portalVp!==undefined||sectorDefinition(Number(s.tileId))?.warpPortal))??[];
- const mapView=view&&decision.kind==='portal-placement'&&selected?{...view,sectors:view.sectors.map(s=>s.id===selected?{...s,portalVp:1 as const}:s)}:view;
+ const mapView=useMemo(()=>view&&decision.kind==='portal-placement'&&selected?{...view,sectors:view.sectors.map(s=>s.id===selected?{...s,portalVp:1 as const}:s)}:view,[view,decision.kind,selected]);
+ const setPresentation=sharedMap?.setPresentation;
+ useEffect(()=>{if(!setPresentation||!mapView)return;setPresentation({view:mapView,legalTargetIds:eligible,targetLabel:'eligible sector'});return()=>setPresentation(null);},[setPresentation,mapView,eligible]);
  let abandonment:ReactNode=null;
  if(seat&&sector&&decision.kind==='bankruptcy'){
   const population={...seat.populationTracks};for(const cube of sector.population)population[cube.resource]--;
@@ -101,7 +113,7 @@ function SectorDecision(props:EconomyDecisionProps&{decision:Extract<EconomyChoi
  return <DecisionFrame {...props} title={title} label={decision.kind==='control'?'Confirm control':decision.kind==='bankruptcy'?'Abandon selected sector':'Place warp portal'} choice={choice} valid={choiceAllowed&&Boolean(sector)&&(decision.kind!=='control'||Boolean(accept))}>
   {decision.kind==='portal-placement'&&selected&&<section aria-label="Preview portal connections" className="dg-portal-preview"><StatIcon kind="discovery"/><strong>Portal preview · sector {sector?.tileId}</strong><span>{portalTargets.length?`Links to sectors ${portalTargets.map(s=>s.tileId).join(', ')}`:'First portal · future portals will connect here'}</span><small>+1 VP · placement awaits confirmation</small></section>}
   {decision.kind==='bankruptcy'&&<div className="dg-bankruptcy-options"><strong>{decision.shortfall} money short</strong><button onClick={()=>setTrading(v=>!v)}>{trading?'Return to sector choices':'Convert to cover upkeep'}</button></div>}
-  {trading&&view?<TradePanel view={view} candidates={props.candidates} disabled={props.disabled} onSubmit={props.onSubmit}/>:<div className="dg-map-decision-layout"><div className="dg-decision-map">{view?<GalaxyBoard initialFit targetLabel="eligible sector" view={mapView!} candidates={[]} selected={selected||null} legalTargetIds={eligible} onSelect={id=>{if(eligible.includes(id))setSelected(id);}} onExplore={()=>{}}/>:<p>Reconnect to restore the sector map.</p>}</div><section className="dg-decision-sector-details"><div className="dg-sector-target-strip" role="group" aria-label="Eligible sectors">{eligible.map(id=><button key={id} aria-pressed={selected===id} onClick={()=>setSelected(id)}><svg viewBox="0 0 30 30" aria-hidden="true"><path d="M15 2 27 9v13L15 29 3 22V9Z" fill="none" stroke="currentColor" strokeWidth="2"/></svg>{view?.sectors.find(s=>s.id===id)?.tileId??'Sector'}</button>)}</div>
+  {trading&&view?<TradePanel view={view} candidates={props.candidates} disabled={props.disabled} onSubmit={props.onSubmit}/>:<div className={sharedMap?"dg-shared-map-decision-layout":"dg-map-decision-layout"}>{!sharedMap&&<div className="dg-decision-map">{view?<GalaxyBoard initialFit targetLabel="eligible sector" view={mapView!} candidates={[]} selected={selected||null} legalTargetIds={eligible} onSelect={selectSector} onExplore={()=>{}}/>:<p>Reconnect to restore the sector map.</p>}</div>}<section className="dg-decision-sector-details"><div className="dg-sector-target-strip" role="group" aria-label="Eligible sectors">{eligible.map(id=><button key={id} aria-pressed={selected===id} onClick={()=>selectSector(id)}><svg viewBox="0 0 30 30" aria-hidden="true"><path d="M15 2 27 9v13L15 29 3 22V9Z" fill="none" stroke="currentColor" strokeWidth="2"/></svg>{view?.sectors.find(s=>s.id===id)?.tileId??'Sector'}</button>)}</div>
   {sector&&view?<><h3>Sector {sector.tileId}</h3>{decision.kind==='control'&&<><ChoiceCards label="Control sector" value={accept} disabled={props.disabled} onChange={setAccept} options={[{value:'yes',label:'Place influence disc',disabled:!props.candidates.some(c=>c.command.type==='resolve'&&c.command.choice.kind==='control'&&c.command.choice.accept),visual:<StatIcon kind="influence"/>},{value:'no',label:'Leave uncontrolled',visual:<StatIcon kind="shield"/>}]}/><ActionEconomy view={view} action="resolve" preview={preview}/></>}{abandonment}{decision.kind==='portal-placement'&&<p>A warp portal links this sector to every other portal. This placement adds 1 VP here.</p>}<SectorPlanets view={view} sector={sector} candidates={[...props.candidates]}/><SectorFleet view={view} sectorId={sector.id}/></>:<p>Select a highlighted sector on the map.</p>}
   </section></div>}
  </DecisionFrame>;

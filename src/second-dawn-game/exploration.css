@@ -79,3 +79,26 @@
 /* Placement needs room for the tile, all exits, and its sticky commit controls. */
 .dg-tabletop:not(.dg-mobile-board) .dg-choice-workspace.dg-choice-placement{position:fixed;inset:16px;max-width:none;width:auto;height:auto;max-height:none;z-index:55}
 .dg-mobile-board .dg-choice-workspace.dg-choice-placement{position:fixed;inset:8px 6px calc(70px + env(safe-area-inset-bottom));height:auto;max-height:none;z-index:55}
+
+/* Exploration controls share the live galaxy when rendered in its inspector. */
+.dg-exploration-decision.dg-exploration-embedded{height:auto;max-width:none;gap:10px;}
+.dg-exploration-embedded .dg-explore-heading{flex-wrap:wrap;margin:0;gap:7px;}
+.dg-exploration-embedded .dg-explore-heading h2{font-size:21px;}
+.dg-exploration-embedded .dg-explore-heading p{display:block;font-size:12px;}
+.dg-exploration-embedded .dg-explore-heading>span{font-size:11px;padding:5px 8px;}
+.dg-exploration-embedded .dg-drawn-choices{flex-wrap:wrap;margin:0;order:1;}
+.dg-exploration-embedded .dg-drawn-choices button{flex:1;min-width:100px;min-height:44px;}
+.dg-exploration-embedded .dg-placement-verdict{margin:0;order:2;}
+.dg-exploration-embedded .dg-exploration-controls{order:3;position:static;display:flex;flex-direction:column;align-items:stretch;padding:10px 0;border-block:1px solid #5c503b;gap:10px;}
+.dg-exploration-embedded .dg-rotation-controls{gap:6px;justify-content:space-between;}
+.dg-exploration-embedded .dg-rotation-controls button{padding:7px;font-size:11px;flex:1;justify-content:center;}
+.dg-exploration-embedded .dg-rotation-controls>span{gap:3px;}
+.dg-exploration-embedded .dg-placement-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.dg-exploration-embedded .dg-placement-actions button{min-width:0;font-size:12px;padding:8px;}
+.dg-exploration-embedded .dg-placement-actions button:nth-child(n+3){grid-column:1/-1;}
+.dg-exploration-embedded .dg-explore-layout{order:4;display:flex;flex-direction:column;flex:none;gap:12px;}
+.dg-exploration-embedded .dg-placement-stage{height:auto;flex:none;}
+.dg-exploration-embedded .dg-placement-map-caption{flex-wrap:wrap;}
+.dg-exploration-embedded .dg-placement-map-caption button{min-height:44px;}
+.dg-exploration-embedded .dg-placement-notes{overflow:visible;padding:0;}
+.dg-exploration-embedded .dg-placement-connections{margin-top:12px;padding-top:12px;}

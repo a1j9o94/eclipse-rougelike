@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import {DecisionMapContext} from './decisionMapContext';
+import { useContext, useEffect, useMemo, useState } from "react";
 import { useActionDraftGuard, useActionDraftState } from './actionDraftContext';
 import { previewCommand } from "../../shared/eclipse/commandPreview";
 import type { GameCommand, PendingDecision, PlayerView, Resource } from "../../shared/eclipse/types";
@@ -37,11 +38,15 @@ export default function ColonizationPlanner({
   candidates,
   disabled,
   onSubmit,
-  selectedSectorId: boardSelectedSectorId,
+  selectedSectorId: suppliedSectorId,
   decision,
   onColonizableSectorIdsChange,
   onSectorFocus,
 }: ColonizationPlannerProps) {
+  const sharedMap=useContext(DecisionMapContext);
+  const decisionMap=decision?sharedMap:null;
+  const boardSelectedSectorId=decisionMap?.selectedSectorId??suppliedSectorId;
+  const setMapPresentation=decisionMap?.setPresentation;
   const options = useMemo(() => decision ? decisionColonizationOptions(view, decision) : colonizationOptions(view, candidates), [view, candidates, decision]);
   const [chosen, setChosen] = useActionDraftState('colonization',{}, {enabled:!decision});
   const [focusedKey, setFocusedKey] = useActionDraftState('colonizationFocus',null, {enabled:!decision});
@@ -64,6 +69,7 @@ export default function ColonizationPlanner({
   const preview = !decision && placements.length ? previewCommand(view, normalCommand) : null;
   const own = view.seats.find((seat) => seat.id === view.viewerSeatId);
   const sectors = useMemo(()=>[...new Set(options.map((option) => option.sectorId))],[options]);
+  useEffect(()=>{if(!setMapPresentation)return;setMapPresentation({view,legalTargetIds:sectors,targetLabel:'available planet'});return()=>setMapPresentation(null);},[setMapPresentation,view,sectors]);
   const [localSectorId,setLocalSectorId]=useState<string|null>(boardSelectedSectorId??null);
   const selectedSectorId = boardSelectedSectorId && sectors.includes(boardSelectedSectorId) ? boardSelectedSectorId : localSectorId && sectors.includes(localSectorId) ? localSectorId : focused?.sectorId ?? sectors[0] ?? null;
   const visibleOptions = options.filter((option) => option.sectorId === selectedSectorId);
@@ -95,7 +101,7 @@ export default function ColonizationPlanner({
         <div className="dg-colonization-layout">
           <section className="dg-colonization-squares" aria-labelledby="colonize-square-title">
             <h3 id="colonize-square-title">Open population spaces</h3>
-            {sectors.length>1&&<nav className="dg-colonization-sectors" aria-label="Colonizable sectors">{sectors.map(id=>{const sector=view.sectors.find(candidate=>candidate.id===id)!;const selectedCount=placements.filter(placement=>placement.sectorId===id).length;return <button key={id} type="button" aria-pressed={selectedSectorId===id} onClick={()=>{setLocalSectorId(id);onSectorFocus?.(id);}}>Sector {sector.tileId}<small>{selectedCount?`${selectedCount} selected`:`${options.filter(option=>option.sectorId===id).length} open`}</small></button>;})}</nav>}
+            {sectors.length>1&&<nav className="dg-colonization-sectors" aria-label="Colonizable sectors">{sectors.map(id=>{const sector=view.sectors.find(candidate=>candidate.id===id)!;const selectedCount=placements.filter(placement=>placement.sectorId===id).length;return <button key={id} type="button" aria-pressed={selectedSectorId===id} onClick={()=>{setLocalSectorId(id);onSectorFocus?.(id);decisionMap?.selectSector(id);decisionMap?.focusSector(id);}}>Sector {sector.tileId}<small>{selectedCount?`${selectedCount} selected`:`${options.filter(option=>option.sectorId===id).length} open`}</small></button>;})}</nav>}
             {visibleOptions.map((option) => {
               const sector = view.sectors.find((candidate) => candidate.id === option.sectorId)!;
               const key = `${option.sectorId}:${option.squareId}`;

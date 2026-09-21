@@ -638,3 +638,9 @@ Outcome: opt-in ten-round Régis variant, fully saved and available to humans/AI
 - Decision: exhausted committed actions usually advance automatically in the engine, so readiness belongs to the unsubmitted planner, not an unconditional remaining=0 turn notice.
 - Risks/rollback: avoid interrupting part selection, hiding funding/diplomacy consequences, or submitting twice; revert this UI-only commit if needed. No engine/protocol/save changes intended.
 - Tests (must fail first): complete upgrade prompt and explicit submission; dismissal/no-repeat; partial/invalid/disabled drafts; build/move readiness. Run bounded adjacent attention/draft/planner regressions, lint/build, desktop/mobile browser checks, then deploy via main.
+
+## September 20, 2026 — Decisions on the shared galaxy
+- Outcome: exploration placement, control/influence choices, upkeep abandonment, and other sector decisions use the main map with existing desktop inspector/mobile sheet, preserving spatial context.
+- Acceptance: exactly one galaxy map during these choices; preview rotation/portal placement and eligible targets rendered there; sector taps drive the active choice; inspection/navigation preserves drafts; explicit confirmation and existing rules remain; non-map choices use an appropriate popup rather than a duplicate galaxy.
+- Risks & rollback: preview must never mutate authoritative state; retain legal validation and no accidental submits, avoid stale map callbacks after decision changes. Revert UI slice if needed; no schema/engine changes planned.
+- Tests (fail first): shared-map board integration for exploration/control/bankruptcy/portal, same map identity/camera, target selection and valid exact commands, draft preservation and mobile inspector access. Run relevant tests, lint/build, browser verification then deploy.

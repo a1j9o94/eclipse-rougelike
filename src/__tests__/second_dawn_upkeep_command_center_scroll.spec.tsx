@@ -7,7 +7,7 @@ import {getPlayerView} from '../../shared/eclipse/protocol';
 import {legalCommands} from '../../shared/eclipse/legal';
 import SecondDawnBoard from '../second-dawn-game/SecondDawnBoard';
 afterEach(()=>{cleanup();document.querySelector('[data-scroll-regression]')?.remove();localStorage.clear();});
-it('keeps the command center scrollable while a minimized upkeep choice retains its map and selected sector',()=>{
+it('keeps the command center scrollable while an upkeep choice retains its selected sector in the inspector',()=>{
  const style=document.createElement('style');style.dataset.scrollRegression='';style.textContent=baseStyles;document.head.append(style);
  const state=createGame({seed:42,seats:[{id:'a',faction:'terran-directorate',controller:'human'},{id:'b',faction:'hydran',controller:'human'}]});
  state.phase='upkeep';state.activeSeatId='a';state.seats[0].passed=true;
@@ -18,7 +18,8 @@ it('keeps the command center scrollable while a minimized upkeep choice retains 
  fireEvent.click(screen.getByRole('button',{name:sector.tileId,exact:true}));
  fireEvent.click(within(screen.getByRole('region',{name:'Civilization roster'})).getByRole('button',{name:/Terran Directorate/}));
  expect(screen.getByRole('heading',{name:'Faction abilities'})).toBeVisible();
- expect(container.querySelector('.dg-choice-workspace[hidden] .sd-map')).not.toBeNull();
+ expect(container.querySelector('.dg-map-choice-controls[hidden]')).not.toBeNull();
+ expect(container.querySelector('.dg-map-choice-controls .sd-map')).toBeNull();
  expect(getComputedStyle(container.querySelector('.sd-main')!).overflow).toBe('auto');
  fireEvent.click(screen.getByRole('button',{name:'Return to upkeep shortfall'}));
  expect(screen.getByRole('button',{name:sector.tileId,exact:true})).toHaveAttribute('aria-pressed','true');
