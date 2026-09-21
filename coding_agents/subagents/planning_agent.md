@@ -631,3 +631,10 @@ Outcome: opt-in ten-round Régis variant, fully saved and available to humans/AI
 - Risks: mixed configurations leaking hidden supply or diverging AI, partial backend rollout. Additive optional schema; deploy backend before frontend. No migrations of existing games.
 - Follow-ups: bounded regression batches, lint/build, local/live browser verification and release audit.
 - Result: independent settings and upkeep scroll fix complete. Final integrated gate: 175 tests in 29 bounded suites, full lint, codegen/typecheck/build passed. All 256 option configurations pass setup/privacy/legal smoke; custom seeded AI games finish. Browser settings and native upkeep scrolling verified on desktop/mobile. Backend-first main-only release follows automatically; see custom_game_rules_release.md.
+
+## September 20, 2026 — Proactive action confirmation
+- Outcome: when a player has filled a valid action plan, a centered notice surfaces its final confirmation without submitting automatically.
+- Acceptance: completed upgrade drafts prompt Apply upgrades/Keep editing; full build/move plans use the same notice when all placements/destinations are chosen; incomplete, invalid, blocked, stale, or pending-choice plans stay quiet; dismissal preserves drafts and does not repeat for the same plan. Existing turn/upkeep attention remains intact.
+- Decision: exhausted committed actions usually advance automatically in the engine, so readiness belongs to the unsubmitted planner, not an unconditional remaining=0 turn notice.
+- Risks/rollback: avoid interrupting part selection, hiding funding/diplomacy consequences, or submitting twice; revert this UI-only commit if needed. No engine/protocol/save changes intended.
+- Tests (must fail first): complete upgrade prompt and explicit submission; dismissal/no-repeat; partial/invalid/disabled drafts; build/move readiness. Run bounded adjacent attention/draft/planner regressions, lint/build, desktop/mobile browser checks, then deploy via main.

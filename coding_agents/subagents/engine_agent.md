@@ -358,3 +358,6 @@ Result and next steps: focused tests green; parent owns shared integration and r
 Follow-up: `runningScore.ts` now independently includes exploration, Quantum Labs and artifact VP while hiding reputation-derived Ancient Might, including own eliminated snapshots. `publicInspection.ts` explains the hidden portion and uses a mode-neutral Variant bonuses title.
 
 Final review: `factionPresentation.ts` accepts full RuleConfiguration while retaining historical RulesMode calls. `FactionPicker.tsx` accepts optional ruleOptions; `EmpireOverview.tsx` supplies full view. Reputation/exploration/faction explanations resolve independently. React best-practices checklist applied to these TSX updates (derived state only; no new hooks/effects). Parent addresses preset-reset and setup component-state synchronization findings.
+
+## September 20 — Action confirmation notices
+Implemented reusable ActionConfirmationNotice with session-only turn-scoped acknowledgments and existing GameDialog focus/escape behavior. BlueprintEditor, BuildPlanner, and MovementPlanner surface full valid plans with exact command confirmation and material consequences. No engine, API, or save-schema changes. Read-only rules review confirmed ordinary spent actions already advance and cautioned against treating Midas/Ragnarok continuation choices as automatic finish.

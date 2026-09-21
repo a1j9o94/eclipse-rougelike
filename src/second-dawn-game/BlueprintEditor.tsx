@@ -1,3 +1,4 @@
+import ActionConfirmationNotice from './ActionConfirmationNotice';
 import {OutsideGridModule, ShipCapabilities} from './BlueprintLoadout';
 import { describeShipPart, describeWeapons } from "./itemDescriptions";
 import "./itemDetails.css";
@@ -86,6 +87,8 @@ export default function BlueprintEditor({
   );
   const installations=plan.ok?plan.installations:0;
   const changed = JSON.stringify(draft) !== JSON.stringify(blueprint);
+  const canApply = !disabled && !draftGuard.stale && changed && plan.ok && issues.length === 0 && installations <= capacity;
+  const apply = () => { if(canApply) onSubmit({type:"upgrade",blueprints:[draft]}); };
   const preview = view
     ? previewCommand(view, { type: "upgrade", blueprints: [draft] })
     : null;
@@ -123,6 +126,14 @@ export default function BlueprintEditor({
   });
   return (
     <section className="dg-blueprint-editor">
+      <ActionConfirmationNotice ready={canApply && capacity > 0 && Math.max(1,installations) === capacity && !pickerOpen && !view?.pendingDecision && !view?.waitingFor}
+        noticeKey={JSON.stringify(['upgrade',view?.round,view?.actionTurnSerial,blueprint,draft,capacity])}
+        title="Upgrades ready to apply" description="Your upgrade allowance is filled. Apply this blueprint when you are ready, or keep editing."
+        confirmLabel={`Apply ${installations} ${installations===1?'upgrade':'upgrades'}`} onConfirm={apply}>
+        <p>{replacementSummary.join(' · ') || 'Updated blueprint ready to apply.'}</p>
+        {draft.outsideParts.filter(part=>!blueprint.outsideParts.includes(part)).map(part=><p key={part}>Install {getShipPart(part).name}</p>)}
+        {preview&&<p>Upkeep after confirmation: {preview.upkeepAfter} · {preview.moneyBalanceAfter<0?`${-preview.moneyBalanceAfter} money shortfall`:`${preview.moneyBalanceAfter} money remaining`}</p>}
+      </ActionConfirmationNotice>
       <header className="dg-shipyard-header">
         <ShipSilhouette type={blueprint.shipType} faction={faction} />
         <div className="dg-shipyard-identity">
@@ -204,15 +215,8 @@ export default function BlueprintEditor({
       {replacementSummary.length > 0 && <span className="dg-upgrade-summary" role="status">{replacementSummary.join(" · ")}</span>}
       <button
         className="sd-primary"
-        disabled={
-          disabled ||
-          draftGuard.stale ||
-          !changed ||
-          !plan.ok ||
-          issues.length > 0 ||
-          installations > capacity
-        }
-        onClick={() => onSubmit({ type: "upgrade", blueprints: [draft] })}
+        disabled={!canApply}
+        onClick={apply}
       >
         Apply {installations} {installations===1?'upgrade':'upgrades'}
       </button>
