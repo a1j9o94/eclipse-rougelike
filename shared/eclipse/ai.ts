@@ -1,5 +1,5 @@
 import { researchedTechnologyIds } from './technologies';
-import { isLessRandom } from './lessRandom';
+import { gameRules, gameRoundLimit, factionRulesMode } from './gameRules';
 import { getDiscovery, type DiscoveryId } from './discoveries';
 import {evaluateMinorSpeciesPurchase} from './aiMinorSpecies';
 import { aiWeaponValue } from "./aiWeaponValue";
@@ -71,7 +71,7 @@ export function sectorControlValue(view: PlayerView, id: string): number {
     seat.resources.money +
     incomeForPopulationAway(seat.populationTracks.money) -
     upkeepForEmptyInfluenceSlots(empty);
-  const turns = Math.max(1, (isLessRandom(view) ? 11 : 9) - view.round);
+  const turns = Math.max(1, (gameRoundLimit(view) + 1) - view.round);
   const techs = researchedTechnologyIds(seat);
   let money = 0,
     moneyCubes = 0,
@@ -153,7 +153,7 @@ function technologyValue(view: PlayerView, id: string): number {
           ).length ?? 0),
         0,
       );
-    return 6 + available * Math.min(6, (isLessRandom(view) ? 11 : 9) - view.round);
+    return 6 + available * Math.min(6, (gameRoundLimit(view) + 1) - view.round);
   }
   if (id === "monolith")
     return view.round >= 5 && seat.resources.materials >= 10 ? 19 : 5;
@@ -208,7 +208,7 @@ function shipBuildValue(
     Math.max(2, 12 - own.length * 0.8 + Math.min(8, enemy.length * 0.7)) +
     (threat ? 5 : 0) +
     Math.min(6, quality) +
-    (view.round >= 7 ? -6 : 0)
+    (view.round >= gameRoundLimit(view) - 1 ? -6 : 0)
   );
 }
 export function evaluateAiCommand(
@@ -261,7 +261,7 @@ export function evaluateAiCommand(
       const lost = command.trades.reduce(
         (sum, t) =>
           sum +
-          (tradeQuote(seat.faction, t.from, t.to, t.amount, view.rulesMode)?.input ?? Number.POSITIVE_INFINITY) *
+          (tradeQuote(seat.faction, t.from, t.to, t.amount, factionRulesMode(view))?.input ?? Number.POSITIVE_INFINITY) *
             utility(t.from) *
             0.7,
         0,
@@ -319,7 +319,7 @@ export function evaluateAiCommand(
         discPenalty
       );
     case "research-development":
-      return (command.developmentId === 'quantum-labs' ? (view.round <= 7 ? 13 : 4) : 10) - discPenalty;
+      return (command.developmentId === 'quantum-labs' ? (view.round <= gameRoundLimit(view) - 3 ? 13 : 4) : 10) - discPenalty;
     case "quantum-research":
       return technologyValue(view, command.tileId) + 4 - discPenalty;
     case "research":
@@ -488,7 +488,7 @@ export function evaluateAiCommand(
                 sectorDefinition(Number(c.tileId))!.ancients *
                   factionPolicy.ancientExplorationValue;
         case "discovery": {
-          if (!isLessRandom(view)) return c.option === 'use' && view.round < 7 ? 12 : 5;
+          if (!gameRules(view).publicDiscoveries && !gameRules(view).discoveryVariant) return c.option === 'use' && view.round < gameRoundLimit(view) - 1 ? 12 : 5;
           if (c.option === 'keep') return 8;
           const tileId = c.discoveryId ?? (view.pendingDecision?.kind === 'discovery' ? view.pendingDecision.tileId : '');
           if (!tileId) return -Infinity;
@@ -496,7 +496,7 @@ export function evaluateAiCommand(
           if (effect.kind === 'resources') return Object.entries(effect.resources).reduce((sum,[r,n])=>sum+n*utility(r as Resource),0);
           if (effect.kind === 'choice-resources') return effect.money*utility('money')+effect.amount*Math.max(...(['money','science','materials'] as const).map(utility));
           if (effect.kind === 'end-game-bonus') return effect.bonus === 'reputation' ? Math.floor(view.private.reputation.reduce((a,b)=>a+b,0)/3)*4 : sectors.reduce((sum,s)=>sum+(sectorDefinition(Number(s.tileId))?.artifacts??0),0)*4;
-          if (effect.kind === 'ancient-ship-part') return view.round < 9 ? 16 : 4;
+          if (effect.kind === 'ancient-ship-part') return view.round < gameRoundLimit(view) - 1 ? 16 : 4;
           if (effect.kind === 'place-unbuilt-ship') return 17;
           if (effect.kind === 'free-technology') return 14;
           return 10;

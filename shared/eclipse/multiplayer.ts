@@ -1,3 +1,4 @@
+import { allowsRiftCannons, factionRulesMode, validRuleOptions, type GameRuleOptions } from './gameRules';
 import { factionAllowedForProfile, getFaction, seatPieceColor, listFactionsForProfile, type CivilizationColor, type FactionProfile, type FactionId } from "./catalog";
 import type { AiDifficulty } from "./aiConfig";
 import type { GameState, SeatId, RulesMode } from "./types";
@@ -17,8 +18,10 @@ export interface MultiplayerRoomSettings {
   aiCount: number;
   timerMs: number;
   warpPortals: boolean;
+  riftCannons?: boolean;
   /** Missing on an existing room means standard rules. */
   rulesMode?: RulesMode;
+  ruleOptions?: GameRuleOptions;
   showCombatOdds?: boolean;
   minorSpecies?: boolean;
   aiDifficulty?: AiDifficulty;
@@ -99,7 +102,10 @@ export function isMultiplayerSettings(value: MultiplayerRoomSettings): boolean {
     total <= MAX_MULTIPLAYER_SEATS &&
     isMultiplayerTimerMs(value.timerMs) &&
     (value.rulesMode === undefined || value.rulesMode === "standard" || value.rulesMode === "less-random-v1") &&
-    (value.rulesMode !== "less-random-v1" || value.warpPortals === false) &&
+    validRuleOptions(value.ruleOptions) &&
+    typeof value.warpPortals === "boolean" &&
+    (value.riftCannons === undefined || typeof value.riftCannons === "boolean") &&
+    (!value.riftCannons || allowsRiftCannons(value)) &&
     (value.factionProfile === undefined || ["base", "expanded-v1"].includes(value.factionProfile)) &&
     (value.showCombatOdds === undefined || typeof value.showCombatOdds === "boolean") &&
     (value.minorSpecies === undefined || typeof value.minorSpecies === "boolean") &&
@@ -171,6 +177,7 @@ export function roomCanStart(input: {
   aiCount: number;
   factionProfile?: FactionProfile;
   rulesMode?: RulesMode;
+  ruleOptions?: GameRuleOptions;
   seats: readonly Pick<MultiplayerLobbySeat, "slot" | "faction" | "pieceColor" | "bannedFaction" | "ready" | "occupied">[];
 }): boolean {
   const humanSeats = input.seats.filter((seat) => seat.slot <= input.humanSeatCount);
@@ -179,13 +186,15 @@ export function roomCanStart(input: {
     aiCount: input.aiCount,
     timerMs: MIN_MULTIPLAYER_TIMER_MS,
     warpPortals: true,
+    rulesMode: input.rulesMode,
+    ruleOptions: input.ruleOptions,
   };
   return (
     isMultiplayerSettings(settings) &&
     humanSeats.length === input.humanSeatCount &&
     humanSeats.every((seat) => seat.occupied && seat.ready && seat.faction !== null) &&
     roomFactionsAreDistinct(humanSeats.map((seat) => ({ ...seat, isHost: false })), input.factionProfile) &&
-    roomTerranBansAreValid(humanSeats.map((seat) => ({ ...seat, isHost: false })), input.rulesMode, input.factionProfile)
+    roomTerranBansAreValid(humanSeats.map((seat) => ({ ...seat, isHost: false })), factionRulesMode(input), input.factionProfile)
   );
 }
 

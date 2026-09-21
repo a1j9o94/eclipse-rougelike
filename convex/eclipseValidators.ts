@@ -9,6 +9,17 @@ export const factionValidator: Validator<FactionId> = v.union(
 );
 export const factionProfileValidator = v.union(v.literal('base'), v.literal('expanded-v1'));
 export const rulesModeValidator = v.union(v.literal('standard'), v.literal('less-random-v1'));
+export const gameRuleOptionsValidator = v.object({
+  roundLimit: v.optional(v.number()),
+  openTechnology: v.optional(v.boolean()),
+  publicDiscoveries: v.optional(v.boolean()),
+  publicReputation: v.optional(v.boolean()),
+  explorationRules: v.optional(v.boolean()),
+  combatJokers: v.optional(v.boolean()),
+  technologyVariant: v.optional(v.boolean()),
+  discoveryVariant: v.optional(v.boolean()),
+  factionVariant: v.optional(v.boolean()),
+});
 export const pieceColorValidator = v.union(v.literal('red'), v.literal('blue'), v.literal('green'), v.literal('yellow'), v.literal('white'), v.literal('black'));
 export const minorSpeciesValidator: Validator<MinorSpeciesId> = v.union(...MINOR_SPECIES.map(tile => v.literal(tile.id)));
 const action = v.union(v.literal('explore'), v.literal('influence'), v.literal('research'), v.literal('upgrade'), v.literal('build'), v.literal('move'));

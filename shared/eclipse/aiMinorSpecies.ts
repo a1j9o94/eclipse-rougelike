@@ -1,3 +1,4 @@
+import {gameRoundLimit} from './gameRules';
 import { researchedTechnologyIds } from './technologies';
 import {getFaction} from './catalog';
 import {getMinorSpecies,minorSpeciesPoints} from './minorSpecies';
@@ -6,7 +7,7 @@ import type {GameCommand,PlayerView,Seat} from './types';
 
 /** Conservative future savings in estimated VP units, using public plans and income only. */
 export function minorSpeciesFutureValue(view:PlayerView,seat:Seat):number {
- const rounds=Math.max(0,(view.rulesMode==='less-random-v1'?10:8)-view.round),horizon=Math.min(3,rounds);
+ const rounds=Math.max(0,gameRoundLimit(view)-view.round),horizon=Math.min(3,rounds);
  const techs=researchedTechnologyIds(seat);
  return (seat.minorSpecies??[]).reduce((value,tile)=>{
   if(tile.id==='researchers'){
@@ -38,7 +39,7 @@ export function evaluateMinorSpeciesPurchase(view:PlayerView,command:Extract<Gam
   const resource=command.resource;
   const gain=incomeForPopulationAway(Math.min(11,seat.populationTracks[resource]+1))-incomeForPopulationAway(seat.populationTracks[resource]);
   const policy=getFaction(seat.faction).capabilities.ai;
-  future+=gain*Math.max(0,9-view.round)*(resource==='science'?policy.scienceValue:resource==='materials'?policy.materialsValue:1)*.7;
+  future+=gain*Math.max(0,gameRoundLimit(view)+1-view.round)*(resource==='science'?policy.scienceValue:resource==='materials'?policy.materialsValue:1)*.7;
   if(resource==='money')moneyIncome+=gain;
  }
  const balance=seat.resources.money-tile.cost+moneyIncome-upkeepForEmptyInfluenceSlots(Math.max(0,13-seat.influenceOnTrack));

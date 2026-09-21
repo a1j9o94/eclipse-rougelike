@@ -41,7 +41,7 @@ import {
   unpinned,
   consumeActivations,
 } from "./rulesState";
-import { isLessRandom } from './lessRandom';
+import { gameRules } from './gameRules';
 import type {
   Blueprint,
   Coordinate,
@@ -100,14 +100,14 @@ export function discoveryAt(
     )
   )
     return;
-  if (isLessRandom(state) && !(state.lessRandom?.discoverySupply.length)) {
+  if (gameRules(state).publicDiscoveries && !(state.lessRandom?.discoverySupply.length)) {
     sector.discovery = false;
     return;
   }
   const e = continuation(state);
   const index = e.sectorDiscoveries.findIndex((d) => d.sectorId === sector.id);
-  if (!isLessRandom(state) && index < 0) return;
-  const discoveryId = isLessRandom(state) ? '' : e.sectorDiscoveries.splice(index, 1)[0].discoveryId;
+  if (!gameRules(state).publicDiscoveries && index < 0) return;
+  const discoveryId = gameRules(state).publicDiscoveries ? '' : e.sectorDiscoveries.splice(index, 1)[0].discoveryId;
   sector.discovery = false;
   queueDecision(state, {
     id: uniqueId(state, "discovery"),
@@ -116,7 +116,7 @@ export function discoveryAt(
     tileId: discoveryId,
     sectorId: sector.id,
     options: ["keep", "use"],
-    ...(isLessRandom(state) ? { availableTileIds: [...(state.lessRandom?.discoverySupply ?? [])] } : {}),
+    ...(gameRules(state).publicDiscoveries ? { availableTileIds: [...(state.lessRandom?.discoverySupply ?? [])] } : {}),
   });
 }
 export function researchTechnology(
@@ -159,7 +159,7 @@ export function researchTechnology(
   ) {
     const discoveryId = hidden.storedDiscovery;
     hidden.storedDiscoveryResolved = true;
-    if (isLessRandom(state)) state.lessRandom!.reservedDiscoveries[seat.id] = null;
+    if (gameRules(state).publicDiscoveries) state.lessRandom!.reservedDiscoveries[seat.id] = null;
     const home = state.sectors.find(s => Number(s.tileId) === faction.homeSector && s.owner === seat.id);
     const placement = ["place-unbuilt-ship", "place-structure", "place-warp-portal"].includes(
       getDiscovery(discoveryId as DiscoveryId).effect.kind,
@@ -316,7 +316,7 @@ export function performAction(
         distance === 1 ? "inner" : distance === 2 ? "middle" : "outer";
       const drawn: string[] = [];
       const e = continuation(state);
-      const drawCount = isLessRandom(state) ? (factionHasCapability(seat.faction, "choose-one-of-two-exploration-sectors") ? 3 : 2) : 1;
+      const drawCount = gameRules(state).explorationRules ? (factionHasCapability(seat.faction, "choose-one-of-two-exploration-sectors") ? 3 : 2) : 1;
       for (let i = 0; i < drawCount; i++) {
         if (!state.supplies[ring].length && e.discardedSectors[ring].length) {
           const shuffled = shuffle(state.random, e.discardedSectors[ring]);
@@ -358,7 +358,7 @@ export function performAction(
         position: p,
         drawnTileIds: drawn,
         placements,
-        ...(isLessRandom(state) ? { ring, redrawAvailable: state.lessRandom?.explorationJokers[seat.id] === true } : {}),
+        ...(gameRules(state).explorationRules ? { ring, redrawAvailable: state.lessRandom?.explorationJokers[seat.id] === true } : {}),
         ...(factionHasCapability(seat.faction, "choose-one-of-two-exploration-sectors") &&
         state.supplies[ring].length + e.discardedSectors[ring].length > 0
           ? { canDrawAnother: true }

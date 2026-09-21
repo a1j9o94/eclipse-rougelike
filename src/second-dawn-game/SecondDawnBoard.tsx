@@ -1,3 +1,4 @@
+import {gameRoundLimit,gameRules} from '../../shared/eclipse/gameRules';
 import {TradeResourceIcon} from './TradePanel';
 import { researchedTechnologyIds } from '../../shared/eclipse/technologies';
 import {needsUpkeep,upkeepReadyCount} from './upkeepParticipation';
@@ -452,7 +453,7 @@ function SecondDawnBoardContent({
           </div>
         </div>
         <div className="sd-turn">
-          <small>ROUND {view.round} / {view.rulesMode==='less-random-v1'?10:8}</small>
+          <small>ROUND {view.round} / {gameRoundLimit(view)}</small>
           <strong>
             {view.phase === "finished"
               ? "Final results"
@@ -473,7 +474,7 @@ function SecondDawnBoardContent({
           </div>
         ))}
         <UpkeepSummary view={view}/>
-        <button className="dg-running-score" onClick={() => setScreen("Scoring")} title={view.rulesMode==='less-random-v1'?'Open the scoring breakdown, including public reputation.':'Open the scoring breakdown. Reputation is excluded until game end.'}>
+        <button className="dg-running-score" onClick={() => setScreen("Scoring")} title={gameRules(view).publicReputation?'Open the scoring breakdown, including public reputation.':'Open the scoring breakdown. Reputation is excluded until game end.'}>
           <small>{view.phase === "finished" ? "Your final score" : "Your public VP"}</small><strong>{ownScore.total}<span>VP</span></strong>
         </button>
         <div className="sd-actions" aria-label="Available actions">
@@ -557,11 +558,11 @@ function SecondDawnBoardContent({
                         : seat.id === view.activeSeatId
                           ? "active"
                           : "waiting"}
-                    {view.round<(view.rulesMode==='less-random-v1'?10:8)&&view.phase!=='finished'&&seat.id===view.firstPasser&&!seat.eliminated&&<span className="dg-next-starter" title="Passed first: gained 2 money and starts the next round."> · Next round first</span>}
-                    {view.rulesMode==='less-random-v1'&&<span> · Reputation {view.lessRandom?.reputationBySeat[seat.id]?.reduce((total,value)=>total+value,0)??0} VP</span>}
+                    {view.round<(gameRoundLimit(view))&&view.phase!=='finished'&&seat.id===view.firstPasser&&!seat.eliminated&&<span className="dg-next-starter" title="Passed first: gained 2 money and starts the next round."> · Next round first</span>}
+                    {gameRules(view).publicReputation&&<span> · Reputation {view.lessRandom?.reputationBySeat[seat.id]?.reduce((total,value)=>total+value,0)??0} VP</span>}
                   </small>
                 </div>
-                <span className="dg-roster-vp" title={view.phase === "finished" ? "Final victory points" : view.rulesMode==='less-random-v1'?`Public victory points, including ${view.lessRandom?.reputationBySeat[seat.id]?.reduce((total,value)=>total+value,0)??0} reputation`:'Public victory points; reputation excluded'}>{liveScores.find(score => score.playerId === seat.id)!.total}<small>VP</small></span>
+                <span className="dg-roster-vp" title={view.phase === "finished" ? "Final victory points" : gameRules(view).publicReputation?`Public victory points, including ${view.lessRandom?.reputationBySeat[seat.id]?.reduce((total,value)=>total+value,0)??0} reputation`:'Public victory points; reputation excluded'}>{liveScores.find(score => score.playerId === seat.id)!.total}<small>VP</small></span>
               </button>
             ))}
           </div>

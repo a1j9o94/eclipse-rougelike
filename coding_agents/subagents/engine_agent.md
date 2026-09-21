@@ -348,3 +348,13 @@ Implemented: public combat simulation groups firing ships by owner/class, rolls 
 Tests first: new six-face simulation cases failed on faces 4, 5, 6 before simulation edits; the new heuristic test initially failed because its module did not exist. Added full-volley simultaneous backfire, destruction of a larger later-firing Rift ship, public expansion inventory/old-view regression, computer/shield independence and unchanged view assertions. Five focused files passed, 57 tests total: second_dawn_ai_simulation, second_dawn_ai_rift_value, second_dawn_ai_search, second_dawn_movement_battle_estimate, second_dawn_ai_strategy. Changed AI/test files pass ESLint. Supervisor owns full lint/build gate after integration.
 
 Decision: Rift heuristic treats expected enemy damage (1) minus expected backfire (1/3), normalized against existing base-cannon heuristic (1/3), for value 2 without computer scaling. This is a bounded ranking heuristic; displayed odds continue using actual dice simulation. No hidden deck or authoritative RNG access added.
+
+## 2026-09-20 — Independent settings AI/protocol slice
+
+Files: `shared/eclipse/protocol.ts`, `ai.ts`, `aiWorld.ts`, `aiEvaluation.ts`, `aiMinorSpecies.ts`. Public views carry rule overrides and redact disabled public supplies/maps even if bookkeeping contains values. Opponent frozen Ancient Might contribution stays hidden with private reputation. AI world sampling resolves each feature, retains options, and reads chosen round limits; previews value actual faction trades and own private reputation. No new public boundary types or emitted effects. Audit: `coding_agents/custom_rules_audit.md`.
+
+Result and next steps: focused tests green; parent owns shared integration and release gate.
+
+Follow-up: `runningScore.ts` now independently includes exploration, Quantum Labs and artifact VP while hiding reputation-derived Ancient Might, including own eliminated snapshots. `publicInspection.ts` explains the hidden portion and uses a mode-neutral Variant bonuses title.
+
+Final review: `factionPresentation.ts` accepts full RuleConfiguration while retaining historical RulesMode calls. `FactionPicker.tsx` accepts optional ruleOptions; `EmpireOverview.tsx` supplies full view. Reputation/exploration/faction explanations resolve independently. React best-practices checklist applied to these TSX updates (derived state only; no new hooks/effects). Parent addresses preset-reset and setup component-state synchronization findings.

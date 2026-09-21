@@ -1,3 +1,4 @@
+import { factionRulesMode } from './gameRules';
 import {DEVELOPMENTS,quantumResearchCost} from './developments';
 import { researchCostForSeat, constructionCostForSeat, getMinorSpecies } from "./minorSpecies";
 import { tradeQuote } from "./catalog";
@@ -34,7 +35,7 @@ export function previewCommand(
     if (!fundingSeat) throw Error("A command preview needs an owned seat.");
     for (const trade of command.trades) {
       fundingSeat.resources[trade.from] -=
-        (tradeQuote(fundingSeat.faction, trade.from, trade.to, trade.amount, view.rulesMode)?.input ?? 0);
+        (tradeQuote(fundingSeat.faction, trade.from, trade.to, trade.amount, factionRulesMode(view))?.input ?? 0);
       fundingSeat.resources[trade.to] += trade.amount;
     }
     return previewCommand(converted, command.action);
@@ -65,7 +66,7 @@ export function previewCommand(
     if (getMinorSpecies(command.minorSpeciesId).effect.kind === "population" && command.resource) population[command.resource]++;
   }
   if (command.type === "trade") {
-    resources[command.from] -= (tradeQuote(seat.faction, command.from, command.to, command.amount, view.rulesMode)?.input ?? 0);
+    resources[command.from] -= (tradeQuote(seat.faction, command.from, command.to, command.amount, factionRulesMode(view))?.input ?? 0);
     resources[command.to] += command.amount;
   }
   if (command.type === "research") {

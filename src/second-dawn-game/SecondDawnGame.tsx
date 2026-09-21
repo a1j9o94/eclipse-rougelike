@@ -1,4 +1,5 @@
-import RulesModePicker from './RulesModePicker';
+import GameRuleSettings,{type GameRuleSettingsValue} from './GameRuleSettings';
+import {factionRulesMode,type GameRuleOptions} from '../../shared/eclipse/gameRules';
 import {ChoiceCards} from './DecisionChoicePrimitives';
 import FactionSymbol from './FactionSymbol';
 import Leaderboard from './Leaderboard';
@@ -124,6 +125,10 @@ function ConnectedGame() {
   const [showCombatOdds,setShowCombatOdds]=useState(false);
   const [minorSpecies,setMinorSpecies]=useState(false);
   const [rulesMode,setRulesMode]=useState<RulesMode>('standard');
+  const [ruleOptions,setRuleOptions]=useState<GameRuleOptions|undefined>();
+  const [riftCannons,setRiftCannons]=useState(true);
+  const ruleConfig={rulesMode,ruleOptions};
+  const selectRules=(next:GameRuleSettingsValue)=>{setRulesMode(next.rulesMode??'standard');setRuleOptions(next.ruleOptions);setWarpPortals(next.warpPortals);setRiftCannons(next.riftCannons??next.rulesMode!=='less-random-v1');};
   const [bannedFaction,setBannedFaction]=useState<FactionId>('eridani');
   const initialization = useRef<Promise<string> | null>(null);
   const lastRequest = useRef<{
@@ -195,7 +200,7 @@ function ConnectedGame() {
     try{await action();}catch(error){setStatus(error instanceof Error?error.message:'The room could not be updated.');}finally{setBusy(false);}
   }
   function newRoom(settings:MultiplayerRoomSettings){
-    void roomAction(async()=>{const result=await createRoom({credential:credential!,settings:{...settings,factionProfile},faction,...(settings.rulesMode==='less-random-v1'&&getFaction(faction).species==='terran'?{bannedFaction}:{}),pieceColor:factionProfile==='expanded-v1'?pieceColor:undefined});window.location.assign(roomInvitePath(result.roomToken));});
+    void roomAction(async()=>{const result=await createRoom({credential:credential!,settings:{...settings,factionProfile},faction,...(factionRulesMode(settings)==='less-random-v1'&&getFaction(faction).species==='terran'?{bannedFaction}:{}),pieceColor:factionProfile==='expanded-v1'?pieceColor:undefined});window.location.assign(roomInvitePath(result.roomToken));});
   }
   useEffect(() => {
     if (credential) return;
@@ -228,9 +233,9 @@ function ConnectedGame() {
       const room = await createRoom({
         credential,
         faction,
-        ...(rulesMode==='less-random-v1'&&getFaction(faction).species==='terran'?{bannedFaction}:{}),
+        ...(factionRulesMode(ruleConfig)==='less-random-v1'&&getFaction(faction).species==='terran'?{bannedFaction}:{}),
         pieceColor:factionProfile==='expanded-v1'?pieceColor:undefined,
-        settings:{humanSeatCount:1,aiCount,aiDifficulty,rulesMode,warpPortals:rulesMode==='less-random-v1'?false:warpPortals,showCombatOdds,minorSpecies,factionProfile,timerMs:DEFAULT_ROOM_SETTINGS.timerMs},
+        settings:{humanSeatCount:1,aiCount,aiDifficulty,rulesMode,ruleOptions,riftCannons,warpPortals,showCombatOdds,minorSpecies,factionProfile,timerMs:DEFAULT_ROOM_SETTINGS.timerMs},
       });
       await setRoomReady({credential,roomToken:room.roomToken,ready:true});
       const result=await startRoom({credential,roomToken:room.roomToken});
@@ -354,14 +359,14 @@ function ConnectedGame() {
             <button onClick={() => setMatchId(null)}>Back to games</button>
           </>
         ) : creatingRoom ? (
-          <section className="dg-room dg-room-creation"><h2>Create multiplayer room</h2><div className="dg-room-creation-grid"><FactionPicker rulesMode={rulesMode} selected={faction} onSelect={setFaction} disabled={busy} profile={factionProfile} pieceColor={pieceColor} onPieceColorChange={setPieceColor}/><div><RoomSettingsEditor onRulesModeChange={setRulesMode} onProfileChange={chooseProfile} settings={{...DEFAULT_ROOM_SETTINGS,factionProfile,rulesMode,warpPortals:rulesMode==='less-random-v1'?false:DEFAULT_ROOM_SETTINGS.warpPortals}} disabled={!connected||!credential||busy} onSave={newRoom} saveLabel="Create room"/></div></div><button onClick={()=>setCreatingRoom(false)}>Back</button></section>
+          <section className="dg-room dg-room-creation"><h2>Create multiplayer room</h2><div className="dg-room-creation-grid"><FactionPicker rulesMode={rulesMode} ruleOptions={ruleOptions} selected={faction} onSelect={setFaction} disabled={busy} profile={factionProfile} pieceColor={pieceColor} onPieceColorChange={setPieceColor}/><div><RoomSettingsEditor onRulesChange={selectRules} onProfileChange={chooseProfile} settings={{...DEFAULT_ROOM_SETTINGS,factionProfile,rulesMode,ruleOptions,warpPortals,riftCannons}} disabled={!connected||!credential||busy} onSave={newRoom} saveLabel="Create room"/></div></div><button onClick={()=>setCreatingRoom(false)}>Back</button></section>
         ) : creating ? (
           <section className="dg-setup">
             <h2>New game</h2><FactionProfilePicker value={factionProfile} onChange={chooseProfile} disabled={busy}/>
-            {rulesMode==='standard'&&<p>Includes the Rift Cannon expansion.</p>}<RulesModePicker value={rulesMode} disabled={busy} onChange={setRulesMode}/>
+            <GameRuleSettings value={{...ruleConfig,warpPortals,riftCannons}} disabled={busy} onChange={selectRules}/>
             <p className="dg-solo-wait">Solo · Wait for me. No turn timer; your game waits until you return.</p>
             <div className="dg-solo-setup-grid">
-            <FactionPicker rulesMode={rulesMode} selected={faction} onSelect={setFaction} disabled={busy} profile={factionProfile} pieceColor={pieceColor} onPieceColorChange={setPieceColor}/>{rulesMode==='less-random-v1'&&getFaction(faction).species==='terran'&&<section className="dg-field"><strong>Alien species ban</strong><ChoiceCards label="Alien species ban" value={bannedFaction} disabled={busy} onChange={value=>setBannedFaction(value as FactionId)} options={listFactionsForProfile(factionProfile).filter(f=>f.species==='alien').map(f=>({value:f.id,label:f.name,visual:<FactionSymbol faction={f.id}/>}))}/></section>}
+            <FactionPicker rulesMode={rulesMode} ruleOptions={ruleOptions} selected={faction} onSelect={setFaction} disabled={busy} profile={factionProfile} pieceColor={pieceColor} onPieceColorChange={setPieceColor}/>{factionRulesMode(ruleConfig)==='less-random-v1'&&getFaction(faction).species==='terran'&&<section className="dg-field"><strong>Alien species ban</strong><ChoiceCards label="Alien species ban" value={bannedFaction} disabled={busy} onChange={value=>setBannedFaction(value as FactionId)} options={listFactionsForProfile(factionProfile).filter(f=>f.species==='alien').map(f=>({value:f.id,label:f.name,visual:<FactionSymbol faction={f.id}/>}))}/></section>}
             <aside className="dg-solo-controls">
             <label className="dg-field">
               AI opponents
@@ -375,15 +380,6 @@ function ConnectedGame() {
                   </option>
                 ))}
               </select>
-            </label>
-            <label className="dg-check">
-              <input
-                type="checkbox"
-                checked={rulesMode==='less-random-v1'?false:warpPortals}
-                disabled={rulesMode==='less-random-v1'}
-                onChange={(e) => setWarpPortals(e.target.checked)}
-              />
-              Use base-game warp portals
             </label>
             <label className="dg-check"><input type="checkbox" checked={showCombatOdds} onChange={event=>setShowCombatOdds(event.target.checked)}/>Show estimated combat odds in movement and fleet inspection</label>
             <label className="dg-check"><input type="checkbox" checked={minorSpecies} disabled={busy} onChange={event=>setMinorSpecies(event.target.checked)}/>Include Minor Species</label>

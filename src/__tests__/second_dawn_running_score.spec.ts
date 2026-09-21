@@ -1,3 +1,5 @@
+import {SECTORS} from '../../shared/eclipse/sectors';
+import {scoreInspection} from '../second-dawn-game/publicInspection';
 import { expect, it } from 'vitest';
 import { createGame } from '../../shared/eclipse/setup';
 import { getPlayerView } from '../../shared/eclipse/protocol';
@@ -17,3 +19,26 @@ it('filters frozen reputation at the server view boundary while preserving own a
 });
 
 it('omits own frozen reputation from the public running score until final scoring',()=>{const s=fixture();const frozen=scoreSeat(s,s.seats[0]);s.engine!.scores=[frozen];s.seats[0].eliminated=true;const result=runningScore(getPlayerView(s,'a'),'a');expect(result.breakdown.reputation).toBe(0);expect(result.breakdown.total).toBe(frozen.total-frozen.reputation);expect(result.hiddenReputation).toBe(true);});
+
+
+it('shows public exploration, development and artifact bonuses while concealing Ancient Might with private reputation',()=>{
+ const s=fixture();s.ruleOptions={explorationRules:true,technologyVariant:true,discoveryVariant:true};
+ s.lessRandom={explorationJokers:{a:true,b:true},outerPlacementsThisRound:{},discoverySupply:[],reputationSupply:[],reputationBySeat:{},reservedDiscoveries:{}};
+ s.seats[0].developments=[{id:'quantum-labs',technologyId:'improved-hull'}];s.seats[0].discoveryBonuses=['artifacts','reputation'];
+ const artifact=SECTORS.find(sector=>sector.artifacts>0)!;const sector=s.sectors.find(item=>item.owner==='a')!;sector.tileId=String(artifact.id);
+ const expected=3+artifact.artifacts;
+ for(const viewer of ['a','b']){
+  const view=getPlayerView(s,viewer)!;expect(runningScore(view,'a').breakdown.variant).toBe(expected);
+  const detail=scoreInspection(view,'a','variant');expect(detail.value).toBe(expected);expect(detail.explanation).toContain('Ancient Might');expect(detail.explanation).toContain('hidden');
+ }
+});
+
+it('subtracts frozen private Ancient Might exactly once from both own and opponent public scores',()=>{
+ const s=fixture();s.ruleOptions={discoveryVariant:true};s.seats[0].discoveryBonuses=['reputation'];s.seats[0].developments=[{id:'quantum-labs',technologyId:'improved-hull'}];
+ const frozen=scoreSeat(s,s.seats[0]);s.engine!.scores=[frozen];s.seats[0].eliminated=true;
+ for(const viewer of ['a','b']){
+  const score=runningScore(getPlayerView(s,viewer)!,'a').breakdown;
+  expect(score.variant).toBe(1);expect(score.total).toBe(frozen.total-frozen.reputation-2);
+ }
+ s.phase='finished';expect(runningScore(getPlayerView(s,'a')!,'a').breakdown).toEqual(frozen);
+});

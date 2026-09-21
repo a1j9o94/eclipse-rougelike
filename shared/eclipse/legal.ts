@@ -1,6 +1,8 @@
+import { factionRulesMode } from './gameRules';
 import { researchedTechnologyIds } from './technologies';
 import { DEVELOPMENTS, developmentAvailable, quantumResearchCost } from './developments';
-import { isLessRandom, outerPlacementLimit } from './lessRandom';
+import { outerPlacementLimit } from './lessRandom';
+import { gameRules } from './gameRules';
 import { researchCostForSeat, constructionCostForSeat, minorSpeciesPurchaseOptions, getMinorSpecies, hasEmptyAmbassadorSpace } from "./minorSpecies";
 import { planBlueprintUpgrade } from "./upgradePlan";
 import { BASE_COMPONENTS, SETUP_BY_PLAYER_COUNT, type PlayerCount, factionHasCapability, getFaction, tradeQuote } from "./catalog";
@@ -132,7 +134,7 @@ export function legalCommands(
       for (const to of RESOURCES) {
         if (from === to) continue;
         for (let amount = 1; amount <= 16; amount++) {
-          const quote = tradeQuote(seat.faction, from, to, amount, view.rulesMode);
+          const quote = tradeQuote(seat.faction, from, to, amount, factionRulesMode(view));
           if (!quote || quote.input > seat.resources[from]) continue;
           add(
             { type: "trade", from, to, amount },
@@ -611,7 +613,7 @@ export function legalCommands(
         const ring =
           distance <= 1 ? "inner" : distance === 2 ? "middle" : "outer";
         if (view.supplyCounts?.[ring] === 0) continue;
-        if (ring === 'outer' && isLessRandom(view) && ((view.lessRandom?.outerPlacementsThisRound[seat.id] ?? 0) >= outerPlacementLimit(view,seat) || view.sectors.filter(s => BASE_COMPONENTS.sectorIds.outer.some(id => String(id) === s.tileId)).length >= SETUP_BY_PLAYER_COUNT[view.seats.length as PlayerCount].outerSectors)) continue;
+        if (ring === 'outer' && gameRules(view).explorationRules && ((view.lessRandom?.outerPlacementsThisRound[seat.id] ?? 0) >= outerPlacementLimit(view,seat) || view.sectors.filter(s => BASE_COMPONENTS.sectorIds.outer.some(id => String(id) === s.tileId)).length >= SETUP_BY_PLAYER_COUNT[view.seats.length as PlayerCount].outerSectors)) continue;
         const key = `${position.q},${position.r}`;
         if (
           seen.has(key) ||
@@ -637,7 +639,7 @@ export function legalCommands(
       const technology = TECHNOLOGIES.find((t) => t.id === tileId);
       if (!technology) continue;
       for (const track of TRACKS) {
-        const quantum = isLessRandom(view) ? quantumResearchCost(seat,technology.id,track) : null;
+        const quantum = gameRules(view).technologyVariant ? quantumResearchCost(seat,technology.id,track) : null;
         if (quantum !== null && seat.resources.science >= quantum) add({type:'quantum-research',tileId,track},`Research ${technology.name} in Quantum Labs`,`${quantum} science; outside your research tracks.`);
         const cost = researchCostForSeat(technology.id, track, seat);
         if (cost.ok && seat.resources.science >= cost.scienceCost)

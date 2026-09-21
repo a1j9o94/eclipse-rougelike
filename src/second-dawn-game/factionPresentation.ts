@@ -1,3 +1,4 @@
+import {gameRules,type RuleConfiguration} from '../../shared/eclipse/gameRules';
 import { getFaction, type FactionId } from "../../shared/eclipse/catalog";
 import { blueprintDefinition } from "../../shared/eclipse/blueprints";
 import type { StatIconName } from "./ShipPartStats";
@@ -86,7 +87,8 @@ function terranPresentation(): Omit<FactionPresentation, "startingShip" | "bluep
 }
 
 /** Human-readable effects are derived from reviewed catalog values and actual rules branches. */
-export function factionPresentation(id: FactionId, rulesMode?: RulesMode): FactionPresentation {
+export function factionPresentation(id: FactionId, config?: RulesMode | RuleConfiguration): FactionPresentation {
+  const rules = gameRules(typeof config === 'string' ? {rulesMode: config} : config ?? {});
   const faction = getFaction(id);
   const blueprint = blueprintDefinition(id, faction.startingShip);
   const permanent = blueprint.permanent;
@@ -94,11 +96,11 @@ export function factionPresentation(id: FactionId, rulesMode?: RulesMode): Facti
   const energy = permanent.energyProduction ? ` · ${permanent.energyProduction} permanent energy` : "";
   const computer = permanent.computer ? ` · +${permanent.computer} computer` : "";
   const base=presentations[id];const benefits=[...common,...base.benefits],constraints=[...base.constraints];
-  if(rulesMode==='less-random-v1'){
-    if(id==='eridani') benefits[benefits.length-1]={icon:'discovery',value:'2',label:'public reputation draws',detail:'Begin with two public reputation draws. Reputation tiles remain visible to every player.'};
+  if(rules.publicReputation&&id==='eridani') benefits[benefits.length-1]={icon:'discovery',value:'2',label:'public reputation draws',detail:'Begin with two public reputation draws. Reputation tiles remain visible to every player.'};
+  if(rules.explorationRules&&id==='draco') constraints[1]='For each Explore activation, draw three sectors and choose one or discard all three.';
+  if(rules.factionVariant){
     if(id==='eridani') constraints.push('Trade 2 resources for 1; 3 Money can instead buy 2 Science or Materials.');
     if(id==='mechanema') constraints[0]='Your strength is production; trade 2 resources for 1.';
-    if(id==='draco') constraints[1]='For each Explore activation, draw three sectors and choose one or discard all three.';
     if(faction.species==='terran'){benefits[1]={icon:'population',value:'3:2',label:'trade',detail:'Trade 3 of one resource for 2 of another, or use the normal 2:1 trade when needed.'};constraints.push('At setup, ban one unchosen alien species from this game.');}
   }
   return {

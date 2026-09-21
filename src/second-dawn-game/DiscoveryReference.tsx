@@ -1,5 +1,6 @@
+import {gameRules} from '../../shared/eclipse/gameRules';
 import {useId,useState} from 'react';
-import {createLessRandomDiscoverySupply,getDiscovery,type DiscoveryEffect} from '../../shared/eclipse/discoveries';
+import {createLessRandomDiscoverySupply,createDiscoverySupply,getDiscovery,type DiscoveryEffect} from '../../shared/eclipse/discoveries';
 import type {PlayerView} from '../../shared/eclipse/types';
 import {describeShipPart} from './itemDescriptions';
 import ShipPartStats,{StatIcon} from './ShipPartStats';
@@ -18,21 +19,21 @@ function describeReward(effect:DiscoveryEffect):string {
  }
 }
 
-const discoveryOptions=[...new Set(createLessRandomDiscoverySupply())].map(id=>{
+function referenceOptions(view:PlayerView){return [...new Set(gameRules(view).discoveryVariant?createLessRandomDiscoverySupply():createDiscoverySupply(view.warpPortals??true,view.riftCannons??false))].map(id=>{
  const tile=getDiscovery(id),description=describeReward(tile.effect);
  return {...tile,description,searchText:`${tile.name} ${description} ${tile.effect.kind==='ancient-ship-part'?describeShipPart(tile.effect.part):''}`.toLowerCase()};
-});
+});}
 
 export default function DiscoveryReference({view}:{view:PlayerView}) {
  const [open,setOpen]=useState(false),[search,setSearch]=useState('');
  const contentId=`discovery-options-${useId().replace(/[^a-zA-Z0-9_-]/g,'')}`;
- if(view.rulesMode!=='less-random-v1'||!view.lessRandom)return null;
+ if(!gameRules(view).publicDiscoveries||!view.lessRandom)return null;
  const supply=view.lessRandom.discoverySupply;
  const counts=new Map<string,number>();
  for(const id of supply)counts.set(id,(counts.get(id)??0)+1);
- const options=discoveryOptions.filter(tile=>tile.searchText.includes(search.trim().toLowerCase()));
+ const options=referenceOptions(view).filter(tile=>tile.searchText.includes(search.trim().toLowerCase()));
  return <section className="eo-panel eo-discovery-reference" aria-label="Discovery tile options">
-  <header><div><p className="sd-eyebrow">LESS RANDOM · SHARED SUPPLY</p><h2><StatIcon kind="discovery"/> Discovery tile options</h2><p className="eo-discovery-stock">{supply.length} {supply.length===1?'tile':'tiles'} remaining in the public supply</p></div><button type="button" aria-expanded={open} aria-controls={contentId} onClick={()=>setOpen(value=>!value)}>{open?'Hide':'Show'} discovery tile options</button></header>
+  <header><div><p className="sd-eyebrow">PUBLIC DISCOVERIES · SHARED SUPPLY</p><h2><StatIcon kind="discovery"/> Discovery tile options</h2><p className="eo-discovery-stock">{supply.length} {supply.length===1?'tile':'tiles'} remaining in the public supply</p></div><button type="button" aria-expanded={open} aria-controls={contentId} onClick={()=>setOpen(value=>!value)}>{open?'Hide':'Show'} discovery tile options</button></header>
   <div id={contentId} hidden={!open}>{open&&<>
    <p className="eo-discovery-intro">When you earn a discovery, choose a tile from the public supply. Keep a tile for 2 VP or use its reward. Availability here shows remaining copies; rewards may have additional requirements.</p>
    <label className="eo-discovery-search">Find a discovery<input type="search" value={search} onChange={event=>setSearch(event.target.value)} placeholder="Search names or effects"/></label>

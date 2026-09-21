@@ -1,3 +1,5 @@
+import { factionRulesMode } from './gameRules';
+import { gameRules } from './gameRules';
 import { performDevelopment } from './developments';
 import { focusUpkeepDecision, upkeepSeatUnfinished } from './upkeep';
 import { buyMinorSpecies } from "./minorSpeciesRules";
@@ -181,7 +183,7 @@ export function processGameCommand(
           trade.from,
           trade.to,
           trade.amount,
-          state.rulesMode,
+          factionRulesMode(state),
         );
         requireRule(
           result.ok,
@@ -192,7 +194,7 @@ export function processGameCommand(
         emit(
           events,
           actor,
-          `${getFaction(seat.faction).name} gains ${trade.amount} ${trade.to} by trading ${tradeQuote(seat.faction, trade.from, trade.to, trade.amount, state.rulesMode)!.input} ${trade.from}.`,
+          `${getFaction(seat.faction).name} gains ${trade.amount} ${trade.to} by trading ${tradeQuote(seat.faction, trade.from, trade.to, trade.amount, factionRulesMode(state))!.input} ${trade.from}.`,
           "resource",
         );
       }
@@ -214,7 +216,7 @@ export function processGameCommand(
         command.from,
         command.to,
         command.amount,
-        state.rulesMode,
+        factionRulesMode(state),
       );
       requireRule(
         result.ok,
@@ -275,7 +277,7 @@ export function processGameCommand(
         requireRule(index >= 0, "You do not own this reputation tile.");
         hidden.reputation.splice(index, 1);
         state.supplies.reputation.push(value);
-        if (state.lessRandom) {
+        if (gameRules(state).publicReputation && state.lessRandom) {
           state.lessRandom.reputationBySeat[actor] = [...hidden.reputation];
           state.lessRandom.reputationSupply.push(value);
         }

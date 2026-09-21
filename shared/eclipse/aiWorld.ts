@@ -1,7 +1,7 @@
 import { researchedTechnologyIds } from './technologies';
-import {isLessRandom} from './lessRandom';
+import {gameRules} from './gameRules';
 import {BASE_COMPONENTS,getFaction} from './catalog';
-import {createDiscoverySupply} from './discoveries';
+import {createDiscoverySupply,createLessRandomDiscoverySupply} from './discoveries';
 import {createTechnologyBag,createReputationSupply} from './supplies';
 import {SHIP_PARTS} from './parts';
 import {randomSeed,shuffle} from './random';
@@ -13,6 +13,7 @@ import type {GameState,PlayerView} from './types';
  */
 export function sampleAiWorld(view:PlayerView,seed:number):GameState {
  if(view.phase!=='action'||view.pendingDecision||view.actionProgress||view.waitingFor)throw new Error('Search worlds require an ordinary action boundary.');
+ const rules=gameRules(view);
  let random=randomSeed(seed>>>0);
  function mix<T>(items:readonly T[]):T[]{const result=shuffle(random,items);random=result.state;return result.items;}
  function remove<T>(items:T[],used:readonly T[]):void{for(const item of used){const i=items.indexOf(item);if(i>=0)items.splice(i,1);}}
@@ -21,10 +22,10 @@ export function sampleAiWorld(view:PlayerView,seed:number):GameState {
  const visible=new Set(view.sectors.map(s=>Number(s.tileId)));
  const allowed=(id:number)=>!visible.has(id)&&(warpPortals||!BASE_COMPONENTS.sectorIds.optionalWarpPortals.some(portal=>portal===id));
  const ring=(name:'inner'|'middle'|'outer')=>mix(BASE_COMPONENTS.sectorIds[name].filter(allowed)).slice(0,view.supplyCounts?.[name]).map(String);
- const technology=createTechnologyBag(random,warpPortals,riftCannons,isLessRandom(view)).tiles.map(t=>t.technology as string);
+ const technology=createTechnologyBag(random,warpPortals,riftCannons,rules.technologyVariant).tiles.map(t=>t.technology as string);
  remove(technology,view.technologyMarket);
  for(const seat of view.seats){const acquired=researchedTechnologyIds(seat);remove(acquired,getFaction(seat.faction).startingTechnologies);remove(technology,acquired);}
- const discoveries:string[]=createDiscoverySupply(warpPortals,riftCannons);remove(discoveries,view.private.discoveriesKept);
+ const discoveries:string[]=rules.discoveryVariant?createLessRandomDiscoverySupply():createDiscoverySupply(warpPortals,riftCannons);remove(discoveries,view.private.discoveriesKept);
  const visibleParts=view.seats.flatMap(s=>[...(s.storedParts??[]),...s.blueprints.flatMap(b=>[...b.parts,...(b.outsideParts??[])])]).filter((id):id is string=>id!==null&&SHIP_PARTS.some(p=>p.id===id&&p.access.kind==='ancient'));
  remove(discoveries,visibleParts);
  const discoveryPool=mix(discoveries);
@@ -32,15 +33,15 @@ export function sampleAiWorld(view:PlayerView,seed:number):GameState {
  remove(reputation,view.private.reputation);const repPool=mix(reputation);
  const privateSeats=view.seats.map(seat=>{
   const privateSeat=seat.id===view.viewerSeatId?structuredClone(view.private):{
-   seatId:seat.id,reputation:isLessRandom(view)?[...(view.lessRandom?.reputationBySeat[seat.id]??[])]:repPool.splice(0,view.hiddenTileCounts.find(c=>c.seatId===seat.id)?.reputation??0),
+   seatId:seat.id,reputation:rules.publicReputation?[...(view.lessRandom?.reputationBySeat[seat.id]??[])]:repPool.splice(0,view.hiddenTileCounts.find(c=>c.seatId===seat.id)?.reputation??0),
    discoveriesKept:discoveryPool.splice(0,view.hiddenTileCounts.find(c=>c.seatId===seat.id)?.discoveriesKept??0),
   };
-  const reserved=isLessRandom(view)?view.lessRandom?.reservedDiscoveries[seat.id]:null;
+  const reserved=rules.publicDiscoveries?view.lessRandom?.reservedDiscoveries[seat.id]:null;
   return reserved?{...privateSeat,storedDiscovery:reserved,storedDiscoveryResolved:false}:privateSeat;
  });
- const sectorDiscoveries=isLessRandom(view)?[]:view.sectors.filter(s=>s.discovery).flatMap(s=>{const discoveryId=discoveryPool.shift();return discoveryId?[{sectorId:s.id,discoveryId}]:[];});
- const supplies={inner:ring('inner'),middle:ring('middle'),outer:ring('outer'),technology:isLessRandom(view)?[]:mix(technology).slice(0,view.supplyCounts?.technology),discovery:isLessRandom(view)?[...(view.lessRandom?.discoverySupply??[])]:discoveryPool.slice(0,view.supplyCounts?.discovery),reputation:isLessRandom(view)?[...(view.lessRandom?.reputationSupply??[])]:repPool.slice(0,view.supplyCounts?.reputation)};
- return {...(view.rulesMode?{rulesMode:view.rulesMode}:{}),...(view.lessRandom?{lessRandom:structuredClone(view.lessRandom)}:{}),...(view.minorSpecies?{minorSpecies:structuredClone(view.minorSpecies)}:{}),...(view.factionProfile?{factionProfile:view.factionProfile}:{}),rulesVersion:view.rulesVersion,catalogVersion:view.catalogVersion,revision:view.revision,round:view.round,phase:view.phase,activeSeatId:view.activeSeatId,startSeatId:view.startSeatId,firstPasser:view.firstPasser??null,seats:structuredClone(view.seats),sectors:structuredClone(view.sectors),ships:structuredClone(view.ships),technologyMarket:[...view.technologyMarket],pendingDecision:null,privateSeats,random,supplies,
+ const sectorDiscoveries=rules.publicDiscoveries?[]:view.sectors.filter(s=>s.discovery).flatMap(s=>{const discoveryId=discoveryPool.shift();return discoveryId?[{sectorId:s.id,discoveryId}]:[];});
+ const supplies={inner:ring('inner'),middle:ring('middle'),outer:ring('outer'),technology:rules.openTechnology?[]:mix(technology).slice(0,view.supplyCounts?.technology),discovery:rules.publicDiscoveries?[...(view.lessRandom?.discoverySupply??[])]:discoveryPool.slice(0,view.supplyCounts?.discovery),reputation:rules.publicReputation?[...(view.lessRandom?.reputationSupply??[])]:repPool.slice(0,view.supplyCounts?.reputation)};
+ return {...(view.ruleOptions?{ruleOptions:structuredClone(view.ruleOptions)}:{}),...(view.rulesMode?{rulesMode:view.rulesMode}:{}),...(view.lessRandom?{lessRandom:structuredClone(view.lessRandom)}:{}),...(view.minorSpecies?{minorSpecies:structuredClone(view.minorSpecies)}:{}),...(view.factionProfile?{factionProfile:view.factionProfile}:{}),rulesVersion:view.rulesVersion,catalogVersion:view.catalogVersion,revision:view.revision,round:view.round,phase:view.phase,activeSeatId:view.activeSeatId,startSeatId:view.startSeatId,firstPasser:view.firstPasser??null,seats:structuredClone(view.seats),sectors:structuredClone(view.sectors),ships:structuredClone(view.ships),technologyMarket:[...view.technologyMarket],pendingDecision:null,privateSeats,random,supplies,
   engine:{warpPortals,riftCannons,action:null,decisions:[],sectorDiscoveries,discardedSectors:{inner:[],middle:[],outer:[]},discardedDiscoveries:[],boxedSectors:[],battle:null,battleSectors:[],upkeepDone:[],scores:null,nextId:1_000_000+view.revision*10_000},
  };
 }

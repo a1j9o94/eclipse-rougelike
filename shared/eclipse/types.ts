@@ -1,3 +1,4 @@
+import type {GameRuleOptions} from './gameRules';
 import type { MinorSpeciesId, MinorSpeciesState, MinorSpeciesTile } from "./minorSpecies";
 import type { CivilizationColor, FactionId, FactionProfile } from "./catalog";
 import type { RandomState } from "./random";
@@ -318,6 +319,7 @@ export interface GameState {
   factionProfile?: FactionProfile;
   /** Omitted snapshots use standard rules. */
   rulesMode?: RulesMode;
+  ruleOptions?: GameRuleOptions;
   lessRandom?: LessRandomState;
   revision: number;
   round: number;
@@ -496,6 +498,7 @@ export interface PlayerView {
   catalogVersion: string;
   factionProfile?: FactionProfile;
   rulesMode?: RulesMode;
+  ruleOptions?: GameRuleOptions;
   lessRandom?: LessRandomState;
   revision: number;
   /** Public turn boundary; distinguishes turns when a client misses intermediate AI updates. */

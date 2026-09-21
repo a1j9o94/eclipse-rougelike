@@ -163,9 +163,9 @@ function attackThrough(s: GameState, max = 250): void {
   throw new Error("did not finish");
 }
 describe("persisted complete battles", () => {
-  it("spends Less Random reputation draws from the public supply and mirrors scoring state", () => {
+  it.each([{rulesMode:"less-random-v1" as const},{ruleOptions:{publicReputation:true}}])("spends public reputation draws and mirrors scoring state (%j)", rules => {
     const s = fixture();
-    s.rulesMode = "less-random-v1";
+    Object.assign(s, rules);
     s.privateSeats[0].reputation = [1];
     s.lessRandom = {
       explorationJokers:{a:true,b:true,c:true}, outerPlacementsThisRound:{a:0,b:0,c:0},
@@ -178,9 +178,9 @@ describe("persisted complete battles", () => {
     expect(s.privateSeats[0].reputation).toEqual([2,1]);
     expect(s.lessRandom.reputationSupply).toEqual([3,4,1]);
   });
-  it("pauses a Less Random player volley before allocation until its result is accepted", () => {
+  it.each([{rulesMode:"less-random-v1" as const},{ruleOptions:{combatJokers:true}}])("pauses a player volley for an enabled combat Joker (%j)", rules => {
     const s = fixture();
-    s.rulesMode = "less-random-v1";
+    Object.assign(s, rules);
     s.seats[0].superJokers = 5;
     advanceCombat(s, []);
     expect(s.pendingDecision?.kind).toBe("combat-turn");

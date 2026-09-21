@@ -3,7 +3,7 @@ import {afterEach,expect,it,vi} from 'vitest';
 import {cleanup,fireEvent,render,screen,within} from '@testing-library/react';
 import {createGame} from '../../shared/eclipse/setup';
 import {getPlayerView} from '../../shared/eclipse/protocol';
-import {createLessRandomDiscoverySupply,getDiscovery} from '../../shared/eclipse/discoveries';
+import {createLessRandomDiscoverySupply,createDiscoverySupply,getDiscovery} from '../../shared/eclipse/discoveries';
 import EmpireOverview from '../second-dawn-game/EmpireOverview';
 
 afterEach(cleanup);
@@ -63,4 +63,14 @@ it('does not expose the public discovery reference in Standard mode or claim sto
  view.rulesMode='less-random-v1';delete view.lessRandom;
  ui.rerender(<EmpireOverview view={view} seatId="a" {...callbacks}/>);
  expect(screen.queryByRole('region',{name:'Discovery tile options'})).toBeNull();
+});
+
+
+it('shows the Standard inventory when only public discovery choices are enabled',()=>{
+ const state=createGame({seed:17,warpPortals:true,riftCannons:true,ruleOptions:{publicDiscoveries:true},seats:[{id:'a',faction:'planta',controller:'human'},{id:'b',faction:'draco',controller:'human'}]});
+ render(<EmpireOverview view={getPlayerView(state,'a')!} seatId="a" {...callbacks}/>);
+ const reference=openReference();
+ expect(within(reference).getAllByRole('article')).toHaveLength(new Set(createDiscoverySupply(true,true)).size);
+ expect(within(reference).getByRole('article',{name:'Ancient Warp Portal'})).toBeVisible();
+ expect(within(reference).queryByRole('article',{name:'Ancient Might'})).toBeNull();
 });

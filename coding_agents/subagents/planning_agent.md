@@ -622,3 +622,12 @@ Outcome: opt-in ten-round Régis variant, fully saved and available to humans/AI
 - Decision log: use existing resource icons; retain full faction identity through its accessible title; show a read-only discovery reference rather than issuing a reward command while browsing.
 - Follow-ups: record actual validation and delivery evidence after integration.
 - Result: all requested UI changes complete; 60 related tests, lint and build passed. Reviewed actual desktop/mobile browser images and measured an 8px timer/resource gap. See coding_agents/second_dawn_ux_clarity.md and the updated delivery ledger; human playtests and deployment remain outside this delivery.
+
+## September 20 — Independent custom game rules
+- Outcome: players configure game length and rule groups independently, or apply the complete Standard/Less Random presets in one click.
+- Acceptance: 1–20 rounds; independently open technology/public discovery/public reputation/exploration/combat Jokers/variant technology inventory/variant discovery inventory/faction rules; solo and room settings persist with readiness invalidation, visible summaries, AI support and correct endgame round; historical saves retain preset defaults. Deploy after passing gates per user preference.
+- Rules contract: optional `ruleOptions` overrides resolved by `gameRules`; `rulesMode` stays backward-compatible. Rift Cannons unavailable with combat Jokers or variant technology inventory; full preset disables portals/Rift. Custom public discoveries use the selected discovery inventory, not implicitly the variant inventory.
+- Failing-first tests: standard 10-round finish; independent setup supply/decisions/privacy; public-view and AI reconstruction; backend validators/save/readiness; UI preset/custom callbacks and display.
+- Risks: mixed configurations leaking hidden supply or diverging AI, partial backend rollout. Additive optional schema; deploy backend before frontend. No migrations of existing games.
+- Follow-ups: bounded regression batches, lint/build, local/live browser verification and release audit.
+- Result: independent settings and upkeep scroll fix complete. Final integrated gate: 175 tests in 29 bounded suites, full lint, codegen/typecheck/build passed. All 256 option configurations pass setup/privacy/legal smoke; custom seeded AI games finish. Browser settings and native upkeep scrolling verified on desktop/mobile. Backend-first main-only release follows automatically; see custom_game_rules_release.md.

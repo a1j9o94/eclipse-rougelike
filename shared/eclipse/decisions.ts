@@ -35,7 +35,8 @@ import type {
   Seat,
   Sector,
 } from "./types";
-import { isLessRandom, outerPlacementLimit } from './lessRandom';
+import { outerPlacementLimit } from './lessRandom';
+import { gameRules } from './gameRules';
 import { applyVariantDiscoveryEffect } from './developmentEffects';
 
 export function validateDiplomacy(
@@ -168,7 +169,7 @@ export function resolveGeneralChoice(
   );
   if (d.kind === "exploration" && c.kind === "exploration") {
     if (c.redraw) {
-      requireRule(isLessRandom(state) && d.redrawAvailable === true && state.lessRandom?.explorationJokers[seat.id] === true, 'Your Exploration Joker is unavailable.');
+      requireRule(gameRules(state).explorationRules && d.redrawAvailable === true && state.lessRandom?.explorationJokers[seat.id] === true, 'Your Exploration Joker is unavailable.');
       const ring = d.ring;
       requireRule(!!ring, 'This exploration cannot be redrawn.');
       const previous = [...d.drawnTileIds];
@@ -250,7 +251,7 @@ export function resolveGeneralChoice(
         ].push(tile);
       }
     if (c.tileId !== null) {
-      if (isLessRandom(state) && d.ring === 'outer') {
+      if (gameRules(state).explorationRules && d.ring === 'outer') {
         const placed = state.lessRandom!.outerPlacementsThisRound[seat.id] ?? 0;
         requireRule(placed < outerPlacementLimit(state, seat), 'You have already placed the maximum Outer sector this round.');
         const boardOuter = state.sectors.filter(sector => BASE_COMPONENTS.sectorIds.outer.includes(Number(sector.tileId))).length;
@@ -285,7 +286,7 @@ export function resolveGeneralChoice(
           arrival: 0,
         });
       }
-      if (def.discovery && !isLessRandom(state)) {
+      if (def.discovery && !gameRules(state).publicDiscoveries) {
         const id = state.supplies.discovery.shift();
         if (id)
           e.sectorDiscoveries.push({ sectorId: sector.id, discoveryId: id });
@@ -323,10 +324,13 @@ export function resolveGeneralChoice(
     // Older AI clients selected the decision's concrete tile ID rather than
     // echoing it in discoveryId; retain that deterministic compatibility.
     const discoveryId = c.discoveryId ?? d.tileId;
-    if (isLessRandom(state) && d.availableTileIds) {
+    if (gameRules(state).publicDiscoveries && d.availableTileIds) {
       requireRule(!!(discoveryId && d.availableTileIds?.includes(discoveryId) && state.lessRandom?.discoverySupply.includes(discoveryId)), 'Choose one available face-up discovery tile.');
       state.lessRandom!.discoverySupply.splice(state.lessRandom!.discoverySupply.indexOf(discoveryId), 1);
       state.supplies.discovery.splice(state.supplies.discovery.indexOf(discoveryId), 1);
+    } else {
+      // Hidden draws and redeemed reservations already identify one exact tile.
+      requireRule(discoveryId === d.tileId, 'Resolve the discovery tile that was drawn or reserved.');
     }
     const privateSeat = state.privateSeats.find((p) => p.seatId === seat.id)!;
     if (d.reserveForFourthTechnology) {

@@ -1,3 +1,4 @@
+import { gameRules } from './gameRules';
 import { reputationCapacityWithMinorSpecies } from "./minorSpecies";
 import { applyLessRandomReputation, bestReputation } from './reputation';
 import { substituteSuperJokerDice, superJokerFaces } from './lessRandomCombat';
@@ -246,7 +247,7 @@ function nextReputation(
         .reduce((n, k) => n + k.value, 0) +
         (b.participationEligible!.includes(owner) ? 1 : 0),
     );
-    if (state.rulesMode === "less-random-v1") {
+    if (gameRules(state).publicReputation) {
       if (!count) continue;
       const gained = reputationDrawMoney(player(state, owner).faction, count);
       if (gained) {
@@ -325,7 +326,7 @@ function rollAttack(
     `${group.shipType} rolled ${b.dice.map(describeDie).join(", ")}.`,
     "combat",
   );
-  if (state.rulesMode === "less-random-v1" && !neutral(group.owner) && (player(state, group.owner).superJokers ?? 0) > 0) {
+  if (gameRules(state).combatJokers && !neutral(group.owner) && (player(state, group.owner).superJokers ?? 0) > 0) {
     state.pendingDecision = {
       id: uniqueId(state, "super-joker"), kind: "super-joker", owner: group.owner,
       battleId: b.id, dice: structuredClone(b.dice), remaining: player(state, group.owner).superJokers ?? 0,
@@ -769,7 +770,7 @@ export function resolveCombatChoice(
       throw error;
     }
     hidden.reputation = result.kept;
-    if (state.lessRandom) {
+    if (gameRules(state).publicReputation && state.lessRandom) {
       state.lessRandom.reputationSupply = result.supply;
       state.lessRandom.reputationBySeat[actor] = [...result.kept];
     }

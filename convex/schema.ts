@@ -1,6 +1,6 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
-import { factionProfileValidator, pieceColorValidator, factionValidator, phaseValidator, receiptValidator, rulesModeValidator } from "./eclipseValidators";
+import { factionProfileValidator, pieceColorValidator, factionValidator, phaseValidator, receiptValidator, rulesModeValidator, gameRuleOptionsValidator } from "./eclipseValidators";
 
 /**
  * Eclipse: Second Dawn - Complete Data Schema
@@ -48,6 +48,7 @@ export default defineSchema({
     snapshotJson: v.string(),
     showCombatOdds: v.optional(v.boolean()),
     rulesMode: v.optional(rulesModeValidator),
+    ruleOptions: v.optional(gameRuleOptionsValidator),
     /** Abandonment freezes a run without inventing final scoring. Missing means active. */
     lifecycle: v.optional(v.literal('abandoned')),
     rollbackPendingId: v.optional(v.id('eclipseRollbacksV1')),
@@ -159,11 +160,13 @@ export default defineSchema({
     status: v.union(v.literal('waiting'), v.literal('playing'), v.literal('finished'), v.literal('closed')),
     factionProfile: v.optional(factionProfileValidator),
     rulesMode: v.optional(rulesModeValidator),
+    ruleOptions: v.optional(gameRuleOptionsValidator),
     humanSeatCount: v.number(),
     aiCount: v.number(),
     aiDifficulty: v.optional(v.union(v.literal('normal'), v.literal('hard'), v.literal('expert'))),
     timerMs: v.number(),
     warpPortals: v.boolean(),
+    riftCannons: v.optional(v.boolean()),
     showCombatOdds: v.optional(v.boolean()),
     minorSpecies: v.optional(v.boolean()),
     matchId: v.optional(v.id('eclipseMatchesV1')),

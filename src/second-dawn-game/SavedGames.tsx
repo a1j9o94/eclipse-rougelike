@@ -1,3 +1,4 @@
+import {gameRoundLimit} from '../../shared/eclipse/gameRules';
 import type {MatchSummary} from '../../convex/eclipseMatches';
 import {roomInvitePath,type MultiplayerRoomLobby} from '../../shared/eclipse/multiplayer';
 import './savedGames.css';
@@ -13,7 +14,7 @@ export default function SavedGames({matches,rooms,onOpen}:Props){
  // current player's ownership list; avoid listing the same completed game twice.
  const completedRooms=rooms?.filter(room=>room.status==='finished'&&!matches?.some(match=>match.matchId===room.matchId))??[];
  const completeCount=completed.length+completedRooms.length;
-const matchCard=(match:MatchSummary,finished:boolean)=><button key={match.matchId} onClick={()=>onOpen(match)}><strong>{match.participation&&match.participation!=='active'?'View board':finished?'View results':`Continue · round ${match.round} / ${match.rulesMode==='less-random-v1'?10:8}`}</strong><span>{match.playerCount} players · {match.participation==='abandoned'?'Quit':match.participation==='resigned'?'Resigned':finished?'Completed':match.phase} · {new Date(match.updatedAt).toLocaleDateString()}</span></button>;
+const matchCard=(match:MatchSummary,finished:boolean)=><button key={match.matchId} onClick={()=>onOpen(match)}><strong>{match.participation&&match.participation!=='active'?'View board':finished?'View results':`Continue · round ${match.round} / ${gameRoundLimit(match)}`}</strong><span>{match.playerCount} players · {match.participation==='abandoned'?'Quit':match.participation==='resigned'?'Resigned':finished?'Completed':match.phase} · {new Date(match.updatedAt).toLocaleDateString()}</span></button>;
  return <>
   {activeRooms.length>0&&<section className="dg-room-saves"><h2>Your game rooms</h2><div className="dg-saves">{activeRooms.map(saved=><a key={saved.roomToken} href={roomInvitePath(saved.roomToken)}><strong>{saved.status==='waiting'?'Open room':'Continue room game'}</strong><span> · {saved.settings.humanSeatCount} human players · {saved.settings.aiCount} AI · {saved.status}</span></a>)}</div></section>}
   <section aria-label="Active games"><h2>Active games</h2>{matches===undefined?<p>Looking for saves…</p>:active.length===0?<p>{completeCount?'No games in progress. Start a new galaxy when you’re ready.':'No saved Second Dawn games yet.'}</p>:<div className="dg-saves">{active.map(match=>matchCard(match,false))}</div>}</section>

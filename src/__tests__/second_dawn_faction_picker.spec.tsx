@@ -42,3 +42,20 @@ it("keeps the presentation facts aligned with the actual catalog/engine exceptio
   expect(factionPresentation('terran-directorate','less-random-v1').benefits).toContainEqual(expect.objectContaining({value:'3:2',label:'trade'}));
   expect(factionPresentation('draco','less-random-v1').constraints.join(' ')).toMatch(/three sectors/i);
 });
+
+
+it('describes independently selected reputation, exploration and faction changes accurately',()=>{
+ const factionOnly={ruleOptions:{factionVariant:true}};
+ expect(factionPresentation('eridani',factionOnly).benefits.map(benefit=>benefit.label)).not.toContain('public reputation draws');
+ expect(factionPresentation('eridani',factionOnly).constraints.join(' ')).toContain('3 Money');
+ expect(factionPresentation('draco',factionOnly).constraints.join(' ')).not.toContain('three sectors');
+ expect(factionPresentation('eridani',{ruleOptions:{publicReputation:true}}).benefits.map(benefit=>benefit.label)).toContain('public reputation draws');
+ expect(factionPresentation('eridani',{ruleOptions:{publicReputation:true}}).constraints.join(' ')).not.toContain('3 Money');
+ expect(factionPresentation('draco',{ruleOptions:{explorationRules:true}}).constraints.join(' ')).toContain('three sectors');
+ expect(factionPresentation('eridani',{rulesMode:'less-random-v1',ruleOptions:{publicReputation:false}}).benefits.map(benefit=>benefit.label)).not.toContain('public reputation draws');
+});
+
+it('passes individual rule options into the selected faction details',()=>{
+ render(<FactionPicker selected="draco" onSelect={()=>{}} rulesMode="standard" ruleOptions={{explorationRules:true}}/>);
+ expect(screen.getByText(/draw three sectors/i)).toBeVisible();
+});

@@ -1,3 +1,4 @@
+import {gameRules} from '../../shared/eclipse/gameRules';
 import { calculateScore, type ScoreBreakdown } from '../../shared/eclipse/scoring';
 import { sectorDefinition } from '../../shared/eclipse/sectors';
 import type { PlayerView } from '../../shared/eclipse/types';
@@ -7,29 +8,39 @@ export interface RunningScore {
   hiddenReputation: boolean;
   final: boolean;
 }
-/** Live board score, never a prediction of unearned VP. Standard reputation stays private; Less Random reputation and bonuses are public. */
+/** Live public board score. Reputation and its dependent bonuses stay hidden until enabled or final. */
 export function runningScore(view: PlayerView, seatId: string): RunningScore {
   const seat = view.seats.find(candidate => candidate.id === seatId);
   if (!seat) throw new RangeError(`Seat is absent from this view: ${seatId}`);
   const final = view.phase === 'finished';
   const own = seatId === view.viewerSeatId;
   const counts = view.hiddenTileCounts.find(candidate => candidate.seatId === seatId);
-  const publicReputation = view.rulesMode === 'less-random-v1';
+  const rules = gameRules(view);
+  const publicReputation = rules.publicReputation;
   const hiddenReputation = !final && !publicReputation && (own ? (counts?.reputation ?? 0) > 0 : true);
   const frozen = view.scores?.find(score => score.playerId === seatId);
   if (frozen && (final || seat.eliminated)) {
+    // Opponent snapshots already have reputation removed by the protocol; their
+    // zero reputation makes this redaction idempotent for either viewer.
+    const hiddenBonus = (seat.discoveryBonuses ?? []).filter(bonus => bonus === 'reputation').length * Math.floor(frozen.reputation / 3);
     return {
       breakdown: final || publicReputation
         ? { ...frozen }
-        : { ...frozen, reputation: 0, total: frozen.total - frozen.reputation },
+        : { ...frozen, reputation: 0, ...(hiddenBonus ? {variant: Math.max(0, (frozen.variant ?? 0) - hiddenBonus)} : {}), total: frozen.total - frozen.reputation - hiddenBonus },
       hiddenReputation,
       final,
     };
   }
+  const visibleReputation = publicReputation ? view.lessRandom?.reputationBySeat[seatId] ?? [] : final && own ? view.private.reputation : [];
+  const reputationBonus = Math.floor(visibleReputation.reduce((total, points) => total + points, 0) / 3);
+  const artifactBonus = view.sectors.filter(sector => sector.owner === seatId).reduce((total, sector) => total + (sectorDefinition(Number(sector.tileId))?.artifacts ?? 0), 0);
+  const variantVp = (rules.explorationRules && view.lessRandom?.explorationJokers[seatId] ? 2 : 0)
+    + (seat.developments?.some(development => development.id === 'quantum-labs' && development.technologyId) ? 1 : 0)
+    + (seat.discoveryBonuses ?? []).reduce((total, bonus) => total + (bonus === 'artifacts' ? artifactBonus : reputationBonus), 0);
   const breakdown = calculateScore({
     playerId: seatId,
     faction: seat.faction,
-    reputation: publicReputation ? view.lessRandom?.reputationBySeat[seatId] ?? [] : final && own ? view.private.reputation : [],
+    reputation: visibleReputation,
     ambassadors: seat.ambassadors.length,
     minorSpecies: seat.minorSpecies,
     reputationTileCount: own?view.private.reputation.length:counts?.reputation??0,
@@ -48,7 +59,7 @@ export function runningScore(view: PlayerView, seatId: string): RunningScore {
     ancientPartsUsed:seat.ancientPartsUsed??0,
     researchTracks: [seat.technologies.military.length, seat.technologies.grid.length, seat.technologies.nano.length],
     ancientsOnBoard: view.ships.filter(ship => ship.type === 'ancient').length,
-    variantVp: publicReputation ? (view.lessRandom?.explorationJokers[seatId] ? 2 : 0) + (seat.developments?.some(d=>d.id==='quantum-labs'&&d.technologyId) ? 1 : 0) + (seat.discoveryBonuses??[]).reduce((sum,bonus)=>sum+(bonus==='artifacts'?view.sectors.filter(s=>s.owner===seatId).reduce((n,s)=>n+(sectorDefinition(Number(s.tileId))?.artifacts??0),0):Math.floor((view.lessRandom?.reputationBySeat[seatId]??[]).reduce((a,b)=>a+b,0)/3)),0) : 0,
+    variantVp,
     resources: seat.resources,
   });
   return { breakdown, hiddenReputation, final };

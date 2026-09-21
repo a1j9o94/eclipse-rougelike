@@ -1,3 +1,4 @@
+import {gameRules} from '../../shared/eclipse/gameRules';
 import {useEffect,useState} from 'react';
 import {movementBattleEstimate,type MovementBattleEstimate} from '../../shared/eclipse/movementBattleEstimate';
 import type {PlayerView} from '../../shared/eclipse/types';
@@ -14,7 +15,7 @@ export default function MovementBattlePreview({view,shipIds,targetSectorId}:Prop
    <div className="dg-movement-odds-lead"><strong>≈{result.winPercent}%</strong><span>estimated fleet win</span></div>
    <div className="dg-movement-odds-meter" aria-hidden="true"><span style={{width:`${result.winPercent}%`}}/></div>
    <p>{result.friendlyShips} of your ships vs {result.enemyShips} enemy {result.enemyShips===1?'ship':'ships'}</p>
-   {view.rulesMode==='less-random-v1'&&<p>Super Joker use is not included in this estimate.</p>}<details><summary>Estimate assumptions</summary><p>{result.trials} simulations · sampling range {result.lowerPercent}–{result.upperPercent}%. This is an estimate, not a guarantee.</p><p>Current public loadouts and damage, with your fleet {result.defender?'defending':'attacking'}. No voluntary retreats, later reinforcements or upgrades. Automatic hit allocation and tied ship order can differ from player choices.</p><p>Winning means your fleet survives and the enemy fleet is destroyed. It does not predict taking control or destroying population.</p></details>
+   {gameRules(view).combatJokers&&<p>Super Joker use is not included in this estimate.</p>}<details><summary>Estimate assumptions</summary><p>{result.trials} simulations · sampling range {result.lowerPercent}–{result.upperPercent}%. This is an estimate, not a guarantee.</p><p>Current public loadouts and damage, with your fleet {result.defender?'defending':'attacking'}. No voluntary retreats, later reinforcements or upgrades. Automatic hit allocation and tied ship order can differ from player choices.</p><p>Winning means your fleet survives and the enemy fleet is destroyed. It does not predict taking control or destroying population.</p></details>
   </>}
  </section>;
 }

@@ -1,3 +1,4 @@
+import {gameRules} from '../../shared/eclipse/gameRules';
 import {seatColor} from './factionColors';
 import type {CSSProperties} from 'react';
 import {getFaction} from '../../shared/eclipse/catalog';
@@ -27,15 +28,15 @@ interface Props {
 }
 export default function ScoreWorkspace({view,scores,playerNames,onInspect,onHome,onPlayAgain,onGalaxy}:Props){
  const final=view.phase==='finished';
- const publicReputation=final||view.rulesMode==='less-random-v1';
- const visibleCategories=categories.filter(category=>(category.id!=='variant'||view.rulesMode==='less-random-v1')&&(category.id!=='minorSpecies'||view.minorSpecies||view.seats.some(seat=>seat.minorSpecies?.length)));
+ const publicReputation=final||gameRules(view).publicReputation;
+ const visibleCategories=categories.filter(category=>(category.id!=='variant'||gameRules(view).explorationRules||gameRules(view).discoveryVariant||gameRules(view).technologyVariant)&&(category.id!=='minorSpecies'||view.minorSpecies||view.seats.some(seat=>seat.minorSpecies?.length)));
  const ranks=rankScores(scores);
  const sorted=ranks.flatMap(rank=>rank.players.map(id=>({score:scores.find(score=>score.playerId===id)!,rank})));
  const winners=ranks[0]?.players??[];
  const name=(id:string)=>getFaction(view.seats.find(seat=>seat.id===id)!.faction).name;
  return <div className="sd-workspace dg-score-workspace">
   <header className="dg-score-heading">
-   <div><p className="sd-eyebrow">{final?(view.rulesMode==='less-random-v1'?'THE TENTH DAWN':'THE EIGHTH DAWN'):'YOUR EMPIRE’S PROGRESS'}</p><h1>{final?'Final standings':'Public victory points'}</h1>
+   <div><p className="sd-eyebrow">{final?`THE FINAL DAWN · ROUND ${view.round}`:'YOUR EMPIRE’S PROGRESS'}</p><h1>{final?'Final standings':'Public victory points'}</h1>
     <p>{final?'Every discovery, alliance and conquest has left its mark.':(publicReputation?'All reputation and variant bonuses are public.':'Your empire, one achievement at a time. Reputation stays hidden until the game ends.')}</p>
    </div>
    {final&&<div className="dg-endgame-actions"><button className="sd-primary" onClick={onPlayAgain}>Play again</button><button onClick={onHome}>Return home</button><button onClick={onGalaxy}>View final galaxy</button></div>}

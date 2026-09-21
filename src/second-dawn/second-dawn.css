@@ -682,7 +682,8 @@
   min-height: 0;
   overflow: auto;
 }
-.sd-main:has(.sd-map) {
+/* Only the active galaxy surface locks scrolling; minimized choices retain their maps. */
+.sd-main:has(> .sd-map, > .dg-board-surface > .sd-map) {
   overflow: hidden;
 }
 .sd-map {

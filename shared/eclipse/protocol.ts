@@ -1,3 +1,4 @@
+import {gameRules} from './gameRules';
 import { upkeepDecisionForSeat, upkeepSeatUnfinished } from './upkeep';
 import type {
   CommandRequest,
@@ -193,6 +194,7 @@ export function getPlayerView(
   viewerSeatId: SeatId,
 ): PlayerView | null {
   if (!state.seats.some((seat) => seat.id === viewerSeatId)) return null;
+  const rules = gameRules(state);
   const own = state.privateSeats.find((seat) => seat.seatId === viewerSeatId);
   if (!own) throw new Error('Seat has no private-state record.');
   const visibleOwn = { ...own };
@@ -206,7 +208,15 @@ export function getPlayerView(
     catalogVersion: state.catalogVersion,
     ...(state.factionProfile ? { factionProfile: state.factionProfile } : {}),
     ...(state.rulesMode ? { rulesMode: state.rulesMode } : {}),
-    ...(state.lessRandom ? { lessRandom: state.lessRandom } : {}),
+    ...(state.ruleOptions ? { ruleOptions: state.ruleOptions } : {}),
+    ...(state.lessRandom ? { lessRandom: {
+      explorationJokers: rules.explorationRules ? state.lessRandom.explorationJokers : {},
+      outerPlacementsThisRound: rules.explorationRules ? state.lessRandom.outerPlacementsThisRound : {},
+      discoverySupply: rules.publicDiscoveries ? state.lessRandom.discoverySupply : [],
+      reservedDiscoveries: rules.publicDiscoveries ? state.lessRandom.reservedDiscoveries : {},
+      reputationSupply: rules.publicReputation ? state.lessRandom.reputationSupply : [],
+      reputationBySeat: rules.publicReputation ? state.lessRandom.reputationBySeat : {},
+    } } : {}),
     revision: state.revision,
     actionTurnSerial: state.actionTurnSerial ?? 0,
     round: state.round,
@@ -249,11 +259,12 @@ export function getPlayerView(
     })),
     ...(state.engine ? {
       actionProgress: state.engine.action,
-      scores: state.engine.scores?.map(score =>
-        state.phase === 'finished' || state.rulesMode === 'less-random-v1' || score.playerId === viewerSeatId
-          ? score
-          : { ...score, reputation: 0, total: score.total - score.reputation }
-      ) ?? null,
+      scores: state.engine.scores?.map(score => {
+        if (state.phase === 'finished' || rules.publicReputation || score.playerId === viewerSeatId) return score;
+        const bonusCount = state.seats.find(seat => seat.id === score.playerId)?.discoveryBonuses?.filter(bonus => bonus === 'reputation').length ?? 0;
+        const hiddenBonus = bonusCount * Math.floor(score.reputation / 3);
+        return { ...score, reputation: 0, ...(hiddenBonus ? {variant: Math.max(0, (score.variant ?? 0) - hiddenBonus)} : {}), total: score.total - score.reputation - hiddenBonus };
+      }) ?? null,
       battle: state.engine.battle ? {
         id: state.engine.battle.id,
         sectorId: state.engine.battle.sectorId, attacker: state.engine.battle.attacker,

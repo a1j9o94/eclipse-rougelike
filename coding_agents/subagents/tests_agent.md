@@ -79,3 +79,13 @@ Ten focused picker tests plus existing editor/draft/fitting/class tests pass (30
 
 ### September 19 — Inline Research validation
 13 research/funding cases pass (initial local-containment/no-scroll failures recorded), including rare tracks and owned market duplicates. Six Chromium/WebKit desktop/phone isolated purchases succeed with zero selection scroll shift; doubled-text phone cards do not overflow. Actual rendered images reviewed; no human playtest claimed. Parent runs integrated final gates.
+
+## 2026-09-20 — Independent settings AI and privacy
+
+Result: added `second_dawn_custom_rules_privacy.spec.ts`; initial four cases failed before implementation (settings propagation, hidden inventory redaction, frozen Ancient Might points, game-length AI horizon). All now pass; added catalog/sampling isolation coverage. Relevant verification: 39 protocol/review/search/privacy tests, then 31 strategy/minor-species/full Less Random AI match/privacy tests passed (overlapping privacy cases). AI matches completed for two through six base seats and expanded civilizations. Targeted ESLint and `npm run typecheck:eclipse` passed.
+
+Next steps: parent runs final combined focused gate plus lint/build after all agents integrate; deploy via authorized existing Git-triggered pipeline.
+
+Follow-up public score slice: two new running-score cases failed first, then passed after separating public bonus categories from private reputation and making frozen Ancient Might redaction idempotent. Running score + public inspection + Less Random score + custom privacy: 19 tests passed; targeted ESLint passed.
+
+Final review follow-up: two faction description tests failed first. Full configuration now separates Eridani public reputation, Draco exploration, and changed faction trade/bans. Faction picker + expanded faction UI: 11 tests passed; targeted ESLint passed. Minor-species population purchase horizon regression also failed first and now passes (12 privacy/species tests).

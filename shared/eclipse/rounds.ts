@@ -1,3 +1,4 @@
+import { gameRules } from './gameRules';
 import { upkeepDecisionForSeat, upkeepSeatUnfinished } from './upkeep';
 import { discoveryAt } from './actions';
 import { eligibleDiplomacyPartners } from './decisions';
@@ -124,7 +125,7 @@ function aftermath(state: GameState, events: GameEvent[]): void {
       if (!sector.discovery || state.ships.some(ship => ship.sectorId === sector.id && ['ancient', 'guardian', 'gcds'].includes(ship.type))) continue;
       const seat = occupant(state, sector) ?? (sector.owner ? player(state, sector.owner) : undefined);
       if (!seat) continue;
-      if (state.rulesMode === 'less-random-v1') {
+      if (gameRules(state).publicDiscoveries) {
         discoveryAt(state, seat, sector);
         if (presentNextDecision(state)) return;
         continue;
@@ -162,7 +163,7 @@ function finishGame(state: GameState, events: GameEvent[]): void {
   emit(events, null, `The ${state.round}th round is complete. Final scoring is ready.`, 'score');
 }
 function cleanup(state: GameState, events: GameEvent[]): void {
-  if (state.round === (state.rulesMode === 'less-random-v1' ? 10 : 8) || living(state).length === 0) { finishGame(state, events); return; }
+  if (state.round >= gameRules(state).roundLimit || living(state).length === 0) { finishGame(state, events); return; }
   const e = continuation(state);
   if (!done(state, 'cleanup')) {
     mark(state, 'cleanup');
@@ -185,7 +186,7 @@ function cleanup(state: GameState, events: GameEvent[]): void {
   state.startSeatId = living(state).some(seat => seat.id === state.firstPasser) ? state.firstPasser! : living(state).some(seat => seat.id === state.startSeatId) ? state.startSeatId : living(state)[0].id;
   state.activeSeatId = state.startSeatId; state.firstPasser = null; state.round++; state.phase = 'action';
   e.action = null; e.aftermath = undefined; e.aftermathDone = []; e.upkeepDone = []; e.diplomacyDone = []; e.diplomacyDeclined = []; e.battleSectors = []; e.battle = null; e.combatInitialized = false;
-  if (state.lessRandom) state.lessRandom.outerPlacementsThisRound = Object.fromEntries(living(state).map(seat => [seat.id, 0]));
+  if (gameRules(state).explorationRules && state.lessRandom) state.lessRandom.outerPlacementsThisRound = Object.fromEntries(living(state).map(seat => [seat.id, 0]));
   emit(events, null, `Round ${state.round}: action phase.`, 'phase');
 }
 /** Called after every resolved decision; never consumes a outstanding player choice. */

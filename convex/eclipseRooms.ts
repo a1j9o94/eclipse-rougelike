@@ -1,3 +1,4 @@
+import { allowsRiftCannons, factionRulesMode } from '../shared/eclipse/gameRules';
 import {syncLeaderboardResult} from './eclipseLeaderboardStore';
 import {synchronizeUpkeepTimer,roomTimerTarget} from './eclipseUpkeepTimer';
 import { v } from "convex/values";
@@ -26,12 +27,14 @@ import { AI_BUDGETS, AI_VERSION } from "../shared/eclipse/aiConfig";
 import { AI_DECISION_DELAY_MS } from '../shared/eclipse/pacing';
 import { TIMEOUT_AI_HISTORY_MARKER } from "../shared/eclipse/history";
 import type { GameState, JournalEntry } from "../shared/eclipse/types";
-import { factionValidator, factionProfileValidator, pieceColorValidator, rulesModeValidator } from "./eclipseValidators";
+import { factionValidator, factionProfileValidator, pieceColorValidator, rulesModeValidator, gameRuleOptionsValidator } from "./eclipseValidators";
 import { scheduleAi } from "./eclipseMatches";
 
 const settingsValidator = v.object({
   factionProfile: v.optional(factionProfileValidator),
   rulesMode: v.optional(rulesModeValidator),
+  ruleOptions: v.optional(gameRuleOptionsValidator),
+  riftCannons: v.optional(v.boolean()),
   humanSeatCount: v.number(),
   aiCount: v.number(),
   aiDifficulty: v.optional(v.union(v.literal("normal"), v.literal("hard"), v.literal("expert"))),
@@ -79,7 +82,7 @@ async function ownedRoomSeat(ctx: ReadContext, credential: string, room: Doc<"ec
 }
 
 function settingsFor(room: Doc<"eclipseRoomsV1">): MultiplayerRoomSettings {
-  return { factionProfile: room.factionProfile ?? "base", ...(room.rulesMode?{rulesMode:room.rulesMode}:{}), humanSeatCount: room.humanSeatCount, aiCount: room.aiCount, ...(room.aiDifficulty ? {aiDifficulty: room.aiDifficulty} : {}), timerMs: room.timerMs, warpPortals: room.warpPortals, minorSpecies:room.minorSpecies??false, showCombatOdds:room.showCombatOdds??false };
+  return { factionProfile: room.factionProfile ?? "base", ...(room.rulesMode?{rulesMode:room.rulesMode}:{}), ...(room.ruleOptions?{ruleOptions:room.ruleOptions}:{}), ...(room.riftCannons!==undefined?{riftCannons:room.riftCannons}:{}), humanSeatCount: room.humanSeatCount, aiCount: room.aiCount, ...(room.aiDifficulty ? {aiDifficulty: room.aiDifficulty} : {}), timerMs: room.timerMs, warpPortals: room.warpPortals, minorSpecies:room.minorSpecies??false, showCombatOdds:room.showCombatOdds??false };
 }
 
 function toLobbySeats(room: Doc<"eclipseRoomsV1">, seats: readonly Doc<"eclipseRoomSeatsV1">[]): MultiplayerLobbySeat[] {
@@ -109,7 +112,7 @@ async function lobbyFor(ctx: ReadContext, room: Doc<"eclipseRoomsV1">, credentia
 }
 
 function requireSettings(settings: MultiplayerRoomSettings): void {
-  if (!isMultiplayerSettings(settings)) throw new Error("Choose 2–6 total seats and a timer from 30 seconds through 48 hours.");
+  if (!isMultiplayerSettings(settings)) throw new Error("Choose 2–6 total seats, 1–20 whole rounds, a timer from 30 seconds through 48 hours, and compatible Rift Cannon settings.");
 }
 
 function selectedColor(faction: FactionId, pieceColor: CivilizationColor | undefined, profile: FactionProfile): CivilizationColor {
@@ -198,12 +201,12 @@ export const createRoom = mutation({
     const guest = await findGuest(ctx, args.credential);
     if (!guest) throw new Error("Guest session required.");
     const pieceColor = selectedColor(args.faction, args.pieceColor, args.settings.factionProfile ?? "base");
-    requireTerranBan(args.faction,args.bannedFaction,[],args.settings.rulesMode,args.settings.factionProfile);
+    requireTerranBan(args.faction,args.bannedFaction,[],factionRulesMode(args.settings),args.settings.factionProfile);
     const now = Date.now();
     let roomToken = randomToken();
     while (await findRoom(ctx, roomToken)) roomToken = randomToken();
     const roomId = await ctx.db.insert("eclipseRoomsV1", { roomToken, hostGuestId: guest._id, status: "waiting", ...args.settings, createdAt: now, updatedAt: now });
-    await ctx.db.insert("eclipseRoomSeatsV1", { roomId, guestId: guest._id, slot: 1, faction: args.faction, ...(args.settings.rulesMode==='less-random-v1'&&args.bannedFaction?{bannedFaction:args.bannedFaction}:{}), pieceColor, ready: false, isHost: true, joinedAt: now });
+    await ctx.db.insert("eclipseRoomSeatsV1", { roomId, guestId: guest._id, slot: 1, faction: args.faction, ...(factionRulesMode(args.settings)==='less-random-v1'&&args.bannedFaction?{bannedFaction:args.bannedFaction}:{}), pieceColor, ready: false, isHost: true, joinedAt: now });
     const room = await ctx.db.get(roomId);
     if (!room) throw new Error("Room creation failed.");
     return { roomToken, lobby: await lobbyFor(ctx, room, args.credential) };
@@ -247,10 +250,10 @@ export const joinRoom = mutation({
     const profile = room.factionProfile ?? "base";
     const pieceColor = selectedColor(args.faction, args.pieceColor, profile);
     requireAvailableSelection(args.faction, pieceColor, seats, profile);
-    requireTerranBan(args.faction,args.bannedFaction,seats,room.rulesMode,room.factionProfile);
+    requireTerranBan(args.faction,args.bannedFaction,seats,factionRulesMode(room),room.factionProfile);
     const slot = Array.from({ length: room.humanSeatCount }, (_, index) => index + 1).find((candidate) => !seats.some((seat) => seat.slot === candidate));
     if (!slot) throw new Error("This room is full.");
-    await ctx.db.insert("eclipseRoomSeatsV1", { roomId: room._id, guestId: guest._id, slot, faction: args.faction, ...(room.rulesMode==='less-random-v1'&&args.bannedFaction?{bannedFaction:args.bannedFaction}:{}), pieceColor, ready: false, isHost: false, joinedAt: Date.now() });
+    await ctx.db.insert("eclipseRoomSeatsV1", { roomId: room._id, guestId: guest._id, slot, faction: args.faction, ...(factionRulesMode(room)==='less-random-v1'&&args.bannedFaction?{bannedFaction:args.bannedFaction}:{}), pieceColor, ready: false, isHost: false, joinedAt: Date.now() });
     await resetReady(ctx, room._id);
     await ctx.db.patch(room._id, { updatedAt: Date.now() });
     const updated = await ctx.db.get(room._id);
@@ -297,8 +300,8 @@ export const chooseRoomFaction = mutation({
     const pieceColor = selectedColor(args.faction, args.pieceColor, profile);
     const seats = await roomSeats(ctx, room._id);
     requireAvailableSelection(args.faction, pieceColor, seats.filter(seat => seat._id !== owned.seat._id), profile);
-    requireTerranBan(args.faction,args.bannedFaction,seats.filter(seat => seat._id !== owned.seat._id),room.rulesMode,profile);
-    await ctx.db.patch(owned.seat._id, { faction: args.faction, bannedFaction: room.rulesMode==='less-random-v1'?args.bannedFaction:undefined, pieceColor, ready: false });
+    requireTerranBan(args.faction,args.bannedFaction,seats.filter(seat => seat._id !== owned.seat._id),factionRulesMode(room),profile);
+    await ctx.db.patch(owned.seat._id, { faction: args.faction, bannedFaction: factionRulesMode(room)==='less-random-v1'?args.bannedFaction:undefined, pieceColor, ready: false });
     await resetReady(ctx, room._id);
     await ctx.db.patch(room._id, { updatedAt: Date.now() });
     const updated = await ctx.db.get(room._id);
@@ -317,18 +320,19 @@ export const updateRoomSettings = mutation({
     if (!owned?.seat.isHost) throw new Error("Only the host can change room settings.");
     const seats = await roomSeats(ctx, room._id);
     if (seats.length > args.settings.humanSeatCount) throw new Error("Cannot remove occupied human seats.");
-    if (args.settings.rulesMode !== 'less-random-v1')
+    if (factionRulesMode(args.settings) !== 'less-random-v1')
       for (const seat of seats) if (seat.bannedFaction) await ctx.db.patch(seat._id,{bannedFaction:undefined,ready:false});
     const factionProfile = args.settings.factionProfile ?? room.factionProfile ?? 'base';
+    for (const seat of seats) if (seat.bannedFaction && !factionAllowedForProfile(seat.bannedFaction, factionProfile)) await ctx.db.patch(seat._id, {bannedFaction:undefined,ready:false});
     const usedColors = new Set<CivilizationColor>();
     for (const seat of [...seats].sort((a, b) => a.slot - b.slot)) {
       if (!seat.faction) continue;
       const available = factionAllowedForProfile(seat.faction, factionProfile);
       const color = available ? selectedColor(seat.faction, seat.pieceColor, factionProfile) : undefined;
-      if (!color || usedColors.has(color)) await ctx.db.patch(seat._id, { faction: null, pieceColor: undefined, ready: false });
+      if (!color || usedColors.has(color)) await ctx.db.patch(seat._id, { faction: null, bannedFaction:undefined, pieceColor: undefined, ready: false });
       else { usedColors.add(color); await ctx.db.patch(seat._id, { pieceColor: color }); }
     }
-    await ctx.db.patch(room._id, { ...args.settings, factionProfile, minorSpecies:args.settings.minorSpecies??room.minorSpecies??false, showCombatOdds:args.settings.showCombatOdds??room.showCombatOdds??false, updatedAt: Date.now() });
+    await ctx.db.patch(room._id, { ...args.settings, rulesMode:args.settings.rulesMode, ruleOptions:args.settings.ruleOptions, riftCannons:args.settings.riftCannons, factionProfile, minorSpecies:args.settings.minorSpecies??room.minorSpecies??false, showCombatOdds:args.settings.showCombatOdds??room.showCombatOdds??false, updatedAt: Date.now() });
     await resetReady(ctx, room._id);
     const updated = await ctx.db.get(room._id);
     if (!updated) throw new Error("Room unavailable.");
@@ -348,7 +352,7 @@ export const setRoomReady = mutation({
       const profile = room.factionProfile ?? 'base';
       const color = selectedColor(owned.seat.faction, owned.seat.pieceColor, profile);
       requireAvailableSelection(owned.seat.faction, color, (await roomSeats(ctx, room._id)).filter(seat => seat._id !== owned.seat._id), profile);
-      requireTerranBan(owned.seat.faction,owned.seat.bannedFaction,(await roomSeats(ctx,room._id)).filter(seat=>seat._id!==owned.seat._id),room.rulesMode,profile);
+      requireTerranBan(owned.seat.faction,owned.seat.bannedFaction,(await roomSeats(ctx,room._id)).filter(seat=>seat._id!==owned.seat._id),factionRulesMode(room),profile);
     }
     await ctx.db.patch(owned.seat._id, { ready: args.ready });
     await ctx.db.patch(room._id, { updatedAt: Date.now() });
@@ -368,17 +372,17 @@ export const startRoom = mutation({
     const humanSeats = await roomSeats(ctx, room._id);
     const lobbySeats = toLobbySeats(room, humanSeats);
     const factionProfile = room.factionProfile ?? 'base';
-    if (!roomCanStart({ humanSeatCount: room.humanSeatCount, aiCount: room.aiCount, seats: lobbySeats, factionProfile, rulesMode:room.rulesMode })) throw new Error("Every human seat must be ready with a distinct faction; in Less Random, every Terran also needs a valid alien ban.");
+    if (!roomCanStart({ humanSeatCount: room.humanSeatCount, aiCount: room.aiCount, seats: lobbySeats, factionProfile, rulesMode:room.rulesMode, ruleOptions:room.ruleOptions })) throw new Error("Every human seat must be ready with a distinct faction; with faction changes enabled, every Terran also needs a valid alien ban.");
     const humans = [...humanSeats].sort((a, b) => a.slot - b.slot).map(seat => {
       if (!seat.faction) throw new Error('Choose a faction before starting.');
       return { id: `seat-${seat.slot}`, faction: seat.faction, ...(seat.bannedFaction?{bannedFaction:seat.bannedFaction}:{}), pieceColor: selectedColor(seat.faction, seat.pieceColor, factionProfile), controller: 'human' as const };
     });
-    const opponents = roomAiSelections(humans, room.aiCount, factionProfile, Math.random,room.rulesMode);
+    const opponents = roomAiSelections(humans, room.aiCount, factionProfile, Math.random,factionRulesMode(room));
     const seats = [...humans, ...opponents.map((opponent, index) => ({ id: `seat-${room.humanSeatCount + index + 1}`, ...opponent, controller: 'ai' as const }))];
     const rulesMode=room.rulesMode;
-    const state = createGame({ seed: Math.floor(Math.random() * 0x100000000), seats, factionProfile, ...(rulesMode?{rulesMode}:{}), warpPortals: rulesMode === 'less-random-v1' ? false : room.warpPortals, riftCannons: rulesMode !== 'less-random-v1', minorSpecies:room.minorSpecies??false, randomizeStartingPlayer: true });
+    const state = createGame({ seed: Math.floor(Math.random() * 0x100000000), seats, factionProfile, ...(rulesMode?{rulesMode}:{}), ...(room.ruleOptions?{ruleOptions:room.ruleOptions}:{}), warpPortals: room.warpPortals, riftCannons: room.riftCannons ?? (rulesMode !== 'less-random-v1' && allowsRiftCannons(room)), minorSpecies:room.minorSpecies??false, randomizeStartingPlayer: true });
     const now = Date.now();
-    const matchId = await ctx.db.insert("eclipseMatchesV1", { snapshotJson: JSON.stringify(state), rulesVersion: state.rulesVersion, catalogVersion: state.catalogVersion, revision: state.revision, round: state.round, phase: state.phase, ...(rulesMode?{rulesMode}:{}), roomToken: room.roomToken, showCombatOdds:room.showCombatOdds??false, aiDifficulty: room.aiDifficulty ?? "normal", aiVersion: AI_VERSION, createdAt: now, updatedAt: now });
+    const matchId = await ctx.db.insert("eclipseMatchesV1", { snapshotJson: JSON.stringify(state), rulesVersion: state.rulesVersion, catalogVersion: state.catalogVersion, revision: state.revision, round: state.round, phase: state.phase, ...(rulesMode?{rulesMode}:{}), ...(room.ruleOptions?{ruleOptions:room.ruleOptions}:{}), roomToken: room.roomToken, showCombatOdds:room.showCombatOdds??false, aiDifficulty: room.aiDifficulty ?? "normal", aiVersion: AI_VERSION, createdAt: now, updatedAt: now });
     await Promise.all(humanSeats.map((seat) => ctx.db.insert("eclipseOwnershipV1", { matchId, guestId: seat.guestId, seatId: `seat-${seat.slot}` })));
     await ctx.db.insert("eclipseAiJobsV1", { matchId, status: "waiting", expectedRevision: state.revision, attempts: 0, error: null, updatedAt: now });
     await ctx.db.patch(room._id, { status: "playing", matchId, updatedAt: now });
