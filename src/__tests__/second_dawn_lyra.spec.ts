@@ -60,6 +60,23 @@ describe('Enlightened of Lyra',()=>{
   expect(state.seats[0].shrines).toHaveLength(3);
   expect(hasTech(state.seats[0],'wormhole-generator')).toBe(true);
  });
+ it('grants the printed money and materials row rewards once each',()=>{
+  for(const [row,planetIndex] of [['money',3],['materials',0]] as const){
+    let state=game();state.seats[0].resources[row]=100;
+    const home=state.sectors.find(sector=>sector.owner==='lyra')!;
+    const discoveryBefore=state.supplies.discovery.length,influenceBefore=state.seats[0].influenceOnTrack;
+    for(let column=0;column<3;column++){
+      const sector={...structuredClone(home),id:`reward-${row}-${column}`,position:{q:column+10,r:1}};
+      state.sectors.push(sector);state.engine!.action=null;
+      const result=processGameCommand(state,'lyra',{type:'place-shrine',sectorId:sector.id,planetIndex,row,column:column as 0|1|2});
+      expect(result.ok).toBe(true);if(!result.ok)break;state=result.state;
+    }
+    if(row==='money'){
+      expect(state.supplies.discovery.length).toBe(discoveryBefore-1);
+      expect(state.pendingDecision?.kind).toBe('discovery');
+    }else expect(state.seats[0].influenceOnTrack).toBe(influenceBefore-2);
+  }
+ });
  it('spends exactly one colony ship to reroll exactly one die',()=>{
   const state=game();const seat=state.seats[0];
   const dice=[{id:'a',face:1,damage:1,computer:0,weaponColor:'yellow' as const},{id:'b',face:6,damage:1,computer:0,weaponColor:'orange' as const}];
