@@ -5,6 +5,9 @@
 .dg-upkeep-summary strong { display:block; margin:3px 0; font-size:15px; line-height:1.2; color:#a0d3b6; font-weight:700; }
 .dg-upkeep-summary summary > small { display:block; font-size:10px; margin-top:3px; color:#c3d2db; }
 .dg-upkeep-summary .dg-danger { color:#f6a4a1; }
+.dg-upkeep-link { display:block; width:100%; padding:0; border:0; background:none; text-align:left; cursor:pointer; }
+.dg-upkeep-link:hover strong,.dg-upkeep-link:focus-visible strong { text-decoration:underline; }
+.dg-upkeep-link:focus-visible { outline:2px solid #ead1a0; outline-offset:3px; }
 .dg-upkeep-explanation { position:absolute; top:calc(100% + 12px); right:0; width:335px; padding:16px; background:#15202b; border:1px solid #b58f4c; box-shadow:0 8px 22px #0009; z-index:40; color:#e4ded0; }
 .dg-app .dg-upkeep-explanation h3 { margin:0; color:#ead1a0; font-size:14px; }
 .dg-app .dg-upkeep-explanation p { font-size:12px; line-height:1.55; margin-top:10px; }

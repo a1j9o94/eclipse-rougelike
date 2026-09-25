@@ -1,7 +1,7 @@
 import {gameRules} from '../../shared/eclipse/gameRules';
 import { researchedTechnologyIds } from '../../shared/eclipse/technologies';
 import {seatColor} from './factionColors';
-import {useState,type CSSProperties} from 'react';
+import {useEffect,useRef,useState,type CSSProperties} from 'react';
 import {getFaction} from '../../shared/eclipse/catalog';
 import type {BlueprintShipType} from '../../shared/eclipse/blueprints';
 import {TECHNOLOGIES,type TechnologyId} from '../../shared/eclipse/technologies';
@@ -30,12 +30,13 @@ export interface EmpireOverviewProps {
  view:PlayerView|SpectatorView;seatId:string;onSector:(sectorId:string)=>void;
  onNavigate:(destination:EmpireDestination)=>void;onBlueprints:(type?:BlueprintShipType)=>void;
  onBuild?:(type:BlueprintShipType)=>void;buildOrder?:BuildOrderDraft;buildUnavailableReason?:string;
+ focusEconomyTracks?:number;
 }
 const names:Record<PlanetResource,string>={money:'Money',science:'Science',materials:'Materials',gray:'Flexible',orbital:'Orbital'};
 const actionIcons:Record<string,StatIconName>={explore:'discovery',influence:'influence',research:'computer',upgrade:'hull',build:'structure',move:'drive'};
 function ResourceSymbol({resource}:{resource:PlanetResource}){return <svg viewBox="0 0 20 20" aria-hidden="true"><PlanetIcon resource={resource}/></svg>;}
 const title=(text:string)=>text[0].toUpperCase()+text.slice(1);
-export default function EmpireOverview({view,seatId,onSector,onNavigate,onBlueprints,onBuild,buildOrder=emptyBuildOrder(),buildUnavailableReason}:EmpireOverviewProps){
+export default function EmpireOverview({view,seatId,onSector,onNavigate,onBlueprints,onBuild,buildOrder=emptyBuildOrder(),buildUnavailableReason,focusEconomyTracks=0}:EmpireOverviewProps){
  const seat=view.seats.find(seat=>seat.id===seatId)!;
  const faction=getFaction(seat.faction),presentation=factionPresentation(seat.faction,view),model=empireOverviewModel(view,seatId);
  const buildOptions=model.own&&onBuild&&'private' in view?empireBuildOptions(view,buildOrder):[];
@@ -48,6 +49,8 @@ export default function EmpireOverview({view,seatId,onSector,onNavigate,onBluepr
  const technology=TECHNOLOGIES.find(tech=>tech.id===selectedTech&&researched.includes(tech.id));
  const planets=model.planets.filter(planet=>planetGroup==='gray'?planet.resource==='gray'||planet.resource==='orbital':planet.resource===planetGroup);
  const readyCount=model.planets.filter(planet=>planet.readyResources.length>0).length;
+ const economyTracksRef=useRef<HTMLDivElement>(null);
+ useEffect(()=>{if(focusEconomyTracks>0&&model.own){economyTracksRef.current?.scrollIntoView({behavior:'smooth',block:'start'});economyTracksRef.current?.focus({preventScroll:true});}},[focusEconomyTracks,model.own]);
  return <div className="eo-overview" style={{'--empire-color':seatColor(seat)} as CSSProperties}>
   <header className="eo-hero">
    <div className="eo-hero-emblem"><FactionSymbol faction={seat.faction}/></div>
@@ -68,7 +71,7 @@ export default function EmpireOverview({view,seatId,onSector,onNavigate,onBluepr
    <section className="eo-panel eo-colony-supply" aria-label="Colony ships available"><header><h2>Colony ships</h2></header><div className="eo-colony-ships"><StatIcon kind="population"/><strong>{model.colonyShips}<small> / {model.colonyShipCapacity}</small></strong><span>available</span></div>{model.own&&<button className="sd-primary" disabled={upkeepComplete} title={upkeepComplete?'You have completed upkeep.':undefined} onClick={()=>onNavigate('colonize')}>Colonize planets</button>}</section>
   </div>
   <DiscoveryReference view={view}/>
-  <EmpireEconomyTracks seat={seat}/>
+  <div ref={economyTracksRef} tabIndex={-1} className="eo-economy-anchor"><EmpireEconomyTracks seat={seat}/></div>
   <section className="eo-panel eo-research"><header><div><p className="sd-eyebrow">KNOWLEDGE & CAPABILITIES</p><h2>Researched technologies</h2></div>{model.own&&<button onClick={()=>onNavigate('Research')}>Research technology</button>}</header>
    {(['military','grid','nano'] as const).map(track=><div key={track} className="eo-tech-track"><h3>{title(track)} <span>{seat.technologies[track].length} / 7</span></h3><ResearchDiscountTrack track={track} count={seat.technologies[track].length} minorSpecies={seat.minorSpecies}/><div className="eo-tech-tiles">{seat.technologies[track].length?seat.technologies[track].map(id=>{const tech=TECHNOLOGIES.find(tech=>tech.id===id);return tech?<button key={id} onClick={()=>setSelectedTech(tech.id)} aria-label={`Inspect ${tech.name}`} aria-pressed={selectedTech===tech.id}><strong>{tech.name}</strong><TechnologyStats technology={tech}/></button>:null;}):<small className="eo-muted">No technologies</small>}</div></div>)}
    <p className="eo-muted">Discounts reduce science costs on that track, never below a technology’s minimum price.</p>

@@ -1,4 +1,6 @@
 .eo-economy-tracks { margin-bottom:16px; }
+.eo-economy-anchor { scroll-margin-top:20px; }
+.eo-economy-anchor:focus { outline:none; }
 .eo-track { min-width:0; margin-top:14px; }
 .eo-influence { --resource-color:#a8c9d7; }
 .eo-track > header { display:flex; flex-wrap:wrap; align-items:center; gap:6px 14px; margin-bottom:7px; }
