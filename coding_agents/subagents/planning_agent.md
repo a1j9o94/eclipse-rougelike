@@ -719,3 +719,4 @@ Tests (must fail first): desktop and mobile Board click reaches own Command Cent
 Decision Log: give the prominent affordable-action count a direct navigation action, while keeping the adjacent This round control for the compact forecast explanation.
 Follow-ups: verify browser focus/scroll on both layouts and record release evidence in the UX ledger.
 Result & Next Steps: the count opens the player’s own economy tracks and keeps the forecast disclosure separately accessible. Three new interaction tests failed before implementation, then the focused 23-test batch, lint, and build passed. Local Chromium desktop and mobile checks reached the tracks with no errors or overflow. Release and live verification follow.
+Release: `fbafec4` merged into `main`; Vercel production reported Ready and the public guest game’s affordable-action button reached Income & upkeep tracks without page errors. Human playtest remains pending.
