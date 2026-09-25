@@ -106,7 +106,7 @@ export function isMultiplayerSettings(value: MultiplayerRoomSettings): boolean {
     typeof value.warpPortals === "boolean" &&
     (value.riftCannons === undefined || typeof value.riftCannons === "boolean") &&
     (!value.riftCannons || allowsRiftCannons(value)) &&
-    (value.factionProfile === undefined || ["base", "expanded-v1"].includes(value.factionProfile)) &&
+    (value.factionProfile === undefined || ["base", "expanded-v1", "expanded-v2"].includes(value.factionProfile)) &&
     (value.showCombatOdds === undefined || typeof value.showCombatOdds === "boolean") &&
     (value.minorSpecies === undefined || typeof value.minorSpecies === "boolean") &&
     (value.aiDifficulty === undefined || ["normal", "hard", "expert"].includes(value.aiDifficulty))

@@ -7,7 +7,7 @@ import type { DecisionChoice, GameCommand } from "../shared/eclipse/types";
 export const factionValidator: Validator<FactionId> = v.union(
   ...FACTION_IDS.map(id => v.literal(id)),
 );
-export const factionProfileValidator = v.union(v.literal('base'), v.literal('expanded-v1'));
+export const factionProfileValidator = v.union(v.literal('base'), v.literal('expanded-v1'), v.literal('expanded-v2'));
 export const rulesModeValidator = v.union(v.literal('standard'), v.literal('less-random-v1'));
 export const gameRuleOptionsValidator = v.object({
   roundLimit: v.optional(v.number()),

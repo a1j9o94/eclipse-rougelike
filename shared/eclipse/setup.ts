@@ -138,7 +138,7 @@ export function createGame(config: GameSetup): GameState {
   });
   const state: GameState = {
     ...profileVersions(profile, config.riftCannons, config.minorSpecies),
-    ...(profile === 'expanded-v1' ? { factionProfile: profile } : {}),
+    ...(profile !== 'base' ? { factionProfile: profile } : {}),
     ...(config.rulesMode === LESS_RANDOM_MODE ? { rulesMode: LESS_RANDOM_MODE } : {}),
     ...(config.ruleOptions ? { ruleOptions: { ...config.ruleOptions } } : {}),
     revision: 0,

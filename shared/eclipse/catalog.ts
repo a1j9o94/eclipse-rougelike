@@ -8,12 +8,16 @@ export const RULES_VERSION = 'second-dawn-base-2021-04-27' as const;
 export const CATALOG_VERSION = 'second-dawn-catalog-0.1' as const;
 export const EXPANDED_RULES_VERSION = 'second-dawn-expanded-v1-2026-05-20' as const;
 export const EXPANDED_CATALOG_VERSION = 'second-dawn-catalog-expanded-v1' as const;
-export type FactionProfile = 'base' | 'expanded-v1';
+export const EXPANDED_V2_RULES_VERSION = 'second-dawn-expanded-v2-2026-09-25' as const;
+export const EXPANDED_V2_CATALOG_VERSION = 'second-dawn-catalog-expanded-v2' as const;
+export type FactionProfile = 'base' | 'expanded-v1' | 'expanded-v2';
 export interface ProfileVersions { readonly rulesVersion: string; readonly catalogVersion: string }
 export function profileVersions(profile: FactionProfile, riftCannons = false, minorSpecies = false): ProfileVersions {
   const base = profile === 'base'
     ? { rulesVersion: RULES_VERSION, catalogVersion: CATALOG_VERSION }
-    : { rulesVersion: EXPANDED_RULES_VERSION, catalogVersion: EXPANDED_CATALOG_VERSION };
+    : profile === 'expanded-v1'
+      ? { rulesVersion: EXPANDED_RULES_VERSION, catalogVersion: EXPANDED_CATALOG_VERSION }
+      : { rulesVersion: EXPANDED_V2_RULES_VERSION, catalogVersion: EXPANDED_V2_CATALOG_VERSION };
   const rift = riftCannons
     ? { rulesVersion: `${base.rulesVersion}+rift-cannon-v1`, catalogVersion: `${base.catalogVersion}+rift-cannon-v1` }
     : base;
@@ -555,20 +559,28 @@ export const FACTION_REGISTRY: readonly FactionDefinition[] = [
 ];
 /** Compatibility catalog view. Base selection order and membership stay stable. */
 export const BASE_FACTIONS: readonly BaseFaction[] = FACTION_REGISTRY.slice(0, 12);
+const EXPANDED_V1_FACTION_IDS: ReadonlySet<FactionId> = new Set([
+  'eridani', 'hydran', 'planta', 'draco', 'mechanema', 'orion',
+  'terran-directorate', 'terran-federation', 'terran-union',
+  'terran-republic', 'terran-conglomerate', 'terran-alliance',
+  'rho-indi', 'magellan', 'midas', 'ragnarok',
+]);
 export function getFaction(id: FactionId): BaseFaction {
   const faction = FACTION_REGISTRY.find((candidate) => candidate.id === id);
   if (!faction) throw new Error(`Faction is absent from this catalog: ${id}`);
   return faction;
 }
 export function listFactions(profileOrContentPack?: FactionProfile | string): readonly FactionDefinition[] {
-  if (profileOrContentPack === 'base' || profileOrContentPack === 'expanded-v1')
+  if (profileOrContentPack === 'base' || profileOrContentPack === 'expanded-v1' || profileOrContentPack === 'expanded-v2')
     return listFactionsForProfile(profileOrContentPack);
   return profileOrContentPack
     ? FACTION_REGISTRY.filter(faction => faction.content.packId === profileOrContentPack)
-    : FACTION_REGISTRY;
+    : listFactionsForProfile('expanded-v1');
 }
 export function listFactionsForProfile(profile: FactionProfile): readonly FactionDefinition[] {
-  return profile === 'base' ? FACTION_REGISTRY.slice(0, 12) : FACTION_REGISTRY;
+  return profile === 'base' ? BASE_FACTIONS : profile === 'expanded-v1'
+    ? FACTION_REGISTRY.filter(faction => EXPANDED_V1_FACTION_IDS.has(faction.id))
+    : FACTION_REGISTRY;
 }
 export function factionAvailableInProfile(id: FactionId, profile: FactionProfile): boolean {
   return listFactionsForProfile(profile).some(faction => faction.id === id);

@@ -1,6 +1,7 @@
 # Reddit playtest feedback: next Second Dawn slices
 
 Status: upkeep colony review and exploration odds released as `8e1e2da` on September 25, 2026; action-layout and faction slices remain planned/in progress.
+Action-layout update: the owner requested a visual review before any UI implementation. [Desktop/mobile concept](mockups/second_dawn_action_layout.png) groups the six normal actions, Colonize/Trade, and the phase-ending control in stable areas. It is a static proposal only; no live controls have moved.
 Date: September 25, 2026.
 Source: player comments supplied by the product owner after the public post. One player stopped after round one because menus dominated the board and action buttons were hard to find; another repeatedly passed with unused colony ships. A reader asked why The Exiles and Enlightened of Lyra were absent. A companion-app author suggested exploration probabilities. These are distinct requests, not evidence that every proposed feature has been validated in play.
 
