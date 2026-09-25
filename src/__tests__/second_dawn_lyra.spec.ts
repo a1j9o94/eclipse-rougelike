@@ -9,7 +9,7 @@ import {hasTech} from '../../shared/eclipse/rulesState';
 import {resolveCombatChoice} from '../../shared/eclipse/battleEngine';
 import {chooseAiCommand} from '../../shared/eclipse/ai';
 
-const game = () => createGame({seed:238,warpPortals:true,seats:[{id:'lyra',faction:'lyra',controller:'human'},{id:'other',faction:'eridani',controller:'human'}],factionProfile:'expanded-v1'});
+const game = () => createGame({seed:238,warpPortals:true,seats:[{id:'lyra',faction:'lyra',controller:'human'},{id:'other',faction:'eridani',controller:'human'}],factionProfile:'expanded-v2'});
 
 describe('Enlightened of Lyra',()=>{
  it('starts with its printed faction resources and nine unbuilt Shrines',()=>{
@@ -82,7 +82,7 @@ describe('Enlightened of Lyra',()=>{
   expect(processGameCommand(saved,'lyra',{type:'end-action'}).ok).toBe(true);
  });
  it('lets Lyra AI finish a seeded match without an illegal Shrine or reroll command',()=>{
-  let state=createGame({seed:238,warpPortals:false,factionProfile:'expanded-v1',ruleOptions:{roundLimit:4},seats:[{id:'lyra',faction:'lyra',controller:'ai',pieceColor:'red'},{id:'other',faction:'orion',controller:'ai',pieceColor:'black'}]});
+  let state=createGame({seed:238,warpPortals:false,factionProfile:'expanded-v2',ruleOptions:{roundLimit:4},seats:[{id:'lyra',faction:'lyra',controller:'ai',pieceColor:'red'},{id:'other',faction:'orion',controller:'ai',pieceColor:'black'}]});
   let steps=0;
   while(state.phase!=='finished'&&steps<2500){
     const actor=state.pendingDecision?.owner??state.activeSeatId;
