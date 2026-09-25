@@ -648,3 +648,11 @@ Outcome: opt-in ten-round Régis variant, fully saved and available to humans/AI
 ## 2026-09-24 — Public spectator mode
 Outcome: room-link visitors watch all players and freely inspect only public game information.
 Acceptance, failing-first test list, decisions and rollback: [spectator plan](../second_dawn_spectators.md). Backend and UI implementation assigned independently; supervisor owns routing, integration and release gates. No seat takeover or puzzles.
+
+## 2026-09-25 — Reddit feedback and missing factions
+Outcome: make legal colonization visible before Pass, simplify action finding, and add the missing official expansion factions through separate complete releases.
+Acceptance: the [feedback plan](../reddit_feedback_2026_09_25.md) defines desktop/mobile opportunity cues, newcomer/expert action discovery, truthful exploration information, Exiles and Lyra rules/AI/UX, and versioned faction roster preservation.
+Risks & rollback: avoid false colony opportunities, nagging prompts, lost drafts, hidden deck leakage and faction save incompatibility; retain one-click Pass and release each shell/faction slice independently.
+Test list (must fail first when implementation begins): legal/no-legal/pending/mobile pre-pass cues and one submission; action reachability/draft preservation; deck privacy and variant odds; Exiles Orbital lifecycle/combat/scoring/recovery; Lyra Shrine/research/row-bonus/combat/scoring/recovery; AI full matches for each faction.
+Decision Log: plan the observed colony and navigation fixes first; keep probability claims limited to public facts; add Exiles then Lyra under a new pinned profile instead of changing `expanded-v1` membership.
+Follow-ups: implement and verify each slice, record actual human playtests and release evidence in the UX ledger.

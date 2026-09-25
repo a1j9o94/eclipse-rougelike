@@ -283,6 +283,10 @@ Use reviewable commits within each slice; do not hold every system for one giant
 | P4 | Implemented; backend rollout required for rich live replay | PR #87; additive metadata | [Combat evidence and compatibility](ux_p4_combat.md), [rollout boundary](ux_integrated_release.md) | Publish compatible Convex backend; verify live provenance/impact replay |
 | P5 | Implemented and cross-reviewed | PR #87; implementation `50a76be`, merge `f2869d0` | [Contextual actions](ux_p5_context.md), [history/scoring](ux_p5_history_scoring.md) | Live fixture checks recorded; human/physical-device playtest pending |
 
+### September 25 player feedback intake
+
+The [Reddit feedback plan](reddit_feedback_2026_09_25.md) adds planned follow-up slices for visible pre-pass colony opportunities, a more stable action layout, honest exploration odds, and the Exiles/Lyra factions. A player reported repeatedly passing with colony ships unused, and another stopped after round one because menu and button placement made actions hard to find. These are human observations; no new slice is marked implemented or verified by this intake.
+
 ## 7. Engineering seams and verification
 
 Primary UI: `src/second-dawn-game/SecondDawnBoard.tsx`, `BuildPlanner.tsx`, `MovementPlanner.tsx`, `movementPlanning.ts`, `BlueprintEditor.tsx`, `ActionEconomy.tsx`, `upkeepForecast.ts`, `FundingPlanSelector.tsx`, `fundedCandidates.ts`, `CombatDecisionVisuals.tsx`, `DecisionPanel.tsx`, `BattleOverview.tsx`, `SectorFleet.tsx`, `SectorPlanets.tsx`, `ColonizationPlanner.tsx`, `ExplorationDecision.tsx`, `DiscoveryDecision.tsx`, `InfluencePlanner.tsx`, `DiplomacyPanel.tsx`, `TradePanel.tsx`, `ActivityRecap.tsx`, `HistoryPanel.tsx`, and mobile shell components. Paths in this sentence are relative to `src/second-dawn-game/` after the first one.
