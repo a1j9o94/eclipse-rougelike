@@ -29,6 +29,11 @@ import { TIMEOUT_AI_HISTORY_MARKER } from "../shared/eclipse/history";
 import type { GameState, JournalEntry } from "../shared/eclipse/types";
 import { factionValidator, factionProfileValidator, pieceColorValidator, rulesModeValidator, gameRuleOptionsValidator } from "./eclipseValidators";
 import { scheduleAi } from "./eclipseMatches";
+import {getSpectatorView as projectSpectatorView} from '../shared/eclipse/protocol';
+import type {SpectatorView} from '../shared/eclipse/types';
+import type {AiDifficulty} from '../shared/eclipse/aiConfig';
+import type {PublicHistoryPage} from '../shared/eclipse/history';
+import {readPublicMatchHistory} from './eclipsePublicHistory';
 
 const settingsValidator = v.object({
   factionProfile: v.optional(factionProfileValidator),
@@ -107,7 +112,7 @@ async function lobbyFor(ctx: ReadContext, room: Doc<"eclipseRoomsV1">, credentia
     viewerSlot: viewer?.seat.slot ?? null,
     viewerIsHost: viewer?.seat.isHost ?? false,
     matchId: room.matchId ?? null,
-    timer: timer && room.humanSeatCount > 1 ? {...timerPublicView(timerFromRow(timer)),...(timer.upkeepRound!==undefined?{upkeepRound:timer.upkeepRound,upkeepSeatIds:timer.upkeepSeatIds??[]}: {})} : null,
+    timer: timer && room.humanSeatCount > 1 ? {...timerPublicView(timerFromRow(timer)),...(!viewer ? {decisionId:null,error:null} : {}),...(timer.upkeepRound!==undefined?{upkeepRound:timer.upkeepRound,upkeepSeatIds:timer.upkeepSeatIds??[]}: {})} : null,
   };
 }
 
@@ -497,5 +502,55 @@ export const retryRoomTimer = mutation({
     if (!timer || timer.status !== "failed") throw new Error("No failed room timer is available to retry.");
     await retryFailedRoomTimeout(ctx, room.matchId, timer.token);
     return null;
+  },
+});
+
+
+export interface RoomSpectatorView extends SpectatorView {
+  matchId: Id<'eclipseMatchesV1'>;
+  roomToken: string;
+  historyResetRevision: number;
+  matchLifecycle: 'active' | 'abandoned';
+  showCombatOdds: boolean;
+  playerNames: Record<string,string>;
+  aiDifficulty: AiDifficulty;
+  aiStatus: {status:'thinking'|'scheduled'|'waiting'|'failed'|'finished'} | null;
+  timer: {deadlineAt:number;targetSeatId:string;status:MultiplayerTurnTimer['status'];upkeepRound?:number;upkeepSeatIds?:string[]} | null;
+}
+
+/** A room link authorizes public inspection only; queries never advance workers or timers. */
+export const getSpectatorView = query({
+  args: {roomToken:v.string()},
+  handler: async(ctx,{roomToken}):Promise<RoomSpectatorView|null> => {
+    const room = await findRoom(ctx,roomToken);
+    if (!room?.matchId || room.status === 'waiting') return null;
+    const match = await ctx.db.get(room.matchId);
+    if (!match) return null;
+    const state = readState(match);
+    const owners = await ctx.db.query('eclipseOwnershipV1').withIndex('by_match_guest',q=>q.eq('matchId',match._id)).collect();
+    const playerNames:Record<string,string> = {};
+    for (const owner of owners) {
+      const name = await playerNameForGuest(ctx,owner.guestId);
+      if (name) playerNames[owner.seatId] = name;
+    }
+    const job = await ctx.db.query('eclipseAiJobsV1').withIndex('by_match',q=>q.eq('matchId',match._id)).unique();
+    const timer = room.humanSeatCount > 1 ? await ctx.db.query('eclipseRoomTimersV1').withIndex('by_match',q=>q.eq('matchId',match._id)).unique() : null;
+    const rollbacks = await ctx.db.query('eclipseRollbacksV1').withIndex('by_match_created',q=>q.eq('matchId',match._id)).collect();
+    return {
+      ...projectSpectatorView(state), matchId:match._id,roomToken,
+      historyResetRevision:Math.max(0,...rollbacks.filter(row=>row.status==='applied').map(row=>row.appliedRevision??0)),
+      matchLifecycle:match.lifecycle??'active',showCombatOdds:match.showCombatOdds??false,playerNames,
+      aiDifficulty:match.aiDifficulty??'normal',aiStatus:job ? {status:job.status} : null,
+      timer:timer ? {deadlineAt:timer.deadlineAt,targetSeatId:timer.targetSeatId,status:timer.status,...(timer.upkeepRound!==undefined ? {upkeepRound:timer.upkeepRound,upkeepSeatIds:timer.upkeepSeatIds??[]} : {})} : null,
+    };
+  },
+});
+
+export const getSpectatorHistory = query({
+  args: {roomToken:v.string(),beforeRevision:v.optional(v.number()),fromStart:v.optional(v.boolean()),limit:v.optional(v.number())},
+  handler: async(ctx,{roomToken,...options}):Promise<PublicHistoryPage|null> => {
+    const room = await findRoom(ctx,roomToken);
+    if (!room?.matchId || room.status === 'waiting') return null;
+    return readPublicMatchHistory(ctx,room.matchId,{...options,spectator:true});
   },
 });

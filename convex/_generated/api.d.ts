@@ -22,6 +22,7 @@ import type * as eclipseMaintenance from "../eclipseMaintenance.js";
 import type * as eclipseMatches from "../eclipseMatches.js";
 import type * as eclipsePlayerStore from "../eclipsePlayerStore.js";
 import type * as eclipsePlayers from "../eclipsePlayers.js";
+import type * as eclipsePublicHistory from "../eclipsePublicHistory.js";
 import type * as eclipseRollback from "../eclipseRollback.js";
 import type * as eclipseRooms from "../eclipseRooms.js";
 import type * as eclipseUpkeepTimer from "../eclipseUpkeepTimer.js";
@@ -45,6 +46,7 @@ declare const fullApi: ApiFromModules<{
   eclipseMatches: typeof eclipseMatches;
   eclipsePlayerStore: typeof eclipsePlayerStore;
   eclipsePlayers: typeof eclipsePlayers;
+  eclipsePublicHistory: typeof eclipsePublicHistory;
   eclipseRollback: typeof eclipseRollback;
   eclipseRooms: typeof eclipseRooms;
   eclipseUpkeepTimer: typeof eclipseUpkeepTimer;

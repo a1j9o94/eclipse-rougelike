@@ -8,7 +8,7 @@ import SecondDawnBoard from '../second-dawn-game/SecondDawnBoard';
 afterEach(()=>{cleanup();localStorage.clear();});
 function renderBoard(){const state=createGame({seed:42,seats:[{id:'a',faction:'terran-directorate',controller:'human'},{id:'b',faction:'hydran',controller:'ai'}]});state.activeSeatId='a';state.seats[0].resources.materials=20;const view=getPlayerView(state,'a')!,onSubmit=vi.fn();render(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="" onSubmit={onSubmit} onMenu={vi.fn()}/>);return{view,onSubmit};}
 it('opens settings without leaving the game and saves the dice preference without another confirmation',()=>{
- renderBoard();const settings=screen.getByRole('button',{name:'Settings',exact:true});settings.focus();fireEvent.click(settings);
+ renderBoard();fireEvent.click(screen.getByRole('button',{name:'Dismiss turn notice'}));const settings=screen.getByRole('button',{name:'Settings',exact:true});settings.focus();fireEvent.click(settings);
  const dialog=screen.getByRole('dialog',{name:'Game settings'});const dice=within(dialog).getByRole('checkbox',{name:/3D combat dice/});expect(dice).toBeChecked();fireEvent.click(dice);expect(localStorage.getItem('eclipse.second-dawn.dice3d.v1')).toBe('off');fireEvent.keyDown(dialog,{key:'Escape'});expect(screen.queryByRole('dialog',{name:'Game settings'})).toBeNull();expect(settings).toHaveFocus();
 });
 it('inspects an empire location without spending or editing an unfinished build order',()=>{

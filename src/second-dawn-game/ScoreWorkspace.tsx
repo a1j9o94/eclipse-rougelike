@@ -3,7 +3,7 @@ import {seatColor} from './factionColors';
 import type {CSSProperties} from 'react';
 import {getFaction} from '../../shared/eclipse/catalog';
 import {rankScores,type ScoreBreakdown} from '../../shared/eclipse/scoring';
-import type {PlayerView} from '../../shared/eclipse/types';
+import type {SpectatorView,PlayerView} from '../../shared/eclipse/types';
 import type {PublicScoreCategory} from './publicInspection';
 import FactionSymbol from './FactionSymbol';
 import './scoreWorkspace.css';
@@ -22,9 +22,9 @@ const categories:{id:PublicScoreCategory;label:string;color:string;path:string}[
  {id:'traitor',label:'Traitor',color:'#eb979c',path:'M12 2 21 6v6c0 5-9 10-9 10S3 17 3 12V6Z M8 8l8 8 M16 8l-8 8'},
 ];
 interface Props {
- view:PlayerView;scores:readonly ScoreBreakdown[];playerNames:Record<string,string>;
+ view:PlayerView|SpectatorView;scores:readonly ScoreBreakdown[];playerNames:Record<string,string>;
  onInspect:(seatId:string,category:PublicScoreCategory)=>void;
- onHome:()=>void;onPlayAgain:()=>void;onGalaxy:()=>void;
+ onHome:()=>void;onPlayAgain?:()=>void;onGalaxy:()=>void;
 }
 export default function ScoreWorkspace({view,scores,playerNames,onInspect,onHome,onPlayAgain,onGalaxy}:Props){
  const final=view.phase==='finished';
@@ -39,7 +39,7 @@ export default function ScoreWorkspace({view,scores,playerNames,onInspect,onHome
    <div><p className="sd-eyebrow">{final?`THE FINAL DAWN · ROUND ${view.round}`:'YOUR EMPIRE’S PROGRESS'}</p><h1>{final?'Final standings':'Public victory points'}</h1>
     <p>{final?'Every discovery, alliance and conquest has left its mark.':(publicReputation?'All reputation and variant bonuses are public.':'Your empire, one achievement at a time. Reputation stays hidden until the game ends.')}</p>
    </div>
-   {final&&<div className="dg-endgame-actions"><button className="sd-primary" onClick={onPlayAgain}>Play again</button><button onClick={onHome}>Return home</button><button onClick={onGalaxy}>View final galaxy</button></div>}
+   {final&&<div className="dg-endgame-actions">{onPlayAgain&&<button className="sd-primary" onClick={onPlayAgain}>Play again</button>}<button onClick={onHome}>Return home</button><button onClick={onGalaxy}>View final galaxy</button></div>}
   </header>
   {final&&winners.length>0&&<div className="dg-victory-banner">
    <div className="dg-victory-emblems">{winners.map(id=><FactionSymbol key={id} faction={view.seats.find(seat=>seat.id===id)!.faction}/>)}</div>
@@ -53,7 +53,7 @@ export default function ScoreWorkspace({view,scores,playerNames,onInspect,onHome
     return <article key={seat.id} className={`dg-score-card${winner?' dg-score-winner':''}`} aria-label={`${faction.name} score`} style={{'--score-faction':seatColor(seat)} as CSSProperties}>
      <header className="dg-score-card-heading">
       <div className="dg-score-crest"><FactionSymbol faction={seat.faction}/><span aria-label={`Rank ${rank.place}`}>{rank.place}</span></div>
-      <div className="dg-score-civilization"><h2>{faction.name}</h2><small>{seat.id===view.viewerSeatId?'You':playerNames[seat.id]??(seat.controller==='ai'?'Computer':'Player')}{seat.eliminated?' · eliminated':''}</small>{winner&&<span className="dg-score-winner-label">{rank.players.length>1?'Joint winner':'Winner'}</span>}</div>
+      <div className="dg-score-civilization"><h2>{faction.name}</h2><small>{seat.id===('viewerSeatId' in view?view.viewerSeatId:undefined)?'You':playerNames[seat.id]??(seat.controller==='ai'?'Computer':'Player')}{seat.eliminated?' · eliminated':''}</small>{winner&&<span className="dg-score-winner-label">{rank.players.length>1?'Joint winner':'Winner'}</span>}</div>
       <div className="dg-score-medallion" aria-label={`${final?'Final':'Public'} score: ${score.total} VP`}><strong>{score.total}</strong><span>VP</span></div>
      </header>
      <div className="dg-score-contributions" aria-hidden="true">{visibleCategories.filter(c=>(c.id!=='reputation'||publicReputation)&&(score[c.id]??0)>0).map(c=><span key={c.id} style={{flex:(score[c.id]??0)/Math.max(1,positiveTotal),background:c.color}} title={`${c.label}: ${score[c.id]} VP`}/>)}</div>

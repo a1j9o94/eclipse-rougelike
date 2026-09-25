@@ -23,6 +23,8 @@ import { isGuestCredential } from "../../shared/eclipse/guest";
 import { legalCommands } from "../../shared/eclipse/legal";
 import type { GameCommand, RulesMode } from "../../shared/eclipse/types";
 import SecondDawnBoard from "./SecondDawnBoard";
+import SpectatorBoard from "./SpectatorBoard";
+import {useSpectatorHistory} from "../second-dawn-session/useSpectatorHistory";
 import SavedGames from "./SavedGames";
 import FactionProfilePicker from "./FactionProfilePicker";
 import FactionPicker from './FactionPicker';
@@ -167,12 +169,15 @@ function ConnectedGame() {
     finally{setRecapSaving(false);}
   }
   const room=useQuery(api.eclipseRooms.getRoom,roomToken?{roomToken,...(credential?{credential}:{})}:'skip');
+  const watchingRoom=!!roomToken&&!!room?.matchId&&room.viewerSlot===null;
+  const spectatorView=useQuery(api.eclipseRooms.getSpectatorView,watchingRoom?{roomToken:roomToken!}:'skip');
+  const spectatorHistory=useSpectatorHistory(watchingRoom?roomToken:null,spectatorView?.historyResetRevision??0);
   const rooms=useQuery(api.eclipseRooms.listMyRooms,credential?{credential}:'skip');
   const profile=useQuery(api.eclipsePlayerStore.getPlayerProfile,credential?{credential}:'skip');
   function switchPlayer(next:string){switchPlayerCredential(localStorage,next);lastRequest.current=null;setMatchId(null);setRoomOverview(false);setCredential(next);setStatus('Player restored.');}
   const originalPlayer=readStorage('eclipse.second-dawn.original-player.v1');
   const previousPlayer=originalPlayer&&isGuestCredential(originalPlayer)&&originalPlayer!==credential?originalPlayer:readStorage('eclipse.second-dawn.previous-player.v1');
-  const playerAccess=<PlayerAccessPanel profile={profile??null} disabled={!connected||!credential||profile===undefined||busy} onRegister={(username,pin)=>registerPlayer({credential:credential!,username,...(pin?{pin}:{})})} onLogin={async(username,secret)=>{const result=await loginPlayer({username,secret});switchPlayer(result.credential);}} onRotateRecoveryCode={()=>rotateRecoveryCode({credential:credential!})} onPreviousPlayer={previousPlayer&&isGuestCredential(previousPlayer)&&previousPlayer!==credential?()=>switchPlayer(previousPlayer):undefined}/>;
+  const playerAccess=<PlayerAccessPanel profile={profile??null} loginDisabled={!connected||busy} disabled={!connected||!credential||profile===undefined||busy} onRegister={(username,pin)=>registerPlayer({credential:credential!,username,...(pin?{pin}:{})})} onLogin={async(username,secret)=>{const result=await loginPlayer({username,secret});switchPlayer(result.credential);}} onRotateRecoveryCode={()=>rotateRecoveryCode({credential:credential!})} onPreviousPlayer={previousPlayer&&isGuestCredential(previousPlayer)&&previousPlayer!==credential?()=>switchPlayer(previousPlayer):undefined}/>;
   const deadline=view?.multiplayer?.timer?.deadlineAt;
   useEffect(()=>{
     setClockExpired(deadline!==undefined&&Date.now()>=deadline);
@@ -203,7 +208,7 @@ function ConnectedGame() {
     void roomAction(async()=>{const result=await createRoom({credential:credential!,settings:{...settings,factionProfile},faction,...(factionRulesMode(settings)==='less-random-v1'&&getFaction(faction).species==='terran'?{bannedFaction}:{}),pieceColor:factionProfile==='expanded-v1'?pieceColor:undefined});window.location.assign(roomInvitePath(result.roomToken));});
   }
   useEffect(() => {
-    if (credential) return;
+    if (credential || (roomToken && room?.status !== 'waiting')) return;
     let active = true;
     initialization.current ??= loadOrCreateGuestCredential(localStorage, () =>
       issueGuest({}),
@@ -224,7 +229,7 @@ function ConnectedGame() {
     return () => {
       active = false;
     };
-  }, [credential, issueGuest]);
+  }, [credential, issueGuest, roomToken, room?.status]);
   async function newMatch() {
     if (!credential || !connected || busy) return;
     setBusy(true);
@@ -292,6 +297,9 @@ function ConnectedGame() {
     }
   }
   const takeover=view?.multiplayer?.timer?.targetSeatId===view?.viewerSeatId&&(clockExpired||['timed-out','failed'].includes(view?.multiplayer?.timer?.status??''));
+  if(watchingRoom&&!roomOverview)return spectatorView
+    ? <SpectatorBoard key={roomToken!} view={spectatorView} history={spectatorHistory} connected={connected&&browserOnline} playerNames={spectatorView.playerNames} timer={spectatorView.timer} lifecycle={spectatorView.matchLifecycle} onHome={()=>openHome()} onRoom={()=>setRoomOverview(true)}/>
+    : <main className="dg-lobby"><h1>{spectatorView===null?'Game unavailable':'Opening the public galaxy…'}</h1><p>{spectatorView===null?'This room’s game is no longer available.':connected?'Loading the live board.':'Waiting for a connection…'}</p><button onClick={()=>setRoomOverview(true)}>Room overview</button><button onClick={()=>openHome()}>All games</button></main>;
   if (matchId && view && !roomOverview)
     return (
       <>{gameControls.banner}<SecondDawnBoard
@@ -334,7 +342,7 @@ function ConnectedGame() {
         }}
       />{gameControls.dialogs}{recovery.error&&<div className="dg-foreground-warning" role="alert"><span>{recovery.error}</span><button onClick={recovery.retry}>Retry refresh</button></div>}</>
     );
-  if(roomToken)return <><div className="dg-room-player-access"><ConnectionStatus connected={connected} browserOnline={browserOnline} sessionReady={Boolean(credential&&guest)} status={status}/>{playerAccess}</div>{room===undefined?<main className="dg-lobby"><p>Loading game room…</p></main>:room===null?<main className="dg-lobby"><h1>Room unavailable</h1><p>This room link is no longer available.</p><a href="/">All games</a></main>:<RoomLobby lobby={room} disabled={!connected||!credential||busy||guest===null} onJoin={(selected,color,bannedFaction)=>{void roomAction(async()=>{await joinRoom({credential:credential!,roomToken,faction:selected,pieceColor:color,bannedFaction});});}} onLeave={()=>{void roomAction(async()=>{await leaveRoom({credential:credential!,roomToken});window.location.assign('/');});}} onFaction={(selected,color,bannedFaction)=>{void roomAction(async()=>{await chooseRoomFaction({credential:credential!,roomToken,faction:selected,pieceColor:color,bannedFaction});});}} onReady={ready=>{void roomAction(async()=>{await setRoomReady({credential:credential!,roomToken,ready});});}} onSettings={settings=>{void roomAction(async()=>{await updateRoomSettings({credential:credential!,roomToken,settings});});}} onStart={()=>{void roomAction(async()=>{await startRoom({credential:credential!,roomToken});setRoomOverview(false);});}} onEnter={()=>setRoomOverview(false)}/>}</>;
+  if(roomToken)return <><div className="dg-room-player-access"><ConnectionStatus connected={connected} browserOnline={browserOnline} sessionReady={watchingRoom||Boolean(credential&&guest)} status={status} readyMessage={watchingRoom?'Watching public game information.':undefined}/>{playerAccess}</div>{room===undefined?<main className="dg-lobby"><p>Loading game room…</p></main>:room===null?<main className="dg-lobby"><h1>Room unavailable</h1><p>This room link is no longer available.</p><a href="/">All games</a></main>:<RoomLobby lobby={room} disabled={!connected||!credential||busy||guest===null} onJoin={(selected,color,bannedFaction)=>{void roomAction(async()=>{await joinRoom({credential:credential!,roomToken,faction:selected,pieceColor:color,bannedFaction});});}} onLeave={()=>{void roomAction(async()=>{await leaveRoom({credential:credential!,roomToken});window.location.assign('/');});}} onFaction={(selected,color,bannedFaction)=>{void roomAction(async()=>{await chooseRoomFaction({credential:credential!,roomToken,faction:selected,pieceColor:color,bannedFaction});});}} onReady={ready=>{void roomAction(async()=>{await setRoomReady({credential:credential!,roomToken,ready});});}} onSettings={settings=>{void roomAction(async()=>{await updateRoomSettings({credential:credential!,roomToken,settings});});}} onStart={()=>{void roomAction(async()=>{await startRoom({credential:credential!,roomToken});setRoomOverview(false);});}} onEnter={()=>setRoomOverview(false)}/>}</>;
   if(showLeaderboard)return <Leaderboard onClose={()=>setShowLeaderboard(false)}/>;
   return (
     <main className="dg-lobby">

@@ -364,3 +364,23 @@ Implemented reusable ActionConfirmationNotice with session-only turn-scoped ackn
 
 ## September 20 — Shared-map decisions
 Added typed DecisionMapContext bridge, reused the existing inspector/mobile sheet in SecondDawnBoard, and adapted exploration, control/bankruptcy/portal, and automatic colonization controls to publish previews/highlights instead of rendering another galaxy. Camera/selection use the board's existing controls; same-decision drafts remain mounted during browsing. Explicit commands, legal validation, public/private state, and backend schemas are unchanged.
+
+## September 24, 2026 — Public spectator backend
+
+Outcome: a room link can read the live public board and retained public history without an owned seat, private information, or subscription side effects.
+
+- Extracted `PublicGameView`; seated `PlayerView` adds its unchanged ownership/private fields and `SpectatorView` adds only its discriminator. The shared public projection preserves public rule options and hides every seat's reputation and dependent score bonuses until public/final scoring permits them.
+- Added room-token `getSpectatorView` and `getSpectatorHistory`; public player names, timer status and latest applied rollback revision support observation/reconnects. No decision IDs, worker errors, ownership credentials, mutation controls or raw history requests are returned. Anonymous lobby timer responses now redact decision IDs and raw errors as well.
+- Shared bounded retained-history reader at `convex/eclipsePublicHistory.ts` preserves existing player pagination, rollback intervals and lifecycle markers while spectators receive an allowlisted history shape.
+- Failing-first evidence: protocol suite initially 3 missing-projection failures; rooms initially missing-query failure; explicit anonymous lobby timer sentinel failed before redaction. Final backend run: 39 tests passed across 7 files (spectator protocol/rooms, existing protocol/review, room/solo-room, history Convex). Owned-file ESLint and `npm run typecheck:eclipse` pass. Full lint/build and browser integration remain supervisor gates.
+- Types added: `PublicGameView`, `SpectatorView`, `RoomSpectatorView`. Effects emitted: none. No schema or saved-game migration.
+
+Result & Next Steps: backend and privacy contracts complete; supervisor integrates spectator UI, performs full release gates and deployment verification.
+
+## 2026-09-24 — Public spectator shell
+
+- Outcome: non-player audiences can follow committed human/AI actions and freely inspect the galaxy, science income/research tracks, public command centers, blueprints, market, history and standings without a private seat or command callbacks.
+- Implementation: `SpectatorBoard` accepts the dedicated spectator projection and a parent-owned history feed; public presentation components accept explicit public projections or a guarded player/spectator union. Manual navigation/sector/empire/camera inspection pauses focus while the view continues updating. Resume focuses current actor activity; turn changes discard stale spatial focus. Finished/abandoned matches remain inspectable with archive status.
+- Interfaces: optional public timer projection has no internal IDs/error requirement; `TurnClock` exposes retry only when a callback exists. Score play-again remains optional for a spectator. No engine commands, AI scheduling or rule changes.
+- React review: stable keyed lists, explicit boundary types, no conditional hooks, no private-player fabrication, actual interactive buttons, keyboard map access, focus-visible styling. Shared selector behavior retains player ownership guards. Browser review uncovered inherited full-height flex clipping; spectator-specific document scrolling override fixes it.
+- Result & Next Steps: shell/public regression tests pass; supervisor owns final lint/build, browser acceptance, integration and release.

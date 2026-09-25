@@ -5,7 +5,7 @@ import {useState,type CSSProperties} from 'react';
 import {getFaction} from '../../shared/eclipse/catalog';
 import type {BlueprintShipType} from '../../shared/eclipse/blueprints';
 import {TECHNOLOGIES,type TechnologyId} from '../../shared/eclipse/technologies';
-import type {PlayerView,Resource} from '../../shared/eclipse/types';
+import type {SpectatorView,PlayerView,Resource} from '../../shared/eclipse/types';
 import FactionSymbol from './FactionSymbol';
 import ReputationSummary from './ReputationSummary';
 import ReputationTile from './ReputationTile';
@@ -27,7 +27,7 @@ import './empireOverview.css';
 
 export type EmpireDestination='Research'|'Scoring'|'Diplomacy'|'Trade'|'colonize';
 export interface EmpireOverviewProps {
- view:PlayerView;seatId:string;onSector:(sectorId:string)=>void;
+ view:PlayerView|SpectatorView;seatId:string;onSector:(sectorId:string)=>void;
  onNavigate:(destination:EmpireDestination)=>void;onBlueprints:(type?:BlueprintShipType)=>void;
  onBuild?:(type:BlueprintShipType)=>void;buildOrder?:BuildOrderDraft;buildUnavailableReason?:string;
 }
@@ -38,11 +38,11 @@ const title=(text:string)=>text[0].toUpperCase()+text.slice(1);
 export default function EmpireOverview({view,seatId,onSector,onNavigate,onBlueprints,onBuild,buildOrder=emptyBuildOrder(),buildUnavailableReason}:EmpireOverviewProps){
  const seat=view.seats.find(seat=>seat.id===seatId)!;
  const faction=getFaction(seat.faction),presentation=factionPresentation(seat.faction,view),model=empireOverviewModel(view,seatId);
- const buildOptions=model.own&&onBuild?empireBuildOptions(view,buildOrder):[];
+ const buildOptions=model.own&&onBuild&&'private' in view?empireBuildOptions(view,buildOrder):[];
  const upkeepComplete=view.phase==='upkeep'&&view.upkeepDone?.includes(seatId);
  const [planetGroup,setPlanetGroup]=useState<Resource|'gray'>('science');
  const [showReputation,setShowReputation]=useState(false);
- const canReviewReputation=seatId===view.viewerSeatId&&view.private.seatId===view.viewerSeatId&&!!view.private.reputationSummary;
+ const canReviewReputation='private' in view&&seatId===view.viewerSeatId&&view.private.seatId===view.viewerSeatId&&!!view.private.reputationSummary;
  const [selectedTech,setSelectedTech]=useState<TechnologyId|null>(null);
  const researched=researchedTechnologyIds(seat);
  const technology=TECHNOLOGIES.find(tech=>tech.id===selectedTech&&researched.includes(tech.id));
@@ -62,7 +62,7 @@ export default function EmpireOverview({view,seatId,onSector,onNavigate,onBluepr
   </div>
   <div className="eo-economy-footer"><span><StatIcon kind="influence"/><b>{model.influence}</b> influence discs available</span><span>Round upkeep <b>{model.upkeep} money</b></span>{model.own&&<button disabled={upkeepComplete} title={upkeepComplete?'You have completed upkeep.':undefined} onClick={()=>onNavigate('Trade')}>Convert resources <b>{faction.tradeRates?'Faction rates':`${model.tradeRatio}:1`}</b></button>}</div>
   <div className="eo-quick-status">
-   {model.own&&view.private.seatId===view.viewerSeatId&&<section className="eo-panel eo-reputation" aria-label="Your reputation tiles"><header><h2>Your reputation</h2><small>{view.phase==='finished'?'Final score':gameRules(view).publicReputation?'Public reputation':'Private · only you can see these'}</small></header><div className="eo-held-reputation">{view.private.reputation.length?view.private.reputation.map((points,index)=><ReputationTile key={index} points={points}/>):<p className="eo-muted">No reputation tiles yet.</p>}</div>
+   {'private' in view&&model.own&&view.private.seatId===view.viewerSeatId&&<section className="eo-panel eo-reputation" aria-label="Your reputation tiles"><header><h2>Your reputation</h2><small>{view.phase==='finished'?'Final score':gameRules(view).publicReputation?'Public reputation':'Private · only you can see these'}</small></header><div className="eo-held-reputation">{view.private.reputation.length?view.private.reputation.map((points,index)=><ReputationTile key={index} points={points}/>):<p className="eo-muted">No reputation tiles yet.</p>}</div>
   {canReviewReputation&&<div className="eo-reputation-recap"><button aria-expanded={showReputation} onClick={()=>setShowReputation(open=>!open)}>Latest reputation draw</button>{showReputation&&<ReputationSummary view={view} onDismiss={()=>setShowReputation(false)}/>}</div>}
    </section>}
    <section className="eo-panel eo-colony-supply" aria-label="Colony ships available"><header><h2>Colony ships</h2></header><div className="eo-colony-ships"><StatIcon kind="population"/><strong>{model.colonyShips}<small> / {model.colonyShipCapacity}</small></strong><span>available</span></div>{model.own&&<button className="sd-primary" disabled={upkeepComplete} title={upkeepComplete?'You have completed upkeep.':undefined} onClick={()=>onNavigate('colonize')}>Colonize planets</button>}</section>

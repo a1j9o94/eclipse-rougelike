@@ -644,3 +644,7 @@ Outcome: opt-in ten-round Régis variant, fully saved and available to humans/AI
 - Acceptance: exactly one galaxy map during these choices; preview rotation/portal placement and eligible targets rendered there; sector taps drive the active choice; inspection/navigation preserves drafts; explicit confirmation and existing rules remain; non-map choices use an appropriate popup rather than a duplicate galaxy.
 - Risks & rollback: preview must never mutate authoritative state; retain legal validation and no accidental submits, avoid stale map callbacks after decision changes. Revert UI slice if needed; no schema/engine changes planned.
 - Tests (fail first): shared-map board integration for exploration/control/bankruptcy/portal, same map identity/camera, target selection and valid exact commands, draft preservation and mobile inspector access. Run relevant tests, lint/build, browser verification then deploy.
+
+## 2026-09-24 — Public spectator mode
+Outcome: room-link visitors watch all players and freely inspect only public game information.
+Acceptance, failing-first test list, decisions and rollback: [spectator plan](../second_dawn_spectators.md). Backend and UI implementation assigned independently; supervisor owns routing, integration and release gates. No seat takeover or puzzles.

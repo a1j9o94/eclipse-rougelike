@@ -490,7 +490,7 @@ export interface SectorDeckCount {
   discardPile: number;
 }
 
-export interface PlayerView {
+export interface PublicGameView {
   /** Seats that have paid this upkeep; all other living seats may prepare independently. */
   upkeepDone?: SeatId[];
   minorSpecies?: MinorSpeciesState;
@@ -507,7 +507,6 @@ export interface PlayerView {
   phase: Phase;
   activeSeatId: SeatId | null;
   startSeatId: SeatId;
-  viewerSeatId: SeatId;
   /** Public turn order and optional-rule configuration, also used by fair AI rollouts. */
   firstPasser?: SeatId | null;
   warpPortals?: boolean;
@@ -516,8 +515,6 @@ export interface PlayerView {
   sectors: Sector[];
   ships: Ship[];
   technologyMarket: string[];
-  private: PrivateSeat;
-  pendingDecision: PendingDecision | null;
   waitingFor: { owner: SeatId; kind: PendingDecision["kind"] } | null;
   hiddenTileCounts: {
     seatId: SeatId;
@@ -544,4 +541,16 @@ export interface PlayerView {
     stage: string;
     engagement: number;
   } | null;
+}
+
+/** Seated controllers receive only their own private information. */
+export interface PlayerView extends PublicGameView {
+  viewerSeatId: SeatId;
+  private: PrivateSeat;
+  pendingDecision: PendingDecision | null;
+}
+
+/** A public board observer has no owned seat or private decision. */
+export interface SpectatorView extends PublicGameView {
+  kind: 'spectator';
 }

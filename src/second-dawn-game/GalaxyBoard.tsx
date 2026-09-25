@@ -4,7 +4,7 @@ import {displayedWormholes} from './visibleConnections';
 import type {BuildOrderItem} from './buildPlanning';
 import type {MovementRoutePreview} from './movementPlanning';
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import type { PlayerView, Ship } from "../../shared/eclipse/types";
+import type { SpectatorView, PlayerView, Ship } from "../../shared/eclipse/types";
 import { getFaction } from "../../shared/eclipse/catalog";
 import { sectorDefinition } from "../../shared/eclipse/sectors";
 import { adjacentPosition, connectionBetween } from "../../shared/eclipse/geometry";
@@ -25,7 +25,7 @@ interface Props {
   plannedMoves?:readonly MovementRoutePreview[];
   onSelectBuildItem?:(id:string)=>void;
   onInspectFleet?:(sectorId:string)=>void;
-  view: PlayerView;
+  view: PlayerView|SpectatorView;
   candidates: CommandCandidate[];
   selected: string | null;
   legalTargetIds?: string[];
@@ -75,7 +75,7 @@ export default function GalaxyBoard({
   onSelect,
   onExplore,
 }: Props) {
-  const viewer=view.seats.find(seat=>seat.id===view.viewerSeatId);
+  const viewer=view.seats.find(seat=>seat.id===('viewerSeatId' in view?view.viewerSeatId:undefined));
   const hasGenerator=viewer?movementAbilities(viewer).wormholeGenerator:false;
   const [smallScreen,setSmallScreen]=useState(()=>window.matchMedia?.('(max-width: 760px)').matches??false);
   useEffect(()=>{const query=window.matchMedia?.('(max-width: 760px)');if(!query)return;const changed=()=>setSmallScreen(query.matches);query.addEventListener('change',changed);return()=>query.removeEventListener('change',changed);},[]);
@@ -107,7 +107,7 @@ export default function GalaxyBoard({
     maxY = Math.max(...points.map((p) => p.y)) + 68;
   const center = { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
   const owned = view.sectors
-    .filter((s) => s.owner === view.viewerSeatId)
+    .filter((s) => s.owner === ('viewerSeatId' in view?view.viewerSeatId:undefined))
     .map((s) => galaxyPoint(s.position));
   const [localCamera,setLocalCamera]=useState<GalaxyCamera>(()=>controlledCamera??{zoom:initialFit||compact?1:view.sectors.length>20?1.4:1.6,center:initialFit||compact||!owned.length?center:{x:owned.reduce((n,p)=>n+p.x,0)/owned.length,y:owned.reduce((n,p)=>n+p.y,0)/owned.length}});
   const camera=controlledCamera??localCamera,zoom=camera.zoom;
@@ -463,7 +463,7 @@ export default function GalaxyBoard({
       </svg>
       {zoom > 1 && (
         <div className="dg-galaxy-overview">
-          <span>Your territory</span>
+          <span>{viewer?'Your territory':'Public galaxy'}</span>
           <svg
             viewBox={`${minX} ${minY} ${maxX - minX} ${maxY - minY}`}
             role="img"
@@ -478,7 +478,7 @@ export default function GalaxyBoard({
                     points={hex}
                     transform={`translate(${p.x} ${p.y})`}
                     fill={ownerInfo(s.owner).color}
-                    opacity={s.owner === view.viewerSeatId ? 1 : 0.4}
+                    opacity={!viewer||s.owner===viewer.id?1:0.4}
                   />
                 );
               })}

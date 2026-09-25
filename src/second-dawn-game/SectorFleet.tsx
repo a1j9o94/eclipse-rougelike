@@ -1,11 +1,11 @@
 import {seatColor} from './factionColors';
-import type {PlayerView,Ship} from '../../shared/eclipse/types';
+import type {PublicGameView,Ship} from '../../shared/eclipse/types';
 import {getFaction} from '../../shared/eclipse/catalog';
 import ShipSilhouette from './ShipSilhouette';
 import {NeutralShipSilhouette} from './BattleOverview';
 import './sectorFleet.css';
 import FactionSymbol from './FactionSymbol';
-interface Props {view:PlayerView;sectorId:string;onInspect?:()=>void}
+interface Props {view:PublicGameView;sectorId:string;onInspect?:()=>void}
 const names={interceptor:'Interceptor',cruiser:'Cruiser',dreadnought:'Dreadnought',starbase:'Starbase',ancient:'Ancient',guardian:'Guardian',gcds:'GCDS'};
 export default function SectorFleet({view,sectorId,onInspect}:Props){
  const groups: {owner:string;type:Ship['type'];ships:Ship[]}[]=[];

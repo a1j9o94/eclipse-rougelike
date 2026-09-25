@@ -1,7 +1,7 @@
 import {gameRules} from '../../shared/eclipse/gameRules';
 import {useId,useState} from 'react';
 import {createLessRandomDiscoverySupply,createDiscoverySupply,getDiscovery,type DiscoveryEffect} from '../../shared/eclipse/discoveries';
-import type {PlayerView} from '../../shared/eclipse/types';
+import type {PublicGameView} from '../../shared/eclipse/types';
 import {describeShipPart} from './itemDescriptions';
 import ShipPartStats,{StatIcon} from './ShipPartStats';
 import './discoveryReference.css';
@@ -19,12 +19,12 @@ function describeReward(effect:DiscoveryEffect):string {
  }
 }
 
-function referenceOptions(view:PlayerView){return [...new Set(gameRules(view).discoveryVariant?createLessRandomDiscoverySupply():createDiscoverySupply(view.warpPortals??true,view.riftCannons??false))].map(id=>{
+function referenceOptions(view:PublicGameView){return [...new Set(gameRules(view).discoveryVariant?createLessRandomDiscoverySupply():createDiscoverySupply(view.warpPortals??true,view.riftCannons??false))].map(id=>{
  const tile=getDiscovery(id),description=describeReward(tile.effect);
  return {...tile,description,searchText:`${tile.name} ${description} ${tile.effect.kind==='ancient-ship-part'?describeShipPart(tile.effect.part):''}`.toLowerCase()};
 });}
 
-export default function DiscoveryReference({view}:{view:PlayerView}) {
+export default function DiscoveryReference({view}:{view:PublicGameView}) {
  const [open,setOpen]=useState(false),[search,setSearch]=useState('');
  const contentId=`discovery-options-${useId().replace(/[^a-zA-Z0-9_-]/g,'')}`;
  if(!gameRules(view).publicDiscoveries||!view.lessRandom)return null;

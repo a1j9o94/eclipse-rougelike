@@ -1,6 +1,6 @@
 import type {ReactNode} from 'react';
 import type {PublicHistoryEntry,BuildComponent} from '../../shared/eclipse/history';
-import type {PlayerView} from '../../shared/eclipse/types';
+import type {PlayerView,SpectatorView} from '../../shared/eclipse/types';
 import {getFaction} from '../../shared/eclipse/catalog';
 import {TECHNOLOGIES} from '../../shared/eclipse/technologies';
 import {getShipPart} from '../../shared/eclipse/parts';
@@ -16,7 +16,7 @@ import SectorPlanets from './SectorPlanets';
 import {MinorSpeciesCard} from './MinorSpeciesMarket';
 import './aiActionPanel.css';
 export interface AiActionPanelProps {
- view:PlayerView;
+ view:PlayerView|SpectatorView;
  entry:PublicHistoryEntry;
  onInspectSector:(id:string)=>void;
 }
@@ -50,7 +50,7 @@ export default function AiActionPanel({view,entry,onInspectSector}:AiActionPanel
   const types=[...new Set(ships.map(ship=>ship.type))];
   content=<div className="dg-ai-component-cards"><small className="dg-ai-current-note">Ships still on the public board</small>{types.flatMap(type=>type==='ancient'||type==='guardian'||type==='gcds'?[]:<ComponentCard key={type} type={type} count={ships.filter(ship=>ship.type===type).length} label="Moved"/>)}</div>;
  }
- return <section className="dg-ai-action-panel" aria-label="AI action details">
+ return <section className="dg-ai-action-panel" aria-label={'kind' in view&&view.kind==='spectator'?'Public action details':'AI action details'}>
   <header className="dg-ai-action-heading">{actor&&<FactionSymbol faction={actor.faction}/>}<div><small>{actor?getFaction(actor.faction).name:entry.actorName}</small><h2>{entry.summary}</h2></div></header>
   {content}
   {sectors.length>0&&<nav className="dg-ai-sector-links" aria-label="Action sectors">{sectors.map(sector=><button key={sector.id} onClick={()=>onInspectSector(sector.id)} aria-label={`Inspect sector ${sector.tileId}`}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 21 7v10l-9 5-9-5V7Z"/></svg> Sector {sector.tileId}</button>)}</nav>}

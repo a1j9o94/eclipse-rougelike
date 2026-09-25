@@ -6,6 +6,8 @@ import type {
   GameState,
   MatchAggregate,
   PlayerView,
+  PublicGameView,
+  SpectatorView,
   RuleResult,
   SeatId,
   SubmissionResult,
@@ -188,20 +190,11 @@ export function commitCommand(
   };
 }
 
-/** AI and human controllers consume this same allowlisted projection. */
-export function getPlayerView(
-  state: GameState,
-  viewerSeatId: SeatId,
-): PlayerView | null {
-  if (!state.seats.some((seat) => seat.id === viewerSeatId)) return null;
+/** Shared allowlisted public state; no ownership is needed to inspect the board. */
+function publicGameView(state: GameState, scoreViewer?: SeatId): PublicGameView {
   const rules = gameRules(state);
-  const own = state.privateSeats.find((seat) => seat.seatId === viewerSeatId);
-  if (!own) throw new Error('Seat has no private-state record.');
-  const visibleOwn = { ...own };
-  if (visibleOwn.storedDiscovery && !visibleOwn.storedDiscoveryResolved)
-    delete visibleOwn.storedDiscovery;
-  const visiblePending = state.phase === 'upkeep' ? upkeepDecisionForSeat(state, viewerSeatId) : state.pendingDecision;
-  return structuredClone({
+  const visiblePending = state.pendingDecision;
+  return {
     ...(state.phase === 'upkeep' ? { upkeepDone: [...(state.engine?.upkeepDone ?? [])] } : {}),
     ...(state.minorSpecies ? {minorSpecies:structuredClone(state.minorSpecies)} : {}),
     rulesVersion: state.rulesVersion,
@@ -223,7 +216,6 @@ export function getPlayerView(
     phase: state.phase,
     activeSeatId: state.activeSeatId,
     startSeatId: state.startSeatId,
-    viewerSeatId,
     firstPasser: state.firstPasser,
     warpPortals: state.engine?.warpPortals ?? true,
     riftCannons: state.engine?.riftCannons ?? false,
@@ -244,11 +236,6 @@ export function getPlayerView(
     sectors: state.sectors,
     ships: state.ships,
     technologyMarket: state.technologyMarket,
-    private: visibleOwn,
-    pendingDecision:
-      visiblePending?.owner === viewerSeatId
-        ? visiblePending
-        : null,
     waitingFor: visiblePending
       ? { owner: visiblePending.owner, kind: visiblePending.kind }
       : null,
@@ -260,7 +247,7 @@ export function getPlayerView(
     ...(state.engine ? {
       actionProgress: state.engine.action,
       scores: state.engine.scores?.map(score => {
-        if (state.phase === 'finished' || rules.publicReputation || score.playerId === viewerSeatId) return score;
+        if (state.phase === 'finished' || rules.publicReputation || score.playerId === scoreViewer) return score;
         const bonusCount = state.seats.find(seat => seat.id === score.playerId)?.discoveryBonuses?.filter(bonus => bonus === 'reputation').length ?? 0;
         const hiddenBonus = bonusCount * Math.floor(score.reputation / 3);
         return { ...score, reputation: 0, ...(hiddenBonus ? {variant: Math.max(0, (score.variant ?? 0) - hiddenBonus)} : {}), total: score.total - score.reputation - hiddenBonus };
@@ -272,7 +259,33 @@ export function getPlayerView(
         engagement: state.engine.battle.engagement,
       } : null,
     } : {}),
+  };
+}
+
+/** AI and human controllers consume this same allowlisted projection. */
+export function getPlayerView(
+  state: GameState,
+  viewerSeatId: SeatId,
+): PlayerView | null {
+  if (!state.seats.some((seat) => seat.id === viewerSeatId)) return null;
+  const own = state.privateSeats.find((seat) => seat.seatId === viewerSeatId);
+  if (!own) throw new Error('Seat has no private-state record.');
+  const visibleOwn = { ...own };
+  if (visibleOwn.storedDiscovery && !visibleOwn.storedDiscoveryResolved)
+    delete visibleOwn.storedDiscovery;
+  const visiblePending = state.phase === 'upkeep' ? upkeepDecisionForSeat(state, viewerSeatId) : state.pendingDecision;
+  return structuredClone({
+    ...publicGameView(state, viewerSeatId),
+    viewerSeatId,
+    private: visibleOwn,
+    pendingDecision: visiblePending?.owner === viewerSeatId ? visiblePending : null,
+    waitingFor: visiblePending ? {owner:visiblePending.owner, kind:visiblePending.kind} : null,
   });
+}
+
+/** Anonymous spectators use the public projection directly, never an impersonated seat. */
+export function getSpectatorView(state: GameState): SpectatorView {
+  return structuredClone({...publicGameView(state), kind:'spectator'});
 }
 
 export function visibleEvents(

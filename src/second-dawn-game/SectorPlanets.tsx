@@ -1,7 +1,7 @@
 import { researchedTechnologyIds } from '../../shared/eclipse/technologies';
 import SectorFeatureIcon from './SectorFeatureIcon';
 import {seatColor} from './factionColors';
-import type { PlayerView, Resource, Sector } from "../../shared/eclipse/types";
+import type { SpectatorView, PlayerView, Resource, Sector } from "../../shared/eclipse/types";
 import { sectorDefinition } from "../../shared/eclipse/sectors";
 import type { CommandCandidate } from "./SecondDawnBoard";
 import "./sectorPlanets.css";
@@ -56,7 +56,7 @@ export function PlanetIcon({ resource }: { resource: PlanetResource }) {
 }
 interface Props {
   sector: Sector;
-  view: PlayerView;
+  view: PlayerView|SpectatorView;
   candidates: CommandCandidate[];
 }
 const resources: Resource[] = ["money", "science", "materials"];
@@ -72,13 +72,13 @@ const advancedIds = {
 };
 export default function SectorPlanets({ sector, view, candidates }: Props) {
   const definition = sectorDefinition(Number(sector.tileId))!;
-  const own = view.seats.find((s) => s.id === view.viewerSeatId)!;
-  const owned = sector.owner === own.id;
+  const own = view.seats.find((s) => s.id === ('viewerSeatId' in view?view.viewerSeatId:undefined));
+  const owned = !!own && sector.owner === own.id;
   const owner = view.seats.find((seat) => seat.id === sector.owner);
   const cubeColor = owner
     ? seatColor(owner)
     : "#c4cbd1";
-  const technologies: readonly string[] = researchedTechnologyIds(own);
+  const technologies: readonly string[] = own ? researchedTechnologyIds(own) : [];
   const squares: { id: string; resource: PlanetResource; advanced: boolean }[] =
     definition.population.map((square, i) => ({ id: `p${i}`, ...square }));
   if (sector.orbital)
@@ -116,7 +116,7 @@ export default function SectorPlanets({ sector, view, candidates }: Props) {
         : `Requires ${advancedNames[square.resource as Resource]}, or Metasynthesis.`
       : null;
     const eligibility =
-      !owned || cube
+      !own || !owned || cube
         ? null
         : legal.length
           ? `Can colonize: ${legal.map((r) => PLANET_NAMES[r]).join(" / ")} · 1 colony ship`

@@ -1,7 +1,7 @@
 import {gameRules} from '../../shared/eclipse/gameRules';
 import { calculateScore, type ScoreBreakdown } from '../../shared/eclipse/scoring';
 import { sectorDefinition } from '../../shared/eclipse/sectors';
-import type { PlayerView } from '../../shared/eclipse/types';
+import type { SpectatorView, PlayerView } from '../../shared/eclipse/types';
 
 export interface RunningScore {
   breakdown: ScoreBreakdown;
@@ -9,11 +9,11 @@ export interface RunningScore {
   final: boolean;
 }
 /** Live public board score. Reputation and its dependent bonuses stay hidden until enabled or final. */
-export function runningScore(view: PlayerView, seatId: string): RunningScore {
+export function runningScore(view: PlayerView|SpectatorView, seatId: string): RunningScore {
   const seat = view.seats.find(candidate => candidate.id === seatId);
   if (!seat) throw new RangeError(`Seat is absent from this view: ${seatId}`);
   const final = view.phase === 'finished';
-  const own = seatId === view.viewerSeatId;
+  const own = seatId === ('viewerSeatId' in view?view.viewerSeatId:undefined);
   const counts = view.hiddenTileCounts.find(candidate => candidate.seatId === seatId);
   const rules = gameRules(view);
   const publicReputation = rules.publicReputation;
@@ -31,7 +31,7 @@ export function runningScore(view: PlayerView, seatId: string): RunningScore {
       final,
     };
   }
-  const visibleReputation = publicReputation ? view.lessRandom?.reputationBySeat[seatId] ?? [] : final && own ? view.private.reputation : [];
+  const visibleReputation = publicReputation ? view.lessRandom?.reputationBySeat[seatId] ?? [] : final && own && 'private' in view ? view.private.reputation : [];
   const reputationBonus = Math.floor(visibleReputation.reduce((total, points) => total + points, 0) / 3);
   const artifactBonus = view.sectors.filter(sector => sector.owner === seatId).reduce((total, sector) => total + (sectorDefinition(Number(sector.tileId))?.artifacts ?? 0), 0);
   const variantVp = (rules.explorationRules && view.lessRandom?.explorationJokers[seatId] ? 2 : 0)
@@ -43,7 +43,7 @@ export function runningScore(view: PlayerView, seatId: string): RunningScore {
     reputation: visibleReputation,
     ambassadors: seat.ambassadors.length,
     minorSpecies: seat.minorSpecies,
-    reputationTileCount: own?view.private.reputation.length:counts?.reputation??0,
+    reputationTileCount: own&&'private' in view?view.private.reputation.length:counts?.reputation??0,
     sectors: view.sectors.filter(sector => sector.owner === seatId).map(sector => {
       const definition = sectorDefinition(Number(sector.tileId));
       if (!definition) throw new RangeError(`Sector is absent from base catalog: ${sector.tileId}`);
@@ -54,7 +54,7 @@ export function runningScore(view: PlayerView, seatId: string): RunningScore {
         portalVp: sector.portalVp ?? 0,
       };
     }),
-    discoveriesKeptForVp: own ? view.private.discoveriesKept.length : counts?.discoveriesKept ?? 0,
+    discoveriesKeptForVp: own && 'private' in view ? view.private.discoveriesKept.length : counts?.discoveriesKept ?? 0,
     traitor: seat.traitor,
     ancientPartsUsed:seat.ancientPartsUsed??0,
     researchTracks: [seat.technologies.military.length, seat.technologies.grid.length, seat.technologies.nano.length],

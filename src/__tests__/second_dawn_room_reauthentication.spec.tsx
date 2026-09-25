@@ -29,13 +29,13 @@ afterEach(()=>{cleanup();localStorage.clear();window.history.replaceState({},'',
 it('reopens the same room seat after refreshing its player credential',async()=>{
  localStorage.setItem('eclipse.second-dawn.guest.v1',data.old);window.history.replaceState({},'', '/room/test-room');render(<SecondDawnGame/>);
  expect(await screen.findByRole('heading',{name:'Saved galaxy'})).toBeVisible();
- fireEvent.click(screen.getByRole('button',{name:'Game room'}));fireEvent.click(screen.getByRole('button',{name:'Sign in again'}));
+ fireEvent.click(screen.getByRole('button',{name:'Game room'}));fireEvent.click(screen.getByRole('button',{name:'Open game room'}));fireEvent.click(screen.getByRole('button',{name:'Sign in again'}));
  await waitFor(()=>expect(localStorage.getItem('eclipse.second-dawn.guest.v1')).toBe(data.next));
  expect(await screen.findByRole('heading',{name:'Saved galaxy'})).toBeVisible();
 });
 it('offers the original browser player even after another saved player was used most recently',async()=>{
  localStorage.setItem('eclipse.second-dawn.guest.v1',data.next);localStorage.setItem('eclipse.second-dawn.original-player.v1',data.old);localStorage.setItem('eclipse.second-dawn.previous-player.v1',`ecl1_${'c'.repeat(64)}`);
  window.history.replaceState({},'', '/room/test-room');render(<SecondDawnGame/>);
- await screen.findByRole('heading',{name:'Saved galaxy'});fireEvent.click(screen.getByRole('button',{name:'Game room'}));fireEvent.click(screen.getByRole('button',{name:'Restore browser player'}));
+ await screen.findByRole('heading',{name:'Saved galaxy'});fireEvent.click(screen.getByRole('button',{name:'Game room'}));fireEvent.click(screen.getByRole('button',{name:'Open game room'}));fireEvent.click(screen.getByRole('button',{name:'Restore browser player'}));
  await waitFor(()=>expect(localStorage.getItem('eclipse.second-dawn.guest.v1')).toBe(data.old));
 });
