@@ -282,12 +282,13 @@ Use reviewable commits within each slice; do not hold every system for one giant
 | P3 | Implemented and cross-reviewed | PR #87; implementation `50a76be`, merge `f2869d0` | [Fitting](ux_p3_fitting.md), [inspection and colony review](ux_integrated_release.md) | Live fixture checks recorded; human/physical-device playtest pending |
 | P4 | Implemented; backend rollout required for rich live replay | PR #87; additive metadata | [Combat evidence and compatibility](ux_p4_combat.md), [rollout boundary](ux_integrated_release.md) | Publish compatible Convex backend; verify live provenance/impact replay |
 | P5 | Implemented and cross-reviewed | PR #87; implementation `50a76be`, merge `f2869d0` | [Contextual actions](ux_p5_context.md), [history/scoring](ux_p5_history_scoring.md) | Live fixture checks recorded; human/physical-device playtest pending |
+| F1 | Upkeep colony review and Explore odds released | `8e1e2da` on `main` | [Feedback slice evidence](reddit_feedback_2026_09_25.md): 25 bounded tests, lint/build, local desktop/mobile checks, live Ring II odds and Ready production deployment | Human upkeep/Explore playtest; action-layout and faction work continue |
 
 ### September 25 player feedback intake
 
 The [Reddit feedback plan](reddit_feedback_2026_09_25.md) adds follow-up slices for colony opportunities, a more stable action layout, exploration odds, and the Exiles/Lyra factions. A player reported repeatedly passing with colony ships unused, and another stopped after round one because menu and button placement made actions hard to find. These are human observations; no slice was marked implemented or verified by the initial intake.
 
-The product owner subsequently clarified the colony checkpoint should occur before **Finish upkeep**, not before every Pass. That upkeep review and the current-ring feature odds are implemented on `feature/colonize-pass-explore-odds`; [bounded tests and local browser review](reddit_feedback_2026_09_25.md) pass, while release and human playtests remain. The action-layout and faction slices remain planned.
+The product owner subsequently clarified the colony checkpoint should occur before **Finish upkeep**, not before every Pass. That upkeep review and the current-ring feature odds are released as F1, with [tests, local browser review and live odds verification](reddit_feedback_2026_09_25.md). Human playtests, action-layout and faction slices remain.
 
 ## 7. Engineering seams and verification
 
