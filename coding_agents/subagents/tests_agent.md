@@ -103,3 +103,8 @@ Failing-first tests demonstrated duplicate maps and absent inspector controls. A
 - Green: 7 spectator cases cover no command controls, no private reputation, public sector/empire/science/blueprint inspection, following both human and AI results, persistent manual focus during live updates, pause/resume/camera navigation, disconnected read-only browsing, market/history, final standings, current-player focus over stale history, keyboard sector selection, read-only failed timer, abandoned archive, configured public reputation labels.
 - Regression: 42 tests passed across 9 suites (spectator board, mobile galaxy, running score, sector planets, public inspection, turn clock, discovery reference, galaxy, AI action panel); 11 empire overview tests passed separately. Subsequent public-reputation change: 13 tests passed across spectator/public inspection/turn clock. Targeted ESLint clean.
 - Result & Next Steps: supervisor performs complete relevant integration batch and browser newcomer/expert acceptance; no unbounded full-suite run.
+
+## 2026-09-25 — Enlightened of Lyra base verification
+- Failing first: Lyra setup/Shrine tests failed while the faction was absent.
+- Added `second_dawn_lyra.spec.ts`: setup, legal/cost/one-per-action placement, post-technology placement, controlled-sector scoring, science row reward, one-die colony reroll, saved action recovery, seeded AI completion.
+- Result & Next Steps: focused Lyra tests pass; expanded-v2 integration must preserve the existing expanded-v1 roster test and rerun adjacent combat, catalog, protocol, lint/build gates.

@@ -63,6 +63,7 @@ export function player(state: GameState, id: string): Seat {
   return found!;
 }
 export function hasTech(seat: Seat, id: string): boolean {
+  if(id==='wormhole-generator'&&seat.faction==='lyra'&&(seat.shrines??[]).filter(shrine=>shrine.row==='science').length===3)return true;
   return Object.values(seat.technologies).some((track) => track.includes(id)) ||
     seat.developments?.some(development => development.technologyId === id) === true;
 }

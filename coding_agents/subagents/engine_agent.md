@@ -384,3 +384,9 @@ Result & Next Steps: backend and privacy contracts complete; supervisor integrat
 - Interfaces: optional public timer projection has no internal IDs/error requirement; `TurnClock` exposes retry only when a callback exists. Score play-again remains optional for a spectator. No engine commands, AI scheduling or rule changes.
 - React review: stable keyed lists, explicit boundary types, no conditional hooks, no private-player fabrication, actual interactive buttons, keyboard map access, focus-visible styling. Shared selector behavior retains player ownership guards. Browser review uncovered inherited full-height flex clipping; spectator-specific document scrolling override fixes it.
 - Result & Next Steps: shell/public regression tests pass; supervisor owns final lint/build, browser acceptance, integration and release.
+
+## 2026-09-25 — Enlightened of Lyra base implementation
+- Files: `shared/eclipse/{catalog,sectors,types,setup,actions,engine,legal,rulesState,battleEngine,scoring,rounds,ai,aiEvaluation,history}.ts`, `convex/eclipseValidators.ts`, and Second Dawn faction, Research, combat, galaxy, score UI.
+- Types: persistent `Seat.shrines` placements and `ActionProgress.shrinePlaced`; typed `place-shrine` command and single-die `colony-reroll` choice.
+- Effects: publisher setup, nine paid board spaces, one optional Shrine each Research action, permanent row rewards, 1 VP per currently controlled Shrine, colony ship reroll, public map/scoring feedback.
+- Result & Next Steps: focused tests and build gates run in the Lyra feature worktree. Expanded-v2 profile scaffold and human playtest remain integration tasks; anti-missile variant follows base acceptance.

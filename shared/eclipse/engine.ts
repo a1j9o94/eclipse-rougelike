@@ -8,7 +8,7 @@ import { FIRST_PASS_MONEY } from './passing';
 import { fundingActionCost, fundingOptions } from "./funding";
 import { getFaction, tradeQuote } from "./catalog";
 import { tradeResources } from "./economy";
-import { colonize, performAction } from "./actions";
+import { colonize, performAction, placeShrine } from "./actions";
 import {
   breakAggressiveRelations,
   offerDiplomacy,
@@ -77,7 +77,7 @@ function advance(state: GameState, events: GameEvent[]): void {
     }
     if (!usable) action.remaining = 0;
   }
-  if (state.phase === "action" && action?.remaining === 0 && !canBuyActivation(state, player(state, action.owner))) {
+  if (state.phase === "action" && action?.remaining === 0 && !(action.action==='research'&&player(state,action.owner).faction==='lyra'&&!action.shrinePlaced) && !canBuyActivation(state, player(state, action.owner))) {
     // Resolve all committed draws/rewards first, then use the same boundary as
     // an explicit finish. A responding opponent never becomes the turn origin.
     finishAction(state, player(state, action.owner), events);
@@ -317,6 +317,10 @@ export function processGameCommand(
       );
       if (command.type === "research-development" || command.type === "quantum-research")
         performDevelopment(state, seat, command, events);
+      else if(command.type==='place-shrine'){
+        placeShrine(state,seat,command);
+        emit(events,actor,`Placed a Shrine in ${command.sectorId}.`,'action');
+      }
       else if (command.type === "colonize")
         colonize(state, seat, command.placements);
       else if (command.type === "buy-activation") {

@@ -30,7 +30,7 @@ export const FACTION_IDS = [
   'eridani', 'hydran', 'planta', 'draco', 'mechanema', 'orion',
   'terran-directorate', 'terran-federation', 'terran-union',
   'terran-republic', 'terran-conglomerate', 'terran-alliance',
-  'rho-indi', 'magellan', 'midas', 'ragnarok', 'exiles',
+  'rho-indi', 'magellan', 'midas', 'ragnarok', 'exiles', 'lyra',
 ] as const;
 export type FactionId = (typeof FACTION_IDS)[number];
 export type CivilizationColor =
@@ -51,8 +51,9 @@ export type FactionVisualIdentity =
   | 'magellan'
   | 'midas'
   | 'ragnarok'
-  | 'exiles';
-export type ShipDesignFamily = Exclude<FactionVisualIdentity, 'rho-indi' | 'magellan' | 'midas' | 'ragnarok' | 'exiles'>;
+  | 'exiles'
+  | 'lyra';
+export type ShipDesignFamily = Exclude<FactionVisualIdentity, 'rho-indi' | 'magellan' | 'midas' | 'ragnarok' | 'exiles' | 'lyra'>;
 export type FactionCapability =
   | 'ancient-coexistence'
   | 'controlled-sector-vp'
@@ -273,7 +274,7 @@ const visual = (identity: ShipDesignFamily, blueprints: FactionBlueprints = STAN
   emblem: identity, shipDesignFamily: identity, content: CONTENT, blueprints,
 });
 const expandedVisual = (
-  emblem: Extract<FactionVisualIdentity, 'rho-indi' | 'magellan' | 'midas' | 'ragnarok' | 'exiles'>,
+  emblem: Extract<FactionVisualIdentity, 'rho-indi' | 'magellan' | 'midas' | 'ragnarok' | 'exiles' | 'lyra'>,
   shipDesignFamily: ShipDesignFamily,
   blueprints: FactionBlueprints = STANDARD_BLUEPRINTS,
   content: FactionContentMetadata = EXPANDED_CONTENT,
@@ -581,6 +582,18 @@ export const FACTION_REGISTRY: readonly FactionDefinition[] = [
     special: { populatedOrbitalVp: 1, startsWithOrbital: true, orbitalCombat: true, cannotBuildStarbases: true },
     source: '.second-dawn/faction-research/originals/Outcasts and Seekers/04 The Exiles Outcasts rules.jpg',
     sources: { rules: '.second-dawn/faction-research/originals/Outcasts and Seekers/04 The Exiles Outcasts rules.jpg', blueprints: '.second-dawn/faction-research/originals/Outcasts and Seekers/04 The Exiles Outcasts.jpg' },
+  },
+  {
+    ...standard,
+    ...expandedVisual('lyra', 'hydran', STANDARD_BLUEPRINTS, SEEKERS_CONTENT),
+    id:'lyra', name:'Enlightened of Lyra', color:'blue', species:'alien', homeSector:238,
+    startingResources:{materials:3,science:4,money:2},
+    startingPopulation:{materials:1,science:0,money:1},
+    normalHomePopulation:{materials:1,science:0,money:1},
+    advancedHomePopulation:{materials:0,science:2,money:0},
+    startingTechnologies:['fusion-source'],
+    source:'.second-dawn/faction-research/originals/Outcasts and Seekers/01 Enlightened of Lyra Seekers rules.jpg',
+    sources:{rules:'.second-dawn/faction-research/originals/Outcasts and Seekers/01 Enlightened of Lyra Seekers rules.jpg',blueprints:'.second-dawn/faction-research/originals/Outcasts and Seekers/01 Enlightened of Lyra Seekers board.jpg'},
   },
 ];
 /** Compatibility catalog view. Base selection order and membership stay stable. */

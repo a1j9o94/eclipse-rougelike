@@ -51,7 +51,43 @@ import type {
   Seat,
   Sector,
   Track,
+  Resource,
 } from "./types";
+
+const SHRINE_COSTS:Record<Resource,readonly [number,number,number]>={science:[2,3,4],money:[3,4,5],materials:[4,5,6]};
+/** The nine board spaces are independent; each row grants a permanent reward when emptied. */
+export function placeShrine(state:GameState,seat:Seat,command:Extract<GameCommand,{type:'place-shrine'}>):void{
+  requireRule(seat.faction==='lyra','Only the Enlightened of Lyra build Shrines.');
+  requireRule(!seat.passed,'Shrines are placed during a Research action, not a reaction.');
+  const sector=state.sectors.find(s=>s.id===command.sectorId);
+  requireRule(!!sector&&sector.owner===seat.id,'Place a Shrine in a controlled sector.');
+  const planet=sectorDefinition(Number(sector!.tileId)).population[command.planetIndex];
+  requireRule(!!planet&&(planet.resource===command.row||planet.resource==='gray'),'Choose a matching or gray planet.');
+  requireRule(Number.isInteger(command.column)&&command.column>=0&&command.column<=2,'Choose a Shrine board space.');
+  requireRule(!(seat.shrines??[]).some(shrine=>shrine.sectorId===command.sectorId&&shrine.planetIndex===command.planetIndex),'This planet already has a Shrine.');
+  requireRule(!(seat.shrines??[]).some(shrine=>shrine.row===command.row&&shrine.column===command.column),'This Shrine has already been placed.');
+  const cost=SHRINE_COSTS[command.row][command.column];
+  requireRule(seat.resources[command.row]>=cost,`This Shrine costs ${cost} ${command.row}.`,'INSUFFICIENT_RESOURCES');
+  const open=continuation(state).action;
+  if(open)requireRule(open.owner===seat.id&&open.action==='research','Finish the current action before placing a Shrine.');
+  else beginAction(state,seat,'research');
+  const action=continuation(state).action!;
+  requireRule(!action.shrinePlaced,'Only one Shrine may be placed per Research action.');
+  seat.resources[command.row]-=cost;
+  seat.shrines??=[];
+  seat.shrines.push({sectorId:command.sectorId,planetIndex:command.planetIndex,row:command.row,column:command.column});
+  action.shrinePlaced=true;
+  if(seat.shrines.filter(shrine=>shrine.row===command.row).length!==3)return;
+  if(command.row==='materials')seat.influenceOnTrack++;
+  if(command.row==='money'){
+    const id=state.supplies.discovery.shift();
+    if(id){
+      const home=state.sectors.find(sector=>Number(sector.tileId)===getFaction(seat.faction).homeSector&&sector.owner===seat.id);
+      const placement=['place-unbuilt-ship','place-structure','place-warp-portal'].includes(getDiscovery(id as DiscoveryId).effect.kind);
+      queueDecision(state,{id:uniqueId(state,'discovery'),owner:seat.id,kind:'discovery',tileId:id,...(home?{sectorId:home.id}:{}),options:placement&&!home?['keep']:['keep','use']});
+    }
+  }
+}
 
 export function typedBlueprint(blueprint: Blueprint): ShipBlueprint {
   requireRule(

@@ -322,6 +322,10 @@ export function evaluateAiCommand(
       return (command.developmentId === 'quantum-labs' ? (view.round <= gameRoundLimit(view) - 3 ? 13 : 4) : 10) - discPenalty;
     case "quantum-research":
       return technologyValue(view, command.tileId) + 4 - discPenalty;
+    case 'place-shrine':
+      return (view.round>=gameRoundLimit(view)-2?10:16)
+        + (seat.shrines?.filter(shrine=>shrine.row===command.row).length===2?8:0)
+        - (command.column+2)*utility(command.row) - discPenalty;
     case "research":
       return (
         technologyValue(view, command.tileId) +
@@ -536,6 +540,10 @@ export function evaluateAiCommand(
         case "less-random-reputation":
           return c.actions.length * 10;
         case "super-joker":
+          if(c.action==='colony-reroll'){
+            const die=view.pendingDecision?.kind==='super-joker'?view.pendingDecision.dice.find(die=>die.id===c.dieId):undefined;
+            return die&&die.face<=2?4:-2;
+          }
           return c.action === "table" ? 10 : c.action === "reroll" ? 2 : 0;
         case "resource-reward":
           return c.resources.reduce((n, r) => n + utility(r), 0);

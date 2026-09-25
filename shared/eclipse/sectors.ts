@@ -1700,6 +1700,18 @@ export const SECTORS: readonly SectorDefinition[] = [
     source: ".second-dawn/faction-research/originals/Outcasts and Seekers/03 Rho indi syndicate Outcasts starting sector.jpg",
   },
   {
+    id:238,name:'Beta Lyrae',wormholes:[0,1,3,4],victoryPoints:3,
+    population:[
+      {resource:'materials',advanced:false},
+      {resource:'science',advanced:true},
+      {resource:'science',advanced:true},
+      {resource:'money',advanced:false},
+    ],
+    ancients:0,artifacts:1,discovery:false,warpPortal:false,
+    guardian:false,gcds:false,homeArrow:1,
+    source:'.second-dawn/faction-research/originals/Outcasts and Seekers/01 Enlightened of Lyra Seekers board.jpg',
+  },
+  {
     id: 277, name: "Phrygia - Ionys", wormholes: [0, 1, 3, 4], victoryPoints: 3,
     population: [
       { resource: "gray", advanced: false },

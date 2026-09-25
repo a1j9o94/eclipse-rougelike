@@ -407,6 +407,7 @@ export default function GalaxyBoard({
                     <title>Monolith: 3 victory points</title>
                   </path>
                 )}
+                {view.seats.flatMap(seat=>(seat.shrines??[]).filter(shrine=>shrine.sectorId===s.id)).length>0&&<g transform="translate(0 31)" role="img" aria-label={`${view.seats.flatMap(seat=>(seat.shrines??[]).filter(shrine=>shrine.sectorId===s.id)).length} Lyra Shrines`}><path d="M0 -8 6 0 0 8 -6 0Z" fill="#f0c6ec" stroke="#824a88"/><title>Lyra Shrines · 1 VP each while Lyra controls this sector</title></g>}
               </g>
             );
           })}

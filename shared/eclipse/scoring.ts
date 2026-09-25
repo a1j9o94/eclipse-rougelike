@@ -2,6 +2,7 @@ import { minorSpeciesPoints, type MinorSpeciesTile } from "./minorSpecies";
 import { getFaction, type CatalogResources, type FactionId } from './catalog';
 export interface ScoringSector {
   readonly id: string;
+  readonly shrines?: number;
   readonly printedVp: number;
   readonly monoliths: number;
   /** Bonus of an installed optional portal tile, not the sector's printed VP. */
@@ -78,7 +79,8 @@ export function calculateScore(input: ScoringInput): ScoreBreakdown {
       ? input.ancientsOnBoard
       : 0;
   const species = speciesBase + (input.ancientPartsUsed ?? 0) * (faction.special?.ancientPartVp ?? 0)
-    + input.sectors.filter(sector => sector.orbitalPopulated).length * (faction.special?.populatedOrbitalVp ?? 0);
+    + input.sectors.filter(sector => sector.orbitalPopulated).length * (faction.special?.populatedOrbitalVp ?? 0)
+    + (input.faction==='lyra'?input.sectors.reduce((sum,sector)=>sum+(sector.shrines??0),0):0);
   const variant = input.variantVp ?? 0;
   return {
     ...(input.minorSpecies?.length ? {minorSpecies} : {}),

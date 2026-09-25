@@ -17,6 +17,8 @@ import ResearchedTechnologies from './ResearchedTechnologies';
 import TechnologyStats from './TechnologyStats';
 import AdvancedPopulationPreview from './AdvancedPopulationPreview';
 import {DEVELOPMENTS,developmentAvailable,quantumResearchCost} from '../../shared/eclipse/developments';
+import {legalCommands} from '../../shared/eclipse/legal';
+import {sectorDefinition} from '../../shared/eclipse/sectors';
 import './researchWorkspace.css';
 
 type Candidate={command:GameCommand;label:string;description:string};
@@ -30,6 +32,7 @@ export default function ResearchWorkspace({view,purchases,selected,draft,disable
  const detailRef=useRef<HTMLElement>(null);
  const seat=view.seats.find(s=>s.id===view.viewerSeatId)!;
  const owned=new Set(researchedTechnologyIds(seat));
+ const shrineOptions=seat.faction==='lyra'?legalCommands(view).filter((candidate):candidate is Candidate&{command:Extract<GameCommand,{type:'place-shrine'}>}=>candidate.command.type==='place-shrine'):[];
  const canResearch=view.phase==='action'&&view.activeSeatId===seat.id&&!view.pendingDecision&&!view.waitingFor&&!seat.passed&&(view.actionProgress?view.actionProgress.owner===seat.id&&view.actionProgress.action==='research'&&view.actionProgress.remaining>0:seat.influenceOnTrack>0);
  const market=TECHNOLOGIES.filter(tech=>view.technologyMarket.includes(tech.id)).map(tech=>{
   const prices=tracks.flatMap(track=>{const cost=researchCostForSeat(tech.id,track,seat);return cost.ok?[cost]:[];}).sort((a,b)=>a.scienceCost-b.scienceCost||b.discount-a.discount);
@@ -71,6 +74,7 @@ export default function ResearchWorkspace({view,purchases,selected,draft,disable
  return <div className="sd-workspace dg-research-workspace">
   <p className="sd-eyebrow">AVAILABLE TECHNOLOGY</p>
   <div className="dg-research-heading"><h1>Research</h1><ScienceBudget available={seat.resources.science}/></div>
+  {seat.faction==='lyra'&&<section className="dg-research-developments" aria-label="Lyra Shrines"><h2>Shrines · {(seat.shrines??[]).length}/9 placed</h2><p>Place one Shrine during a Research action beside a matching or gray planet. Completed rows grant Wormhole Generator, a discovery, or an influence disc; controlled Shrines score 1 VP each.</p>{shrineOptions.length>0?<div className="sd-tech-grid">{shrineOptions.map(({command})=>{const sector=view.sectors.find(s=>s.id===command.sectorId)!;const planet=sectorDefinition(Number(sector.tileId))?.population[command.planetIndex];const cost=({science:[2,3,4],money:[3,4,5],materials:[4,5,6]} as const)[command.row][command.column];return <button key={`${command.sectorId}-${command.planetIndex}-${command.row}-${command.column}`} disabled={disabled||stale} onClick={()=>onSubmit(command)}><strong>{sectorDefinition(Number(sector.tileId))?.name??sector.id} · {planet?.resource} planet {command.planetIndex+1}</strong><span>Place {command.row} Shrine {command.column+1} · {cost} {command.row}</span></button>;})}</div>:<p>{view.actionProgress?.shrinePlaced?'A Shrine was placed this Research action.':'No legal Shrine placement is currently affordable.'}</p>}</section>}
   {acquired&&owned.has(acquired)&&<div className="dg-research-acquired" role="status"><strong>Acquired · {TECHNOLOGIES.find(t=>t.id===acquired)?.name}</strong><span>{describeTechnology(TECHNOLOGIES.find(t=>t.id===acquired)!)}</span></div>}
   <ResearchedTechnologies view={view} selectedId={selected} seat={seat} onInspect={id=>onSelect(id,true)}/>
   {gameRules(view).technologyVariant&&<section className="dg-research-developments" aria-label="Developments"><h2>Developments</h2><p>These stay beside your research tracks.</p><div className="sd-tech-grid">{DEVELOPMENTS.map(development=>{const ownedDevelopment=seat.developments?.find(item=>item.id===development.id);return <article key={development.id} className="sd-tech-card"><h3>{development.name}</h3><p>{development.description}</p><p className="dg-development-price"><TradeResourceIcon resource={development.resource}/><strong> {development.cost}</strong></p>{ownedDevelopment?<small>{ownedDevelopment.technologyId?`Filled · ${TECHNOLOGIES.find(t=>t.id===ownedDevelopment.technologyId)?.name??ownedDevelopment.technologyId} · +1 VP`:'Acquired'}</small>:<button className="sd-primary" disabled={disabled||stale||!canResearch||seat.resources[development.resource]<development.cost||!developmentAvailable(view,development.id)} onClick={()=>onSubmit({type:'research-development',developmentId:development.id})}>Acquire</button>}</article>;})}</div></section>}

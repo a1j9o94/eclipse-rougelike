@@ -49,6 +49,7 @@ export function runningScore(view: PlayerView|SpectatorView, seatId: string): Ru
       if (!definition) throw new RangeError(`Sector is absent from base catalog: ${sector.tileId}`);
       return {
         id: sector.id,
+        shrines:(seat.shrines??[]).filter(shrine=>shrine.sectorId===sector.id).length,
         printedVp: definition.victoryPoints,
         monoliths: Number(sector.monolith),
         portalVp: sector.portalVp ?? 0,

@@ -121,6 +121,7 @@ export function createGame(config: GameSetup): GameState {
         move: 0,
       },
       colonyShipsAvailable: f.colonyShips,
+      ...(s.faction==='lyra'?{shrines:[]}:{}),
       passed: false,
       eliminated: false,
       technologies,

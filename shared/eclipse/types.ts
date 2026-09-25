@@ -72,6 +72,8 @@ export interface Ship {
   orbitalShip?: boolean;
 }
 export interface Seat {
+  /** Placed Lyra Shrines remain in their sector even if control changes. */
+  shrines?: {sectorId:string;planetIndex:number;row:Resource;column:0|1|2}[];
   minorSpecies?: MinorSpeciesTile[];
   id: SeatId;
   faction: FactionId;
@@ -250,7 +252,7 @@ export type DecisionChoice =
       kind: "combat-allocation";
       allocations: { dieId: string; targetId: string; damage?: number }[];
     }
-  | { kind: "super-joker"; action: "accept" | "reroll" | "table" }
+  | { kind: "super-joker"; action: "accept" | "reroll" | "table" | "colony-reroll"; dieId?:string }
   | { kind: "retreat"; destinationId: string | null }
   | { kind: "reputation"; kept?: number[] }
   | {
@@ -283,6 +285,7 @@ export interface FundingTrade {
   amount: number;
 }
 export type GameCommand =
+  | {type:'place-shrine';sectorId:string;planetIndex:number;row:Resource;column:0|1|2}
   | { type: "research-development"; developmentId: "ancient-labs-development" | "quantum-labs" }
   | { type: "quantum-research"; tileId: string; track: Track }
   | { type: "buy-minor-species"; minorSpeciesId: MinorSpeciesId; resource?: Resource; returnReputation?: number[] }
@@ -356,6 +359,7 @@ export interface GameState {
 }
 
 export interface ActionProgress {
+  shrinePlaced?:boolean;
   owner: SeatId;
   action: Action;
   remaining: number;

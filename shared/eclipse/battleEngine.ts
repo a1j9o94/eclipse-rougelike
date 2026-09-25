@@ -336,7 +336,7 @@ function rollAttack(
     `${group.shipType} rolled ${b.dice.map(describeDie).join(", ")}.`,
     "combat",
   );
-  if (gameRules(state).combatJokers && !neutral(group.owner) && (player(state, group.owner).superJokers ?? 0) > 0) {
+  if (!neutral(group.owner) && ((gameRules(state).combatJokers && (player(state, group.owner).superJokers ?? 0) > 0) || (player(state,group.owner).faction==='lyra'&&player(state,group.owner).colonyShipsAvailable>0))) {
     state.pendingDecision = {
       id: uniqueId(state, "super-joker"), kind: "super-joker", owner: group.owner,
       battleId: b.id, dice: structuredClone(b.dice), remaining: player(state, group.owner).superJokers ?? 0,
@@ -809,6 +809,19 @@ export function resolveCombatChoice(
       offerAllocation(state, b!, events);
       return;
     }
+    if(choice.action==='colony-reroll'){
+      const owner=player(state,actor);
+      requireRule(owner.faction==='lyra'&&owner.colonyShipsAvailable>0,'No unused Lyra colony ship remains.');
+      const index=b!.dice!.findIndex(die=>die.id===choice.dieId);
+      requireRule(index>=0,'Choose one die from the current volley.');
+      owner.colonyShipsAvailable--;
+      const roll=randomInt(state.random,6);state.random=roll.state;
+      const die=b!.dice![index],face=roll.value+1;
+      b!.dice![index]={...die,face,damage:die.weaponColor==='magenta'?riftDieOutcome(face).damage:die.damage};
+      emit(events,actor,`${actor} flipped one colony ship to reroll a ${die.weaponColor??'combat'} die: ${face}.`,'combat');
+      state.pendingDecision={id:uniqueId(state,'super-joker'),kind:'super-joker',owner:actor,battleId:b!.id,dice:structuredClone(b!.dice!),remaining:decision.remaining};
+      return;
+    }
     requireRule(decision.remaining > 0, "No Super Jokers remain.");
     const owner = player(state, actor);
     owner.superJokers = decision.remaining - 1;
@@ -827,7 +840,7 @@ export function resolveCombatChoice(
       return { ...die, face, damage: die.weaponColor === "magenta" ? riftDieOutcome(face).damage : die.damage };
     });
     emit(events, actor, `${actor} rerolled the whole volley with a Super Joker: ${b!.dice.map(describeDie).join(", ")}.`, "combat");
-    state.pendingDecision = owner.superJokers > 0 ? {
+    state.pendingDecision = owner.superJokers > 0 || (owner.faction==='lyra'&&owner.colonyShipsAvailable>0) ? {
       id: uniqueId(state, "super-joker"), kind: "super-joker", owner: actor,
       battleId: b!.id, dice: structuredClone(b!.dice), remaining: owner.superJokers,
     } : null;

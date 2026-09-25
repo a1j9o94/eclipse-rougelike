@@ -693,3 +693,11 @@ Acceptance criteria: Official setup constants, sector 234, station defense and l
 Risks & rollback: The stationary Orbital reuses the otherwise unavailable Starbase blueprint; revert this feature branch if its lifecycle integration is incomplete.
 
 Test list: `second_dawn_exiles.spec.ts` (setup and scoring failed first, then passed); bounded registry, setup, actions, and blueprint tests. Deterministic combat and full AI match remain follow-ups.
+
+## 2026-09-25 — Enlightened of Lyra base species
+Outcome: players can choose Lyra, place nine Shrines through optional Research action steps, earn row rewards, spend colony ships on single-die combat rerolls, and score controlled Shrines.
+Acceptance: publisher setup and costs match the archived Seekers rules/boards; each planet holds at most one Shrine; completed rows grant permanent wormhole ability, discovery, or one influence disc; Shrines remain after lost control; AI and saved games handle all choices.
+Risks & rollback: adding Lyra changes a public roster and persistent command shape. Preserve `expanded-v1` via the separately pinned `expanded-v2` scaffold; revert this feature commit before release if faction tests, lint, or build fail.
+Tests (failed first): faction setup, legal/illegal Shrine placement, optional placement after technology, scoring, row reward, combat reroll, recovery, bounded AI match. Then run adjacent faction/combat/protocol tests, lint, and build.
+Decision Log: Shrine placements are explicit typed records on the seat, with sector and planet identity. A Shrine opens or continues Research but consumes no technology activation; Lyra's only technology activation leaves the action open until Shrine placement or explicit End action. The combat reroll uses the volley review and spends one available colony ship per chosen die.
+Follow-ups: complete `expanded-v2` integration and human playtest before release; add the separately sourced anti-missile variant only after base Lyra is accepted.

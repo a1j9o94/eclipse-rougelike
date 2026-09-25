@@ -112,6 +112,7 @@ export function evaluateLegacyAiCommand(
       );
     case "research-development": return 4;
     case "quantum-research": return 8;
+    case 'place-shrine': return 8-command.column;
     case "research":
       return (
         11 +

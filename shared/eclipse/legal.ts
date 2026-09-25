@@ -374,9 +374,11 @@ export function legalCommands(
         break;
       case "super-joker":
         resolve({kind:"super-joker",action:"accept"}, "Accept this volley");
-        resolve({kind:"super-joker",action:"reroll"}, "Spend a Super Joker to reroll every die");
-        if (decision.dice.length <= 50)
+        if(decision.remaining>0)resolve({kind:"super-joker",action:"reroll"}, "Spend a Super Joker to reroll every die");
+        if (decision.remaining>0&&decision.dice.length <= 50)
           resolve({kind:"super-joker",action:"table"}, "Spend a Super Joker for the table result");
+        if(seat.faction==='lyra'&&seat.colonyShipsAvailable>0)
+          for(const die of decision.dice)resolve({kind:'super-joker',action:'colony-reroll',dieId:die.id},`Flip colony ship to reroll ${die.weaponColor??'combat'} die ${die.id}`);
         break;
       case "less-random-reputation": {
         resolve({kind:"less-random-reputation",actions:[]}, "Leave reputation draws unspent");
@@ -507,6 +509,24 @@ export function legalCommands(
         (progress.budgets ? (progress.budgets[action] ?? 0) > 0 : progress.action === action && progress.remaining > 0)
       : seat.influenceOnTrack > 0 &&
         (!seat.passed || ["upgrade", "build", "move"].includes(action));
+  if(view.phase==='action'&&seat.faction==='lyra'&&!seat.passed&&!progress?.shrinePlaced&&(!progress?(seat.influenceOnTrack>0):progress.owner===seat.id&&progress.action==='research')){
+    const costs={science:[2,3,4],money:[3,4,5],materials:[4,5,6]} as const;
+    for(const sector of controlled){
+      const planets=sectorDefinition(Number(sector.tileId))?.population??[];
+      for(let planetIndex=0;planetIndex<planets.length;planetIndex++){
+        const planet=planets[planetIndex];
+        if((seat.shrines??[]).some(shrine=>shrine.sectorId===sector.id&&shrine.planetIndex===planetIndex))continue;
+        for(const row of RESOURCES){
+          if(planet.resource!==row&&planet.resource!=='gray')continue;
+          for(const column of [0,1,2] as const){
+            const cost=costs[row][column];
+            if(seat.resources[row]<cost||(seat.shrines??[]).some(shrine=>shrine.row===row&&shrine.column===column))continue;
+            add({type:'place-shrine',sectorId:sector.id,planetIndex,row,column},`Place ${row} Shrine in ${sector.id}`,`${cost} ${row}. One Shrine during this Research action.`);
+          }
+        }
+      }
+    }
+  }
   if (view.phase === "action" && progress)
     add(
       { type: "end-action" },

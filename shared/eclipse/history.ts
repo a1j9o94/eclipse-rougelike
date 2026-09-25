@@ -52,6 +52,7 @@ function actionSummary(command: GameCommand): string {
       return "Changed influence";
     case "research-development": return `Acquired ${command.developmentId === 'quantum-labs' ? 'Quantum Labs' : 'Ancient Labs'}`;
     case "quantum-research": return `Researched ${TECHNOLOGIES.find(t => t.id === command.tileId)?.name ?? 'technology'} in Quantum Labs`;
+    case 'place-shrine': return `Placed a ${command.row} Shrine`;
     case "research":
       return `Researched ${TECHNOLOGIES.find((t) => t.id === command.tileId)?.name ?? "a technology"}`;
     case "upgrade":
