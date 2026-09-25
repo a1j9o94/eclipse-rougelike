@@ -36,22 +36,23 @@ type PublicVolley = NonNullable<GameEvent["combatVolley"]>;
 function VolleyScene({ volley, view, knownShips, still, awaitingDice }: {
   volley: PublicVolley;
   view?: PlayerView;
-  knownShips: readonly Pick<Ship, "id" | "owner" | "type">[];
+  knownShips: readonly Pick<Ship, "id" | "owner" | "type" | "orbitalShip">[];
   still: boolean;
   awaitingDice: boolean;
 }) {
   const firingSeat = view?.seats.find(seat => seat.id === volley.attacker);
   const sourceType = (die: PublicVolley['dice'][number]) => die.sourceShipType ?? knownShips.find(ship => ship.id === die.sourceShipId)?.type ?? view?.ships.find(ship => ship.id === die.sourceShipId)?.type;
+  const sourceOrbital = (die: PublicVolley['dice'][number]) => die.sourceOrbitalShip ?? knownShips.find(ship => ship.id === die.sourceShipId)?.orbitalShip ?? view?.ships.find(ship => ship.id === die.sourceShipId)?.orbitalShip ?? false;
   const sourceTypes = [...new Set(volley.dice.map(sourceType))];
-  const art = (type: Ship['type'], owner?: string) => type === 'ancient' || type === 'guardian' || type === 'gcds'
+  const art = (type: Ship['type'], owner?: string, orbital = false) => type === 'ancient' || type === 'guardian' || type === 'gcds'
     ? <NeutralShipSilhouette type={type}/>
-    : <ShipSilhouette type={type} faction={view?.seats.find(seat => seat.id === owner)?.faction}/>;
+    : <ShipSilhouette type={type} faction={view?.seats.find(seat => seat.id === owner)?.faction} orbital={orbital}/>;
   return <div className={`dg-volley-scene${still ? ' is-still' : ''}${awaitingDice ? ' is-awaiting-dice' : ''}`} role="group" aria-label="Volley firing and impacts">
     <div className="dg-volley-firing">
       <small>FIRING</small>
       {sourceTypes.map(type => <div className="dg-volley-source" key={type ?? 'unknown'}>
-        <span className="dg-volley-source-art">{type ? art(type, volley.attacker) : <StatIcon kind="cannon"/>}</span>
-        <strong>{type ? names[type] : 'Firing fleet'}</strong>
+        <span className="dg-volley-source-art">{type ? art(type, volley.attacker, volley.dice.some(die => sourceType(die)===type && sourceOrbital(die))) : <StatIcon kind="cannon"/>}</span>
+        <strong>{type ? type==='starbase'&&volley.dice.some(die => sourceType(die)===type && sourceOrbital(die))?'Orbital':names[type] : 'Firing fleet'}</strong>
         <small>{volley.dice.filter(die => sourceType(die) === type).length} {volley.dice.filter(die => sourceType(die) === type).length === 1 ? 'die' : 'dice'}</small>
       </div>)}
       {firingSeat && <small>{getFaction(firingSeat.faction).name}</small>}
@@ -67,7 +68,8 @@ function VolleyScene({ volley, view, knownShips, still, awaitingDice }: {
         const hits = impacts.filter(impact => impact.hit).length;
         const misses = impacts.length - hits;
         const outcome = target.destroyed ? 'destroyed' : target.hpAfter < target.hpBefore ? 'damaged' : 'unharmed';
-        const name = type ? names[type] : 'Ship';
+        const orbital = target.orbitalShip ?? known?.orbitalShip ?? false;
+        const name = orbital ? 'Orbital' : type ? names[type] : 'Ship';
         const label = `${name}: ${hits} ${hits === 1 ? 'hit' : 'hits'}, ${misses} ${misses === 1 ? 'miss' : 'misses'}, ${outcome === 'unharmed' ? 'no damage' : outcome}`;
         return <div key={target.id} className={`dg-volley-scene-target is-${outcome}`} aria-label={label}>
           <svg className="dg-volley-flight" viewBox="0 0 100 70" preserveAspectRatio="none" aria-hidden="true">
@@ -77,7 +79,7 @@ function VolleyScene({ volley, view, knownShips, still, awaitingDice }: {
               return <path key={`${impact.dieId}:${index}`} data-weapon-color={die?.weaponColor} data-hit={impact.hit} d={impact.hit ? `M0 ${y} L100 35` : `M0 ${y} L100 ${index % 2 ? 67 : 3}`} style={{ animationDelay: `${Math.min(index, 8) * .06}s` }}/>;
             })}
           </svg>
-          <span className="dg-volley-scene-target-art">{type ? art(type, target.owner ?? known?.owner) : <StatIcon kind="hull"/>}<span className="dg-volley-impact-flash" aria-hidden="true"/>{target.destroyed && <b className="dg-volley-wreck-mark" aria-hidden="true">×</b>}</span>
+          <span className="dg-volley-scene-target-art">{type ? art(type, target.owner ?? known?.owner, orbital) : <StatIcon kind="hull"/>}<span className="dg-volley-impact-flash" aria-hidden="true"/>{target.destroyed && <b className="dg-volley-wreck-mark" aria-hidden="true">×</b>}</span>
           <span className="dg-volley-scene-target-copy"><strong>{name}</strong>{owner===volley.attacker&&<small className="dg-rift-backfire">Rift backfire · own fleet</small>}{ownerLabel && <small>{ownerLabel}</small>}<b>{target.destroyed ? 'Destroyed' : outcome === 'damaged' ? 'Damaged' : 'No damage'}</b><small>{target.hpBefore} → {target.hpAfter} HP</small></span>
         </div>;
       })}
@@ -88,7 +90,7 @@ function VolleyScene({ volley, view, knownShips, still, awaitingDice }: {
 export function CombatPlayback({ volleys, view, knownShips = [], fast = false, soundEligible = false }: {
   volleys: readonly PublicVolley[];
   view?: PlayerView;
-  knownShips?: readonly Pick<Ship, "id" | "owner" | "type">[];
+  knownShips?: readonly Pick<Ship, "id" | "owner" | "type" | "orbitalShip">[];
   fast?: boolean;
   soundEligible?: boolean;
 }) {
@@ -124,12 +126,13 @@ export function CombatPlayback({ volleys, view, knownShips = [], fast = false, s
             const seat = view?.seats.find(candidate => candidate.id === owner);
             const faction = seat ? getFaction(seat.faction) : undefined;
             const ownerLabel = faction?.name ?? (owner === "ancient" || owner === "guardian" || owner === "gcds" ? neutralNames[owner] : owner);
-            const title = type ? names[type] : "Ship";
+            const orbital = target.orbitalShip ?? knownShip?.orbitalShip ?? false;
+            const title = orbital ? 'Orbital' : type ? names[type] : "Ship";
             const outcome = target.destroyed ? "destroyed" : target.hpAfter < target.hpBefore ? "damaged" : "unharmed";
             return <li key={target.id}>
               <div className={`dg-impact-card is-${outcome}`} role="group" aria-label={`${title} ${outcome}`} style={seat ? { borderLeftColor: seatColor(seat) } : undefined}>
                 {type && <span className="dg-impact-ship-art">
-                  {type === "ancient" || type === "guardian" || type === "gcds" ? <NeutralShipSilhouette type={type} /> : <ShipSilhouette type={type} faction={seat?.faction} />}
+                  {type === "ancient" || type === "guardian" || type === "gcds" ? <NeutralShipSilhouette type={type} /> : <ShipSilhouette type={type} faction={seat?.faction} orbital={orbital} />}
                   {target.destroyed && <svg className="dg-impact-destruction-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M16 16l32 32M48 16L16 48" /></svg>}
                 </span>}
                 <span className="dg-impact-copy"><strong>{title}</strong>{owner===volley.attacker&&<small className="dg-rift-backfire">Rift backfire</small>}{ownerLabel && <small>{ownerLabel}</small>}{!type && <small>{target.id}</small>}<span>{target.hpBefore} → {target.hpAfter} HP{target.excess > 0 && <small> · {target.excess} excess</small>}</span></span>
@@ -211,7 +214,7 @@ function BattleStat({
   );
 }
 /** Active engagement only; all stats come from the same public blueprints as combat. */
-export default function BattleOverview({ view, recentVolleys = [], knownShips = [], fastPlayback = false, soundEligible = false }: { view: PlayerView; recentVolleys?: readonly NonNullable<GameEvent["combatVolley"]>[]; knownShips?: readonly Pick<Ship, "id" | "owner" | "type">[]; fastPlayback?: boolean; soundEligible?: boolean }) {
+export default function BattleOverview({ view, recentVolleys = [], knownShips = [], fastPlayback = false, soundEligible = false }: { view: PlayerView; recentVolleys?: readonly NonNullable<GameEvent["combatVolley"]>[]; knownShips?: readonly Pick<Ship, "id" | "owner" | "type" | "orbitalShip">[]; fastPlayback?: boolean; soundEligible?: boolean }) {
   const battle = view.battle;
   if (!battle) return null;
   const inSector = view.ships.filter((s) => s.sectorId === battle.sectorId);
@@ -302,7 +305,7 @@ export default function BattleOverview({ view, recentVolleys = [], knownShips = 
                       </div>
                       <div className="dg-battle-class-info">
                         <strong>
-                          {type==="gcds"?"Galactic Center Defense System":names[type]}
+                          {ships[0]?.orbitalShip?'Orbital':type==="gcds"?"Galactic Center Defense System":names[type]}
                           {ships.length > 1 ? ` ×${ships.length}` : ""}
                         </strong>
                         {(type==="ancient"||type==="guardian"||type==="gcds")&&<small className="dg-neutral-blueprint-label">Standard defender blueprint</small>}
@@ -392,7 +395,7 @@ export default function BattleOverview({ view, recentVolleys = [], knownShips = 
                       .findIndex((s) => s.id === ship.id) + 1;
                   return (
                     <p key={ship.id}>
-                      {names[ship.type]} #{ordinal} ·{" "}
+                      {ship.orbitalShip?'Orbital':names[ship.type]} #{ordinal} ·{" "}
                       {stats
                         ? `${Math.max(0, stats.hull + 1 - ship.damage)}/${stats.hull + 1} HP`
                         : ""}{" "}

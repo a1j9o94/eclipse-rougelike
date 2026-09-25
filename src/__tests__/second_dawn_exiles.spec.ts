@@ -29,7 +29,7 @@ describe('The Exiles (official Outcasts pack)', () => {
     expect(game.seats[0].technologies.nano).toContain('cloaking-device');
     const orbitalBlueprint = game.seats[0].blueprints.find(blueprint => blueprint.shipType === 'starbase')!;
     expect(deriveBlueprintStats('exiles', { ...orbitalBlueprint, outsideParts: [] })).toMatchObject({
-      initiative: 2, computer: 1, hull: 1,
+      initiative: 2, energyProduction: 4, computer: 1, hull: 1,
       weapons: [{ kind: 'cannon', color: 'yellow', dice: 2, damage: 1 }],
     });
     game.seats[0].technologies.grid.push('positron-computer');

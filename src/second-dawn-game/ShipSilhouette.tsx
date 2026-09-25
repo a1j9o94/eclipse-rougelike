@@ -9,10 +9,17 @@ const HULLS: Record<BlueprintShipType, string> = {
   starbase: 'M147 18 173 18 181 65 212 48 231 67 210 100 254 109 254 135 210 144 231 177 212 196 181 179 173 222 147 222 139 179 108 196 89 177 110 144 66 135 66 109 110 100 89 67 108 48 139 65Z',
 };
 /** Original vector silhouettes: decorative ship identity, not a physical slot map. */
-export default function ShipSilhouette({ type, faction }: { type: BlueprintShipType; faction?: FactionId }) {
-  const name = type[0].toUpperCase() + type.slice(1);
+export default function ShipSilhouette({ type, faction, orbital = false }: { type: BlueprintShipType; faction?: FactionId; orbital?: boolean }) {
+  const isOrbital = orbital || (type === 'starbase' && faction === 'exiles');
+  const name = isOrbital ? 'Orbital' : type[0].toUpperCase() + type.slice(1);
   const family = faction ? shipDesignFamily(faction) : undefined;
   const design = family ? factionShipDesign(family, type) : undefined;
+  if (isOrbital) return <svg className="dg-ship-silhouette" role="img" aria-label="Orbital blueprint silhouette" data-ship-family={family} viewBox="40 0 240 240">
+    <circle cx="160" cy="120" r="105" className="dg-ship-radar" />
+    <circle cx="160" cy="120" r="45" className="dg-ship-hull" />
+    <ellipse cx="160" cy="120" rx="95" ry="29" transform="rotate(-25 160 120)" fill="none" stroke="currentColor" strokeWidth="12" />
+    <circle cx="160" cy="120" r="17" fill="currentColor" opacity=".65" />
+  </svg>;
   return <svg className="dg-ship-silhouette" role="img" aria-label={`${name} blueprint silhouette`} data-ship-family={family} viewBox="40 0 240 240">
     <circle cx="160" cy="120" r="105" className="dg-ship-radar" />
     <circle cx="160" cy="120" r="76" className="dg-ship-radar" />

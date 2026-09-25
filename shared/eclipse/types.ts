@@ -181,6 +181,7 @@ export type PendingDecision = DecisionBase &
           computer?: number;
           sourceShipId?: string;
           sourceShipType?: Ship["type"];
+          sourceOrbitalShip?: boolean;
           weaponKind?: "cannon" | "missile";
           weaponColor?: "yellow" | "orange" | "blue" | "red" | "magenta";
           targets: string[];
@@ -388,7 +389,7 @@ export interface BattleState {
   kills: { owner: string; value: number }[];
   participants: string[];
   retreated: string[];
-  dice?: { id: string; face: number; damage: number; computer: number; sourceShipId?: string; sourceShipType?: Ship["type"]; weaponKind?: "cannon" | "missile"; weaponColor?: "yellow" | "orange" | "blue" | "red" | "magenta" }[];
+  dice?: { id: string; face: number; damage: number; computer: number; sourceShipId?: string; sourceShipType?: Ship["type"]; sourceOrbitalShip?: boolean; weaponKind?: "cannon" | "missile"; weaponColor?: "yellow" | "orange" | "blue" | "red" | "magenta" }[];
   attackingOwner?: string;
   reputationOrder?: string[];
   awarded?: string[];
@@ -437,9 +438,9 @@ export interface GameEvent {
     battleId: string;
     sectorId?: string;
     attacker: string;
-    dice: { id: string; face: number; damage: number; computer: number; sourceShipId?: string; sourceShipType?: Ship["type"]; weaponKind?: "cannon" | "missile"; weaponColor?: "yellow" | "orange" | "blue" | "red" | "magenta" }[];
+    dice: { id: string; face: number; damage: number; computer: number; sourceShipId?: string; sourceShipType?: Ship["type"]; sourceOrbitalShip?: boolean; weaponKind?: "cannon" | "missile"; weaponColor?: "yellow" | "orange" | "blue" | "red" | "magenta" }[];
     impacts: { dieId: string; targetId: string; damage: number; hit: boolean }[];
-    targets: { id: string; shipType?: Ship["type"]; owner?: string; hpBefore: number; hpAfter: number; excess: number; destroyed: boolean }[];
+    targets: { id: string; shipType?: Ship["type"]; orbitalShip?: boolean; owner?: string; hpBefore: number; hpAfter: number; excess: number; destroyed: boolean }[];
   };
 }
 export interface ValidationError {

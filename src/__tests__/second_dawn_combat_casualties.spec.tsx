@@ -34,6 +34,16 @@ it("keeps a named casualty and silhouette visible after its ship and battle disa
   expect(screen.getByRole("status")).toHaveTextContent("1 ship destroyed");
 });
 
+it('keeps a destroyed Exiles Orbital distinct from a Starbase in recorded combat', () => {
+  const volley = destroyedVolley();
+  volley.targets = [{ ...volley.targets[0], id: 'orbital-1', shipType: 'starbase', orbitalShip: true }];
+  volley.impacts = volley.impacts.map(impact => ({ ...impact, targetId: 'orbital-1' }));
+  render(<CombatPlayback volleys={[volley]} />);
+  const casualty = screen.getByRole('group', { name: 'Orbital destroyed' });
+  expect(within(casualty).getByRole('img', { name: 'Orbital blueprint silhouette' })).toBeInTheDocument();
+  expect(screen.getByLabelText('Orbital: 1 hit, 0 misses, destroyed')).toBeInTheDocument();
+});
+
 it("uses neutral ship art and never invents an owner for legacy journal entries", () => {
   const volley = destroyedVolley();
   volley.targets = [{ ...volley.targets[0], shipType: "ancient", owner: "ancient" }, { id: "legacy-ship", hpBefore: 1, hpAfter: 0, excess: 0, destroyed: true }];

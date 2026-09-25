@@ -32,6 +32,6 @@ The engine has four player ship types. Exiles' Orbital uses the unused Starbase 
 ## Follow-ups
 
 - Verify combat casualty and reputation timing with a deterministic fixture.
-- Render Orbital-specific art and casualty labels throughout combat. Fleet inspection labels it Orbital, while its generic ship silhouette and combat casualty can appear as a Starbase.
-- Confirm the physical Orbital blueprint's intrinsic initiative and energy markings against a higher-resolution publisher scan; the archived board image supports three preprinted parts (Ion Turret, Electron Computer, Hull).
+- The archived board labels the Orbital blueprint with 2 initiative and 4 energy. Its three printed parts are Ion Turret, Electron Computer, and Hull; those values are encoded in the catalog and verified by the Exiles test.
+- Combat playback carries Orbital identity in recorded volleys so the correct label and ring silhouette remain after its ship is destroyed.
 - The parent integration must pin the prior expanded-v1 roster and place Exiles in the new versioned profile.

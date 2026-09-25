@@ -313,6 +313,7 @@ function rollAttack(
           computer: s.computer,
           sourceShipId: ship.id,
           sourceShipType: ship.type,
+          sourceOrbitalShip: ship.orbitalShip,
           weaponKind: weapon.kind,
           weaponColor: weapon.color,
         });
@@ -363,6 +364,7 @@ function offerAllocation(state: GameState, b: BattleState, events: GameEvent[]):
       computer: d.computer,
       sourceShipId: d.sourceShipId,
       sourceShipType: d.sourceShipType,
+      sourceOrbitalShip: d.sourceOrbitalShip,
       weaponKind: d.weaponKind,
       weaponColor: d.weaponColor,
       hitTargets: targets.filter(t=>attackDieHits(d,stats(state,t).shield)).map(t=>t.id),
@@ -538,7 +540,7 @@ function applyAllocation(
         const maximum = stats(state, target).hull + 1;
         const before = hpBefore.get(target.id) ?? 0;
         const applied = damage.get(target.id) ?? 0;
-        return { id: target.id, shipType: target.type, owner: target.owner, hpBefore: before, hpAfter: Math.max(0, before - applied), excess: Math.max(0, applied - before), destroyed: target.damage >= maximum };
+        return { id: target.id, shipType: target.type, orbitalShip: target.orbitalShip, owner: target.owner, hpBefore: before, hpAfter: Math.max(0, before - applied), excess: Math.max(0, applied - before), destroyed: target.damage >= maximum };
       }),
     },
   });
