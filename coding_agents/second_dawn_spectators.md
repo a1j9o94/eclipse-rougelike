@@ -42,4 +42,10 @@ Human newcomer/expert playtests after engineering verification.
 - Backend published successfully to existing `dev:ideal-nightingale-55` using account authentication. Both hosted spectator queries return null for an invalid link. The CLI's explicit --env-file mode excludes account authentication; using verified default project selectors resolved that tooling issue. Deployment configuration remains unchanged.
 
 ## Release status
-Backend functions published at 19:59 local, September 24. Frontend main merge/push and hosted verification follow.
+Backend functions published at 19:59 local, September 24. Frontend main deployment and hosted verification succeeded; details below.
+
+### Hosted release verified
+- Implementation commit `5361f3a` merged and pushed to `main`.
+- Git-triggered Vercel production deployment `dpl_FEgnF3xvNFDjGwahbUk3rg3e5vqo` reached Ready: https://eclipse-rougelike-mchtw1qtm-obleton-adrian.vercel.app . Public alias: https://eclipse-rougelike.vercel.app/ . GitHub's Vercel status is success.
+- Read-only hosted verification used an existing six-seat room: anonymous entry renders Spectating, no guest credential is created, six public command centers are available, and science tracks inspect correctly. Hosted query response has no private, pendingDecision or viewerSeatId fields; bounded history returns public entries. No existing game actions were submitted during hosted verification.
+- No save/schema migration or deployment configuration changes. Human newcomer/expert playtest remains the only follow-up.
