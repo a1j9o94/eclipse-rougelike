@@ -9,6 +9,7 @@ const configurations: Array<{name:string;config:Pick<GameSetup,'rulesMode'|'rule
  {name:'ten-round Standard',config:{ruleOptions:{roundLimit:10}}},
  {name:'open Standard markets and private reputation',config:{ruleOptions:{openTechnology:true,publicDiscoveries:true}}},
  {name:'variant inventory with hidden discoveries and reputation',config:{rulesMode:'less-random-v1',ruleOptions:{publicDiscoveries:false,publicReputation:false,openTechnology:false,combatJokers:false}}},
+ {name:'pass-order turn sequence',config:{ruleOptions:{passOrderTurnOrder:true}}},
 ];
 describe('bounded independent rules AI matches',()=>{
  it.each(configurations)('finishes $name with valid sampled worlds and no deadlock',({config})=>{

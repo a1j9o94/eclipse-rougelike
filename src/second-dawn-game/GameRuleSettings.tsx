@@ -13,6 +13,7 @@ const options:readonly {key:Exclude<keyof GameRuleOptions,'roundLimit'>;label:st
  {key:'technologyVariant',label:'Less Random technology tiles',description:'Use revised technology inventory and the two developments. Independent of opening the whole market; excludes Rift Cannons.'},
  {key:'discoveryVariant',label:'Less Random discovery tiles',description:'Use revised missiles, resource choices and endgame bonuses. Independent of public discovery choices.'},
  {key:'factionVariant',label:'Less Random faction rules',description:'Use variant trade rates and require each Terran player to ban an unchosen alien faction.'},
+ {key:'passOrderTurnOrder',label:'Next round follows pass order',description:'Players take turns next round in the order they first passed this round. The first player to pass still gains 2 money.'},
 ];
 export default function GameRuleSettings({value,disabled,onChange}:Props){
  const id=`custom-rules-${useId().replace(/[^a-zA-Z0-9_-]/g,'')}`,rules=gameRules(value),defaults=gameRules({rulesMode:value.rulesMode});

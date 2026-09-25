@@ -22,3 +22,16 @@ it('saves custom room rules and honors disabled setup',()=>{
  fireEvent.change(screen.getByRole('combobox',{name:'Rounds'}),{target:{value:'12'}});fireEvent.click(screen.getByRole('checkbox',{name:'Choose from all discovery tiles'}));fireEvent.click(screen.getByRole('button',{name:'Save room settings'}));expect(save).toHaveBeenCalledWith(expect.objectContaining({ruleOptions:expect.objectContaining({roundLimit:12,publicDiscoveries:true})}));
  rerender(<GameRuleSettings value={{rulesMode:'standard',warpPortals:true}} disabled onChange={vi.fn()}/>);expect(screen.getByRole('combobox',{name:'Rounds'})).toBeDisabled();expect(screen.getByRole('checkbox',{name:'All technologies available'})).toBeDisabled();
 });
+it('offers pass-order turns with the other creation rules and saves the room choice',()=>{
+ render(<Harness/>);
+ const toggle=screen.getByRole('checkbox',{name:'Next round follows pass order'});
+ expect(toggle).not.toBeChecked();
+ fireEvent.click(toggle);
+ expect(JSON.parse(screen.getByTestId('rules').textContent!)).toMatchObject({passOrderTurnOrder:true});
+ cleanup();
+ const save=vi.fn();
+ render(<RoomSettingsEditor settings={{humanSeatCount:2,aiCount:0,timerMs:600000,warpPortals:true}} disabled={false} onSave={save}/>);
+ fireEvent.click(screen.getByRole('checkbox',{name:'Next round follows pass order'}));
+ fireEvent.click(screen.getByRole('button',{name:'Save room settings'}));
+ expect(save).toHaveBeenCalledWith(expect.objectContaining({ruleOptions:expect.objectContaining({passOrderTurnOrder:true})}));
+});

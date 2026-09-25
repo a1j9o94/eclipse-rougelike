@@ -218,6 +218,8 @@ function publicGameView(state: GameState, scoreViewer?: SeatId): PublicGameView 
     activeSeatId: state.activeSeatId,
     startSeatId: state.startSeatId,
     firstPasser: state.firstPasser,
+    ...(state.passOrder ? { passOrder: [...state.passOrder] } : {}),
+    ...(state.turnOrder ? { turnOrder: [...state.turnOrder] } : {}),
     warpPortals: state.engine?.warpPortals ?? true,
     riftCannons: state.engine?.riftCannons ?? false,
     sectorDeckCounts: {

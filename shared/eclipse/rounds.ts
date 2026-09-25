@@ -183,8 +183,15 @@ function cleanup(state: GameState, events: GameEvent[]): void {
     }
   }
   if (presentNextDecision(state)) return;
+  if (gameRules(state).passOrderTurnOrder) {
+    const livingIds = new Set(living(state).map(seat => seat.id));
+    state.turnOrder = [
+      ...(state.passOrder ?? []).filter(id => livingIds.delete(id)),
+      ...living(state).filter(seat => livingIds.has(seat.id)).map(seat => seat.id),
+    ];
+  }
   state.startSeatId = living(state).some(seat => seat.id === state.firstPasser) ? state.firstPasser! : living(state).some(seat => seat.id === state.startSeatId) ? state.startSeatId : living(state)[0].id;
-  state.activeSeatId = state.startSeatId; state.firstPasser = null; state.round++; state.phase = 'action';
+  state.activeSeatId = state.startSeatId; state.firstPasser = null; state.passOrder = []; state.round++; state.phase = 'action';
   e.action = null; e.aftermath = undefined; e.aftermathDone = []; e.upkeepDone = []; e.diplomacyDone = []; e.diplomacyDeclined = []; e.battleSectors = []; e.battle = null; e.combatInitialized = false;
   if (gameRules(state).explorationRules && state.lessRandom) state.lessRandom.outerPlacementsThisRound = Object.fromEntries(living(state).map(seat => [seat.id, 0]));
   emit(events, null, `Round ${state.round}: action phase.`, 'phase');

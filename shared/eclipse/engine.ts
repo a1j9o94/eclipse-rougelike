@@ -36,16 +36,9 @@ import type {
 } from "./types";
 import { getPlayerView } from "./protocol";
 import { legalCommands } from "./legal";
+import { nextLivingSeatId } from './turnOrder';
 function nextSeat(state: GameState, seat: Seat): void {
-  const i = state.seats.indexOf(seat);
-  for (let offset = 1; offset <= state.seats.length; offset++) {
-    const next = state.seats[(i + offset) % state.seats.length];
-    if (!next.eliminated) {
-      state.activeSeatId = next.id;
-      return;
-    }
-  }
-  state.activeSeatId = null;
+  state.activeSeatId = nextLivingSeatId(state, seat.id);
 }
 function finishAction(state: GameState, seat: Seat, events: GameEvent[]): void {
   const partners = [...seat.ambassadors];
@@ -360,6 +353,7 @@ export function processGameCommand(
           "Finish your open action before passing.",
         );
         seat.passed = true;
+        if (gameRules(state).passOrderTurnOrder && !state.passOrder?.includes(actor)) (state.passOrder ??= []).push(actor);
         state.actionTurnSerial = (state.actionTurnSerial ?? 0) + 1;
         if (state.firstPasser === null) {
           state.firstPasser = actor;

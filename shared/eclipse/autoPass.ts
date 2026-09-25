@@ -1,6 +1,7 @@
 import { getFaction } from './catalog';
 import { emit } from './rulesState';
 import type { GameEvent, GameState, Seat } from './types';
+import { nextLivingSeatId } from './turnOrder';
 
 /** A saved convenience preference; never substitutes for a player's first pass. */
 export function shouldAutoPass(state: GameState, seat: Seat): boolean {
@@ -18,10 +19,7 @@ export function skipPassedReactionTurns(state: GameState, events: GameEvent[]): 
     const seat = state.seats[index];
     emit(events, seat.id, `${getFaction(seat.faction).name} automatically passes its reaction turn.`);
     state.actionTurnSerial = (state.actionTurnSerial ?? 0) + 1;
-    for (let offset = 1; offset <= state.seats.length; offset++) {
-      const next = state.seats[(index + offset) % state.seats.length];
-      if (!next.eliminated) { state.activeSeatId = next.id; break; }
-    }
+    state.activeSeatId = nextLivingSeatId(state, seat.id);
   }
 }
 

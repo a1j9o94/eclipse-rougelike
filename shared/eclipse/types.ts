@@ -327,6 +327,10 @@ export interface GameState {
   activeSeatId: SeatId | null;
   startSeatId: SeatId;
   firstPasser: SeatId | null;
+  /** First-pass sequence in the current round; distinct from later reaction passes. */
+  passOrder?: SeatId[];
+  /** Saved action cycle for the current round when pass-order turns are enabled. */
+  turnOrder?: SeatId[];
   /** Persisted action-turn boundary; absent in older saves means zero. */
   actionTurnSerial?: number;
   seats: Seat[];
@@ -509,6 +513,8 @@ export interface PublicGameView {
   startSeatId: SeatId;
   /** Public turn order and optional-rule configuration, also used by fair AI rollouts. */
   firstPasser?: SeatId | null;
+  passOrder?: SeatId[];
+  turnOrder?: SeatId[];
   warpPortals?: boolean;
   riftCannons?: boolean;
   seats: Seat[];

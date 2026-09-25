@@ -7,14 +7,21 @@ import SecondDawnBoard from '../second-dawn-game/SecondDawnBoard';
 
 afterEach(cleanup);
 
-it('keeps desktop navigation and session controls in one compact game bar', () => {
+it('keeps turn actions in a fixed rail beside the board', () => {
   const state = createGame({ seed: 7, seats: [{ id: 'a', faction: 'eridani', controller: 'human' }, { id: 'b', faction: 'hydran', controller: 'ai' }] });
   const view = getPlayerView(state, 'a')!;
   const { container } = render(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="" onSubmit={vi.fn()} onMenu={vi.fn()} />);
 
   const header = container.querySelector('.sd-header')!;
-  expect(header.querySelector('.sd-actions')).not.toBeNull();
-  expect(header.querySelector('.sd-actions button')?.textContent).toBe('Explore');
+  expect(header.querySelector('.sd-actions')).toBeNull();
+  const rail = screen.getByRole('navigation', { name: 'Turn actions' });
+  expect(rail).toHaveTextContent('Explore');
+  expect(rail).toHaveTextContent('Colonize');
+  expect(rail).toHaveTextContent('Trade');
+  expect(rail).toHaveTextContent('Pass');
+  expect(rail.querySelectorAll('.dg-action-rail-primary button')).toHaveLength(6);
+  expect(rail.querySelector('.dg-action-rail-turn')).toContainElement(screen.getByRole('button', { name: 'Pass +2 money' }));
+  expect(rail).toContainElement(screen.getByRole('checkbox', { name: 'Auto-pass unless attacked' }));
   expect(header.querySelector('.dg-save button')).not.toBeNull();
   expect(container.querySelector('.sd-toolbar')).toBeNull();
   expect(container.querySelector('.sd-footer')).toBeNull();

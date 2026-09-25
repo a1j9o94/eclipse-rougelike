@@ -172,6 +172,24 @@
 .dg-mobile-board .dg-board-draft-notice { max-height: 140px; overflow: auto; flex-shrink: 0; }
 .dg-mobile-board .dg-action-draft-notice button { padding: 6px 8px; min-height: 40px; font-size: 12px; }
 .dg-mobile-board:has(.dg-mobile-sheet[data-sheet-state=peek]) .sd-main { padding-bottom: 58px; }
+.dg-mobile-turn-controls{grid-column:1/-1;grid-row:1;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;margin-bottom:3px}
+.dg-mobile-board .dg-mobile-footer:has(.dg-mobile-turn-controls){grid-template-columns:minmax(0,1fr)}
+.dg-mobile-board .dg-mobile-turn-controls>.dg-mobile-choose-action{grid-column:1;grid-row:1}
+.dg-mobile-board .dg-mobile-turn-controls>.dg-mobile-turn-button{grid-column:2;grid-row:1}
+.dg-mobile-board .dg-mobile-turn-controls .dg-mobile-choose-action{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:8px;min-width:0;min-height:44px;padding:6px 11px;font-size:13px}
+.dg-mobile-board .dg-mobile-turn-controls .dg-mobile-turn-button{min-height:44px;padding:6px 12px;background:#d8b370;color:#192024;border-color:#f0cf91;font-weight:700;white-space:nowrap}
+.dg-mobile-board .dg-mobile-turn-controls .dg-mobile-turn-button:disabled{opacity:.5}
+.dg-mobile-passed-control{grid-column:1/-1;padding:3px 5px;color:#e6d4ad}
+.dg-mobile-passed-control .dg-auto-pass-control{padding:0;border:0;background:transparent}
+.dg-mobile-passed-control .dg-auto-pass-control label{font-size:12px}
+.dg-mobile-turn-controls+.dg-mobile-navigation{grid-row:2;grid-column:1/-1}
+.dg-mobile-action-groups{display:grid;gap:16px}
+.dg-mobile-action-groups h3{margin:0 0 7px;font-size:10px;letter-spacing:.12em;color:#d9bc86;text-transform:uppercase}
+.dg-mobile-action-groups .dg-mobile-action-picker{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.dg-mobile-board .dg-mobile-action-groups .dg-mobile-action-picker button{min-height:86px;padding:8px;gap:4px}
+.dg-mobile-action-groups .dg-mobile-action-picker strong{font-size:12px}
+.dg-mobile-action-groups .dg-mobile-action-picker small{font-size:10px;line-height:1.25}
+.dg-mobile-action-groups .dg-mobile-action-picker .dg-stat-icon{width:20px;height:20px}
 .dg-mobile-feedback { flex-shrink: 0; max-height: 96px; overflow: auto; padding: 8px 12px; border-top: 1px solid #af9056; background: #30291b; color: #f1ddb4; font-size: 12px; line-height: 1.5; z-index: 52; }
 .dg-mobile-board .dg-mobile-resume-draft { width: 100%; margin: 10px 0; border-color: #c0a367; color: #f3dfb5; background: #413723; }
 .dg-mobile-action-nav > .sd-primary { background: #d7b577; color: #17202a; border-color: #dfc592; }
@@ -215,6 +233,9 @@
 .dg-mobile-board .dg-mobile-sheet .dg-action-panel > .sd-primary { position: static; }
 .dg-mobile-ai-recovery { padding:8px 0; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
 .dg-mobile-ai-recovery p { flex:1 1 180px; margin:0; font-size:13px; line-height:1.4; color:#f0c292; overflow-wrap:anywhere; }
+.dg-mobile-board .dg-mobile-footer:has(.dg-mobile-turn-controls){display:grid;grid-template-columns:minmax(0,1fr);gap:3px}
+.dg-mobile-board .dg-mobile-turn-controls .dg-mobile-choose-action{max-width:none;width:100%}
+.dg-mobile-board .dg-mobile-footer:has(.dg-mobile-turn-controls) .dg-mobile-navigation{width:100%;min-width:0}
 .dg-mobile-ai-recovery button { min-height:44px; border-color:#b59358; color:#efcf91; }
 
 /* The player roster is a horizontal strip, so its 190px basis is width. */

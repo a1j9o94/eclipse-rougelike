@@ -2,6 +2,7 @@
 
 Status: upkeep colony review and exploration odds released as `8e1e2da` on September 25, 2026; action-layout and faction slices remain planned/in progress.
 Action-layout update: the owner requested a visual review before any UI implementation. [Desktop/mobile concept](mockups/second_dawn_action_layout.png) groups the six normal actions, Colonize/Trade, and the phase-ending control in stable areas. It is a static proposal only; no live controls have moved.
+September 25 follow-up: after reviewing the static concept, the owner approved the full action layout and requested a separate game-creation checkbox for next-round pass-order turns. The action shell and optional rule were implemented together on `feature/action-layout-pass-order`; first-pass money and legacy clockwise saves are preserved. See the plan/result entry in `subagents/planning_agent.md`. Human action-search playtesting is still pending.
 Date: September 25, 2026.
 Source: player comments supplied by the product owner after the public post. One player stopped after round one because menus dominated the board and action buttons were hard to find; another repeatedly passed with unused colony ships. A reader asked why The Exiles and Enlightened of Lyra were absent. A companion-app author suggested exploration probabilities. These are distinct requests, not evidence that every proposed feature has been validated in play.
 

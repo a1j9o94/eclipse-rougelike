@@ -19,6 +19,7 @@ export const gameRuleOptionsValidator = v.object({
   technologyVariant: v.optional(v.boolean()),
   discoveryVariant: v.optional(v.boolean()),
   factionVariant: v.optional(v.boolean()),
+  passOrderTurnOrder: v.optional(v.boolean()),
 });
 export const pieceColorValidator = v.union(v.literal('red'), v.literal('blue'), v.literal('green'), v.literal('yellow'), v.literal('white'), v.literal('black'));
 export const minorSpeciesValidator: Validator<MinorSpeciesId> = v.union(...MINOR_SPECIES.map(tile => v.literal(tile.id)));

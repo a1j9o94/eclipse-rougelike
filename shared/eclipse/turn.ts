@@ -2,6 +2,8 @@ import { skipPassedReactionTurns } from './autoPass';
 import { FIRST_PASS_MONEY } from './passing';
 import { tradeResources, type ResourceKind } from './economy';
 import type { GameEvent, GameState, RuleResult, SeatId, ValidationError } from './types';
+import { gameRules } from './gameRules';
+import { nextLivingSeatId } from './turnOrder';
 
 const reject = (
   code: ValidationError['code'],
@@ -34,6 +36,7 @@ export function passTurn(input: GameState, actor: SeatId): RuleResult {
       'Money storage is outside its supported range.',
     );
   seat.passed = true;
+  if (gameRules(state).passOrderTurnOrder && !state.passOrder?.includes(actor)) (state.passOrder ??= []).push(actor);
   state.actionTurnSerial = (state.actionTurnSerial ?? 0) + 1;
   if (first) {
     seat.resources.money += FIRST_PASS_MONEY;
@@ -46,13 +49,7 @@ export function passTurn(input: GameState, actor: SeatId): RuleResult {
     state.phase = 'combat';
     state.activeSeatId = null;
   } else {
-    for (let offset = 1; offset <= state.seats.length; offset++) {
-      const next = state.seats[(index + offset) % state.seats.length];
-      if (!next.eliminated) {
-        state.activeSeatId = next.id;
-        break;
-      }
-    }
+    state.activeSeatId = nextLivingSeatId(state, actor);
   }
   const events: GameEvent[] = [
       {

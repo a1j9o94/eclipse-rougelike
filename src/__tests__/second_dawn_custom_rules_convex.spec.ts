@@ -29,6 +29,15 @@ it('persists custom solo settings and exposes the selected round limit in match 
  expect(state.ruleOptions).toEqual(ruleOptions);expect(state.engine?.riftCannons).toBeFalsy();
  expect((await t.query(api.eclipseMatches.listMyMatches,host))[0].ruleOptions).toEqual(ruleOptions);
 });
+it('saves pass-order turns from solo and room creation without changing the default',async()=>{
+ const t=convexTest(schema,modules),host=await t.action(api.eclipseGuests.createGuestSession,{});
+ const {matchId}=await t.mutation(api.eclipseMatches.createMatch,{...host,faction:'hydran',aiCount:1,ruleOptions:{passOrderTurnOrder:true}});
+ const solo=await t.run(ctx=>ctx.db.get(matchId));
+ expect((JSON.parse(solo!.snapshotJson) as GameState).ruleOptions?.passOrderTurnOrder).toBe(true);
+ const {roomToken}=await t.mutation(api.eclipseRooms.createRoom,{...host,faction:'hydran',settings:{...settings,ruleOptions:{passOrderTurnOrder:true}}});
+ const lobby=await t.query(api.eclipseRooms.getRoom,{...host,roomToken});
+ expect(lobby?.settings.ruleOptions?.passOrderTurnOrder).toBe(true);
+});
 it('rejects invalid round limits and incompatible cannons in solo and room creation',async()=>{
  const t=convexTest(schema,modules),host=await t.action(api.eclipseGuests.createGuestSession,{});
  for(const roundLimit of [0,21,2.5]) {
