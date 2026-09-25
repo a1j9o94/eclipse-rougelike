@@ -17,7 +17,7 @@ describe('The Exiles (official Outcasts pack)', () => {
     expect(faction.startingResources).toEqual({ materials: 4, science: 2, money: 3 });
     expect(faction.startingTechnologies).toEqual(['orbital', 'cloaking-device']);
     expect(faction.activations).toEqual({ explore: 1, research: 1, upgrade: 2, build: 2, move: 2, influence: 2 });
-    const game = createGame({ seed: 10, warpPortals: false, factionProfile: 'expanded-v1', seats: [
+    const game = createGame({ seed: 10, warpPortals: false, factionProfile: 'expanded-v2', seats: [
       { id: 'exiles', faction: 'exiles', controller: 'human' },
       { id: 'other', faction: 'orion', controller: 'ai' },
     ] });
@@ -54,7 +54,7 @@ describe('The Exiles (official Outcasts pack)', () => {
   });
 
   it('turns a populated orbital into a stationary defender and removes it on abandonment', () => {
-    const game = createGame({ seed: 10, warpPortals: false, factionProfile: 'expanded-v1', seats: [
+    const game = createGame({ seed: 10, warpPortals: false, factionProfile: 'expanded-v2', seats: [
       { id: 'exiles', faction: 'exiles', controller: 'human' },
       { id: 'other', faction: 'orion', controller: 'ai' },
     ] });
@@ -72,7 +72,7 @@ describe('The Exiles (official Outcasts pack)', () => {
   });
 
   it('rejects Starbase construction even after acquiring its technology', () => {
-    const game = createGame({ seed: 10, warpPortals: false, factionProfile: 'expanded-v1', seats: [
+    const game = createGame({ seed: 10, warpPortals: false, factionProfile: 'expanded-v2', seats: [
       { id: 'exiles', faction: 'exiles', controller: 'human' },
       { id: 'other', faction: 'orion', controller: 'ai' },
     ] });
@@ -84,7 +84,7 @@ describe('The Exiles (official Outcasts pack)', () => {
   });
 
   it('loses a populated Orbital as a ship while its structure remains', () => {
-    const game = createGame({ seed: 10, warpPortals: false, factionProfile: 'expanded-v1', seats: [
+    const game = createGame({ seed: 10, warpPortals: false, factionProfile: 'expanded-v2', seats: [
       { id: 'exiles', faction: 'exiles', controller: 'human' },
       { id: 'other', faction: 'orion', controller: 'ai' },
     ] });
@@ -121,7 +121,7 @@ describe('The Exiles (official Outcasts pack)', () => {
   });
 
   it('finishes a seeded AI match with Exiles', () => {
-    let state = createGame({ seed: 234, warpPortals: false, factionProfile: 'expanded-v1', seats: [
+    let state = createGame({ seed: 234, warpPortals: false, factionProfile: 'expanded-v2', seats: [
       { id: 'exiles', faction: 'exiles', controller: 'ai' },
       { id: 'other', faction: 'orion', controller: 'ai' },
     ] });

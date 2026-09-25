@@ -29,6 +29,15 @@ describe('expanded faction choice',()=>{
   expect(screen.queryByRole('button',{name:/Wardens of Magellan/})).toBeNull();
   expect(screen.getByRole('region',{name:'Blue civilization board'})).toBeVisible();
  });
+ it('offers Exiles and Lyra in the new collection without changing the old collection',()=>{
+  const {unmount}=render(<FactionPicker selected="hydran" onSelect={()=>{}} profile="expanded-v1"/>);
+  expect(screen.queryByRole('button',{name:/Exiles/i})).toBeNull();
+  expect(screen.queryByRole('button',{name:/Lyra/i})).toBeNull();
+  unmount();
+  render(<FactionPicker selected="hydran" onSelect={()=>{}} profile="expanded-v2"/>);
+  expect(screen.getByRole('button',{name:/Exiles/i})).toBeVisible();
+  expect(screen.getByRole('button',{name:/Lyra/i})).toBeVisible();
+ });
  it('keeps each expanded emblem distinct and explains the mixed action',()=>{
   const paths=['rho-indi','magellan','midas','ragnarok'].map(id=>{const{container,unmount}=render(<FactionSymbol faction={id as 'magellan'}/>);const d=container.querySelector('path')?.getAttribute('d');unmount();return d;});
   expect(new Set(paths).size).toBe(4);

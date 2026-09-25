@@ -614,7 +614,7 @@ export function listFactions(profileOrContentPack?: FactionProfile | string): re
     return listFactionsForProfile(profileOrContentPack);
   return profileOrContentPack
     ? FACTION_REGISTRY.filter(faction => faction.content.packId === profileOrContentPack)
-    : listFactionsForProfile('expanded-v1');
+    : FACTION_REGISTRY;
 }
 export function listFactionsForProfile(profile: FactionProfile): readonly FactionDefinition[] {
   return profile === 'base' ? BASE_FACTIONS : profile === 'expanded-v1'

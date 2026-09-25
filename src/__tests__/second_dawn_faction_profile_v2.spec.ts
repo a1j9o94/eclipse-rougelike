@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { listFactionsForProfile, profileVersions } from '../../shared/eclipse/catalog';
 import { isMultiplayerSettings } from '../../shared/eclipse/multiplayer';
+import { createGame } from '../../shared/eclipse/setup';
 
 const originalExpanded = [
   'eridani', 'hydran', 'planta', 'draco', 'mechanema', 'orion',
@@ -17,10 +18,20 @@ describe('versioned expanded faction collections', () => {
   });
 
   it('gives the new collection a separate save version and room setting', () => {
+    expect(listFactionsForProfile('expanded-v2').map(faction => faction.id)).toEqual([...originalExpanded, 'exiles', 'lyra']);
     expect(profileVersions('expanded-v2')).toEqual({
       rulesVersion: 'second-dawn-expanded-v2-2026-09-25',
       catalogVersion: 'second-dawn-catalog-expanded-v2',
     });
     expect(isMultiplayerSettings({ humanSeatCount: 2, aiCount: 0, timerMs: 30_000, warpPortals: true, factionProfile: 'expanded-v2' })).toBe(true);
+  });
+
+  it('allows both new factions together only in expanded-v2 games', () => {
+    const seats = [
+      { id: 'exiles-player', faction: 'exiles' as const, controller: 'human' as const },
+      { id: 'lyra-player', faction: 'lyra' as const, controller: 'ai' as const },
+    ];
+    expect(createGame({ seed: 42, warpPortals: false, factionProfile: 'expanded-v2', seats }).seats.map(seat => seat.faction)).toEqual(['exiles', 'lyra']);
+    expect(() => createGame({ seed: 42, warpPortals: false, factionProfile: 'expanded-v1', seats })).toThrow();
   });
 });

@@ -44,7 +44,7 @@ import "./game.css";
 import './mobileLauncher.css';
 const credentialKey = "eclipse.second-dawn.guest.v1";
 const matchKey = "eclipse.second-dawn.match.v1";
-const DEFAULT_ROOM_SETTINGS:MultiplayerRoomSettings={humanSeatCount:2,aiCount:0,timerMs:600000,warpPortals:true,factionProfile:"expanded-v1"};
+const DEFAULT_ROOM_SETTINGS:MultiplayerRoomSettings={humanSeatCount:2,aiCount:0,timerMs:600000,warpPortals:true,factionProfile:"expanded-v2"};
 function readStorage(key: string): string | null {
   try {
     return localStorage.getItem(key);
@@ -120,9 +120,9 @@ function ConnectedGame() {
   const [aiCount, setAiCount] = useState(2);
   const [aiDifficulty, setAiDifficulty] = useState<AiDifficulty>('normal');
   const [faction, setFaction] = useState<FactionId>("terran-directorate");
-  const [factionProfile,setFactionProfile]=useState<FactionProfile>('expanded-v1');
+  const [factionProfile,setFactionProfile]=useState<FactionProfile>('expanded-v2');
   const [pieceColor,setPieceColor]=useState<CivilizationColor>('red');
-  const chooseProfile=(profile:FactionProfile)=>{setFactionProfile(profile);if(!listFactionsForProfile(profile).some(f=>f.id===bannedFaction))setBannedFaction('eridani');if(profile==='base'&&['rho-indi','magellan','midas','ragnarok'].includes(faction))setFaction('terran-directorate');};
+  const chooseProfile=(profile:FactionProfile)=>{setFactionProfile(profile);if(!listFactionsForProfile(profile).some(f=>f.id===bannedFaction))setBannedFaction('eridani');if(!listFactionsForProfile(profile).some(f=>f.id===faction))setFaction('terran-directorate');};
   const [warpPortals, setWarpPortals] = useState(true);
   const [showCombatOdds,setShowCombatOdds]=useState(false);
   const [minorSpecies,setMinorSpecies]=useState(false);
@@ -205,7 +205,7 @@ function ConnectedGame() {
     try{await action();}catch(error){setStatus(error instanceof Error?error.message:'The room could not be updated.');}finally{setBusy(false);}
   }
   function newRoom(settings:MultiplayerRoomSettings){
-    void roomAction(async()=>{const result=await createRoom({credential:credential!,settings:{...settings,factionProfile},faction,...(factionRulesMode(settings)==='less-random-v1'&&getFaction(faction).species==='terran'?{bannedFaction}:{}),pieceColor:factionProfile==='expanded-v1'?pieceColor:undefined});window.location.assign(roomInvitePath(result.roomToken));});
+    void roomAction(async()=>{const result=await createRoom({credential:credential!,settings:{...settings,factionProfile},faction,...(factionRulesMode(settings)==='less-random-v1'&&getFaction(faction).species==='terran'?{bannedFaction}:{}),pieceColor:factionProfile!=='base'?pieceColor:undefined});window.location.assign(roomInvitePath(result.roomToken));});
   }
   useEffect(() => {
     if (credential || (roomToken && room?.status !== 'waiting')) return;
@@ -239,7 +239,7 @@ function ConnectedGame() {
         credential,
         faction,
         ...(factionRulesMode(ruleConfig)==='less-random-v1'&&getFaction(faction).species==='terran'?{bannedFaction}:{}),
-        pieceColor:factionProfile==='expanded-v1'?pieceColor:undefined,
+        pieceColor:factionProfile!=='base'?pieceColor:undefined,
         settings:{humanSeatCount:1,aiCount,aiDifficulty,rulesMode,ruleOptions,riftCannons,warpPortals,showCombatOdds,minorSpecies,factionProfile,timerMs:DEFAULT_ROOM_SETTINGS.timerMs},
       });
       await setRoomReady({credential,roomToken:room.roomToken,ready:true});
