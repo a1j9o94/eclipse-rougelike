@@ -17,5 +17,6 @@ it.each([false,true])('clears the inspected sector when choosing an exploration 
  fireEvent.click(screen.getAllByRole('button',{name:/^Explore \(/})[0]);
  expect(screen.queryByRole('heading',{name:'Planets & population',hidden:true})).toBeNull();
  expect(screen.getByRole('heading',{name:'Explore new sector'})).toBeVisible();
+ expect(screen.getByRole('group',{name:/Science: \d+%/})).toBeVisible();
  expect(submit).not.toHaveBeenCalled();
 });

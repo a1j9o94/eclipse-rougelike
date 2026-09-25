@@ -1,4 +1,5 @@
 import {gameRules} from './gameRules';
+import {sectorDrawOdds} from './sectorDrawOdds';
 import { upkeepDecisionForSeat, upkeepSeatUnfinished } from './upkeep';
 import type {
   CommandRequest,
@@ -224,6 +225,7 @@ function publicGameView(state: GameState, scoreViewer?: SeatId): PublicGameView 
       middle: {drawPile: state.supplies.middle.length, discardPile: state.engine?.discardedSectors.middle.length ?? 0},
       outer: {drawPile: state.supplies.outer.length, discardPile: state.engine?.discardedSectors.outer.length ?? 0},
     },
+    sectorDrawOdds: sectorDrawOdds(state),
     supplyCounts: {
       inner: state.supplies.inner.length + (state.engine?.discardedSectors.inner.length ?? 0),
       middle: state.supplies.middle.length + (state.engine?.discardedSectors.middle.length ?? 0),

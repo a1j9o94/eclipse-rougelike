@@ -1,6 +1,6 @@
 # Reddit playtest feedback: next Second Dawn slices
 
-Status: planned; no gameplay or UI changes shipped by this document.
+Status: upkeep colony review and exploration odds implemented on `feature/colonize-pass-explore-odds`; release verification pending.
 Date: September 25, 2026.
 Source: player comments supplied by the product owner after the public post. One player stopped after round one because menus dominated the board and action buttons were hard to find; another repeatedly passed with unused colony ships. A reader asked why The Exiles and Enlightened of Lyra were absent. A companion-app author suggested exploration probabilities. These are distinct requests, not evidence that every proposed feature has been validated in play.
 
@@ -8,14 +8,14 @@ Source: player comments supplied by the product owner after the public post. One
 
 | Priority | Player outcome | Slice and acceptance | Evidence before release |
 | --- | --- | --- | --- |
-| 1 | A player sees colonization opportunities before passing and can act on them immediately. | Show available colony ships **and currently legal empty planets** beside Pass in desktop and mobile action surfaces, with a direct Colonize entry. The cue follows authoritative legal candidates, so ships alone never promise an impossible placement. Passing remains a one-click choice; do not force a modal or auto-spend a ship. Include a brief, dismissible reminder in the pass context only when a placement is legal. | Failing-first UI cases: legal planets and ships, ships but no legal planets, no ships, wrong turn/pending decision, mobile, and Pass submitted exactly once. Human repeat-pass playtest. |
+| 1 | A player gets a final chance to use colony ships before income is collected. | When Finish upkeep is chosen and a planet is legally colonizable, open a review with the actual colonization planner and an explicit **Finish upkeep anyway** choice. Show available ships and legal planet count. If none is legal, finish normally. Do not intercept Pass or End action. | Failing-first desktop/mobile upkeep cases: legal planets, ships but no legal planets, no ships, enemy present, in-popup colonization and exactly one command. Human upkeep playtest. |
 | 2 | Players find the next action without hunting through menus, while the galaxy remains the main workspace. | Group the six ordinary actions consistently; place Colonize, Trade, Pass, and upkeep/continuation controls in a clearly separate, stable area. Keep the active action and its commit beside the selected board object. Improve action hierarchy and recognizable visuals without relying on hover or a full reskin. | Observe two newcomers and two experienced players doing a round-one task set before and after. Record action-search time, wrong-menu opens, board visibility, and whether they understand the result. Desktop/mobile keyboard and draft-preservation regressions. |
-| 3 | Exploration information is useful and honest. | Keep current public sector-deck counts. Explore may explain ring composition and how draws/discards change it. If showing percentages, label them as **starting-deck reference odds**, unless the current public projection supports exact remaining distribution. Never derive live odds from hidden tile identities/order. | Privacy and variant-deck tests, draw/discard/reshuffle cases, and user comprehension check of what the percentage means. |
+| 3 | Exploration information is useful and honest. | Show the next sector tile's chance of containing at least one science, money or materials planet, at least one Ancient, and at least one artifact in the selected ring. Gray planets count for each resource. Use an authoritative projection of aggregate counts in the next draw pile, or the discard pile when it will be reshuffled. These are overlapping tile properties, not an outcome distribution. | Privacy and variant-deck tests, draw/discard/reshuffle cases, and user comprehension check of what the percentage means. |
 | 4 | Players can select the missing publisher Second Dawn species. | Implement **The Exiles** and **Enlightened of Lyra** as separate vertical releases, then Lyra's anti-missile variant. Pin a new faction-profile version so existing `expanded-v1` matches retain their roster. Transcribe exact board/setup fixtures before coding, using the archived publisher rules and the collection's explicit amendments. | Failing-first rules scenarios, reconnection/private-view tests, AI legality and bounded full matches, faction-specific UI/playtest, then lint, relevant tests and build for each release. |
 
 ## Scope behind the decisions
 
-The current Pass button submits directly from `SecondDawnBoard.activate`; colonization count appears in the colonization planner or Empire screen, and an existing upkeep reminder comes after the player's pass decision. The next cue belongs at that decision point. Derive opportunity count from legal colonization candidates rather than raw empty planets or ship stock. Unused colony ships are sometimes intentional, so the interface must inform rather than block.
+The current Pass button submits directly from `SecondDawnBoard.activate`. The product owner clarified that the reminder belongs before **finalizing upkeep**, where unspent colony ships are about to refresh. The upkeep review embeds the existing planner, so available planets and income consequences are inspectable before either colonizing or finishing anyway. Derive opportunity count from legal colonization candidates rather than raw empty planets or ship stock. Pass remains a quick action.
 
 The desktop header currently exposes up to twelve action buttons, and the mobile picker repeats the verbs in a separate surface. The reported problem merits a targeted playtest and layout slice. Preserve existing object-based entry points, drafts, rules previews and accessible equivalents. Measure the experience before committing to a large graphic redesign; the existing art-direction studies may inform later visual work.
 
@@ -25,16 +25,22 @@ The Exiles need an Orbital that can be populated, fight through its own blueprin
 
 ## Decision log
 
-- Prioritize a contextual colony cue because it directly addresses observed lost income and is already consistent with UX-12's nonblocking pass guidance.
+- Prioritize a final upkeep colony review because it addresses observed lost income at the last available colonization window. An explicit Finish upkeep anyway preserves the player's choice. The user clarified that repeated Pass review is unnecessary.
 - Treat “menus dominate the board” as a workflow and visual-hierarchy issue to test in round-one play, not a request to copy physical-board graphics literally.
-- Defer exact live exploration probabilities until public information supports a truthful calculation. Deck counts currently expose no hidden identities/order.
+- Project aggregate next-draw feature counts from authoritative state without exposing tile IDs or order. This gives exact current-stack percentages, including randomly boxed Outer sectors, optional modules and reshuffles. It does reveal aggregate hidden composition, which is an intentional information-design tradeoff for this feature.
 - Add both requested official expansion species, one at a time, with a versioned faction roster. The publisher lists Exiles in Outcasts and Lyra in Seekers; the repository already has source research and archived boards.
 
 ## Risks, rollback and follow-ups
 
-- A colony reminder can become nagging or falsely suggest a legal action. Show it only for current authoritative legality, keep it dismissible and test Pass without extra submission.
+- A colony reminder can become nagging or falsely suggest a legal action. Show it only for current authoritative legality at Finish upkeep, keep an explicit way through and test Pass without extra submission.
 - Moving actions can hide a valid route or discard a draft. Preserve keyboard/mobile reachability and receipt-aware drafts; revert the shell layout independently if playtests regress.
 - Faction state must survive saves, recovery and multiplayer projection. Ship/structure and Shrine data should be added through explicit typed state, with backward-compatible defaults; release each faction independently and disable its profile if a regression appears.
 - Record actual newcomer/expert observations, source transcriptions, failing-first tests and deployed commit in the Second Dawn UX ledger as slices complete. Do not mark these planned slices as shipped here.
+
+## Implementation verification
+
+The upkeep review uses the existing legal-candidate planner and is reached from desktop, mobile and direct Finish upkeep controls. Its explicit finish choice stays visible near the top of the dialog, while mobile planet choices precede sector details. Pass and End action retain their existing behavior. The Explore card presents five overlapping next-tile odds using the game's resource, Ancient and artifact icons, with accessible labels and hover titles. Gray planets count toward each resource.
+
+Failing-first upkeep and odds tests were added. The final bounded five-suite batch passed 25 tests; repository lint and `npm run build` passed. Local browser checks showed the Explore card on desktop and the upkeep review at 1280×800 and 390×844, with no page errors or horizontal overflow. The first mobile image exposed an off-screen finish choice and planet list; the revised image confirmed both choices visible. The browser review used Playwright because the `agent-browser` executable was unavailable in this workspace. No human newcomer/expert playtest has been conducted for this slice.
 
 Primary references: `coding_agents/second_dawn_ux_iteration_plan.md` (UX-12 and delivery ledger), `coding_agents/faction_research/README.md`, `coding_agents/faction_research/factions.md`, `src/second-dawn-game/SecondDawnBoard.tsx`, `src/second-dawn-game/ColonizationPlanner.tsx`, `shared/eclipse/catalog.ts`, and the publisher's [Outcasts](https://en.lautapelit.fi/product/45705/eclipse---2nd-dawn-outcasts-eng) and [Seekers](https://en.lautapelit.fi/product/45704/eclipse---2nd-dawn-seekers-eng) listings.

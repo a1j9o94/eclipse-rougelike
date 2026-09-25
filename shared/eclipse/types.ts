@@ -523,6 +523,8 @@ export interface PublicGameView {
   }[];
   /** Public pile sizes only; never tile identities or draw order. */
   sectorDeckCounts?: Record<'inner' | 'middle' | 'outer', SectorDeckCount>;
+  /** Aggregate feature counts in the pile used for the next sector draw; no tile IDs or order. */
+  sectorDrawOdds?: Record<'inner' | 'middle' | 'outer', SectorDrawOdds>;
   supplyCounts?: {
     inner: number;
     middle: number;
@@ -541,6 +543,16 @@ export interface PublicGameView {
     stage: string;
     engagement: number;
   } | null;
+}
+
+export interface SectorDrawOdds {
+  source: 'draw' | 'reshuffle' | 'exhausted';
+  total: number;
+  science: number;
+  money: number;
+  materials: number;
+  ancients: number;
+  artifacts: number;
 }
 
 /** Seated controllers receive only their own private information. */

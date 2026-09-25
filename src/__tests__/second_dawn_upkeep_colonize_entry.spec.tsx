@@ -31,22 +31,40 @@ it.each([false,true])('opens colonization from upkeep review and returns without
  expect(within(details).getByRole('heading',{name:'Round 1 upkeep'})).toBeVisible();
  expect(onSubmit).not.toHaveBeenCalled();
  fireEvent.click(within(details).getByRole('button',{name:'Finish upkeep',exact:true}));
- expect(onSubmit).toHaveBeenCalledWith({type:'finish-upkeep'});
+ const review=screen.getByRole('dialog',{name:'Colonize before upkeep'});
+ expect(within(review).getByRole('region',{name:'Colonization planner'})).toBeVisible();
+ expect(onSubmit).not.toHaveBeenCalled();
+ fireEvent.click(within(review).getByRole('button',{name:'Finish upkeep anyway'}));
+ expect(onSubmit).toHaveBeenCalledExactlyOnceWith({type:'finish-upkeep'});
 });
 it.each(['no ships','no open planets','enemy present'] as const)('does not offer colonization when %s',reason=>{
  const state=fixture(reason!=='no open planets');
  if(reason==='no ships')state.seats[0].colonyShipsAvailable=0;
  if(reason==='enemy present')state.ships.find(ship=>ship.owner==='b')!.sectorId=state.sectors.find(sector=>sector.owner==='a')!.id;
- const {view}=show(state);
+ const {onSubmit,view}=show(state);
  expect(legalCommands(view).some(candidate=>candidate.command.type==='colonize')).toBe(false);
  fireEvent.click(screen.getByRole('button',{name:'Review upkeep'}));
  expect(within(screen.getByRole('complementary',{name:'Selection and action details'})).queryByRole('button',{name:'Colonize',exact:true})).toBeNull();
+ fireEvent.click(within(screen.getByRole('complementary',{name:'Selection and action details'})).getByRole('button',{name:'Finish upkeep',exact:true}));
+ expect(screen.queryByRole('dialog',{name:'Colonize before upkeep'})).toBeNull();
+ expect(onSubmit).toHaveBeenCalledExactlyOnceWith({type:'finish-upkeep'});
 });
 it('offers direct colonization from the upkeep notice without submitting',()=>{
  const {onSubmit}=show();
  fireEvent.click(within(screen.getByRole('dialog',{name:'Upkeep is ready'})).getByRole('button',{name:'Colonize',exact:true}));
  expect(screen.getByRole('region',{name:'Colonization planner'})).toBeVisible();
  expect(onSubmit).not.toHaveBeenCalled();
+});
+it('colonizes directly in the finish-upkeep review without also finishing upkeep',()=>{
+ const {onSubmit}=show();
+ fireEvent.click(screen.getByRole('button',{name:'Review upkeep'}));
+ fireEvent.click(within(screen.getByRole('complementary',{name:'Selection and action details'})).getByRole('button',{name:'Finish upkeep',exact:true}));
+ const review=screen.getByRole('dialog',{name:'Colonize before upkeep'});
+ fireEvent.click(within(review).getByRole('button',{name:/^Colonize .* planet .* in sector/}));
+ fireEvent.click(within(review).getByRole('button',{name:'Colonize 1 planet'}));
+ expect(onSubmit).toHaveBeenCalledTimes(1);
+ expect(onSubmit.mock.calls[0][0]).toMatchObject({type:'colonize',placements:[{}]});
+ expect(screen.queryByRole('dialog',{name:'Colonize before upkeep'})).toBeNull();
 });
 it('returns to updated upkeep after confirming a legal population placement',()=>{
  const state=fixture();const {onSubmit,rerender}=show(state);

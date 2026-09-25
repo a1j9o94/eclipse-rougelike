@@ -1,0 +1,4 @@
+.dg-presentation-settings.dg-upkeep-colony-review{width:min(920px,100%)}
+.dg-upkeep-colony-review>.dg-colonization-planner{margin-top:16px}
+.dg-upkeep-colony-review-actions{display:flex;justify-content:flex-end;padding:0 0 12px;border-bottom:1px solid #ffffff2b}
+@media(max-width:850px){.dg-upkeep-colony-review .dg-colonization-detail{order:initial}}

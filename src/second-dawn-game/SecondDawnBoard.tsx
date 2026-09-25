@@ -68,6 +68,9 @@ import type {HistoryFeed} from "../second-dawn-session/useMatchHistory";
 import TradePanel from "./TradePanel";
 import InfluencePlanner from "./InfluencePlanner";
 import ColonizationPlanner from "./ColonizationPlanner";
+import GameDialog from './GameDialog';
+import ExploreOdds from './ExploreOdds';
+import './upkeepColonyReview.css';
 import {ChoiceCards} from "./DecisionChoicePrimitives";
 import BuildPlanner from "./BuildPlanner";
 import MovementPlanner from "./MovementPlanner";
@@ -203,6 +206,7 @@ function SecondDawnBoardContent({
   const pendingBuild=useRef<{receipt:Props['lastAcceptedCommand'];type:GameCommand['type'];count:number}|null>(null);
   const [empireMapSeat,setEmpireMapSeat]=useState<string|null>(null);
   const [upkeepBrowsing,setUpkeepBrowsing]=useState(false);
+  const [upkeepColonyReviewOpen,setUpkeepColonyReviewOpen]=useState(false);
   const browsingUpkeep=view.phase==='upkeep'&&upkeepBrowsing;
   const [inspectSector,setInspectSector]=useState<string|null>(null);
   const [inspectDiplomacy,setInspectDiplomacy]=useState<string|null>(null);
@@ -353,6 +357,12 @@ function SecondDawnBoardContent({
   const inspectedPlayer = view.seats.find((s) => s.id === playerId) ?? own;
   const sector = view.sectors.find((s) => s.id === selected);
   const blocked = !connected || busy || !!interactionBlockedReason;
+  const upkeepColonyPlacements=new Set(candidates.flatMap(candidate=>candidate.command.type==='colonize'?candidate.command.placements.map(placement=>`${placement.sectorId}:${placement.squareId}`):[]));
+  const finishUpkeep=(command:GameCommand)=>{
+    if(command.type!=='finish-upkeep'||blocked)return;
+    if(view.phase==='upkeep'&&upkeepColonyPlacements.size>0){setUpkeepColonyReviewOpen(true);return;}
+    onSubmit(command);
+  };
   const funded = useMemo(()=>fundedCandidates(view),[view]);
   const purchases = [...candidates,...funded];
   const available = purchases.filter((c) => (c.command.type === "trade-and-act" ? c.command.action.type : c.command.type) === action);
@@ -401,6 +411,7 @@ function SecondDawnBoardContent({
     const direct = directTurnActions.includes(type) ? candidates.find(c=>c.command.type===type) : undefined;
     if(direct && !blocked){
       if(type==='end-action' && previewCommand(view,direct.command).betrayedPartners.length){setDraft(direct);setScreen('Galaxy');return;}
+      if(type==='finish-upkeep'){finishUpkeep(direct.command);return;}
       onSubmit(direct.command);setDraft(null);return;
     }
     setDraft(null);
@@ -840,7 +851,7 @@ function SecondDawnBoardContent({
           ) : action === 'finish-upkeep' && view.phase === 'upkeep' && !browsingUpkeep ? (
             <><h2>Round {view.round} upkeep</h2><p>Review production and your civilization’s upkeep before continuing. You can convert resources first if needed.</p><button type="button" onClick={browseTechnologies}>Browse technologies</button>{canColonizeAtUpkeep&&<><p>You can still populate an open planet before collecting income.</p><button type="button" disabled={blocked} onClick={openUpkeepColonization}>Colonize</button></>}</>
           ) : action === 'explore' && draft?.command.type === 'explore' ? (
-            <><h2>Explore new sector</h2><p>Confirm this frontier to draw a sector, then choose its orientation.</p></>
+            <><h2>Explore new sector</h2><p>Confirm this frontier to draw a sector, then choose its orientation.</p><ExploreOdds view={view} position={draft.command.position}/></>
           ) : sector ? (
             <>
               <h2>Sector {sector.tileId}</h2>
@@ -945,7 +956,8 @@ function SecondDawnBoardContent({
                       className="sd-primary"
                       disabled={blocked || draftGuard.stale || !stillLegal}
                       onClick={() => {
-                        onSubmit(draft.command);
+                        if(draft.command.type==='finish-upkeep')finishUpkeep(draft.command);
+                        else onSubmit(draft.command);
                       }}
                     >
                       {draft.command.type === "end-action" ? "End action and break diplomacy" : draft.command.type === "trade-and-act" ? `Convert & ${draft.command.action.type}` : draft.command.type === "finish-upkeep" ? "Finish upkeep" : "Confirm action"}
@@ -960,12 +972,17 @@ function SecondDawnBoardContent({
         </aside>
       </div>
 
-      <TurnAttentionNotice view={view} matchScope={matchId??'preview'} connected={connected} suppressed={!!interactionBlockedReason||settingsOpen||historyOpen||recapOpen||!!publicInspection?.active||!!inspectSector||busy||buildOpen||moveOpen||mobileActionMode||mobileActionsOpen||screen!=='Galaxy'} onOpenTurn={()=>{setScreen('Galaxy');setAiDismissed(true);setReviewAi(false);if(compact){setMobileActionsOpen(true);setMobileSheet('expanded');}}} onReviewUpkeep={reviewUpkeep} onColonize={canColonizeAtUpkeep&&!blocked?openUpkeepColonization:undefined}/>
+      <TurnAttentionNotice view={view} matchScope={matchId??'preview'} connected={connected} suppressed={upkeepColonyReviewOpen||!!interactionBlockedReason||settingsOpen||historyOpen||recapOpen||!!publicInspection?.active||!!inspectSector||busy||buildOpen||moveOpen||mobileActionMode||mobileActionsOpen||screen!=='Galaxy'} onOpenTurn={()=>{setScreen('Galaxy');setAiDismissed(true);setReviewAi(false);if(compact){setMobileActionsOpen(true);setMobileSheet('expanded');}}} onReviewUpkeep={reviewUpkeep} onColonize={canColonizeAtUpkeep&&!blocked?openUpkeepColonization:undefined}/>
+      {upkeepColonyReviewOpen&&view.phase==='upkeep'&&needsUpkeep(view)&&<GameDialog title="Colonize before upkeep" onClose={()=>setUpkeepColonyReviewOpen(false)} className="dg-upkeep-colony-review">
+        <p>You have {own.colonyShipsAvailable} colony ship{own.colonyShipsAvailable===1?'':'s'} and {upkeepColonyPlacements.size} open planet{upkeepColonyPlacements.size===1?'':'s'} you can populate before income is collected.</p>
+        <div className="dg-upkeep-colony-review-actions"><button type="button" disabled={blocked||draftGuard.stale||!candidates.some(candidate=>candidate.command.type==='finish-upkeep')} onClick={()=>{setUpkeepColonyReviewOpen(false);onSubmit({type:'finish-upkeep'});}}>Finish upkeep anyway</button></div>
+        <ColonizationPlanner view={view} candidates={candidates} disabled={blocked} onSubmit={command=>{setUpkeepColonyReviewOpen(false);onSubmit(command);}}/>
+      </GameDialog>}
       <PublicInspectionModal view={view}/>
       {settingsOpen&&<GameSettingsPanel onHistory={()=>{setSettingsOpen(false);setHistoryOpen(true);setInspectorOpen(true);if(compact){setScreen("Activity");setMobileSheet("closed");setMobileActionMode(false);}}} onGameMenu={()=>{setSettingsOpen(false);onMenu();}} motionEnabled={motionEnabled} onMotionChange={changeMotion} followAi={followAi} onFollowAiChange={changeFollowAi} autoPass={view.phase!=='finished'&&!own.eliminated?{enabled:own.autoPassUnlessAttacked??false,paused:own.autoPassPausedRound===view.round,disabled:blocked,disabledReason:interactionBlockedReason??(!connected?'Reconnect to change auto-pass.':busy?'Saving your change…':undefined),onChange:enabled=>onSubmit({type:'set-auto-pass',enabled})}:undefined} onClose={()=>setSettingsOpen(false)}/>}
       {inspectSector&&<FleetInspection showCombatOdds={showCombatOdds} view={view} sectorId={inspectSector} selectedShipIds={movementDraft.ids.length?movementDraft.ids:[...new Set(moveRoutePreviews.flatMap(route=>route.draft.shipIds))]} onClose={()=>{setInspectSector(null);setInspectDiplomacy(null);}} onDiplomacy={setInspectDiplomacy} diplomacy={inspectDiplomacy?<DiplomacyPanel view={view} candidates={candidates} inspectedSeatId={inspectDiplomacy} disabled={blocked} onSubmit={onSubmit}/>:undefined}/>}
       {compact&&status&&!/^(Saved|Saving|Applied to the isolated|Engine fixture review)/.test(status)&&<div className="dg-mobile-feedback" role="status" aria-live="polite">{status}</div>}
-      {compact&&<MobileNavigation selected={mobileDestination} onSelect={mobileNavigate} onActions={!view.pendingDecision&&view.phase!=='finished'&&(view.phase==='upkeep'?needsUpkeep(view):view.activeSeatId===own.id)&&!mobileActionMode?()=>{setMobileActionsOpen(true);setMobileSheet('expanded');setHistoryOpen(false);setAiDismissed(true);}:undefined} pending={!!view.pendingDecision&&(screen!=='Decision'||spatialDecision&&mobileSheet!=='expanded')} pendingLabel={view.pendingDecision?`Return to ${choiceLabel(view.pendingDecision)}`:undefined} onDecision={returnToChoice} onConfirm={mobileActionMode&&draft&&action!=='research'?{label:draft.command.type==='trade-and-act'?'Convert & confirm':draft.command.type==='finish-upkeep'?'Finish upkeep':'Confirm',disabled:blocked||draftGuard.stale||!stillLegal,submit:()=>onSubmit(draft.command)}:undefined} onEndAction={mobileActionMode&&!draft&&candidates.some(candidate=>candidate.command.type==='end-action')?()=>activate('end-action'):undefined} actionLabel={mobileActionMode?`${actionLabel(action)}${view.actionProgress?` · ${view.actionProgress.budgets?.[action as import("../../shared/eclipse/types").Action]??view.actionProgress.remaining} left`:''}`:undefined} onBack={()=>{setMobileActionMode(false);setMobileSheet('closed');setMobileActionsOpen(false);setScreen('Galaxy');}} onDetails={mobileActionMode&&!['research','upgrade','trade'].includes(action)?()=>{if(action==='build')setBuildOpen(true);else setMobileSheet('expanded');}:undefined}/>}
+      {compact&&<MobileNavigation selected={mobileDestination} onSelect={mobileNavigate} onActions={!view.pendingDecision&&view.phase!=='finished'&&(view.phase==='upkeep'?needsUpkeep(view):view.activeSeatId===own.id)&&!mobileActionMode?()=>{setMobileActionsOpen(true);setMobileSheet('expanded');setHistoryOpen(false);setAiDismissed(true);}:undefined} pending={!!view.pendingDecision&&(screen!=='Decision'||spatialDecision&&mobileSheet!=='expanded')} pendingLabel={view.pendingDecision?`Return to ${choiceLabel(view.pendingDecision)}`:undefined} onDecision={returnToChoice} onConfirm={mobileActionMode&&draft&&action!=='research'?{label:draft.command.type==='trade-and-act'?'Convert & confirm':draft.command.type==='finish-upkeep'?'Finish upkeep':'Confirm',disabled:blocked||draftGuard.stale||!stillLegal,submit:()=>draft.command.type==='finish-upkeep'?finishUpkeep(draft.command):onSubmit(draft.command)}:undefined} onEndAction={mobileActionMode&&!draft&&candidates.some(candidate=>candidate.command.type==='end-action')?()=>activate('end-action'):undefined} actionLabel={mobileActionMode?`${actionLabel(action)}${view.actionProgress?` · ${view.actionProgress.budgets?.[action as import("../../shared/eclipse/types").Action]??view.actionProgress.remaining} left`:''}`:undefined} onBack={()=>{setMobileActionMode(false);setMobileSheet('closed');setMobileActionsOpen(false);setScreen('Galaxy');}} onDetails={mobileActionMode&&!['research','upgrade','trade'].includes(action)?()=>{if(action==='build')setBuildOpen(true);else setMobileSheet('expanded');}:undefined}/>}
     </main>
     </DecisionMapContext.Provider>
     </ActionConfirmationContext.Provider>

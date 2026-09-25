@@ -285,7 +285,9 @@ Use reviewable commits within each slice; do not hold every system for one giant
 
 ### September 25 player feedback intake
 
-The [Reddit feedback plan](reddit_feedback_2026_09_25.md) adds planned follow-up slices for visible pre-pass colony opportunities, a more stable action layout, honest exploration odds, and the Exiles/Lyra factions. A player reported repeatedly passing with colony ships unused, and another stopped after round one because menu and button placement made actions hard to find. These are human observations; no new slice is marked implemented or verified by this intake.
+The [Reddit feedback plan](reddit_feedback_2026_09_25.md) adds follow-up slices for colony opportunities, a more stable action layout, exploration odds, and the Exiles/Lyra factions. A player reported repeatedly passing with colony ships unused, and another stopped after round one because menu and button placement made actions hard to find. These are human observations; no slice was marked implemented or verified by the initial intake.
+
+The product owner subsequently clarified the colony checkpoint should occur before **Finish upkeep**, not before every Pass. That upkeep review and the current-ring feature odds are implemented on `feature/colonize-pass-explore-odds`; [bounded tests and local browser review](reddit_feedback_2026_09_25.md) pass, while release and human playtests remain. The action-layout and faction slices remain planned.
 
 ## 7. Engineering seams and verification
 

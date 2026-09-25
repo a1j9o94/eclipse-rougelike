@@ -1,0 +1,8 @@
+.dg-explore-odds{display:grid;gap:8px;margin:12px 0;padding:12px;border:1px solid #887753;border-radius:7px;background:#18242d;color:#e8d8b0}
+.dg-explore-odds>strong{font-size:13px}
+.dg-explore-odds-features{display:flex;flex-wrap:wrap;gap:6px}
+.dg-explore-odds-features>span{display:flex;align-items:center;gap:5px;min-height:36px;padding:5px 8px;border:1px solid #5b6670;border-radius:5px;background:#22313d;color:#f3e8d0;font-size:12px;white-space:nowrap}
+.dg-explore-odds-features b{font-weight:600;color:#cfdae2;font-variant-numeric:tabular-nums}
+.dg-explore-odds-icon{display:grid;place-items:center;width:22px;height:22px}
+.dg-explore-odds-icon svg{width:21px;height:21px}
+.dg-explore-odds small,.dg-explore-odds p{margin:0;color:#b7c5cb;font-size:11px;line-height:1.4}
