@@ -282,6 +282,10 @@ export function colonize(
     seat.populationTracks[p.resource]++;
     seat.colonyShipsAvailable--;
     sector!.population.push({ ...p });
+    if (p.squareId === 'orbital' && getFaction(seat.faction).special?.orbitalCombat) {
+      state.ships.push({ id: uniqueId(state, 'orbital-ship'), owner: seat.id, type: 'starbase',
+        sectorId: sector!.id, damage: 0, arrival: 0, orbitalShip: true });
+    }
   }
 }
 export function performAction(
@@ -379,6 +383,8 @@ export function performAction(
         "Choose builds within your activation limit.",
       );
       for (const build of command.builds) {
+        requireRule(build.component !== 'starbase' || !getFaction(seat.faction).special?.cannotBuildStarbases,
+          'The Exiles cannot construct Starbases.');
         const sector = state.sectors.find((s) => s.id === build.sectorId);
         requireRule(
           !!sector && sector.owner === seat.id,

@@ -23,7 +23,7 @@ describe('Second Dawn faction registry', () => {
       'eridani', 'hydran', 'planta', 'draco', 'mechanema', 'orion',
       'terran-directorate', 'terran-federation', 'terran-union',
       'terran-republic', 'terran-conglomerate', 'terran-alliance',
-      'rho-indi', 'magellan', 'midas', 'ragnarok',
+      'rho-indi', 'magellan', 'midas', 'ragnarok', 'exiles',
     ]);
     expect(RULES_VERSION).toBe('second-dawn-base-2021-04-27');
     expect(CATALOG_VERSION).toBe('second-dawn-catalog-0.1');

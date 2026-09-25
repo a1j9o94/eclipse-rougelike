@@ -5,6 +5,9 @@ import type { TechnologyId } from './technologies';
 import { EMPTY_SHIP_STATS, getShipPart, sumShipStats, type ShipPartId, type ShipStats } from './parts';
 
 export type BlueprintShipType = 'interceptor' | 'cruiser' | 'dreadnought' | 'starbase';
+export function blueprintClassName(faction: FactionId, shipType: BlueprintShipType): string {
+  return faction === 'exiles' && shipType === 'starbase' ? 'Orbital' : shipType[0].toUpperCase() + shipType.slice(1);
+}
 export interface ShipBlueprint {
   shipType: BlueprintShipType;
   /** Installed overlays. null means reveal the preprinted part at this index. */

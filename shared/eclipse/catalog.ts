@@ -30,7 +30,7 @@ export const FACTION_IDS = [
   'eridani', 'hydran', 'planta', 'draco', 'mechanema', 'orion',
   'terran-directorate', 'terran-federation', 'terran-union',
   'terran-republic', 'terran-conglomerate', 'terran-alliance',
-  'rho-indi', 'magellan', 'midas', 'ragnarok',
+  'rho-indi', 'magellan', 'midas', 'ragnarok', 'exiles',
 ] as const;
 export type FactionId = (typeof FACTION_IDS)[number];
 export type CivilizationColor =
@@ -50,8 +50,9 @@ export type FactionVisualIdentity =
   | 'rho-indi'
   | 'magellan'
   | 'midas'
-  | 'ragnarok';
-export type ShipDesignFamily = Exclude<FactionVisualIdentity, 'rho-indi' | 'magellan' | 'midas' | 'ragnarok'>;
+  | 'ragnarok'
+  | 'exiles';
+export type ShipDesignFamily = Exclude<FactionVisualIdentity, 'rho-indi' | 'magellan' | 'midas' | 'ragnarok' | 'exiles'>;
 export type FactionCapability =
   | 'ancient-coexistence'
   | 'controlled-sector-vp'
@@ -135,6 +136,10 @@ export interface FactionSpecialAbilities {
   readonly ancientPartVp?: number;
   readonly paidAdditionalActivation?: { readonly explore: number; readonly research: number; readonly upgrade: number; readonly build: number; readonly move: number; readonly influence: number; readonly lowDiscSurcharge: number; readonly lowDiscThreshold: number };
   readonly mixedAction?: { readonly move: { readonly move: number; readonly build: number }; readonly build: { readonly move: number; readonly build: number } };
+  readonly populatedOrbitalVp?: number;
+  readonly startsWithOrbital?: boolean;
+  readonly orbitalCombat?: boolean;
+  readonly cannotBuildStarbases?: boolean;
 }
 export interface FactionDefinition {
   id: FactionId;
@@ -230,6 +235,14 @@ const RAGNAROK_BLUEPRINTS: FactionBlueprints = {
   dreadnought: STANDARD_BLUEPRINTS.dreadnought,
   starbase: STANDARD_BLUEPRINTS.starbase,
 };
+const EXILES_BLUEPRINTS: FactionBlueprints = {
+  ...STANDARD_BLUEPRINTS,
+  interceptor: blueprint('interceptor', ['ion-cannon', 'nuclear-source', 'nuclear-drive', 'electron-computer'], { initiative: 2 }),
+  cruiser: blueprint('cruiser', ['electron-computer', 'ion-cannon', 'hull', 'nuclear-source', 'nuclear-drive', 'electron-computer'], { initiative: 1 }),
+  dreadnought: STANDARD_BLUEPRINTS.dreadnought,
+  // Exiles cannot build Starbases; this otherwise-unused slot is their Orbital blueprint.
+  starbase: blueprint('starbase', ['ion-turret', 'electron-computer', 'hull'], { energyProduction: 4, initiative: 2 }),
+};
 const ERIDANI_BLUEPRINTS: FactionBlueprints = {
   interceptor: blueprint('interceptor', [...STANDARD_BLUEPRINTS.interceptor.preprinted], { energyProduction: 1, initiative: 2 }),
   cruiser: blueprint('cruiser', [...STANDARD_BLUEPRINTS.cruiser.preprinted], { energyProduction: 1, initiative: 1 }),
@@ -260,7 +273,7 @@ const visual = (identity: ShipDesignFamily, blueprints: FactionBlueprints = STAN
   emblem: identity, shipDesignFamily: identity, content: CONTENT, blueprints,
 });
 const expandedVisual = (
-  emblem: Extract<FactionVisualIdentity, 'rho-indi' | 'magellan' | 'midas' | 'ragnarok'>,
+  emblem: Extract<FactionVisualIdentity, 'rho-indi' | 'magellan' | 'midas' | 'ragnarok' | 'exiles'>,
   shipDesignFamily: ShipDesignFamily,
   blueprints: FactionBlueprints = STANDARD_BLUEPRINTS,
   content: FactionContentMetadata = EXPANDED_CONTENT,
@@ -555,6 +568,19 @@ export const FACTION_REGISTRY: readonly FactionDefinition[] = [
     special: { mixedAction: { move: { move: 2, build: 1 }, build: { move: 1, build: 2 } } },
     source: '.second-dawn/faction-research/originals/NEW FACTIONS/02 Remaining Info Sheet and Rules of the new Factions/Heralds of Ragnarok rules Info sheet PRINT final.jpg',
     sources: { rules: '.second-dawn/faction-research/originals/NEW FACTIONS/02 Remaining Info Sheet and Rules of the new Factions/Heralds of Ragnarok rules Info sheet PRINT final.jpg', blueprints: '.second-dawn/faction-research/originals/NEW FACTIONS/01 Faction Board Sheets/13 Heralds of Ragnarok Board.png' },
+  },
+  {
+    ...standard,
+    ...expandedVisual('exiles', 'mechanema', EXILES_BLUEPRINTS, OUTCASTS_CONTENT),
+    id: 'exiles', name: 'The Exiles', color: 'white', species: 'alien', homeSector: 234,
+    startingResources: { materials: 4, science: 2, money: 3 },
+    startingPopulation: { materials: 1, science: 0, money: 0 },
+    normalHomePopulation: { materials: 1, science: 0, money: 0 },
+    advancedHomePopulation: { materials: 1, science: 0, money: 1 },
+    startingTechnologies: ['orbital', 'cloaking-device'],
+    special: { populatedOrbitalVp: 1, startsWithOrbital: true, orbitalCombat: true, cannotBuildStarbases: true },
+    source: '.second-dawn/faction-research/originals/Outcasts and Seekers/04 The Exiles Outcasts rules.jpg',
+    sources: { rules: '.second-dawn/faction-research/originals/Outcasts and Seekers/04 The Exiles Outcasts rules.jpg', blueprints: '.second-dawn/faction-research/originals/Outcasts and Seekers/04 The Exiles Outcasts.jpg' },
   },
 ];
 /** Compatibility catalog view. Base selection order and membership stay stable. */

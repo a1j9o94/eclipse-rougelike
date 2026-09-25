@@ -24,7 +24,7 @@ function occupant(state: GameState, sector: Sector): Seat | undefined {
 export function scoreSeat(state: GameState, seat: Seat): ScoreBreakdown {
   const hidden = state.privateSeats.find(privateSeat => privateSeat.seatId === seat.id);
   return calculateScore({ playerId: seat.id, faction: seat.faction, reputation: hidden?.reputation ?? [], ambassadors: seat.ambassadors.length,
-    sectors: state.sectors.filter(sector => sector.owner === seat.id).map(sector => ({ id: sector.id, printedVp: requireSectorDefinition(Number(sector.tileId)).victoryPoints, monoliths: Number(sector.monolith), portalVp: sector.portalVp ?? 0 })),
+    sectors: state.sectors.filter(sector => sector.owner === seat.id).map(sector => ({ id: sector.id, printedVp: requireSectorDefinition(Number(sector.tileId)).victoryPoints, monoliths: Number(sector.monolith), portalVp: sector.portalVp ?? 0, orbitalPopulated: sector.orbital && sector.population.some(cube => cube.squareId === 'orbital') })),
     discoveriesKeptForVp: hidden?.discoveriesKept.length ?? 0, traitor: seat.traitor,
     researchTracks: [seat.technologies.military.length, seat.technologies.grid.length, seat.technologies.nano.length],
     ancientsOnBoard: state.ships.filter(ship => ship.type === 'ancient').length,

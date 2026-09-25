@@ -1,5 +1,5 @@
 import type {ReactNode} from 'react';
-import {blueprintDefinition,effectiveBlueprintParts,type ShipBlueprint} from '../../shared/eclipse/blueprints';
+import {blueprintClassName,blueprintDefinition,effectiveBlueprintParts,type ShipBlueprint} from '../../shared/eclipse/blueprints';
 import type {FactionId} from '../../shared/eclipse/catalog';
 import {getShipPart,type ShipStats,type ShipPartId} from '../../shared/eclipse/parts';
 import ShipPartStats,{StatBadge} from './ShipPartStats';
@@ -8,7 +8,7 @@ import NeutralShipArmament from './NeutralShipArmament';
 
 /** Read-only effective modules, including printed parts revealed below empty overlays. */
 export default function BlueprintLoadout({faction,blueprint}:{faction:FactionId;blueprint:ShipBlueprint}){
- const name=blueprint.shipType[0].toUpperCase()+blueprint.shipType.slice(1);
+ const name=blueprintClassName(faction,blueprint.shipType);
  const parts=effectiveBlueprintParts(faction,blueprint),permanent=blueprintDefinition(faction,blueprint.shipType).permanent;
  return <div className="dg-readonly-loadout" role="group" aria-label={`${name} installed loadout`}>
   <div className="dg-readonly-hardpoints">{parts.map((id,index)=><div className={`dg-readonly-part${blueprint.parts[index]?' dg-readonly-overlay':''}${id?'':' dg-readonly-empty'}`} key={index}>

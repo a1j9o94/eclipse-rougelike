@@ -683,3 +683,13 @@ Tests (must fail first): new `second_dawn_pass_order_variant.spec.ts` rejects th
 Decision Log: the product owner approved the static rail/sheet concept and explicitly required the pass-order checkbox alongside existing Less Random game-creation options. We keep physical seat arrays unchanged and persist a separate action cycle; passing first still grants +2 money and begins the next round. Mobile retains Galaxy/Empire/Players/Activity navigation as a second footer row.
 Follow-ups: verify final browser layout and relevant regressions, update the UX ledger and release evidence; human newcomer/expert action-search playtests remain outstanding.
 Result & Next Steps: 39 bounded tests across nine suites pass, including an eight-round AI match with pass-order turns. Lint and build pass. The isolated local backend accepted a new game with the variant; desktop and mobile browser checks found no page errors or horizontal overflow. The first mobile footer check caught reversed controls caused by a later flex rule; the corrected 390-pixel screen now has Choose action left and Pass right, and after Pass the checkbox occupies the turn row. Final integration/release gates remain.
+
+# Exiles faction slice — 2026-09-25
+
+Outcome: Play The Exiles with their starting Orbital, combat defender, and end-game Orbital points.
+
+Acceptance criteria: Official setup constants, sector 234, station defense and loss, Starbase restriction, Orbital VP, base-save compatibility. Details: `coding_agents/exiles_faction_design.md`.
+
+Risks & rollback: The stationary Orbital reuses the otherwise unavailable Starbase blueprint; revert this feature branch if its lifecycle integration is incomplete.
+
+Test list: `second_dawn_exiles.spec.ts` (setup and scoring failed first, then passed); bounded registry, setup, actions, and blueprint tests. Deterministic combat and full AI match remain follow-ups.

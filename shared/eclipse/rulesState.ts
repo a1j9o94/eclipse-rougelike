@@ -313,5 +313,6 @@ export function abandonSector(state: GameState, sector: Sector): void {
     enqueueCubeReturn(state, seat.id, choices);
   }
   sector.population = [];
+  state.ships = state.ships.filter(ship => !(ship.orbitalShip && ship.sectorId === sector.id));
   sector.owner = null;
 }

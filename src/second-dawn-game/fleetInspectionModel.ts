@@ -11,7 +11,7 @@ export function publicShipProfile(view:PlayerView,id:string):PublicShipProfile|n
  const blueprint=seat?.blueprints.find(b=>b.shipType===ship.type);
  const stats=neutral?neutralBlueprint(`${ship.type as 'ancient'|'guardian'|'gcds'}-standard`).stats:seat&&blueprint?deriveBlueprintStats(seat.faction,publicBlueprint(blueprint)):null;
  if(!stats)return null;
- return {ship,name:ship.type==='gcds'?'Galactic Center Defense System':ship.type[0].toUpperCase()+ship.type.slice(1),ownerName:seat?getFaction(seat.faction).name:'Neutral defenders',stats,maximumHp:stats.hull+1,remainingHp:Math.max(0,stats.hull+1-ship.damage)};
+ return {ship,name:ship.orbitalShip?'Orbital':ship.type==='gcds'?'Galactic Center Defense System':ship.type[0].toUpperCase()+ship.type.slice(1),ownerName:seat?getFaction(seat.faction).name:'Neutral defenders',stats,maximumHp:stats.hull+1,remainingHp:Math.max(0,stats.hull+1-ship.damage)};
 }
 export function hitFaceDescription(computer:number,shield:number):string{
  const required=6-computer+shield;return required>6?'Natural 6 only':required>=6?'6 to hit':`${Math.max(2,required)}–6 to hit`;

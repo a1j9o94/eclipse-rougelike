@@ -4,7 +4,7 @@ import { getFaction, type FactionId, type FactionVisualIdentity } from '../../sh
 export type ShipDesignFamily = 'eridani'|'hydran'|'planta'|'draco'|'mechanema'|'orion';
 export interface FactionShipDesign { hull: string; plating: string; cockpit: string; engines: string }
 /** Original top-down silhouettes, nose toward the top; paired Terrans share the physical color family. */
-const familyAliases:Record<FactionVisualIdentity,ShipDesignFamily>={eridani:'eridani',hydran:'hydran',planta:'planta',draco:'draco',mechanema:'mechanema',orion:'orion','rho-indi':'orion',magellan:'hydran',midas:'eridani',ragnarok:'draco'};
+const familyAliases:Record<FactionVisualIdentity,ShipDesignFamily>={eridani:'eridani',hydran:'hydran',planta:'planta',draco:'draco',mechanema:'mechanema',orion:'orion','rho-indi':'orion',magellan:'hydran',midas:'eridani',ragnarok:'draco',exiles:'mechanema'};
 export function shipDesignFamily(faction: FactionId): ShipDesignFamily { return familyAliases[getFaction(faction).shipDesignFamily]; }
 
 const hulls: Record<ShipDesignFamily, Record<BlueprintShipType, string>> = {

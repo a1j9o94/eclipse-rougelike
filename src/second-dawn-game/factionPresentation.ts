@@ -21,6 +21,11 @@ export interface FactionPresentation {
 
 const common: FactionEffect[] = [];
 const presentations: Record<FactionId, Omit<FactionPresentation, "startingShip" | "blueprintSummary">> = {
+  exiles: {
+    overview: 'Orbital builders whose populated habitats defend sectors and score points.',
+    benefits: [{icon:'structure',value:'1',label:'Orbital at setup',detail:'Your home sector starts with an Orbital, and Orbital technology is already researched.'},{icon:'influence',value:'+1',label:'VP per populated Orbital',detail:'Each Orbital holding your population scores one point at game end.'},{icon:'shield',label:'Orbital defense',detail:'A populated Orbital is a stationary ship with its own blueprint. Its structure remains if destroyed.'}],
+    constraints: ['Cannot build Starbases.','A destroyed defending Orbital returns its population cube to the Money or Science graveyard and gives its opponent one extra reputation draw.'],
+  },
   'rho-indi': {
     overview: 'Fast raiders who turn combat into income and can break treaties without losing victory points.',
     benefits: [{icon:'drive',value:'4',label:'Move activations',detail:'Bring a wider fleet into position with four Move activations.'},{icon:'discovery',value:'−1',label:'draws become Money',detail:'Gain Money equal to your reputation draws minus one after combat.'},{icon:'shield',value:'0',label:'Traitor VP penalty',detail:'Betrayal still breaks diplomacy; the Traitor tile costs you no victory points.'}],

@@ -636,7 +636,7 @@ function SecondDawnBoardContent({
               <div className="dg-blueprint-heading"><h1>Ship blueprints</h1>
               <label className="dg-blueprint-owner">Civilization <select aria-label="Blueprint civilization" value={inspectedPlayer.id} onChange={event => {setPlayerId(event.target.value); setEditing(null);}}>{view.seats.map(seat => <option key={seat.id} value={seat.id}>{faction(seat.id)?.name}{seat.id === own.id ? " (you)" : ""}</option>)}</select></label></div>
               <nav className="dg-class-selector" aria-label="Ship classes">
-                {inspectedPlayer.blueprints.map(bp => <button key={bp.shipType} aria-pressed={editing === bp.shipType} disabled={getFaction(inspectedPlayer.faction).componentSupply?.[bp.shipType]===0} title={getFaction(inspectedPlayer.faction).componentSupply?.[bp.shipType]===0?`${getFaction(inspectedPlayer.faction).name} does not use this ship class.`:undefined} onClick={() => {setEditing(bp.shipType); setAction("upgrade");}}>{humanize(bp.shipType)}</button>)}
+                {inspectedPlayer.blueprints.map(bp => <button key={bp.shipType} aria-pressed={editing === bp.shipType} disabled={getFaction(inspectedPlayer.faction).componentSupply?.[bp.shipType]===0} title={getFaction(inspectedPlayer.faction).componentSupply?.[bp.shipType]===0?`${getFaction(inspectedPlayer.faction).name} does not use this ship class.`:undefined} onClick={() => {setEditing(bp.shipType); setAction("upgrade");}}>{inspectedPlayer.faction==='exiles'&&bp.shipType==='starbase'?'Orbital':humanize(bp.shipType)}</button>)}
                 <button aria-pressed={editing === null} onClick={() => setEditing(null)}>All loadouts</button>
               </nav>
               {editing && inspectedPlayer.id === own.id && getFaction(own.faction).componentSupply?.[editing]!==0 ? (
@@ -680,7 +680,7 @@ function SecondDawnBoardContent({
                 <div className="dg-blueprints">
                   {inspectedPlayer.blueprints.filter(bp => getFaction(inspectedPlayer.faction).componentSupply?.[bp.shipType]!==0&&(editing === null || bp.shipType === editing)).map((bp) => (
                     <section key={bp.shipType} className="dg-loadout-card">
-                      <header><ShipSilhouette type={bp.shipType} faction={inspectedPlayer.faction}/><h2>{humanize(bp.shipType)}</h2></header>
+                      <header><ShipSilhouette type={bp.shipType} faction={inspectedPlayer.faction}/><h2>{inspectedPlayer.faction==='exiles'&&bp.shipType==='starbase'?'Orbital':humanize(bp.shipType)}</h2></header>
                       {(() => {
                         const stats = deriveBlueprintStats(
                           inspectedPlayer.faction,

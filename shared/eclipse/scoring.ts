@@ -6,6 +6,7 @@ export interface ScoringSector {
   readonly monoliths: number;
   /** Bonus of an installed optional portal tile, not the sector's printed VP. */
   readonly portalVp: 0 | 1 | 2 | 3;
+  readonly orbitalPopulated?: boolean;
 }
 export interface ScoringInput {
   readonly minorSpecies?: readonly MinorSpeciesTile[];
@@ -76,7 +77,8 @@ export function calculateScore(input: ScoringInput): ScoreBreakdown {
     : scoring === 'surviving-ancient'
       ? input.ancientsOnBoard
       : 0;
-  const species = speciesBase + (input.ancientPartsUsed ?? 0) * (faction.special?.ancientPartVp ?? 0);
+  const species = speciesBase + (input.ancientPartsUsed ?? 0) * (faction.special?.ancientPartVp ?? 0)
+    + input.sectors.filter(sector => sector.orbitalPopulated).length * (faction.special?.populatedOrbitalVp ?? 0);
   const variant = input.variantVp ?? 0;
   return {
     ...(input.minorSpecies?.length ? {minorSpecies} : {}),

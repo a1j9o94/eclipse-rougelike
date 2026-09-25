@@ -104,9 +104,8 @@ export function createGame(config: GameSetup): GameState {
     };
     for (const id of f.startingTechnologies) {
       const t = getTechnology(id as TechnologyId);
-      if (t.track === "rare")
-        throw new Error("Invalid printed starting technology.");
-      technologies[t.track].push(id);
+      // A printed rare technology occupies a chosen regular track at setup.
+      technologies[t.track === "rare" ? "nano" : t.track].push(id);
     }
     return {
       ...s,
@@ -229,7 +228,7 @@ export function createGame(config: GameSetup): GameState {
       rotation: d.homeArrow === null ? 0 : (inward - d.homeArrow + 6) % 6,
       owner: owner?.id ?? null,
       population: [],
-      orbital: false,
+      orbital: owner ? !!getFaction(owner.faction).special?.startsWithOrbital : false,
       monolith: false,
       discovery: d.discovery,
     };

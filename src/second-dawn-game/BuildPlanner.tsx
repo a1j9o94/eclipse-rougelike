@@ -42,6 +42,7 @@ export default function BuildPlanner({ view, sectorId, defaultPlacementSectorId=
   const turnReason=own.eliminated?'This civilization has been eliminated.':view.waitingFor||view.pendingDecision?'Resolve the pending decision first.':view.phase!=='action'||view.activeSeatId!==own.id?'Wait for your action turn.':view.actionProgress&&(!continuesAction(view,'build'))?'Finish your current action first.':!view.actionProgress&&own.influenceOnTrack<1?'No influence discs remain.':analysis.limit<1?'No Build activations remain.':null;
   const valid=total>0&&!turnReason&&analysis.issues.length===0&&(analysis.cost<=own.resources.materials||!!funded), preview=valid?previewCommand(view,command):null;
   const componentReason=(type:BuildComponent):string|null=>{
+    if(type==='starbase'&&getFaction(own.faction).special?.cannotBuildStarbases)return `${getFaction(own.faction).name} cannot build Starbases.`;
     if(isShip(type)&&getFaction(own.faction).componentSupply?.[type]===0)return `${getFaction(own.faction).name} does not build ${name(type)}s.`;
     if(['starbase','orbital','monolith'].includes(type)&&!technologies.includes(type))return `Research ${name(type)} first.`;
     const sample={...draft,items:[...draft.items,{id:'candidate',component:type,sectorId:null}]} as BuildOrderDraft;

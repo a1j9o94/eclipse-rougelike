@@ -68,6 +68,8 @@ export interface Ship {
   sectorId: string;
   damage: number;
   arrival?: number;
+  /** Exiles populated Orbital, represented as a stationary combat unit. */
+  orbitalShip?: boolean;
 }
 export interface Seat {
   minorSpecies?: MinorSpeciesTile[];

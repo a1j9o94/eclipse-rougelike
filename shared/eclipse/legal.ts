@@ -661,7 +661,7 @@ export function legalCommands(
         "orbital",
         "monolith",
       ] as const) {
-        if (component === "starbase" && !has(seat, "starbase")) continue;
+        if (component === "starbase" && (!has(seat, "starbase") || faction.special?.cannotBuildStarbases)) continue;
         if (
           component === "orbital" &&
           (!has(seat, "orbital") || sector.orbital)

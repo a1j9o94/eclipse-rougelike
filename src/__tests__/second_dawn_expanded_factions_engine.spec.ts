@@ -37,7 +37,7 @@ const expanded = () => createGame({
 describe('expanded-v1 faction engine', () => {
   it('pins the expanded profile while an omitted profile remains the legacy base roster', () => {
     expect(BASE_FACTIONS).toHaveLength(12);
-    expect(listFactions()).toHaveLength(16);
+    expect(listFactions()).toHaveLength(17);
     expect(listFactions('base')).toEqual(BASE_FACTIONS);
     expect(profileVersions('expanded-v1')).toEqual({
       rulesVersion: EXPANDED_RULES_VERSION,

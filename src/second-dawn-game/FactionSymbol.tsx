@@ -2,6 +2,7 @@ import {getFaction, type FactionId, type FactionVisualIdentity} from '../../shar
 import './factionSymbol.css';
 /** Original civilization emblems; both faces of a civilization share an emblem. */
 const EMBLEMS:Record<FactionVisualIdentity,string>={
+ exiles:'M12 3A9 9 0 1 0 12 21A9 9 0 1 0 12 3 M12 7A5 5 0 1 0 12 17A5 5 0 1 0 12 7 M3 12H21',
  eridani:'M4 6 12 2 20 6 18 16 12 22 6 16Z M8 9H16 M12 6V17',
  hydran:'M12 2 22 18H2Z M12 8V16 M8 18H16',
  planta:'M12 21V10 M12 15C2 15 2 5 3 3 12 3 12 11 12 15 M12 12C12 5 18 3 22 3 22 10 18 13 12 12',

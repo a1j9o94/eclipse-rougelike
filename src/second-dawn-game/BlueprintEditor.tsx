@@ -139,7 +139,7 @@ export default function BlueprintEditor({
         <div className="dg-shipyard-identity">
           <span className="dg-yard-eyebrow">Shipyard · configuration</span>
           <div className="dg-shipyard-heading-row">
-            <h2>Edit {blueprint.shipType}</h2>
+            <h2>Edit {faction==='exiles'&&blueprint.shipType==='starbase'?'Orbital':blueprint.shipType}</h2>
             <div className={`dg-reactor-readout ${stats.energyProduction < stats.energyConsumption ? "dg-danger" : ""}`}><span>Reactor balance</span><strong>{stats.energyProduction - stats.energyConsumption} energy available</strong><small>{stats.energyProduction} generated / {stats.energyConsumption} used</small></div>
           </div>
           <ShipCapabilities stats={stats} showEnergy={false} showWeapons/>

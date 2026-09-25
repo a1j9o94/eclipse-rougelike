@@ -1677,6 +1677,17 @@ export const SECTORS: readonly SectorDefinition[] = [
     source: ".second-dawn/faction-research/originals/Outcasts and Seekers/02 Warden of Magellan Seekers.jpg",
   },
   {
+    id: 234, name: "Eta Geminorum", wormholes: [0, 1, 3, 4], victoryPoints: 3,
+    population: [
+      { resource: "money", advanced: true },
+      { resource: "materials", advanced: true },
+      { resource: "materials", advanced: false },
+    ],
+    ancients: 0, artifacts: 1, discovery: false, warpPortal: false,
+    guardian: false, gcds: false, homeArrow: 1,
+    source: ".second-dawn/faction-research/originals/Outcasts and Seekers/04 The Exiles Outcasts starting sector.jpg",
+  },
+  {
     id: 236, name: "Rho Indi", wormholes: [0, 1, 3, 4], victoryPoints: 0,
     population: [
       { resource: "money", advanced: true },

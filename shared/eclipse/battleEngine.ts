@@ -15,6 +15,7 @@ import {
   connected,
   continuation,
   emit,
+  enqueueCubeReturn,
   hasEnemy,
   hasTech,
   player,
@@ -181,7 +182,15 @@ function destroy(
   killer: string | null,
 ): void {
   if (killer && !neutral(killer))
-    b.kills.push({ owner: killer, value: VALUES[ship.type] });
+    b.kills.push({ owner: killer, value: VALUES[ship.type] + Number(!!ship.orbitalShip) });
+  if (ship.orbitalShip) {
+    const sector = state.sectors.find(candidate => candidate.id === ship.sectorId);
+    const cube = sector?.population.find(population => population.squareId === 'orbital');
+    if (cube) {
+      sector!.population = sector!.population.filter(population => population.squareId !== 'orbital');
+      enqueueCubeReturn(state, ship.owner, [cube.resource], 'graveyard');
+    }
+  }
   state.ships = state.ships.filter((s) => s.id !== ship.id);
 }
 function updatePenalty(state: GameState, b: BattleState, owner: string): void {
