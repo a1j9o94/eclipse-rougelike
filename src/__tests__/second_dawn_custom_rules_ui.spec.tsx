@@ -1,11 +1,25 @@
 import {useState} from 'react';
-import {cleanup,fireEvent,render,screen} from '@testing-library/react';
+import {cleanup,fireEvent,render,screen,within} from '@testing-library/react';
 import {afterEach,expect,it,vi} from 'vitest';
 import GameRuleSettings,{type GameRuleSettingsValue} from '../second-dawn-game/GameRuleSettings';
 import {RoomSettingsEditor} from '../second-dawn-game/RoomLobby';
 import {gameRules} from '../../shared/eclipse/gameRules';
 afterEach(cleanup);
-function Harness(){const [value,setValue]=useState<GameRuleSettingsValue>({rulesMode:'standard',warpPortals:true,riftCannons:true});return <><GameRuleSettings value={value} disabled={false} onChange={setValue}/><output data-testid="rules">{JSON.stringify({...gameRules(value),warpPortals:value.warpPortals,riftCannons:value.riftCannons})}</output></>;}
+function Harness(){const [value,setValue]=useState<GameRuleSettingsValue>({rulesMode:'standard',warpPortals:true,riftCannons:true,minorSpecies:true,showCombatOdds:true});return <><GameRuleSettings value={value} disabled={false} onChange={setValue}/><output data-testid="rules">{JSON.stringify({...gameRules(value),warpPortals:value.warpPortals,riftCannons:value.riftCannons,minorSpecies:value.minorSpecies,showCombatOdds:value.showCombatOdds})}</output></>;}
+it('keeps all four setup choices together under individual rules',()=>{
+ render(<Harness/>);
+ const fieldset=screen.getByRole('group',{name:'Individual rule options'});
+ for(const name of ['Base-game warp portals','Rift Cannons','Include Minor Species','Show estimated combat odds in movement and fleet inspection'])expect(within(fieldset).getByRole('checkbox',{name})).toBeVisible();
+ expect(screen.queryByRole('group',{name:'Optional components'})).toBeNull();
+});
+it('uses preset defaults for Minor Species and combat estimates while allowing overrides',()=>{
+ render(<Harness/>);
+ const minor=screen.getByRole('checkbox',{name:'Include Minor Species'}),odds=screen.getByRole('checkbox',{name:/Show estimated combat odds/});
+ expect(minor).toBeChecked();expect(odds).toBeChecked();
+ fireEvent.click(minor);expect(minor).not.toBeChecked();expect(screen.getByText('Custom rules')).toBeVisible();
+ fireEvent.click(screen.getByRole('radio',{name:'Régis’s Less Random'}));expect(minor).not.toBeChecked();expect(odds).not.toBeChecked();
+ fireEvent.click(screen.getByRole('radio',{name:'Standard Eclipse'}));expect(minor).toBeChecked();expect(odds).toBeChecked();
+});
 it('chooses ten standard rounds and independent open supplies without enabling other variant rules',()=>{
  render(<Harness/>);fireEvent.change(screen.getByRole('combobox',{name:'Rounds'}),{target:{value:'10'}});fireEvent.click(screen.getByRole('checkbox',{name:'All technologies available'}));fireEvent.click(screen.getByRole('checkbox',{name:'Choose from all discovery tiles'}));
  expect(JSON.parse(screen.getByTestId('rules').textContent!)).toMatchObject({roundLimit:10,openTechnology:true,publicDiscoveries:true,publicReputation:false,explorationRules:false,combatJokers:false,factionVariant:false,technologyVariant:false,discoveryVariant:false});

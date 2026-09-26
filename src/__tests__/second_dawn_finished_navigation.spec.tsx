@@ -66,7 +66,9 @@ it('returns to setup from a saved result opened on the home page',()=>{
  expect(screen.getByRole('button',{name:/Continue · round 3/})).toBeVisible();
 });
 
-it('keeps Minor Species optional when creating a solo game',()=>{
+it('defaults Minor Species and combat estimates on in solo setup but allows turning them off',()=>{
  render(<SecondDawnGame/>);fireEvent.click(screen.getByRole('button',{name:'New game'}));
- const toggle=screen.getByRole('checkbox',{name:'Include Minor Species'});expect(toggle).not.toBeChecked();fireEvent.click(toggle);expect(toggle).toBeChecked();
+ const options=screen.getByRole('group',{name:'Individual rule options'});
+ const minor=within(options).getByRole('checkbox',{name:'Include Minor Species'}),odds=within(options).getByRole('checkbox',{name:/Show estimated combat odds/});
+ expect(minor).toBeChecked();expect(odds).toBeChecked();fireEvent.click(minor);fireEvent.click(odds);expect(minor).not.toBeChecked();expect(odds).not.toBeChecked();
 });
