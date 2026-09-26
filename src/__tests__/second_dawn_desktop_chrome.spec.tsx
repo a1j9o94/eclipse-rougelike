@@ -7,7 +7,7 @@ import SecondDawnBoard from '../second-dawn-game/SecondDawnBoard';
 
 afterEach(cleanup);
 
-it('keeps turn actions in a fixed rail beside the board', () => {
+it('keeps turn actions in a fixed rail to the right of the inspector', () => {
   const state = createGame({ seed: 7, seats: [{ id: 'a', faction: 'eridani', controller: 'human' }, { id: 'b', faction: 'hydran', controller: 'ai' }] });
   const view = getPlayerView(state, 'a')!;
   const { container } = render(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="" onSubmit={vi.fn()} onMenu={vi.fn()} />);
@@ -15,6 +15,8 @@ it('keeps turn actions in a fixed rail beside the board', () => {
   const header = container.querySelector('.sd-header')!;
   expect(header.querySelector('.sd-actions')).toBeNull();
   const rail = screen.getByRole('navigation', { name: 'Turn actions' });
+  const layout = container.querySelector('.sd-layout')!;
+  expect([...layout.children].filter(element => element.matches('.sd-main,.sd-inspector,.dg-action-rail')).map(element => element.classList[0])).toEqual(['sd-main','sd-inspector','dg-action-rail']);
   expect(rail).toHaveTextContent('Explore');
   expect(rail).toHaveTextContent('Colonize');
   expect(rail).toHaveTextContent('Trade');

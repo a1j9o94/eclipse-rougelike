@@ -99,8 +99,9 @@ it('opens Upgrade directly on the player blueprint and keeps the details sheet c
  expect(screen.queryByRole('dialog')).toBeNull();
 });
 
-it('shows the available first-pass money directly in the mobile action choice',()=>{
+it('keeps the first-pass money in the fixed mobile turn control while choosing an action',()=>{
  setup();fireEvent.click(screen.getByRole('button',{name:'Choose action'}));
  const picker=screen.getByRole('group',{name:'Choose your action'});
- expect(within(picker).getByRole('button',{name:/^Pass \+2 money/})).toBeEnabled();
+ expect(within(picker).queryByRole('button',{name:/^Pass \+2 money/})).toBeNull();
+ expect(screen.getByRole('button',{name:/^Pass \+2 money/})).toBeEnabled();
 });
