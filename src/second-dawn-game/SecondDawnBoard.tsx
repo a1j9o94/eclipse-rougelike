@@ -84,6 +84,7 @@ import DiplomacyPanel from "./DiplomacyPanel";
 import { runningScore } from "./runningScore";
 import ShipPartStats from "./ShipPartStats";
 import ShipSilhouette from "./ShipSilhouette";
+import {shipClassName} from './shipLabels';
 import type { BlueprintShipType, ShipBlueprint } from "../../shared/eclipse/blueprints";
 import "../second-dawn/second-dawn.css";
 import "./game.css";
@@ -447,7 +448,7 @@ function SecondDawnBoardContent({
       view={view}
       targetLabels={Object.fromEntries(view.ships.map(ship => [
         ship.id,
-        `${faction(ship.owner)?.name ?? humanize(ship.owner)} · ${humanize(ship.type)} #${view.ships.filter(s => s.owner === ship.owner && s.type === ship.type).findIndex(s => s.id === ship.id) + 1}`,
+        `${faction(ship.owner)?.name ?? humanize(ship.owner)} · ${shipClassName(ship.type,faction(ship.owner)?.id,ship.orbitalShip)} #${view.ships.filter(s => s.owner === ship.owner && s.type === ship.type).findIndex(s => s.id === ship.id) + 1}`,
       ]))}
       key={view.pendingDecision.id}
       decision={view.pendingDecision}
@@ -633,7 +634,7 @@ function SecondDawnBoardContent({
               <div className="dg-blueprint-heading"><h1>Ship blueprints</h1>
               <label className="dg-blueprint-owner">Civilization <select aria-label="Blueprint civilization" value={inspectedPlayer.id} onChange={event => {setPlayerId(event.target.value); setEditing(null);}}>{view.seats.map(seat => <option key={seat.id} value={seat.id}>{faction(seat.id)?.name}{seat.id === own.id ? " (you)" : ""}</option>)}</select></label></div>
               <nav className="dg-class-selector" aria-label="Ship classes">
-                {inspectedPlayer.blueprints.map(bp => <button key={bp.shipType} aria-pressed={editing === bp.shipType} disabled={getFaction(inspectedPlayer.faction).componentSupply?.[bp.shipType]===0} title={getFaction(inspectedPlayer.faction).componentSupply?.[bp.shipType]===0?`${getFaction(inspectedPlayer.faction).name} does not use this ship class.`:undefined} onClick={() => {setEditing(bp.shipType); setAction("upgrade");}}>{inspectedPlayer.faction==='exiles'&&bp.shipType==='starbase'?'Orbital':humanize(bp.shipType)}</button>)}
+                {inspectedPlayer.blueprints.map(bp => <button key={bp.shipType} aria-pressed={editing === bp.shipType} disabled={getFaction(inspectedPlayer.faction).componentSupply?.[bp.shipType]===0} title={getFaction(inspectedPlayer.faction).componentSupply?.[bp.shipType]===0?`${getFaction(inspectedPlayer.faction).name} does not use this ship class.`:undefined} onClick={() => {setEditing(bp.shipType); setAction("upgrade");}}>{shipClassName(bp.shipType,inspectedPlayer.faction)}</button>)}
                 <button aria-pressed={editing === null} onClick={() => setEditing(null)}>All loadouts</button>
               </nav>
               {editing && inspectedPlayer.id === own.id && getFaction(own.faction).componentSupply?.[editing]!==0 ? (
@@ -677,7 +678,7 @@ function SecondDawnBoardContent({
                 <div className="dg-blueprints">
                   {inspectedPlayer.blueprints.filter(bp => getFaction(inspectedPlayer.faction).componentSupply?.[bp.shipType]!==0&&(editing === null || bp.shipType === editing)).map((bp) => (
                     <section key={bp.shipType} className="dg-loadout-card">
-                      <header><ShipSilhouette type={bp.shipType} faction={inspectedPlayer.faction}/><h2>{inspectedPlayer.faction==='exiles'&&bp.shipType==='starbase'?'Orbital':humanize(bp.shipType)}</h2></header>
+                      <header><ShipSilhouette type={bp.shipType} faction={inspectedPlayer.faction}/><h2>{shipClassName(bp.shipType,inspectedPlayer.faction)}</h2></header>
                       {(() => {
                         const stats = deriveBlueprintStats(
                           inspectedPlayer.faction,
@@ -710,7 +711,7 @@ function SecondDawnBoardContent({
                             </p>
                             {inspectedPlayer.id !== own.id && ownStats && (
                               <p className="dg-compare">
-                                Your {bp.shipType}: hull {ownStats.hull}, move{" "}
+                                Your {shipClassName(bp.shipType,inspectedPlayer.faction)}: hull {ownStats.hull}, move{" "}
                                 {ownStats.movement}, initiative{" "}
                                 {ownStats.initiative}, computer +
                                 {ownStats.computer}, shield −{ownStats.shield}
@@ -740,7 +741,7 @@ function SecondDawnBoardContent({
                             setAction("upgrade");
                           }}
                         >
-                          Edit {bp.shipType}
+                          Edit {shipClassName(bp.shipType,inspectedPlayer.faction)}
                         </button>
                       )}
                     </section>
@@ -817,7 +818,7 @@ function SecondDawnBoardContent({
             <><h2>Resource exchange</h2><p>Choose what to receive, adjust the amount, and select which resource pays for it.</p><p>Trading does not use an action disc. Your money after trading changes what you can afford at upkeep.</p></>
           ) : screen === "Blueprints" ? (
             <>
-              <h2>{editing ? `${humanize(editing)} loadout` : "Fleet blueprints"}</h2>
+              <h2>{editing ? `${shipClassName(editing,inspectedPlayer.faction)} loadout` : "Fleet blueprints"}</h2>
               <p>{faction(inspectedPlayer.id)?.name} · current installed parts</p>
               {editing ? <div className="dg-current-loadout">{effectiveBlueprintParts(inspectedPlayer.faction, publicBlueprint(inspectedPlayer.blueprints.find(bp => bp.shipType === editing)!)).map((part, index) => <div key={index}><strong>{index+1}. {part ? humanize(part) : "Empty slot"}</strong>{part && <ShipPartStats partId={part}/>}</div>)}</div> : <p>Select any ship class above, or use All loadouts to compare the fleet. Draft changes do not affect ships until confirmed.</p>}
             </>
@@ -890,9 +891,9 @@ function SecondDawnBoardContent({
                   );
                   return (
                     <p key={ship.id}>
-                      {humanize(ship.type)}:{" "}
+                      {shipClassName(ship.type,own.faction,ship.orbitalShip)}:{" "}
                       {ship.type === "starbase"
-                        ? "Immobile starbase"
+                        ? ship.orbitalShip?'Immobile Orbital':'Immobile starbase'
                         : movable === 0
                           ? "Pinned by opposing ships; no ship can leave."
                           : `${stats?.movement ?? 0} range; ${movable} friendly ships may leave without exceeding pinning limits.`}

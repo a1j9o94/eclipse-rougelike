@@ -1,7 +1,8 @@
 import {useState} from 'react';
-import type {GameCommand,PendingDecision,PlayerView} from '../../shared/eclipse/types';
+import type {GameCommand,PendingDecision,PlayerView,Ship} from '../../shared/eclipse/types';
 import {RetreatCards} from './CombatDecisionVisuals';
 import ShipSilhouette from './ShipSilhouette';
+import {shipClassName} from './shipLabels';
 
 type CombatTurn=Extract<PendingDecision,{kind:'combat-turn'|'retreat'}>;
 export default function CombatTurnDecision({decision,view,disabled,onSubmit}:{decision:CombatTurn;view?:PlayerView;disabled:boolean;onSubmit:(command:GameCommand)=>void}){
@@ -16,7 +17,7 @@ export default function CombatTurnDecision({decision,view,disabled,onSubmit}:{de
  return <section className="dg-decision dg-combat-turn" aria-label="Combat controls">
   <div className="dg-combat-turn-heading">
    {shipType&&['interceptor','cruiser','dreadnought','starbase'].includes(shipType)&&<ShipSilhouette type={shipType as 'interceptor'|'cruiser'|'dreadnought'|'starbase'} faction={view?.seats.find(seat=>seat.id===decision.owner)?.faction}/>}
-   <div><p className="sd-eyebrow">{sector?`BATTLE · SECTOR ${sector.tileId}`:'BATTLE'}</p><h2>{forced?'Retreat required':shipType?`Your ${shipType}s are ready`:'Your fleet is ready'}</h2></div>
+   <div><p className="sd-eyebrow">{sector?`BATTLE · SECTOR ${sector.tileId}`:'BATTLE'}</p><h2>{forced?'Retreat required':shipType?`Your ${shipClassName(shipType as Ship['type'],view?.seats.find(seat=>seat.id===decision.owner)?.faction)}s are ready`:'Your fleet is ready'}</h2></div>
   </div>
   {!forced&&decision.kind==='combat-turn'&&<p className="dg-combat-turn-prompt">Roll when you are ready, or declare a retreat.</p>}
   {!forced&&<div className="dg-combat-turn-actions">

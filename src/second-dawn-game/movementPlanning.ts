@@ -4,6 +4,7 @@ import { publicBlueprint } from '../../shared/eclipse/legal';
 import { connectionBetween, movableShipCount, validateMovementPath, type MovementShip, type MovementSector, type MovementAbilities } from '../../shared/eclipse/geometry';
 import { mapSector, movementAbilities, capacity as actionCapacity } from '../../shared/eclipse/rulesState';
 import type { GameCommand, PlayerView } from '../../shared/eclipse/types';
+import {shipClassName} from './shipLabels';
 export interface MovementShipOption { id:string; type:BlueprintShipType; label:string; range:number; reason:string|null }
 export interface MovementDestination { sectorId:string; command:Extract<GameCommand,{type:'move'}>; activations:number }
 export interface MovementPlan { ships:MovementShipOption[]; capacity:number; leaveCapacity:number; destinations:MovementDestination[]; message:string|null }
@@ -39,7 +40,7 @@ export function movementPlan(view:PlayerView,sourceSectorId:string|null,selected
  const fleet:MovementShip[]=view.ships.map(ship=>({id:ship.id,owner:ship.owner,sectorId:ship.sectorId,kind:ship.type,movement:ship.owner===seat.id&&ship.type!=='ancient'&&ship.type!=='guardian'&&ship.type!=='gcds'?deriveBlueprintStats(seat.faction,publicBlueprint(seat.blueprints.find(b=>b.shipType===ship.type)!)).movement:0}));
  const leaveCapacity=sourceSectorId?movableShipCount(seat.id,sourceSectorId,fleet,abilities):0;
  const counters:Partial<Record<BlueprintShipType,number>>={};
- const ships:MovementShipOption[]=fleet.filter(s=>s.owner===seat.id&&s.sectorId===sourceSectorId).map(ship=>{const type=ship.kind as BlueprintShipType;const index=counters[type]=(counters[type]??0)+1;return {id:ship.id,type,label:`${type[0].toUpperCase()+type.slice(1)} ${index}`,range:ship.movement,reason:type==='starbase'?'Starbases cannot move.':ship.movement===0?'No drive: install a drive before moving.':leaveCapacity===0?'Pinned: opposing ships prevent this fleet from leaving.':null};});
+ const ships:MovementShipOption[]=fleet.filter(s=>s.owner===seat.id&&s.sectorId===sourceSectorId).map(ship=>{const type=ship.kind as BlueprintShipType;const index=counters[type]=(counters[type]??0)+1;const label=shipClassName(type,seat.faction,view.ships.find(candidate=>candidate.id===ship.id)?.orbitalShip);return {id:ship.id,type,label:`${label} ${index}`,range:ship.movement,reason:type==='starbase'?`${label}s cannot move.`:ship.movement===0?'No drive: install a drive before moving.':leaveCapacity===0?'Pinned: opposing ships prevent this fleet from leaving.':null};});
  let message:string|null=null;
  if(!capacity)message=canAct?'Finish the current action or free an influence disc before moving.':'Wait for your action turn to move.';
  else if(!sourceSectorId)message='Select a sector containing your ships on the galaxy.';

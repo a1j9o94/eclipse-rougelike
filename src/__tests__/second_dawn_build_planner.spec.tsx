@@ -15,3 +15,14 @@ describe('visual build planner',()=>{
  it('funds the placed order atomically and supports returning a piece to the tray',()=>{const f=fixture();f.state.seats[0].resources={money:4,science:0,materials:1};f.view=getPlayerView(f.state,'a')!;const submit=vi.fn();render(<BuildPlanner {...f} disabled={false} onClose={()=>{}} onSubmit={submit}/>);fireEvent.click(screen.getByRole('button',{name:'Add interceptor'}));place('interceptor');expect(screen.getByText('Conversion required')).toBeVisible();expect(within(screen.getByRole('region',{name:'Action cost preview'})).getByText(/money: 4 → 0/)).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'Return to tray'}));expect(screen.getByRole('button',{name:/Build 1 ship/})).toBeDisabled();place('interceptor');fireEvent.click(screen.getByRole('button',{name:/Convert & Build 1 ship/}));const command=submit.mock.calls[0][0] as GameCommand;expect(command.type).toBe('trade-and-act');expect(processGameCommand(f.state,'a',command).ok).toBe(true);});
 });
 it('disables building for an eliminated seat',()=>{const f=fixture();f.view.seats[0].eliminated=true;render(<BuildPlanner {...f} disabled={false} onClose={()=>{}} onSubmit={()=>{}}/>);expect(screen.getByRole('button',{name:'Add interceptor'})).toBeDisabled();expect(screen.getByText('This civilization has been eliminated.')).toBeVisible();});
+it('shows the Exiles Orbital blueprint parts and explains when the defender appears',()=>{
+ const state=createGame({seed:42,factionProfile:'expanded-v2',seats:[{id:'a',faction:'exiles',controller:'human'},{id:'b',faction:'orion',controller:'ai'}]});
+ const view=getPlayerView(state,'a')!;
+ render(<BuildPlanner view={view} sectorId={state.sectors.find(s=>s.owner==='a')!.id} disabled={false} onClose={()=>{}} onSubmit={vi.fn()}/>);
+ const orbital=screen.getByRole('article',{name:'Orbital'});
+ expect(orbital).toHaveTextContent('Ion Turret');
+ expect(orbital).toHaveTextContent('Electron Computer');
+ expect(orbital).toHaveTextContent('Hull');
+ expect(orbital).toHaveTextContent(/coloniz/i);
+ expect(screen.queryByRole('button',{name:'Add starbase'})).toBeNull();
+});

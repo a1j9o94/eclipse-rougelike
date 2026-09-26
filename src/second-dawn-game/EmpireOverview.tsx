@@ -22,6 +22,7 @@ import ShipSilhouette from './ShipSilhouette';
 import {StatIcon,type StatIconName} from './ShipPartStats';
 import TechnologyStats from './TechnologyStats';
 import {describeTechnology} from './itemDescriptions';
+import {shipClassName} from './shipLabels';
 import DiscoveryReference from './DiscoveryReference';
 import './empireOverview.css';
 
@@ -91,11 +92,11 @@ export default function EmpireOverview({view,seatId,onSector,onNavigate,onBluepr
     <footer><p>{readyCount} empty {readyCount===1?'space meets':'spaces meet'} technology requirements. Each population needs a colony ship and a matching cube; turn and sector restrictions still apply.</p></footer>
    </details>
    <section className="eo-panel eo-fleet"><header><div><p className="sd-eyebrow">SHIPS IN THE GALAXY</p><h2>Fleet & blueprints</h2></div><span className="eo-muted">Select a hull to inspect</span></header>
-    <div className="eo-fleet-grid">{model.fleets.map(fleet=>{const option=buildOptions.find(option=>option.shipType===fleet.type),reason=buildUnavailableReason??option?.disabledReason,conversion=!!option?.requiresConversion&&!reason;return <div key={fleet.type} className="eo-fleet-card" role="group" aria-label={`${title(fleet.type)} fleet`}>
-     <button className="eo-fleet-hull" aria-label={`Inspect ${title(fleet.type)} blueprint`} onClick={()=>onBlueprints(fleet.type)}><ShipSilhouette type={fleet.type} faction={seat.faction}/><strong className="eo-fleet-count">×{fleet.count}</strong><span>{title(fleet.type)}</span></button>
+    <div className="eo-fleet-grid">{model.fleets.map(fleet=>{const option=seat.faction==='exiles'&&fleet.type==='starbase'?undefined:buildOptions.find(option=>option.shipType===fleet.type),reason=buildUnavailableReason??option?.disabledReason,conversion=!!option?.requiresConversion&&!reason,label=shipClassName(fleet.type,seat.faction);return <div key={fleet.type} className="eo-fleet-card" role="group" aria-label={`${label} fleet`}>
+     <button className="eo-fleet-hull" aria-label={`Inspect ${label} blueprint`} onClick={()=>onBlueprints(fleet.type)}><ShipSilhouette type={fleet.type} faction={seat.faction}/><strong className="eo-fleet-count">×{fleet.count}</strong><span>{label}</span></button>
      <div className="eo-fleet-stats"><span aria-label={`Movement per activation: ${fleet.movement}`} title="Movement per activation"><StatIcon kind="drive"/>{fleet.movement}</span><span aria-label={`Initiative: ${fleet.initiative}`} title="Initiative"><StatIcon kind="initiative"/>{fleet.initiative}</span><span aria-label={`Hit points: ${fleet.hitPoints}`} title="Hit points"><StatIcon kind="hull"/>{fleet.hitPoints}</span></div>
      {option&&<div className="eo-build-shortcut"><button className="eo-build-button" disabled={!!reason} aria-label={`Build ${fleet.type} · ${option.cost} materials${conversion?' · conversion required':''}`} aria-describedby={reason||conversion?`build-${seatId}-${fleet.type}-reason`:undefined} onClick={()=>{if(!reason)onBuild?.(fleet.type);}}><span>Build</span><span className="eo-build-price"><TradeResourceIcon resource="materials"/>{option.cost}</span></button>{(reason||conversion)&&<small id={`build-${seatId}-${fleet.type}-reason`} className={conversion?'eo-build-conversion':'eo-build-reason'}>{reason??'Conversion required'}</small>}</div>}
-     <div className="eo-fleet-locations">{fleet.locations.length?fleet.locations.map(location=><button key={location.sectorId} onClick={()=>onSector(location.sectorId)} aria-label={`Sector ${location.tileId}, ${location.count} ${title(fleet.type)}${location.damaged?`, ${location.damaged} damaged`:''}`}><span>Sector {location.tileId}</span><b>×{location.count}</b>{location.damaged>0&&<small>{location.damaged} damaged</small>}</button>):<small>No ships deployed</small>}</div>
+     <div className="eo-fleet-locations">{fleet.locations.length?fleet.locations.map(location=><button key={location.sectorId} onClick={()=>onSector(location.sectorId)} aria-label={`Sector ${location.tileId}, ${location.count} ${label}${location.damaged?`, ${location.damaged} damaged`:''}`}><span>Sector {location.tileId}</span><b>×{location.count}</b>{location.damaged>0&&<small>{location.damaged} damaged</small>}</button>):<small>No ships deployed</small>}</div>
     </div>;})}</div>
    </section>
   </div>

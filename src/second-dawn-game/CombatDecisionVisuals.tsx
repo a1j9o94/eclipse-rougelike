@@ -14,6 +14,7 @@ import EclipseDieFace from "./EclipseDieFace";
 import {eclipseDieFace} from "./dice3d/faces";
 import { useDice3dEnabled } from "./presentationSettings";
 import "./combatDecisionVisuals.css";
+import {shipClassName} from './shipLabels';
 
 const shipNames: Record<Ship["type"], string> = {
   interceptor: "Interceptor",
@@ -137,7 +138,7 @@ function ShipCard({
   const ordinal = ship
     ? (view?.ships.filter((candidate) => candidate.owner === ship.owner && candidate.type === ship.type).findIndex((candidate) => candidate.id === ship.id) ?? 0) + 1
     : 0;
-  const name = ship ? `${shipNames[ship.type]} #${ordinal}` : label;
+  const name = ship ? `${shipClassName(ship.type,view?.seats.find(seat=>seat.id===ship.owner)?.faction,ship.orbitalShip)} #${ordinal}` : label;
   const owner = ship ? ownerName(view, ship.owner) : null;
   const seat = ship ? view?.seats.find((candidate) => candidate.id === ship.owner) : undefined;
   const blueprint = ship ? seat?.blueprints.find((candidate) => candidate.shipType === ship.type) : undefined;
@@ -227,7 +228,7 @@ export function SplitDamageCards({
         return (
           <article className={`dg-combat-split-card${amount ? " is-selected" : ""}`} key={target}>
             {ship && <span className="dg-combat-ship-art"><ShipArt type={ship.type} faction={view?.seats.find(seat => seat.id === ship.owner)?.faction} /></span>}
-            <div className="dg-split-target-copy"><strong>{ship ? shipNames[ship.type] : label}</strong><small>{ship ? ownerName(view, ship.owner) : label}</small></div>
+            <div className="dg-split-target-copy"><strong>{ship ? shipClassName(ship.type,view?.seats.find(seat=>seat.id===ship.owner)?.faction,ship.orbitalShip) : label}</strong><small>{ship ? ownerName(view, ship.owner) : label}</small></div>
             <div className="dg-damage-stepper" aria-label={`Damage allocated to ${label}`}>
               <button type="button" aria-label={`Decrease damage from die ${dieNumber} to ${label}`} disabled={amount === 0} onClick={() => onChange(target, amount - 1)}>−</button>
               <output aria-label={`Damage from die ${dieNumber} to ${label}`}>{amount}</output>
@@ -244,7 +245,7 @@ export function SplitDamageCards({
 function retreatSector(view: PlayerView | undefined, id: string) {
   const sector = view?.sectors.find((candidate) => candidate.id === id);
   const ships = view?.ships.filter((ship) => ship.sectorId === id) ?? [];
-  const fleet = [...new Set(ships.map((ship) => shipNames[ship.type]))];
+  const fleet = [...new Set(ships.map((ship) => shipClassName(ship.type,view?.seats.find(seat=>seat.id===ship.owner)?.faction,ship.orbitalShip)))];
   return { sector, fleet };
 }
 
@@ -310,7 +311,7 @@ export function InitiativeQueue({
         const [owner, typeValue] = id.split("/");
         const shipType = typeValue in shipNames ? typeValue as Ship["type"] : undefined;
         const order = selected.indexOf(id);
-        const label = shipType ? `${ownerName(view, owner)} ${shipNames[shipType]}` : id;
+        const label = shipType ? `${ownerName(view, owner)} ${shipClassName(shipType,view?.seats.find(seat=>seat.id===owner)?.faction)}` : id;
         return (
           <button key={id} type="button" className={`dg-initiative-card${order >= 0 ? " is-selected" : ""}`} aria-pressed={order >= 0} aria-label={order >= 0 ? `Remove ${label} from firing order` : `Add ${label} to firing order`} onClick={() => onToggle(id)}>
             <span className="dg-initiative-order">{order >= 0 ? order + 1 : "—"}</span>

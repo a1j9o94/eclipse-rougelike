@@ -23,3 +23,14 @@ fireEvent.click(screen.getByRole('button',{name:'Slot 4: Hull'}));
 expect(screen.getByRole('button',{name:'Install Hull in slot 4'})).toHaveAttribute('aria-pressed','true');
 expect(submit).not.toHaveBeenCalled();
 });
+it('calls the Exiles blueprint Orbital throughout the shipyard',()=>{
+ const state=createGame({seed:11,factionProfile:'expanded-v2',seats:[{id:'a',faction:'exiles',controller:'human'},{id:'b',faction:'orion',controller:'ai'}]});
+ const view=getPlayerView(state,'a')!;
+ render(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="" onSubmit={vi.fn()} onMenu={vi.fn()}/>);
+ fireEvent.click(screen.getByRole('button',{name:'Upgrade',exact:true}));
+ const classes=screen.getByRole('navigation',{name:'Ship classes'});
+ expect(within(classes).getByRole('button',{name:'Orbital'})).toBeVisible();
+ fireEvent.click(within(classes).getByRole('button',{name:'Orbital'}));
+ expect(screen.getByRole('heading',{name:'Edit Orbital'})).toBeVisible();
+ expect(screen.queryByRole('heading',{name:/Starbase loadout/i})).toBeNull();
+});

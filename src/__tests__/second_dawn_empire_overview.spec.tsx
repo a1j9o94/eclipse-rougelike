@@ -45,6 +45,14 @@ it('provides planet, fleet, research and trade navigation without submitting com
  fireEvent.click(screen.getByRole('button',{name:/Convert resources/}));expect(onNavigate).toHaveBeenCalledWith('Trade');
  expect(screen.getByRole('heading',{name:'Faction abilities'})).toBeVisible();expect(screen.getByRole('heading',{name:'Move activations'})).toBeVisible();
 });
+it('labels Exiles Orbital fleet and blueprint controls without renaming other factions Starbases',()=>{
+ const state=createGame({seed:42,factionProfile:'expanded-v2',seats:[{id:'a',faction:'exiles',controller:'human'},{id:'b',faction:'orion',controller:'ai'}]});
+ const view=getPlayerView(state,'a')!;
+ render(<EmpireOverview view={view} seatId="a" onSector={vi.fn()} onNavigate={vi.fn()} onBlueprints={vi.fn()}/>);
+ expect(screen.getByRole('group',{name:'Orbital fleet'})).toBeVisible();
+ expect(screen.getByRole('button',{name:'Inspect Orbital blueprint'})).toBeVisible();
+ expect(screen.queryByRole('group',{name:'Starbase fleet'})).toBeNull();
+});
 it('opponents expose researched effects locally, never own market actions or private rewards',()=>{
  const view=fixture();view.private.reputation=[987];view.private.discoveriesKept=['secret-discovery'];
  const onNavigate=vi.fn();render(<EmpireOverview view={view} seatId="b" onSector={vi.fn()} onNavigate={onNavigate} onBlueprints={vi.fn()}/>);
