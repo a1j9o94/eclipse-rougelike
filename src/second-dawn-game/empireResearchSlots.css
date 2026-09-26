@@ -1,0 +1,9 @@
+.eo-tech-track > .eo-tech-tiles { display:flex; flex-wrap:nowrap; overflow-x:auto; scroll-snap-type:x proximity; gap:8px; align-items:stretch; padding-bottom:5px; }
+.eo-tech-tiles > * { flex:0 0 185px; scroll-snap-align:start; }
+.eo-tech-tiles > .dg-research-discounts { margin:0; min-width:0; }
+.eo-tech-tiles > button { width:100%; min-height:112px; }
+.eo-tech-slot { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px; min-height:112px; border:1px dashed #647381; border-radius:5px; background:#0c19237a; color:#afbdc8; font-size:11px; text-align:center; }
+.eo-tech-slot small { color:#d4c3a2; font-size:10px; }
+@media(max-width:700px) {
+ .eo-tech-tiles > * { flex:0 0 190px; scroll-snap-align:start; }
+}

@@ -26,11 +26,10 @@ export default function ResearchedTechnologies({seat,view,onInspect,selectedId}:
         const name=track[0].toUpperCase()+track.slice(1);
         return <section key={track} role="group" aria-label={`${name} · ${seat.technologies[track].length} researched`}>
           <h3>{name}<span>{seat.technologies[track].length} / 7</span></h3>
-          <ResearchDiscountTrack track={track} count={seat.technologies[track].length} minorSpecies={seat.minorSpecies}/>
-          <div className="dg-owned-tiles">{seat.technologies[track].map(id=>{
+          <div className="dg-owned-tiles" role="group" aria-label={`${name} technology slots`}><ResearchDiscountTrack track={track} count={seat.technologies[track].length} minorSpecies={seat.minorSpecies}/>{seat.technologies[track].map(id=>{
             const technology=TECHNOLOGIES.find(candidate=>candidate.id===id);
             return technology ? <button className="dg-owned-tile" key={id} aria-label={`Inspect researched ${technology.name}`} aria-pressed={selected===id} onClick={()=>{setSelected(technology.id);onInspect?.(technology.id);}}><strong>{technology.name}</strong><TechnologyStats technology={technology}/>{view&&view.viewerSeatId===seat.id&&<AdvancedPopulationPreview view={view} technology={technology}/>}</button> : <p key={id}>Catalog entry unavailable: {id}</p>;
-          })}{seat.technologies[track].length===0&&<p className="dg-owned-empty">No technologies yet</p>}</div>
+          })}{Array.from({length:Math.max(0,7-seat.technologies[track].length)},(_,index)=><span className="dg-owned-slot" key={`empty-${index}`} aria-label={`Empty technology slot ${seat.technologies[track].length+index+1}`}><small>Slot {seat.technologies[track].length+index+1} / 7</small>Empty technology slot</span>)}</div>
         </section>;
       })}</div>
       <p className="dg-discount-explanation">Discounts reduce science costs on that track, never below a technology’s minimum price.</p>

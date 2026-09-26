@@ -24,6 +24,14 @@ it('shows the larger late-track discounts and warns when the next purchase fills
  expect(within(track).getByText('Current discount: 8 science')).toBeVisible();
  expect(within(track).getByText('Next research fills this track')).toBeVisible();
 });
+it('places discount information and researched tiles in one row of fillable card slots',()=>{
+ const seat=fixture();seat.technologies.nano=['advanced-labs','conifold-field'];
+ render(<ResearchedTechnologies seat={seat}/>);
+ const row=within(screen.getByRole('group',{name:'Nano · 2 researched'})).getByRole('group',{name:'Nano technology slots'});
+ expect(within(row).getByRole('group',{name:'Nano research discounts'})).toBeVisible();
+ expect(within(row).getAllByRole('button',{name:/Inspect researched/})).toHaveLength(2);
+ expect(within(row).getAllByText(/Empty technology slot/)).toHaveLength(5);
+});
 it('does not advertise another research discount after all seven slots are filled',()=>{
  const seat=fixture();seat.technologies.nano=['advanced-labs','conifold-field','nanorobots','fusion-source','orbital','advanced-mining','metasynthesis'];
  render(<ResearchedTechnologies seat={seat}/>);

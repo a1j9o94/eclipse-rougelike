@@ -31,12 +31,14 @@
   .dg-app.dg-tabletop .dg-owned-tile > strong { font-size: .8rem; line-height: 1.2; }
   .dg-app.dg-tabletop .dg-owned-tile .dg-part-stats { margin-top: .2rem; }
 }
-/* One civilization-board row per track: discounts beside the installed tiles. */
-.dg-owned-tracks > section { display:grid; grid-template-columns:minmax(260px,340px) minmax(0,1fr); gap:8px 14px; align-items:start; }
-.dg-owned-tracks > section > h3 { grid-column:1 / -1; }
-.dg-owned-tracks > section > .dg-research-discounts { margin:0; }
-.dg-owned-tiles { align-items:flex-start; }
+/* Discount and technology spaces share one card row. */
+.dg-owned-tracks > section { display:block; }
+.dg-owned-tiles { display:flex; flex-wrap:nowrap; overflow-x:auto; scroll-snap-type:x proximity; align-items:stretch; gap:8px; padding-bottom:5px; }
+.dg-owned-tiles > * { flex:0 0 190px; scroll-snap-align:start; }
+.dg-owned-tiles > .dg-research-discounts { margin:0; min-width:0; }
+.dg-owned-tiles > .dg-owned-tile { width:190px; flex:0 0 190px; min-height:126px; }
+.dg-owned-slot { display:flex; flex-direction:column; justify-content:center; align-items:center; gap:7px; min-height:126px; border:1px dashed #67727e; border-radius:3px; background:#10192275; color:#aeb9c4; font-size:12px; text-align:center; }
+.dg-owned-slot small { color:#dbcca9; font-size:10px; }
 @media(max-width:700px) {
- .dg-owned-tracks > section { grid-template-columns:minmax(0,1fr); }
- .dg-app .dg-owned-tile { flex:1 1 140px; }
+ .dg-owned-tiles > *, .dg-owned-tiles > .dg-owned-tile { width:205px; flex:0 0 205px; scroll-snap-align:start; }
 }

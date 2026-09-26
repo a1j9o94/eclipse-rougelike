@@ -1,4 +1,4 @@
-.dg-research-discounts { padding:8px; margin:0 0 9px; border:1px solid #716286; border-radius:5px; background:#1c1d2c; }
+.dg-research-discounts { display:flex; flex-direction:column; justify-content:space-between; padding:9px; margin:0 0 9px; border:1px solid #8e76a6; border-radius:5px; background:linear-gradient(140deg,#352941,#1c1d2c); }
 .dg-app .dg-research-discounts p { margin:0 0 6px; font-size:11px; color:#d4c1ed; line-height:1.35; }
 .dg-research-discounts ol { list-style:none; padding:0; margin:0; display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:3px; }
 .dg-research-discounts li { padding:5px 1px 3px; min-width:0; display:flex; flex-direction:column; align-items:center; gap:2px; border:1px solid #60556c; border-radius:4px; background:#101823; color:#ded5e9; }

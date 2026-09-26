@@ -490,3 +490,8 @@ Release verification: `d1470fc` reached `main`; Vercel deployment `dpl_8XS1eDsc9
 ### September 26 — Exiles Orbital build clarity
 The Exiles Build picker removes its impossible Starbase card and explains that an Orbital gains its current blueprint modules as a defending ship after its population space is colonized. Player-facing shipyard, fleet, movement and combat menus use Orbital for Exiles while other factions retain Starbase. Failing-first tests cover Build, shipyard and empire fleet labels; validation and release evidence follow.
 Validation: 50 focused tests, lint and build passed. Local browser Build showed the Orbital blueprint modules and activation explanation, omitted the Starbase card, and had no page errors or horizontal overflow. Human playtest confirmation remains open.
+Release verification: `2c00c1d` reached `main`; Vercel deployment `dpl_2hWM6L8tvmtUT1owt1EpTL4n2cpJ` became Ready with the public alias. Live Exiles Build showed the blueprint modules and activation explanation, no Starbase choice, and no page errors.
+
+### September 26 — Research discount card rows
+The discount progression leads each Military, Grid and Nano technology row as a card. Seven stable slots show researched cards or empty spaces, and the row scrolls within its panel on desktop and mobile. Prices and inspection behavior stay unchanged. Failing-first slot-row tests pass; final gates and release evidence follow.
+Validation: 20 focused tests, lint, and build passed. Local desktop/mobile Research views showed internal row scrolling, no page errors, and no page overflow. Human review of visual density remains open.

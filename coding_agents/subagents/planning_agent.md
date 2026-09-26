@@ -765,3 +765,13 @@ Test list (failed first): Exiles shipyard labels, empire fleet labels, and Build
 Decision Log: Exiles Orbitals use the Starbase blueprint slot internally, but building the structure creates only a population space. A defender ship appears when that space is colonized. Keep those rules and remove the impossible Starbase Build card for Exiles.
 Follow-ups: human check that the two-stage behavior is clear in play; verify production after release.
 Result & Next Steps: 50 focused Exiles, Build, shipyard, empire, movement and combat tests passed after three UI tests failed first. Lint and build passed. Local browser Build showed Orbital with its Ion Turret, Electron Computer and Hull blueprint, explained colonization, omitted the Starbase card, and had no page errors or overflow. Release verification follows.
+Release: `2c00c1d` reached `main`; Vercel deployment `dpl_2hWM6L8tvmtUT1owt1EpTL4n2cpJ` became Ready with the public alias. Live Exiles Build showed the modules and activation explanation, no Starbase build choice, and no page errors.
+
+## 2026-09-26 — Research discounts as a card row
+Outcome: the discount progression sits as a card beside researched technology cards and remaining spaces, echoing the physical civilization board.
+Acceptance: each track has one leading discount card and seven stable technology slots; researched tiles fill slots in order, empty slots remain visible, and the discount values and tech inspection controls work. Desktop and mobile rows scroll internally without page overflow.
+Risks & rollback: many empty slots could push the market below the fold or create page-level horizontal scrolling. Keep each track to a single scrollable row; revert the layout if visual review shows either issue.
+Test list (failed first): discount and technology controls share a named slot row with the expected number of vacancies. Run discount, empire and Minor Species suites, lint, build, and desktop/mobile browser checks.
+Decision Log: preserve existing discount calculations and labels. Move their component into the slot row, and render visual placeholders for the seven track positions; do not change research prices or save state.
+Follow-ups: human review of visual density and sideways scrolling; verify production after release.
+Result & Next Steps: the new slot-row test failed first, then 20 focused research, empire and Minor Species tests passed. Lint and build passed. Local Playwright at 1366px and 390px showed single-height scrollable rows, no page errors, and no page overflow. Release verification follows.
