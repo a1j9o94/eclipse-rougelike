@@ -114,9 +114,11 @@ it('shows research discounts in the empty command-center technology slots',()=>{
  render(<EmpireOverview view={view} seatId="a" onSector={vi.fn()} onNavigate={vi.fn()} onBlueprints={vi.fn()}/>);
  for(const [name,current] of [['Military',0],['Grid',1],['Nano',2]] as const){
   const track=screen.getByRole('group',{name:`${name} technology slots`});
-  expect(within(track).getByLabelText(`Empty technology slot ${current+1}: ${current?`−${current}`:'0'} science discount`)).toBeVisible();
+  expect(within(track).getByLabelText(`Empty technology slot ${current+1}: ${current?`−${current}`:'0'} science discount, 0 VP track total`)).toBeVisible();
+  expect(within(track).getAllByLabelText(/Empty technology slot/).at(-1)).toHaveTextContent('5 VP');
   expect(within(track).queryByText(/Slot \d+ \/ 7|Current discount:/)).toBeNull();
  }
+ expect(screen.getByRole('button',{name:'Inspect Improved Hull'})).toHaveTextContent('0 VP');
  expect(screen.getAllByText('Discount 0')).toHaveLength(1);
  fireEvent.click(screen.getByRole('button',{name:'Inspect Improved Hull'}));
  expect(screen.getByRole('status')).toHaveTextContent('Improved Hull');

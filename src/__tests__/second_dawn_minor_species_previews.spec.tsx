@@ -22,8 +22,8 @@ it('includes Research partners in discounts on each empty technology slot',()=>{
  render(<ResearchedTechnologies seat={view.seats[0]}/>);
  const track=screen.getByRole('group',{name:'Nano technology slots'});
  expect(within(screen.getByRole('group',{name:'Nano · 1 researched'})).getByText('Discount 2')).toBeVisible();
- expect(within(track).getByLabelText('Empty technology slot 2: −2 science discount')).toBeVisible();
- expect(within(track).getByLabelText('Empty technology slot 3: −3 science discount')).toBeVisible();
+ expect(within(track).getByLabelText('Empty technology slot 2: −2 science discount, 0 VP track total')).toBeVisible();
+ expect(within(track).getByLabelText('Empty technology slot 3: −3 science discount, 0 VP track total')).toBeVisible();
 });
 it('scores public Minor Species bonuses using reputation counts, never tile values',()=>{
  const view=fixture();view.seats[1].minorSpecies=[{id:'reputation'},{id:'prestige'}];

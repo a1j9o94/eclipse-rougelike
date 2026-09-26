@@ -3,7 +3,7 @@ import { RESEARCH_TRACK_CAPACITY, TECHNOLOGIES, type TechnologyId, type Technolo
 import type { PlayerView, Seat } from '../../shared/eclipse/types';
 import TechnologyStats from './TechnologyStats';
 import AdvancedPopulationPreview from './AdvancedPopulationPreview';
-import {ResearchDiscountSlot} from './ResearchDiscountTrack';
+import {ResearchDiscountSlot,ResearchSlotMarkers} from './ResearchDiscountTrack';
 import {researchSlotDiscount} from './researchSlotDiscount';
 import { describeTechnology } from './itemDescriptions';
 import './researchedTechnologies.css';
@@ -28,9 +28,9 @@ export default function ResearchedTechnologies({seat,view,onInspect,selectedId}:
         const researched=seat.technologies[track].length;
         return <section key={track} role="group" aria-label={`${name} · ${seat.technologies[track].length} researched`}>
           <h3><span className="dg-research-track-heading">{name}<span className="dg-research-discount-label">{researched<RESEARCH_TRACK_CAPACITY?`Discount ${researchSlotDiscount(researched,seat.minorSpecies)}`:'Track full'}</span></span><span>{researched} / 7</span></h3>
-          <div className="dg-owned-tiles" role="group" aria-label={`${name} technology slots`}>{seat.technologies[track].map(id=>{
+          <div className="dg-owned-tiles" role="group" aria-label={`${name} technology slots`}>{seat.technologies[track].map((id,index)=>{
             const technology=TECHNOLOGIES.find(candidate=>candidate.id===id);
-            return technology ? <button className="dg-owned-tile" key={id} aria-label={`Inspect researched ${technology.name}`} aria-pressed={selected===id} onClick={()=>{setSelected(technology.id);onInspect?.(technology.id);}}><strong>{technology.name}</strong><TechnologyStats technology={technology}/>{view&&view.viewerSeatId===seat.id&&<AdvancedPopulationPreview view={view} technology={technology}/>}</button> : <p key={id}>Catalog entry unavailable: {id}</p>;
+            return technology ? <button className="dg-owned-tile" key={id} aria-label={`Inspect researched ${technology.name}`} aria-pressed={selected===id} onClick={()=>{setSelected(technology.id);onInspect?.(technology.id);}}><strong>{technology.name}</strong><TechnologyStats technology={technology}/>{view&&view.viewerSeatId===seat.id&&<AdvancedPopulationPreview view={view} technology={technology}/>}<ResearchSlotMarkers index={index} minorSpecies={seat.minorSpecies}/></button> : <p key={id}>Catalog entry unavailable: {id}</p>;
           })}{Array.from({length:Math.max(0,RESEARCH_TRACK_CAPACITY-researched)},(_,index)=><ResearchDiscountSlot className="dg-owned-slot" key={`empty-${index}`} index={researched+index} minorSpecies={seat.minorSpecies}/>)}</div>
         </section>;
       })}</div>

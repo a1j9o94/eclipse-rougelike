@@ -1,5 +1,11 @@
 .dg-discount-slot { border-color:#8e76a6; background:linear-gradient(140deg,#352941,#1c1d2c); }
-.dg-discount-slot strong { color:#ecd7ff; font-size:1.65rem; font-variant-numeric:tabular-nums; line-height:1; }
+.dg-research-slot-markers { display:flex; justify-content:space-between; align-items:end; gap:8px; width:100%; margin-top:auto; padding-top:7px; border-top:1px solid #a6a1b13d; font-variant-numeric:tabular-nums; }
+.dg-research-slot-markers > span { display:grid; gap:1px; text-align:left; }
+.dg-research-slot-markers > span:last-child { text-align:right; }
+.dg-research-slot-markers strong { color:#ecd7ff; font-size:15px; line-height:1.1; white-space:nowrap; }
+.dg-research-slot-markers small { color:#b9b4c4; font-size:9px; line-height:1.1; text-transform:uppercase; letter-spacing:.03em; }
+.dg-research-slot-vp strong { color:#ecd39b; }
+.dg-discount-slot .dg-research-slot-markers { margin-top:0; border-top:0; }
 .dg-research-discount-label { color:#d4c1ed; font-size:.75rem; font-weight:600; }
 .dg-research-track-heading { display:inline-flex; align-items:baseline; gap:.55rem; }
 .dg-research-track-heading .dg-research-discount-label::before { content:'· '; }

@@ -1,7 +1,8 @@
 .eo-tech-track > .eo-tech-tiles { display:flex; flex-wrap:nowrap; overflow-x:auto; scroll-snap-type:x proximity; gap:8px; align-items:stretch; padding-bottom:5px; }
 .eo-tech-tiles > * { flex:0 0 185px; scroll-snap-align:start; }
-.eo-tech-tiles > button { width:100%; min-height:112px; }
-.eo-tech-slot { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px; min-height:112px; border:1px dashed #647381; border-radius:5px; background:#0c19237a; color:#afbdc8; font-size:11px; text-align:center; }
+.eo-tech-tiles > button { width:100%; min-height:140px; }
+.eo-tech-tiles > button .dg-research-slot-markers { margin-top:auto; }
+.eo-tech-slot { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px; min-height:140px; padding:10px; border:1px dashed #647381; border-radius:5px; background:#0c19237a; color:#afbdc8; font-size:11px; text-align:center; }
 .eo-tech-track h3 .dg-research-discount-label { color:#d4c1ed; font-size:11px; font-weight:600; }
 .eo-tech-track h3 .dg-research-track-heading, .eo-tech-track h3 .dg-research-track-heading .dg-research-discount-label { margin-left:0; }
 @media(max-width:700px) {
