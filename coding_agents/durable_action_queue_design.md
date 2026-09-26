@@ -35,4 +35,4 @@ The shared planner, private Convex queue worker, and in-game planner are impleme
 
 ## Release
 
-The established `dev:ideal-nightingale-55` Convex deployment accepted the new queue indexes and functions through `npx convex dev --once`; the CLI reported functions ready. The frontend release and hosted verification follow.
+The established `dev:ideal-nightingale-55` Convex deployment accepted the new queue indexes and functions through `npx convex dev --once`; the CLI reported functions ready. Commit `7fa5d9b` reached `main`, and Vercel production deployment `dpl_FufWq6L47TtFSpiJns2DBMcDoAdT` became Ready. In a new guest game on the public alias, a queued Pass step saved and executed to Done. The 390px queue dialog had no horizontal overflow or browser errors. Human newcomer and expert playtests remain follow-ups.
