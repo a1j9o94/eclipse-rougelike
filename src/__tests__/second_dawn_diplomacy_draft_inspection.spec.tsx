@@ -19,6 +19,7 @@ it('inspects sectors on mobile during an exchange without exposing or altering a
  writeActionDrafts(localStorage,snapshot);
  const submit=vi.fn();
  const {container}=render(<SecondDawnBoard matchId={partition.matchId} view={view} candidates={legalCommands(view)} connected busy={false} status="" onSubmit={submit} onMenu={vi.fn()}/>);
+ fireEvent.click(screen.getByRole('radio',{name:'Accept exchange'}));
  fireEvent.click(screen.getByRole('radio',{name:'Science'}));
  fireEvent.click(screen.getByRole('button',{name:'View galaxy'}));
  const map=screen.getByRole('group',{name:'Galaxy map'});

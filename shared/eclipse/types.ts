@@ -573,6 +573,8 @@ export interface PlayerView extends PublicGameView {
   viewerSeatId: SeatId;
   private: PrivateSeat;
   pendingDecision: PendingDecision | null;
+  /** This seat's rejected offers in the current round, used by AI diplomacy. */
+  diplomacyDeclinedSeatIds?: SeatId[];
 }
 
 /** A public board observer has no owned seat or private decision. */

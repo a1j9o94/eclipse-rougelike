@@ -311,7 +311,9 @@ export function chooseLegacyAiCommand(
   view: PlayerView,
   simulationSeed: number,
 ): AiChoice | null {
-  const candidates = legalCommands(view);
+  const candidates = legalCommands(view).filter(candidate =>
+    candidate.command.type !== "offer-diplomacy" ||
+    !view.diplomacyDeclinedSeatIds?.includes(candidate.command.to));
   if (!candidates.length) return null;
   let random = randomSeed(simulationSeed >>> 0);
   let best: AiChoice | null = null;

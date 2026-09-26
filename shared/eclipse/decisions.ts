@@ -462,7 +462,7 @@ export function resolveGeneralChoice(
       offerDiplomacy(state, seat, c.offerTo, c.resource, true);
     }
   } else if (d.kind === "diplomacy" && c.kind === "diplomacy") {
-    if (!c.accept && state.phase === 'combat') {
+    if (!c.accept) {
       const declined = continuation(state).diplomacyDeclined ??= [];
       if (!declined.some(pair => pair.proposer === d.proposer && pair.offeree === seat.id)) declined.push({proposer:d.proposer,offeree:seat.id});
     }

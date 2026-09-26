@@ -3,6 +3,10 @@ import { createGame } from '../../shared/eclipse/setup';
 import { advanceRound } from '../../shared/eclipse/rounds';
 import { processGameCommand } from '../../shared/eclipse/engine';
 import { eligibleDiplomacyPartners } from '../../shared/eclipse/decisions';
+import { legalCommands } from '../../shared/eclipse/legal';
+import { generateAiCandidates } from '../../shared/eclipse/aiCandidates';
+import { getPlayerView, getSpectatorView } from '../../shared/eclipse/protocol';
+import { sampleAiWorld } from '../../shared/eclipse/aiWorld';
 import type { GameState } from '../../shared/eclipse/types';
 function game(): GameState {
   const state = createGame({seed: 27, warpPortals: true, seats: [
@@ -85,6 +89,36 @@ describe('end-of-combat diplomacy', () => {
     expect(offered.ok).toBe(true); if (!offered.ok) return;
     expect(offered.state.pendingDecision?.kind).toBe('diplomacy');
     expect(offered.state.engine!.action).toEqual(state.engine!.action);
+  });
+
+  it('lets a human decline an AI action-turn offer without being asked again this round', () => {
+    const state = game();
+    state.seats[0].controller = 'ai';
+    state.phase = 'action'; state.activeSeatId = 'a';
+    state.seats.forEach(seat => { seat.passed = false; });
+    state.engine!.action = {owner:'a',action:'explore',remaining:1};
+    const offered = processGameCommand(state, 'a', {type:'offer-diplomacy',to:'b',resource:'money'});
+    expect(offered.ok).toBe(true); if (!offered.ok) return;
+    const response = offered.state.pendingDecision!;
+    const declined = processGameCommand(offered.state, 'b', {type:'resolve',decisionId:response.id,choice:{kind:'diplomacy',accept:false,resource:'science'}});
+    expect(declined.ok).toBe(true); if (!declined.ok) return;
+    expect(declined.state.engine!.diplomacyDeclined).toContainEqual({proposer:'a',offeree:'b'});
+    expect(declined.state.engine!.action).toEqual(state.engine!.action);
+    const view = getPlayerView(declined.state, 'a')!;
+    expect(view.diplomacyDeclinedSeatIds).toEqual(['b']);
+    expect(getPlayerView(declined.state, 'b')!.diplomacyDeclinedSeatIds).toEqual([]);
+    expect(getSpectatorView(declined.state)).not.toHaveProperty('diplomacyDeclinedSeatIds');
+    expect(legalCommands(view).some(candidate => candidate.command.type === 'offer-diplomacy' && candidate.command.to === 'b')).toBe(true);
+    expect(generateAiCandidates(view).some(candidate => candidate.command.type === 'offer-diplomacy' && candidate.command.to === 'b')).toBe(false);
+    const hardAiWorld = sampleAiWorld({...view, actionProgress: null}, 42);
+    const hardAiView = getPlayerView(hardAiWorld, 'a')!;
+    expect(generateAiCandidates(hardAiView).some(candidate => candidate.command.type === 'offer-diplomacy' && candidate.command.to === 'b')).toBe(false);
+    declined.state.phase = 'upkeep';
+    declined.state.pendingDecision = null;
+    declined.state.engine!.upkeepDone = declined.state.seats.map(seat => seat.id);
+    advanceRound(declined.state, []);
+    expect(declined.state.round).toBe(2);
+    expect(getPlayerView(declined.state, 'a')!.diplomacyDeclinedSeatIds).toEqual([]);
   });
 
 });

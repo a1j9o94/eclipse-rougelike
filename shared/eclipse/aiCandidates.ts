@@ -28,6 +28,9 @@ export function generateAiCandidates(
   const seat = view.seats.find((s) => s.id === view.viewerSeatId);
   const basic = legalCommands(view, { perFamilyLimit: 64 }).filter(
     (candidate) => {
+      if (candidate.command.type === "offer-diplomacy" &&
+          view.diplomacyDeclinedSeatIds?.includes(candidate.command.to))
+        return false;
       if (
         !seat ||
         view.pendingDecision?.kind !== "population-return" ||

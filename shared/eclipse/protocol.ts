@@ -282,6 +282,9 @@ export function getPlayerView(
     ...publicGameView(state, viewerSeatId),
     viewerSeatId,
     private: visibleOwn,
+    diplomacyDeclinedSeatIds: (state.engine?.diplomacyDeclined ?? [])
+      .filter(pair => pair.proposer === viewerSeatId)
+      .map(pair => pair.offeree),
     pendingDecision: visiblePending?.owner === viewerSeatId ? visiblePending : null,
     waitingFor: visiblePending ? {owner:visiblePending.owner, kind:visiblePending.kind} : null,
   });
