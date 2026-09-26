@@ -785,6 +785,7 @@ Test list (failed first): battle-linked result nesting and ordering, explicit re
 Decision Log: standard reputation is settled automatically by the engine; the private result is feedback, not another selection. Treat battle-linked feedback as the final combat result, while nonbattle feedback remains a brief notice.
 Follow-ups: human playtest the handoff from the final volley into reputation; production verification after release.
 Result & Next Steps: 29 relevant combat/reputation tests passed. Local Chromium at 1366px and 390px showed combat impacts followed by the reputation result inside one dismissible dialog, no page errors, and no horizontal overflow. The combined combat/research validation passed 49 focused tests, lint, and build. Release and a human battle handoff playtest remain.
+Release: `af8111e` reached `main`; Vercel production deployment `dpl_5YSFVfTip2gCCbvAXuaCkvXHRtnS` became Ready with the public alias. Live desktop and mobile home checks found no page errors or overflow. The combat handoff was verified in the local deterministic fixture; a live human battle playtest remains.
 
 ## 2026-09-26 — Discounts printed on research slots
 Outcome: each research track shows its current science discount beside its name, while the seven technology spaces themselves carry the printed discount progression.
@@ -794,3 +795,4 @@ Test list (failed first): seven technology spaces, their discount labels, occupi
 Decision Log: physical-board layout puts discount values beneath technology tiles. Empty spaces expose the effective adjustment, including Minor Species bonuses, while a filled space displays its technology and covers that adjustment. The heading repeats the effective current discount.
 Follow-ups: human review of discount comprehension and track scrolling; production verification after release.
 Result & Next Steps: research tests failed first, then 20 focused Research, Command Center, and Minor Species tests passed. Local Chromium at 1366px and 390px showed exactly seven slots, “Nano · Discount 4” beside the heading, no page errors, and no page overflow. The combined combat/research validation passed 49 tests, lint, and build. Release and human comprehension review remain.
+Release: `af8111e` reached `main` in the same production deployment. Local deterministic Research views verified the final slot layout; live desktop and mobile home checks found no page errors or overflow. Human comprehension review remains.
