@@ -1,0 +1,29 @@
+.dg-action-queue-dialog{width:min(760px,94vw);max-height:85vh;overflow:auto}
+.dg-action-queue-dialog>p{line-height:1.45}
+.dg-action-queue-status{color:#e5c78e;font-weight:700}
+.dg-action-queue-alert{padding:12px;border:1px solid #dfad71;background:#493423;color:#fff0dd}
+.dg-action-queue-steps{padding:0;margin:12px 0;list-style:none;display:grid;gap:7px}
+.dg-action-queue-steps li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px;border:1px solid #586978;border-radius:5px;background:#1b2933}
+.dg-action-queue-steps li.is-complete{opacity:.65}
+.dg-action-queue-steps li.is-paused{border-color:#e2b575}
+.dg-action-queue-steps li>div:first-child{display:grid;gap:3px;min-width:0}
+.dg-action-queue-steps small{color:#aebfc8}
+.dg-action-queue-step-buttons{display:flex;gap:5px}
+.dg-action-queue-step-buttons button{min-width:32px}
+.dg-action-queue-editor{display:grid;gap:8px;margin-top:10px;padding:10px;border-top:1px solid #566774}
+.dg-action-queue-editor label{display:grid;gap:4px;font-size:12px;color:#d9dfdc}
+.dg-action-queue-editor select{min-width:190px;max-width:100%;padding:6px;color:#f4f0e8;background:#17242d;border:1px solid #76868b;border-radius:4px}
+.dg-action-queue-add{display:grid;gap:6px;padding:12px 0;border-top:1px solid #52616a}
+.dg-action-queue-add>div{display:flex;gap:8px}
+.dg-action-queue-add select{flex:1;min-width:0;color:#f3eee4;background:#17242d;border:1px solid #76868b;border-radius:4px;padding:8px}
+.dg-action-queue-add small{color:#b8c7ca}
+.dg-action-queue-controls{display:flex;justify-content:flex-end;gap:8px;padding-top:10px}
+.dg-action-queue-entry{display:flex;gap:8px;align-items:center}
+.dg-action-queue-mode{display:grid;gap:3px;justify-items:center;color:#ead3a7;font-size:10px;text-align:center}
+.dg-action-queue-mode input{margin:0}
+.dg-mobile-queue-open{position:fixed;right:12px;top:65px;z-index:13;display:flex;gap:6px;align-items:center;padding:4px;border:1px solid #d5ae70;border-radius:5px;background:#26333b;color:#ffe0a4;font-size:11px}
+.dg-mobile-queue-open button{padding:5px;color:inherit;background:transparent;border:0}
+.dg-mobile-queue-open label{display:flex;gap:3px;align-items:center;padding-right:5px}
+.dg-saved-queue-alert{color:#ffdb9d;font-weight:700}
+.dg-saved-queue-status{color:#c8dfcc}
+@media(max-width:620px){.dg-action-queue-steps li{align-items:flex-start;flex-direction:column}.dg-action-queue-controls{flex-wrap:wrap}.dg-action-queue-add>div{display:grid;grid-template-columns:minmax(0,1fr)}.dg-action-queue-add select,.dg-action-queue-add button{min-width:0;width:100%}}

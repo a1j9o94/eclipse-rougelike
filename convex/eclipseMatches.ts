@@ -20,6 +20,7 @@ import { AI_BUDGETS, AI_VERSION, type AiDifficulty } from '../shared/eclipse/aiC
 import { finishTimeoutAiCommand, validateTimeoutAi, retryFailedRoomTimeout } from './eclipseRooms';
 import { AI_DECISION_DELAY_MS } from '../shared/eclipse/pacing';
 import { factionValidator, factionProfileValidator, pieceColorValidator, gameCommandValidator, rulesModeValidator, gameRuleOptionsValidator } from './eclipseValidators';
+import { pauseQueueForManualCommand, queueSummaryForSeat, scheduleQueue } from './eclipseActionQueue';
 
 type ReadContext = Pick<QueryCtx, 'db'>;
 async function ownedSeat(ctx: ReadContext, credential: string, matchId: Id<'eclipseMatchesV1'>): Promise<Doc<'eclipseOwnershipV1'> | null> {
@@ -106,12 +107,14 @@ export interface MatchSummary {
   rulesMode?: 'standard' | 'less-random-v1';
   ruleOptions?: GameRuleOptions;
   participation?: MatchParticipation;
+  queueStatus?: { status: 'draft' | 'running' | 'paused' | 'finished'; pendingCount: number; pauseReason?: string };
 }
 export type MatchSubmission =
   | { ok: true; receipt: CommandReceipt; duplicate: boolean }
   | { ok: false; error: ValidationError };
 
 export interface MatchPlayerView extends PlayerView {
+  queueStatus?: { status: 'draft' | 'running' | 'paused' | 'finished'; pendingCount: number; pauseReason?: string };
   showCombatOdds?:boolean;
   participation?: MatchParticipation;
   matchLifecycle?: 'active' | 'abandoned';
@@ -167,7 +170,8 @@ export const listMyMatches = query({
       const match = await ctx.db.get(ownership.matchId);
       if (!match) continue;
       const state = readState(match);
-      results.push({ participation: participation(match, ownership), matchId: match._id, seatId: ownership.seatId, round: match.round, phase: match.phase, revision: match.revision, playerCount: state.seats.length, lastSeenRevision: ownership.lastSeenRevision ?? null, updatedAt: match.updatedAt, ...(match.roomToken ? { roomToken: match.roomToken } : {}), ...(state.rulesMode?{rulesMode:state.rulesMode}:{}), ...(state.ruleOptions?{ruleOptions:state.ruleOptions}:{}) });
+      const queueStatus = await queueSummaryForSeat(ctx, match._id, ownership.seatId);
+      results.push({ participation: participation(match, ownership), matchId: match._id, seatId: ownership.seatId, round: match.round, phase: match.phase, revision: match.revision, playerCount: state.seats.length, lastSeenRevision: ownership.lastSeenRevision ?? null, updatedAt: match.updatedAt, ...(match.roomToken ? { roomToken: match.roomToken } : {}), ...(state.rulesMode?{rulesMode:state.rulesMode}:{}), ...(state.ruleOptions?{ruleOptions:state.ruleOptions}:{}), ...(queueStatus ? { queueStatus } : {}) });
     }
     return results.sort((a, b) => b.updatedAt - a.updatedAt);
   },
@@ -191,6 +195,7 @@ export const getMatchView = query({
     const job = await ctx.db.query('eclipseAiJobsV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique();
     const room = match.roomToken ? await ctx.db.query('eclipseRoomsV1').withIndex('by_token', q => q.eq('roomToken', match.roomToken!)).unique() : null;
     const timer = room && room.humanSeatCount > 1 ? await ctx.db.query('eclipseRoomTimersV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique() : null;
+    const queueStatus = await queueSummaryForSeat(ctx, matchId, ownership.seatId);
     return view ? {
       ...view,
       showCombatOdds:match.showCombatOdds??false,
@@ -202,6 +207,7 @@ export const getMatchView = query({
       playerNames,
       aiDifficulty: match.aiDifficulty ?? 'normal',
       aiStatus: job ? { status: job.status, error: job.error, attempts: job.attempts } : null,
+      ...(queueStatus ? { queueStatus } : {}),
       multiplayer: room ? { roomToken: room.roomToken, viewerIsHost: room.hostGuestId === ownership.guestId, timer: timer ? { deadlineAt: timer.deadlineAt, targetSeatId: timer.upkeepSeatIds?.includes(ownership.seatId)?ownership.seatId:timer.targetSeatId, decisionId: timer.upkeepSeatIds?.includes(ownership.seatId)?view.pendingDecision?.id??null:timer.decisionId, status: timer.status, error: timer.error, ...(timer.upkeepRound!==undefined?{upkeepRound:timer.upkeepRound,upkeepSeatIds:timer.upkeepSeatIds??[]}: {}) } : null } : null,
     } : null;
   },
@@ -288,6 +294,7 @@ export const resignMatch = mutation({
       await reconcileRoomTimerAfterCommand(ctx, match, state);
     }
     await scheduleAi(ctx, match._id, state);
+    await scheduleQueue(ctx, match._id, state);
     return { ok: true, revision: state.revision, outcome, duplicate: false };
   },
 });
@@ -321,9 +328,11 @@ export const submitCommand = mutation({
     if (!result.duplicate) {
       const entry = result.aggregate.journal[result.aggregate.journal.length - 1];
       await saveAccepted(ctx, matchId, result.aggregate.state, entry, state.round);
+      if (request.command.type !== 'set-auto-pass') await pauseQueueForManualCommand(ctx, matchId, ownership.seatId);
       await ctx.db.patch(ownership._id, { lastSeenRevision: Math.max(ownership.lastSeenRevision ?? 0, result.receipt.revision) });
       await reconcileRoomTimerAfterCommand(ctx, match, result.aggregate.state);
       await scheduleAi(ctx, matchId, result.aggregate.state);
+      await scheduleQueue(ctx, matchId, result.aggregate.state);
     }
     return { ok: true, receipt: result.receipt, duplicate: result.duplicate };
   },
@@ -455,10 +464,12 @@ export const commitAiWork = internalMutation({
     });
     if (job.timeoutToken) {
       await finishTimeoutAiCommand(ctx, match, job.timeoutToken, actor, result.aggregate.state, result.aggregate.journal[0], state.round);
+      await scheduleQueue(ctx, matchId, result.aggregate.state);
     } else {
       await saveAccepted(ctx, matchId, result.aggregate.state, result.aggregate.journal[0], state.round);
       await reconcileRoomTimerAfterCommand(ctx, match, result.aggregate.state);
       await scheduleAi(ctx, matchId, result.aggregate.state);
+      await scheduleQueue(ctx, matchId, result.aggregate.state);
     }
     return null;
   },

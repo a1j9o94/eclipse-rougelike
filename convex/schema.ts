@@ -101,6 +101,20 @@ export default defineSchema({
     resignationOutcome: v.optional(v.union(v.literal('resigned'), v.literal('abandoned'))),
   }).index('by_guest', ['guestId'])
     .index('by_match_guest', ['matchId', 'guestId']),
+  /** Private, durable per-seat automation; commands and future bindings never enter public match views. */
+  eclipseActionQueuesV1: defineTable({
+    matchId: v.id('eclipseMatchesV1'),
+    seatId: v.string(),
+    status: v.union(v.literal('draft'), v.literal('running'), v.literal('paused'), v.literal('finished')),
+    stepsJson: v.string(),
+    currentIndex: v.number(),
+    bindingsJson: v.string(),
+    pauseReason: v.optional(v.string()),
+    reviewedUpkeepRound: v.optional(v.number()),
+    token: v.string(),
+    updatedAt: v.number(),
+  }).index('by_match_seat', ['matchId', 'seatId'])
+    .index('by_match', ['matchId']),
   // Control/lifecycle commands are separate from rule commands, but share the
   // authoritative revision sequence for replay and administration.
   eclipseMatchLifecycleV1: defineTable({
