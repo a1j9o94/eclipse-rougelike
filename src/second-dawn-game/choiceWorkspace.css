@@ -32,6 +32,7 @@
 .dg-mobile-board .dg-choice-body { padding: 12px; }
 .dg-mobile-board .dg-choice-placement .dg-choice-body { padding: 0; }
 .dg-choice-header { flex: 0 0 auto; }
+.dg-combat-result-workspace .dg-reputation-summary { margin-top:14px; }
 .dg-choice-body > .dg-decision-location { padding: 0 0 10px; margin: 0; background: transparent; border: 0; }
 .dg-choice-placement { height: calc(100% - 24px); }
 .dg-choice-placement .dg-choice-body { display: flex; flex-direction: column; flex: 1; overflow: hidden; }

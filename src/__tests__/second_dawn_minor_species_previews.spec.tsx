@@ -17,13 +17,13 @@ it('uses acquired engineers in both the build-order total and command-center shi
  expect(analyzeBuildOrder(view,draft).cost).toBe(before-1);
  expect(empireBuildOptions(view).find(option=>option.shipType==='cruiser')?.cost).toBe(before-1);
 });
-it('includes Research partners in visible current and future discount progression',()=>{
+it('includes Research partners in discounts on each empty technology slot',()=>{
  const view=fixture();view.seats[0].minorSpecies=[{id:'researchers'}];
  render(<ResearchedTechnologies seat={view.seats[0]}/>);
- const track=screen.getByRole('group',{name:'Nano research discounts'});
- expect(within(track).getByText('Current discount: 2 science')).toBeVisible();
- expect(within(track).getByText('After next research: 3 science discount')).toBeVisible();
- expect(within(track).getByText('Includes 1 Minor Species discount')).toBeVisible();
+ const track=screen.getByRole('group',{name:'Nano technology slots'});
+ expect(within(screen.getByRole('group',{name:'Nano · 1 researched'})).getByText('Discount 2')).toBeVisible();
+ expect(within(track).getByLabelText('Empty technology slot 2: −2 science discount')).toBeVisible();
+ expect(within(track).getByLabelText('Empty technology slot 3: −3 science discount')).toBeVisible();
 });
 it('scores public Minor Species bonuses using reputation counts, never tile values',()=>{
  const view=fixture();view.seats[1].minorSpecies=[{id:'reputation'},{id:'prestige'}];

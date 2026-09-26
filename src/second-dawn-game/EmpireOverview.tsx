@@ -4,13 +4,14 @@ import {seatColor} from './factionColors';
 import {useEffect,useRef,useState,type CSSProperties} from 'react';
 import {getFaction} from '../../shared/eclipse/catalog';
 import type {BlueprintShipType} from '../../shared/eclipse/blueprints';
-import {TECHNOLOGIES,type TechnologyId} from '../../shared/eclipse/technologies';
+import {RESEARCH_TRACK_CAPACITY,TECHNOLOGIES,type TechnologyId} from '../../shared/eclipse/technologies';
 import type {SpectatorView,PlayerView,Resource} from '../../shared/eclipse/types';
 import FactionSymbol from './FactionSymbol';
 import ReputationSummary from './ReputationSummary';
 import ReputationTile from './ReputationTile';
 import EmpireEconomyTracks from './EconomyTracks';
-import ResearchDiscountTrack from './ResearchDiscountTrack';
+import {ResearchDiscountSlot} from './ResearchDiscountTrack';
+import {researchSlotDiscount} from './researchSlotDiscount';
 import {AcquiredMinorSpecies} from './MinorSpeciesMarket';
 import {factionPresentation} from './factionPresentation';
 import {empireOverviewModel} from './empireOverviewModel';
@@ -75,7 +76,7 @@ export default function EmpireOverview({view,seatId,onSector,onNavigate,onBluepr
   <DiscoveryReference view={view}/>
   <div ref={economyTracksRef} tabIndex={-1} className="eo-economy-anchor"><EmpireEconomyTracks seat={seat}/></div>
   <section className="eo-panel eo-research"><header><div><p className="sd-eyebrow">KNOWLEDGE & CAPABILITIES</p><h2>Researched technologies</h2></div>{model.own&&<button onClick={()=>onNavigate('Research')}>Research technology</button>}</header>
-   {(['military','grid','nano'] as const).map(track=><div key={track} className="eo-tech-track"><h3>{title(track)} <span>{seat.technologies[track].length} / 7</span></h3><div className="eo-tech-tiles" role="group" aria-label={`${title(track)} technology slots`}><ResearchDiscountTrack track={track} count={seat.technologies[track].length} minorSpecies={seat.minorSpecies}/>{seat.technologies[track].map(id=>{const tech=TECHNOLOGIES.find(tech=>tech.id===id);return tech?<button key={id} onClick={()=>setSelectedTech(tech.id)} aria-label={`Inspect ${tech.name}`} aria-pressed={selectedTech===tech.id}><strong>{tech.name}</strong><TechnologyStats technology={tech}/></button>:null;})}{Array.from({length:Math.max(0,7-seat.technologies[track].length)},(_,index)=><span className="eo-tech-slot" key={`empty-${index}`} aria-label={`Empty technology slot ${seat.technologies[track].length+index+1}`}><small>Slot {seat.technologies[track].length+index+1} / 7</small>Empty technology slot</span>)}</div></div>)}
+   {(['military','grid','nano'] as const).map(track=>{const researched=seat.technologies[track].length;return <div key={track} className="eo-tech-track"><h3><span className="dg-research-track-heading">{title(track)}<span className="dg-research-discount-label">{researched<RESEARCH_TRACK_CAPACITY?`Discount ${researchSlotDiscount(researched,seat.minorSpecies)}`:'Track full'}</span></span><span>{researched} / 7</span></h3><div className="eo-tech-tiles" role="group" aria-label={`${title(track)} technology slots`}>{seat.technologies[track].map(id=>{const tech=TECHNOLOGIES.find(tech=>tech.id===id);return tech?<button key={id} onClick={()=>setSelectedTech(tech.id)} aria-label={`Inspect ${tech.name}`} aria-pressed={selectedTech===tech.id}><strong>{tech.name}</strong><TechnologyStats technology={tech}/></button>:null;})}{Array.from({length:Math.max(0,RESEARCH_TRACK_CAPACITY-researched)},(_,index)=><ResearchDiscountSlot className="eo-tech-slot" key={`empty-${index}`} index={researched+index} minorSpecies={seat.minorSpecies}/>)}</div></div>;})}
    <p className="eo-muted">Discounts reduce science costs on that track, never below a technology’s minimum price.</p>
    {technology&&<div className="eo-tech-effect" role="status"><h3>{technology.name}</h3><p>{describeTechnology(technology)}</p></div>}
   </section>

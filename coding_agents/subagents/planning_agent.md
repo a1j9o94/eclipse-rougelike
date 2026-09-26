@@ -775,3 +775,22 @@ Test list (failed first): discount and technology controls share a named slot ro
 Decision Log: preserve existing discount calculations and labels. Move their component into the slot row, and render visual placeholders for the seven track positions; do not change research prices or save state.
 Follow-ups: human review of visual density and sideways scrolling; verify production after release.
 Result & Next Steps: the new slot-row test failed first, then 20 focused research, empire and Minor Species tests passed. Lint and build passed. Local Playwright at 1366px and 390px showed single-height scrollable rows, no page errors, and no page overflow. Release verification follows.
+Release: `daa876c` reached `main`; Vercel deployment `dpl_G6yEhMevkidEDJSJ5xh6jEwgZjyA` became Ready with the public alias. Live post-game research navigation was interrupted by the recovery overlay; local desktop/mobile Research checks confirmed the rendered rows.
+
+## 2026-09-26 — Reputation at the end of combat presentation
+Outcome: a reputation result appears after combat impacts within the combat results dialog, and explicit variant reputation choices follow the active battle overview.
+Acceptance: a battle-linked private summary is absent from the separate header notice, visible after matching combat playback, and dismissible without another result row appearing. Noncombat summaries keep their existing notice and timeout. A public-reputation decision remains fully interactive after the battle overview.
+Risks & rollback: summaries can arrive without a retained volley, and combat may hand off to another decision. Show the result even without playback and preserve pending choices while browsing; revert UI-only placement if it hides a choice.
+Test list (failed first): battle-linked result nesting and ordering, explicit reputation choice ordering. Run combat flow, automatic/variant reputation suites, lint, build, and browser smoke.
+Decision Log: standard reputation is settled automatically by the engine; the private result is feedback, not another selection. Treat battle-linked feedback as the final combat result, while nonbattle feedback remains a brief notice.
+Follow-ups: human playtest the handoff from the final volley into reputation; production verification after release.
+Result & Next Steps: 29 relevant combat/reputation tests passed. Local Chromium at 1366px and 390px showed combat impacts followed by the reputation result inside one dismissible dialog, no page errors, and no horizontal overflow. The combined combat/research validation passed 49 focused tests, lint, and build. Release and a human battle handoff playtest remain.
+
+## 2026-09-26 — Discounts printed on research slots
+Outcome: each research track shows its current science discount beside its name, while the seven technology spaces themselves carry the printed discount progression.
+Acceptance: researched cards occupy their numbered positions; empty positions show only their applicable adjustment (0, −1, −2, −3, −4, −6, −8) and never say “Slot x/7”; there is no separate discount card. Apply this in Research and Command Center, including Minor Species bonuses in the current-discount summary. Research costs and inspection stay unchanged.
+Risks & rollback: Minor Species bonuses could be overlooked if only the base values appeared in empty spaces. Show the effective values in the spaces and current heading; revert this UI-only layout if the values become unclear in play.
+Test list (failed first): seven technology spaces, their discount labels, occupied positions, heading discount including Minor Species, and absence of separate card. Run research discount, empire and Minor Species suites, lint, build, and desktop/mobile browser checks.
+Decision Log: physical-board layout puts discount values beneath technology tiles. Empty spaces expose the effective adjustment, including Minor Species bonuses, while a filled space displays its technology and covers that adjustment. The heading repeats the effective current discount.
+Follow-ups: human review of discount comprehension and track scrolling; production verification after release.
+Result & Next Steps: research tests failed first, then 20 focused Research, Command Center, and Minor Species tests passed. Local Chromium at 1366px and 390px showed exactly seven slots, “Nano · Discount 4” beside the heading, no page errors, and no page overflow. The combined combat/research validation passed 49 tests, lint, and build. Release and human comprehension review remain.

@@ -5,6 +5,7 @@
 .dg-app .dg-owned-research .dg-owned-tracks { display: grid; grid-template-columns: minmax(0,1fr); gap: .7rem; padding: 0 .85rem .85rem; }
 .dg-app .dg-owned-tracks h3 { font-size: .8rem; margin: .2rem 0 .45rem; display: flex; justify-content: space-between; color: #d6d2c6; }
 .dg-owned-tracks h3 > span { color: #aeb9c4; font-size: .7rem; font-weight: 400; }
+.dg-owned-tracks h3 > .dg-research-track-heading { color:#d6d2c6; font-size:inherit; font-weight:inherit; }
 .dg-owned-tiles { display:flex; flex-wrap:wrap; gap:.5rem; }
 .dg-owned-tracks > section { min-width:0; padding-bottom:.7rem; border-bottom:1px solid #a7b4bd24; }
 .dg-owned-tracks > section:last-child { border-bottom:0; padding-bottom:0; }
@@ -35,10 +36,9 @@
 .dg-owned-tracks > section { display:block; }
 .dg-owned-tiles { display:flex; flex-wrap:nowrap; overflow-x:auto; scroll-snap-type:x proximity; align-items:stretch; gap:8px; padding-bottom:5px; }
 .dg-owned-tiles > * { flex:0 0 190px; scroll-snap-align:start; }
-.dg-owned-tiles > .dg-research-discounts { margin:0; min-width:0; }
 .dg-owned-tiles > .dg-owned-tile { width:190px; flex:0 0 190px; min-height:126px; }
 .dg-owned-slot { display:flex; flex-direction:column; justify-content:center; align-items:center; gap:7px; min-height:126px; border:1px dashed #67727e; border-radius:3px; background:#10192275; color:#aeb9c4; font-size:12px; text-align:center; }
-.dg-owned-slot small { color:#dbcca9; font-size:10px; }
+.dg-owned-tracks h3 .dg-research-discount-label { color:#d4c1ed; font-size:.75rem; font-weight:600; }
 @media(max-width:700px) {
  .dg-owned-tiles > *, .dg-owned-tiles > .dg-owned-tile { width:205px; flex:0 0 205px; scroll-snap-align:start; }
 }

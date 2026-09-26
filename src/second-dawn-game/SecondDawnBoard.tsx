@@ -175,7 +175,7 @@ function SecondDawnBoardContent({
   useAutomaticReputation(view,connected,busy||!!interactionBlockedReason,submitAuthoritative);
   const reputationSummaryId=view.private.reputationSummary?.id;
   const [dismissedReputationId,setDismissedReputationId]=useState<string|null>(null);
-  useEffect(()=>{if(!reputationSummaryId)return;const timer=setTimeout(()=>setDismissedReputationId(reputationSummaryId),10000);return()=>clearTimeout(timer);},[reputationSummaryId]);
+  useEffect(()=>{if(!reputationSummaryId||view.private.reputationSummary?.battleId)return;const timer=setTimeout(()=>setDismissedReputationId(reputationSummaryId),10000);return()=>clearTimeout(timer);},[reputationSummaryId,view.private.reputationSummary?.battleId]);
   const publicInspection=usePublicInspection();
   const draftGuard=useActionDraftGuard();
   const submittedResearch=useRef<{id:TechnologyId;command:string}|null>(null);
@@ -438,7 +438,11 @@ function SecondDawnBoardContent({
     activate('colonize');
     if(compact)setMobileSheet('expanded');
   };
-  const combatAftermath=playback&&combatNotice.visible&&<div className="dg-combat-aftermath">
+  const reputationSummaryVisible=!!reputationSummaryId&&reputationSummaryId!==dismissedReputationId&&view.private.reputationSummary?.round===view.round;
+  const combatReputationVisible=reputationSummaryVisible&&!!view.private.reputationSummary?.battleId;
+  const dismissCombatReputation=()=>{setDismissedReputationId(reputationSummaryId!);combatNotice.dismiss();};
+  const reputationDecision=view.pendingDecision?.kind==='reputation'||view.pendingDecision?.kind==='less-random-reputation';
+  const combatAftermath=playback&&combatNotice.visible&&!combatReputationVisible&&<div className="dg-combat-aftermath">
             <div className="dg-combat-aftermath-heading"><strong>Last combat exchange</strong><button onClick={combatNotice.dismiss}>Dismiss battle results</button></div>
             <CombatPlayback soundEligible={sound.combatLive(playback.revision)} volleys={playback.volleys} view={view} knownShips={[...knownShips.current.values()]} fast={!motionEnabled}/>
           </div>;
@@ -600,18 +604,21 @@ function SecondDawnBoardContent({
               {empireMapSeat&&<button className="dg-board-control" onClick={()=>{setPlayerId(empireMapSeat);setScreen(compact&&empireMapSeat===own.id?'Empire':'Players');setEmpireMapSeat(null);setMobileSheet('closed');}}>Back to empire</button>}
             </>}
           </AiActivityBar><FactionAbilityControls view={view} candidates={candidates} disabled={blocked} onSubmit={onSubmit} onAction={activate} onFinish={()=>activate("end-action")}/>
-          {reputationSummaryId&&reputationSummaryId!==dismissedReputationId&&view.private.reputationSummary?.round===view.round&&<div className="dg-reputation-notice"><ReputationSummary view={view} onDismiss={()=>setDismissedReputationId(reputationSummaryId)}/></div>}
+          {reputationSummaryVisible&&!combatReputationVisible&&<div className="dg-reputation-notice"><ReputationSummary view={view} onDismiss={()=>setDismissedReputationId(reputationSummaryId!)}/></div>}
           {!compact&&<div className="dg-board-tools">
             {view.pendingDecision&&screen!=='Decision'&&<div className="dg-pending-return" role="status"><span>Your choice is waiting</span><button onClick={returnToChoice}>Return to {choiceLabel(view.pendingDecision)}</button></div>}
 
           </div>}
         </aside>
         <section className="sd-main" ref={workspaceRef}>
+          {combatReputationVisible&&!view.pendingDecision&&<div className="dg-choice-workspace dg-combat-result-workspace" role="dialog" aria-modal="false" aria-label="Combat results" onKeyDown={event=>{if(event.key==='Escape'){event.stopPropagation();dismissCombatReputation();}}}><header className="dg-choice-header"><div><span className="sd-eyebrow">BATTLE COMPLETE</span><strong>Combat results</strong></div><button type="button" autoFocus onClick={dismissCombatReputation}>Close results</button></header><div className="dg-choice-body">{playback?.volleys.some(volley=>volley.battleId===view.private.reputationSummary?.battleId)&&<CombatPlayback soundEligible={sound.combatLive(playback.revision)} volleys={playback.volleys.filter(volley=>volley.battleId===view.private.reputationSummary?.battleId)} view={view} knownShips={[...knownShips.current.values()]} fast={!motionEnabled}/>}<ReputationSummary view={view} onDismiss={dismissCombatReputation}/></div></div>}
           {view.pendingDecision&&!spatialDecision&&<ChoiceWorkspace key={view.pendingDecision.id} decision={view.pendingDecision} open={screen==='Decision'} onMinimize={showDecisionMap}>
             {(selected&&view.pendingDecision.kind!=='exploration'||view.pendingDecision.kind==='discovery')&&<div className="dg-decision-location">{selected&&<><strong>Sector {sector?.tileId??selected}</strong><button onClick={()=>setInspectSector(selected)}>Inspect location</button></>}{view.pendingDecision.kind==='discovery'&&<button type="button" onClick={browseTechnologies}>Browse technologies</button>}</div>}
             {screen==='Decision'&&combatAftermath}
-            {pendingDecisionPanel}
+            {!reputationDecision&&pendingDecisionPanel}
             {view.battle&&<BattleOverview soundEligible={!!playback&&sound.combatLive(playback.revision)} view={view} fastPlayback={!motionEnabled||screen!=='Decision'} recentVolleys={playback?.volleys.some(volley=>volley.targets.some(target=>target.destroyed))?[]:playback?.volleys??[]} knownShips={[...knownShips.current.values()]}/>}
+            {reputationDecision&&pendingDecisionPanel}
+            {combatReputationVisible&&<ReputationSummary view={view} onDismiss={dismissCombatReputation}/>}
           </ChoiceWorkspace>}
           <div className="dg-board-surface" inert={screen==='Decision'&&!spatialDecision} aria-hidden={screen==='Decision'&&!spatialDecision?true:undefined}>
           {screen==='Galaxy'&&combatAftermath}
