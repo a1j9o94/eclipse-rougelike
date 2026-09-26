@@ -59,6 +59,17 @@ it('shows AI public faces and skip stops the throw without hiding damage results
   expect(screen.getByLabelText('Roll 1, 4 damage')).toBeVisible();
 });
 
+it('skips only the current volley and animates the next opponent roll', () => {
+  const next={...volley,dice:[{...volley.dice[0],id:'die-14',face:4}]};
+  const {rerender}=render(<CombatPlayback volleys={[volley]}/>);
+  fireEvent.click(screen.getByRole('button',{name:'Skip volley animation'}));
+  expect(screen.getByTestId('dice-presentation')).toHaveAttribute('data-enabled','false');
+  rerender(<CombatPlayback volleys={[next]}/>);
+  expect(screen.getByTestId('dice-presentation')).toHaveAttribute('data-enabled','true');
+  expect(screen.getByTestId('dice-presentation')).toHaveAttribute('data-skipped','false');
+  expect(screen.getByRole('button',{name:'Skip volley animation'})).toBeEnabled();
+});
+
 it('keeps historical volleys static instead of throwing again when browsing the log', () => {
   render(<CombatVolleyResult volley={volley} />);
   expect(screen.queryByTestId('dice-presentation')).not.toBeInTheDocument();

@@ -94,14 +94,15 @@ export function CombatPlayback({ volleys, view, knownShips = [], fast = false, s
   fast?: boolean;
   soundEligible?: boolean;
 }) {
-  const [skipMotion, setSkipMotion] = useState(false);
+  const [skippedRollId, setSkippedRollId] = useState<string | null>(null);
   const [settledRoll, setSettledRoll] = useState<string | null>(null);
   const [dice3dEnabled] = useDice3dEnabled();
   const destroyedCount = new Set(volleys.flatMap(volley => volley.targets.filter(target => target.destroyed).map(target => target.id))).size;
-  const isFast = fast || skipMotion;
   const opponentVolleys = volleys.filter(volley => !view || volley.attacker !== view.viewerSeatId);
   const opponentRolls = opponentVolleys.flatMap(volley => volley.dice.map(die => ({ id: die.id, face: die.face, color: die.weaponColor ?? "#bac0ce" })));
   const opponentRollId = JSON.stringify(opponentVolleys.map(volley => [volley.battleId, volley.dice.map(die => [die.id, die.face])]));
+  const skipMotion = skippedRollId === opponentRollId;
+  const isFast = fast || skipMotion;
   const awaitingDice = dice3dEnabled && !isFast && opponentRolls.length > 0 && settledRoll !== opponentRollId;
   useCombatVolleySounds({volleys,eligible:soundEligible,awaitingDice,skipped:skipMotion});
   if (!volleys.length) return null;
@@ -112,7 +113,7 @@ export function CombatPlayback({ volleys, view, knownShips = [], fast = false, s
           <span>BATTLE RESULTS</span>
           <strong role="status" aria-atomic="true">{destroyedCount > 0 ? `${destroyedCount} ${destroyedCount === 1 ? "ship" : "ships"} destroyed` : "Volley resolved"}</strong>
         </div>
-        <button type="button" onClick={() => setSkipMotion(true)} disabled={isFast}>{isFast ? "Fast playback on" : "Skip volley animation"}</button>
+        <button type="button" onClick={() => setSkippedRollId(opponentRollId)} disabled={isFast}>{isFast ? "Fast playback on" : "Skip volley animation"}</button>
       </header>
       <DiceRoll3D skipped={skipMotion} rolls={opponentRolls} rollId={opponentRollId} onComplete={() => setSettledRoll(opponentRollId)} enabled={dice3dEnabled && !isFast && opponentRolls.length > 0}>
       {volleys.map((volley, index) => (

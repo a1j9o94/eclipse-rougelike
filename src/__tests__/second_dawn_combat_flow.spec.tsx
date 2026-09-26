@@ -63,3 +63,16 @@ it('keeps the battle on screen while an opponent resolves their firing decision'
  expect(screen.getByText(/Waiting for.*combat decision/)).toBeVisible();
  expect(screen.queryByRole('button',{name:'Roll dice'})).toBeNull();
 });
+it('uses OS reduced motion as the default but honors an explicit in-game animation preference',()=>{
+ const key='eclipse.second-dawn.motion.v1',view=fixture();view.pendingDecision=null;view.battle=null;
+ const saved=localStorage.getItem(key);
+ vi.stubGlobal('matchMedia',vi.fn(()=>({matches:true,addEventListener:vi.fn(),removeEventListener:vi.fn()})));
+ try{
+  localStorage.removeItem(key);
+  render(<SecondDawnBoard view={view} candidates={[]} connected busy={false} status="" onSubmit={vi.fn()} onMenu={vi.fn()}/>);
+  expect(document.querySelector('.dg-app')).toHaveAttribute('data-motion','off');
+  cleanup();localStorage.setItem(key,'on');
+  render(<SecondDawnBoard view={view} candidates={[]} connected busy={false} status="" onSubmit={vi.fn()} onMenu={vi.fn()}/>);
+  expect(document.querySelector('.dg-app')).toHaveAttribute('data-motion','on');
+ }finally{cleanup();if(saved===null)localStorage.removeItem(key);else localStorage.setItem(key,saved);vi.unstubAllGlobals();}
+});

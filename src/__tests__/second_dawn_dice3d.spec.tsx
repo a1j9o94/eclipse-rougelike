@@ -43,9 +43,12 @@ it('skips or disables an active animation with cleanup and a single completion',
  rerender(<DiceRoll3D rollId="skip-test" rolls={rolls} enabled onComplete={complete}/>);
  expect(mocks.create).toHaveBeenCalledOnce();expect(complete).toHaveBeenCalledOnce();
 });
-it('does not animate with reduced motion and isolates repeat IDs by match scope',async()=>{
+it('lets an explicit animation setting override the OS reduced-motion default',async()=>{
  vi.stubGlobal('matchMedia',vi.fn(()=>({matches:true,addEventListener:vi.fn(),removeEventListener:vi.fn()})));
- const {unmount}=render(<DiceRoll3D rollId="reduced-test" rolls={rolls} enabled/>);expect(mocks.create).not.toHaveBeenCalled();unmount();
+ render(<DiceRoll3D rollId="reduced-override" rolls={rolls} enabled/>);
+ await waitFor(()=>expect(mocks.create).toHaveBeenCalledOnce());
+});
+it('isolates repeat IDs by match scope',async()=>{
  vi.stubGlobal('matchMedia',vi.fn(()=>({matches:false,addEventListener:vi.fn(),removeEventListener:vi.fn()})));
  const first=render(<DiceRollScopeContext.Provider value="game-a"><DiceRoll3D rollId="same-roll" rolls={rolls} enabled/></DiceRollScopeContext.Provider>);
  await waitFor(()=>expect(mocks.create).toHaveBeenCalledTimes(1));first.unmount();

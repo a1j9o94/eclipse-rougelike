@@ -11,20 +11,15 @@ import {useDiceRollSound} from './dice3d/useDiceRollSound';
 export interface DiceRoll3DProps {rolls:readonly PresentedDie[];rollId:string;enabled:boolean;skipped?:boolean;onComplete?:()=>void;children?:ReactNode}
 const recentThrows=new Set<string>();
 function remember(key:string):void {recentThrows.add(key);if(recentThrows.size>256)recentThrows.delete(recentThrows.values().next().value!);}
-function useReducedMotion():boolean {
-  const [reduced,setReduced]=useState(()=>typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches);
-  useEffect(()=>{if(typeof matchMedia!=='function')return;const query=matchMedia('(prefers-reduced-motion: reduce)');const update=()=>setReduced(query.matches);update();query.addEventListener?.('change',update);return()=>query.removeEventListener?.('change',update);},[]);
-  return reduced;
-}
 /** Optional visual feedback only. The original result controls remain immediately usable. */
 export default function DiceRoll3D({rolls,rollId,enabled,skipped=false,onComplete,children}:DiceRoll3DProps) {
-  const scope=useDiceRollScope(),key=JSON.stringify([scope,rollId]),reduced=useReducedMotion();
+  const scope=useDiceRollScope(),key=JSON.stringify([scope,rollId]);
   const [activeKey,setActiveKey]=useState<string|null>(null),[fading,setFading]=useState(false);
   const canvas=useRef<HTMLCanvasElement>(null),latestRolls=useRef(rolls),complete=useRef(onComplete),notified=useRef(new Set<string>());
   latestRolls.current=rolls;complete.current=onComplete;
   const valid=rolls.length>0&&rolls.every(die=>Number.isInteger(die.face)&&die.face>=1&&die.face<=6);
   const visible=useContext(DicePresentationVisibilityContext);
-  const allowed=visible&&enabled&&!skipped&&!reduced&&valid;
+  const allowed=visible&&enabled&&!skipped&&valid;
   const {start:startSound,stop:stopSound}=useDiceRollSound(key,valid?rolls.length:0,allowed,visible);
   useEffect(()=>{if(skipped)stopSound();},[skipped,stopSound]);
   const notify=useCallback((completedKey:string)=>{if(notified.current.has(completedKey))return;notified.current.add(completedKey);complete.current?.();},[]);

@@ -35,4 +35,3 @@
 .dg-dice-static-face { display: inline-flex; width: 40px; height: 40px; border-radius: 7px; border: 1px solid #ffffff60; box-shadow: inset 0 -3px 5px #0004,0 2px 4px #0005; }
 .dg-dice-static-face svg { width: 100%; height: 100%; fill: #fff5dc; filter: drop-shadow(0 1px 1px #000b); }
 .dg-dice-screen-reader { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-@media (prefers-reduced-motion: reduce) { .dg-dice-overlay { display: none; transition: none; } }
