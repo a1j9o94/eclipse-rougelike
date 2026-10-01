@@ -19,3 +19,13 @@ it('opens an upkeep review from the notice without submitting payment until conf
   fireEvent.click(within(inspector).getByRole('button', { name: 'Finish upkeep', exact: true }));
   expect(onSubmit).toHaveBeenCalledWith({ type: 'finish-upkeep' });
 });
+
+it('keeps direct turn actions available without action-queue controls', () => {
+  const state = createGame({ seed: 29, seats: [{ id: 'a', faction: 'terran-directorate', controller: 'human' }, { id: 'b', faction: 'hydran', controller: 'ai' }] });
+  const view = getPlayerView(state, 'a')!;
+  const formerQueueProps = { onSaveQueue: vi.fn(), actionQueue: null };
+  render(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="Saved" onSubmit={vi.fn()} onMenu={() => {}} {...formerQueueProps}/>);
+  expect(screen.queryByRole('button', { name: 'Open action queue' })).toBeNull();
+  expect(screen.queryByLabelText('Queue instead of play')).toBeNull();
+  expect(screen.getByRole('button', { name: 'Explore', exact: true })).toBeVisible();
+});

@@ -825,3 +825,11 @@ Decision Log: user chose automatic server execution, all actions, future planned
 Follow-ups: human playtest whether automatic execution and pause explanations match player intent; verify production after release.
 Result & Next Steps: shared planning, Convex worker, and queue UI landed. Local browser verified a queued Research step executed and marked Done. A 390px check found and fixed editor overflow. Focused tests, lint, and build passed; release verification follows.
 Release: `dev:ideal-nightingale-55` Convex functions and queue indexes are ready. `7fa5d9b` reached `main`; Vercel production deployment `dpl_FufWq6L47TtFSpiJns2DBMcDoAdT` became Ready. A public mobile guest game queued and completed Pass with no page errors or horizontal overflow.
+
+## 2026-09-30 — Revert the durable action queue
+Outcome: players return to the direct action interface while the action-queue design remains available for a later redesign.
+Acceptance: no queue controls, alerts, saved-game status, Convex worker, or queue mutations remain active; ordinary actions, timers, AI turns, and undo retain their prior behavior. The prior design and release record are preserved and marked as withdrawn.
+Risks & rollback: existing queue documents may remain in Convex storage, but no client or function should read or execute them. Restore the reverted commit only after a new interaction design is tested.
+Test list (must fail first): a board regression test rejects queue controls during a player turn while direct actions remain available. Run focused board, Convex match/timer/undo, AI and room tests, lint, build, then production smoke checks.
+Decision Log: remove the shipped queue completely from the interface and backend; retain its design record to support a later attempt without leaving any automatic execution path enabled.
+Follow-ups: redesign the queue interface with the player before reintroducing server execution.
