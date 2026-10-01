@@ -1,5 +1,7 @@
 # Durable action queue
 
+Status: withdrawn September 30, 2026. The shipped interface did not make sense in play, so the queue controls and automatic executor were removed. This document is retained as design history for a later, user-tested redesign; it does not describe the current game.
+
 ## Player outcome
 
 A player can plan an exact sequence of actions, review it, and authorize the server to execute each step as soon as its legal window arrives, even after closing the browser. The game displays a persistent reason whenever the plan pauses. The queue never substitutes or silently skips an action.
@@ -36,3 +38,9 @@ The shared planner, private Convex queue worker, and in-game planner are impleme
 ## Release
 
 The established `dev:ideal-nightingale-55` Convex deployment accepted the new queue indexes and functions through `npx convex dev --once`; the CLI reported functions ready. Commit `7fa5d9b` reached `main`, and Vercel production deployment `dpl_FufWq6L47TtFSpiJns2DBMcDoAdT` became Ready. In a new guest game on the public alias, a queued Pass step saved and executed to Done. The 390px queue dialog had no horizontal overflow or browser errors. Human newcomer and expert playtests remain follow-ups.
+
+## Withdrawal decision
+
+The player found the action-queue interface confusing in actual use and asked to revert it. Remove the UI, Convex functions and worker, schema definition, and queue-specific tests while retaining this record. Existing queue documents can remain inert in storage; no game flow should read or execute them. Future work should start with a simpler interaction design and playtest it before restoring automatic execution.
+
+The queue functions and indexes were removed from the established Convex deployment on September 30, 2026. The frontend rollback and hosted checks follow.

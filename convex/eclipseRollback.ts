@@ -5,7 +5,6 @@ import type { Doc, Id } from './_generated/dataModel';
 import { internal } from './_generated/api';
 import { resolveGuest } from './eclipseIdentity';
 import { reconcileRoomTimerAfterCommand, scheduleAi } from './eclipseMatches';
-import { invalidateQueuesAfterAppliedUndo, pauseQueuesForUndo } from './eclipseActionQueue';
 import { projectHistoryEntry } from '../shared/eclipse/history';
 import type { GameState, JournalEntry } from '../shared/eclipse/types';
 import type { RollbackStatus } from '../shared/eclipse/rollback';
@@ -105,7 +104,6 @@ async function finish(ctx: MutationCtx, match: Doc<'eclipseMatchesV1'>, row: Doc
     restored.revision = appliedRevision;
     await ctx.db.patch(match._id, { snapshotJson: JSON.stringify(restored), revision: appliedRevision, round: restored.round, phase: restored.phase, updatedAt: Date.now() });
     await syncLeaderboardResult(ctx,match._id,restored);
-    await invalidateQueuesAfterAppliedUndo(ctx, match._id);
   }
   await ctx.db.patch(row._id, { status: outcome, resolvedAt: Date.now(), appliedRevision });
   await ctx.db.patch(match._id, { rollbackPendingId: undefined });
@@ -142,7 +140,6 @@ export const requestRollback = mutation({
     const requiredSeatIds = state.seats.filter(seat => seat.controller === 'human' && !seat.eliminated && seat.id !== viewer.ownership.seatId).map(seat => seat.id);
     const targetSummary = projectHistoryEntry({ actor: target.actor, receipt: target.receipt, request: JSON.parse(target.requestJson) as JournalEntry['request'], events: JSON.parse(target.eventsJson) as JournalEntry['events'] }, state.seats, target.round, state).summary;
     const pausedTimerJson = await pause(ctx, match);
-    await pauseQueuesForUndo(ctx, match._id);
     const id = await ctx.db.insert('eclipseRollbacksV1', { matchId: match._id, requestedBySeatId: viewer.ownership.seatId, targetRevision: args.targetRevision, targetSummary, expectedRevision: args.expectedRevision, requiredSeatIds, approvedSeatIds: [], status: 'pending', createdAt: Date.now(), pausedTimerJson });
     await advanceControlRevision(ctx, match);
     await ctx.db.patch(match._id, { rollbackPendingId: id });

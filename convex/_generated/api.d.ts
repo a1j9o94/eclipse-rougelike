@@ -13,7 +13,6 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
-import type * as eclipseActionQueue from "../eclipseActionQueue.js";
 import type * as eclipseGuests from "../eclipseGuests.js";
 import type * as eclipseHistoryRecovery from "../eclipseHistoryRecovery.js";
 import type * as eclipseIdentity from "../eclipseIdentity.js";
@@ -38,7 +37,6 @@ import type * as eclipseValidators from "../eclipseValidators.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
-  eclipseActionQueue: typeof eclipseActionQueue;
   eclipseGuests: typeof eclipseGuests;
   eclipseHistoryRecovery: typeof eclipseHistoryRecovery;
   eclipseIdentity: typeof eclipseIdentity;

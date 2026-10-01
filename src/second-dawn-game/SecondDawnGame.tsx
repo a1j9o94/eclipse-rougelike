@@ -22,7 +22,6 @@ import { loadOrCreateGuestCredential } from "../second-dawn-session/guestStorage
 import { isGuestCredential } from "../../shared/eclipse/guest";
 import { legalCommands } from "../../shared/eclipse/legal";
 import type { GameCommand, RulesMode } from "../../shared/eclipse/types";
-import type {ActionQueueStep} from '../../shared/eclipse/queue';
 import SecondDawnBoard from "./SecondDawnBoard";
 import SpectatorBoard from "./SpectatorBoard";
 import {useSpectatorHistory} from "../second-dawn-session/useSpectatorHistory";
@@ -83,10 +82,6 @@ function ConnectedGame() {
   const loginPlayer=useAction(api.eclipsePlayers.loginPlayer);
   const submit = useMutation(api.eclipseMatches.submitCommand);
   const retryAi = useMutation(api.eclipseMatches.retryAi);
-  const saveActionQueue=useMutation(api.eclipseActionQueue.saveQueue);
-  const startActionQueue=useMutation(api.eclipseActionQueue.startQueue);
-  const pauseActionQueue=useMutation(api.eclipseActionQueue.pauseQueue);
-  const resumeActionQueue=useMutation(api.eclipseActionQueue.resumeQueue);
   const createRoom = useMutation(api.eclipseRooms.createRoom);
   const joinRoom = useMutation(api.eclipseRooms.joinRoom);
   const leaveRoom = useMutation(api.eclipseRooms.leaveRoom);
@@ -155,14 +150,6 @@ function ConnectedGame() {
     api.eclipseMatches.getMatchView,
     credential && matchId ? { credential, matchId } : "skip",
   );
-  const actionQueue=useQuery(api.eclipseActionQueue.getQueue,credential&&matchId?{credential,matchId}:'skip');
-  async function changeQueue(action:()=>Promise<unknown>){
-    if(!credential||!matchId||!connected||busy)return;
-    setBusy(true);setStatus('Saving your action queue…');
-    try{await action();setStatus('Action queue updated.');}
-    catch(error){setStatus(error instanceof Error?error.message:'Could not update the action queue.');}
-    finally{setBusy(false);}
-  }
   const gameControls=useGameRecoveryControls({credential,matchId,view,connected,busy,onHome:()=>openHome(),onRoom:roomToken?()=>setRoomOverview(true):undefined});
   const history=useMatchHistory(credential,matchId,gameControls.rollbackRevision);
   const recap=useActivityRecap(matchId&&view?`${matchId}:${view.viewerSeatId}:${credential}`:null,view);
@@ -334,11 +321,6 @@ function ConnectedGame() {
         onSubmit={(command) => {
           void send(command);
         }}
-        actionQueue={actionQueue}
-        onSaveQueue={(steps:ActionQueueStep[])=>{void changeQueue(()=>saveActionQueue({credential:credential!,matchId:matchId!,steps}));}}
-        onStartQueue={()=>{void changeQueue(()=>startActionQueue({credential:credential!,matchId:matchId!}));}}
-        onPauseQueue={()=>{void changeQueue(()=>pauseActionQueue({credential:credential!,matchId:matchId!}));}}
-        onResumeQueue={()=>{void changeQueue(()=>resumeActionQueue({credential:credential!,matchId:matchId!}));}}
         onHome={()=>openHome()}
         onPlayAgain={()=>openHome(true)}
         menuLabel="Game menu"

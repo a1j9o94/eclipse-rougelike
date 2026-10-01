@@ -833,3 +833,4 @@ Risks & rollback: existing queue documents may remain in Convex storage, but no 
 Test list (must fail first): a board regression test rejects queue controls during a player turn while direct actions remain available. Run focused board, Convex match/timer/undo, AI and room tests, lint, build, then production smoke checks.
 Decision Log: remove the shipped queue completely from the interface and backend; retain its design record to support a later attempt without leaving any automatic execution path enabled.
 Follow-ups: redesign the queue interface with the player before reintroducing server execution.
+Result & Next Steps: the board regression failed against the shipped queue button and passed after removal. Forty-seven focused board, match, timer, AI, upkeep, room, and undo tests passed; lint and build passed. The established Convex deployment removed the queue functions and indexes and reported functions ready. Frontend release verification follows.
