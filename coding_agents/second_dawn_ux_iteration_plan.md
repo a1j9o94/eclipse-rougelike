@@ -283,7 +283,7 @@ Use reviewable commits within each slice; do not hold every system for one giant
 | P4 | Implemented; backend rollout required for rich live replay | PR #87; additive metadata | [Combat evidence and compatibility](ux_p4_combat.md), [rollout boundary](ux_integrated_release.md) | Publish compatible Convex backend; verify live provenance/impact replay |
 | P5 | Implemented and cross-reviewed | PR #87; implementation `50a76be`, merge `f2869d0` | [Contextual actions](ux_p5_context.md), [history/scoring](ux_p5_history_scoring.md) | Live fixture checks recorded; human/physical-device playtest pending |
 | F1 | Upkeep colony review and Explore odds released | `8e1e2da` on `main` | [Feedback slice evidence](reddit_feedback_2026_09_25.md): 25 bounded tests, lint/build, local desktop/mobile checks, live Ring II odds and Ready production deployment | Human upkeep/Explore playtest; action-layout and faction work continue |
-| F2 | Turn attention across panes implemented | `feature/turn-attention-all-panes` | Failing-first Players-pane handoff test; 16 focused turn tests, lint and build passed | Verify Git-triggered production release and live human handoff |
+| F2 | Turn attention across panes released | `125606c` on `main`; production deployment `dpl_83kjeKv5gPXPuwUoQNw3JeVhrvjy` Ready | Failing-first Players-pane handoff test; 16 focused turn tests, lint and build passed; protected production alias returned HTTP 200 through `vercel curl` | Live human handoff playtest |
 
 ### September 25 player feedback intake
 
