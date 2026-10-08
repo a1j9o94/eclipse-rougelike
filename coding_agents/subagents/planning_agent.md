@@ -834,3 +834,11 @@ Test list (must fail first): a board regression test rejects queue controls duri
 Decision Log: remove the shipped queue completely from the interface and backend; retain its design record to support a later attempt without leaving any automatic execution path enabled.
 Follow-ups: redesign the queue interface with the player before reintroducing server execution.
 Result & Next Steps: the board regression failed against the shipped queue button and passed after removal. Forty-seven focused board, match, timer, AI, upkeep, room, and undo tests passed; lint and build passed. The established Convex deployment removed the queue functions and indexes and reported functions ready. Frontend release verification follows.
+## Plan Entry — Turn attention across panes (October 7, 2026)
+
+- Outcome: A player sees the incoming turn notice while browsing any game pane, with View turn returning to Galaxy.
+- Acceptance criteria: An opponent-to-human handoff opens the notice from the Players pane; acknowledgment opens the turn view; active decisions, drafts, and overlays continue to suppress the notice; a dismissed notice stays dismissed until the next turn boundary.
+- Risks & rollback: A dialog could interrupt an active draft or overlay. Keep existing suppression for those interactions. Revert the Board suppression change to restore prior behavior.
+- Test list (must fail first): `second_dawn_turn_attention_board.spec.tsx` covers an incoming turn while Players is open. Existing notice tests cover acknowledgment, boundaries, and overlays.
+- Decision Log: The pane name is navigation state, not a deliberate interaction. Suppress for active work and overlays, independent of pane.
+- Follow-ups: Verify production deployment after lint, targeted tests, and build.

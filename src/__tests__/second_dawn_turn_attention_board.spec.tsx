@@ -29,3 +29,16 @@ it('keeps direct turn actions available without action-queue controls', () => {
   expect(screen.queryByLabelText('Queue instead of play')).toBeNull();
   expect(screen.getByRole('button', { name: 'Explore', exact: true })).toBeVisible();
 });
+
+it('announces a new turn while the player is viewing another pane', () => {
+  const state = createGame({ seed: 31, seats: [{ id: 'a', faction: 'eridani', controller: 'human' }, { id: 'b', faction: 'hydran', controller: 'ai' }] });
+  const view = getPlayerView(state, 'a')!;
+  const waitingView = { ...view, activeSeatId: 'b' };
+  const ui = render(<SecondDawnBoard view={waitingView} candidates={legalCommands(waitingView)} connected busy={false} status="Saved" onSubmit={vi.fn()} onMenu={() => {}}/>);
+  fireEvent.click(within(screen.getByRole('region', { name: 'Civilization roster' })).getByRole('button', { name: /Eridani Empire/ }));
+  expect(screen.queryByRole('dialog', { name: 'Your turn' })).not.toBeInTheDocument();
+  ui.rerender(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="Saved" onSubmit={vi.fn()} onMenu={() => {}}/>);
+  expect(screen.getByRole('dialog', { name: 'Your turn' })).toBeVisible();
+  fireEvent.click(screen.getByRole('button', { name: 'View turn' }));
+  expect(screen.queryByRole('dialog', { name: 'Your turn' })).not.toBeInTheDocument();
+});
