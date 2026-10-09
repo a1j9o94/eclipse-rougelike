@@ -852,3 +852,13 @@ Result & Next Steps: the board regression failed against the shipped queue butto
 - Decision Log: Save the endorsed Guild transport/trade package alongside the other selected faction candidates. Keep Culture's replacement statline provisional, leave Formic cruiser replacement versus supplementation open, and preserve ordinary fleet pinning for convoys.
 - Follow-ups: Review open rules and complete starting faction sheets before a separately requested implementation plan.
 - Result & Next Steps: Proposal checked against the conversation and reviewed for internal rule consistency; relative links and all eight faction sections verified. Save under coding_agents/second_dawn_scifi_faction_proposal.md; no gameplay implementation or deployment requested in this task.
+
+## Plan Entry — Confirm faction proposal decisions (October 9, 2026)
+
+- Outcome: Reconcile the saved science-fiction proposal with the player's seven-faction first-version decisions.
+- Acceptance criteria: ExFor setup and short Trisolaran reservation accepted; Bob factories follow ordinary firing-side targeting; Portiid copies use physical discovery-part rules; Guild markers remain fixed with legal onward exploration; Formics start with one cruiser and exclude reaction coordination after the player's 12:44 correction; Culture held; Belters salvage battle-wide wrecks including neutrals and surviving retreats.
+- Risks & rollback: Ambiguous "any" wrecks is expressly interpreted to include friendly ships rather than represented as independent confirmation. Repeated Portiid same-name acquisition remains open. Revert this documentation commit to restore the prior proposal; no gameplay change.
+- Test list: Documentation consistency checks, current combat allocation and reaction-budget source inspection, and focused planning review. Runtime tests/lint/build are implementation gates for a subsequent gameplay change.
+- Decision Log: The player initially requested Formic reaction convoys, then chose to match the current Ragnarok suppression after the source-code correction. Final proposal uses normal-action convoys only; reaction movement is one ship. Retain ordinary neutral combat and exploration restrictions.
+- Follow-ups: Tune full starting sheets, component-copy costs, salvage payouts and caps; resolve same-name Portiid repeat-acquisition policy before implementing it.
+- Result & Next Steps: Proposal amended with explicit confirmed rules, provisional numeric values and recorded interpretations. Source checks confirm firing-side damage allocation and current Ragnarok reaction suppression. No gameplay implementation is included.
