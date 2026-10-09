@@ -1,3 +1,4 @@
+import {guildMovementTolls} from '../../shared/eclipse/scifiActions';
 import {getFaction} from '../../shared/eclipse/catalog';
 import ActionConfirmationNotice from './ActionConfirmationNotice';
 import {continuesAction} from './actionCapacity';
@@ -24,27 +25,29 @@ export default function MovementPlanner({view,sourceSectorId,selectedTargetId,di
  const [queuedRoutes,setQueuedRoutes]=useActionDraftState('movementRoutes',[]);
  const draftGuard=useActionDraftGuard();
  const ids=useMemo(()=>draft.source===sourceSectorId?draft.ids:[],[draft,sourceSectorId]);
+ const escortsByLeader=useMemo(()=>draft.source===sourceSectorId?draft.escortsByLeader??{}:{},[draft,sourceSectorId]);
  const queued=useMemo(()=>queuedMovementPlan(view,queuedRoutes),[view,queuedRoutes]);
- const plan=useMemo(()=>movementPlan(queued.projectedView,sourceSectorId,ids,queued.remainingCapacity),[queued.projectedView,sourceSectorId,ids,queued.remainingCapacity]);
+ const plan=useMemo(()=>movementPlan(queued.projectedView,sourceSectorId,ids,queued.remainingCapacity,escortsByLeader,queued.paidShipIds),[queued.projectedView,sourceSectorId,ids,queued.remainingCapacity,escortsByLeader,queued.paidShipIds]);
  const targetKey=plan.destinations.map(d=>d.sectorId).join('|');
  useEffect(()=>{onTargetsChange(targetKey?targetKey.split('|'):[]);},[targetKey,onTargetsChange]);
  useEffect(()=>{onRoutePreview?.(queued.routes);},[queued.routes,onRoutePreview]);
  const destination=plan.destinations.find(d=>d.sectorId===selectedTargetId);
  const activations=destination?.activations??ids.length;
  const source=view.sectors.find(s=>s.id===sourceSectorId);const target=view.sectors.find(s=>s.id===selectedTargetId);
- const toggle=(id:string)=>setDraft({source:sourceSectorId,ids:ids.includes(id)?ids.filter(s=>s!==id):[...ids,id]});
+ const toggle=(id:string)=>setDraft({source:sourceSectorId,ids:ids.includes(id)?ids.filter(s=>s!==id):[...ids,id],escortsByLeader: Object.fromEntries(Object.entries(escortsByLeader).filter(([leader])=>leader!==id))});
  const clearSelection=()=>{setDraft({source:null,ids:[]});onSelectionChange?.({sourceSectorId:null,shipIds:[],targetSectorId:null});};
- const queueRoute=()=>{if(!destination||draftGuard.stale||!sourceSectorId)return;const nextRoutes=[...queuedRoutes,{sourceSectorId,shipIds:[...ids],destinationSectorId:destination.sectorId}];setQueuedRoutes(nextRoutes);const afterQueue=queuedMovementPlan(view,nextRoutes);const retained=movementPlan(afterQueue.projectedView,sourceSectorId,[],afterQueue.remainingCapacity).ships.some(ship=>!ship.reason);if(retained){setDraft({source:sourceSectorId,ids:[]});onSelectionChange?.({sourceSectorId,shipIds:[],targetSectorId:null});}else clearSelection();};
+ const queueRoute=()=>{if(!destination||draftGuard.stale||!sourceSectorId)return;const nextRoutes=[...queuedRoutes,{sourceSectorId,shipIds:[...ids],destinationSectorId:destination.sectorId,...(Object.values(escortsByLeader).some(group=>group.length)?{escortsByLeader}:{})}];setQueuedRoutes(nextRoutes);const afterQueue=queuedMovementPlan(view,nextRoutes);const retained=movementPlan(afterQueue.projectedView,sourceSectorId,[],afterQueue.remainingCapacity).ships.some(ship=>!ship.reason);if(retained){setDraft({source:sourceSectorId,ids:[]});onSelectionChange?.({sourceSectorId,shipIds:[],targetSectorId:null});}else clearSelection();};
  const removeRoute=(index:number)=>setQueuedRoutes(routes=>routes.filter((_,routeIndex)=>routeIndex!==index));
  const moveRoute=(index:number,direction:-1|1)=>setQueuedRoutes(routes=>{const targetIndex=index+direction;if(targetIndex<0||targetIndex>=routes.length)return routes;const next=[...routes];[next[index],next[targetIndex]]=[next[targetIndex],next[index]];return next;});
  const routeMode=!!onRoutePreview;
  const hasUnqueuedSelection=routeMode&&ids.length>0;
- const execution=routeMode&&destination&&sourceSectorId?queuedMovementPlan(view,[...queuedRoutes,{sourceSectorId,shipIds:[...ids],destinationSectorId:destination.sectorId}]):queued;
+ const execution=routeMode&&destination&&sourceSectorId?queuedMovementPlan(view,[...queuedRoutes,{sourceSectorId,shipIds:[...ids],destinationSectorId:destination.sectorId,...(Object.values(escortsByLeader).some(group=>group.length)?{escortsByLeader}:{})}]):queued;
  const executionRouteCount=queuedRoutes.length+(routeMode&&destination?1:0);
  const confirmationCommand=routeMode?queued.command:destination?.command;
  const confirmationReady=!disabled&&!draftGuard.stale&&!view.pendingDecision&&!view.waitingFor&&!!confirmationCommand?.moves.length&&(routeMode?!hasUnqueuedSelection&&queued.routes.every(route=>route.status==='valid')&&queued.remainingCapacity===0:!!destination&&destination.activations===plan.capacity);
  const confirmationPreview=confirmationCommand?previewCommand(view,confirmationCommand):null;
  const own=view.seats.find(seat=>seat.id===view.viewerSeatId)!;
+ const tollCommand=routeMode?execution.command:destination?.command;let toll=0;const recipients=new Set<string>();const paid:string[]=[...(view.actionProgress?.guildTollShipIds??[])];const origins=new Map(view.ships.map(s=>[s.id,s.sectorId]));for(const move of tollCommand?.moves??[]){const quoted=guildMovementTolls(view,own.id,[move.shipId,...(move.escorts??[])],origins.get(move.shipId)??'',move.path,paid);toll+=quoted.reduce((sum,item)=>sum+item.amount,0);paid.push(...quoted.map(item=>item.shipId));for(const item of quoted)recipients.add(item.owner);for(const id of [move.shipId,...(move.escorts??[])])origins.set(id,move.path.at(-1)??'');}
  return <section className="dg-movement-planner" aria-label="Move fleet">
   <header><div className="dg-movement-heading-copy"><span className="dg-eyebrow">MOVE FLEET</span><h2>{source?`Depart sector ${source.tileId}`:'Choose a departure sector'}</h2></div><div className="dg-movement-header-actions">{onChangeSource&&<button type="button" onClick={onChangeSource}>Change departure sector</button>}<button type="button" onClick={onClose} aria-label="Close movement planner">Close</button></div></header>
   {result&&<p className="dg-movement-result" role="status">{result}</p>}
@@ -52,6 +55,9 @@ export default function MovementPlanner({view,sourceSectorId,selectedTargetId,di
   <p className="dg-movement-steps">{routeMode?'1 Select ships · 2 Choose a sector on the galaxy · 3 Queue route · 4 Execute':'1 Select ships · 2 Choose a sector on the galaxy · 3 Confirm'}</p>
   <p>{activations} / {queued.remainingCapacity} move activations selected{source&&plan.leaveCapacity<plan.ships.length?` · ${plan.leaveCapacity} ships can leave without being pinned`:''}</p>
   <div className="dg-movement-ships">{plan.ships.map(ship=>{const checked=ids.includes(ship.id);const locked=disabled||!!ship.reason||(!checked&&(ids.length>=queued.remainingCapacity||ids.length>=plan.leaveCapacity));return <label key={ship.id} className={`dg-movement-ship ${checked?'is-selected':''} ${locked?'is-unavailable':''}`}><input type="checkbox" checked={checked} disabled={locked} onChange={()=>toggle(ship.id)} aria-label={ship.label}/><ShipSilhouette type={ship.type} faction={view.seats.find(seat=>seat.id===view.viewerSeatId)?.faction}/><span><strong>{ship.label}</strong><small>{ship.range} {ship.range===1?'sector':'sectors'} per activation</small>{ship.reason&&<small className="dg-danger">{ship.reason}</small>}</span></label>;})}</div>
+  {own.faction==='formics'&&!own.passed&&ids.map(leaderId=>{const leader=plan.ships.find(s=>s.id===leaderId);const escortType=leader?.type==='cruiser'?'interceptor':leader?.type==='dreadnought'?'cruiser':null;const escorts=escortsByLeader[leaderId]??[];return escortType?<fieldset key={leaderId}><legend>{leader?.label} convoy · up to 2 {escortType}s</legend>{plan.ships.filter(ship=>ship.type===escortType&&!ids.includes(ship.id)).map(ship=><label key={ship.id}><input type="checkbox" checked={escorts.includes(ship.id)} disabled={disabled||!!ship.reason||(!escorts.includes(ship.id)&&(escorts.length>=2||Object.values(escortsByLeader).some(group=>group.includes(ship.id))))} onChange={()=>setDraft({source:sourceSectorId,ids,escortsByLeader:{...escortsByLeader,[leaderId]:escorts.includes(ship.id)?escorts.filter(id=>id!==ship.id):[...escorts,ship.id]}})}/>{ship.label} · {ship.range} sectors</label>)}</fieldset>:null;})}
+  {own.faction==='formics'&&<p>{own.passed?'Reaction: one ship, without escorts.':'Convoys share one activation. Escorts follow the leader’s path; no recursive escorts.'}</p>}
+  {toll>0&&<p role="status">Guild transport fee: {toll} Money to {[...recipients].map(id=>getFaction(view.seats.find(s=>s.id===id)!.faction).name).join(', ')} · {own.resources.money-toll} Money remaining after transport. Each passenger pays once per Move action.</p>}
   {plan.message&&<p role="status">{plan.message}</p>}
   {!!ids.length&&!plan.message&&!destination&&<p role="status">{target?'That sector is outside the selected fleet’s legal routes.':'Choose a highlighted destination on the galaxy.'}</p>}
   {destination&&<div className="dg-movement-route"><h3>Destination · sector {target?.tileId}</h3>{ids.map(shipId=>{const moves=destination.command.moves.filter(move=>move.shipId===shipId);return <p key={shipId}><strong>{plan.ships.find(s=>s.id===shipId)?.label} <small>· {moves.length} {moves.length===1?'activation':'activations'}</small></strong><span>{[source?.tileId,...moves.flatMap(move=>move.path).map(id=>view.sectors.find(s=>s.id===id)?.tileId)].join(' → ')}</span></p>;})}</div>}

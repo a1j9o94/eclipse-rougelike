@@ -19,7 +19,7 @@ describe('Second Dawn faction registry', () => {
     expect(BASE_FACTIONS).toEqual(FACTION_REGISTRY.slice(0, 12));
     expect(listFactions('second-dawn-base')).toEqual(BASE_FACTIONS);
     expect(listFactions('future-drive-pack')).toEqual([]);
-    expect(listFactions().map(faction => faction.id)).toEqual([
+    expect(listFactions().slice(0, 18).map(faction => faction.id)).toEqual([
       'eridani', 'hydran', 'planta', 'draco', 'mechanema', 'orion',
       'terran-directorate', 'terran-federation', 'terran-union',
       'terran-republic', 'terran-conglomerate', 'terran-alliance',

@@ -1,3 +1,4 @@
+import { observeScifiEngagement, recordScifiWreck, returnFactoryPopulation, settleScifiBattle } from './scifiBattle';
 import { gameRules } from './gameRules';
 import { reputationCapacityWithMinorSpecies } from "./minorSpecies";
 import { applyLessRandomReputation, bestReputation } from './reputation';
@@ -19,6 +20,7 @@ import {
   hasEnemy,
   hasTech,
   player,
+  presentNextDecision,
   requireRule,
   uniqueId,
 } from "./rulesState";
@@ -120,6 +122,7 @@ function startPair(
   pair: [string, string],
   events: GameEvent[],
 ): void {
+  observeScifiEngagement(state, b, pair);
   b.attacker = pair[0];
   b.defender = pair[1];
   b.stage = "missiles";
@@ -181,6 +184,8 @@ function destroy(
   ship: Ship,
   killer: string | null,
 ): void {
+  recordScifiWreck(b, ship);
+  returnFactoryPopulation(state, ship);
   if (killer && !neutral(killer))
     b.kills.push({ owner: killer, value: VALUES[ship.type] + Number(!!ship.orbitalShip) });
   if (ship.orbitalShip) {
@@ -603,6 +608,8 @@ export function advanceCombat(state: GameState, events: GameEvent[]): boolean {
         continue;
       }
       if (!nextReputation(state, b, events)) return false;
+      settleScifiBattle(state, b, events);
+      if (b.scifi && presentNextDecision(state)) return false;
       e.battle = null;
       e.battleSectors.shift();
       continue;

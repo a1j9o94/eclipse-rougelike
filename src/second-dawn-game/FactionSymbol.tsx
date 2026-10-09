@@ -2,6 +2,13 @@ import {getFaction, type FactionId, type FactionVisualIdentity} from '../../shar
 import './factionSymbol.css';
 /** Original civilization emblems; both faces of a civilization share an emblem. */
 const EMBLEMS:Record<FactionVisualIdentity,string>={
+ exfor:'M4 16 8 4 16 4 20 16 12 21Z M8 12H16 M12 8V16',
+ bobiverse:'M12 2 21 7V17L12 22 3 17V7Z M7 8H17V16H7Z M9 11H10 M14 11H15',
+ trisolarans:'M12 3 21 19H3Z M4 4A2 2 0 1 0 4 8A2 2 0 1 0 4 4 M20 4A2 2 0 1 0 20 8A2 2 0 1 0 20 4 M12 11V16',
+ portiids:'M9 8H15L17 12 15 16H9L7 12Z M9 8 5 3 M15 8 19 3 M7 10 2 8 M17 10 22 8 M7 14 2 17 M17 14 22 17 M9 16 7 22 M15 16 17 22',
+ 'spacing-guild':'M4 12A8 8 0 1 0 20 12A8 8 0 1 0 4 12 M8 12H16 M12 8V16 M3 3 7 7 M17 17 21 21',
+ formics:'M12 2 16 7 14 11 17 16 12 22 7 16 10 11 8 7Z M8 7 3 5 M16 7 21 5 M10 11 4 12 M14 11 20 12 M9 17 4 21 M15 17 20 21',
+ belters:'M3 14 7 4 14 2 21 9 19 19 10 22Z M8 8 16 16 M8 16 16 8 M5 13H19',
  exiles:'M12 3A9 9 0 1 0 12 21A9 9 0 1 0 12 3 M12 7A5 5 0 1 0 12 17A5 5 0 1 0 12 7 M3 12H21',
  eridani:'M4 6 12 2 20 6 18 16 12 22 6 16Z M8 9H16 M12 6V17',
  hydran:'M12 2 22 18H2Z M12 8V16 M8 18H16',

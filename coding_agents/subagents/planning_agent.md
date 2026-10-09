@@ -876,3 +876,27 @@ Tests (must fail first): off-turn Build and queue confirmation/cancel/failure UI
 Decision log: queue one fully specified command, not an entire future decision tree; later exploration/combat/discovery choices remain interactive. Use only the public PlayerView for hypothetical planner selections; never replace the authoritative live turn/decision view.
 
 Release blocker: current workspace has no Convex CLI login. The Vercel connector returns 403 for obleton-adrian. Complete and push a reviewable feature PR before requesting any access/handoff; do not merge the frontend until backend publication is available.
+## 2026-10-09 — Science-fiction factions
+
+Outcome: seven optional playable factions with usable controls, AI and durable private choices. See `coding_agents/second_dawn_scifi_implementation.md` for acceptance criteria, authoritative decisions, tuning and rollback.
+
+Fail-first: profile/setup guards and privacy, actions/escrow/convoys/reservations, battle-wide rewards/physical replicas, UI choices, AI legality. Relevant regression suites, lint and full build are required. Release preserves old roster/version pins and publishes the backward-compatible backend before the Git frontend release.
+
+
+## PR 94 local backend recovery — 2026-10-09
+
+Outcome: publish the tested off-turn queue backend so the browser session can release the matching frontend.
+
+Acceptance criteria: original dirty checkout preserved; release checkout at 3176ffca766a6b03d0e55d08f1b642fd83d19aeb; lint, targeted tests and build pass; Convex reports successful publication to dev:ideal-nightingale-55.
+
+Risks & rollback: existing old main code may have been published accidentally after failed switch; use an isolated detached worktree, explicit deployment and no deploy-key/self-hosted overrides. Stop on incompatible schema errors, preserve data. No main merge in this recovery.
+
+Test list: existing queue server/UI regressions, lint, build, Convex typecheck. No new behavior or failing-test change required for deployment-only recovery.
+
+Decision Log: use separate checkout rather than stash/reset local changes.
+
+Follow-ups: return verified backend publication receipt to browser session for main merge and Vercel verification.
+
+Release correction: first publish rejected stored faction bobiverse; integrate origin/main 8b87eed before retry. Preserve both branches documentation entries. Source merge was automatic. Re-run queue and sci-fi faction regressions before publication.
+
+Validation: Node 22.23.3; queue, session, auto-pass, sci-fi actions/AI/combat/UI/profile regressions passed (105 tests in 12 suites), catalog regression passed separately (7 tests). Lint, Convex typecheck/codegen and full build passed. Existing main catalog assertion first failed on 25 versus 18 factions; preserve assertion on original 18-ID prefix while dedicated sci-fi profile test checks appended catalog.

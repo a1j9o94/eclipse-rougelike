@@ -1,3 +1,4 @@
+import { availableTechnologyMarket } from './scifiActions';
 import type {
   Action,
   GameEvent,
@@ -103,7 +104,7 @@ export function presentNextDecision(state: GameState): boolean {
     getDiscovery(decision.tileId as DiscoveryId).effect.kind ===
       "free-technology" &&
     ancientTechnologyChoices(
-      state.technologyMarket,
+      availableTechnologyMarket(state, decision.owner),
       player(state, decision.owner).technologies,
       researchedTechnologyIds(player(state,decision.owner)),
     ).length === 0
@@ -119,7 +120,7 @@ export function mapSector(sector: Sector): MovementSector {
     r: sector.position.r,
     rotation: sector.rotation as HexEdge,
     wormholes: d.wormholes,
-    warpPortal: d.warpPortal || !!sector.portalVp,
+    warpPortal: d.warpPortal || !!sector.portalVp || !!sector.guildPortalOwner,
     controller: sector.owner,
   };
 }
@@ -137,6 +138,7 @@ export function movementShips(state: GameState): MovementShip[] {
     owner: ship.owner,
     kind: ship.type,
     movement: 0,
+    doesNotPin: state.seats.find(seat => seat.id === ship.owner)?.faction === 'spacing-guild',
   }));
 }
 export function unpinned(

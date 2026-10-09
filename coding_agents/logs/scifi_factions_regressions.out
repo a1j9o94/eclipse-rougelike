@@ -1,0 +1,19 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+ RUN  v3.2.4 /workspace/scratch/9cbcc3db6db5/eclipse-rougelike
+
+ ✓ src/__tests__/second_dawn_ai_simulation.spec.ts (21 tests) 80ms
+ ✓ src/__tests__/second_dawn_ai_strategy.spec.ts (13 tests) 161ms
+ ✓ src/__tests__/second_dawn_protocol.spec.ts (13 tests) 18ms
+ ✓ src/__tests__/second_dawn_catalog.spec.ts (7 tests) 8ms
+ ✓ src/__tests__/second_dawn_multiplayer_contracts.spec.ts (4 tests) 9ms
+ ✓ src/__tests__/second_dawn_spectator_protocol.spec.ts (4 tests) 13ms
+ ✓ src/__tests__/second_dawn_scifi_profile.spec.ts (5 tests) 17ms
+ ✓ src/__tests__/second_dawn_discovery_technology_history.spec.ts (2 tests) 10ms
+ ✓ src/__tests__/second_dawn_faction_profile_v2.spec.ts (3 tests) 11ms
+
+ Test Files  9 passed (9)
+      Tests  72 passed (72)
+   Start at  13:00:05
+   Duration  6.84s (transform 609ms, setup 787ms, collect 964ms, tests 326ms, environment 2.59s, prepare 489ms)
+

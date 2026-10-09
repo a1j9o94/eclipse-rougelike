@@ -11,6 +11,10 @@ npm run second-dawn:local
 
 The local launcher starts an isolated Convex backend and Vite. To use an already configured backend, set `VITE_CONVEX_URL` in an ignored environment file and run `npm run dev`. Saved solo and multiplayer games require Convex.
 
+## Experimental science-fiction factions
+
+Choose **Science fiction** in the new-game or room faction collection to include ExFor, Bobiverse, Trisolarans, Portiids, the Spacing Guild, Formics and Belters alongside the 18 existing civilizations. These first versions use Standard Eclipse rules. The normal Expanded collection remains the default. Abilities, starting values and playtest tuning are documented in [the implementation plan](coding_agents/second_dawn_scifi_implementation.md).
+
 ## Code map
 
 - `shared/eclipse/`: typed rules, catalog, deterministic command processor, public views and AI planning.

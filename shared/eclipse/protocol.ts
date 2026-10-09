@@ -198,6 +198,8 @@ function publicGameView(state: GameState, scoreViewer?: SeatId): PublicGameView 
   return {
     ...(state.phase === 'upkeep' ? { upkeepDone: [...(state.engine?.upkeepDone ?? [])] } : {}),
     ...(state.minorSpecies ? {minorSpecies:structuredClone(state.minorSpecies)} : {}),
+    ...(state.guildOffers ? {guildOffers:structuredClone(state.guildOffers)} : {}),
+    ...(state.technologyReservations ? {technologyReservations:structuredClone(state.technologyReservations)} : {}),
     rulesVersion: state.rulesVersion,
     catalogVersion: state.catalogVersion,
     ...(state.factionProfile ? { factionProfile: state.factionProfile } : {}),

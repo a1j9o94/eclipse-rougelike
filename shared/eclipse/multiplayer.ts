@@ -1,4 +1,4 @@
-import { allowsRiftCannons, factionRulesMode, validRuleOptions, type GameRuleOptions } from './gameRules';
+import { allowsRiftCannons, isScifiCompatible, factionRulesMode, validRuleOptions, type GameRuleOptions } from './gameRules';
 import { factionAllowedForProfile, getFaction, seatPieceColor, listFactionsForProfile, type CivilizationColor, type FactionProfile, type FactionId } from "./catalog";
 import type { AiDifficulty } from "./aiConfig";
 import type { GameState, SeatId, RulesMode } from "./types";
@@ -102,11 +102,11 @@ export function isMultiplayerSettings(value: MultiplayerRoomSettings): boolean {
     total <= MAX_MULTIPLAYER_SEATS &&
     isMultiplayerTimerMs(value.timerMs) &&
     (value.rulesMode === undefined || value.rulesMode === "standard" || value.rulesMode === "less-random-v1") &&
-    validRuleOptions(value.ruleOptions) &&
+    validRuleOptions(value.ruleOptions) && isScifiCompatible(value) &&
     typeof value.warpPortals === "boolean" &&
     (value.riftCannons === undefined || typeof value.riftCannons === "boolean") &&
     (!value.riftCannons || allowsRiftCannons(value)) &&
-    (value.factionProfile === undefined || ["base", "expanded-v1", "expanded-v2"].includes(value.factionProfile)) &&
+    (value.factionProfile === undefined || ["base", "expanded-v1", "expanded-v2", "scifi-v1"].includes(value.factionProfile)) &&
     (value.showCombatOdds === undefined || typeof value.showCombatOdds === "boolean") &&
     (value.minorSpecies === undefined || typeof value.minorSpecies === "boolean") &&
     (value.aiDifficulty === undefined || ["normal", "hard", "expert"].includes(value.aiDifficulty))

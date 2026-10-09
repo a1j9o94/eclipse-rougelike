@@ -218,7 +218,7 @@ export default function GalaxyBoard({
               if(group)group.count++;else groups.push({owner:ship.owner,type:ship.type,count:1});
             }
             const visibleGroups=compact&&!detail?[]:groups.slice(0,groups.length>4?3:4);
-            const portal = s.portalVp !== undefined || definition.warpPortal;
+            const portal = !!s.guildPortalOwner || s.portalVp !== undefined || definition.warpPortal;
             return (
               <g
                 key={s.id}
@@ -301,13 +301,14 @@ export default function GalaxyBoard({
                   const info=ownerInfo(group.owner), two=groups.length>1;
                   const fx=two?(index%2?21:-21):0,fy=Math.floor(index/2)*20;
                   const name=group.type[0].toUpperCase()+group.type.slice(1);
-                  return <g key={`${group.owner}-${group.type}`} data-fleet-card={group.type} data-galaxy-target={onInspectFleet?`fleet:${s.id}`:undefined} role={onInspectFleet?"button":"img"} tabIndex={onInspectFleet?0:undefined} onClick={onInspectFleet?e=>{e.stopPropagation();onInspectFleet(s.id);}:undefined} onKeyDown={onInspectFleet?e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();onInspectFleet(s.id);}}:undefined} aria-label={`${info.name}: ${group.count} ${name}${group.count>1?'s':''}`} transform={`translate(${fx} ${fy})`} color={info.color} className="dg-map-fleet-card">
+                  const factories=fleets.filter(ship=>ship.owner===group.owner&&ship.type===group.type&&ship.factoryPopulation).length;
+                  return <g key={`${group.owner}-${group.type}`} data-fleet-card={group.type} data-galaxy-target={onInspectFleet?`fleet:${s.id}`:undefined} role={onInspectFleet?"button":"img"} tabIndex={onInspectFleet?0:undefined} onClick={onInspectFleet?e=>{e.stopPropagation();onInspectFleet(s.id);}:undefined} onKeyDown={onInspectFleet?e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();onInspectFleet(s.id);}}:undefined} aria-label={`${info.name}: ${group.count} ${name}${group.count>1?'s':''}${factories?`, ${factories} Materials factories`:''}`} transform={`translate(${fx} ${fy})`} color={info.color} className="dg-map-fleet-card">
                     <rect x="-20" y="-9" width="40" height="18" rx="3" fill="#08121b" stroke={info.color} strokeWidth=".8"/>
                     <rect x="-20" y="-9" width="40" height="18" rx="3" fill={info.color} opacity=".13"/>
                     <svg x="-20" y="-9" width="22" height="18" viewBox="0 0 24 24">
                       {group.type==='ancient'||group.type==='guardian'||group.type==='gcds'?<NeutralShipSilhouette type={group.type}/>:<ShipSilhouette type={group.type} faction={view.seats.find(seat=>seat.id===group.owner)?.faction}/>}
                     </svg>
-                    <text x="9" y="3.5" textAnchor="middle" fill={info.color} className="dg-fleet-label">×{group.count}</text>
+                    {factories>0&&<g transform="translate(-17 7)" role="img" aria-label={`${factories} Materials factories`}><rect width="6" height="6" x="-3" y="-3" fill="#e09462" stroke="#ffe5c4" strokeWidth=".7"/><title>{factories} productive Materials factories; select sector to inspect individual ships.</title></g>}<text x="9" y="3.5" textAnchor="middle" fill={info.color} className="dg-fleet-label">×{group.count}</text>
                     <title>{info.name}: {group.count} {name}{group.count>1?'s':''}. Select sector to inspect fleet.</title>
                   </g>;
                 })}
@@ -371,7 +372,7 @@ export default function GalaxyBoard({
                     <circle r="2" fill="#96dfef" />
                     <title>
                       Warp portal: connects to every other warp portal,
-                      regardless of distance.
+                      regardless of distance.{s.guildPortalOwner&&s.owner===s.guildPortalOwner?' Guild-controlled connection: foreign transport pays 1 Money per ship per Move action.':''}
                     </title>
                   </g>
                 )}

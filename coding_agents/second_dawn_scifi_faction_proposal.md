@@ -1,7 +1,7 @@
 # Science-fiction faction expansion proposal
 
 Date: October 9, 2026  
-Status: Design proposal with player decisions recorded October 9, 2026; gameplay implementation is a separate task.  
+Status: Player decisions recorded October 9, 2026; implemented first versions are documented in [the implementation plan](second_dawn_scifi_implementation.md).
 Target: The current Eclipse: Second Dawn game, not the retired roguelike.  
 Proposed destination: `coding_agents/second_dawn_scifi_faction_proposal.md`
 

@@ -1,3 +1,5 @@
+import { clearScifiRoundState } from './scifiActions';
+import { returnFactoryPopulation } from './scifiBattle';
 import { gameRules } from './gameRules';
 import { upkeepDecisionForSeat, upkeepSeatUnfinished } from './upkeep';
 import { discoveryAt } from './actions';
@@ -86,7 +88,7 @@ function bombardmentDamage(state: GameState, seat: Seat, ships: Ship[], events: 
     const ship = state.ships.find(s => s.id === hit.targetId)!;
     const destroyed = hit.damage >= riftTargets.find(t => t.id === ship.id)!.hp;
     ship.damage += hit.damage;
-    if (destroyed) state.ships = state.ships.filter(s => s.id !== ship.id);
+    if (destroyed) { returnFactoryPopulation(state, ship); state.ships = state.ships.filter(s => s.id !== ship.id); }
     emit(events, seat.id, `${ship.type} ${ship.id} ${destroyed ? 'destroyed by' : 'takes '+hit.damage+' damage from'} Rift backfire during population attack.`, 'combat');
   }
   return hits;
@@ -153,6 +155,7 @@ function aftermath(state: GameState, events: GameEvent[]): void {
       presentNextDecision(state); return;
     }
   }
+  clearScifiRoundState(state, events);
   state.phase = 'upkeep'; e.upkeepDone = []; state.activeSeatId = living(state)[0]?.id ?? null;
   emit(events, null, 'Upkeep: use remaining colony ships or trade, then confirm income and upkeep.', 'phase');
 }

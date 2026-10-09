@@ -13,11 +13,17 @@ function blueprintParts(blueprint: Blueprint): ShipBlueprint {
   const part = (id: string): ShipPartId => { requireRule(isShipPartId(id), 'Blueprint contains an unknown part.', 'INVALID_COMMAND'); return id; };
   return { shipType: blueprint.shipType, parts: blueprint.parts.map(id => id === null ? null : part(id)), outsideParts: (blueprint.outsideParts ?? []).map(part) };
 }
+function alreadyOwned(state: GameState, seat: Seat, id: string, replica: boolean): boolean {
+  return state.seats.some(owner => {
+    const owns = (owner.storedParts ?? []).includes(id) || owner.blueprints.some(blueprint => [...blueprint.parts, ...(blueprint.outsideParts ?? [])].includes(id));
+    return owns && (owner.id === seat.id || (!replica && !(owner.scifi?.copiedAncientParts ?? []).includes(id)));
+  });
+}
 /** Publisher p9: offer immediate free installation or storage; neither uses an upgrade activation. */
-export function queueAncientPart(state: GameState, seat: Seat, part: string): void {
+export function queueAncientPart(state: GameState, seat: Seat, part: string, replica = false): void {
   const partId = ancientId(part);
-  requireRule(!state.seats.some(owner => (owner.storedParts ?? []).includes(partId) || owner.blueprints.some(blueprint => [...blueprint.parts, ...(blueprint.outsideParts ?? [])].includes(partId))), 'This unique ancient part is already owned.');
-  queueDecision(state, { id: uniqueId(state, 'ancient-part'), owner: seat.id, kind: 'ancient-part', partId });
+  requireRule(!alreadyOwned(state, seat, partId, replica), 'This unique ancient part is already owned.');
+  queueDecision(state, { id: uniqueId(state, 'ancient-part'), owner: seat.id, kind: 'ancient-part', partId, ...(replica ? { replica: true } : {}) });
 }
 /** A response supplies one complete blueprint. Its only change is installation of the discovered part.
  * Replacing an ancient overlay destroys that overlay; it is not moved to storage or another blueprint.
@@ -27,7 +33,7 @@ export function resolveAncientPart(state: GameState, seat: Seat, decision: Pendi
   requireRule(decision.kind === 'ancient-part' && choice.kind === 'ancient-part', 'The response must match the ancient-part decision.');
   requireRule(decision.owner === seat.id && state.seats.some(owner => owner.id === seat.id), 'This ancient part belongs to another player.');
   const id = ancientId(decision.partId);
-  requireRule(!state.seats.some(owner => (owner.storedParts ?? []).includes(id) || owner.blueprints.some(blueprint => [...blueprint.parts, ...(blueprint.outsideParts ?? [])].includes(id))), 'This unique ancient part is already owned.');
+  requireRule(!alreadyOwned(state, seat, id, decision.replica === true), 'This unique ancient part is already owned.');
   if (choice.blueprint === null) { seat.storedParts = [...(seat.storedParts ?? []), id]; return; }
   const next = blueprintParts(choice.blueprint);
   const index = seat.blueprints.findIndex(blueprint => blueprint.shipType === next.shipType);

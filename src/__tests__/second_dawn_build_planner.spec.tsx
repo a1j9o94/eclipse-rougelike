@@ -26,3 +26,14 @@ it('shows the Exiles Orbital blueprint parts and explains when the defender appe
  expect(orbital).toHaveTextContent(/coloniz/i);
  expect(screen.queryByRole('button',{name:'Add starbase'})).toBeNull();
 });
+it('shows Bobiverse expanded component supply and subtracts deployed and drafted ships',()=>{
+ const state=createGame({seed:42,factionProfile:'scifi-v1',seats:[{id:'a',faction:'bobiverse',controller:'human'},{id:'b',faction:'orion',controller:'ai'}]});
+ const view=getPlayerView(state,'a');
+ render(<BuildPlanner view={view} sectorId={state.sectors.find(s=>s.owner==='a')!.id} disabled={false} onClose={()=>{}} onSubmit={vi.fn()}/>);
+ const interceptors=screen.getByRole('article',{name:'Interceptor'});
+ expect(interceptors).toHaveTextContent('8 in supply');
+ expect(screen.getByRole('article',{name:'Cruiser'})).toHaveTextContent('5 in supply');
+ expect(screen.getByRole('article',{name:'Dreadnought'})).toHaveTextContent('3 in supply');
+ fireEvent.click(screen.getByRole('button',{name:'Add interceptor'}));
+ expect(interceptors).toHaveTextContent('7 in supply');
+});

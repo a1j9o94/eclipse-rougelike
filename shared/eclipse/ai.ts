@@ -1,3 +1,4 @@
+import {scifiExchangeValue} from './aiScifi';
 import { researchedTechnologyIds } from './technologies';
 import { gameRules, gameRoundLimit, factionRulesMode } from './gameRules';
 import { getDiscovery, type DiscoveryId } from './discoveries';
@@ -245,6 +246,13 @@ export function evaluateAiCommand(
     ? 0
     : Math.max(0, -nextBalance) * 12 + Math.max(0, 2 - nextBalance) * 2;
   switch (command.type) {
+    case 'load-factory': return view.round < gameRoundLimit(view) ? 32 : 2;
+    case 'place-guild-portal': return 9;
+    case 'cancel-guild-offer': return -30;
+    case 'guild-offer': return !(view.guildOffers??[]).some(o=>o.owner===seat.id&&o.give===command.give&&o.receive===command.receive) && seat.resources[command.give] > 6 && seat.resources[command.receive] < 3 ? 3 : -30;
+    case 'accept-guild-offer': return scifiExchangeValue(view,command);
+    case 'reverse-engineer': return seat.scifi?.reverseEngineeringProject?.kind==='technology' ? 17-discPenalty : 12-discPenalty;
+
     case "trade-and-act": {
       const option = fundingOptions(view, command.action).find(
         (o) => JSON.stringify(o.trades) === JSON.stringify(command.trades),
@@ -407,7 +415,7 @@ export function evaluateAiCommand(
       return factionPolicy.diplomacyValue;
     case "move": {
       const final = new Map(
-        command.moves.map((m) => [m.shipId, m.path.at(-1)!]),
+        command.moves.flatMap((m) => [m.shipId,...(m.escorts??[])].map(id=>[id,m.path.at(-1)!] as const)),
       );
       let value = 0;
       for (const destination of new Set(final.values())) {
@@ -481,6 +489,12 @@ export function evaluateAiCommand(
     case "resolve": {
       const c = command.choice;
       switch (c.kind) {
+        case 'discovery-draft': return c.tileIds.reduce((sum,id)=>{
+          const effect=getDiscovery(id as DiscoveryId).effect;
+          return sum+(effect.kind==='resources'?Object.entries(effect.resources).reduce((n,[r,v])=>n+v*utility(r as Resource),0):effect.kind==='ancient-ship-part'?16:12);
+        },0);
+        case 'technology-reservation': return c.tileId ? technologyValue(view,c.tileId)*0.2+2 : 0;
+        case 'reverse-engineering': return c.project ? c.project.kind==='technology' ? technologyValue(view,c.project.id)+3 : 16 : 0;
         case "exploration":
           if (c.redraw) return view.pendingDecision?.kind === 'exploration' && view.pendingDecision.placements.length === 0 ? 6 : -10;
           return c.drawAnother

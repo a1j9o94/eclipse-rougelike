@@ -1,3 +1,4 @@
+import {initializeScifiDiscoveries} from './scifiBattle';
 import { MINOR_SPECIES } from "./minorSpecies";
 import {
   BASE_COMPONENTS,
@@ -23,10 +24,10 @@ import {
   createReputationSupply,
 } from "./supplies";
 import { getTechnology, type TechnologyId } from "./technologies";
-import { requireSectorDefinition as sectorDefinition } from "./rulesState";
+import { presentNextDecision, requireSectorDefinition as sectorDefinition } from "./rulesState";
 import type { GameState, PendingDecision, Resource, Seat, Sector } from "./types";
 import { LESS_RANDOM_MODE } from './lessRandom';
-import { allowsRiftCannons, gameRules, validRuleOptions, type GameRuleOptions } from './gameRules';
+import { allowsRiftCannons, isScifiCompatible, gameRules, validRuleOptions, type GameRuleOptions } from './gameRules';
 
 export interface GameSetup {
   minorSpecies?: boolean;
@@ -44,6 +45,7 @@ export interface GameSetup {
   ruleOptions?: GameRuleOptions;
 }
 export function createGame(config: GameSetup): GameState {
+  if (!isScifiCompatible(config)) throw new Error('Sci-fi factions require Standard rules and inventories.');
   if (!validRuleOptions(config.ruleOptions)) throw new Error('Choose valid game rule options and a round limit from 1 to 20.');
   if (config.riftCannons && !allowsRiftCannons(config)) throw new Error('Rift Cannons cannot be combined with combat Jokers or the variant technology inventory.');
   const rules = gameRules(config);
@@ -108,6 +110,7 @@ export function createGame(config: GameSetup): GameState {
       technologies[t.track === "rare" ? "nano" : t.track].push(id);
     }
     return {
+      ...(f.content.packId === 'scifi-v1' ? {scifi: f.id === 'spacing-guild' ? {guildPortalMarkers:2} : {}} : {}),
       ...s,
       resources: { ...f.startingResources },
       populationTracks: { ...f.startingPopulation },
@@ -152,6 +155,7 @@ export function createGame(config: GameSetup): GameState {
     ships: [],
     technologyMarket: tech.drawn.map((t) => t.technology),
     pendingDecision: null,
+    ...(profile === 'scifi-v1' ? {guildOffers:[],technologyReservations:[]} : {}),
     privateSeats: seats.map((s) => {
       const privateSeat: GameState['privateSeats'][number] = {
         seatId: s.id,
@@ -223,11 +227,12 @@ export function createGame(config: GameSetup): GameState {
       [0, 1],
     ].findIndex(([a, b]) => a === -q / 2 && b === -r / 2);
     const sector: Sector = {
-      id: String(tile).padStart(3, "0"),
+      id: state.sectors.some(s => s.id === String(tile).padStart(3,"0")) ? `${String(tile).padStart(3,"0")}-${owner?.id ?? state.sectors.length}` : String(tile).padStart(3, "0"),
       tileId: String(tile).padStart(3, "0"),
       position: { q, r },
       rotation: d.homeArrow === null ? 0 : (inward - d.homeArrow + 6) % 6,
       owner: owner?.id ?? null,
+      ...(owner?.faction === 'spacing-guild' ? {guildPortalOwner:owner.id} : {}),
       population: [],
       orbital: owner ? !!getFaction(owner.faction).special?.startsWithOrbital : false,
       monolith: false,
@@ -311,5 +316,7 @@ export function createGame(config: GameSetup): GameState {
     state.random = market.state;
     state.minorSpecies = {market:market.items.slice(0,4)};
   }
+  initializeScifiDiscoveries(state);
+  presentNextDecision(state);
   return state;
 }

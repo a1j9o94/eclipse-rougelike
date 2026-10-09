@@ -13,18 +13,19 @@ export interface DraftValues {
   researchSelection: string | null; editing: BlueprintShipType | null; playerId: string;
   buildOpen: boolean; moveOpen: boolean; moveSource: string | null; moveTarget: string | null; historyOpen: boolean;
   camera: { zoom: number; center: { x: number; y: number } } | null;
-  movement: { source: string | null; ids: string[] };
+  movement: { source: string | null; ids: string[]; escortsByLeader?:Record<string,string[]> };
   buildSector: string; buildCounts: Record<BuildComponent, number>; buildFunding: string;
   'blueprint-interceptor': ShipBlueprint; 'blueprint-cruiser': ShipBlueprint; 'blueprint-dreadnought': ShipBlueprint; 'blueprint-starbase': ShipBlueprint;
   'blueprintSlot-interceptor': number; 'blueprintSlot-cruiser': number; 'blueprintSlot-dreadnought': number; 'blueprintSlot-starbase': number;
   influenceSource: string | null; influenceDraft: CommandCandidate | null;
   colonization: Record<string, Resource>; colonizationFocus: string | null;
+  guildGive: Resource; guildReceive: Resource; guildAmount: number;
   tradeTo: Resource; tradeFrom: Resource; tradeAmount: number;
 }
 export type DraftKey = keyof DraftValues;
 export type DraftEntries = { [K in DraftKey]?: { revision: number; value: DraftValues[K] } };
 export interface DraftSnapshot extends DraftPartition { version: 1; values: DraftEntries }
-export const DRAFT_KEYS: readonly DraftKey[] = ['buildOrder','movementRoutes','selectedSector','screen','action','commandDraft','researchSelection','editing','playerId','buildOpen','moveOpen','moveSource','moveTarget','historyOpen','camera','movement','buildSector','buildCounts','buildFunding','blueprint-interceptor','blueprint-cruiser','blueprint-dreadnought','blueprint-starbase','blueprintSlot-interceptor','blueprintSlot-cruiser','blueprintSlot-dreadnought','blueprintSlot-starbase','influenceSource','influenceDraft','colonization','colonizationFocus','tradeTo','tradeFrom','tradeAmount'];
+export const DRAFT_KEYS: readonly DraftKey[] = ['buildOrder','movementRoutes','selectedSector','screen','action','commandDraft','researchSelection','editing','playerId','buildOpen','moveOpen','moveSource','moveTarget','historyOpen','camera','movement','buildSector','buildCounts','buildFunding','blueprint-interceptor','blueprint-cruiser','blueprint-dreadnought','blueprint-starbase','blueprintSlot-interceptor','blueprintSlot-cruiser','blueprintSlot-dreadnought','blueprintSlot-starbase','influenceSource','influenceDraft','colonization','colonizationFocus','tradeTo','tradeFrom','tradeAmount','guildGive','guildReceive','guildAmount'];
 const COMPONENTS = ['interceptor','cruiser','dreadnought','starbase','orbital','monolith'];
 const SHIPS = COMPONENTS.slice(0,4);
 const RESOURCES = ['money','science','materials'];
@@ -41,11 +42,11 @@ function blueprint(value: unknown): boolean {
 function publicCommand(value: unknown): boolean {
   if (!record(value) || typeof value.type !== 'string') return false;
   switch(value.type) {
-    case 'explore': return keysOnly(value,['type','position']) && record(value.position) && keysOnly(value.position,['q','r']) && ['q','r'].every(key=>typeof value.position === 'object' && value.position!==null && Math.abs(Number((value.position as Record<string,unknown>)[key]))<=100 && Number.isInteger((value.position as Record<string,unknown>)[key]));
+    case 'explore': return keysOnly(value,['type','position','remote']) && (value.remote===undefined||typeof value.remote==='boolean') && record(value.position) && keysOnly(value.position,['q','r']) && ['q','r'].every(key=>typeof value.position === 'object' && value.position!==null && Math.abs(Number((value.position as Record<string,unknown>)[key]))<=100 && Number.isInteger((value.position as Record<string,unknown>)[key]));
     case 'research': return keysOnly(value,['type','tileId','track']) && text(value.tileId) && ['military','grid','nano'].includes(String(value.track));
     case 'influence': return keysOnly(value,['type','removeSectorIds','addSectorIds']) && strings(value.removeSectorIds) && strings(value.addSectorIds);
     case 'upgrade': return keysOnly(value,['type','blueprints']) && Array.isArray(value.blueprints) && value.blueprints.length <= 4 && value.blueprints.every(blueprint);
-    case 'move': return keysOnly(value,['type','moves']) && Array.isArray(value.moves) && value.moves.length<=10 && value.moves.every(move=>record(move)&&keysOnly(move,['shipId','path'])&&text(move.shipId)&&strings(move.path));
+    case 'move': return keysOnly(value,['type','moves']) && Array.isArray(value.moves) && value.moves.length<=10 && value.moves.every(move=>record(move)&&keysOnly(move,['shipId','path','escorts'])&&text(move.shipId)&&strings(move.path)&&(move.escorts===undefined||strings(move.escorts)));
     case 'build': return keysOnly(value,['type','builds']) && Array.isArray(value.builds) && value.builds.length<=20 && value.builds.every(build=>record(build)&&keysOnly(build,['sectorId','component'])&&text(build.sectorId)&&COMPONENTS.includes(String(build.component)));
     case 'trade': return keysOnly(value,['type','from','to','amount']) && RESOURCES.includes(String(value.from)) && RESOURCES.includes(String(value.to)) && integer(value.amount);
     case 'trade-and-act': return keysOnly(value,['type','trades','action']) && record(value.action) && ['research','build'].includes(String(value.action.type)) && publicCommand(value.action) && Array.isArray(value.trades) && value.trades.length<=10 && value.trades.every(trade=>record(trade)&&keysOnly(trade,['from','to','amount'])&&RESOURCES.includes(String(trade.from))&&RESOURCES.includes(String(trade.to))&&integer(trade.amount));
@@ -68,12 +69,12 @@ function validValue(key: DraftKey, value: unknown): boolean {
     case 'buildOpen': case 'moveOpen': case 'historyOpen': return typeof value==='boolean';
     case 'camera': return value===null || record(value)&&keysOnly(value,['zoom','center'])&&typeof value.zoom==='number'&&value.zoom>0&&value.zoom<=20&&record(value.center)&&keysOnly(value.center,['x','y'])&&typeof value.center.x==='number'&&Number.isFinite(value.center.x)&&typeof value.center.y==='number'&&Number.isFinite(value.center.y);
     case 'buildOrder': return record(value)&&keysOnly(value,['items','selectedItemId','fundingKey'])&&Array.isArray(value.items)&&value.items.length<=20&&value.items.every(item=>record(item)&&keysOnly(item,['id','component','sectorId'])&&text(item.id)&&COMPONENTS.includes(String(item.component))&&nullableText(item.sectorId))&&nullableText(value.selectedItemId)&&text(value.fundingKey);
-    case 'movementRoutes': return Array.isArray(value)&&value.length<=10&&value.every(route=>record(route)&&keysOnly(route,['sourceSectorId','shipIds','destinationSectorId'])&&text(route.sourceSectorId)&&strings(route.shipIds)&&route.shipIds.length<=10&&text(route.destinationSectorId));
-    case 'movement': return record(value)&&keysOnly(value,['source','ids'])&&nullableText(value.source)&&strings(value.ids);
+    case 'movementRoutes': return Array.isArray(value)&&value.length<=10&&value.every(route=>record(route)&&keysOnly(route,['sourceSectorId','shipIds','destinationSectorId','escortsByLeader'])&&text(route.sourceSectorId)&&strings(route.shipIds)&&route.shipIds.length<=10&&text(route.destinationSectorId)&&(route.escortsByLeader===undefined||record(route.escortsByLeader)&&Object.values(route.escortsByLeader).every(strings)));
+    case 'movement': return record(value)&&keysOnly(value,['source','ids','escortsByLeader'])&&nullableText(value.source)&&strings(value.ids)&&(value.escortsByLeader===undefined||record(value.escortsByLeader)&&Object.values(value.escortsByLeader).every(strings));
     case 'buildCounts': return record(value)&&keysOnly(value,COMPONENTS)&&COMPONENTS.every(component=>integer(value[component],100));
     case 'colonization': return record(value)&&Object.keys(value).length<=100&&Object.entries(value).every(([id,resource])=>text(id)&&RESOURCES.includes(String(resource)));
-    case 'tradeTo': case 'tradeFrom': return RESOURCES.includes(String(value));
-    case 'tradeAmount': return integer(value) && value>0;
+    case 'guildGive': case 'guildReceive': case 'tradeTo': case 'tradeFrom': return RESOURCES.includes(String(value));
+    case 'guildAmount': case 'tradeAmount': return integer(value) && value>0;
     default: return false;
   }
 }
@@ -121,6 +122,7 @@ export function keysForCommand(command: GameCommand): DraftKey[] {
     case 'influence':return [...keys,'influenceDraft','influenceSource'];
     case 'colonize':return [...keys,'colonization','colonizationFocus'];
     case 'trade':return ['tradeTo','tradeFrom','tradeAmount'];
+    case 'guild-offer':return ['guildGive','guildReceive','guildAmount'];
     default:return [];
   }
 }

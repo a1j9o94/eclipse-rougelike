@@ -1,3 +1,4 @@
+import {isScifiCompatible} from '../shared/eclipse/gameRules';
 import { allowsRiftCannons, factionRulesMode, validRuleOptions, type GameRuleOptions } from '../shared/eclipse/gameRules';
 import {syncLeaderboardResult} from './eclipseLeaderboardStore';
 import {synchronizeUpkeepTimer,workerActor} from './eclipseUpkeepTimer';
@@ -133,6 +134,7 @@ export const createMatch = mutation({
   handler: async (ctx, args): Promise<{ matchId: Id<'eclipseMatchesV1'>; seatId: string }> => {
     const guest = await findGuest(ctx, args.credential);
     if (!guest) throw new Error('Guest session required.');
+    if (!isScifiCompatible(args)) throw new Error('Science fiction requires Standard Eclipse without custom rule options.');
     if (!validRuleOptions(args.ruleOptions)) throw new Error('Choose a whole number of rounds from 1 through 20.');
     if (args.riftCannons && !allowsRiftCannons(args)) throw new Error('Rift Cannons cannot be combined with combat jokers or variant technology.');
     const factionMode = factionRulesMode(args);

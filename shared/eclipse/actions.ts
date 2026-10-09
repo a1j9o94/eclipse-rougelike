@@ -1,3 +1,4 @@
+import { availableTechnologyMarket, remoteExplorationSources, guildMovementTolls } from './scifiActions';
 import { researchedTechnologyIds } from './technologies';
 import { upkeepSeatUnfinished } from './upkeep';
 import { researchCostForSeat, constructionCostForSeat } from "./minorSpecies";
@@ -21,6 +22,7 @@ import {
   adjacentPosition,
   connectionBetween,
   validateMovementPath,
+  validateMovementGroup,
   type HexEdge,
 } from "./geometry";
 import { shuffle } from "./random";
@@ -162,10 +164,11 @@ export function researchTechnology(
   track: Track,
   free = false,
   outsideTrack = false,
+  consumeMarket = true,
 ): void {
   const definition = TECHNOLOGIES.find((t) => t.id === tileId);
   requireRule(
-    !!definition && state.technologyMarket.includes(tileId),
+    !!definition && (!consumeMarket || availableTechnologyMarket(state,seat.id).includes(tileId)),
     "This technology is not available in the market.",
   );
   requireRule(!hasTech(seat, tileId), 'Technology is already researched.');
@@ -183,7 +186,11 @@ export function researchTechnology(
     );
     seat.resources.science -= scienceCost;
   }
-  state.technologyMarket.splice(state.technologyMarket.indexOf(tileId), 1);
+  if(consumeMarket){
+    state.technologyMarket.splice(state.technologyMarket.indexOf(tileId), 1);
+    const reservation=state.technologyReservations?.find(r=>r.owner===seat.id&&r.tileId===tileId);
+    if(reservation)state.technologyReservations=state.technologyReservations!.filter(r=>r!==reservation);
+  }
   if (!outsideTrack) seat.technologies[track].push(tileId);
   const faction = getFaction(seat.faction);
   const hidden = state.privateSeats.find(candidate => candidate.seatId === seat.id);
@@ -342,7 +349,9 @@ export function performAction(
           ),
         "Choose an empty hex adjacent to your exploration source.",
       );
-      const sources = explorationSources(state, seat, p);
+      const ordinarySources = explorationSources(state, seat, p);
+      const remote = command.remote === true;
+      const sources = remote ? remoteExplorationSources(state,seat,p) : ordinarySources;
       requireRule(
         sources.length > 0,
         "No controlled sector or unpinned fleet connects to this exploration target.",
@@ -404,6 +413,7 @@ export function performAction(
           ? { canDrawAnother: true }
           : {}),
       });
+      if(remote){seat.scifi??={};seat.scifi.remoteExploreRound=state.round;}
       consumeActivations(state, 1);
       break;
     }
@@ -558,19 +568,33 @@ export function performAction(
               : 0,
           };
         });
-        const result = validateMovementPath({
-          player: seat.id,
-          shipId: move.shipId,
-          path: move.path,
-          sectors: state.sectors.map(mapSector),
-          ships,
-          abilities: movementAbilities(seat),
-        });
+        const escorts=move.escorts??[];
+        const leader=state.ships.find(ship=>ship.id===move.shipId);
+        const groupIds=[move.shipId,...escorts];
+        if(escorts.length){
+          requireRule(seat.faction==='formics'&&!seat.passed,'Only normal Formic moves allow convoy escorts.');
+          requireRule(escorts.length<=2&&new Set(groupIds).size===groupIds.length,'Choose up to two distinct escorts.');
+          const escortType=leader?.type==='cruiser'?'interceptor':leader?.type==='dreadnought'?'cruiser':null;
+          requireRule(!!escortType&&escorts.every(id=>state.ships.some(ship=>ship.id===id&&ship.owner===seat.id&&ship.type===escortType&&ship.sectorId===leader!.sectorId)),'Escorts must be the immediate smaller class and start with their leader.');
+        }
+        const request={player:seat.id,path:move.path,sectors:state.sectors.map(mapSector),ships,abilities:movementAbilities(seat)};
+        const result = escorts.length ? validateMovementGroup({...request,shipIds:groupIds}) : validateMovementPath({...request,shipId:move.shipId});
         requireRule(result.ok, result.ok ? "" : result.message);
+        const progress=continuation(state).action!;
+        const tolls=guildMovementTolls(state,seat.id,groupIds,leader!.sectorId,move.path,progress.guildTollShipIds??[]);
+        requireRule(seat.resources.money>=tolls.length,`Portal transit costs ${tolls.length} money.`,'INSUFFICIENT_RESOURCES');
+        seat.resources.money-=tolls.length;
+        for(const toll of tolls){
+          const guild=state.seats.find(s=>s.id===toll.owner)!;guild.resources.money+=toll.amount;
+          emit(events,seat.id,`Paid ${toll.amount} money to the Guild for ${toll.shipId}.`);
+        }
+        progress.guildTollShipIds=[...(progress.guildTollShipIds??[]),...tolls.map(t=>t.shipId)];
         interruptAutoPassForEntry(state, seat, move.path, events);
-        const ship = state.ships.find((s) => s.id === move.shipId)!;
-        ship.sectorId = move.path[move.path.length - 1];
-        ship.arrival = continuation(state).nextId++;
+        for(const id of groupIds){
+          const ship = state.ships.find((s) => s.id === id)!;
+          ship.sectorId = move.path[move.path.length - 1];
+          ship.arrival = continuation(state).nextId++;
+        }
       }
       consumeActivations(state, command.moves.length, "move");
       break;

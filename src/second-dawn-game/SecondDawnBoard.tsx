@@ -467,7 +467,7 @@ function SecondDawnBoardContent({
       view={view}
       targetLabels={Object.fromEntries(view.ships.map(ship => [
         ship.id,
-        `${faction(ship.owner)?.name ?? humanize(ship.owner)} · ${shipClassName(ship.type,faction(ship.owner)?.id,ship.orbitalShip)} #${view.ships.filter(s => s.owner === ship.owner && s.type === ship.type).findIndex(s => s.id === ship.id) + 1}`,
+        `${faction(ship.owner)?.name ?? humanize(ship.owner)} · ${shipClassName(ship.type,faction(ship.owner)?.id,ship.orbitalShip)} #${view.ships.filter(s => s.owner === ship.owner && s.type === ship.type).findIndex(s => s.id === ship.id) + 1}${ship.factoryPopulation?' · Materials factory':''}`,
       ]))}
       key={view.pendingDecision.id}
       decision={view.pendingDecision}
@@ -862,7 +862,7 @@ function SecondDawnBoardContent({
           ) : action === 'finish-upkeep' && view.phase === 'upkeep' && !browsingUpkeep ? (
             <><h2>Round {view.round} upkeep</h2><p>Review production and your civilization’s upkeep before continuing. You can convert resources first if needed.</p><button type="button" onClick={browseTechnologies}>Browse technologies</button>{canColonizeAtUpkeep&&<><p>You can still populate an open planet before collecting income.</p><button type="button" disabled={blocked} onClick={openUpkeepColonization}>Colonize</button></>}</>
           ) : action === 'explore' && draft?.command.type === 'explore' ? (
-            <><h2>Explore new sector</h2><p>Confirm this frontier to draw a sector, then choose its orientation.</p><ExploreOdds view={view} position={draft.command.position}/></>
+            <><h2>Explore new sector</h2><p>Confirm this frontier to draw a sector, then choose its orientation.</p>{draft?.command.type==='explore'&&draft.command.remote&&<p>Remote prospecting · outer sector beside any explored sector. Normal influence cost and placement rules apply; onward exploration may reach inner rings.</p>}<ExploreOdds view={view} position={draft.command.position}/></>
           ) : sector ? (
             <>
               <h2>Sector {sector.tileId}</h2>
@@ -912,12 +912,13 @@ function SecondDawnBoardContent({
                       sectorId: s.sectorId,
                       kind: s.type,
                       movement: 0,
+                      doesNotPin:faction(s.owner)?.id==='spacing-guild',
                     })),
                     movementAbilities(own),
                   );
                   return (
                     <p key={ship.id}>
-                      {shipClassName(ship.type,own.faction,ship.orbitalShip)}:{" "}
+                      {shipClassName(ship.type,own.faction,ship.orbitalShip)}{ship.factoryPopulation?' · Materials factory':''}:{" "}
                       {ship.type === "starbase"
                         ? ship.orbitalShip?'Immobile Orbital':'Immobile starbase'
                         : movable === 0
