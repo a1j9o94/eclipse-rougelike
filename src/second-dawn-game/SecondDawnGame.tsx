@@ -6,7 +6,7 @@ import Leaderboard from './Leaderboard';
 import {submitWithUpkeepRetry} from './upkeepSubmission';
 import AiDifficultyPicker from './AiDifficultyPicker';
 import type { AiDifficulty } from '../../shared/eclipse/aiConfig';
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   useAction,
   useConvex,
@@ -73,7 +73,7 @@ function ConnectedGame() {
   const client=useConvex();
   const compact=useMobileLayout();
   const markSeen=useMutation(api.eclipseMatches.markMatchSeen);
-  const [lastAcceptedCommand,setLastAcceptedCommand]=useState<{revision:number;type:GameCommand['type']}|undefined>();
+  const [lastAcceptedCommand,setLastAcceptedCommand]=useState<{revision:number;type:GameCommand['type'];sessionKey:string}|undefined>();
   const [recapSaving,setRecapSaving]=useState(false);
   const [recapError,setRecapError]=useState<string|null>(null);
   const issueGuest = useAction(api.eclipseGuests.createGuestSession);
@@ -81,6 +81,9 @@ function ConnectedGame() {
   const registerPlayer=useAction(api.eclipsePlayers.registerPlayer);
   const loginPlayer=useAction(api.eclipsePlayers.loginPlayer);
   const submit = useMutation(api.eclipseMatches.submitCommand);
+  const queueCommand = useMutation(api.eclipseMatches.queueCommand);
+  const [lastQueuedCommand,setLastQueuedCommand]=useState<{commandId:string;type:GameCommand['type'];sessionKey:string}|undefined>();
+  const lastQueueRequest=useRef<{sessionKey:string;request:{commandId:string;expectedRevision:number;command:GameCommand|null}}|null>(null);
   const retryAi = useMutation(api.eclipseMatches.retryAi);
   const createRoom = useMutation(api.eclipseRooms.createRoom);
   const joinRoom = useMutation(api.eclipseRooms.joinRoom);
@@ -150,6 +153,15 @@ function ConnectedGame() {
     api.eclipseMatches.getMatchView,
     credential && matchId ? { credential, matchId } : "skip",
   );
+  const queuedReceiptRevision=view?.lastExecutedQueuedCommand?.revision;
+  const queuedReceiptType=view?.lastExecutedQueuedCommand?.type;
+  const sessionKey=`${credential}:${matchId}:${view?.viewerSeatId}`;
+  const activeSession=useRef(sessionKey);activeSession.current=sessionKey;
+  // Keep receipt identity stable across unrelated subscription revisions. A new
+  // object acknowledges a submission and must represent a new execution.
+  const executedQueueReceipt=useMemo(()=>queuedReceiptRevision!==undefined&&queuedReceiptType?{revision:queuedReceiptRevision,type:queuedReceiptType,sessionKey}:undefined,[queuedReceiptRevision,queuedReceiptType,sessionKey]);
+  const currentAcceptedCommand=lastAcceptedCommand?.sessionKey===sessionKey?lastAcceptedCommand:undefined;
+  const acceptedCommand=executedQueueReceipt&&(!currentAcceptedCommand||executedQueueReceipt.revision>currentAcceptedCommand.revision)?executedQueueReceipt:currentAcceptedCommand;
   const gameControls=useGameRecoveryControls({credential,matchId,view,connected,busy,onHome:()=>openHome(),onRoom:roomToken?()=>setRoomOverview(true):undefined});
   const history=useMatchHistory(credential,matchId,gameControls.rollbackRevision);
   const recap=useActivityRecap(matchId&&view?`${matchId}:${view.viewerSeatId}:${credential}`:null,view);
@@ -174,7 +186,7 @@ function ConnectedGame() {
   const spectatorHistory=useSpectatorHistory(watchingRoom?roomToken:null,spectatorView?.historyResetRevision??0);
   const rooms=useQuery(api.eclipseRooms.listMyRooms,credential?{credential}:'skip');
   const profile=useQuery(api.eclipsePlayerStore.getPlayerProfile,credential?{credential}:'skip');
-  function switchPlayer(next:string){switchPlayerCredential(localStorage,next);lastRequest.current=null;setMatchId(null);setRoomOverview(false);setCredential(next);setStatus('Player restored.');}
+  function switchPlayer(next:string){switchPlayerCredential(localStorage,next);lastRequest.current=null;lastQueueRequest.current=null;setLastQueuedCommand(undefined);setMatchId(null);setRoomOverview(false);setCredential(next);setStatus('Player restored.');}
   const originalPlayer=readStorage('eclipse.second-dawn.original-player.v1');
   const previousPlayer=originalPlayer&&isGuestCredential(originalPlayer)&&originalPlayer!==credential?originalPlayer:readStorage('eclipse.second-dawn.previous-player.v1');
   const playerAccess=<PlayerAccessPanel profile={profile??null} loginDisabled={!connected||busy} disabled={!connected||!credential||profile===undefined||busy} onRegister={(username,pin)=>registerPlayer({credential:credential!,username,...(pin?{pin}:{})})} onLogin={async(username,secret)=>{const result=await loginPlayer({username,secret});switchPlayer(result.credential);}} onRotateRecoveryCode={()=>rotateRecoveryCode({credential:credential!})} onPreviousPlayer={previousPlayer&&isGuestCredential(previousPlayer)&&previousPlayer!==credential?()=>switchPlayer(previousPlayer):undefined}/>;
@@ -197,6 +209,7 @@ function ConnectedGame() {
     setRoomToken(null);setMatchId(null);setRoomOverview(false);
     setCreating(setup);setCreatingRoom(false);setStatus('');
     lastRequest.current=null;setLastAcceptedCommand(undefined);
+    lastQueueRequest.current=null;setLastQueuedCommand(undefined);
     setRecapError(null);recap.dismiss();
   }
   async function roomAction(action:()=>Promise<void>){
@@ -277,7 +290,7 @@ function ConnectedGame() {
       const result = await submitWithUpkeepRetry(view,request,next=>submit({credential,matchId,...next}),()=>client.query(api.eclipseMatches.getMatchView,{credential,matchId}),next=>{lastRequest.current=next;});
       if (result.ok) {
         lastRequest.current = null;
-        setLastAcceptedCommand({revision:result.receipt.revision,type:command.type});
+        setLastAcceptedCommand({revision:result.receipt.revision,type:command.type,sessionKey});
         recap.dismiss();
         setStatus(
           `Saved · revision ${result.receipt.revision}${result.duplicate ? " · recovered original confirmation" : ""}`,
@@ -296,6 +309,25 @@ function ConnectedGame() {
       setBusy(false);
     }
   }
+  async function queue(command:GameCommand|null){
+    if(!credential||!matchId||!view||!recovery.ready||busy||gameControls.blockedReason||gameControls.working)return;
+    setBusy(true);setStatus(command?'Saving your next action…':'Canceling your queued action…');
+    const prior=lastQueueRequest.current;
+    const request=prior?.sessionKey===sessionKey&&JSON.stringify(prior.request.command)===JSON.stringify(command)?prior.request:{commandId:crypto.randomUUID(),expectedRevision:view.revision,command};
+    lastQueueRequest.current={sessionKey,request};
+    try{
+      const result=await queueCommand({credential,matchId,...request});
+      if(activeSession.current!==sessionKey)return;
+      lastQueueRequest.current=null;
+      if(result.ok){
+        if(command)setLastQueuedCommand({commandId:request.commandId,type:command.type,sessionKey});
+        setStatus(command?'Queued · will execute on your turn.':'Queued action canceled.');
+      }else setStatus(`${result.error.message}${result.error.code==='STALE_REVISION'?' The board is refreshing; review your choice again.':''}`);
+    }catch(error){
+      if(activeSession.current!==sessionKey)return;
+      setStatus(`${error instanceof Error?error.message:'Connection interrupted.'} Retry the same choice to recover its confirmation.`);
+    }finally{setBusy(false);}
+  }
   const takeover=view?.multiplayer?.timer?.targetSeatId===view?.viewerSeatId&&(clockExpired||['timed-out','failed'].includes(view?.multiplayer?.timer?.status??''));
   if(watchingRoom&&!roomOverview)return spectatorView
     ? <SpectatorBoard key={roomToken!} view={spectatorView} history={spectatorHistory} connected={connected&&browserOnline} playerNames={spectatorView.playerNames} timer={spectatorView.timer} lifecycle={spectatorView.matchLifecycle} onHome={()=>openHome()} onRoom={()=>setRoomOverview(true)}/>
@@ -305,7 +337,10 @@ function ConnectedGame() {
       <>{gameControls.banner}<SecondDawnBoard
         key={`${matchId}:${view.viewerSeatId}:${gameControls.rollbackRevision}`}
         matchId={matchId}
-        lastAcceptedCommand={lastAcceptedCommand}
+        lastAcceptedCommand={acceptedCommand}
+        queuedAction={view.queuedAction}
+        lastQueuedCommand={lastQueuedCommand?.sessionKey===sessionKey?lastQueuedCommand:undefined}
+        onQueue={command=>{void queue(command);}}
         recapOpen={compact&&!!recap.snapshot?.open}
         activityRecap={compact&&recap.snapshot?.open?<ActivityRecap baseline={recap.snapshot.baseline} throughRevision={recap.snapshot.throughRevision} feed={history} disabled={!recovery.ready} saving={recapSaving} error={recapError} onDismiss={()=>{void dismissRecap();}}/>:undefined}
         playerNames={view.playerNames}

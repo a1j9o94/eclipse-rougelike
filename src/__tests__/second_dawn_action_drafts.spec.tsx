@@ -11,11 +11,11 @@ import { getPlayerView } from '../../shared/eclipse/protocol';
 import { initialBlueprints } from '../../shared/eclipse/blueprints';
 import ActionDraftNotice from '../second-dawn-game/ActionDraftNotice';
 afterEach(() => { cleanup(); localStorage.clear(); });
-function Harness({ submit = () => {} }: { submit?: () => void }) {
+function Harness({ submit = () => {},queued=false }: { submit?: () => void;queued?:boolean }) {
   const [amount, setAmount] = useActionDraftState('tradeAmount', 1);
   const [sector, setSector] = useActionDraftState('selectedSector', null);
   const guard = useActionDraftGuard();
-  return <><output aria-label="Amount">{amount}</output><output aria-label="Sector">{sector}</output><span>{guard.stale ? 'Review required' : 'Ready'}</span><button onClick={() => setAmount(value => value + 1)}>Increase</button><button onClick={() => setSector('new-sector')}>Navigate</button><button disabled={guard.stale} onClick={() => { guard.markSubmitted({ type: 'trade', from: 'money', to: 'science', amount }); submit(); }}>Submit</button></>;
+  return <><output aria-label="Amount">{amount}</output><output aria-label="Sector">{sector}</output><span>{guard.stale ? 'Review required' : 'Ready'}</span><button onClick={() => setAmount(value => value + 1)}>Increase</button><button onClick={() => setSector('new-sector')}>Navigate</button><button disabled={guard.stale} onClick={() => { guard.markSubmitted({ type: 'trade', from: 'money', to: 'science', amount },queued?'queued':'accepted'); submit(); }}>Submit</button></>;
 }
 describe('partitioned local action drafts', () => {
   it('restores a build after refresh without adding a draft-review confirmation', () => {
@@ -71,6 +71,21 @@ describe('partitioned local action drafts', () => {
     localStorage.setItem(key, '{bad json');expect(readActionDrafts(localStorage, partition).values).toEqual({});
     localStorage.setItem(key, JSON.stringify({ version: 1, ...partition, values: { tradeAmount: { revision: 4, value: -2 }, commandDraft: { revision: 4, value: { label: 'Secret', description: '', command: { type: 'resolve', decisionId: 'secret-choice', choice: { kind: 'reputation', kept: [4] } } } }, pin: { revision: 4, value: '123456' } } }));
     expect(readActionDrafts(localStorage, partition).values).toEqual({});
+  });
+  it('clears a saved queued draft on its fresh receipt but preserves changes made while saving',()=>{
+    const props={matchId:'queue-draft',viewerSeatId:'a',revision:4};
+    const ui=render(<ActionDraftProvider {...props}><Harness queued/></ActionDraftProvider>);
+    fireEvent.click(screen.getByText('Increase'));fireEvent.click(screen.getByText('Submit'));
+    ui.rerender(<ActionDraftProvider {...props} lastQueuedCommand={{commandId:'queue-1',type:'trade'}}><Harness queued/></ActionDraftProvider>);
+    expect(screen.getByLabelText('Amount')).toHaveTextContent('1');
+    fireEvent.click(screen.getByText('Increase'));fireEvent.click(screen.getByText('Submit'));fireEvent.click(screen.getByText('Increase'));
+    ui.rerender(<ActionDraftProvider {...props} lastAcceptedCommand={{revision:5,type:'trade'}} lastQueuedCommand={{commandId:'queue-1',type:'trade'}}><Harness queued/></ActionDraftProvider>);
+    expect(screen.getByLabelText('Amount')).toHaveTextContent('3');
+    ui.rerender(<ActionDraftProvider {...props} lastQueuedCommand={{commandId:'queue-2',type:'trade'}}><Harness queued/></ActionDraftProvider>);
+    expect(screen.getByLabelText('Amount')).toHaveTextContent('3');
+    fireEvent.click(screen.getByText('Submit'));
+    ui.rerender(<ActionDraftProvider {...props} lastQueuedCommand={{commandId:'queue-2',type:'trade'}}><Harness queued/></ActionDraftProvider>);
+    expect(screen.getByLabelText('Amount')).toHaveTextContent('3');
   });
   it('keeps ordinary local component behavior when no provider is installed', () => {
     render(<Harness/>);fireEvent.click(screen.getByText('Increase'));expect(screen.getByLabelText('Amount')).toHaveTextContent('2');expect(localStorage.length).toBe(0);

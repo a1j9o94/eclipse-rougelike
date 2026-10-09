@@ -863,6 +863,19 @@ Result & Next Steps: the board regression failed against the shipped queue butto
 - Follow-ups: Tune full starting sheets, component-copy costs, salvage payouts and caps; resolve same-name Portiid repeat-acquisition policy before implementing it.
 - Result & Next Steps: Proposal amended with explicit confirmed rules, provisional numeric values and recorded interpretations. Source checks confirm firing-side damage allocation and current Ragnarok reaction suppression. No gameplay implementation is included.
 
+## October 9, 2026 — Off-turn next-action queue
+
+Outcome: players use the existing action workflows while waiting, confirm their exact next command with “Will execute on your turn”, and the server executes it when their action turn starts.
+
+Acceptance: one private persisted queue per seat; replace/cancel; existing desktop/mobile selection flow; no off-turn spending; authoritative revalidation and explicit failure without substitutions; no future decision choices; independent of an open browser; exactly-once journaled execution through normal, AI and timeout handoffs; preserve auto-pass preference while pausing it for an explicitly queued reaction.
+
+Risks/rollback: intervening board changes can invalidate selections and must leave the player's turn available. Shared undo, abandonment, resignation and round changes invalidate old queues. Backend deploy is additive to the established dev:ideal-nightingale-55 deployment and must precede main/frontend release. Revert frontend only if needed; retain optional backend fields to preserve existing saves.
+
+Tests (must fail first): off-turn Build and queue confirmation/cancel/failure UI; authenticated private queue persistence, duplicate IDs, execution once and stale-target rejection; rollback/phase and timeout transition coverage. Relevant existing drafts/planners/passing/multiplayer suites, lint and build gate. Integration verifies server queue calls, lost-response recovery and execution receipt forwarding.
+
+Decision log: queue one fully specified command, not an entire future decision tree; later exploration/combat/discovery choices remain interactive. Use only the public PlayerView for hypothetical planner selections; never replace the authoritative live turn/decision view.
+
+Release blocker: current workspace has no Convex CLI login. The Vercel connector returns 403 for obleton-adrian. Complete and push a reviewable feature PR before requesting any access/handoff; do not merge the frontend until backend publication is available.
 ## 2026-10-09 — Science-fiction factions
 
 Outcome: seven optional playable factions with usable controls, AI and durable private choices. See `coding_agents/second_dawn_scifi_implementation.md` for acceptance criteria, authoritative decisions, tuning and rollback.
@@ -870,6 +883,23 @@ Outcome: seven optional playable factions with usable controls, AI and durable p
 Fail-first: profile/setup guards and privacy, actions/escrow/convoys/reservations, battle-wide rewards/physical replicas, UI choices, AI legality. Relevant regression suites, lint and full build are required. Release preserves old roster/version pins and publishes the backward-compatible backend before the Git frontend release.
 
 
+## PR 94 local backend recovery — 2026-10-09
+
+Outcome: publish the tested off-turn queue backend so the browser session can release the matching frontend.
+
+Acceptance criteria: original dirty checkout preserved; release checkout at 3176ffca766a6b03d0e55d08f1b642fd83d19aeb; lint, targeted tests and build pass; Convex reports successful publication to dev:ideal-nightingale-55.
+
+Risks & rollback: existing old main code may have been published accidentally after failed switch; use an isolated detached worktree, explicit deployment and no deploy-key/self-hosted overrides. Stop on incompatible schema errors, preserve data. No main merge in this recovery.
+
+Test list: existing queue server/UI regressions, lint, build, Convex typecheck. No new behavior or failing-test change required for deployment-only recovery.
+
+Decision Log: use separate checkout rather than stash/reset local changes.
+
+Follow-ups: return verified backend publication receipt to browser session for main merge and Vercel verification.
+
+Release correction: first publish rejected stored faction bobiverse; integrate origin/main 8b87eed before retry. Preserve both branches documentation entries. Source merge was automatic. Re-run queue and sci-fi faction regressions before publication.
+
+Validation: Node 22.23.3; queue, session, auto-pass, sci-fi actions/AI/combat/UI/profile regressions passed (105 tests in 12 suites), catalog regression passed separately (7 tests). Lint, Convex typecheck/codegen and full build passed. Existing main catalog assertion first failed on 25 versus 18 factions; preserve assertion on original 18-ID prefix while dedicated sci-fi profile test checks appended catalog.
 ## October 9 — Structure art cleanup
 Outcome: replace generic portal/house/ellipse assets with consistent physical sector pieces. Acceptance: shared portal, Monolith and civilian Orbital art across map and card uses, readable small markers, preserved Exiles defender art and rule labels. Risk/rollback: frontend-only; revert release commit. Tests: three new integration tests failed first; bounded Build, galaxy/mobile, discoveries, population, AI summaries, Minor Species, technology, Exiles and fleet regressions; lint and production build. See ../second_dawn_structure_art.md.
 

@@ -6,7 +6,7 @@ export interface ActionDraftGuard {
   stale: boolean;
   draftKeys: readonly DraftKey[];
   clear: (keys?: readonly DraftKey[]) => void;
-  markSubmitted: (command: GameCommand) => void;
+  markSubmitted: (command: GameCommand, receiptKind?:'accepted'|'queued') => void;
   storageAvailable: boolean;
 }
 export interface ActionDraftContextValue extends ActionDraftGuard {

@@ -8,12 +8,14 @@ import { v } from 'convex/values';
 import { internalAction, internalQuery, internalMutation, mutation, query } from './_generated/server';
 import type { MutationCtx, QueryCtx } from './_generated/server';
 import type { Doc, Id } from './_generated/dataModel';
-import { getFaction, factionAllowedForProfile, profileVersions, seatPieceColor } from '../shared/eclipse/catalog';
+import { getFaction, factionAllowedForProfile, profileVersions, seatPieceColor, tradeQuote } from '../shared/eclipse/catalog';
 import { resolveGuest as findGuest, playerNameForGuest } from './eclipseIdentity';
 import { commitCommand, getPlayerView } from '../shared/eclipse/protocol';
 import { createGame } from '../shared/eclipse/setup';
 import { processGameCommand } from '../shared/eclipse/engine';
-import type { CommandReceipt, GameState, JournalEntry, Phase, PlayerView, ValidationError } from '../shared/eclipse/types';
+import { legalCommands } from '../shared/eclipse/legal';
+import { canQueueCommand, type QueuedAction, type QueuedActionReceipt } from '../shared/eclipse/queuedActions';
+import type { CommandReceipt, GameCommand, GameState, JournalEntry, Phase, PlayerView, ValidationError } from '../shared/eclipse/types';
 import { roomAiSelections, reconcileMultiplayerTimer, timerTargetForState, type MultiplayerTimerPublic, type MultiplayerTurnTimer } from '../shared/eclipse/multiplayer';
 import { internal } from './_generated/api';
 import { chooseStrategicAiCommand } from '../shared/eclipse/aiSearch';
@@ -113,6 +115,8 @@ export type MatchSubmission =
   | { ok: false; error: ValidationError };
 
 export interface MatchPlayerView extends PlayerView {
+  queuedAction?:QueuedAction|null;
+  lastExecutedQueuedCommand?:QueuedActionReceipt;
   showCombatOdds?:boolean;
   participation?: MatchParticipation;
   matchLifecycle?: 'active' | 'abandoned';
@@ -195,6 +199,8 @@ export const getMatchView = query({
     const timer = room && room.humanSeatCount > 1 ? await ctx.db.query('eclipseRoomTimersV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique() : null;
     return view ? {
       ...view,
+      queuedAction:ownership.queuedAction?{command:ownership.queuedAction.command,status:ownership.queuedAction.status,...(ownership.queuedAction.error?{error:ownership.queuedAction.error}: {})}:null,
+      ...(ownership.lastExecutedQueuedCommand?{lastExecutedQueuedCommand:{revision:ownership.lastExecutedQueuedCommand.revision,type:ownership.lastExecutedQueuedCommand.command.type}}: {}),
       showCombatOdds:match.showCombatOdds??false,
       participation: participation(match, ownership),
       matchLifecycle: match.lifecycle ?? 'active',
@@ -247,12 +253,13 @@ export const resignMatch = mutation({
     const ownership = await ownedSeat(ctx, args.credential, args.matchId);
     const match = await ctx.db.get(args.matchId);
     if (!ownership || !match) return { ok: false, error: { code: 'NOT_A_SEAT', message: 'This identity does not own a seat in this match.', field: null } };
-    if (!args.commandId.trim() || args.commandId.length > 200 || /^(ai|timeout):/.test(args.commandId) || !Number.isSafeInteger(args.expectedRevision) || args.expectedRevision < 0) {
+    if (!args.commandId.trim() || args.commandId.length > 200 || /^(ai|timeout|queued):/.test(args.commandId) || !Number.isSafeInteger(args.expectedRevision) || args.expectedRevision < 0) {
       return { ok: false, error: { code: 'INVALID_COMMAND', message: 'Provide a unique command ID and valid revision.', field: null } };
     }
     const original = await ctx.db.query('eclipseMatchLifecycleV1').withIndex('by_match_command', q => q.eq('matchId', args.matchId).eq('commandId', args.commandId)).unique();
     const ruleCommand = await ctx.db.query('eclipseJournalV1').withIndex('by_match_command', q => q.eq('matchId', args.matchId).eq('commandId', args.commandId)).unique();
-    if (ruleCommand || (original && (original.actor !== ownership.seatId || original.expectedRevision !== args.expectedRevision))) {
+    const queueRequest=await ctx.db.query('eclipseQueueRequestsV1').withIndex('by_match_command',q=>q.eq('matchId',args.matchId).eq('commandId',args.commandId)).unique();
+    if (ruleCommand || queueRequest || (original && (original.actor !== ownership.seatId || original.expectedRevision !== args.expectedRevision))) {
       return { ok: false, error: { code: 'COMMAND_ID_REUSED', message: 'This command ID already belongs to another request.', field: 'commandId' } };
     }
     if (original) return { ok: true, revision: original.revision, outcome: original.outcome, duplicate: true };
@@ -269,7 +276,7 @@ export const resignMatch = mutation({
     state.revision += 1;
     const now = Date.now();
     await ctx.db.patch(match._id, { snapshotJson: JSON.stringify(state), revision: state.revision, updatedAt: now, ...(outcome === 'abandoned' ? { lifecycle: 'abandoned' as const } : {}) });
-    await ctx.db.patch(ownership._id, { resignedAt: now, resignationOutcome: outcome });
+    await ctx.db.patch(ownership._id, { resignedAt: now, resignationOutcome: outcome, queuedAction:undefined,lastExecutedQueuedCommand:undefined });
     await ctx.db.insert('eclipseMatchLifecycleV1', { matchId: match._id, actor: seat.id, commandId: args.commandId, expectedRevision: args.expectedRevision, revision: state.revision, outcome, createdAt: now });
     if (outcome === 'abandoned') {
       const room = await ctx.db.query('eclipseRoomsV1').withIndex('by_match', q => q.eq('matchId', match._id)).unique();
@@ -306,11 +313,13 @@ export const submitCommand = mutation({
     if (ownership.resignedAt !== undefined) return { ok: false, error: { code: 'NOT_A_SEAT', message: 'You resigned from this game. AI now controls your seat.', field: null } };
     const lifecycleCommand = await ctx.db.query('eclipseMatchLifecycleV1').withIndex('by_match_command', q => q.eq('matchId', matchId).eq('commandId', request.commandId)).unique();
     if (lifecycleCommand) return { ok: false, error: { code: 'COMMAND_ID_REUSED', message: 'This command ID already belongs to a resignation.', field: 'commandId' } };
+    const queueRequest=await ctx.db.query('eclipseQueueRequestsV1').withIndex('by_match_command',q=>q.eq('matchId',matchId).eq('commandId',request.commandId)).unique();
+    if(queueRequest)return {ok:false,error:{code:'COMMAND_ID_REUSED',message:'This command ID already belongs to a queued action.',field:'commandId'}};
     const state = readState(match);
     // Duplicate delivery returns its original receipt even if the current turn has since timed out.
     const original = await ctx.db.query('eclipseJournalV1').withIndex('by_match_command', q => q.eq('matchId', matchId).eq('commandId', request.commandId)).unique();
     if (!original && match.rollbackPendingId) return { ok: false, error: { code: 'ILLEGAL_ACTION', message: 'The game is paused for a shared undo request.', field: null } };
-    if (!original && /^(ai|timeout):/.test(request.commandId)) return {ok:false, error:{code:'INVALID_COMMAND', message:'This command ID prefix is reserved for server actions.', field:'commandId'}};
+    if (!original && /^(ai|timeout|queued):/.test(request.commandId)) return {ok:false, error:{code:'INVALID_COMMAND', message:'This command ID prefix is reserved for server actions.', field:'commandId'}};
     const room = match.roomToken ? await ctx.db.query('eclipseRoomsV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique() : null;
     const timer = room && room.humanSeatCount > 1 ? await ctx.db.query('eclipseRoomTimersV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique() : null;
     if (!original && timer && (timer.upkeepSeatIds?timer.upkeepSeatIds.includes(ownership.seatId):timer.targetSeatId === ownership.seatId) && (timer.status !== 'active' || timer.deadlineAt <= Date.now())) {
@@ -331,8 +340,82 @@ export const submitCommand = mutation({
   },
 });
 
+export type QueueSubmission={ok:true;duplicate:boolean}|{ok:false;error:ValidationError};
+
+function queueRequestKey(expectedRevision:number,command:GameCommand|null):string {
+  return JSON.stringify({expectedRevision,command},(_key,item:object|string|number|boolean|null)=>item&&typeof item==='object'&&!Array.isArray(item)?Object.fromEntries(Object.entries(item).sort(([a],[b])=>a.localeCompare(b))):item);
+}
+
+/** Confirmation persists private intent; no hidden outcome from the validation clone is returned. */
+export const queueCommand=mutation({
+ args:{credential:v.string(),matchId:v.id('eclipseMatchesV1'),commandId:v.string(),expectedRevision:v.number(),command:v.union(gameCommandValidator,v.null())},
+ handler:async(ctx,{credential,matchId,commandId,expectedRevision,command}):Promise<QueueSubmission>=>{
+  const reject=(code:ValidationError['code'],message:string,field:string|null=null):QueueSubmission=>({ok:false,error:{code,message,field}});
+  const ownership=await ownedSeat(ctx,credential,matchId),match=await ctx.db.get(matchId);
+  if(!ownership||!match||ownership.resignedAt!==undefined)return reject('NOT_A_SEAT','This identity does not control a seat in this match.');
+  const state=readState(match),seat=state.seats.find(s=>s.id===ownership.seatId);
+  if(!seat||seat.controller!=='human'||seat.eliminated||match.lifecycle==='abandoned'||state.phase==='finished')return reject('GAME_FINISHED','This seat can no longer queue actions.');
+  if(!commandId.trim()||commandId.length>100||/^(ai|timeout|queued):/.test(commandId)||!Number.isSafeInteger(expectedRevision)||expectedRevision<0)return reject('INVALID_COMMAND','Provide a unique command ID and valid revision.');
+  const original=await ctx.db.query('eclipseQueueRequestsV1').withIndex('by_match_command',q=>q.eq('matchId',matchId).eq('commandId',commandId)).unique(),requestJson=queueRequestKey(expectedRevision,command);
+  if(original)return original.actor===seat.id&&original.requestJson===requestJson?{ok:true,duplicate:true}:reject('COMMAND_ID_REUSED','This command ID already belongs to another request.','commandId');
+  const ruleCommand=await ctx.db.query('eclipseJournalV1').withIndex('by_match_command',q=>q.eq('matchId',matchId).eq('commandId',commandId)).unique(),lifecycleCommand=await ctx.db.query('eclipseMatchLifecycleV1').withIndex('by_match_command',q=>q.eq('matchId',matchId).eq('commandId',commandId)).unique();
+  if(ruleCommand||lifecycleCommand)return reject('COMMAND_ID_REUSED','This command ID already belongs to another request.','commandId');
+  if(match.rollbackPendingId)return reject('ILLEGAL_ACTION','Resolve the shared undo request before changing your queued action.');
+  if(state.revision!==expectedRevision)return reject('STALE_REVISION','The board changed. Review your queued action again.','expectedRevision');
+  if(command){
+   if(state.phase!=='action'||!canQueueCommand(command))return reject('ILLEGAL_ACTION','Queue a next action during the action phase.');
+   if(state.pendingDecision?.owner===seat.id)return reject('DECISION_PENDING','Resolve your outstanding choice before confirming a queued action.');
+   if(state.activeSeatId===seat.id||state.engine?.action?.owner===seat.id)return reject('ILLEGAL_ACTION','Your turn is already in progress. Execute this action normally.');
+   const projected=structuredClone(state);projected.activeSeatId=seat.id;projected.pendingDecision=null;
+   if(projected.engine){projected.engine.action=null;projected.engine.decisions=[];}
+   const publicView=getPlayerView(projected,seat.id)!;
+   if(command.type==='trade-and-act'){
+    const own=publicView.seats.find(s=>s.id===seat.id)!;
+    for(const trade of command.trades){const quote=tradeQuote(own.faction,trade.from,trade.to,trade.amount,factionRulesMode(publicView));if(quote){own.resources[trade.from]-=quote.input;own.resources[trade.to]+=trade.amount;}}
+   }
+   const family=command.type==='trade-and-act'?command.action.type:command.type;
+   if(!legalCommands(publicView,{perFamilyLimit:1}).some(candidate=>candidate.command.type===family))return reject('ILLEGAL_ACTION','That action is not available for your next turn.');
+   const validation=processGameCommand(projected,seat.id,command);
+   if(!validation.ok)return {ok:false,error:validation.error};
+   if(seat.passed&&seat.autoPassUnlessAttacked&&seat.autoPassPausedRound!==state.round){
+    const pause=commitCommand({state,journal:[]},seat.id,{commandId:`queued:${seat.id}:${commandId}:pause`,expectedRevision:state.revision,command:{type:'set-auto-pass',enabled:true,pauseForRound:true}},profileVersions(state.factionProfile??'base',state.engine?.riftCannons,Boolean(state.minorSpecies)),processGameCommand);
+    if(!pause.ok)return {ok:false,error:pause.error};
+    await saveAccepted(ctx,matchId,pause.aggregate.state,pause.aggregate.journal[0],state.round);
+    await reconcileRoomTimerAfterCommand(ctx,match,pause.aggregate.state);
+    await scheduleAi(ctx,matchId,pause.aggregate.state);
+   }
+  }
+  await ctx.db.patch(ownership._id,{queuedAction:command?{commandId,command,round:state.round,status:'pending'}:undefined});
+  await ctx.db.insert('eclipseQueueRequestsV1',{matchId,commandId,actor:seat.id,requestJson,createdAt:Date.now()});
+  return {ok:true,duplicate:false};
+ }
+});
+
+/** Called in the handoff transaction, so no client needs to remain online to execute intent. */
+async function executeQueuedAction(ctx:MutationCtx,matchId:Id<'eclipseMatchesV1'>,state:GameState):Promise<boolean>{
+ const match=await ctx.db.get(matchId);if(!match||match.rollbackPendingId)return false;
+ const owners=await ctx.db.query('eclipseOwnershipV1').withIndex('by_match_guest',q=>q.eq('matchId',matchId)).collect();
+ for(const owner of owners){
+  const queued=owner.queuedAction;if(!queued)continue;
+  if(owner.resignedAt!==undefined||match.lifecycle==='abandoned'||state.phase==='finished'||state.seats.find(s=>s.id===owner.seatId)?.eliminated){await ctx.db.patch(owner._id,{queuedAction:undefined});continue;}
+  if(queued.status==='pending'&&(queued.round!==state.round||state.phase!=='action'))await ctx.db.patch(owner._id,{queuedAction:{...queued,status:'failed',error:'The round ended before your queued action could execute. Choose your next action again.'}});
+ }
+ if(match.lifecycle==='abandoned'||state.phase!=='action'||state.pendingDecision||state.engine?.action||state.engine?.decisions.length)return false;
+ const owner=owners.find(o=>o.seatId===state.activeSeatId),queued=owner?.queuedAction;
+ if(!owner||!queued||queued.status!=='pending'||queued.round!==state.round||owner.resignedAt!==undefined||state.seats.find(s=>s.id===owner.seatId)?.controller!=='human'||state.seats.find(s=>s.id===owner.seatId)?.eliminated)return false;
+ const timer=await ctx.db.query('eclipseRoomTimersV1').withIndex('by_match',q=>q.eq('matchId',matchId)).unique();
+ if(timer?.targetSeatId===owner.seatId&&(timer.actionTurnSerial??0)===(state.actionTurnSerial??0)&&(timer.status!=='active'||timer.deadlineAt<=Date.now())){await ctx.db.patch(owner._id,{queuedAction:{...queued,status:'failed',error:'Your turn timed out before the queued action could execute.'}});return false;}
+ const result=commitCommand({state,journal:[]},owner.seatId,{commandId:`queued:${owner.seatId}:${queued.commandId}`,expectedRevision:state.revision,command:queued.command},profileVersions(state.factionProfile??'base',state.engine?.riftCannons,Boolean(state.minorSpecies)),processGameCommand);
+ if(!result.ok){await ctx.db.patch(owner._id,{queuedAction:{...queued,status:'failed',error:result.error.message}});return false;}
+ await saveAccepted(ctx,matchId,result.aggregate.state,result.aggregate.journal[0],state.round);
+ await ctx.db.patch(owner._id,{queuedAction:undefined,lastExecutedQueuedCommand:{revision:result.receipt.revision,command:queued.command}});
+ await reconcileRoomTimerAfterCommand(ctx,match,result.aggregate.state);
+ await scheduleAi(ctx,matchId,result.aggregate.state);
+ return true;
+}
 
 export async function scheduleAi(ctx: MutationCtx, matchId: Id<'eclipseMatchesV1'>, state: GameState): Promise<void> {
+  if(await executeQueuedAction(ctx,matchId,state))return;
   const existing = await ctx.db.query('eclipseAiJobsV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique();
 
   const match = await ctx.db.get(matchId);

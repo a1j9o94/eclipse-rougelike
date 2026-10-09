@@ -210,7 +210,7 @@ export const gameCommandValidator: Validator<GameCommand, "required", string> =
       ),
     }),
     v.object({ type: v.literal("pass") }),
-    v.object({ type: v.literal("set-auto-pass"), enabled: v.boolean() }),
+    v.object({ type: v.literal("set-auto-pass"), enabled: v.boolean(), pauseForRound:v.optional(v.boolean()) }),
     v.object({
       type: v.literal("discard-reputation"),
       values: v.array(v.number()),

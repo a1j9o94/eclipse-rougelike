@@ -125,8 +125,11 @@ export function processGameCommand(
     } else if (command.type === "set-auto-pass") {
       requireRule(typeof command.enabled === "boolean", "Choose whether automatic passing is enabled.", "INVALID_COMMAND");
       seat.autoPassUnlessAttacked = command.enabled;
-      if (command.enabled) delete seat.autoPassPausedRound;
-      emit(events, actor, command.enabled ? "Enabled auto-pass unless attacked." : "Disabled auto-pass unless attacked.");
+      if (command.pauseForRound) {
+        requireRule(command.enabled && state.phase === 'action' && seat.passed, 'Pause automatic passing only for a passed action-phase seat.');
+        seat.autoPassPausedRound = state.round;
+      } else if (command.enabled) delete seat.autoPassPausedRound;
+      emit(events, actor, command.pauseForRound ? 'Auto-pass paused for this round for a queued reaction.' : command.enabled ? "Enabled auto-pass unless attacked." : "Disabled auto-pass unless attacked.");
       // Preferences never resolve choices, run combat, or advance another seat.
       if (command.enabled && state.activeSeatId === actor && seat.passed && state.phase === "action") {
         skipPassedReactionTurns(state, events);
