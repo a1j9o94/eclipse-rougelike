@@ -336,6 +336,7 @@ export function performAction(
   seat: Seat,
   command: GameCommand,
   events: GameEvent[],
+  remoteSources: typeof remoteExplorationSources = remoteExplorationSources,
 ): boolean {
   switch (command.type) {
     case "explore": {
@@ -351,10 +352,12 @@ export function performAction(
       );
       const ordinarySources = explorationSources(state, seat, p);
       const remote = command.remote === true;
-      const sources = remote ? remoteExplorationSources(state,seat,p) : ordinarySources;
+      const sources = remote ? remoteSources(state,seat,p) : ordinarySources;
       requireRule(
         sources.length > 0,
-        "No controlled sector or unpinned fleet connects to this exploration target.",
+        remote
+          ? "No adjacent sector exposes a usable wormhole connection to this exploration target."
+          : "No controlled sector or unpinned fleet connects to this exploration target.",
       );
       const distance = Math.max(
         Math.abs(p.q),

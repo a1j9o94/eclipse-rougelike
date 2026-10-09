@@ -134,7 +134,7 @@ Retreat with a surviving ship can qualify; mere adjacency cannot. A battle snaps
 
 ### Remote prospecting
 
-On every normal Explore action, each Explore activation may place a normally drawn sector III tile in any otherwise legal outer-sector position adjacent to an existing sector, without requiring a nearby Guild-controlled sector or unpinned Guild fleet. The neighboring sector may belong to another player.
+On every normal Explore action, each Explore activation may place a normally drawn sector III tile in any otherwise legal outer-sector position adjacent to an existing sector, without requiring a nearby Guild-controlled sector or unpinned Guild fleet. The neighboring sector may belong to another player. It must expose a wormhole toward the target, unless the Guild has Wormhole Generator; a closed neighboring edge alone is not an exploration source.
 
 Keep normal exploration draws and choices, tile supply, outer-placement limits, rotation/connectivity rules, and influence and colonization costs. Claiming the new sector is optional and consumes a normal influence disc; neither a free ship nor a free developed colony is granted. The position still belongs to the outer ring: this is not permission to place sector III tiles in the inner or middle rings.
 

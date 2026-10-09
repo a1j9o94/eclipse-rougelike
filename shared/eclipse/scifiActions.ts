@@ -46,9 +46,19 @@ export function resolveScifiChoice(state:GameState,seat:Seat,choice:DecisionChoi
  }
  state.pendingDecision=null;return true;
 }
-export function remoteExplorationSources(state:Pick<GameState,'sectors'|'round'>,seat:Seat,position:Coordinate):GameState['sectors'] {
+function guildExplorationSources(state:Pick<GameState,'sectors'|'round'>,seat:Seat,position:Coordinate,legacyClosedEdges:boolean):GameState['sectors'] {
  if(seat.faction!=='spacing-guild'||seat.passed||Math.max(Math.abs(position.q),Math.abs(position.r),Math.abs(position.q+position.r))<3)return [];
- return state.sectors.filter(sector=>([0,1,2,3,4,5] as HexEdge[]).some(edge=>{const p=adjacentPosition(sector.position,edge);return p.q===position.q&&p.r===position.r;}));
+ return state.sectors.filter(sector=>([0,1,2,3,4,5] as HexEdge[]).some(edge=>{
+  const p=adjacentPosition(sector.position,edge);
+  return p.q===position.q&&p.r===position.r&&(legacyClosedEdges||hasTech(seat,'wormhole-generator')||mapSector(sector).wormholes.some(w=>(w+sector.rotation)%6===edge));
+ }));
+}
+export function remoteExplorationSources(state:Pick<GameState,'sectors'|'round'>,seat:Seat,position:Coordinate):GameState['sectors'] {
+ return guildExplorationSources(state,seat,position,false);
+}
+/** Trusted history recovery only: reproduce draws accepted before source-edge validation. */
+export function historicalRemoteExplorationSources(state:Pick<GameState,'sectors'|'round'>,seat:Seat,position:Coordinate):GameState['sectors'] {
+ return guildExplorationSources(state,seat,position,true);
 }
 /** Toll quote and execution share this pure helper, including once-per-action ship accounting. */
 export function guildMovementTolls(state:Pick<GameState,'sectors'|'seats'>,seatId:string,shipIds:readonly string[],origin:string,path:readonly string[],alreadyPaid:readonly string[]=[]):{owner:string;shipId:string;amount:number}[] {

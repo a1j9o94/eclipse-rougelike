@@ -1,4 +1,4 @@
-import {expireScifiReservations,finishResearchScifi,handleScifiCommand,resolveScifiChoice} from './scifiActions';
+import {expireScifiReservations,finishResearchScifi,handleScifiCommand,resolveScifiChoice,remoteExplorationSources,historicalRemoteExplorationSources} from './scifiActions';
 import {resolveScifiBattleChoice} from './scifiBattle';
 import { factionRulesMode } from './gameRules';
 import { gameRules } from './gameRules';
@@ -102,6 +102,18 @@ export function processGameCommand(
   actor: string,
   command: GameCommand,
 ): RuleResult {
+  return processCommand(input, actor, command, remoteExplorationSources);
+}
+/** Recovery-only processor; callers must verify the complete trusted anchor exactly. */
+export function processHistoricalGuildCommand(input: GameState, actor: string, command: GameCommand): RuleResult {
+  return processCommand(input, actor, command, historicalRemoteExplorationSources);
+}
+function processCommand(
+  input: GameState,
+  actor: string,
+  command: GameCommand,
+  remoteSources: typeof remoteExplorationSources,
+): RuleResult {
   const state = structuredClone(input),
     events: GameEvent[] = [];
   try {
@@ -202,7 +214,7 @@ export function processGameCommand(
           "resource",
         );
       }
-      const result = processGameCommand(state, actor, command.action);
+      const result = processCommand(state, actor, command.action, remoteSources);
       return result.ok
         ? { ...result, events: [...events, ...result.events] }
         : result;
@@ -389,7 +401,7 @@ export function processGameCommand(
         } else nextSeat(state, seat);
       } else
         requireRule(
-          performAction(state, seat, command, events),
+          performAction(state, seat, command, events, remoteSources),
           "Unsupported command.",
           "INVALID_COMMAND",
         );

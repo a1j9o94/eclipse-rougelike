@@ -921,3 +921,12 @@ Authorized follow-up: replace Lyra's diamond Shrine with shared faceted art and 
 - Decision: retain legacy remoteExploreRound writes for exact historical journal recovery, but remove eligibility checks. No migration.
 - Risks/rollback: user-directed faction strength change; revert runtime gating and copy if needed. Follow-ups: numerical balance through later playtests.
 - Validation: 62 unique relevant tests passed across action, UI, AI, map and recovery suites; ESLint and full Convex-codegen/typecheck/Vite build passed. Focused review confirmed legacy replay compatibility.
+
+## 2026-10-09 — Guild remote frontier wormhole validation
+- Outcome: remote Explore never offers an empty outer hex whose neighboring sectors have no usable opening toward it.
+- Acceptance: rotated source edges required, any owner/neutral source allowed, Guild Wormhole Generator exception preserved, repeated normal Explore remains available, blocked commands reject before committing costs or hidden draws.
+- Fail-first tests: two closed neighboring edges hide/reject target; rotating one neutral source opens it; generator enables otherwise closed source; all six rotations/edges preserve later-turn eligibility.
+- Decision: share source eligibility between legal commands and engine; saved pending placement choices remain authoritative. No game mutation or migration.
+- Compatibility: a recovery-only historical processor preserves pre-fix closed-edge draws only when the complete trusted anchor matches exactly. Live commands and legal candidates always use strict source validation. Existing pending decisions keep their saved placements.
+- Risks/rollback: Guild history recovery can require up to four bounded replays rather than two. Revert source eligibility check and compatibility fallback to roll back.
+- Validation: 75 relevant action, UI, AI, map, preview and history tests passed; ESLint, full Convex codegen/typecheck/Vite build and diff checks passed. Independent review confirmed strict live/queue/AI paths and exact-anchor legacy recovery.

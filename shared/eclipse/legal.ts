@@ -674,7 +674,7 @@ export function legalCommands(
         const position=adjacentPosition(sector.position,edge),key=`${position.q},${position.r}`;
         if(seen.has(key)||view.sectors.some(s=>s.position.q===position.q&&s.position.r===position.r)||!remoteExplorationSources(view,seat,position).length||view.supplyCounts?.outer===0)continue;
         if(gameRules(view).explorationRules&&((view.lessRandom?.outerPlacementsThisRound[seat.id]??0)>=outerPlacementLimit(view,seat)))continue;
-        seen.add(key);add({type:'explore',position,remote:true},`Remote prospect (${position.q}, ${position.r})`,'Every normal Explore action; outer-sector exploration beside any existing sector.');
+        seen.add(key);add({type:'explore',position,remote:true},`Remote prospect (${position.q}, ${position.r})`,'Every normal Explore action; outer-sector exploration through a usable connection beside any existing sector.');
       }
     }
 

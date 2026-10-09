@@ -1,5 +1,5 @@
 import { profileVersions } from './catalog';
-import { processGameCommand } from './engine';
+import { processGameCommand, processHistoricalGuildCommand } from './engine';
 import { commitCommand } from './protocol';
 import { createGame } from './setup';
 import type { GameState, JournalEntry } from './types';
@@ -38,7 +38,7 @@ function canonicalSnapshot(state: GameState): string {
  * fields, changed rules, resignations, missing commands and rollback branches
  * are never guessed away. Storage callers must supply one original timeline.
  * Memory holds two states, rather than every intermediate checkpoint. Runtime
- * is at most two complete replays; callers should run large histories in jobs.
+ * is at most four complete replays; callers should run large histories in jobs.
  */
 export function recoverHistoryCheckpoint(input: HistoryRecoveryInput): HistoryRecoveryResult {
   const { anchor, entries, targetRevision } = input;
@@ -61,7 +61,11 @@ export function recoverHistoryCheckpoint(input: HistoryRecoveryInput): HistoryRe
   // Only the low 32 bits matter; imul avoids precision loss for large counters.
   const seed = (random.value - Math.imul(random.draws >>> 0, 0x6d2b79f5)) >>> 0;
   const expected = canonicalSnapshot(anchor);
-  for (const randomizeStartingPlayer of [true, false]) {
+  // Try current rules first. The fallback reproduces pre-fix Guild frontiers,
+  // and can return a checkpoint only after matching the entire anchor exactly.
+  const processors = anchor.seats.some(seat => seat.faction === 'spacing-guild')
+    ? [processGameCommand, processHistoricalGuildCommand] : [processGameCommand];
+  for (const processor of processors) for (const randomizeStartingPlayer of [true, false]) {
     try {
       let state = createGame({
         seed, factionProfile: anchor.factionProfile ?? 'base',
@@ -72,7 +76,7 @@ export function recoverHistoryCheckpoint(input: HistoryRecoveryInput): HistoryRe
       let failed = false;
       for (const entry of entries) {
         if (state.revision + 1 === targetRevision) checkpoint = structuredClone(state);
-        const result = commitCommand({ state, journal: [] }, entry.actor, entry.request, pin, processGameCommand);
+        const result = commitCommand({ state, journal: [] }, entry.actor, entry.request, pin, processor);
         if (!result.ok) { failed = true; break; }
         state = result.aggregate.state;
       }

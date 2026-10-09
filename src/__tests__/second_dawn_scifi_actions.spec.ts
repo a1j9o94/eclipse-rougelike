@@ -153,7 +153,7 @@ describe('sci-fi full action rules',()=>{
 
 describe('Guild permanent outposts',()=>{
  it('commits repeated remote draws in one round and keeps ordinary inward exploration',()=>{
-  const state=fixture();state.seats[0].faction='spacing-guild';state.sectors=[{...state.sectors[1],position:{q:2,r:0},owner:'g'}];
+  const state=fixture();state.seats[0].faction='spacing-guild';state.sectors=[{...state.sectors[1],tileId:'315',rotation:0,position:{q:2,r:0},owner:'g'}];state.ships=[];
   const drawn=processGameCommand(state,'p',{type:'explore',position:{q:3,r:-1},remote:true});expect(drawn.ok).toBe(true);if(!drawn.ok)return;
   expect(drawn.state.seats[0].scifi?.remoteExploreRound).toBe(state.round);const decision=drawn.state.pendingDecision;expect(decision?.kind).toBe('exploration');if(decision?.kind!=='exploration')return;
   const discarded=processGameCommand(drawn.state,'p',{type:'resolve',decisionId:decision.id,choice:{kind:'exploration',tileId:null,rotation:0}});expect(discarded.ok).toBe(true);if(!discarded.ok)return;
@@ -172,7 +172,7 @@ describe('Guild permanent outposts',()=>{
   const expected=afterRepeated.supplies.middle[0];const inward=processGameCommand(afterRepeated,'p',{type:'explore',position:{q:2,r:-1}});expect(inward.ok).toBe(true);if(inward.ok&&inward.state.pendingDecision?.kind==='exploration')expect(inward.state.pendingDecision.drawnTileIds).toContain(expected);
  });
  it('keeps remote targets available after placing a sector in the same round',()=>{
-  const state=fixture();state.seats[0].faction='spacing-guild';state.sectors=[{...state.sectors[1],position:{q:2,r:0},owner:'g'}];
+  const state=fixture();state.seats[0].faction='spacing-guild';state.sectors=[{...state.sectors[1],tileId:'315',rotation:0,position:{q:2,r:0},owner:'g'}];state.ships=[];
   const drawn=processGameCommand(state,'p',{type:'explore',position:{q:3,r:-1},remote:true});expect(drawn.ok).toBe(true);if(!drawn.ok)return;
   const decision=drawn.state.pendingDecision;if(decision?.kind!=='exploration')throw new Error('Expected an exploration draw.');
   const placement=decision.placements[0];expect(placement).toBeDefined();
