@@ -1,4 +1,4 @@
-import MenuMusicControls from './sound/MenuMusicControls';
+import MenuSettingsButton from './MenuSettingsButton';
 import GameRuleSettings,{type GameRuleSettingsValue} from './GameRuleSettings';
 import {factionRulesMode,type GameRuleOptions} from '../../shared/eclipse/gameRules';
 import {ChoiceCards} from './DecisionChoicePrimitives';
@@ -379,18 +379,17 @@ function ConnectedGame() {
         }}
       />{gameControls.dialogs}{recovery.error&&<div className="dg-foreground-warning" role="alert"><span>{recovery.error}</span><button onClick={recovery.retry}>Retry refresh</button></div>}</>
     );
-  if(roomToken)return <><div className="dg-room-player-access"><ConnectionStatus connected={connected} browserOnline={browserOnline} sessionReady={watchingRoom||Boolean(credential&&guest)} status={status} readyMessage={watchingRoom?'Watching public game information.':undefined}/>{playerAccess}<MenuMusicControls/></div>{room===undefined?<main className="dg-lobby"><p>Loading game room…</p></main>:room===null?<main className="dg-lobby"><h1>Room unavailable</h1><p>This room link is no longer available.</p><a href="/">All games</a></main>:<RoomLobby lobby={room} disabled={!connected||!credential||busy||guest===null} onJoin={(selected,color,bannedFaction)=>{void roomAction(async()=>{await joinRoom({credential:credential!,roomToken,faction:selected,pieceColor:color,bannedFaction});});}} onLeave={()=>{void roomAction(async()=>{await leaveRoom({credential:credential!,roomToken});window.location.assign('/');});}} onFaction={(selected,color,bannedFaction)=>{void roomAction(async()=>{await chooseRoomFaction({credential:credential!,roomToken,faction:selected,pieceColor:color,bannedFaction});});}} onReady={ready=>{void roomAction(async()=>{await setRoomReady({credential:credential!,roomToken,ready});});}} onSettings={settings=>{void roomAction(async()=>{await updateRoomSettings({credential:credential!,roomToken,settings});});}} onStart={()=>{void roomAction(async()=>{await startRoom({credential:credential!,roomToken});setRoomOverview(false);});}} onEnter={()=>setRoomOverview(false)}/>}</>;
+  if(roomToken)return <><div className="dg-room-player-access"><ConnectionStatus connected={connected} browserOnline={browserOnline} sessionReady={watchingRoom||Boolean(credential&&guest)} status={status} readyMessage={watchingRoom?'Watching public game information.':undefined}/>{playerAccess}<MenuSettingsButton/></div>{room===undefined?<main className="dg-lobby"><p>Loading game room…</p></main>:room===null?<main className="dg-lobby"><h1>Room unavailable</h1><p>This room link is no longer available.</p><a href="/">All games</a></main>:<RoomLobby lobby={room} disabled={!connected||!credential||busy||guest===null} onJoin={(selected,color,bannedFaction)=>{void roomAction(async()=>{await joinRoom({credential:credential!,roomToken,faction:selected,pieceColor:color,bannedFaction});});}} onLeave={()=>{void roomAction(async()=>{await leaveRoom({credential:credential!,roomToken});window.location.assign('/');});}} onFaction={(selected,color,bannedFaction)=>{void roomAction(async()=>{await chooseRoomFaction({credential:credential!,roomToken,faction:selected,pieceColor:color,bannedFaction});});}} onReady={ready=>{void roomAction(async()=>{await setRoomReady({credential:credential!,roomToken,ready});});}} onSettings={settings=>{void roomAction(async()=>{await updateRoomSettings({credential:credential!,roomToken,settings});});}} onStart={()=>{void roomAction(async()=>{await startRoom({credential:credential!,roomToken});setRoomOverview(false);});}} onEnter={()=>setRoomOverview(false)}/>}</>;
   if(showLeaderboard)return <Leaderboard onClose={()=>setShowLeaderboard(false)}/>;
   return (
     <main className="dg-lobby">
       <div className="dg-lobby-inner">
         <p className="sd-eyebrow">SECOND DAWN FOR THE GALAXY</p>
-        <h1>Eclipse</h1>
+        <div className="dg-home-heading"><h1>Eclipse</h1><MenuSettingsButton/></div>
         <p>
           Build an empire. Shape your fleet. Find your place among the stars.
         </p>
         <ConnectionStatus connected={connected} browserOnline={browserOnline} sessionReady={Boolean(credential&&guest)} status={status} readyMessage={profile?`Signed in as ${profile.username}. Your games are available on any device after sign-in.`:'Guest saves stay available in this browser.'}/>
-        <MenuMusicControls/>
         {playerAccess}
         {credential && guest === null ? (
           <div className="dg-error">

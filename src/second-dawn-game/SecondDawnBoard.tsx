@@ -21,7 +21,7 @@ import {passButtonLabel} from '../../shared/eclipse/passing';
 import {AI_DIFFICULTY_LABELS, type AiDifficulty} from '../../shared/eclipse/aiConfig';
 import EmpireOverview from './EmpireOverview';
 import GameSettingsPanel from './GameSettingsPanel';
-import {DiceRollScopeContext} from './presentationSettings';
+import {DiceRollScopeContext,useMotionEnabled,useFollowAiEnabled} from './presentationSettings';
 import {PublicInspectionProvider,usePublicInspection} from './PublicInspectionContext';
 import PublicInspectionModal from './PublicInspectionModal';
 import ScoreWorkspace from './ScoreWorkspace';
@@ -197,18 +197,17 @@ function SecondDawnBoardContent({
   const [mobileActionMode,setMobileActionMode]=useState(false);
   const [mobileWorkspaceTop,setMobileWorkspaceTop]=useState(190);
   const [mobileBottomInset,setMobileBottomInset]=useState(62);
-  const [followAi,setFollowAi]=useState(()=>{try{return localStorage.getItem('eclipse.second-dawn.follow-ai.v1')!=='off';}catch{return true;}});
+  const [followAi,setFollowAi]=useFollowAiEnabled();
   const [aiDismissed,setAiDismissed]=useState(false);
   const [reviewAi,setReviewAi]=useState(false);
   const [fitRequest,setFitRequest]=useState(0);
   const [historyOpen,setHistoryOpen] = useActionDraftState('historyOpen',false);
   const [settingsOpen,setSettingsOpen]=useState(false);
-  const [motionEnabled,setMotionEnabled]=useState(()=>{try{const saved=localStorage.getItem('eclipse.second-dawn.motion.v1');return saved?saved==='on':!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;}catch{return false;}});
+  const [motionEnabled,changeMotion]=useMotionEnabled();
   const aiPresentation=useAiPresentation(view,history?.entries??[],motionEnabled);
   useEffect(()=>{setReviewAi(false);},[aiPresentation.actor?.id]);
   const showAiPanel=(!needsUpkeep(view)||reviewAi)&&followAi&&!aiDismissed&&!!aiPresentation.action&&(!!aiPresentation.actor||reviewAi)&&!view.pendingDecision;
-  const changeFollowAi=(enabled:boolean)=>{setFollowAi(enabled);try{localStorage.setItem('eclipse.second-dawn.follow-ai.v1',enabled?'on':'off');}catch{/* Keep the session preference when storage is blocked. */}setAiDismissed(false);if(!compact&&screen==='Galaxy'){if(enabled&&aiPresentation.action&&(aiPresentation.actor||reviewAi)){setInspectorOpen(true);openedForAi.current=true;}else if(!enabled&&showAiPanel){setInspectorOpen(false);openedForAi.current=false;}}if(!enabled)setReviewAi(false);};
-  function changeMotion(enabled:boolean){setMotionEnabled(enabled);try{localStorage.setItem('eclipse.second-dawn.motion.v1',enabled?'on':'off');}catch{/* The preference still applies for this session. */}}
+  const changeFollowAi=(enabled:boolean)=>{setFollowAi(enabled);setAiDismissed(false);if(!compact&&screen==='Galaxy'){if(enabled&&aiPresentation.action&&(aiPresentation.actor||reviewAi)){setInspectorOpen(true);openedForAi.current=true;}else if(!enabled&&showAiPanel){setInspectorOpen(false);openedForAi.current=false;}}if(!enabled)setReviewAi(false);};
 
   const [buildOpen,setBuildOpen]=useActionDraftState('buildOpen',false);
   const [buildOrder,setBuildOrder]=useActionDraftState('buildOrder',emptyBuildOrder);
