@@ -377,8 +377,8 @@ export default function GalaxyBoard({
                   </g>
                 )}
                 {definition.artifacts>0&&<g transform="translate(25 -24)" color="#becbe6" role="img" aria-label={`${definition.artifacts} artifact${definition.artifacts===1?'':'s'}`}>
-                  <svg x="-7" y="-8" width="14" height="14" viewBox="0 0 24 24"><SectorFeatureIcon kind="artifact"/></svg>
-                  <text x="8" y="3" textAnchor="start" fill="currentColor" fontSize="9" fontWeight="700">×{definition.artifacts}</text>
+                  <svg x="-5" y="-5" width="10" height="10" viewBox="0 0 24 24"><SectorFeatureIcon kind="artifact"/></svg>
+                  <text x="6" y="3" textAnchor="start" fill="currentColor" fontSize="8" fontWeight="600">×{definition.artifacts}</text>
                   <title>{definition.artifacts} printed artifact{definition.artifacts===1?'':'s'}; Artifact Key grants resources when researched.</title>
                 </g>}
                 {s.orbital && <g transform="translate(-29 29)" className="dg-map-structure" role="img" aria-label="Orbital: one money or science population square">

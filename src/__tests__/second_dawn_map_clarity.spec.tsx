@@ -21,6 +21,10 @@ it('uses influence discs and different discovery and artifact symbols instead of
  expect(screen.getByRole('img',{name:'Discovery reward available'})).toBeVisible();
  const artifact=screen.getByRole('img',{name:`${tile.artifacts} artifact${tile.artifacts===1?'':'s'}`});expect(artifact).toHaveTextContent(`×${tile.artifacts}`);
  expect(within(artifact).queryByTitle(/Discovery/)).toBeNull();
+ const planetDiameter=2*Number(container.querySelector('[data-component="population-square"] circle')!.getAttribute('r'));
+ const artifactViewport=artifact.querySelector('svg')!;
+ expect(Number(artifactViewport.getAttribute('width'))).toBe(planetDiameter);
+ expect(Number(artifactViewport.getAttribute('height'))).toBe(planetDiameter);
 });
 it('keeps distant unmatched exits hidden while revealing the entire selected neighborhood',()=>{
  const view=fixture(),sector={...view.sectors[0],tileId:'1',rotation:0};view.sectors=[{...sector,id:'center',position:{q:0,r:0}},{...sector,id:'near',position:{q:1,r:0}},{...sector,id:'far',position:{q:4,r:0}}];view.ships=[];
