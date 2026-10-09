@@ -1,0 +1,22 @@
+/* Match the fleet's slate hulls, light metal edges and restrained instrument glow. */
+.dg-structure-silhouette{flex:none;overflow:visible;--structure-metal:#82949e;--structure-face:#c2cdd1;--structure-edge:#e1dac6;--structure-light:#c9dfdf}
+.dg-structure-warp-portal{--structure-metal:#5b8795;--structure-face:#a0c3ce;--structure-edge:#c4e1e8;--structure-light:#a5e5e9}
+.dg-structure-monolith{--structure-metal:#8b8a7e;--structure-face:#bfb79d;--structure-edge:#e3d2a6;--structure-light:#dcc891}
+.dg-structure-silhouette .dg-structure-body{fill:var(--structure-metal);stroke:var(--structure-edge);stroke-width:1.5}
+.dg-structure-silhouette .dg-structure-face{fill:var(--structure-face);stroke:var(--structure-edge);stroke-width:1}
+.dg-structure-silhouette .dg-structure-dark{fill:#273d49;stroke:var(--structure-edge);stroke-width:1.5}
+.dg-structure-silhouette .dg-structure-shadow{fill:#030b12;stroke:none;opacity:.5}
+.dg-structure-silhouette .dg-structure-aperture{fill:#102c3d;stroke:#7bbcc8;stroke-width:2}
+.dg-structure-silhouette .dg-structure-edge{fill:none;stroke:var(--structure-edge);stroke-width:1.6}
+.dg-structure-silhouette .dg-structure-light{fill:none;stroke:var(--structure-light);stroke-width:3}
+.dg-structure-silhouette .dg-structure-detail{fill:none;stroke:#294450;stroke-width:2}
+.dg-build-piece>.dg-structure-silhouette{width:70px;height:62px}
+.dg-ai-component-art>.dg-structure-silhouette{width:42px;height:42px}
+.dg-discovery-piece .dg-structure-silhouette{width:30px;height:30px}
+.dg-map-key .dg-structure-silhouette{width:16px;height:16px}
+.dg-map-structure .dg-structure-detail,.dg-draft-piece .dg-structure-detail{display:none}
+.dg-feature-note .dg-structure-silhouette{width:18px;height:18px;vertical-align:middle}
+
+.dg-structure-shrine{--structure-metal:#916f83;--structure-face:#c8acbd;--structure-edge:#ead5df;--structure-light:#f0d8eb}
+.dg-research-developments h2>.dg-structure-shrine{width:22px;height:24px;vertical-align:middle;margin-right:7px}
+.dg-research-developments button>.dg-structure-shrine{width:28px;height:30px}

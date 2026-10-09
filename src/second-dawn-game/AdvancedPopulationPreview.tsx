@@ -1,3 +1,4 @@
+import AdvancedPlanetBadge from './AdvancedPlanetBadge';
 import type { PlayerView } from '../../shared/eclipse/types';
 import type { Technology } from '../../shared/eclipse/technologies';
 import { advancedPopulationOpportunity } from './advancedPopulationOpportunity';
@@ -11,7 +12,7 @@ export default function AdvancedPopulationPreview({ view, technology, detailed =
   const label = `${eligible} eligible empty advanced planet${eligible === 1 ? '' : 's'}${resource === 'all' ? '' : ` for ${resource}`}`;
   return <div className={`dg-advanced-opportunity dg-advanced-opportunity--${resource}`}>
     <div className="dg-advanced-count" aria-label={label} title={`${label} in sectors you control. Includes advanced gray planets.`}>
-      <span className="dg-advanced-planet" aria-hidden="true"><svg viewBox="0 0 20 20"><PlanetIcon resource={resource === 'all' ? 'gray' : resource}/></svg><svg className="dg-advanced-star" viewBox="0 0 20 20"><path fill="currentColor" d="m10 1 2.8 5.6 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L1 7.5l6.2-.9Z"/></svg></span>
+      <span className="dg-advanced-planet" aria-hidden="true"><svg viewBox="0 0 20 20"><PlanetIcon resource={resource === 'all' ? 'gray' : resource}/></svg><AdvancedPlanetBadge className="dg-advanced-star" decorative/></span>
       <b aria-hidden="true">{eligible}</b><span aria-hidden="true">empty planet{eligible === 1 ? '' : 's'}<small>in your sectors</small></span>
     </div>
     {detailed && <div className="dg-advanced-detail">

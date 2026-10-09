@@ -1,3 +1,5 @@
+import StructureSilhouette from './StructureSilhouette';
+import BuildPieceSilhouette from './BuildPieceSilhouette';
 import SectorFeatureIcon from './SectorFeatureIcon';
 import {seatColor} from './factionColors';
 import {displayedWormholes} from './visibleConnections';
@@ -219,6 +221,7 @@ export default function GalaxyBoard({
             }
             const visibleGroups=compact&&!detail?[]:groups.slice(0,groups.length>4?3:4);
             const portal = !!s.guildPortalOwner || s.portalVp !== undefined || definition.warpPortal;
+            const shrines = view.seats.flatMap(seat=>(seat.shrines??[]).filter(shrine=>shrine.sectorId===s.id));
             return (
               <g
                 key={s.id}
@@ -361,21 +364,10 @@ export default function GalaxyBoard({
                       </title>
                     </g>
                   ))}
-                {portal && (
-                  <g transform="translate(32 18)">
-                    <circle
-                      r="6"
-                      fill="#122f42"
-                      stroke="#96dfef"
-                      strokeWidth="2"
-                    />
-                    <circle r="2" fill="#96dfef" />
-                    <title>
-                      Warp portal: connects to every other warp portal,
-                      regardless of distance.{s.guildPortalOwner&&s.owner===s.guildPortalOwner?' Guild-controlled connection: foreign transport pays 1 Money per ship per Move action.':''}
-                    </title>
-                  </g>
-                )}
+                {portal && <g transform="translate(36 11)" className="dg-map-structure" role="img" aria-label="Warp portal: connects to every other warp portal">
+                  <svg x="-10" y="-11" width="20" height="22" viewBox="0 0 96 96"><StructureSilhouette kind="warp-portal"/></svg>
+                  <title>Warp portal: connects to every other warp portal, regardless of distance.{s.guildPortalOwner&&s.owner===s.guildPortalOwner?' Guild-controlled connection: foreign transport pays 1 Money per ship per Move action.':''}</title>
+                </g>}
                 {s.discovery && (
                   <g transform="translate(-32 -17)" color="#f3cd78" role="img" aria-label="Discovery reward available">
                     <circle r="9" fill="#14222c" stroke="#f3cd78" strokeWidth=".7"/>
@@ -388,27 +380,19 @@ export default function GalaxyBoard({
                   <text x="8" y="3" textAnchor="start" fill="currentColor" fontSize="9" fontWeight="700">×{definition.artifacts}</text>
                   <title>{definition.artifacts} printed artifact{definition.artifacts===1?'':'s'}; Artifact Key grants resources when researched.</title>
                 </g>}
-                {s.orbital && (
-                  <ellipse
-                    cx="-29"
-                    cy="29"
-                    rx="6"
-                    ry="3"
-                    fill="none"
-                    stroke="#dcd2bb"
-                    strokeWidth="2"
-                  >
-                    <title>
-                      Orbital: one money or science population square
-                    </title>
-                  </ellipse>
-                )}
-                {s.monolith && (
-                  <path d="M26 26 H31 V34 H26 Z" fill="#dcd2bb">
-                    <title>Monolith: 3 victory points</title>
-                  </path>
-                )}
-                {view.seats.flatMap(seat=>(seat.shrines??[]).filter(shrine=>shrine.sectorId===s.id)).length>0&&<g transform="translate(0 31)" role="img" aria-label={`${view.seats.flatMap(seat=>(seat.shrines??[]).filter(shrine=>shrine.sectorId===s.id)).length} Lyra Shrines`}><path d="M0 -8 6 0 0 8 -6 0Z" fill="#f0c6ec" stroke="#824a88"/><title>Lyra Shrines · 1 VP each while Lyra controls this sector</title></g>}
+                {s.orbital && <g transform="translate(-29 29)" className="dg-map-structure" role="img" aria-label="Orbital: one money or science population square">
+                  {owner.faction?.id==='exiles'?<svg x="-10" y="-10" width="20" height="20" viewBox="0 0 96 96" className="dg-map-orbital"><ShipSilhouette type="starbase" faction="exiles"/></svg>:<svg x="-11" y="-10" width="22" height="20" viewBox="0 0 96 96"><StructureSilhouette kind="orbital"/></svg>}
+                  <title>Orbital: one money or science population square</title>
+                </g>}
+                {s.monolith && <g transform="translate(29 29)" className="dg-map-structure" role="img" aria-label="Monolith: 3 victory points">
+                  <svg x="-9" y="-10" width="18" height="20" viewBox="0 0 96 96"><StructureSilhouette kind="monolith"/></svg>
+                  <title>Monolith: 3 victory points</title>
+                </g>}
+                {shrines.length>0&&<g transform="translate(0 24)" className="dg-map-structure" role="img" aria-label={`${shrines.length} Lyra Shrines`}>
+                  <svg x="-9" y="-9" width="18" height="18" viewBox="0 0 96 96"><StructureSilhouette kind="shrine"/></svg>
+                  {shrines.length>1&&<text x="9" y="3" fill="#ead5df" fontSize="8" fontWeight="700">×{shrines.length}</text>}
+                  <title>Lyra Shrines · 1 VP each while Lyra controls this sector</title>
+                </g>}
               </g>
             );
           })}
@@ -419,7 +403,7 @@ export default function GalaxyBoard({
             return <g key={`${move.from}-${move.to}-${index}`} className="dg-activity-move" pointerEvents="none" aria-hidden="true"><path d={`M${a.x} ${a.y} L${b.x} ${b.y}`} fill="none" stroke="#f3dc96" strokeWidth="3" strokeDasharray="7 6"/><circle cx={b.x} cy={b.y} r="11" fill="none" stroke="#f3dc96" strokeWidth="2"/></g>;
           })}
           <g className="dg-draft-routes" aria-label="Planned routes" pointerEvents="none">{plannedMoves.map((route,index)=>route.status==='valid'?route.draft.shipIds.map(shipId=>{const ids=[route.draft.sourceSectorId,...route.paths.filter(move=>move.shipId===shipId).flatMap(move=>move.path)];const points=ids.flatMap(id=>{const sector=view.sectors.find(s=>s.id===id);return sector?[galaxyPoint(sector.position)]:[];});const last=points.at(-1);return <g key={`${index}-${shipId}`}><polyline points={points.map(p=>`${p.x},${p.y}`).join(' ')} fill="none" stroke="#f2d486" strokeWidth="3" strokeDasharray="7 4"/><title>Planned route {index+1}, {ids.map(id=>view.sectors.find(s=>s.id===id)?.tileId??id).join(' to ')}</title>{last&&<g transform={`translate(${last.x} ${last.y-33})`}><circle r="10" fill="#111e2acc" stroke="#f2d486"/><text textAnchor="middle" y="4" fill="#ffe4a4" fontSize="11">{index+1}</text></g>}</g>;}):null)}</g>
-          {plannedBuilds.filter(item=>item.sectorId).map((item,index)=>{const sector=view.sectors.find(s=>s.id===item.sectorId);if(!sector)return null;const p=galaxyPoint(sector.position);const peers=plannedBuilds.filter(other=>other.sectorId===item.sectorId);const offset=(peers.indexOf(item)-(peers.length-1)/2)*20;return <g key={item.id} transform={`translate(${p.x+offset} ${p.y+27})`} className="dg-draft-piece" role="button" tabIndex={0} data-galaxy-target={`build:${item.id}`} aria-label={`Relocate planned ${item.component} ${index+1} in sector ${sector.tileId}`} onClick={e=>{e.stopPropagation();onSelectBuildItem?.(item.id);}} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();onSelectBuildItem?.(item.id);}}}><rect x="-10" y="-12" width="20" height="24" rx="4" fill="#143949cc" stroke="#92e5d5" strokeDasharray="3 2"/><path d="M0 -8 7 7 0 3 -7 7Z" fill="#9fe1d2" opacity=".7"/><title>{item.component} · planned, not built</title></g>;})}
+          {plannedBuilds.filter(item=>item.sectorId).map((item,index)=>{const sector=view.sectors.find(s=>s.id===item.sectorId);if(!sector)return null;const p=galaxyPoint(sector.position);const peers=plannedBuilds.filter(other=>other.sectorId===item.sectorId);const offset=(peers.indexOf(item)-(peers.length-1)/2)*20;return <g key={item.id} transform={`translate(${p.x+offset} ${p.y+27})`} className="dg-draft-piece" role="button" tabIndex={0} data-galaxy-target={`build:${item.id}`} aria-label={`Relocate planned ${item.component} ${index+1} in sector ${sector.tileId}`} onClick={e=>{e.stopPropagation();onSelectBuildItem?.(item.id);}} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();onSelectBuildItem?.(item.id);}}}><rect x="-10" y="-12" width="20" height="24" rx="4" fill="#143949cc" stroke="#92e5d5" strokeDasharray="3 2"/><svg x="-8" y="-9" width="16" height="18" viewBox="0 0 96 96"><BuildPieceSilhouette component={item.component} faction={viewer?.faction}/></svg><title>{item.component} · planned, not built</title></g>;})}
           {frontiers.map((candidate, index) => {
             if (candidate.command.type !== "explore") return null;
             const p = galaxyPoint(candidate.command.position);
@@ -505,7 +489,7 @@ export default function GalaxyBoard({
         </span>
         {(showPrintedWormholes||selected||hoveredSector||focusedSector)&&<span className="dg-key-exits"><i className="dg-key-opening"/>Dotted edge: open exit, unconnected</span>}
         <span>
-          <i className="dg-key-portal" />
+          <StructureSilhouette kind="warp-portal"/>
           Warp portal
         </span>
         <span><SectorFeatureIcon kind="discovery"/>Discovery reward</span><span><SectorFeatureIcon kind="artifact"/>Artifacts × count</span>

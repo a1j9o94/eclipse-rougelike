@@ -5,18 +5,19 @@ import {getFaction} from '../../shared/eclipse/catalog';
 import {rankScores,type ScoreBreakdown} from '../../shared/eclipse/scoring';
 import type {SpectatorView,PlayerView} from '../../shared/eclipse/types';
 import type {PublicScoreCategory} from './publicInspection';
+import StructureSilhouette, {type StructureKind} from './StructureSilhouette';
 import FactionSymbol from './FactionSymbol';
 import './scoreWorkspace.css';
 
-const categories:{id:PublicScoreCategory;label:string;color:string;path:string}[]=[
+const categories:{id:PublicScoreCategory;label:string;color:string;path?:string;structure?:StructureKind}[]=[
  {id:'sectors',label:'Sectors',color:'#87c5e0',path:'M12 2 21 7v10l-9 5-9-5V7Z M3 7l9 5 9-5 M12 12v10'},
  {id:'research',label:'Research',color:'#b6a0e1',path:'M9 2h6 M10 2v7l-7 11q-1 2 2 2h14q3 0 2-2L14 9V2 M6 16h12'},
  {id:'reputation',label:'Reputation',color:'#e4bc72',path:'M12 2 21 7v10l-9 5-9-5V7Z M12 6l2 4 4 1-3 3 1 4-4-2-4 2 1-4-3-3 4-1Z'},
  {id:'discoveries',label:'Discoveries',color:'#d6d493',path:'m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z'},
  {id:'ambassadors',label:'Ambassadors',color:'#82cbb0',path:'M8 8a4 4 0 1 0 8 0a4 4 0 1 0-8 0 M4 22v-4c0-6 16-6 16 0v4'},
  {id:'minorSpecies',label:'Minor Species',color:'#b7c994',path:'M12 2 21 7v10l-9 5-9-5V7Z M8 10a4 4 0 1 0 8 0a4 4 0 1 0-8 0 M7 20v-2c0-5 10-5 10 0v2'},
- {id:'monoliths',label:'Monoliths',color:'#a2b4ce',path:'M8 3 16 1v20l-8 2Z M8 3l5 2v17 M13 5l3-4'},
- {id:'portals',label:'Portals',color:'#80cad0',path:'M7 12a5 10 0 1 0 10 0a5 10 0 1 0-10 0 M1 12h22 M18 8l5 4-5 4'},
+ {id:'monoliths',label:'Monoliths',color:'#a2b4ce',structure:'monolith'},
+ {id:'portals',label:'Portals',color:'#80cad0',structure:'warp-portal'},
  {id:'species',label:'Faction bonus',color:'#dfa884',path:'M12 2 22 12 12 22 2 12Z M7 12l5-5 5 5-5 5Z'},
  {id:'variant',label:'Variant bonuses',color:'#b8dab2',path:'M12 2 22 12 12 22 2 12Z M8 12h8 M12 8v8'},
  {id:'traitor',label:'Traitor',color:'#eb979c',path:'M12 2 21 6v6c0 5-9 10-9 10S3 17 3 12V6Z M8 8l8 8 M16 8l-8 8'},
@@ -60,7 +61,7 @@ export default function ScoreWorkspace({view,scores,playerNames,onInspect,onHome
      <div className="dg-score-tokens">{visibleCategories.map(c=>{
       const hidden=c.id==='reputation'&&!publicReputation,value=score[c.id]??0;
       return <button key={c.id} className={`dg-score-token${hidden?' dg-score-secret':value<0?' dg-score-penalty':value===0?' dg-score-zero':''}`} style={{'--score-category':c.color} as CSSProperties} aria-label={`${c.label}: ${hidden?'Hidden until game end':`${value} VP`}`} onClick={()=>onInspect(seat.id,c.id)}>
-       <svg viewBox="0 0 24 24" aria-hidden="true"><path d={c.path}/></svg><strong>{hidden?'?':value<0?`−${Math.abs(value)}`:value}</strong><span>{c.label}</span>{hidden&&<small>Hidden</small>}
+       <>{c.structure?<StructureSilhouette kind={c.structure}/>:<svg viewBox="0 0 24 24" aria-hidden="true"><path d={c.path}/></svg>}</><strong>{hidden?'?':value<0?`−${Math.abs(value)}`:value}</strong><span>{c.label}</span>{hidden&&<small>Hidden</small>}
       </button>;
      })}</div>
      <footer><span>{final?`${score.resourceTotal} resources`:'Public points only'}</span><small>{final?'Tiebreak':publicReputation?'Reputation included':'Reputation excluded'} · select a symbol for details</small></footer>

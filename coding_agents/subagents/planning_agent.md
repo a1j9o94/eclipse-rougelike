@@ -868,3 +868,9 @@ Result & Next Steps: the board regression failed against the shipped queue butto
 Outcome: seven optional playable factions with usable controls, AI and durable private choices. See `coding_agents/second_dawn_scifi_implementation.md` for acceptance criteria, authoritative decisions, tuning and rollback.
 
 Fail-first: profile/setup guards and privacy, actions/escrow/convoys/reservations, battle-wide rewards/physical replicas, UI choices, AI legality. Relevant regression suites, lint and full build are required. Release preserves old roster/version pins and publishes the backward-compatible backend before the Git frontend release.
+
+
+## October 9 — Structure art cleanup
+Outcome: replace generic portal/house/ellipse assets with consistent physical sector pieces. Acceptance: shared portal, Monolith and civilian Orbital art across map and card uses, readable small markers, preserved Exiles defender art and rule labels. Risk/rollback: frontend-only; revert release commit. Tests: three new integration tests failed first; bounded Build, galaxy/mobile, discoveries, population, AI summaries, Minor Species, technology, Exiles and fleet regressions; lint and production build. See ../second_dawn_structure_art.md.
+
+Authorized follow-up: replace Lyra's diamond Shrine with shared faceted art and consolidate advanced-planet stars into one SVG. Acceptance: Shrine count/scoring labels preserved, readable small badges across six consumers, decorative SVG accessibility preserved. Added tests failed first and 54 relevant tests passed with lint and build:vercel. Independent review approved integration with a minor map spacing adjustment, now applied. User explicitly authorized production deployment; final full build and live checks follow.

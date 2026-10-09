@@ -1,4 +1,6 @@
+import AdvancedPlanetBadge from './AdvancedPlanetBadge';
 import { researchedTechnologyIds } from '../../shared/eclipse/technologies';
+import StructureSilhouette from './StructureSilhouette';
 import SectorFeatureIcon from './SectorFeatureIcon';
 import {seatColor} from './factionColors';
 import type { SpectatorView, PlayerView, Resource, Sector } from "../../shared/eclipse/types";
@@ -42,10 +44,7 @@ export function PlanetIcon({ resource }: { resource: PlanetResource }) {
       ) : resource === "materials" ? (
         <path d="M5 5h10l3 10H2Z M5 5l3 10 M15 5l-3 10 M3 12h14" />
       ) : resource === "orbital" ? (
-        <>
-          <circle cx="10" cy="10" r="5" />
-          <ellipse cx="10" cy="10" rx="9" ry="3" />
-        </>
+        <svg width="20" height="20" viewBox="0 0 96 96"><StructureSilhouette kind="orbital"/></svg>
       ) : (
         <>
           <path d="M10 2l8 8-8 8-8-8Z M6 10h8 M10 6v8" />
@@ -175,19 +174,7 @@ export default function SectorPlanets({ sector, view, candidates }: Props) {
                 </g>
               </svg>
               {square.advanced && (
-                <svg
-                  className="dg-planet-advanced"
-                  viewBox="0 0 16 16"
-                  role="img"
-                  aria-label="Advanced planet"
-                >
-                  <path
-                    d="M8 1l2 4 5 .7-3.5 3.4.8 4.9L8 11.7 3.7 14l.8-4.9L1 5.7 6 5Z"
-                    fill="#e6ce91"
-                    stroke="#121b24"
-                    strokeWidth="1"
-                  />
-                </svg>
+                <AdvancedPlanetBadge className="dg-planet-advanced"/>
               )}
             </span>
             <div className="dg-planet-caption">
@@ -261,12 +248,7 @@ export default function SectorPlanets({ sector, view, candidates }: Props) {
             Uncolonized
           </span>
           <span>
-            <svg viewBox="0 0 16 16" aria-hidden="true">
-              <path
-                d="M8 1l2 4 5 .7-3.5 3.4.8 4.9L8 11.7 3.7 14l.8-4.9L1 5.7 6 5Z"
-                fill="#e6ce91"
-              />
-            </svg>
+            <AdvancedPlanetBadge decorative/>
             Advanced
           </span>
         </div>
@@ -316,7 +298,7 @@ export default function SectorPlanets({ sector, view, candidates }: Props) {
       )}
       {sector.monolith && (
         <p className="dg-feature-note">
-          <strong>Monolith</strong> · 3 VP while you control this sector.
+          <strong><StructureSilhouette kind="monolith"/> Monolith</strong> · 3 VP while you control this sector.
         </p>
       )}
       {sector.discovery && (
@@ -327,7 +309,7 @@ export default function SectorPlanets({ sector, view, candidates }: Props) {
       )}
       {(sector.portalVp !== undefined || definition.warpPortal) && (
         <p className="dg-feature-note">
-          <strong>Warp portal</strong> · Connects to every other warp portal
+          <strong><StructureSilhouette kind="warp-portal"/> Warp portal</strong> · Connects to every other warp portal
           regardless of distance.
           {sector.portalVp !== undefined && sector.portalVp > 0
             ? ` Worth ${sector.portalVp} additional VP while controlled.`
