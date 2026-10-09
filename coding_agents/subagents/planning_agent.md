@@ -862,3 +862,17 @@ Result & Next Steps: the board regression failed against the shipped queue butto
 - Decision Log: The player initially requested Formic reaction convoys, then chose to match the current Ragnarok suppression after the source-code correction. Final proposal uses normal-action convoys only; reaction movement is one ship. Retain ordinary neutral combat and exploration restrictions.
 - Follow-ups: Tune full starting sheets, component-copy costs, salvage payouts and caps; resolve same-name Portiid repeat-acquisition policy before implementing it.
 - Result & Next Steps: Proposal amended with explicit confirmed rules, provisional numeric values and recorded interpretations. Source checks confirm firing-side damage allocation and current Ragnarok reaction suppression. No gameplay implementation is included.
+
+## October 9, 2026 — Off-turn next-action queue
+
+Outcome: players use the existing action workflows while waiting, confirm their exact next command with “Will execute on your turn”, and the server executes it when their action turn starts.
+
+Acceptance: one private persisted queue per seat; replace/cancel; existing desktop/mobile selection flow; no off-turn spending; authoritative revalidation and explicit failure without substitutions; no future decision choices; independent of an open browser; exactly-once journaled execution through normal, AI and timeout handoffs; preserve auto-pass preference while pausing it for an explicitly queued reaction.
+
+Risks/rollback: intervening board changes can invalidate selections and must leave the player's turn available. Shared undo, abandonment, resignation and round changes invalidate old queues. Backend deploy is additive to the established dev:ideal-nightingale-55 deployment and must precede main/frontend release. Revert frontend only if needed; retain optional backend fields to preserve existing saves.
+
+Tests (must fail first): off-turn Build and queue confirmation/cancel/failure UI; authenticated private queue persistence, duplicate IDs, execution once and stale-target rejection; rollback/phase and timeout transition coverage. Relevant existing drafts/planners/passing/multiplayer suites, lint and build gate. Integration verifies server queue calls, lost-response recovery and execution receipt forwarding.
+
+Decision log: queue one fully specified command, not an entire future decision tree; later exploration/combat/discovery choices remain interactive. Use only the public PlayerView for hypothetical planner selections; never replace the authoritative live turn/decision view.
+
+Release blocker: current workspace has no Convex CLI login. The Vercel connector returns 403 for obleton-adrian. Complete and push a reviewable feature PR before requesting any access/handoff; do not merge the frontend until backend publication is available.

@@ -103,6 +103,8 @@ async function finish(ctx: MutationCtx, match: Doc<'eclipseMatchesV1'>, row: Doc
     appliedRevision = match.revision + 1;
     restored.revision = appliedRevision;
     await ctx.db.patch(match._id, { snapshotJson: JSON.stringify(restored), revision: appliedRevision, round: restored.round, phase: restored.phase, updatedAt: Date.now() });
+    const owners=await ctx.db.query('eclipseOwnershipV1').withIndex('by_match_guest',q=>q.eq('matchId',match._id)).collect();
+    for(const owner of owners)await ctx.db.patch(owner._id,{queuedAction:undefined,lastExecutedQueuedCommand:undefined});
     await syncLeaderboardResult(ctx,match._id,restored);
   }
   await ctx.db.patch(row._id, { status: outcome, resolvedAt: Date.now(), appliedRevision });

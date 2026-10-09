@@ -1,6 +1,6 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
-import { factionProfileValidator, pieceColorValidator, factionValidator, phaseValidator, receiptValidator, rulesModeValidator, gameRuleOptionsValidator } from "./eclipseValidators";
+import { factionProfileValidator, pieceColorValidator, factionValidator, phaseValidator, receiptValidator, rulesModeValidator, gameRuleOptionsValidator, gameCommandValidator } from "./eclipseValidators";
 
 /**
  * Eclipse: Second Dawn - Complete Data Schema
@@ -99,8 +99,12 @@ export default defineSchema({
     lastSeenRevision: v.optional(v.number()),
     resignedAt: v.optional(v.number()),
     resignationOutcome: v.optional(v.union(v.literal('resigned'), v.literal('abandoned'))),
+    queuedAction:v.optional(v.object({commandId:v.string(),command:gameCommandValidator,round:v.number(),status:v.union(v.literal('pending'),v.literal('failed')),error:v.optional(v.string())})),
+    lastExecutedQueuedCommand:v.optional(v.object({revision:v.number(),command:gameCommandValidator})),
   }).index('by_guest', ['guestId'])
     .index('by_match_guest', ['matchId', 'guestId']),
+  /** Private queue-control receipts survive replacement and cancellation for safe retries. */
+  eclipseQueueRequestsV1:defineTable({matchId:v.id('eclipseMatchesV1'),commandId:v.string(),actor:v.string(),requestJson:v.string(),createdAt:v.number()}).index('by_match_command',['matchId','commandId']),
   // Control/lifecycle commands are separate from rule commands, but share the
   // authoritative revision sequence for replay and administration.
   eclipseMatchLifecycleV1: defineTable({

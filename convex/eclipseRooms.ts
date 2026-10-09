@@ -184,6 +184,7 @@ async function synchronizeTimer(ctx: MutationCtx, room: Doc<"eclipseRoomsV1">, m
   // Ordinary AI seats above still advance using the durable AI worker.
   if (room.humanSeatCount === 1) {
     if (current) await ctx.db.delete(current._id);
+    await scheduleAi(ctx,match._id,state);
     return;
   }
   const actionTurnSerial = state.actionTurnSerial ?? 0;
@@ -197,6 +198,7 @@ async function synchronizeTimer(ctx: MutationCtx, room: Doc<"eclipseRoomsV1">, m
     await ctx.db.insert("eclipseRoomTimersV1", { roomId: room._id, matchId: match._id, token: next.token, deadlineAt: next.deadlineAt, actionTurnSerial, targetSeatId: next.target.seatId, decisionId: next.target.decisionId, status: next.status, error: next.error, timeoutSteps: 0, updatedAt: Date.now() });
   }
   if (reconciled.changed) await scheduleTimeout(ctx, room, next);
+  await scheduleAi(ctx,match._id,state);
 }
 
 export const createRoom = mutation({

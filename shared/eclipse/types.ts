@@ -304,7 +304,7 @@ export type GameCommand =
   | { type: "move"; moves: { shipId: string; path: string[] }[] }
   | { type: "discard-reputation"; values: number[] }
   | { type: "pass" }
-  | { type: "set-auto-pass"; enabled: boolean }
+  | { type: "set-auto-pass"; enabled: boolean; pauseForRound?:boolean }
   | { type: "end-action" }
   | { type: "finish-upkeep" }
   | { type: "trade"; from: Resource; to: Resource; amount: number }

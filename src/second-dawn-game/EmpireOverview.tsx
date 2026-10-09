@@ -31,6 +31,7 @@ import './empireResearchSlots.css';
 export type EmpireDestination='Research'|'Scoring'|'Diplomacy'|'Trade'|'colonize';
 export interface EmpireOverviewProps {
  view:PlayerView|SpectatorView;seatId:string;onSector:(sectorId:string)=>void;
+ planningView?:PlayerView;
  onNavigate:(destination:EmpireDestination)=>void;onBlueprints:(type?:BlueprintShipType)=>void;
  onBuild?:(type:BlueprintShipType)=>void;buildOrder?:BuildOrderDraft;buildUnavailableReason?:string;
  focusEconomyTracks?:number;
@@ -39,10 +40,10 @@ const names:Record<PlanetResource,string>={money:'Money',science:'Science',mater
 const actionIcons:Record<string,StatIconName>={explore:'discovery',influence:'influence',research:'computer',upgrade:'hull',build:'structure',move:'drive'};
 function ResourceSymbol({resource}:{resource:PlanetResource}){return <svg viewBox="0 0 20 20" aria-hidden="true"><PlanetIcon resource={resource}/></svg>;}
 const title=(text:string)=>text[0].toUpperCase()+text.slice(1);
-export default function EmpireOverview({view,seatId,onSector,onNavigate,onBlueprints,onBuild,buildOrder=emptyBuildOrder(),buildUnavailableReason,focusEconomyTracks=0}:EmpireOverviewProps){
+export default function EmpireOverview({view,planningView,seatId,onSector,onNavigate,onBlueprints,onBuild,buildOrder=emptyBuildOrder(),buildUnavailableReason,focusEconomyTracks=0}:EmpireOverviewProps){
  const seat=view.seats.find(seat=>seat.id===seatId)!;
  const faction=getFaction(seat.faction),presentation=factionPresentation(seat.faction,view),model=empireOverviewModel(view,seatId);
- const buildOptions=model.own&&onBuild&&'private' in view?empireBuildOptions(view,buildOrder):[];
+ const buildOptions=model.own&&onBuild&&'private' in view?empireBuildOptions(planningView??view,buildOrder):[];
  const upkeepComplete=view.phase==='upkeep'&&view.upkeepDone?.includes(seatId);
  const [planetGroup,setPlanetGroup]=useState<Resource|'gray'>('science');
  const [showReputation,setShowReputation]=useState(false);

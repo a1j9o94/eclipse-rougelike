@@ -390,3 +390,14 @@ Result & Next Steps: backend and privacy contracts complete; supervisor integrat
 - Types: persistent `Seat.shrines` placements and `ActionProgress.shrinePlaced`; typed `place-shrine` command and single-die `colony-reroll` choice.
 - Effects: publisher setup, nine paid board spaces, one optional Shrine each Research action, permanent row rewards, 1 VP per currently controlled Shrine, colony ship reroll, public map/scoring feedback.
 - Result & Next Steps: focused tests and build gates run in the Lyra feature worktree. Expanded-v2 profile scaffold and human playtest remain integration tasks; anti-missile variant follows base acceptance.
+
+
+## 2026-10-09 — Off-turn queued actions
+
+Implemented authenticated private next-action persistence on seat ownership, with separate idempotent queue-control receipts. Confirmation validates a projected own-turn public view and an isolated authoritative engine clone; it spends no resources and never consumes a hidden draw. Genuine action-turn handoff commits the exact queued command once using the latest authoritative revision and normal journal path. Invalidated plans retain a private failed status without costs. Confirmations never resolve follow-up choices or continue unfinished actions.
+
+Queue controls support replace/cancel, reject owned pending decisions and stale revisions, reserve execution command IDs, and expire across phase/round boundaries. Resignation and applied rollback clear intent. Timeout handoffs use the same execution hook. Queued reactions pause automatic passing for the current round through a journaled set-auto-pass command, preserving the saved next-round preference.
+
+Files: convex/eclipseMatches.ts, eclipseRooms.ts, eclipseRollback.ts, eclipseValidators.ts, schema.ts; shared/eclipse/queuedActions.ts, types.ts, engine.ts; src/__tests__/second_dawn_queued_actions_convex.spec.ts.
+
+Validation: initial four queue tests failed before implementation; ownership-decision and lifecycle-ID tests also failed before guards were added. Targeted Convex/auto-pass/rooms/rollback/resignation/AI pacing/concurrent-upkeep batch passed 47 tests, targeted lint passed, and Convex typecheck passed. Final additional exploration/no-hidden-draw regression is included in the queue suite.

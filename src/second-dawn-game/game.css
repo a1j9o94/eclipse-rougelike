@@ -722,3 +722,9 @@
 @media (max-width: 1200px) {
  .dg-tabletop:not(.dg-mobile-board) .sd-turn { max-width: 260px; }
 }
+.dg-queue-planning-hint { margin:0; padding:.55rem .9rem; color:var(--sd-muted,#b9c6d5); font-size:.85rem; }
+.dg-next-action { display:flex; align-items:center; justify-content:space-between; gap:.75rem; margin:.5rem .75rem; padding:.75rem; border:1px solid #776440; border-radius:.5rem; background:#161d28; }
+.dg-next-action strong { color:#e0c38a; font-size:.9rem; }
+.dg-next-action p { margin:.35rem 0 0; }
+.dg-next-action button { flex-shrink:0; }
+@media(max-width:600px) { .dg-next-action { align-items:flex-start; flex-wrap:wrap; margin:.4rem; } }
