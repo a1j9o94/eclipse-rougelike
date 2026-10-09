@@ -44,6 +44,12 @@ export interface PublicHistoryPage {
 }
 function actionSummary(command: GameCommand): string {
   switch (command.type) {
+    case 'load-factory': return 'Populated an interceptor factory';
+    case 'place-guild-portal': return 'Deployed a Guild portal';
+    case 'guild-offer': return `Offered ${command.amount} ${command.give} for ${command.receive}`;
+    case 'accept-guild-offer': return `Exchanged ${command.amount} resources through the Guild`;
+    case 'cancel-guild-offer': return 'Withdrew a Guild offer';
+    case 'reverse-engineer': return 'Reverse engineered an observed component';
     case "trade-and-act":
       return `Converted resources · ${actionSummary(command.action)}`;
     case "explore":
@@ -60,7 +66,7 @@ function actionSummary(command: GameCommand): string {
     case "build":
       return `Built ${command.builds.length} component${command.builds.length === 1 ? "" : "s"}`;
     case "move": {
-      const shipCount = new Set(command.moves.map(move => move.shipId)).size;
+      const shipCount = new Set(command.moves.flatMap(move => [move.shipId,...(move.escorts??[])])).size;
       return `Moved ${shipCount} ship${shipCount === 1 ? "" : "s"}${command.moves.length > shipCount ? ` · ${command.moves.length} activations` : ''}`;
     }
     case "set-auto-pass":
@@ -118,7 +124,7 @@ function actionPresentation(command: GameCommand, context?: HistoryPublicContext
     }
     case 'move': {
       const knownShips = new Set(context?.ships.map(ship => ship.id) ?? []);
-      return { kind: 'move', sectorIds: sectors(command.moves.flatMap(move => move.path)), shipIds: [...new Set(command.moves.map(move => move.shipId))].filter(id => knownShips.has(id)) };
+      return { kind: 'move', sectorIds: sectors(command.moves.flatMap(move => move.path)), shipIds: [...new Set(command.moves.flatMap(move => [move.shipId,...(move.escorts??[])]))].filter(id => knownShips.has(id)) };
     }
     case 'influence': return { kind: 'influence', sectorIds: sectors([...command.removeSectorIds, ...command.addSectorIds]) };
     case 'colonize': return { kind: 'colonize', sectorIds: sectors(command.placements.map(placement => placement.sectorId)) };

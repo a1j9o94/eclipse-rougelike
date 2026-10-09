@@ -24,6 +24,8 @@ export interface MovementShip {
     | 'guardian'
     | 'gcds';
   readonly movement: number;
+  /** Guild ships remain opponents for battle and retreat, but never pin. */
+  readonly doesNotPin?: boolean;
 }
 export interface MovementAbilities {
   readonly wormholeGenerator: boolean;
@@ -107,7 +109,7 @@ export function movableShipCount(
   if (present.some((s) => s.kind === 'gcds')) return 0;
   const friendly = present.filter((s) => s.owner === player).length;
   const enemies = present.filter((s) =>
-    isOpponent(s, player, abilities),
+    isOpponent(s, player, abilities) && !s.doesNotPin,
   ).length;
   return Math.max(
     0,
@@ -222,4 +224,30 @@ export function validateRetreat({
       message: 'Opponent ships occupy this retreat destination.',
     };
   return { ok: true };
+}
+
+/** Validate simultaneous movement without using sequential relocation to bypass fleet pinning. */
+export function validateMovementGroup(request: Omit<MovementPathRequest, 'shipId'> & { readonly shipIds: readonly string[] }): MovementValidation {
+  const {shipIds, ships, player, path, abilities} = request;
+  if (!shipIds.length || new Set(shipIds).size !== shipIds.length) return {ok:false,code:'missing-ship',message:'Select distinct convoy ships.'};
+  const selected = shipIds.map(id => ships.find(ship => ship.id === id));
+  if (selected.some(ship => !ship)) return {ok:false,code:'missing-ship',message:'A convoy ship is absent.'};
+  const origin = selected[0]!.sectorId;
+  if (selected.some(ship => ship!.sectorId !== origin)) return {ok:false,code:'disconnected',message:'Convoy ships must begin together.'};
+  for (const id of shipIds) {
+    const result = validateMovementPath({...request,shipId:id,path:path.slice(0,1)});
+    if (!result.ok) return result;
+    const ship = ships.find(candidate => candidate.id === id)!;
+    if (path.length > ship.movement) return {ok:false,code:'range',message:'Every convoy ship must have enough movement.'};
+  }
+  let current = origin;
+  for (const next of path) {
+    const present = ships.map(ship => shipIds.includes(ship.id) ? {...ship,sectorId:current} : ship);
+    if (movableShipCount(player,current,present,abilities) < shipIds.length) return {ok:false,code:'pinned',sectorId:current,message:'The fleet cannot move this many convoy ships past opposing ships.'};
+    const from = request.sectors.find(sector => sector.id === current), to = request.sectors.find(sector => sector.id === next);
+    if (!from || !to) return {ok:false,code:'unexplored',message:'Ships cannot enter unexplored space.'};
+    if (connectionBetween(from,to,abilities.wormholeGenerator) === 'none') return {ok:false,code:'disconnected',message:'The convoy route has no usable connection.'};
+    current = next;
+  }
+  return {ok:true};
 }

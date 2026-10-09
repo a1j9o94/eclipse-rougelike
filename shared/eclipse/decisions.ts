@@ -1,3 +1,4 @@
+import { availableTechnologyMarket } from './scifiActions';
 import { hasEmptyAmbassadorSpace } from "./minorSpecies";
 import { queueAncientPart, resolveAncientPart } from "./ancientAcquisition";
 import { reputationCapacity } from "./battleEngine";
@@ -357,7 +358,7 @@ export function resolveGeneralChoice(
         requireRule(!!sector, "This discovery needs a sector.");
         if (
           state.ships.filter((s) => s.owner === seat.id && s.type === "cruiser")
-            .length < 4
+            .length < (getFaction(seat.faction).componentSupply?.cruiser ?? BASE_COMPONENTS.perColor.cruiser)
         )
           state.ships.push({
             id: uniqueId(state, "ship"),
@@ -379,7 +380,7 @@ export function resolveGeneralChoice(
       }
       if (effect.kind === "free-technology") {
         const ids = ancientTechnologyChoices(
-          state.technologyMarket,
+          availableTechnologyMarket(state, seat.id),
           seat.technologies,
           researchedTechnologyIds(seat),
         );
@@ -401,7 +402,7 @@ export function resolveGeneralChoice(
     resolveAncientPart(state, seat, d, c);
   } else if (d.kind === "free-technology" && c.kind === "free-technology") {
     requireRule(
-      d.technologyIds.includes(c.technologyId),
+      d.technologyIds.includes(c.technologyId) && availableTechnologyMarket(state, seat.id).includes(c.technologyId),
       "Choose an offered free technology.",
     );
     researchTechnology(state, seat, c.technologyId, c.track, true);

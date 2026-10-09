@@ -1,0 +1,20 @@
+✔ accepts only the established deployment with consistent selectors (35.072036ms)
+✔ rejects missing key without disclosing credentials (32.605722ms)
+✔ rejects empty secret without disclosing credentials (39.696948ms)
+✔ rejects old production key without disclosing credentials (33.789275ms)
+✔ rejects another development key without disclosing credentials (27.550749ms)
+✔ rejects preview key without disclosing credentials (30.391065ms)
+✔ rejects wrong frontend URL without disclosing credentials (27.386673ms)
+✔ rejects wrong deployment selector without disclosing credentials (35.617786ms)
+✔ rejects preview environment without disclosing credentials (28.862219ms)
+✔ backend release blocks missing credentials before invoking Convex (200.096859ms)
+✔ backend release blocks wrong deployment before invoking Convex (189.006767ms)
+✔ backend release blocks preview environment before invoking Convex (186.695635ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 664.290315

@@ -50,6 +50,8 @@ export interface Population {
   squareId: string;
 }
 export interface Sector {
+  /** Permanent faction marker; toll entitlement also requires current control. */
+  guildPortalOwner?: SeatId;
   id: string;
   tileId: string;
   position: Coordinate;
@@ -62,6 +64,8 @@ export interface Sector {
   portalVp?: 0 | 1 | 2 | 3;
 }
 export interface Ship {
+  /** Bobiverse interceptor carrying one cube from its owner's materials track. */
+  factoryPopulation?: boolean;
   id: string;
   owner: SeatId | "ancient" | "guardian" | "gcds";
   type: ShipType | "ancient" | "guardian" | "gcds";
@@ -72,6 +76,7 @@ export interface Ship {
   orbitalShip?: boolean;
 }
 export interface Seat {
+  scifi?: ScifiSeatState;
   /** Placed Lyra Shrines remain in their sector even if control changes. */
   shrines?: {sectorId:string;planetIndex:number;row:Resource;column:0|1|2}[];
   minorSpecies?: MinorSpeciesTile[];
@@ -115,6 +120,19 @@ export interface ReputationSummary {
   kept: number[];
   returned: number[];
 }
+
+export interface ScifiProject { kind: 'technology' | 'ancient-part'; id: string }
+export interface ScifiSeatState {
+  remoteExploreRound?: number;
+  reservationRound?: number;
+  guildPortalMarkers?: number;
+  reverseEngineeringProject?: ScifiProject;
+  copiedAncientParts?: string[];
+  exforDraftInitialized?: boolean;
+}
+/** Outgoing resources have already been deducted and are held by the offer. */
+export interface GuildOffer { id: string; owner: SeatId; give: Resource; receive: Resource; remaining: number }
+export interface TechnologyReservation { owner: SeatId; tileId: string; round: number; turnSerial: number }
 export interface PrivateSeat {
   seatId: SeatId;
   reputation: number[];
@@ -132,6 +150,9 @@ interface DecisionBase {
 /** These are persisted choices, never callbacks or component-local continuation state. */
 export type PendingDecision = DecisionBase &
   (
+    | { kind: 'discovery-draft'; tileIds: string[]; keepCount: number }
+    | { kind: 'technology-reservation'; tileIds: string[] }
+    | { kind: 'reverse-engineering'; battleId: string; projects: ScifiProject[] }
     | {
         kind: "exploration";
         position: Coordinate;
@@ -230,10 +251,13 @@ export type PendingDecision = DecisionBase &
         hits: number;
         squareIds: string[];
       }
-    | { kind: "ancient-part"; partId: string }
+    | { kind: "ancient-part"; partId: string; replica?: boolean }
   );
 
 export type DecisionChoice =
+  | { kind: 'discovery-draft'; tileIds: string[] }
+  | { kind: 'technology-reservation'; tileId: string | null }
+  | { kind: 'reverse-engineering'; project: ScifiProject | null }
   | {
       kind: "exploration";
       tileId: string | null;
@@ -285,12 +309,18 @@ export interface FundingTrade {
   amount: number;
 }
 export type GameCommand =
+  | { type: 'load-factory'; shipId: string }
+  | { type: 'place-guild-portal'; sectorId: string }
+  | { type: 'guild-offer'; give: Resource; receive: Resource; amount: number }
+  | { type: 'cancel-guild-offer'; offerId: string }
+  | { type: 'accept-guild-offer'; offerId: string; amount: number }
+  | { type: 'reverse-engineer'; track: Track }
   | {type:'place-shrine';sectorId:string;planetIndex:number;row:Resource;column:0|1|2}
   | { type: "research-development"; developmentId: "ancient-labs-development" | "quantum-labs" }
   | { type: "quantum-research"; tileId: string; track: Track }
   | { type: "buy-minor-species"; minorSpeciesId: MinorSpeciesId; resource?: Resource; returnReputation?: number[] }
   | { type: "trade-and-act"; trades: FundingTrade[]; action: FundableAction }
-  | { type: "explore"; position: Coordinate }
+  | { type: "explore"; position: Coordinate; remote?: boolean }
   | { type: "influence"; removeSectorIds: string[]; addSectorIds: string[] }
   | { type: "research"; tileId: string; track: Track }
   | { type: "upgrade"; blueprints: Blueprint[] }
@@ -301,7 +331,7 @@ export type GameCommand =
         component: ShipType | "orbital" | "monolith";
       }[];
     }
-  | { type: "move"; moves: { shipId: string; path: string[] }[] }
+  | { type: "move"; moves: { shipId: string; path: string[]; escorts?: string[] }[] }
   | { type: "discard-reputation"; values: number[] }
   | { type: "pass" }
   | { type: "set-auto-pass"; enabled: boolean }
@@ -318,6 +348,8 @@ export type GameCommand =
   | { type: "resolve"; decisionId: string; choice: DecisionChoice };
 
 export interface GameState {
+  guildOffers?: GuildOffer[];
+  technologyReservations?: TechnologyReservation[];
   minorSpecies?: MinorSpeciesState;
   rulesVersion: string;
   catalogVersion: string;
@@ -359,6 +391,7 @@ export interface GameState {
 }
 
 export interface ActionProgress {
+  guildTollShipIds?: string[];
   shrinePlaced?:boolean;
   owner: SeatId;
   action: Action;
@@ -376,6 +409,7 @@ export interface BattleGroup {
   initiative: number;
 }
 export interface BattleState {
+  scifi?: { participantShips: Record<string, string[]>; observations: Record<string, ScifiProject[]>; wreckIds: string[]; settled: boolean };
   id: string;
   sectorId: string;
   attacker: string;
@@ -502,6 +536,8 @@ export interface SectorDeckCount {
 }
 
 export interface PublicGameView {
+  guildOffers?: GuildOffer[];
+  technologyReservations?: TechnologyReservation[];
   /** Seats that have paid this upkeep; all other living seats may prepare independently. */
   upkeepDone?: SeatId[];
   minorSpecies?: MinorSpeciesState;

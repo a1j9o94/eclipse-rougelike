@@ -1,6 +1,7 @@
 import type {PendingDecision} from '../../shared/eclipse/types';
 
 const labels:Record<PendingDecision['kind'],string>={
+ 'discovery-draft':'starting discoveries', 'technology-reservation':'technology reservation', 'reverse-engineering':'reverse-engineering project',
  'super-joker':'combat roll', 'less-random-reputation':'reputation upgrades',
  exploration:'sector placement',discovery:'discovery',colonization:'colonization',
  'diplomacy-window':'ambassador exchange',diplomacy:'ambassador exchange',

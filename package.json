@@ -36,7 +36,8 @@
     "second-dawn:local": "node tools/second-dawn-local.mjs",
     "test:second-dawn:local": "node --test tools/second-dawn-local.test.mjs",
     "test:second-dawn:visual-checker": "node --test tools/second-dawn-check-visual.test.mjs",
-    "build:vercel": "tsc -b && npm run typecheck:eclipse && vite build"
+    "build:vercel": "npm run publish:vercel-backend && tsc -b && npm run typecheck:eclipse && vite build",
+    "publish:vercel-backend": "node tools/check-convex-release.mjs && convex dev --once --typecheck enable --tail-logs disable"
   },
   "dependencies": {
     "@vercel/analytics": "^1.5.0",

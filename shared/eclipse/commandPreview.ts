@@ -1,3 +1,4 @@
+import { guildMovementTolls } from './scifiActions';
 import { factionRulesMode } from './gameRules';
 import {DEVELOPMENTS,quantumResearchCost} from './developments';
 import { researchCostForSeat, constructionCostForSeat, getMinorSpecies } from "./minorSpecies";
@@ -54,13 +55,37 @@ export function previewCommand(
     "move",
     "influence",
   ];
-  if ((actions.some((a) => a === command.type) || command.type === 'research-development' || command.type === 'quantum-research') && !view.actionProgress)
+  if ((actions.some((a) => a === command.type) || command.type === 'research-development' || command.type === 'quantum-research' || command.type === 'reverse-engineer') && !view.actionProgress)
     influence--;
   if(command.type === 'research-development') { const d=DEVELOPMENTS.find(d=>d.id===command.developmentId)!;resources[d.resource]-=d.cost; }
   if(command.type === 'quantum-research') resources.science-=quantumResearchCost(seat,command.tileId as TechnologyId,command.track)??0;
   if (command.type === "build")
     for (const build of command.builds)
       resources.materials -= constructionCostForSeat(seat,build.component);
+  if(command.type==='reverse-engineer'){
+    const project=seat.scifi?.reverseEngineeringProject;
+    if(project?.kind==='ancient-part')resources.science-=6;
+    if(project?.kind==='technology'){
+      const cost=researchCostForSeat(project.id as TechnologyId,command.track,seat);
+      if(cost.ok){resources.science-=cost.scienceCost;const effect=getTechnology(project.id as TechnologyId).effect;if(effect.kind==='gain-influence')influence+=effect.amount;}
+    }
+  }
+  if(command.type==='guild-offer')resources[command.give]-=command.amount;
+  if(command.type==='cancel-guild-offer'){
+    const offer=view.guildOffers?.find(o=>o.id===command.offerId&&o.owner===seat.id);if(offer)resources[offer.give]+=offer.remaining;
+  }
+  if(command.type==='accept-guild-offer'){
+    const offer=view.guildOffers?.find(o=>o.id===command.offerId);if(offer){resources[offer.receive]-=command.amount;resources[offer.give]+=command.amount;}
+  }
+  if(command.type==='load-factory')population.materials++;
+  if(command.type==='move'){
+    const paid=[...(view.actionProgress?.guildTollShipIds??[])];const positions=new Map(view.ships.map(ship=>[ship.id,ship.sectorId]));
+    for(const move of command.moves){
+      const ids=[move.shipId,...(move.escorts??[])];const origin=positions.get(move.shipId);
+      if(origin){const tolls=guildMovementTolls(view,seat.id,ids,origin,move.path,paid);resources.money-=tolls.length;paid.push(...tolls.map(t=>t.shipId));}
+      if(move.path.length)for(const id of ids)positions.set(id,move.path[move.path.length-1]);
+    }
+  }
   if (command.type === "buy-minor-species") {
     resources.money -= getMinorSpecies(command.minorSpeciesId).cost;
     if (getMinorSpecies(command.minorSpeciesId).effect.kind === "population" && command.resource) population[command.resource]++;
@@ -112,7 +137,7 @@ export function previewCommand(
     command.type === "move"
       ? command.moves.flatMap((move) =>
           move.path.length
-            ? [[move.shipId, move.path[move.path.length - 1]] as const]
+            ? [move.shipId,...(move.escorts??[])].map(id=>[id, move.path[move.path.length - 1]] as const)
             : [],
         )
       : [],

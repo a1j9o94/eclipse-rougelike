@@ -122,7 +122,7 @@ function ConnectedGame() {
   const [faction, setFaction] = useState<FactionId>("terran-directorate");
   const [factionProfile,setFactionProfile]=useState<FactionProfile>('expanded-v2');
   const [pieceColor,setPieceColor]=useState<CivilizationColor>('red');
-  const chooseProfile=(profile:FactionProfile)=>{setFactionProfile(profile);if(!listFactionsForProfile(profile).some(f=>f.id===bannedFaction))setBannedFaction('eridani');if(!listFactionsForProfile(profile).some(f=>f.id===faction))setFaction('terran-directorate');};
+  const chooseProfile=(profile:FactionProfile)=>{setFactionProfile(profile);if(profile==='scifi-v1'){setRulesMode('standard');setRuleOptions(undefined);setWarpPortals(true);setRiftCannons(true);}if(!listFactionsForProfile(profile).some(f=>f.id===bannedFaction))setBannedFaction('eridani');if(!listFactionsForProfile(profile).some(f=>f.id===faction))setFaction('terran-directorate');};
   const [warpPortals, setWarpPortals] = useState(true);
   const [showCombatOdds,setShowCombatOdds]=useState(true);
   const [minorSpecies,setMinorSpecies]=useState(true);
@@ -371,7 +371,7 @@ function ConnectedGame() {
         ) : creating ? (
           <section className="dg-setup">
             <h2>New game</h2><FactionProfilePicker value={factionProfile} onChange={chooseProfile} disabled={busy}/>
-            <GameRuleSettings value={{...ruleConfig,warpPortals,riftCannons,minorSpecies,showCombatOdds}} disabled={busy} onChange={selectRules}/>
+            <GameRuleSettings standardOnly={factionProfile==='scifi-v1'} value={{...ruleConfig,warpPortals,riftCannons,minorSpecies,showCombatOdds}} disabled={busy} onChange={selectRules}/>
             <p className="dg-solo-wait">Solo · Wait for me. No turn timer; your game waits until you return.</p>
             <div className="dg-solo-setup-grid">
             <FactionPicker rulesMode={rulesMode} ruleOptions={ruleOptions} selected={faction} onSelect={setFaction} disabled={busy} profile={factionProfile} pieceColor={pieceColor} onPieceColorChange={setPieceColor}/>{factionRulesMode(ruleConfig)==='less-random-v1'&&getFaction(faction).species==='terran'&&<section className="dg-field"><strong>Alien species ban</strong><ChoiceCards label="Alien species ban" value={bannedFaction} disabled={busy} onChange={value=>setBannedFaction(value as FactionId)} options={listFactionsForProfile(factionProfile).filter(f=>f.species==='alien').map(f=>({value:f.id,label:f.name,visual:<FactionSymbol faction={f.id}/>}))}/></section>}

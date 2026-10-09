@@ -1,0 +1,21 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+ RUN  v3.2.4 /workspace/scratch/9cbcc3db6db5/eclipse-rougelike
+
+Browserslist: browsers data (caniuse-lite) is 14 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+ ✓ src/__tests__/second_dawn_build_planner.spec.tsx (8 tests) 691ms
+ ✓ src/__tests__/second_dawn_scifi_ui.spec.tsx (11 tests) 383ms
+ ✓ src/__tests__/second_dawn_scifi_ai.spec.ts (15 tests) 1443ms
+   ✓ complete sci-fi Normal AI smoke matches > finishes two rounds with seed 47 without rejected commands or resource cycles  771ms
+   ✓ complete sci-fi Normal AI smoke matches > finishes two rounds with seed 109 without rejected commands or resource cycles  621ms
+ ✓ src/__tests__/second_dawn_scifi_actions.spec.ts (19 tests) 60ms
+ ✓ src/__tests__/second_dawn_scifi_battle.spec.ts (12 tests) 32ms
+ ✓ src/__tests__/second_dawn_scifi_profile.spec.ts (5 tests) 13ms
+
+ Test Files  6 passed (6)
+      Tests  70 passed (70)
+   Start at  13:07:53
+   Duration  7.67s (transform 878ms, setup 505ms, collect 1.42s, tests 2.62s, environment 1.76s, prepare 303ms)
+

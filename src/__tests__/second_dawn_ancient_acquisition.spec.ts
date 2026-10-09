@@ -11,6 +11,22 @@ function draw(state: GameState, part = 'ion-disruptor'): PendingDecision {
   return state.pendingDecision;
 }
 describe('ancient ship part acquisition', () => {
+  it('allows a Portiid replica while another player owns the original, but never duplicates its own component', () => {
+    const state = game(); state.seats[1].storedParts = ['ion-disruptor'];
+    expect(() => queueAncientPart(state, state.seats[0], 'ion-disruptor')).toThrow();
+    queueAncientPart(state, state.seats[0], 'ion-disruptor', true); presentNextDecision(state);
+    const decision = state.pendingDecision!;
+    expect(decision).toMatchObject({kind:'ancient-part', replica:true});
+    resolveAncientPart(state,state.seats[0],decision,{kind:'ancient-part',blueprint:null});
+    expect(state.seats[0].storedParts).toContain('ion-disruptor');
+    expect(() => queueAncientPart(state,state.seats[0],'ion-disruptor',true)).toThrow();
+  });
+  it('does not let a previously fabricated copy block discovery of the original finite tile', () => {
+    const state = game(); state.seats[1].storedParts=['ion-disruptor']; state.seats[1].scifi={copiedAncientParts:['ion-disruptor']};
+    const decision=draw(state);
+    resolveAncientPart(state,state.seats[0],decision,{kind:'ancient-part',blueprint:null});
+    expect(state.seats[0].storedParts).toContain('ion-disruptor');
+  });
   it('persists a new decision without prematurely storing or spending influence', () => {
     const state = game(); const before = state.seats[0].influenceOnTrack;
     const decision = draw(state);

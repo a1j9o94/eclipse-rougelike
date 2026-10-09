@@ -1,3 +1,5 @@
+import {expireScifiReservations,finishResearchScifi,handleScifiCommand,resolveScifiChoice} from './scifiActions';
+import {resolveScifiBattleChoice} from './scifiBattle';
 import { factionRulesMode } from './gameRules';
 import { gameRules } from './gameRules';
 import { performDevelopment } from './developments';
@@ -41,6 +43,7 @@ function nextSeat(state: GameState, seat: Seat): void {
   state.activeSeatId = nextLivingSeatId(state, seat.id);
 }
 function finishAction(state: GameState, seat: Seat, events: GameEvent[]): void {
+  if (continuation(state).action?.action === 'research') finishResearchScifi(state,seat);
   const partners = [...seat.ambassadors];
   breakAggressiveRelations(state, seat);
   for (const partner of partners) {
@@ -49,8 +52,10 @@ function finishAction(state: GameState, seat: Seat, events: GameEvent[]): void {
   state.actionTurnSerial = (state.actionTurnSerial ?? 0) + 1;
   continuation(state).action = null;
   nextSeat(state, seat);
+  expireScifiReservations(state);
 }
 function advance(state: GameState, events: GameEvent[]): void {
+  expireScifiReservations(state);
   if (state.phase === 'upkeep') {
     advanceRound(state, events);
     presentNextDecision(state);
@@ -112,7 +117,10 @@ export function processGameCommand(
       requireRule(upkeepSeatUnfinished(state, actor) || command.type === 'resolve', 'You have already completed upkeep.');
       focusUpkeepDecision(state, actor);
     }
-    if (command.type === "buy-minor-species") {
+    expireScifiReservations(state);
+    if (handleScifiCommand(state,seat,command,events)) {
+      // Ability helpers validate their own action, reaction, and upkeep windows.
+    } else if (command.type === "buy-minor-species") {
       buyMinorSpecies(state, seat, command, events);
     } else if (command.type === "set-auto-pass") {
       requireRule(typeof command.enabled === "boolean", "Choose whether automatic passing is enabled.", "INVALID_COMMAND");
@@ -292,11 +300,13 @@ export function processGameCommand(
         "Response does not match the pending choice.",
         "WRONG_DECISION",
       );
-      state.pendingDecision = null;
-      if (!resolveGeneralChoice(state, seat, d, command.choice)) {
-        if (d.kind === "bankruptcy" || d.kind === "bombardment")
-          resolveAftermathChoice(state, actor, d, command.choice, events);
-        else resolveCombatChoice(state, actor, d, command.choice, events);
+      if (!resolveScifiChoice(state,seat,command.choice,events) && !resolveScifiBattleChoice(state,seat,command.choice,events)) {
+        state.pendingDecision = null;
+        if (!resolveGeneralChoice(state, seat, d, command.choice)) {
+          if (d.kind === "bankruptcy" || d.kind === "bombardment")
+            resolveAftermathChoice(state, actor, d, command.choice, events);
+          else resolveCombatChoice(state, actor, d, command.choice, events);
+        }
       }
       emit(
         events,

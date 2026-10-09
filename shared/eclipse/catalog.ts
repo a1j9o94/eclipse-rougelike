@@ -10,14 +10,18 @@ export const EXPANDED_RULES_VERSION = 'second-dawn-expanded-v1-2026-05-20' as co
 export const EXPANDED_CATALOG_VERSION = 'second-dawn-catalog-expanded-v1' as const;
 export const EXPANDED_V2_RULES_VERSION = 'second-dawn-expanded-v2-2026-09-25' as const;
 export const EXPANDED_V2_CATALOG_VERSION = 'second-dawn-catalog-expanded-v2' as const;
-export type FactionProfile = 'base' | 'expanded-v1' | 'expanded-v2';
+export const SCIFI_RULES_VERSION = 'second-dawn-scifi-v1-2026-10-09' as const;
+export const SCIFI_CATALOG_VERSION = 'second-dawn-catalog-scifi-v1' as const;
+export type FactionProfile = 'base' | 'expanded-v1' | 'expanded-v2' | 'scifi-v1';
 export interface ProfileVersions { readonly rulesVersion: string; readonly catalogVersion: string }
 export function profileVersions(profile: FactionProfile, riftCannons = false, minorSpecies = false): ProfileVersions {
   const base = profile === 'base'
     ? { rulesVersion: RULES_VERSION, catalogVersion: CATALOG_VERSION }
     : profile === 'expanded-v1'
       ? { rulesVersion: EXPANDED_RULES_VERSION, catalogVersion: EXPANDED_CATALOG_VERSION }
-      : { rulesVersion: EXPANDED_V2_RULES_VERSION, catalogVersion: EXPANDED_V2_CATALOG_VERSION };
+      : profile === 'scifi-v1'
+        ? { rulesVersion: SCIFI_RULES_VERSION, catalogVersion: SCIFI_CATALOG_VERSION }
+        : { rulesVersion: EXPANDED_V2_RULES_VERSION, catalogVersion: EXPANDED_V2_CATALOG_VERSION };
   const rift = riftCannons
     ? { rulesVersion: `${base.rulesVersion}+rift-cannon-v1`, catalogVersion: `${base.catalogVersion}+rift-cannon-v1` }
     : base;
@@ -31,6 +35,7 @@ export const FACTION_IDS = [
   'terran-directorate', 'terran-federation', 'terran-union',
   'terran-republic', 'terran-conglomerate', 'terran-alliance',
   'rho-indi', 'magellan', 'midas', 'ragnarok', 'exiles', 'lyra',
+  'exfor', 'bobiverse', 'trisolarans', 'portiids', 'spacing-guild', 'formics', 'belters',
 ] as const;
 export type FactionId = (typeof FACTION_IDS)[number];
 export type CivilizationColor =
@@ -52,8 +57,9 @@ export type FactionVisualIdentity =
   | 'midas'
   | 'ragnarok'
   | 'exiles'
-  | 'lyra';
-export type ShipDesignFamily = Exclude<FactionVisualIdentity, 'rho-indi' | 'magellan' | 'midas' | 'ragnarok' | 'exiles' | 'lyra'>;
+  | 'lyra'
+  | 'exfor' | 'bobiverse' | 'trisolarans' | 'portiids' | 'spacing-guild' | 'formics' | 'belters';
+export type ShipDesignFamily = 'eridani' | 'hydran' | 'planta' | 'draco' | 'mechanema' | 'orion';
 export type FactionCapability =
   | 'ancient-coexistence'
   | 'controlled-sector-vp'
@@ -99,7 +105,7 @@ export interface FactionContentMetadata {
   packId: string;
   kind: 'official' | 'unofficial';
   edition: string;
-  authority: 'publisher' | 'user-supplied-drive';
+  authority: 'publisher' | 'user-supplied-drive' | 'local-design';
 }
 export interface CatalogResources {
   materials: number;
@@ -305,6 +311,18 @@ const terran = {
     dedicatedAmbassadorSlots: 1 as const,
   },
 };
+const SCIFI_CONTENT: FactionContentMetadata = {packId:'scifi-v1',kind:'unofficial',edition:'second-dawn-scifi',authority:'local-design'};
+const scifiFaction = (id: FactionId, name: string, color: CivilizationColor, shipDesignFamily: ShipDesignFamily): FactionDefinition => ({
+  ...standard, id, name, color, species:'alien', homeSector:221,
+  startingResources:{materials:4,science:3,money:3},
+  startingPopulation:{materials:1,science:1,money:1},
+  normalHomePopulation:{materials:1,science:1,money:1},
+  advancedHomePopulation:{materials:0,science:1,money:1},
+  startingTechnologies:['starbase'], emblem:id as FactionVisualIdentity,
+  shipDesignFamily, blueprints:STANDARD_BLUEPRINTS, content:SCIFI_CONTENT,
+  source:'coding_agents/second_dawn_scifi_faction_proposal.md',
+  sources:{rules:'coding_agents/second_dawn_scifi_faction_proposal.md',blueprints:'shared/eclipse/catalog.ts'},
+});
 export const FACTION_REGISTRY: readonly FactionDefinition[] = [
   {
     ...standard,
@@ -595,6 +613,15 @@ export const FACTION_REGISTRY: readonly FactionDefinition[] = [
     source:'.second-dawn/faction-research/originals/Outcasts and Seekers/01 Enlightened of Lyra Seekers rules.jpg',
     sources:{rules:'.second-dawn/faction-research/originals/Outcasts and Seekers/01 Enlightened of Lyra Seekers rules.jpg',blueprints:'.second-dawn/faction-research/originals/Outcasts and Seekers/01 Enlightened of Lyra Seekers board.jpg'},
   },
+  {...scifiFaction('exfor','Merry Band of Pirates','red','eridani'), homeSector:228,
+    startingPopulation:{materials:0,science:1,money:1},normalHomePopulation:{materials:0,science:1,money:1},advancedHomePopulation:{materials:1,science:0,money:1},
+    startingResources:{materials:2,science:2,money:3},startingTechnologies:['wormhole-generator']},
+  {...scifiFaction('bobiverse','Replicant Commonwealth','white','mechanema'),componentSupply:{interceptor:9,cruiser:5,dreadnought:3}},
+  scifiFaction('trisolarans','Trisolaran Civilization','blue','hydran'),
+  scifiFaction('portiids','Portiid Collective','green','planta'),
+  scifiFaction('spacing-guild','Spacing Guild','yellow','draco'),
+  {...scifiFaction('formics','Formic Hive','black','orion'),startingShip:'cruiser',startingResources:{materials:3,science:3,money:3}},
+  scifiFaction('belters','Belt Confederation','red','mechanema'),
 ];
 /** Compatibility catalog view. Base selection order and membership stay stable. */
 export const BASE_FACTIONS: readonly BaseFaction[] = FACTION_REGISTRY.slice(0, 12);
@@ -610,7 +637,7 @@ export function getFaction(id: FactionId): BaseFaction {
   return faction;
 }
 export function listFactions(profileOrContentPack?: FactionProfile | string): readonly FactionDefinition[] {
-  if (profileOrContentPack === 'base' || profileOrContentPack === 'expanded-v1' || profileOrContentPack === 'expanded-v2')
+  if (profileOrContentPack === 'base' || profileOrContentPack === 'expanded-v1' || profileOrContentPack === 'expanded-v2' || profileOrContentPack === 'scifi-v1')
     return listFactionsForProfile(profileOrContentPack);
   return profileOrContentPack
     ? FACTION_REGISTRY.filter(faction => faction.content.packId === profileOrContentPack)
@@ -619,7 +646,7 @@ export function listFactions(profileOrContentPack?: FactionProfile | string): re
 export function listFactionsForProfile(profile: FactionProfile): readonly FactionDefinition[] {
   return profile === 'base' ? BASE_FACTIONS : profile === 'expanded-v1'
     ? FACTION_REGISTRY.filter(faction => EXPANDED_V1_FACTION_IDS.has(faction.id))
-    : FACTION_REGISTRY;
+    : profile === 'scifi-v1' ? FACTION_REGISTRY : FACTION_REGISTRY.filter(faction => faction.content.packId !== 'scifi-v1');
 }
 export function factionAvailableInProfile(id: FactionId, profile: FactionProfile): boolean {
   return listFactionsForProfile(profile).some(faction => faction.id === id);

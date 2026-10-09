@@ -1,3 +1,4 @@
+import type {FactionProfile} from './catalog';
 import type {RulesMode} from './types';
 
 /** Optional overrides preserve historical preset-only saves. */
@@ -30,3 +31,11 @@ export function validRuleOptions(options:GameRuleOptions|undefined):boolean {
 }
 /** Joker tables and the variant technology inventory exclude the Rift Cannon module. */
 export function allowsRiftCannons(config:RuleConfiguration):boolean {const rules=gameRules(config);return !rules.combatJokers&&!rules.technologyVariant;}
+
+/** Experimental factions are tuned against the Standard inventories and rules. */
+export function isScifiCompatible(config:RuleConfiguration & {factionProfile?:FactionProfile}):boolean {
+ if(config.factionProfile!=='scifi-v1')return true;
+ if(config.rulesMode==='less-random-v1')return false;
+ const rules=gameRules(config);
+ return !rules.openTechnology&&!rules.publicDiscoveries&&!rules.publicReputation&&!rules.explorationRules&&!rules.combatJokers&&!rules.technologyVariant&&!rules.discoveryVariant&&!rules.factionVariant;
+}

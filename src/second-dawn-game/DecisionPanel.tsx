@@ -1,3 +1,4 @@
+import ScifiDecision from './ScifiDecision';
 import ReputationTile from './ReputationTile';
 import { researchedTechnologyIds } from '../../shared/eclipse/technologies';
 import './lessRandomDecisions.css';
@@ -85,6 +86,10 @@ export default function DecisionPanel({
   let valid = true;
   let fields: ReactElement;
   switch (decision.kind) {
+    case "discovery-draft":
+    case "technology-reservation":
+    case "reverse-engineering":
+      return <ScifiDecision key={decision.id} decision={decision} disabled={disabled} onSubmit={onSubmit}/>;
     case "exploration":
       return view ? <ExplorationDecision key={`${decision.id}:${decision.drawnTileIds.join(',')}`} view={view} decision={decision} disabled={disabled} onSubmit={onSubmit}/> : <p role="alert">The galaxy view is needed to preview this exploration. Reconnect to restore it.</p>;
     case "discovery":

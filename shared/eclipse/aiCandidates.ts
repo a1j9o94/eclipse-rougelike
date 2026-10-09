@@ -186,6 +186,7 @@ export function generateAiCandidates(
       owner: s.owner,
       sectorId: s.sectorId,
       kind: s.type,
+      doesNotPin: view.seats.some(owner=>owner.id===s.owner&&owner.faction==='spacing-guild'),
       movement:
         s.owner === seat.id &&
         s.type !== "ancient" &&

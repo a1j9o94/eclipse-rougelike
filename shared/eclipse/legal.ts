@@ -1,3 +1,4 @@
+import { availableTechnologyMarket, remoteExplorationSources, guildMovementTolls, scifiOptionalCommands } from './scifiActions';
 import { factionRulesMode } from './gameRules';
 import { researchedTechnologyIds } from './technologies';
 import { DEVELOPMENTS, developmentAvailable, quantumResearchCost } from './developments';
@@ -24,6 +25,7 @@ import {
   movableShipCount,
   rotatedEdge,
   validateMovementPath,
+  validateMovementGroup,
   type HexEdge,
   type MovementShip,
 } from "./geometry";
@@ -111,6 +113,7 @@ export function legalCommands(
     owner: s.owner,
     sectorId: s.sectorId,
     kind: s.type,
+    doesNotPin: view.seats.find(seat => seat.id === s.owner)?.faction === 'spacing-guild',
     movement:
       s.owner === seat.id &&
       s.type !== "ancient" &&
@@ -183,6 +186,21 @@ export function legalCommands(
         description,
       );
     switch (decision.kind) {
+      case 'discovery-draft': {
+        const choose=(start:number,selected:string[]):void=>{
+          if(selected.length===decision.keepCount){resolve({kind:'discovery-draft',tileIds:selected},`Keep ${selected.map(id=>getDiscovery(id as DiscoveryId).name).join(' + ')}`,'Choose your starting discoveries; their normal use/VP choices follow.');return;}
+          for(let index=start;index<decision.tileIds.length;index++)choose(index+1,[...selected,decision.tileIds[index]]);
+        };
+        choose(0,[]);break;
+      }
+      case 'reverse-engineering':
+        for(const project of decision.projects)resolve({kind:'reverse-engineering',project},`Record ${project.id}`,'Prepare one reverse-engineering project for a later Research action.');
+        resolve({kind:'reverse-engineering',project:null},'Decline new project');
+        break;
+      case "technology-reservation":
+        for(const tileId of decision.tileIds.filter(id=>availableTechnologyMarket(view,seat.id).includes(id)))resolve({kind:"technology-reservation",tileId},`Reserve ${tileId}`);
+        resolve({kind:"technology-reservation",tileId:null},"Decline reservation");
+        break;
       case "exploration":
         if (decision.redrawAvailable && decision.ring && (view.supplyCounts?.[decision.ring] ?? 0) >= decision.drawnTileIds.length) resolve({kind:"exploration",tileId:null,rotation:0,redraw:true}, "Use Exploration Joker");
         if (decision.canDrawAnother)
@@ -210,7 +228,7 @@ export function legalCommands(
           const tile = getDiscovery(tileId as DiscoveryId);
           for (const option of decision.options) {
             if (option === 'use' && ['place-unbuilt-ship','place-structure','place-warp-portal'].includes(tile.effect.kind) && !decision.sectorId) continue;
-            if (option === 'use' && tile.effect.kind === 'free-technology' && ancientTechnologyChoices(view.technologyMarket,seat.technologies,researchedTechnologyIds(seat)).length === 0) continue;
+            if (option === 'use' && tile.effect.kind === 'free-technology' && ancientTechnologyChoices(availableTechnologyMarket(view,seat.id),seat.technologies,researchedTechnologyIds(seat)).length === 0) continue;
             resolve({kind:'discovery', option, ...(decision.availableTileIds ? {discoveryId:tileId} : {})}, option === 'keep' ? `Keep ${tile.name} for 2 VP` : `Use ${tile.name}`);
           }
         }
@@ -432,7 +450,7 @@ export function legalCommands(
           );
         break;
       case "free-technology":
-        for (const technologyId of decision.technologyIds) {
+        for (const technologyId of decision.technologyIds.filter(id=>availableTechnologyMarket(view,seat.id).includes(id))) {
           const technology = TECHNOLOGIES.find((t) => t.id === technologyId);
           if (!technology) continue;
           for (const track of TRACKS) {
@@ -499,6 +517,7 @@ export function legalCommands(
   }
   if (view.waitingFor) return result;
   trades();
+  for(const command of scifiOptionalCommands(view,seat))add(command,command.type.replaceAll('-',' '),"Faction ability; no action disc.");
 
   if (view.activeSeatId !== seat.id && !ownUpkeep) return result;
   if (view.phase !== "action" && view.phase !== "upkeep") return result;
@@ -650,11 +669,28 @@ export function legalCommands(
         );
       }
     }
+    if(seat.faction==='spacing-guild'&&!seat.passed&&seat.scifi?.remoteExploreRound!==view.round){
+      for(const sector of view.sectors)for(const edge of [0,1,2,3,4,5] as HexEdge[]){
+        const position=adjacentPosition(sector.position,edge),key=`${position.q},${position.r}`;
+        if(seen.has(key)||view.sectors.some(s=>s.position.q===position.q&&s.position.r===position.r)||!remoteExplorationSources(view,seat,position).length||view.supplyCounts?.outer===0)continue;
+        if(gameRules(view).explorationRules&&((view.lessRandom?.outerPlacementsThisRound[seat.id]??0)>=outerPlacementLimit(view,seat)))continue;
+        seen.add(key);add({type:'explore',position,remote:true},`Remote prospect (${position.q}, ${position.r})`,'Once per round; outer-sector exploration beside any existing sector.');
+      }
+    }
+
   }
   if (can("research")) {
+    const project=seat.scifi?.reverseEngineeringProject;
+    if(seat.faction==='portiids'&&project)for(const track of TRACKS){
+      const definition=TECHNOLOGIES.find(t=>t.id===project.id);
+      const cost=definition?researchCostForSeat(definition.id,track,seat):null;
+      if(project.kind==='technology'?cost?.ok&&seat.resources.science>=cost.scienceCost:seat.resources.science>=6&&!(seat.scifi?.copiedAncientParts??[]).includes(project.id))
+        add({type:'reverse-engineer',track},`Reverse engineer ${project.id}`,`${project.kind==='ancient-part'?6:cost?.ok?cost.scienceCost:0} science; one Research activation.`);
+      if(project.kind==='ancient-part')break;
+    }
     for (const development of DEVELOPMENTS) if (developmentAvailable(view,development.id) && seat.resources[development.resource] >= development.cost)
       add({type:'research-development',developmentId:development.id}, `Acquire ${development.name}`, `${development.cost} ${development.resource}. ${development.description}`);
-    for (const tileId of [...new Set(view.technologyMarket)]) {
+    for (const tileId of [...new Set(availableTechnologyMarket(view,seat.id))]) {
       if (tileId === "warp-portal" && controlled.length === 0) continue;
       const technology = TECHNOLOGIES.find((t) => t.id === tileId);
       if (!technology) continue;
@@ -739,8 +775,20 @@ export function legalCommands(
             }).ok
           )
             continue;
+          const tolls=guildMovementTolls(view,seat.id,[ship.id],ship.sectorId,next,progress?.guildTollShipIds??[]);
+          if(seat.resources.money<tolls.length)continue;
           if (!reached.has(to.id)) {
             reached.add(to.id);
+            if(seat.faction==='formics'&&!seat.passed&&(ship.kind==='cruiser'||ship.kind==='dreadnought')){
+              const escortKind=ship.kind==='cruiser'?'interceptor':'cruiser';
+              const escorts=ships.filter(candidate=>candidate.owner===seat.id&&candidate.kind===escortKind&&candidate.sectorId===ship.sectorId&&candidate.movement>=next.length).slice(0,2).map(s=>s.id);
+              for(let count=escorts.length;count>0;count--){
+                const selected=escorts.slice(0,count);
+                if(!validateMovementGroup({player:seat.id,shipIds:[ship.id,...selected],path:next,sectors:mapped,ships,abilities}).ok)continue;
+                const convoyTolls=guildMovementTolls(view,seat.id,[ship.id,...selected],ship.sectorId,next,progress?.guildTollShipIds??[]);
+                if(seat.resources.money>=convoyTolls.length)add({type:'move',moves:[{shipId:ship.id,path:next,escorts:selected}]},`Convoy ${ship.kind} + ${count} ${escortKind} to ${to.id}`,`One Move activation; portal fee ${convoyTolls.length} money.`);
+              }
+            }
             add(
               { type: "move", moves: [{ shipId: ship.id, path: next }] },
               `Move ${ship.kind} to ${to.id}`,

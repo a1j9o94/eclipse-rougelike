@@ -1,5 +1,9 @@
 import { reputationCapacity } from "./battleEngine";
 import { factionHasCapability, getFaction } from "./catalog";
+import { getDiscovery, type DiscoveryId } from "./discoveries";
+import { gameRoundLimit } from "./gameRules";
+import { TECHNOLOGIES } from "./technologies";
+import { scifiExchangeValue } from "./aiScifi";
 import { estimatePublicBattle } from "./aiLegacySimulation";
 import {
   legalCommands,
@@ -75,6 +79,23 @@ export function evaluateLegacyAiCommand(
         : factionPolicy.materialsValue;
   const discPenalty = view.actionProgress ? 0 : Math.max(0, 3 - balance) * 4;
   switch (command.type) {
+    case "load-factory":
+      return view.round < gameRoundLimit(view) ? 32 : 2;
+    case "place-guild-portal":
+      return 9;
+    case "guild-offer":
+      return seat.resources[command.give] > 6 &&
+        seat.resources[command.receive] < 3 &&
+        !(view.guildOffers ?? []).some(offer => offer.owner === seat.id &&
+          offer.give === command.give && offer.receive === command.receive)
+        ? 3 : -30;
+    case "cancel-guild-offer":
+      return -30; // Round-end escrow release handles leftovers without a repost cycle.
+    case "accept-guild-offer": {
+      return scifiExchangeValue(view, command);
+    }
+    case "reverse-engineer":
+      return (seat.scifi?.reverseEngineeringProject?.kind === "technology" ? 17 : 12) - discPenalty;
     case "trade-and-act": return -100; // The normal AI generates ordinary trades, not funded wrappers.
     case "set-auto-pass":
       return -Infinity; // A human preference is never an AI gameplay candidate.
@@ -219,6 +240,24 @@ export function evaluateLegacyAiCommand(
     case "resolve": {
       const c = command.choice;
       switch (c.kind) {
+        case "discovery-draft":
+          return c.tileIds.reduce((score, id) => {
+            const effect = getDiscovery(id as DiscoveryId).effect;
+            return score + (effect.kind === "resources"
+              ? effect.resources.money * utility("money") +
+                effect.resources.science * utility("science") +
+                effect.resources.materials * utility("materials")
+              : effect.kind === "ancient-ship-part" ? 16 : 12);
+          }, 0);
+        case "technology-reservation": {
+          if (!c.tileId) return 0;
+          const technology = TECHNOLOGIES.find(tile => tile.id === c.tileId);
+          return 2 + (technology?.baseCost ?? 0) * 0.2 +
+            (view.technologyMarket.filter(id => id === c.tileId).length === 1 ? 2 : 0);
+        }
+        case "reverse-engineering":
+          return !c.project ? 0 : c.project.kind === "ancient-part" ? 16 :
+            8 + (TECHNOLOGIES.find(tile => tile.id === c.project?.id)?.baseCost ?? 0) * 0.3;
         case "exploration":
           return c.drawAnother
             ? 30
@@ -348,7 +387,7 @@ export function chooseLegacyAiCommand(
         .filter(
           (s) =>
             s.owner === view.viewerSeatId &&
-            (s.id === move.shipId || s.sectorId === destination),
+            (s.id === move.shipId || move.escorts?.includes(s.id) || s.sectorId === destination),
         )
         .map((s) => s.id);
       const enemy = view.ships

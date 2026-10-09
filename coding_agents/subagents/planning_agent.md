@@ -862,3 +862,9 @@ Result & Next Steps: the board regression failed against the shipped queue butto
 - Decision Log: The player initially requested Formic reaction convoys, then chose to match the current Ragnarok suppression after the source-code correction. Final proposal uses normal-action convoys only; reaction movement is one ship. Retain ordinary neutral combat and exploration restrictions.
 - Follow-ups: Tune full starting sheets, component-copy costs, salvage payouts and caps; resolve same-name Portiid repeat-acquisition policy before implementing it.
 - Result & Next Steps: Proposal amended with explicit confirmed rules, provisional numeric values and recorded interpretations. Source checks confirm firing-side damage allocation and current Ragnarok reaction suppression. No gameplay implementation is included.
+
+## 2026-10-09 — Science-fiction factions
+
+Outcome: seven optional playable factions with usable controls, AI and durable private choices. See `coding_agents/second_dawn_scifi_implementation.md` for acceptance criteria, authoritative decisions, tuning and rollback.
+
+Fail-first: profile/setup guards and privacy, actions/escrow/convoys/reservations, battle-wide rewards/physical replicas, UI choices, AI legality. Relevant regression suites, lint and full build are required. Release preserves old roster/version pins and publishes the backward-compatible backend before the Git frontend release.

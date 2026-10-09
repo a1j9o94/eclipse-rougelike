@@ -155,14 +155,14 @@ function ShipCard({
       type="button"
       className={`dg-combat-ship-card${selected ? " is-selected" : ""}${hit === false ? " is-miss" : ""}`}
       aria-pressed={selected}
-      aria-label={`Target ${label}${hit === undefined ? "" : hit ? " · hit" : " · miss"}`}
+      aria-label={`Target ${label}${ship?.factoryPopulation?" · Materials factory":""}${hit === undefined ? "" : hit ? " · hit" : " · miss"}`}
       onClick={onClick}
     >
       {ship && <span className="dg-combat-ship-art"><ShipArt type={ship.type} faction={seat?.faction} /></span>}
       <span className="dg-combat-card-copy">
         <strong>{name}</strong>
         {owner && <small>{owner}</small>}
-        {ship && <small>{condition}</small>}
+        {ship && <small>{condition}</small>}{ship?.factoryPopulation&&<small>Materials factory · cube returns if destroyed</small>}
       </span>
       <span className="dg-combat-hit-mark" aria-hidden="true">{hit === false ? "MISS" : selected ? "TARGET" : ""}</span>
     </button>

@@ -7,7 +7,7 @@ import type { DecisionChoice, GameCommand } from "../shared/eclipse/types";
 export const factionValidator: Validator<FactionId> = v.union(
   ...FACTION_IDS.map(id => v.literal(id)),
 );
-export const factionProfileValidator = v.union(v.literal('base'), v.literal('expanded-v1'), v.literal('expanded-v2'));
+export const factionProfileValidator = v.union(v.literal('base'), v.literal('expanded-v1'), v.literal('expanded-v2'), v.literal('scifi-v1'));
 export const rulesModeValidator = v.union(v.literal('standard'), v.literal('less-random-v1'));
 export const gameRuleOptionsValidator = v.object({
   roundLimit: v.optional(v.number()),
@@ -40,7 +40,11 @@ const placement = v.object({
   squareId: v.string(),
   resource,
 });
+const reverseProject = v.object({kind:v.union(v.literal('technology'),v.literal('ancient-part')),id:v.string()});
 const choice: Validator<DecisionChoice, "required", string> = v.union(
+  v.object({kind:v.literal('discovery-draft'),tileIds:v.array(v.string())}),
+  v.object({kind:v.literal('technology-reservation'),tileId:v.union(v.string(),v.null())}),
+  v.object({kind:v.literal('reverse-engineering'),project:v.union(reverseProject,v.null())}),
   v.object({
     kind: v.literal("exploration"),
     tileId: v.union(v.string(), v.null()),
@@ -117,6 +121,12 @@ const choice: Validator<DecisionChoice, "required", string> = v.union(
 /** Exact structural validation; numeric ranges and catalog membership remain engine-owned. */
 export const gameCommandValidator: Validator<GameCommand, "required", string> =
   v.union(
+    v.object({type:v.literal('load-factory'),shipId:v.string()}),
+    v.object({type:v.literal('place-guild-portal'),sectorId:v.string()}),
+    v.object({type:v.literal('guild-offer'),give:resource,receive:resource,amount:v.number()}),
+    v.object({type:v.literal('cancel-guild-offer'),offerId:v.string()}),
+    v.object({type:v.literal('accept-guild-offer'),offerId:v.string(),amount:v.number()}),
+    v.object({type:v.literal('reverse-engineer'),track:v.union(v.literal('military'),v.literal('grid'),v.literal('nano'))}),
     v.object({type:v.literal('place-shrine'),sectorId:v.string(),planetIndex:v.number(),row:resource,column:v.union(v.literal(0),v.literal(1),v.literal(2))}),
     v.object({type:v.literal("research-development"),developmentId:v.union(v.literal("ancient-labs-development"),v.literal("quantum-labs"))}),
     v.object({type:v.literal("quantum-research"),tileId:v.string(),track:v.union(v.literal("military"),v.literal("grid"),v.literal("nano"))}),
@@ -154,6 +164,7 @@ export const gameCommandValidator: Validator<GameCommand, "required", string> =
     v.object({
       type: v.literal("explore"),
       position: v.object({ q: v.number(), r: v.number() }),
+      remote: v.optional(v.boolean()),
     }),
     v.object({
       type: v.literal("influence"),
@@ -195,7 +206,7 @@ export const gameCommandValidator: Validator<GameCommand, "required", string> =
     v.object({
       type: v.literal("move"),
       moves: v.array(
-        v.object({ shipId: v.string(), path: v.array(v.string()) }),
+        v.object({ shipId: v.string(), path: v.array(v.string()), escorts:v.optional(v.array(v.string())) }),
       ),
     }),
     v.object({ type: v.literal("pass") }),

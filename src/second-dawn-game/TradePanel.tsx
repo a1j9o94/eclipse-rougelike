@@ -1,3 +1,4 @@
+import GuildTradePanel from './GuildTradePanel';
 import {factionRulesMode} from '../../shared/eclipse/gameRules';
 import FactionActionBenefit from './FactionActionBenefit';
 import { useActionDraftGuard, useActionDraftState } from './actionDraftContext';
@@ -38,7 +39,7 @@ export default function TradePanel({view,candidates,disabled,onSubmit}:TradePane
  const canSubmit=!disabled&&(!draftGuard.stale||!!view.pendingDecision)&&legalPair&&result.ok;
  const chooseOutput=(resource:Resource)=>{setTo(resource);setFrom(pairs.find(pair=>pair.to===resource&&pair.from===from)?.from??pairs.find(pair=>pair.to===resource)?.from??from);setAmount(1);};
  return <section className="dg-trade-panel" aria-label="Convert resources">
-  <header><h3>Convert resources</h3><span>{rates.map(rate=>`${rate.input} : ${rate.output}`).join(" / ")}</span></header>
+  <GuildTradePanel view={view} candidates={candidates} disabled={disabled} onSubmit={onSubmit}/><header><h3>Convert resources</h3><span>{rates.map(rate=>`${rate.input} : ${rate.output}`).join(" / ")}</span></header>
   <p>No action disc · Your turn continues</p><FactionActionBenefit factionId={seat.faction} action="trade"/>
   <fieldset><legend>Receive</legend><div className="dg-trade-choices">{RESOURCES.map(resource=><button key={resource} type="button" aria-label={`Receive ${resource}`} aria-pressed={to===resource} disabled={disabled||!pairs.some(pair=>pair.to===resource)} onClick={()=>chooseOutput(resource)}><TradeResourceIcon resource={resource}/><span>{title(resource)}</span>{to===resource&&<small aria-hidden="true">✓</small>}</button>)}</div></fieldset>
   <fieldset><legend>Pay with</legend><div className="dg-trade-choices">{RESOURCES.filter(resource=>resource!==to).map(resource=><button key={resource} type="button" aria-label={`Pay with ${resource}`} aria-pressed={from===resource} disabled={disabled||!pairs.some(pair=>pair.to===to&&pair.from===resource)} onClick={()=>{setFrom(resource);setAmount(1);}}><TradeResourceIcon resource={resource}/><span>{title(resource)}</span><small>{seat.resources[resource]} held{from===resource?' ✓':''}</small></button>)}</div></fieldset>
