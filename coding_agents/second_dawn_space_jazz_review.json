@@ -1,0 +1,20 @@
+{
+  "duration": 68.57141666666666,
+  "sampleRate": 24000,
+  "generationMs": 213.85837199999997,
+  "finite": true,
+  "peak": 0.550000011920929,
+  "rms": 0.10507557627325774,
+  "boundaryJump": 0.0017019864171743393,
+  "cacheHit": true,
+  "tests": 48,
+  "lint": "passed",
+  "build": "passed",
+  "browserVerification": "Unavailable: Playwright browser download failed; cloud browser cannot reach local server.",
+  "menuMusic": {
+    "defaultEnabled": true,
+    "savedMutePreserved": true,
+    "appScopedPlayback": true,
+    "menuControls": true
+  }
+}

@@ -42,18 +42,18 @@ export function useDiceSoundVolume():readonly [number,(volume:number)=>void] {
  return [volume,setVolume];
 }
 
-/** Each new sound channel is explicitly opt-in; corrupt values never enable it. */
-function soundPreference(name:string,defaultVolume:number){
+/** Independent sound preferences; defaults apply only when no saved choice exists. */
+function soundPreference(name:string,defaultVolume:number,defaultEnabled=false){
  const enabledKey=`eclipse.second-dawn.${name}.v1`,volumeKey=`eclipse.second-dawn.${name}-volume.v1`;
- let sessionEnabled=false,sessionLevel=defaultVolume;
+ let sessionEnabled=defaultEnabled,sessionLevel=defaultVolume;
  const bound=(value:number)=>Number.isFinite(value)?Math.max(0,Math.min(1,value)):defaultVolume;
- const readEnabled=()=>{try{return localStorage.getItem(enabledKey)==='on';}catch{return sessionEnabled;}};
+ const readEnabled=()=>{try{const saved=localStorage.getItem(enabledKey);return saved===null?defaultEnabled:saved==='on';}catch{return sessionEnabled;}};
  const readVolume=()=>{try{const value=localStorage.getItem(volumeKey);return value===null||value.trim()===''?defaultVolume:bound(Number(value));}catch{return sessionLevel;}};
  const setEnabled=(value:boolean)=>{sessionEnabled=value;try{localStorage.setItem(enabledKey,value?'on':'off');}catch{/* Session fallback. */}window.dispatchEvent(new Event(CHANGE_EVENT));};
  const setVolume=(value:number)=>{sessionLevel=bound(value);try{localStorage.setItem(volumeKey,String(sessionLevel));}catch{/* Session fallback. */}window.dispatchEvent(new Event(CHANGE_EVENT));};
- return {readEnabled,readVolume,useEnabled():readonly [boolean,(value:boolean)=>void]{return [useSyncExternalStore(subscribe,readEnabled,()=>false),setEnabled];},useVolume():readonly [number,(value:number)=>void]{return [useSyncExternalStore(subscribe,readVolume,()=>defaultVolume),setVolume];}};
+ return {readEnabled,readVolume,useEnabled():readonly [boolean,(value:boolean)=>void]{return [useSyncExternalStore(subscribe,readEnabled,()=>defaultEnabled),setEnabled];},useVolume():readonly [number,(value:number)=>void]{return [useSyncExternalStore(subscribe,readVolume,()=>defaultVolume),setVolume];}};
 }
-const effects=soundPreference('effects',.35),ambient=soundPreference('ambient',.15);
+const effects=soundPreference('effects',.35),ambient=soundPreference('ambient',.15,true);
 export const useGameEffectsEnabled=effects.useEnabled,useGameEffectsVolume=effects.useVolume;
 export const useAmbientEnabled=ambient.useEnabled,useAmbientVolume=ambient.useVolume;
 export const readGameEffectsEnabled=effects.readEnabled,readGameEffectsVolume=effects.readVolume;
