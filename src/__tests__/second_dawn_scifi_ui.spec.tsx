@@ -112,3 +112,11 @@ it('offers a longer free wormhole route when the shorter Guild portal route is u
  const ship=state.ships.find(s=>s.owner==='a')!;const plan=movementPlan(getPlayerView(state,'a'),source.id,[ship.id]);
  expect(plan.destinations.find(d=>d.sectorId===target.id)?.command.moves).toEqual([{shipId:ship.id,path:[middle.id]},{shipId:ship.id,path:[target.id]}]);
 });
+
+
+import {factionPresentation} from '../second-dawn-game/factionPresentation';
+it('describes Guild remote prospecting on every Explore action',()=>{
+ const ability=factionPresentation('spacing-guild').benefits.find(benefit=>benefit.label.includes('remote prospecting'));
+ expect(ability?.detail).toMatch(/every Explore action/i);
+ expect(ability?.label).not.toMatch(/per round/i);
+});

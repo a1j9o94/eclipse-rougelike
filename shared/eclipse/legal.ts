@@ -669,12 +669,12 @@ export function legalCommands(
         );
       }
     }
-    if(seat.faction==='spacing-guild'&&!seat.passed&&seat.scifi?.remoteExploreRound!==view.round){
+    if(seat.faction==='spacing-guild'&&!seat.passed){
       for(const sector of view.sectors)for(const edge of [0,1,2,3,4,5] as HexEdge[]){
         const position=adjacentPosition(sector.position,edge),key=`${position.q},${position.r}`;
         if(seen.has(key)||view.sectors.some(s=>s.position.q===position.q&&s.position.r===position.r)||!remoteExplorationSources(view,seat,position).length||view.supplyCounts?.outer===0)continue;
         if(gameRules(view).explorationRules&&((view.lessRandom?.outerPlacementsThisRound[seat.id]??0)>=outerPlacementLimit(view,seat)))continue;
-        seen.add(key);add({type:'explore',position,remote:true},`Remote prospect (${position.q}, ${position.r})`,'Once per round; outer-sector exploration beside any existing sector.');
+        seen.add(key);add({type:'explore',position,remote:true},`Remote prospect (${position.q}, ${position.r})`,'Every normal Explore action; outer-sector exploration beside any existing sector.');
       }
     }
 

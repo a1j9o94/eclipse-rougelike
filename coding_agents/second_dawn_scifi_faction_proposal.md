@@ -134,7 +134,7 @@ Retreat with a surviving ship can qualify; mere adjacency cannot. A battle snaps
 
 ### Remote prospecting
 
-Once per round, one Explore activation may place a normally drawn sector III tile in any otherwise legal outer-sector position adjacent to an existing sector, without requiring a nearby Guild-controlled sector or unpinned Guild fleet. The neighboring sector may belong to another player.
+On every normal Explore action, each Explore activation may place a normally drawn sector III tile in any otherwise legal outer-sector position adjacent to an existing sector, without requiring a nearby Guild-controlled sector or unpinned Guild fleet. The neighboring sector may belong to another player.
 
 Keep normal exploration draws and choices, tile supply, outer-placement limits, rotation/connectivity rules, and influence and colonization costs. Claiming the new sector is optional and consumes a normal influence disc; neither a free ship nor a free developed colony is granted. The position still belongs to the outer ring: this is not permission to place sector III tiles in the inner or middle rings.
 
@@ -332,3 +332,6 @@ Measure signature-ability usage and unused opportunities, comprehension errors, 
 - [Action execution](../shared/eclipse/actions.ts)
 - [Population income tracks](../shared/eclipse/tracks.ts)
 - [Existing expansion assessment](second_dawn_faction_expansion_assessment.md)
+
+### October 9, 2026 clarification — Guild remote exploration
+Remote prospecting is available on every normal Explore action, including later turns in the same round. Standard activation, influence, supply, adjacency, and outer-sector placement rules apply. Reactions remain excluded. Historical remote-use markers no longer restrict availability.

@@ -47,7 +47,7 @@ export function resolveScifiChoice(state:GameState,seat:Seat,choice:DecisionChoi
  state.pendingDecision=null;return true;
 }
 export function remoteExplorationSources(state:Pick<GameState,'sectors'|'round'>,seat:Seat,position:Coordinate):GameState['sectors'] {
- if(seat.faction!=='spacing-guild'||seat.passed||seat.scifi?.remoteExploreRound===state.round||Math.max(Math.abs(position.q),Math.abs(position.r),Math.abs(position.q+position.r))<3)return [];
+ if(seat.faction!=='spacing-guild'||seat.passed||Math.max(Math.abs(position.q),Math.abs(position.r),Math.abs(position.q+position.r))<3)return [];
  return state.sectors.filter(sector=>([0,1,2,3,4,5] as HexEdge[]).some(edge=>{const p=adjacentPosition(sector.position,edge);return p.q===position.q&&p.r===position.r;}));
 }
 /** Toll quote and execution share this pure helper, including once-per-action ship accounting. */

@@ -123,6 +123,7 @@ export interface ReputationSummary {
 
 export interface ScifiProject { kind: 'technology' | 'ancient-part'; id: string }
 export interface ScifiSeatState {
+  /** Last remote draw round, retained for historical replay; does not limit exploration. */
   remoteExploreRound?: number;
   reservationRound?: number;
   guildPortalMarkers?: number;

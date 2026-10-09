@@ -59,12 +59,14 @@ describe('sci-fi optional economy and routes',()=>{
   const state=fixture();state.technologyMarket=['fusion-drive','fusion-drive','plasma-cannon'];state.technologyReservations=[{owner:'g',tileId:'fusion-drive',round:1,turnSerial:0}];
   expect(availableTechnologyMarket(state,'p')).toEqual(['fusion-drive','plasma-cannon']);expect(availableTechnologyMarket(state,'g')).toEqual(state.technologyMarket);
  });
- it('allows only outer remote prospecting and consumes its per-round permission',()=>{
+ it('allows outer remote prospecting throughout the round, including legacy saves',()=>{
   const state=fixture();const seat=state.seats[0];seat.faction='spacing-guild' as FactionId;
   state.sectors=[{...state.sectors[0],id:'opponent',owner:'g',position:{q:2,r:0}}];
   expect(remoteExplorationSources(state,seat,{q:3,r:0})).toHaveLength(1);
   expect(remoteExplorationSources(state,seat,{q:1,r:0})).toHaveLength(0);
-  seat.scifi={remoteExploreRound:state.round};expect(remoteExplorationSources(state,seat,{q:3,r:0})).toHaveLength(0);
+  seat.scifi={remoteExploreRound:state.round};expect(remoteExplorationSources(state,seat,{q:3,r:0})).toHaveLength(1);
+  seat.passed=true;expect(remoteExplorationSources(state,seat,{q:3,r:0})).toHaveLength(0);
+  seat.passed=false;seat.faction='eridani';expect(remoteExplorationSources(state,seat,{q:3,r:0})).toHaveLength(0);
  });
  it('includes convoy tolls and brokerage escrow in the public resource preview',()=>{
   const state=fixture();state.seats[1].faction='spacing-guild' as FactionId;
@@ -150,14 +152,36 @@ describe('sci-fi full action rules',()=>{
 });
 
 describe('Guild permanent outposts',()=>{
- it('commits a remote outer draw once per round and keeps ordinary inward exploration',()=>{
+ it('commits repeated remote draws in one round and keeps ordinary inward exploration',()=>{
   const state=fixture();state.seats[0].faction='spacing-guild';state.sectors=[{...state.sectors[1],position:{q:2,r:0},owner:'g'}];
   const drawn=processGameCommand(state,'p',{type:'explore',position:{q:3,r:-1},remote:true});expect(drawn.ok).toBe(true);if(!drawn.ok)return;
   expect(drawn.state.seats[0].scifi?.remoteExploreRound).toBe(state.round);const decision=drawn.state.pendingDecision;expect(decision?.kind).toBe('exploration');if(decision?.kind!=='exploration')return;
   const discarded=processGameCommand(drawn.state,'p',{type:'resolve',decisionId:decision.id,choice:{kind:'exploration',tileId:null,rotation:0}});expect(discarded.ok).toBe(true);if(!discarded.ok)return;
-  discarded.state.activeSeatId='p';expect(processGameCommand(discarded.state,'p',{type:'explore',position:{q:3,r:-1},remote:true}).ok).toBe(false);
-  discarded.state.sectors.push({...discarded.state.sectors[0],id:'outpost',tileId:'1',position:{q:3,r:-1},owner:'p',rotation:0});
-  const expected=discarded.state.supplies.middle[0];const inward=processGameCommand(discarded.state,'p',{type:'explore',position:{q:2,r:-1}});expect(inward.ok).toBe(true);if(inward.ok&&inward.state.pendingDecision?.kind==='exploration')expect(inward.state.pendingDecision.drawnTileIds).toContain(expected);
+  const nextTurn=processGameCommand(discarded.state,'g',{type:'pass'});expect(nextTurn.ok).toBe(true);if(!nextTurn.ok)return;
+  expect(nextTurn.state.activeSeatId).toBe('p');expect(nextTurn.state.round).toBe(state.round);
+  const view=getPlayerView(nextTurn.state,'p')!;
+  const candidates=legalCommands(view).filter(candidate=>candidate.command.type==='explore'&&candidate.command.remote);
+  expect(candidates.length).toBeGreaterThan(0);
+  const discsBefore=nextTurn.state.seats[0].influenceOnTrack;
+  const repeated=processGameCommand(nextTurn.state,'p',{type:'explore',position:{q:3,r:-1},remote:true});expect(repeated.ok).toBe(true);if(!repeated.ok)return;
+  expect(repeated.state.seats[0].influenceOnTrack).toBe(discsBefore-1);
+  const repeatedDecision=repeated.state.pendingDecision;expect(repeatedDecision?.kind).toBe('exploration');if(repeatedDecision?.kind!=='exploration')return;
+  const resolved=processGameCommand(repeated.state,'p',{type:'resolve',decisionId:repeatedDecision.id,choice:{kind:'exploration',tileId:null,rotation:0}});expect(resolved.ok).toBe(true);if(!resolved.ok)return;
+  const afterRepeated=resolved.state;afterRepeated.activeSeatId='p';
+  afterRepeated.sectors.push({...afterRepeated.sectors[0],id:'outpost',tileId:'1',position:{q:3,r:-1},owner:'p',rotation:0});
+  const expected=afterRepeated.supplies.middle[0];const inward=processGameCommand(afterRepeated,'p',{type:'explore',position:{q:2,r:-1}});expect(inward.ok).toBe(true);if(inward.ok&&inward.state.pendingDecision?.kind==='exploration')expect(inward.state.pendingDecision.drawnTileIds).toContain(expected);
+ });
+ it('keeps remote targets available after placing a sector in the same round',()=>{
+  const state=fixture();state.seats[0].faction='spacing-guild';state.sectors=[{...state.sectors[1],position:{q:2,r:0},owner:'g'}];
+  const drawn=processGameCommand(state,'p',{type:'explore',position:{q:3,r:-1},remote:true});expect(drawn.ok).toBe(true);if(!drawn.ok)return;
+  const decision=drawn.state.pendingDecision;if(decision?.kind!=='exploration')throw new Error('Expected an exploration draw.');
+  const placement=decision.placements[0];expect(placement).toBeDefined();
+  const placed=processGameCommand(drawn.state,'p',{type:'resolve',decisionId:decision.id,choice:{kind:'exploration',...placement,claim:false}});expect(placed.ok).toBe(true);if(!placed.ok)return;
+  expect(placed.state.sectors.some(sector=>sector.position.q===3&&sector.position.r===-1)).toBe(true);
+  const nextTurn=processGameCommand(placed.state,'g',{type:'pass'});expect(nextTurn.ok).toBe(true);if(!nextTurn.ok)return;
+  const candidate=legalCommands(getPlayerView(nextTurn.state,'p')!).find(entry=>entry.command.type==='explore'&&entry.command.remote);
+  expect(candidate).toBeDefined();if(!candidate)throw new Error('Remote targets must persist after placement.');
+  expect(processGameCommand(nextTurn.state,'p',candidate.command).ok).toBe(true);
  });
  it('places permanent markers without VP and cannot replace a captured marker',()=>{
   const state=fixture();state.seats[0].faction='spacing-guild';state.seats[0].scifi={guildPortalMarkers:1};const own=state.sectors.find(s=>s.owner==='p')!;
@@ -165,5 +189,23 @@ describe('Guild permanent outposts',()=>{
   expect(placed.state.sectors.find(s=>s.id===own.id)?.guildPortalOwner).toBe('p');expect(placed.state.sectors.find(s=>s.id===own.id)?.portalVp).toBeUndefined();expect(placed.state.seats[0].scifi?.guildPortalMarkers).toBe(0);
   placed.state.sectors.find(s=>s.id===own.id)!.owner='g';const another=placed.state.sectors.find(s=>s.id!==own.id)!;another.owner='p';
   expect(processGameCommand(placed.state,'p',{type:'place-guild-portal',sectorId:another.id}).ok).toBe(false);expect(mapSector(placed.state.sectors.find(s=>s.id===own.id)!).warpPortal).toBe(true);
+ });
+});
+
+
+describe('Guild remote exploration limits',()=>{
+ it('keeps remote targets outer, adjacent, empty and unavailable after passing',()=>{
+  const state=fixture();const seat=state.seats[0];seat.faction='spacing-guild';seat.scifi={remoteExploreRound:state.round};
+  state.sectors=[{...state.sectors[1],position:{q:2,r:0},owner:'g'}];
+  for(const position of [{q:1,r:0},{q:2,r:0},{q:6,r:0}])expect(processGameCommand(state,'p',{type:'explore',position,remote:true}).ok).toBe(false);
+  seat.passed=true;
+  expect(processGameCommand(state,'p',{type:'explore',position:{q:3,r:-1},remote:true}).ok).toBe(false);
+  expect(legalCommands(getPlayerView(state,'p')!).some(candidate=>candidate.command.type==='explore'&&candidate.command.remote)).toBe(false);
+ });
+ it('requires remaining sector supply for remote draws',()=>{
+  const state=fixture();state.seats[0].faction='spacing-guild';state.seats[0].scifi={remoteExploreRound:state.round};
+  state.sectors=[{...state.sectors[1],position:{q:2,r:0},owner:'g'}];state.supplies.outer=[];state.engine!.discardedSectors.outer=[];
+  expect(legalCommands(getPlayerView(state,'p')!).some(candidate=>candidate.command.type==='explore'&&candidate.command.remote)).toBe(false);
+  expect(processGameCommand(state,'p',{type:'explore',position:{q:3,r:-1},remote:true}).ok).toBe(false);
  });
 });

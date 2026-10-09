@@ -913,3 +913,11 @@ Authorized follow-up: replace Lyra's diamond Shrine with shared faceted art and 
 - Decision: retain internal scifi-v1 profile to preserve engine initialization and replay/version contracts.
 - Validation: 40 tests passed across eight relevant suites, plus two additional legacy regressions (42 unique tests total); lint, full Convex-codegen/typecheck/Vite build, and independent component review passed. Final build rechecked after correcting legacy upgrade copy.
 - Follow-ups: book-inspired faction Less Random compatibility remains outside this menu-only change.
+
+## 2026-10-09 — Guild remote prospecting on every Explore
+- Outcome: Guild players retain remote outer-sector targets on every normal Explore action, including later turns in the same round and existing saved games.
+- Acceptance: repeat draws after discard/placement; ordinary influence and activation costs; valid outer/adjacent/empty targets; no remote reaction; UI and AI candidates use the same eligibility.
+- Fail-first tests: current-round legacy marker no longer blocks helper/candidates or authoritative commands; two real turns in one round; exhausted supply and invalid targets still rejected; presentation explains every Explore.
+- Decision: retain legacy remoteExploreRound writes for exact historical journal recovery, but remove eligibility checks. No migration.
+- Risks/rollback: user-directed faction strength change; revert runtime gating and copy if needed. Follow-ups: numerical balance through later playtests.
+- Validation: 62 unique relevant tests passed across action, UI, AI, map and recovery suites; ESLint and full Convex-codegen/typecheck/Vite build passed. Focused review confirmed legacy replay compatibility.
