@@ -18,5 +18,9 @@
 .dg-feature-note .dg-structure-silhouette{width:18px;height:18px;vertical-align:middle}
 
 .dg-structure-shrine{--structure-metal:#916f83;--structure-face:#c8acbd;--structure-edge:#ead5df;--structure-light:#f0d8eb}
-.dg-research-developments h2>.dg-structure-shrine{width:22px;height:24px;vertical-align:middle;margin-right:7px}
+.dg-research-developments .dg-shrine-heading{display:flex;align-items:center;gap:7px}
+.dg-research-developments h2>.dg-structure-shrine{width:22px;height:24px}
+.dg-research-developments .dg-shrine-placement{display:grid;grid-template-columns:30px minmax(0,1fr);gap:5px 12px;text-align:left;align-items:center}
+.dg-shrine-placement>.dg-structure-shrine{grid-row:span 2}
+.dg-shrine-placement>strong,.dg-shrine-placement>span{grid-column:2}
 .dg-research-developments button>.dg-structure-shrine{width:28px;height:30px}
