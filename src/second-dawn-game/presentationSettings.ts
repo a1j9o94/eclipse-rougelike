@@ -57,3 +57,14 @@ const effects=soundPreference('effects',.35),ambient=soundPreference('ambient',.
 export const useGameEffectsEnabled=effects.useEnabled,useGameEffectsVolume=effects.useVolume;
 export const useAmbientEnabled=ambient.useEnabled,useAmbientVolume=ambient.useVolume;
 export const readGameEffectsEnabled=effects.readEnabled,readGameEffectsVolume=effects.readVolume;
+
+/** Browser-wide display choices, shared by home settings and every game board. */
+function displayPreference(name:string,defaultValue:()=>boolean,fallback:boolean){
+ const key=`eclipse.second-dawn.${name}.v1`;
+ let sessionEnabled:boolean|undefined;
+ const read=()=>{try{const saved=localStorage.getItem(key);return saved===null||saved===''?defaultValue():saved==='on';}catch{return sessionEnabled??fallback;}};
+ const set=(enabled:boolean)=>{sessionEnabled=enabled;try{localStorage.setItem(key,enabled?'on':'off');}catch{/* Session preference survives remounts. */}window.dispatchEvent(new Event(CHANGE_EVENT));};
+ return function usePreference():readonly [boolean,(enabled:boolean)=>void]{return [useSyncExternalStore(subscribe,read,()=>fallback),set];};
+}
+export const useMotionEnabled=displayPreference('motion',()=>!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches,false);
+export const useFollowAiEnabled=displayPreference('follow-ai',()=>true,true);
