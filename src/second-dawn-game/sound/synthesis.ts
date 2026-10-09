@@ -1,3 +1,4 @@
+import {createSpaceJazzBuffer,SPACE_JAZZ_SECONDS} from './spaceJazz';
 import {synthesizeCombatCue,type CombatCue} from './combatSynthesis';
 /** Original cosmetic synthesis. No game state or seeded randomness enters this module. */
 type InterfaceCue='selection'|'confirm'|'detent'|'tile'|'move'|'install'|'reject';
@@ -17,20 +18,22 @@ export function synthesizeCue(context:BaseAudioContext,output:AudioNode,cue:Cosm
  oscillator.start(now);oscillator.stop(now+duration+.01);
  return {stop(){if(stopped)return;stopped=true;oscillator.onended=null;try{oscillator.stop();}catch{/* Already ended. */}cleanup();}};
 }
-export const AMBIENT_SECONDS=90;
-/** Four bounded voices: three slowly changing pads and one sparse, breath-like upper tone. */
+export const AMBIENT_SECONDS=SPACE_JAZZ_SECONDS;
+/** Original space jazz; one cached stereo source loops without a gap or a growing node graph. */
 export function synthesizeAmbient(context:BaseAudioContext,output:AudioNode,onEnded:()=>void=()=>{}):SoundHandle{
- const start=context.currentTime,voices:OscillatorNode[]=[],nodes:AudioNode[]=[];
- const chords=[[110,164.81,220],[98,146.83,220],[87.31,130.81,196],[98,146.83,196],[110,164.81,246.94],[110,146.83,220]];
- const envelope=context.createGain();nodes.push(envelope);envelope.connect(output);
- envelope.gain.setValueAtTime(0,start);envelope.gain.linearRampToValueAtTime(1,start+3);envelope.gain.setValueAtTime(1,start+86);envelope.gain.linearRampToValueAtTime(0,start+AMBIENT_SECONDS);
- for(let voice=0;voice<4;voice++){
-  const oscillator=context.createOscillator(),gain=context.createGain();voices.push(oscillator);nodes.push(oscillator,gain);oscillator.type='sine';oscillator.connect(gain);gain.connect(envelope);
-  if(voice<3){gain.gain.value=.11;oscillator.frequency.setValueAtTime(chords[0][voice],start);for(let section=1;section<6;section++){const at=start+section*15;oscillator.frequency.setValueAtTime(chords[section-1][voice],at-3);oscillator.frequency.exponentialRampToValueAtTime(chords[section][voice],at+3);}}
-  else{gain.gain.setValueAtTime(0,start);for(const [index,at] of [7,24,43,65,80].entries()){oscillator.frequency.setValueAtTime([440,493.88,392,329.63,440][index],start+at);gain.gain.setValueAtTime(0,start+at);gain.gain.linearRampToValueAtTime(.045,start+at+1.7);gain.gain.exponentialRampToValueAtTime(.0001,start+at+5);gain.gain.setValueAtTime(0,start+at+5.1);}}
-  oscillator.start(start);oscillator.stop(start+AMBIENT_SECONDS);
- }
- let stopped=false;
- const cleanup=()=>{for(const node of nodes)node.disconnect();onEnded();};voices[0].onended=cleanup;
- return {stop(fadeSeconds=0){if(stopped)return;stopped=true;voices[0].onended=null;const now=context.currentTime;envelope.gain.cancelScheduledValues(now);envelope.gain.setValueAtTime(envelope.gain.value,now);envelope.gain.linearRampToValueAtTime(0,now+fadeSeconds);for(const voice of voices){try{voice.stop(now+fadeSeconds);}catch{/* Already ended. */}}if(fadeSeconds){voices[0].onended=cleanup;}else cleanup();}};
+ const source=context.createBufferSource(),envelope=context.createGain();
+ source.buffer=createSpaceJazzBuffer(context);source.loop=true;
+ source.connect(envelope);envelope.connect(output);
+ const start=context.currentTime;
+ envelope.gain.setValueAtTime(0,start);envelope.gain.linearRampToValueAtTime(1,start+.15);
+ let stopped=false,ended=false;
+ const cleanup=()=>{if(ended)return;ended=true;source.onended=null;source.disconnect();envelope.disconnect();onEnded();};
+ source.onended=cleanup;source.start(start);
+ return {stop(fadeSeconds=0){
+  if(stopped||ended)return;stopped=true;
+  const now=context.currentTime,fade=Math.max(0,fadeSeconds);
+  envelope.gain.cancelScheduledValues(now);envelope.gain.setValueAtTime(envelope.gain.value,now);envelope.gain.linearRampToValueAtTime(0,now+fade);
+  try{source.stop(now+fade);}catch{cleanup();}
+  if(!fade)cleanup();
+ }};
 }

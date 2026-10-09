@@ -56,7 +56,7 @@ export default function SoundSettingsControls(){
   </label>
   <button data-sound="silent" disabled={!effects||effectsVolume===0} onClick={()=>{const token=++previewToken.current,requestedAt=performance.now();void prepareCosmeticAudio().then(()=>{if(token===previewToken.current&&performance.now()-requestedAt<=1000)playCosmeticCue('tile');});}}>Preview game effects</button>
   <label>
-   <span><strong>Ambient music</strong><small>A quiet, original space soundscape. Plays while you are in a match.</small></span>
+   <span><strong>Ambient music</strong><small>Original space jazz: swung drums, warm keys and a walking bass. Plays through menus and matches.</small></span>
    <input type="checkbox" checked={ambient} onChange={event=>{stopPreview();if(event.target.checked)void prepareCosmeticAudio();setAmbient(event.target.checked);}}/>
   </label>
   <label className="dg-dice-volume">
@@ -64,6 +64,6 @@ export default function SoundSettingsControls(){
    <input aria-label="Ambient music volume" aria-valuetext={`${Math.round(ambientVolume*100)} percent`} type="range" min={0} max={100} step={5} value={Math.round(ambientVolume*100)} disabled={!ambient} onChange={event=>{stopPreview();setAmbientVolume(Number(event.target.value)/100);}}/>
   </label>
   <button data-sound="silent" disabled={ambient||ambientVolume===0} onClick={previewMusic}>{previewing?'Stop music preview':'Preview ambient music'}</button>
-  <p>{ambient?'Music is playing. Turn it off above to end the soundscape.':'Preview plays for eight seconds without enabling music.'}</p>
+  <p>{ambient?'Music is playing. Turn it off above to stop the music.':'Preview plays for eight seconds without enabling music.'}</p>
  </>;
 }

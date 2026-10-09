@@ -8,7 +8,6 @@ import {needsUpkeep,upkeepReadyCount} from './upkeepParticipation';
 import FactionAbilityControls from './FactionAbilityControls';
 import {remainingAction,continuesAction} from './actionCapacity';
 import {seatColor} from './factionColors';
-import {useSoundscape} from './sound/useSoundscape';
 import {useCombatVolleySounds} from './sound/useCombatVolleySounds';
 import {useGameSoundFeedback} from './sound/useGameSoundFeedback';
 import ChoiceWorkspace from './ChoiceWorkspace';
@@ -144,7 +143,6 @@ const directTurnActions:GameCommand["type"][] = ["end-action","pass","finish-upk
 const humanize = (text: string) =>
   text.replaceAll("-", " ").replace(/^./, (c) => c.toUpperCase());
 export default function SecondDawnBoard(props:Props){
- useSoundscape();
  return <DiceRollScopeContext.Provider value={`${props.matchId??'preview'}:${props.view.viewerSeatId}`}><ActionDraftProvider matchId={props.matchId} viewerSeatId={props.view.viewerSeatId} revision={props.view.revision} lastAcceptedCommand={props.lastAcceptedCommand} lastQueuedCommand={props.lastQueuedCommand}><PublicInspectionProvider><SecondDawnBoardContent {...props}/></PublicInspectionProvider></ActionDraftProvider></DiceRollScopeContext.Provider>;
 }
 function SecondDawnBoardContent({
