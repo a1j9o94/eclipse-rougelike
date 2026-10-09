@@ -38,3 +38,15 @@ Run relevant tests with one worker, lint, and the full build. The existing main-
 - Full repository lint, Convex API generation, TypeScript, Eclipse typechecking and Vite production build pass. Existing Vite bundle-size advisory remains.
 - Local real-backend browser publishing is blocked by this execution environment rejecting the Node executor Unix socket (`listen EPERM`). The corresponding real Convex mutation/query flows pass under convex-test. Live browser verification follows the authorized Git release.
 - The user explicitly authorized pushing to main after tests pass. Existing Vercel Production target metadata was verified against the required development backend; the sensitive key remains inside Vercel.
+
+## Live release verification
+
+Main commit `8b87eed45f81b9ebd5dcdebc46467c773472ad48` produced Vercel deployment `dpl_FdZkVst6ppNJKLUBbu8SVyWJKFBL`, verified Ready. The canonical application at https://eclipse-rougelike.vercel.app/ exposes the optional Science fiction collection with all seven new factions.
+
+Real browser checks against the deployed application confirmed:
+
+- Bobiverse: loading an interceptor factory increases materials income from 3 to 4; the factory marker and income persist after reload.
+- ExFor: the same three private discoveries persist after reload. Keeping two and resolving the ordinary rewards applies the chosen materials/VP rewards and resumes the turn.
+- Guild: home portal and remote prospecting destinations appear; posting one material for one science reduces available materials from 4 to 3. The offer and escrow survive reload, and cancellation restores materials to 4.
+
+The browser check also identified cramped Guild exchange controls. The follow-up styles give the offer form labeled, spaced controls and a full-width heading. The unused local browser smoke experiment was removed because this environment cannot run its backend executor; the checked-in reducer, UI, Convex, AI and release tests remain the automated verification path.
