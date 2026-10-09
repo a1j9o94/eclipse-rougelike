@@ -3,7 +3,7 @@ import {getMinorSpecies,minorSpeciesPurchaseIssue,minorSpeciesPurchaseOptions,ty
 import {incomeForPopulationAway} from '../../shared/eclipse/tracks';
 import {previewCommand} from '../../shared/eclipse/commandPreview';
 import type {GameCommand,PlayerView,Resource,Seat} from '../../shared/eclipse/types';
-import ShipSilhouette from './ShipSilhouette';
+import BuildPieceSilhouette from './BuildPieceSilhouette';
 import {StatIcon} from './ShipPartStats';
 import {TradeResourceIcon} from './TradePanel';
 import './minorSpecies.css';
@@ -23,7 +23,7 @@ function minorSpeciesDescription(id:MinorSpeciesId):string {
 }
 function MinorSpeciesIcon({id,seat}:{id:MinorSpeciesId;seat?:Seat}){
  const effect=getMinorSpecies(id).effect;
- if(effect.kind==='construction-discount')return effect.component==='cruiser'||effect.component==='dreadnought'?<ShipSilhouette type={effect.component} faction={seat?.faction}/>:<StatIcon kind={effect.component==='orbital'?'portal':'structure'}/>;
+ if(effect.kind==='construction-discount')return <BuildPieceSilhouette component={effect.component} faction={seat?.faction}/>;
  return <StatIcon kind={effect.kind==='research-discount'?'computer':effect.kind==='population'?'population':effect.kind==='ambassador-vp'?'influence':'discovery'}/>;
 }
 export function MinorSpeciesCard({id,seat,resource,children}:{id:MinorSpeciesId;seat?:Seat;resource?:Resource;children?:ReactNode}){

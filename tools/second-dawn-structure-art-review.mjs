@@ -1,0 +1,35 @@
+import {build} from 'esbuild';
+import {mkdir, readFile, writeFile} from 'node:fs/promises';
+import {resolve} from 'node:path';
+const output='coding_agents/visuals/structures';
+await mkdir(output,{recursive:true});
+const compiled=resolve(output,'review-render.mjs');
+await build({stdin:{contents:`
+import React from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+import {createGame} from './shared/eclipse/setup';
+import {getPlayerView} from './shared/eclipse/protocol';
+import GalaxyBoard from './src/second-dawn-game/GalaxyBoard';
+import BuildPlanner from './src/second-dawn-game/BuildPlanner';
+import {ActionDraftProvider} from './src/second-dawn-game/ActionDraftProvider';
+import StructureSilhouette from './src/second-dawn-game/StructureSilhouette';
+import AdvancedPlanetBadge from './src/second-dawn-game/AdvancedPlanetBadge';
+import ShipSilhouette from './src/second-dawn-game/ShipSilhouette';
+import './src/second-dawn-game/game.css';
+const h=React.createElement;
+export function review(width){
+ globalThis.window={matchMedia:()=>({matches:width<760}),innerWidth:width};
+ const state=createGame({seed:42,factionProfile:'expanded-v2',seats:[{id:'a',faction:'eridani',controller:'human'},{id:'b',faction:'exiles',controller:'human'}]});
+ state.activeSeatId='a';state.seats[0].resources={money:20,materials:30,science:20};
+ state.seats[0].technologies.nano.push('orbital','monolith');
+ const view=getPlayerView(state,'a'),sector=view.sectors.find(s=>s.owner==='a'),other=view.sectors.find(s=>s.owner==='b');
+ sector.orbital=true;sector.monolith=true;sector.portalVp=2;other.orbital=true;other.portalVp=1;
+ const noop=()=>{};
+ const build=(seatView,sectorId)=>h(ActionDraftProvider,{viewerSeatId:seatView.viewerSeatId,revision:seatView.revision},h(BuildPlanner,{view:seatView,sectorId,embedded:true,disabled:false,onClose:noop,onSubmit:noop}));
+ return renderToStaticMarkup(h('main',{className:'dg-app structure-review'},h('h1',null,'Sector structures'),h('p',null,'Shared geometry · slate hulls · light metal edges'),h('section',{className:'art-lineup'},...['warp-portal','monolith','orbital','shrine'].map(kind=>h('article',{className:'art-cell',key:kind},h(StructureSilhouette,{kind}),h('div',null,h(StructureSilhouette,{kind}),h(StructureSilhouette,{kind,className:'tiny'})),h('strong',null,kind==='warp-portal'?'Warp portal':kind==='monolith'?'Monolith':kind==='orbital'?'Civilian orbital':'Lyra shrine'))),h('article',{className:'art-cell'},h(AdvancedPlanetBadge,{}),h('div',null,h(AdvancedPlanetBadge,{}),h(AdvancedPlanetBadge,{className:'tiny'})),h('strong',null,'Advanced planet'))),h('h2',null,'Galaxy markers'),h(GalaxyBoard,{view,candidates:[],selected:sector.id,compact:width<760,initialFit:true,onSelect:noop,onExplore:noop}),h('h2',null,'Civilian Build picker'),build(view,sector.id),h('h2',null,'Exiles armed Orbital'),h('div',{className:'exiles-reference'},h(ShipSilhouette,{type:'starbase',faction:'exiles'})),build(getPlayerView(state,'b'),other.id)));
+}`,resolveDir:process.cwd(),loader:'tsx'},bundle:true,jsx:'automatic',platform:'node',format:'esm',packages:'external',external:['/second-dawn/*'],outfile:compiled});
+const {review}=await import(compiled);
+const css=await readFile(compiled.replace('.mjs','.css'),'utf8');
+const layout='body{margin:0;background:#0b141e;color:#dce3e8;font:14px system-ui}.structure-review{max-width:1080px;margin:auto;padding:24px}.structure-review h1{font:30px Georgia;color:#e6cf91;margin:0 0 10px}.structure-review>p{color:#aec0cc;margin-bottom:24px}.structure-review>h2{font:22px Georgia;color:#e6cf91;margin:24px 0 12px}.structure-review .dg-galaxy{height:510px;position:relative;border:1px solid #4d5e6c;border-radius:8px}.structure-review .dg-galaxy>svg{width:100%;height:100%}.structure-review .dg-build-body{overflow:visible}.structure-review .dg-build-planner{height:auto}.art-lineup{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}.art-cell{border:1px solid #405360;background:#14212d;border-radius:7px;padding:18px;text-align:center}.art-cell>svg{width:96px;height:96px;display:block;margin:auto}.art-cell>div{display:flex;justify-content:center;gap:16px;align-items:center;margin:14px 0}.art-cell>div svg{width:24px;height:24px}.art-cell>div .tiny{width:16px;height:16px}.exiles-reference{width:90px;height:90px}.exiles-reference>svg{width:100%;height:100%}@media(max-width:600px){.structure-review{padding:12px}.structure-review .dg-galaxy{height:400px}.art-lineup{gap:6px}.art-cell{padding:8px 3px}.art-cell>svg{width:64px;height:64px}}';
+for(const width of [1440,390])await writeFile(`${output}/review-${width}.html`,`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Structure art review</title><style>${css}\n${layout}</style></head><body>${review(width)}</body></html>`);
+console.log('Static component fixtures written for browser review.');

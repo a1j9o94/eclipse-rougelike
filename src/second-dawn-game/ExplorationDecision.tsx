@@ -1,3 +1,4 @@
+import AdvancedPlanetBadge from './AdvancedPlanetBadge';
 import SectorFeatureIcon from './SectorFeatureIcon';
 import {useContext,useEffect,useLayoutEffect,useMemo,useRef,useState} from 'react';
 import {DecisionMapContext} from './decisionMapContext';
@@ -69,11 +70,11 @@ export default function ExplorationDecision({view,decision,disabled,onSubmit}:Pr
     <div className="dg-placement-map-caption"><span>New sector {tileId} · not yet placed</span><button onClick={focusNewSector}>Focus new sector</button></div>
     <div className="dg-drawn-feature-strip" role="group" aria-label="Drawn sector contents">
      <span title="Sector victory points" aria-label={`${preview.tile!.victoryPoints} victory points`}><strong>{preview.tile!.victoryPoints}</strong> VP</span>
-     {preview.tile!.population.map((planet,index)=><span key={index} className="dg-drawn-planet" role="img" title={`${planet.advanced?'Advanced':'Standard'} ${planet.resource==='gray'?'any resource':planet.resource} planet`} aria-label={`${planet.advanced?'Advanced':'Standard'} ${planet.resource==='gray'?'any resource':planet.resource} planet`} style={{color:({money:'#e7bd67',science:'#b397da',materials:'#b89675',gray:'#b5c3cd'})[planet.resource]}}><svg viewBox="0 0 20 20" aria-hidden="true"><PlanetIcon resource={planet.resource}/></svg>{planet.advanced&&<svg className="dg-drawn-advanced" viewBox="0 0 16 16" aria-hidden="true"><path d="m8 1 2 4 5 1-3.5 3.5.8 5-4.3-2.4-4.3 2.4.8-5L1 6l5-1Z" fill="#e6ce91" stroke="#101c27"/></svg>}</span>)}
+     {preview.tile!.population.map((planet,index)=><span key={index} className="dg-drawn-planet" role="img" title={`${planet.advanced?'Advanced':'Standard'} ${planet.resource==='gray'?'any resource':planet.resource} planet`} aria-label={`${planet.advanced?'Advanced':'Standard'} ${planet.resource==='gray'?'any resource':planet.resource} planet`} style={{color:({money:'#e7bd67',science:'#b397da',materials:'#b89675',gray:'#b5c3cd'})[planet.resource]}}><svg viewBox="0 0 20 20" aria-hidden="true"><PlanetIcon resource={planet.resource}/></svg>{planet.advanced&&<AdvancedPlanetBadge className="dg-drawn-advanced" decorative/>}</span>)}
      {preview.tile!.ancients>0&&<span title="Ancient defenders" aria-label={`${preview.tile!.ancients} Ancient defenders`}><NeutralShipSilhouette type="ancient"/><strong>×{preview.tile!.ancients}</strong></span>}
      {preview.tile!.discovery&&<span title="Discovery tile" aria-label="Discovery tile"><SectorFeatureIcon kind="discovery"/></span>}
      {preview.tile!.artifacts>0&&<span title="Artifacts" aria-label={`${preview.tile!.artifacts} artifacts`}><SectorFeatureIcon kind="artifact"/><strong>{preview.tile!.artifacts}</strong></span>}
-     {preview.tile!.warpPortal&&<span title="Warp portal" aria-label="Warp portal"><StatIcon kind="portal"/></span>}
+     {preview.tile!.warpPortal&&<span title="Warp portal" aria-label="Warp portal"><StatIcon kind="warp-portal"/></span>}
     </div>
     <div className="dg-placement-edge-key" aria-label="Wormhole legend"><span><i className="dg-key-wormhole"/>Connected pair</span><span><i className="dg-key-opening"/>Open exit · unmatched</span></div>
     {!sharedMap&&<GalaxyBoard showPrintedWormholes view={mapped.view} candidates={[]} selected={selected} legalTargetIds={[mapped.sector.id]} targetLabel="new sector preview" compact={compact} camera={camera} onCameraChange={setCamera} onSelect={inspect} onInspectFleet={inspect} onExplore={()=>{}}/>}

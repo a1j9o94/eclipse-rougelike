@@ -1,3 +1,4 @@
+import AdvancedPlanetBadge from './AdvancedPlanetBadge';
 import {DecisionMapContext} from './decisionMapContext';
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useActionDraftGuard, useActionDraftState } from './actionDraftContext';
@@ -118,7 +119,7 @@ export default function ColonizationPlanner({
                 >
                   <span className="dg-colonization-orb" style={{ color: option.resource === "science" ? "#b397da" : option.resource === "materials" ? "#b89675" : option.resource === "money" ? "#e7bd67" : "#b5c3cd" }}>
                     <svg viewBox="0 0 20 20" aria-hidden="true"><PlanetIcon resource={option.resource} /></svg>
-                    {option.advanced && <i aria-label="Advanced planet">★</i>}
+                    {option.advanced && <AdvancedPlanetBadge className="dg-colonization-advanced"/>}
                   </span>
                   <span><strong>{planetName(option.resource)}</strong><small>Sector {sector.tileId} · {option.advanced ? "Advanced" : "Standard"}</small></span>
                 </button>

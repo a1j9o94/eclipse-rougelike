@@ -62,12 +62,7 @@
   height: 4px;
   background: #e8c881;
 }
-.dg-key-portal {
-  width: 9px;
-  height: 9px;
-  border: 2px solid #96dfef;
-  border-radius: 50%;
-}
+
 .dg-app .dg-galaxy {
   background: transparent;
   padding-top: 60px;
@@ -176,3 +171,11 @@
 .dg-map-key{max-width:calc(100% - 32px);gap:5px 12px}
 .dg-galaxy-compact .dg-map-key .dg-key-exits{display:inline-flex}
 .dg-galaxy-compact .dg-map-key{font-size:10px;max-width:calc(100% - 8px)}
+
+.dg-map-orbital .dg-ship-radar{display:none}
+.dg-map-orbital .dg-ship-hull{fill:#82949e;stroke:#dcd2bb;stroke-width:3}
+.dg-draft-piece .dg-ship-radar,.dg-draft-piece .dg-ship-axis{display:none}
+.dg-draft-piece .dg-ship-hull{fill:#9fe1d2;stroke:#d5ebe1;stroke-width:3}
+
+/* Nested ship viewports use the same 96-unit frame as civilian pieces. */
+.dg-map-structure>svg>.dg-ship-silhouette,.dg-draft-piece>svg>.dg-ship-silhouette{width:96px;height:96px}

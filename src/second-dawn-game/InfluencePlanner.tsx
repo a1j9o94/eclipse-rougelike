@@ -1,3 +1,4 @@
+import AdvancedPlanetBadge from './AdvancedPlanetBadge';
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useActionDraftGuard, useActionDraftState } from './actionDraftContext';
 import { previewCommand } from "../../shared/eclipse/commandPreview";
@@ -33,7 +34,7 @@ function SectorChoice({ sectorId, view, purpose, selected, disabled, onClick }: 
     <span className="dg-influence-hex" aria-hidden="true"><span>{sector.tileId}</span><i>{purpose === 'control' ? '+' : '−'}</i></span>
     <span><strong>{purpose === 'transfer' ? 'Use this disc' : `Sector ${sector.tileId}`}</strong>
       <small>{purpose === 'control' ? `${definition?.victoryPoints ?? 0} VP · Uncontrolled` : `Lose ${definition?.victoryPoints ?? 0} VP · return ${sector.population.length} population`}</small>
-      <span className="dg-influence-planets" aria-label="Sector planets">{definition?.population.map((planet,index)=><span key={index} title={`${planet.advanced ? 'Advanced ' : ''}${planet.resource} planet`}><svg viewBox="0 0 20 20" aria-hidden="true"><PlanetIcon resource={planet.resource}/></svg>{planet.advanced&&<b aria-label="Advanced">★</b>}</span>)}</span>
+      <span className="dg-influence-planets" aria-label="Sector planets">{definition?.population.map((planet,index)=><span key={index} title={`${planet.advanced ? 'Advanced ' : ''}${planet.resource} planet`}><svg viewBox="0 0 20 20" aria-hidden="true"><PlanetIcon resource={planet.resource}/></svg>{planet.advanced&&<AdvancedPlanetBadge className="dg-influence-advanced"/>}</span>)}</span>
     </span>
   </button>;
 }

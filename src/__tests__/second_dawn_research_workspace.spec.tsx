@@ -85,7 +85,7 @@ it('invalidates a preserved draft visibly when its market copy is depleted',()=>
  const state=fixture();state.seats[0].resources.science=20;const view=getPlayerView(state,'a')!;const controls={connected:true,busy:false,status:'',onSubmit:vi.fn(),onMenu:vi.fn()};
  const rendered=render(<SecondDawnBoard view={view} candidates={legalCommands(view)} {...controls}/>);fireEvent.click(screen.getAllByRole('button',{name:'Research',exact:true})[0]);fireEvent.click(screen.getByRole('button',{name:/Fusion Drive ×/}));
  state.technologyMarket=['gluon-computer'];state.revision++;const next=getPlayerView(state,'a')!;rendered.rerender(<SecondDawnBoard view={next} candidates={legalCommands(next)} {...controls}/>);
- expect(screen.getByRole('alert')).toHaveTextContent('No market copy remains.');
+ expect(screen.getByRole('alert')).toHaveTextContent('No unreserved market copy remains.');
  expect(screen.getByRole('button',{name:'Research · 4 science'})).toBeDisabled();
 });
 

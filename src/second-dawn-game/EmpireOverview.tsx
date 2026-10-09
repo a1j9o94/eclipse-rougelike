@@ -1,3 +1,4 @@
+import AdvancedPlanetBadge from './AdvancedPlanetBadge';
 import {gameRules} from '../../shared/eclipse/gameRules';
 import { researchedTechnologyIds } from '../../shared/eclipse/technologies';
 import {seatColor} from './factionColors';
@@ -89,7 +90,7 @@ export default function EmpireOverview({view,planningView,seatId,onSector,onNavi
     })}</div>
     <div className="eo-planet-locations" aria-label={`${names[planetGroup]} empty planets`}>
      {planets.length===0?<p className="eo-muted">No empty {names[planetGroup].toLowerCase()} planets in controlled sectors.</p>:planets.map(planet=><button key={`${planet.sectorId}:${planet.squareId}`} className={`eo-planet-location eo-${planet.resource}${planet.readyResources.length?'':' eo-locked'}`} onClick={()=>onSector(planet.sectorId)} aria-label={`Inspect sector ${planet.tileId}, ${planet.advanced?'advanced ':''}${names[planet.resource]} planet, ${planet.readyResources.length?'technology ready':'research required'}`}>
-      <span className="eo-planet-orb"><ResourceSymbol resource={planet.resource}/>{planet.advanced&&<span role="img" aria-label="Advanced planet">★</span>}</span><span><strong>Sector {planet.tileId}</strong><small>{planet.readyResources.length?(planet.resource==='gray'||planet.resource==='orbital'?planet.readyResources.map(resource=>names[resource]).join(' / '):'Technology ready'):'Research required'}</small></span><span aria-hidden="true">↗</span>
+      <span className="eo-planet-orb"><ResourceSymbol resource={planet.resource}/>{planet.advanced&&<AdvancedPlanetBadge className="eo-planet-advanced"/>}</span><span><strong>Sector {planet.tileId}</strong><small>{planet.readyResources.length?(planet.resource==='gray'||planet.resource==='orbital'?planet.readyResources.map(resource=>names[resource]).join(' / '):'Technology ready'):'Research required'}</small></span><span aria-hidden="true">↗</span>
      </button>)}
     </div>
     <footer><p>{readyCount} empty {readyCount===1?'space meets':'spaces meet'} technology requirements. Each population needs a colony ship and a matching cube; turn and sector restrictions still apply.</p></footer>

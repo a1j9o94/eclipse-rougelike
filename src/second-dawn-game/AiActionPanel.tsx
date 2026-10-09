@@ -1,3 +1,5 @@
+import type {FactionId} from '../../shared/eclipse/catalog';
+import BuildPieceSilhouette from './BuildPieceSilhouette';
 import type {ReactNode} from 'react';
 import type {PublicHistoryEntry,BuildComponent} from '../../shared/eclipse/history';
 import type {PlayerView,SpectatorView} from '../../shared/eclipse/types';
@@ -8,7 +10,7 @@ import {effectiveBlueprintParts} from '../../shared/eclipse/blueprints';
 import {publicBlueprint} from '../../shared/eclipse/legal';
 import FactionSymbol from './FactionSymbol';
 import ShipSilhouette from './ShipSilhouette';
-import ShipPartStats,{StatIcon} from './ShipPartStats';
+import ShipPartStats from './ShipPartStats';
 import TechnologyStats from './TechnologyStats';
 import {describeTechnology} from './itemDescriptions';
 import SectorFleet from './SectorFleet';
@@ -21,8 +23,8 @@ export interface AiActionPanelProps {
  onInspectSector:(id:string)=>void;
 }
 const name=(id:string)=>id[0].toUpperCase()+id.slice(1);
-function ComponentCard({type,count,label}:{type:BuildComponent;count:number;label:string}){
- return <div className="dg-ai-component-card" role="group" aria-label={`${label} ${count} ${name(type)}${count===1?'':'s'}`}><span className="dg-ai-component-art">{type==='orbital'||type==='monolith'?<StatIcon kind={type==='orbital'?'portal':'structure'}/>:<ShipSilhouette type={type}/>}</span><strong>{name(type)}</strong><b>×{count}</b></div>;
+function ComponentCard({type,count,label,faction}:{type:BuildComponent;count:number;label:string;faction?:FactionId}){
+ return <div className="dg-ai-component-card" role="group" aria-label={`${label} ${count} ${name(type)}${count===1?'':'s'}`}><span className="dg-ai-component-art"><BuildPieceSilhouette component={type} faction={faction}/></span><strong>{name(type)}</strong><b>×{count}</b></div>;
 }
 /** Read-only narration of committed public actions; never accesses view.private. */
 export default function AiActionPanel({view,entry,onInspectSector}:AiActionPanelProps){
@@ -44,11 +46,11 @@ export default function AiActionPanel({view,entry,onInspectSector}:AiActionPanel
    return <article className="dg-ai-loadout" key={type}><header><ShipSilhouette type={type}/><div><h3>{name(type)}</h3><small>Current public loadout</small></div></header><div className="dg-ai-installed-parts">{parts.map((part,index)=><div key={index} className="dg-ai-installed-part"><small>Slot {index+1}</small><strong>{part?getShipPart(part).name:'Open hardpoint'}</strong>{part&&<ShipPartStats partId={part}/>}</div>)}{blueprint.outsideParts.map((part,index)=><div key={`outside-${index}`} className="dg-ai-installed-part"><small>Outside blueprint</small><strong>{getShipPart(part).name}</strong><ShipPartStats partId={part}/></div>)}</div></article>;
   })}</div>;
  }else if(presentation?.kind==='build'){
-  content=<div className="dg-ai-component-cards">{presentation.components.map(component=><ComponentCard key={component.type} type={component.type} count={component.count} label="Built"/>)}</div>;
+  content=<div className="dg-ai-component-cards">{presentation.components.map(component=><ComponentCard key={component.type} type={component.type} count={component.count} label="Built" faction={actor?.faction}/>)}</div>;
  }else if(presentation?.kind==='move'){
   const ships=view.ships.filter(ship=>presentation.shipIds.includes(ship.id)&&ship.owner===entry.actorSeatId);
   const types=[...new Set(ships.map(ship=>ship.type))];
-  content=<div className="dg-ai-component-cards"><small className="dg-ai-current-note">Ships still on the public board</small>{types.flatMap(type=>type==='ancient'||type==='guardian'||type==='gcds'?[]:<ComponentCard key={type} type={type} count={ships.filter(ship=>ship.type===type).length} label="Moved"/>)}</div>;
+  content=<div className="dg-ai-component-cards"><small className="dg-ai-current-note">Ships still on the public board</small>{types.flatMap(type=>type==='ancient'||type==='guardian'||type==='gcds'?[]:<ComponentCard key={type} type={type} count={ships.filter(ship=>ship.type===type).length} label="Moved" faction={actor?.faction}/>)}</div>;
  }
  return <section className="dg-ai-action-panel" aria-label={'kind' in view&&view.kind==='spectator'?'Public action details':'AI action details'}>
   <header className="dg-ai-action-heading">{actor&&<FactionSymbol faction={actor.faction}/>}<div><small>{actor?getFaction(actor.faction).name:entry.actorName}</small><h2>{entry.summary}</h2></div></header>

@@ -1,9 +1,10 @@
+import StructureSilhouette, {type StructureKind} from './StructureSilhouette';
 import {SECTOR_FEATURE_PATHS} from './sectorFeaturePaths';
 import { getShipPart, type ShipPartId } from '../../shared/eclipse/parts';
 import './itemDetails.css';
 import EclipseDieFace from './EclipseDieFace';
-export type StatIconName = 'computer' | 'energy' | 'shield' | 'hull' | 'drive' | 'initiative' | 'cannon' | 'missile' | 'structure' | 'population' | 'influence' | 'portal' | 'discovery' | 'artifact';
-const PATHS: Record<StatIconName, string> = {
+type LineIconName = 'computer' | 'energy' | 'shield' | 'hull' | 'drive' | 'initiative' | 'cannon' | 'missile' | 'structure' | 'population' | 'influence' | 'portal' | 'discovery' | 'artifact';
+const PATHS: Record<LineIconName, string> = {
  computer: 'M4 5h16v12H4z M8 21h8 M12 17v4 M8 9h8 M8 12h5',
  energy: 'M13 2 5 14h6l-1 8 9-13h-7z',
  shield: 'M12 2 21 6v6c0 5-9 10-9 10S3 17 3 12V6z',
@@ -19,7 +20,8 @@ const PATHS: Record<StatIconName, string> = {
  discovery: SECTOR_FEATURE_PATHS.discovery,
  artifact: SECTOR_FEATURE_PATHS.artifact,
 };
-export function StatIcon({ kind }: { kind: StatIconName }) { return <svg viewBox="0 0 24 24" aria-hidden="true" className="dg-stat-icon"><path d={PATHS[kind]} /></svg>; }
+export type StatIconName = LineIconName | StructureKind;
+export function StatIcon({ kind }: { kind: StatIconName }) { if(kind==='orbital'||kind==='monolith'||kind==='warp-portal'||kind==='shrine')return <StructureSilhouette kind={kind} className="dg-stat-icon"/>; return <svg viewBox="0 0 24 24" aria-hidden="true" className="dg-stat-icon"><path d={PATHS[kind]} /></svg>; }
 export interface StatBadgeProps { icon: StatIconName; value: string | number; label: string; explanation: string; color?: string }
 export function StatBadge({ icon, value, label, explanation, color }: StatBadgeProps) { return <span role="img" className="dg-stat-badge" title={explanation} aria-label={`${label}: ${value}. ${explanation}`} style={color ? { color } : undefined}><StatIcon kind={icon} /><strong>{value}</strong><small>{label}</small></span>; }
 export default function ShipPartStats({ partId }: { partId: ShipPartId }) {
