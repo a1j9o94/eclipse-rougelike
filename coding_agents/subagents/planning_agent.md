@@ -904,3 +904,12 @@ Validation: Node 22.23.3; queue, session, auto-pass, sci-fi actions/AI/combat/UI
 Outcome: replace generic portal/house/ellipse assets with consistent physical sector pieces. Acceptance: shared portal, Monolith and civilian Orbital art across map and card uses, readable small markers, preserved Exiles defender art and rule labels. Risk/rollback: frontend-only; revert release commit. Tests: three new integration tests failed first; bounded Build, galaxy/mobile, discoveries, population, AI summaries, Minor Species, technology, Exiles and fleet regressions; lint and production build. See ../second_dawn_structure_art.md.
 
 Authorized follow-up: replace Lyra's diamond Shrine with shared faceted art and consolidate advanced-planet stars into one SVG. Acceptance: Shrine count/scoring labels preserved, readable small badges across six consumers, decorative SVG accessibility preserved. Added tests failed first and 54 relevant tests passed with lint and build:vercel. Independent review approved integration with a minor map spacing adjustment, now applied. User explicitly authorized production deployment; final full build and live checks follow.
+
+## 2026-10-09 — Unified Expanded faction selection
+- Outcome: discover all 25 civilizations in the existing Expanded collection, without a separate Science fiction menu.
+- Acceptance: new solo/multiplayer Standard setups default to all 25; Base remains available; incompatible custom/ Less Random rules use 18; existing saved profile IDs and roster versions remain pinned until explicit settings changes.
+- Risks/rollback: synchronize parent faction selection when rule compatibility changes. Revert the frontend commit to restore the previous menus; no schema migration.
+- Fail-first tests: two collection buttons, 25 faction cards, pinned old rooms, Less Random transitions, custom rule callbacks and compatible round/pass-order changes.
+- Decision: retain internal scifi-v1 profile to preserve engine initialization and replay/version contracts.
+- Validation: 40 tests passed across eight relevant suites, plus two additional legacy regressions (42 unique tests total); lint, full Convex-codegen/typecheck/Vite build, and independent component review passed. Final build rechecked after correcting legacy upgrade copy.
+- Follow-ups: book-inspired faction Less Random compatibility remains outside this menu-only change.
