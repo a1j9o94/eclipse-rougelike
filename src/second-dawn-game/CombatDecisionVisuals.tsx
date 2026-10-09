@@ -1,3 +1,4 @@
+import FactoryBadge from './FactoryBadge';
 import { researchedTechnologyIds } from '../../shared/eclipse/technologies';
 import { getFaction, type FactionId } from "../../shared/eclipse/catalog";
 import { deriveBlueprintStats, neutralBlueprint } from "../../shared/eclipse/blueprints";
@@ -162,7 +163,7 @@ function ShipCard({
       <span className="dg-combat-card-copy">
         <strong>{name}</strong>
         {owner && <small>{owner}</small>}
-        {ship && <small>{condition}</small>}{ship?.factoryPopulation&&<small>Materials factory · cube returns if destroyed</small>}
+        {ship && <small>{condition}</small>}{ship?.factoryPopulation&&<small className="dg-factory-status"><FactoryBadge/>Materials factory · cube returns if destroyed</small>}
       </span>
       <span className="dg-combat-hit-mark" aria-hidden="true">{hit === false ? "MISS" : selected ? "TARGET" : ""}</span>
     </button>

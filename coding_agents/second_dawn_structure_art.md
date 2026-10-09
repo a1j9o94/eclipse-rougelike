@@ -32,4 +32,14 @@ Release integration: the concurrent science-fiction faction release reached main
 
 Production: 607939e deployed successfully to the intended obleton-adrian project (96BSum1fJR4heC9qX8tbHTNVfNBY). Live Lyra Research showed shared Shrine SVGs at 22×24 / 28×30 and the shared advanced badges, with no page overflow; Build showed civilian Orbital/Monolith art. Live review prompted a small CSS refinement to align the Shrine heading and separate button identity from placement cost.
 
-New-faction audit: Bobiverse's factory marker is a flat Materials square attached to its interceptor. A shared faceted cube attachment badge is a useful subsequent polish item; SectorFleet lacks factory status, while movement/combat use text. Guild portals now share the portal piece, and new faction emblems/ships, reservations and reverse-engineering use the existing visual systems. No factory artwork replacement is included in this release.
+New-faction audit: Bobiverse's factory marker was a flat Materials square attached to its interceptor; SectorFleet lacked factory status, while movement/combat used text. Guild portals share the portal piece, and new faction emblems/ships, reservations and reverse-engineering use the existing visual systems.
+
+## Bobiverse cube follow-up
+
+The user authorized the faceted cube on October 9. Outcome: a shared Materials cube badge keeps loaded factory interceptors recognizable on the map, in sector fleet summaries, movement choices, combat target cards and loading controls. The cube remains an onboard attachment. Factory loading, targeting, production and cube return rules are unchanged.
+
+Acceptance: explicit factory counts and labels; ordinary unloaded ships have no badge; restrained Materials tones and light edges match the physical pieces. Public props remain typed, no new state/effects/fetches. Independent review found and resolved inherited map SVG sizing: outer factory viewport is 8×8 with an inner 24-unit badge. Small status badges use 16px and loading controls use 22px.
+
+Validation: new cross-context integration test failed first, then 53 unique tests across seven relevant factory, fleet, movement, sci-fi UI/battle and combat suites passed. Lint and full build passed; compiled CSS includes the explicit 8px map wrapper. Updated six-piece lineup rendered and reviewed. Production release and live cube sizing checks follow.
+
+Concurrent release integration: preserved main's off-turn queued action release (9e7ccb9); no queue or engine behavior changes. The merged factory release passed 56 tests across eight factory/fleet/movement/combat/sci-fi UI/queue suites, lint and full build.

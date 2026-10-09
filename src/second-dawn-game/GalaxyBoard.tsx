@@ -1,3 +1,4 @@
+import FactoryBadge from './FactoryBadge';
 import StructureSilhouette from './StructureSilhouette';
 import BuildPieceSilhouette from './BuildPieceSilhouette';
 import SectorFeatureIcon from './SectorFeatureIcon';
@@ -311,7 +312,7 @@ export default function GalaxyBoard({
                     <svg x="-20" y="-9" width="22" height="18" viewBox="0 0 24 24">
                       {group.type==='ancient'||group.type==='guardian'||group.type==='gcds'?<NeutralShipSilhouette type={group.type}/>:<ShipSilhouette type={group.type} faction={view.seats.find(seat=>seat.id===group.owner)?.faction}/>}
                     </svg>
-                    {factories>0&&<g transform="translate(-17 7)" role="img" aria-label={`${factories} Materials factories`}><rect width="6" height="6" x="-3" y="-3" fill="#e09462" stroke="#ffe5c4" strokeWidth=".7"/><title>{factories} productive Materials factories; select sector to inspect individual ships.</title></g>}<text x="9" y="3.5" textAnchor="middle" fill={info.color} className="dg-fleet-label">×{group.count}</text>
+                    {factories>0&&<g transform="translate(-17 7)" role="img" aria-label={`${factories} Materials factories`}><svg className="dg-map-factory-icon" x="-4" y="-4" width="8" height="8" viewBox="0 0 24 24"><FactoryBadge/></svg><title>{factories} productive Materials factories; select sector to inspect individual ships.</title></g>}<text x="9" y="3.5" textAnchor="middle" fill={info.color} className="dg-fleet-label">×{group.count}</text>
                     <title>{info.name}: {group.count} {name}{group.count>1?'s':''}. Select sector to inspect fleet.</title>
                   </g>;
                 })}

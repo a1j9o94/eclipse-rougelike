@@ -1,0 +1,10 @@
+.dg-factory-badge{flex:none;overflow:visible}
+.dg-factory-cube-left{fill:#9b7659}
+.dg-factory-cube-right{fill:#6e5141}
+.dg-factory-cube-top{fill:#d4b48c}
+.dg-factory-cube-edge{fill:none;stroke:#efdbc0;stroke-width:1.2;stroke-linejoin:round;stroke-linecap:round}
+.dg-map-fleet-card .dg-factory-badge{width:24px;height:24px}
+.dg-map-fleet-card .dg-map-factory-icon{width:8px;height:8px}
+.dg-factory-status{display:inline-flex;align-items:center;gap:5px}
+.dg-factory-status>.dg-factory-badge,.dg-movement-ship strong>.dg-factory-badge{width:16px;height:16px;vertical-align:middle}
+.dg-movement-ship strong>.dg-factory-badge{display:inline-block;margin-right:5px}
