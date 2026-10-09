@@ -842,3 +842,13 @@ Result & Next Steps: the board regression failed against the shipped queue butto
 - Test list (must fail first): `second_dawn_turn_attention_board.spec.tsx` covers an incoming turn while Players is open. Existing notice tests cover acknowledgment, boundaries, and overlays.
 - Decision Log: The pane name is navigation state, not a deliberate interaction. Suppress for active work and overlays, independent of pane.
 - Follow-ups: Verify production deployment after lint, targeted tests, and build.
+
+## Plan Entry — Science-fiction faction expansion proposal (October 9, 2026)
+
+- Outcome: Preserve the eight-faction design discussion as a reviewable proposal for future Eclipse: Second Dawn expansion work.
+- Acceptance criteria: Covers ExFor, Bobiverse, Trisolarans, Portiids, Spacing Guild, Formics, Culture, and Belters; distinguishes supported concepts, prototype values, and open decisions; records counterplay, risks, integration requirements, and playtest scenarios.
+- Risks & rollback: Provisional mechanics could be mistaken for approved implementation. The document explicitly labels its status and variant restrictions. Revert this documentation commit to withdraw the proposal; no gameplay state or behavior is changed.
+- Test list: Documentation checks only: eight faction sections, terminology and reserve-supply corrections, relative repository links, and agreement with the design conversation. Gameplay fail-first tests, lint, build, and release gates are listed for subsequent implementation slices.
+- Decision Log: Save the endorsed Guild transport/trade package alongside the other selected faction candidates. Keep Culture's replacement statline provisional, leave Formic cruiser replacement versus supplementation open, and preserve ordinary fleet pinning for convoys.
+- Follow-ups: Review open rules and complete starting faction sheets before a separately requested implementation plan.
+- Result & Next Steps: Proposal checked against the conversation and reviewed for internal rule consistency; relative links and all eight faction sections verified. Save under coding_agents/second_dawn_scifi_faction_proposal.md; no gameplay implementation or deployment requested in this task.
