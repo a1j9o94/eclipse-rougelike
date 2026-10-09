@@ -1,3 +1,4 @@
+import FactoryBadge from './FactoryBadge';
 import { researchedTechnologyIds } from '../../shared/eclipse/technologies';
 import {seatColor} from './factionColors';
 import {useEffect,useRef,type CSSProperties,type ReactNode} from 'react';
@@ -30,8 +31,8 @@ function FleetBlueprintCard({view,ships}:{view:PlayerView;ships:PublicShipProfil
   </header>
   <ShipCapabilities stats={p.stats} neutral={neutral}/>
   {seat&&blueprint&&<BlueprintLoadout faction={seat.faction} blueprint={publicBlueprint(blueprint)}/>}
-  <div className="dg-inspection-condition" role="group" aria-label={`${p.name} ship condition`}><small>Ships at this location</small><div>{ships.map((ship,index)=><span className={`dg-ship-condition${ship.ship.damage?' dg-ship-damaged':''}`} key={ship.ship.id} role="img" aria-label={`Ship ${index+1}: ${ship.remainingHp} of ${ship.maximumHp} hit points, ${ship.ship.damage?`${ship.ship.damage} damage`:'undamaged'}`}>
-   <span className="dg-condition-index">{index+1}</span><span className="dg-hp-pips" aria-hidden="true">{Array.from({length:ship.maximumHp},(_,i)=><i key={i} className={i<ship.remainingHp?'':'dg-hp-lost'}>{i<ship.remainingHp?'':'×'}</i>)}</span><b>{ship.remainingHp}/{ship.maximumHp}</b>{ship.ship.damage>0&&<small>{ship.ship.damage} damage</small>}
+  <div className="dg-inspection-condition" role="group" aria-label={`${p.name} ship condition`}><small>Ships at this location</small><div>{ships.map((ship,index)=><span className={`dg-ship-condition${ship.ship.damage?' dg-ship-damaged':''}`} key={ship.ship.id} role="img" aria-label={`Ship ${index+1}: ${ship.remainingHp} of ${ship.maximumHp} hit points, ${ship.ship.damage?`${ship.ship.damage} damage`:'undamaged'}${ship.ship.factoryPopulation?' · Materials factory':''}`}>
+   <span className="dg-condition-index">{index+1}</span><span className="dg-hp-pips" aria-hidden="true">{Array.from({length:ship.maximumHp},(_,i)=><i key={i} className={i<ship.remainingHp?'':'dg-hp-lost'}>{i<ship.remainingHp?'':'×'}</i>)}</span><b>{ship.remainingHp}/{ship.maximumHp}</b>{ship.ship.damage>0&&<small>{ship.ship.damage} damage</small>}{ship.ship.factoryPopulation&&<span className="dg-factory-status"><FactoryBadge/>Materials factory</span>}
   </span>)}</div></div>
  </article>;
 }

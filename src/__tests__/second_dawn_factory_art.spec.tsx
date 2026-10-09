@@ -4,6 +4,7 @@ import {createGame} from '../../shared/eclipse/setup';
 import {getPlayerView} from '../../shared/eclipse/protocol';
 import GalaxyBoard from '../second-dawn-game/GalaxyBoard';
 import SectorFleet from '../second-dawn-game/SectorFleet';
+import FleetInspection from '../second-dawn-game/FleetInspection';
 import MovementPlanner from '../second-dawn-game/MovementPlanner';
 import {CombatTargetCards} from '../second-dawn-game/CombatDecisionVisuals';
 
@@ -15,6 +16,7 @@ it('keeps a loaded factory cube visible on the map and through fleet, movement a
  for(const component of [
   <GalaxyBoard key="map" view={view} candidates={[]} selected={ship.sectorId} onSelect={()=>{}} onExplore={()=>{}}/>,
   <SectorFleet key="fleet" view={view} sectorId={ship.sectorId}/>,
+  <FleetInspection key="inspection" view={view} sectorId={ship.sectorId} selectedShipIds={[]} onClose={()=>{}}/>,
   <MovementPlanner key="movement" view={view} sourceSectorId={ship.sectorId} selectedTargetId={null} disabled={false} onTargetsChange={()=>{}} onClose={()=>{}} onSubmit={()=>{}}/>,
   <CombatTargetCards key="combat" view={view} targets={[ship.id]} targetLabels={{[ship.id]:'Interceptor 1'}} selected="" onSelect={()=>{}}/>,
  ]){
