@@ -930,3 +930,7 @@ Authorized follow-up: replace Lyra's diamond Shrine with shared faceted art and 
 - Compatibility: a recovery-only historical processor preserves pre-fix closed-edge draws only when the complete trusted anchor matches exactly. Live commands and legal candidates always use strict source validation. Existing pending decisions keep their saved placements.
 - Risks/rollback: Guild history recovery can require up to four bounded replays rather than two. Revert source eligibility check and compatibility fallback to roll back.
 - Validation: 75 relevant action, UI, AI, map, preview and history tests passed; ESLint, full Convex codegen/typecheck/Vite build and diff checks passed. Independent review confirmed strict live/queue/AI paths and exact-anchor legacy recovery.
+
+## October 10, 2026 — approved Hyperspace Chase music
+
+Outcome: play selected audition C at 120 BPM through menus and matches. Acceptance: seamless 40-second sampled loop, existing volume/mute/dice ducking, and cancellation during async loading. Risks and rollback: audio download is cosmetic and retryable; revert the release to restore synthesized jazz. Tests first: deferred start, cancelled loading, fetch failure recovery and one-source looping; all now pass. See [release plan](../hyperspace_chase_release.md) for decisions and validation.
