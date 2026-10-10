@@ -1,4 +1,4 @@
-import {createSpaceJazzBuffer,SPACE_JAZZ_SECONDS} from './spaceJazz';
+import {loadHyperspaceChaseBuffer,HYPERSPACE_CHASE_SECONDS} from './hyperspaceChase';
 import {synthesizeCombatCue,type CombatCue} from './combatSynthesis';
 /** Original cosmetic synthesis. No game state or seeded randomness enters this module. */
 type InterfaceCue='selection'|'confirm'|'detent'|'tile'|'move'|'install'|'reject';
@@ -18,19 +18,26 @@ export function synthesizeCue(context:BaseAudioContext,output:AudioNode,cue:Cosm
  oscillator.start(now);oscillator.stop(now+duration+.01);
  return {stop(){if(stopped)return;stopped=true;oscillator.onended=null;try{oscillator.stop();}catch{/* Already ended. */}cleanup();}};
 }
-export const AMBIENT_SECONDS=SPACE_JAZZ_SECONDS;
-/** Original space jazz; one cached stereo source loops without a gap or a growing node graph. */
+export const AMBIENT_SECONDS=HYPERSPACE_CHASE_SECONDS;
+/** Hyperspace Chase: one decoded stereo source, with cancellable asynchronous loading. */
 export function synthesizeAmbient(context:BaseAudioContext,output:AudioNode,onEnded:()=>void=()=>{}):SoundHandle{
  const source=context.createBufferSource(),envelope=context.createGain();
- source.buffer=createSpaceJazzBuffer(context);source.loop=true;
+ source.loop=true;source.loopEnd=HYPERSPACE_CHASE_SECONDS;
  source.connect(envelope);envelope.connect(output);
- const start=context.currentTime;
- envelope.gain.setValueAtTime(0,start);envelope.gain.linearRampToValueAtTime(1,start+.15);
- let stopped=false,ended=false;
+ envelope.gain.value=0;
+ let stopped=false,ended=false,started=false;
  const cleanup=()=>{if(ended)return;ended=true;source.onended=null;source.disconnect();envelope.disconnect();onEnded();};
- source.onended=cleanup;source.start(start);
+ source.onended=cleanup;
+ void loadHyperspaceChaseBuffer(context).then(buffer=>{
+  if(stopped||ended)return;
+  source.buffer=buffer;
+  const start=context.currentTime;
+  envelope.gain.setValueAtTime(0,start);envelope.gain.linearRampToValueAtTime(1,start+.15);
+  source.start(start);started=true;
+ }).catch(cleanup);
  return {stop(fadeSeconds=0){
   if(stopped||ended)return;stopped=true;
+  if(!started){cleanup();return;}
   const now=context.currentTime,fade=Math.max(0,fadeSeconds);
   envelope.gain.cancelScheduledValues(now);envelope.gain.setValueAtTime(envelope.gain.value,now);envelope.gain.linearRampToValueAtTime(0,now+fade);
   try{source.stop(now+fade);}catch{cleanup();}

@@ -17,7 +17,9 @@ export function useSoundscape():void{
    const bus=preparedAudioBus();if(!bus)return;
    if(gain.current){gain.current.gain.setTargetAtTime(preferences.current.volume,bus.context.currentTime,.15);return;}
    const output=bus.context.createGain();output.gain.value=preferences.current.volume;output.connect(bus.output);gain.current=output;
-   const next=()=>{if(disposed||gain.current!==output||document.hidden){output.disconnect();return;}try{music.current=synthesizeAmbient(bus.context,output,next);}catch{output.disconnect();gain.current=null;music.current=null;}};next();
+   // Native source looping needs no restart callback; failed loads wait for a later gesture.
+   const ended=()=>{output.disconnect();if(gain.current===output){gain.current=null;music.current=null;}};
+   try{music.current=synthesizeAmbient(bus.context,output,ended);}catch{ended();}
   }catch{stop();}};
   sync.current=start;
   const unlock=()=>{if(!preferences.current.dice&&!preferences.current.effects&&!preferences.current.ambient)return;void prepareCosmeticAudio().then(()=>start());};
