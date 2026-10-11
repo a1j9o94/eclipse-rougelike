@@ -414,7 +414,7 @@ async function executeQueuedAction(ctx:MutationCtx,matchId:Id<'eclipseMatchesV1'
  return true;
 }
 
-export async function scheduleAi(ctx: MutationCtx, matchId: Id<'eclipseMatchesV1'>, state: GameState): Promise<void> {
+export async function scheduleAi(ctx: MutationCtx, matchId: Id<'eclipseMatchesV1'>, state: GameState, preserveAttempts = false): Promise<void> {
   if(await executeQueuedAction(ctx,matchId,state))return;
   const existing = await ctx.db.query('eclipseAiJobsV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique();
 
@@ -436,7 +436,7 @@ export async function scheduleAi(ctx: MutationCtx, matchId: Id<'eclipseMatchesV1
   const sameActionTurn = (existing?.budgetActionTurnSerial ?? 0) === actionTurnSerial;
   const preserveBudget = sameActionTurn && (timeout || failedTimeout ? existing?.timeoutToken === timer?.token : existing?.budgetActor === budgetActor && existing?.budgetRound === state.round);
   const interruptedSearch = preserveBudget && existing?.status === 'thinking' && existing.expectedRevision !== state.revision;
-  const patch = { status, expectedRevision: state.revision, attempts: failedTimeout ? existing.attempts : 0, error: failedTimeout ? timer.error : null, leaseToken: undefined, leaseExpiresAt: undefined, timeoutToken: timeout || failedTimeout ? timer!.token : undefined,
+  const patch = { status, expectedRevision: state.revision, attempts: failedTimeout || preserveAttempts ? existing?.attempts ?? 0 : 0, error: failedTimeout ? timer.error : null, leaseToken: undefined, leaseExpiresAt: undefined, timeoutToken: timeout || failedTimeout ? timer!.token : undefined,
     budgetActor: budgetActor ?? undefined, budgetRound: state.round, budgetActionTurnSerial: actionTurnSerial,
     remainingBudgetMs: interruptedSearch ? 0 : preserveBudget ? existing?.remainingBudgetMs ?? 0 : AI_BUDGETS[timeout ? 'normal' : match?.aiDifficulty ?? 'normal'].budgetMs,
     updatedAt: Date.now() };
@@ -594,6 +594,22 @@ export const retryAi = mutation({
       return null;
     }
     await scheduleAi(ctx, matchId, readState(match));
+    return null;
+  },
+});
+
+/** Recover one failed ordinary AI decision from a connected room without an endless retry loop. */
+export const recoverAi = mutation({
+  args: { credential: v.string(), matchId: v.id('eclipseMatchesV1') },
+  returns: v.null(),
+  handler: async (ctx, { credential, matchId }): Promise<null> => {
+    const owner = await ownedSeat(ctx, credential, matchId);
+    if (!owner || owner.resignedAt !== undefined) return null;
+    const match = await ctx.db.get(matchId);
+    if (!match || match.lifecycle === 'abandoned' || match.rollbackPendingId) return null;
+    const job = await ctx.db.query('eclipseAiJobsV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique();
+    if (job?.status !== 'failed' || job.attempts !== 1 || job.timeoutToken || job.expectedRevision !== match.revision) return null;
+    await scheduleAi(ctx, matchId, readState(match), true);
     return null;
   },
 });

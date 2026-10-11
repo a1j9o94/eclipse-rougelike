@@ -530,3 +530,11 @@ Players can plan their next command in the existing action workflows while waiti
 
 ### October 9 — Structure artwork
 Warp portals, Monoliths and civilian Orbitals now share detailed metal/slate SVG pieces across map markers, Build, discoveries, technology badges, discounts, AI summaries and scoring. Exiles use their armed Orbital identity. Planned builds show the selected component instead of a universal arrow. Independent review caught and corrected nested ship sizing, marker overlap and contextual badge sizing. The authorized follow-up replaces Lyra's diamond marker with a rose crystal Shrine and unifies advanced planets around a shared gold SVG star across six contexts. See [structure art evidence](second_dawn_structure_art.md).
+
+### October 10 — AI portal toll recovery and Guild trade diagnosis
+
+The reported room was at revision 155 in round 6, with an AI job failed on `INSUFFICIENT_RESOURCES: Portal transit costs 1 money.` The AI proposed two portal moves with only one money. Candidate generation now accounts for the cumulative toll before submitting a move. A connected room owner triggers one bounded automatic retry of a failed ordinary AI job; a second failure leaves the existing manual recovery control and diagnostic intact.
+
+Spacing Guild trading is already reachable from Trade. The reported Guild seat is waiting behind that failed AI turn, and the room has no posted Guild offer. Board-level tests confirm Guild posting and another seat's acceptance submit the authoritative commands; no Guild rule or UI change was needed. The player experience is that the AI turn resumes and the Guild can trade when its turn arrives. Expert timing and the existing 1:1 escrow terms remain unchanged.
+
+Failing-first AI regressions cover the two-ship/one-money portal candidate and one-shot server/client recovery. The board Guild post/accept tests provide an integration guard. Validation: 48 relevant tests in five suites, lint, and full build pass. Local code and tests cannot establish a human Guild exchange in the reported room; verify its revision advances after the main Git release, then obtain a human Guild trade playtest. Rollback: revert this slice; no saved-game migration.

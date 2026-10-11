@@ -42,6 +42,7 @@ import {useForegroundMatch} from '../second-dawn-session/useForegroundMatch';
 import {useMobileLayout} from './mobileLayout';
 import ActivityRecap from './ActivityRecap';
 import {useGameRecoveryControls} from './useGameRecoveryControls';
+import {useAiRecovery} from './useAiRecovery';
 import "./game.css";
 import './mobileLauncher.css';
 const credentialKey = "eclipse.second-dawn.guest.v1";
@@ -87,6 +88,7 @@ function ConnectedGame() {
   const [lastQueuedCommand,setLastQueuedCommand]=useState<{commandId:string;type:GameCommand['type'];sessionKey:string}|undefined>();
   const lastQueueRequest=useRef<{sessionKey:string;request:{commandId:string;expectedRevision:number;command:GameCommand|null}}|null>(null);
   const retryAi = useMutation(api.eclipseMatches.retryAi);
+  const recoverAi = useMutation(api.eclipseMatches.recoverAi);
   const createRoom = useMutation(api.eclipseRooms.createRoom);
   const joinRoom = useMutation(api.eclipseRooms.joinRoom);
   const leaveRoom = useMutation(api.eclipseRooms.leaveRoom);
@@ -159,6 +161,12 @@ function ConnectedGame() {
   const queuedReceiptType=view?.lastExecutedQueuedCommand?.type;
   const sessionKey=`${credential}:${matchId}:${view?.viewerSeatId}`;
   const activeSession=useRef(sessionKey);activeSession.current=sessionKey;
+  useAiRecovery(credential, matchId, connected && browserOnline, view?.aiStatus ? {
+    revision: view.revision,
+    status: view.aiStatus.status,
+    attempts: view.aiStatus.attempts,
+    timerFailed: view.multiplayer?.timer?.status === 'failed',
+  } : null, (owner, id) => recoverAi({ credential: owner, matchId: id as Id<'eclipseMatchesV1'> }).then(() => {}));
   // Keep receipt identity stable across unrelated subscription revisions. A new
   // object acknowledges a submission and must represent a new execution.
   const executedQueueReceipt=useMemo(()=>queuedReceiptRevision!==undefined&&queuedReceiptType?{revision:queuedReceiptRevision,type:queuedReceiptType,sessionKey}:undefined,[queuedReceiptRevision,queuedReceiptType,sessionKey]);

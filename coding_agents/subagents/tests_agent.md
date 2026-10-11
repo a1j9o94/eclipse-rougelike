@@ -108,3 +108,8 @@ Failing-first tests demonstrated duplicate maps and absent inspector controls. A
 - Failing first: Lyra setup/Shrine tests failed while the faction was absent.
 - Added `second_dawn_lyra.spec.ts`: setup, legal/cost/one-per-action placement, post-technology placement, controlled-sector scoring, science row reward, one-die colony reroll, saved action recovery, seeded AI completion.
 - Result & Next Steps: focused Lyra tests pass; expanded-v2 integration must preserve the existing expanded-v1 roster test and rerun adjacent combat, catalog, protocol, lint/build gates.
+
+## 2026-10-10 — Spacing Guild trade room investigation
+- Board-level regression: `second_dawn_guild_trade_board.spec.tsx` covers posting an offer from the Guild's Trade screen and accepting it from another player's Trade screen. Both pass (2 tests). Existing `TradePanel` already includes `GuildTradePanel`, so no UI wiring change was needed.
+- Public spectator query for the reported room at revision 155 showed round 6, active seat-3 (Eridani AI), failed AI status, and no standing Guild offers. The human Guild is seat-1 and cannot post outside its active turn; no Guild command rejection was evident. The stalled AI turn explains the present unavailability. Further action belongs to the AI recovery fix.
+- Result & Next Steps: retain the board regression; run it with the combined relevant gate. No speculative Guild rules change.

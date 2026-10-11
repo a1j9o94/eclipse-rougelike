@@ -321,3 +321,28 @@ it("evaluates a funded continuation after the last influence disc was already sp
     ),
   ).toBe(true);
 });
+
+it("does not offer a coordinated AI move that cannot pay each Guild portal toll", () => {
+  const state = createGame({ seed: 22, warpPortals: true, factionProfile: "scifi-v1", seats: [
+    { id: "a", faction: "terran-directorate", controller: "ai" },
+    { id: "b", faction: "spacing-guild", controller: "human" },
+  ] });
+  state.phase = "action";
+  state.activeSeatId = "a";
+  state.seats[0].resources.money = 1;
+  state.sectors = [
+    { ...state.sectors[0], id: "origin", position: { q: 0, r: 0 }, owner: "a", guildPortalOwner: "a" },
+    { ...state.sectors[1], id: "destination", position: { q: 5, r: 0 }, owner: "b", guildPortalOwner: "b" },
+  ];
+  const starter = state.ships.find(ship => ship.owner === "a")!;
+  state.ships = [
+    { ...starter, id: "first", sectorId: "origin" },
+    { ...starter, id: "second", sectorId: "origin" },
+  ];
+  const moves = generateAiCandidates(getPlayerView(state, "a"))
+    .filter(candidate => candidate.command.type === "move");
+  expect(moves.some(candidate => candidate.command.type === "move" && candidate.command.moves.length === 1)).toBe(true);
+  for (const candidate of moves) {
+    expect(processGameCommand(state, "a", candidate.command), JSON.stringify(candidate.command)).toMatchObject({ ok: true });
+  }
+});

@@ -17,6 +17,7 @@ import {
 import { SHIP_PARTS } from "./parts";
 import { capacity, mapSector, movementAbilities } from "./rulesState";
 import { planBlueprintUpgrade } from "./upgradePlan";
+import { guildMovementTolls } from "./scifiActions";
 import type { AncientShipPartId } from "./discoveries";
 import type { TechnologyId } from "./technologies";
 import type { Action, GameCommand, PlayerView } from "./types";
@@ -262,6 +263,8 @@ export function generateAiCandidates(
       ];
       for (const order of orders) {
         let current = fleet;
+        let money = seat.resources.money;
+        const paidShipIds = new Set(view.actionProgress?.guildTollShipIds ?? []);
         const moves: Extract<GameCommand, { type: "move" }>["moves"] = [];
         for (const ship of order) {
           if (ship.sectorId === target.id || moves.length >= limit("move"))
@@ -273,8 +276,22 @@ export function generateAiCandidates(
             limit("move") - moves.length,
           );
           if (!path) continue;
+          const segments: string[][] = [];
+          let origin = ship.sectorId;
+          let cost = 0;
+          let chargesShip = false;
           for (let offset = 0; offset < path.length; offset += ship.movement) {
             const segment = path.slice(offset, offset + ship.movement);
+            segments.push(segment);
+            const tolls = guildMovementTolls(view, seat.id, [ship.id], origin, segment, chargesShip ? [...paidShipIds, ship.id] : [...paidShipIds]);
+            cost += tolls.length;
+            if (tolls.length) chargesShip = true;
+            origin = segment.at(-1)!;
+          }
+          if (cost > money) continue;
+          money -= cost;
+          if (chargesShip) paidShipIds.add(ship.id);
+          for (const segment of segments) {
             moves.push({ shipId: ship.id, path: segment });
             current = current.map((s) =>
               s.id === ship.id ? { ...s, sectorId: segment.at(-1)! } : s,

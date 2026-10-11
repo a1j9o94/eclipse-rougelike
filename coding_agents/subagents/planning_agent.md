@@ -934,3 +934,12 @@ Authorized follow-up: replace Lyra's diamond Shrine with shared faceted art and 
 ## October 10, 2026 — approved Hyperspace Chase music
 
 Outcome: play selected audition C at 120 BPM through menus and matches. Acceptance: seamless 40-second sampled loop, existing volume/mute/dice ducking, and cancellation during async loading. Risks and rollback: audio download is cosmetic and retryable; revert the release to restore synthesized jazz. Tests first: deferred start, cancelled loading, fetch failure recovery and one-source looping; all now pass. See [release plan](../hyperspace_chase_release.md) for decisions and validation.
+
+## October 10, 2026 — AI pause and Space Guild trading repair
+
+- Outcome: the reported room resumes AI play without repeated manual intervention, and Guild offers can be posted and accepted from the Trade workspace.
+- Acceptance: AI commands account for portal transit fees before submission; a failed AI job can recover automatically within a bounded retry policy; the Guild trade panel is reachable in the actual board and its post/accept actions use authoritative commands; existing non-Guild trading remains available.
+- Risks and rollback: automatic retries must not loop indefinitely or submit an unaffordable command; keep failure diagnostics visible after retry exhaustion. Revert this feature commit if recovery or trade UI regresses; no saved-game migration is planned.
+- Tests that must fail first: AI portal fee candidate/command regression, bounded failed-job recovery regression, and board-level Guild trade navigation/post/accept regression. Run relevant AI, Convex and UI suites, lint, and build.
+- Decision Log: repair the live command/candidate mismatch and expose the already implemented Guild panel in the Trade workspace. Preserve current trade rates and portal fees.
+- Follow-ups: verify the specific room advances after backend release and perform human Guild offer exchange playtest.

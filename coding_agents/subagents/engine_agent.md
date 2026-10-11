@@ -401,3 +401,11 @@ Queue controls support replace/cancel, reject owned pending decisions and stale 
 Files: convex/eclipseMatches.ts, eclipseRooms.ts, eclipseRollback.ts, eclipseValidators.ts, schema.ts; shared/eclipse/queuedActions.ts, types.ts, engine.ts; src/__tests__/second_dawn_queued_actions_convex.spec.ts.
 
 Validation: initial four queue tests failed before implementation; ownership-decision and lifecycle-ID tests also failed before guards were added. Targeted Convex/auto-pass/rooms/rollback/resignation/AI pacing/concurrent-upkeep batch passed 47 tests, targeted lint passed, and Convex typecheck passed. Final additional exploration/no-hidden-draw regression is included in the queue suite.
+
+## 2026-10-10 — AI portal toll recovery
+
+- Live diagnosis: room `5vocmaeekyakm5hmtna9h58dgdrmz0zkyxu0` stopped at revision 155 because its AI submitted two Guild portal moves while holding only one money. The authoritative engine rejected the second toll with `INSUFFICIENT_RESOURCES`.
+- Files: `shared/eclipse/aiCandidates.ts`, `convex/eclipseMatches.ts`, `src/second-dawn-game/SecondDawnGame.tsx`, `src/second-dawn-game/useAiRecovery.ts`, and three focused AI test files.
+- Decision: quote Guild tolls across the full coordinated move before offering an AI candidate. A connected owner requests one automatic recovery for a failed ordinary AI decision; the server preserves the attempt count and rejects a second automatic retry for the same revision. The existing manual retry remains available after the bound is reached.
+- TDD: the portal candidate test first failed with the exact unaffordable two-ship command; the recovery test first failed because the mutation did not exist. All 24 tests in the three focused suites now pass. `npm run lint` and `npm run build` pass.
+- Follow-up: after release, check the reported room advances past revision 155 and that the AI status clears. No saved-game migration is needed.

@@ -68,6 +68,24 @@ describe('durable bounded strategic AI worker',()=>{
   await t.mutation(internal.eclipseMatches.commitAiWork,{matchId,expectedRevision:1,leaseToken:job!.leaseToken!,command:{type:'pass'},elapsedMs:1});
   expect((await t.run(ctx=>ctx.db.get(matchId)))?.revision).toBe(1);
  });
+ it('recovers one failed AI decision automatically without allowing repeated retries',async()=>{
+  const {t,guest,matchId}=await setup();
+  await t.mutation(internal.eclipseMatches.runAi,{matchId,expectedRevision:1});
+  const first=await t.run(ctx=>ctx.db.query('eclipseAiJobsV1').withIndex('by_match',q=>q.eq('matchId',matchId)).unique());
+  await t.mutation(internal.eclipseMatches.failAiWork,{matchId,expectedRevision:1,leaseToken:first!.leaseToken!,error:'Portal transit costs 1 money.'});
+  await t.mutation(api.eclipseMatches.recoverAi,{...guest,matchId});
+  let job=await t.run(ctx=>ctx.db.get(first!._id));
+  expect(job).toMatchObject({status:'scheduled',attempts:1,remainingBudgetMs:0});
+  await t.mutation(api.eclipseMatches.recoverAi,{...guest,matchId});
+  const scheduled=await t.run(ctx=>ctx.db.system.query('_scheduled_functions').collect());
+  expect(scheduled.filter(item=>item.name==='eclipseMatches:runAi')).toHaveLength(2);
+  await t.mutation(internal.eclipseMatches.runAi,{matchId,expectedRevision:1});
+  job=await t.run(ctx=>ctx.db.get(first!._id));
+  await t.mutation(internal.eclipseMatches.failAiWork,{matchId,expectedRevision:1,leaseToken:job!.leaseToken!,error:'Still failing'});
+  await t.mutation(api.eclipseMatches.recoverAi,{...guest,matchId});
+  expect(await t.run(ctx=>ctx.db.get(first!._id))).toMatchObject({status:'failed',attempts:2});
+  expect((await t.run(ctx=>ctx.db.get(matchId)))?.revision).toBe(1);
+ });
  it('persists room difficulty into the authoritative match without changing the solo waiting policy',async()=>{
   const t=convexTest(schema,modules);const guest=await t.action(api.eclipseGuests.createGuestSession,{});
   const room=await t.mutation(api.eclipseRooms.createRoom,{...guest,settings:{humanSeatCount:1,aiCount:1,timerMs:30_000,warpPortals:true,aiDifficulty:'hard'},faction:'hydran'});
