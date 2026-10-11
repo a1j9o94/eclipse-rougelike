@@ -943,3 +943,4 @@ Outcome: play selected audition C at 120 BPM through menus and matches. Acceptan
 - Tests that must fail first: AI portal fee candidate/command regression, bounded failed-job recovery regression, and board-level Guild trade navigation/post/accept regression. Run relevant AI, Convex and UI suites, lint, and build.
 - Decision Log: repair the live command/candidate mismatch and expose the already implemented Guild panel in the Trade workspace. Preserve current trade rates and portal fees.
 - Follow-ups: verify the specific room advances after backend release and perform human Guild offer exchange playtest.
+- Release follow-up decision: add an internal operator recovery for the exact revision and portal-toll failure so the already stalled room can resume without requiring a player refresh. Its fail-first test confirms stale revisions and repeated calls cannot schedule another job.

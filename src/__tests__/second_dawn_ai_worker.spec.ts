@@ -86,6 +86,19 @@ describe('durable bounded strategic AI worker',()=>{
   expect(await t.run(ctx=>ctx.db.get(first!._id))).toMatchObject({status:'failed',attempts:2});
   expect((await t.run(ctx=>ctx.db.get(matchId)))?.revision).toBe(1);
  });
+ it('lets an operator resume this exact failed revision once after deploying a fix',async()=>{
+  const {t,matchId}=await setup();
+  await t.mutation(internal.eclipseMatches.runAi,{matchId,expectedRevision:1});
+  const job=await t.run(ctx=>ctx.db.query('eclipseAiJobsV1').withIndex('by_match',q=>q.eq('matchId',matchId)).unique());
+  await t.mutation(internal.eclipseMatches.failAiWork,{matchId,expectedRevision:1,leaseToken:job!.leaseToken!,error:'INSUFFICIENT_RESOURCES: Portal transit costs 1 money.'});
+  await t.mutation(internal.eclipseMatches.recoverFailedAiRevision,{matchId,expectedRevision:2});
+  expect((await t.run(ctx=>ctx.db.get(job!._id)))?.status).toBe('failed');
+  await t.mutation(internal.eclipseMatches.recoverFailedAiRevision,{matchId,expectedRevision:1});
+  expect(await t.run(ctx=>ctx.db.get(job!._id))).toMatchObject({status:'scheduled',attempts:1});
+  await t.mutation(internal.eclipseMatches.recoverFailedAiRevision,{matchId,expectedRevision:1});
+  const scheduled=await t.run(ctx=>ctx.db.system.query('_scheduled_functions').collect());
+  expect(scheduled.filter(item=>item.name==='eclipseMatches:runAi')).toHaveLength(2);
+ });
  it('persists room difficulty into the authoritative match without changing the solo waiting policy',async()=>{
   const t=convexTest(schema,modules);const guest=await t.action(api.eclipseGuests.createGuestSession,{});
   const room=await t.mutation(api.eclipseRooms.createRoom,{...guest,settings:{humanSeatCount:1,aiCount:1,timerMs:30_000,warpPortals:true,aiDifficulty:'hard'},faction:'hydran'});

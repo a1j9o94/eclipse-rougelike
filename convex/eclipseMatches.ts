@@ -613,3 +613,17 @@ export const recoverAi = mutation({
     return null;
   },
 });
+
+/** Operator repair for a known failed revision after deploying a corrected AI candidate generator. */
+export const recoverFailedAiRevision = internalMutation({
+  args: { matchId: v.id('eclipseMatchesV1'), expectedRevision: v.number() },
+  returns: v.null(),
+  handler: async (ctx, { matchId, expectedRevision }): Promise<null> => {
+    const match = await ctx.db.get(matchId);
+    if (!match || match.lifecycle === 'abandoned' || match.rollbackPendingId || match.revision !== expectedRevision) return null;
+    const job = await ctx.db.query('eclipseAiJobsV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique();
+    if (job?.status !== 'failed' || job.attempts !== 1 || job.timeoutToken || job.expectedRevision !== expectedRevision || !job.error?.includes('Portal transit costs 1 money.')) return null;
+    await scheduleAi(ctx, matchId, readState(match), true);
+    return null;
+  },
+});
