@@ -953,3 +953,7 @@ Outcome: play selected audition C at 120 BPM through menus and matches. Acceptan
 - Decision: use an independent salted seeded stream to shuffle setup seats, leaving the persisted gameplay random stream unchanged. Enable only at live match creation callsites.
 - Follow-ups: none beyond deployment verification.
 - Result: reproduced fixed positions before the change; all 98 relevant tests across 17 suites pass after implementation. `npm run lint`, `npm run build` (Convex codegen, both TypeScript checks, Vite), and `git diff --check` pass. Independent focused agent reviewed live callsites, clockwise ordering and replay compatibility, and verified integration regressions.
+
+## 2026-10-25 — effortless choices
+
+Outcome, acceptance, rollback and fail-first tests: [delivery ledger](../effortless_ux_delivery.md). Supervisor coordinates selection/economy, fitting/rewards, and combat agents with a shared-shell integration stream. The newer user attachment supersedes the earlier UX audit and prior iteration assumptions.

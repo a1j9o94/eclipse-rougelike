@@ -15,8 +15,8 @@ it('opens a public board with sector and empire inspection but no player actions
  const sector=view.sectors[0];fireEvent.click(screen.getAllByRole('button',{name:new RegExp(`Inspect sector ${sector.tileId},`)})[0]);
  expect(screen.getByRole('region',{name:`Sector ${sector.tileId} details`})).toBeVisible();expect(screen.getByRole('button',{name:'Resume following'})).toBeVisible();
  fireEvent.click(screen.getByRole('button',{name:'Inspect Hydran Progress command center'}));
- expect(screen.getByRole('heading',{name:'Researched technologies'})).toBeVisible();expect(screen.getByRole('heading',{name:'Science income'})).toBeVisible();
- fireEvent.click(screen.getByRole('button',{name:'Inspect Cruiser blueprint'}));expect(screen.getByRole('group',{name:'Cruiser installed loadout'})).toBeVisible();
+ expect(screen.getByRole('heading',{name:'Researched technologies'})).toBeVisible();fireEvent.click(screen.getByText('Income & upkeep details'));expect(screen.getByRole('heading',{name:'Science income'})).toBeVisible();
+ fireEvent.click(screen.getByRole('button',{name:'Inspect Cruiser blueprint'}));fireEvent.click(screen.getByText('Installed components'));expect(screen.getByRole('group',{name:'Cruiser installed loadout'})).toBeVisible();
  expect(screen.queryByRole('button',{name:'Colonize planets'})).toBeNull();expect(screen.queryByRole('button',{name:'Research technology'})).toBeNull();expect(screen.queryByText('Your reputation')).toBeNull();
 });
 it('follows committed human and AI actions, preserves manual inspection across updates and resumes',()=>{
@@ -60,7 +60,7 @@ it('keeps an abandoned game inspectable without reporting a live turn',()=>{
  expect(screen.getByText('Game abandoned')).toBeVisible();expect(screen.queryByText(/taking a turn/)).toBeNull();
  expect(screen.queryByRole('button',{name:'Pause following'})).toBeNull();
  fireEvent.click(screen.getByRole('button',{name:'Inspect Hydran Progress command center'}));
- expect(screen.getByRole('heading',{name:'Science income'})).toBeVisible();
+ fireEvent.click(screen.getByText('Income & upkeep details'));expect(screen.getByRole('heading',{name:'Science income'})).toBeVisible();
 });
 it('explains enabled public reputation without calling it hidden',()=>{
  const view=fixture();view.ruleOptions={publicReputation:true};
@@ -68,4 +68,16 @@ it('explains enabled public reputation without calling it hidden',()=>{
  fireEvent.click(screen.getByRole('button',{name:'Standings'}));
  fireEvent.click(screen.getAllByRole('button',{name:'Reputation: 0 VP'})[0]);
  expect(within(screen.getByRole('dialog',{name:'Public score inspection'})).getByRole('heading',{name:'Reputation · 0 VP'})).toBeVisible();
+});
+it('inspects history on the existing galaxy surface and returns to the same timeline position',()=>{
+ const view=fixture();const sector=view.sectors[0];const entry:PublicHistoryEntry={revision:view.revision,actorSeatId:'a',actorName:'Human',round:1,summary:'Built a fleet',details:[],presentation:{kind:'build',sectorIds:[sector.id],components:[{type:'interceptor',count:1}]}};
+ const {container}=render(<SpectatorBoard view={view} history={feed([entry])} connected {...callbacks}/>);
+ fireEvent.click(screen.getByRole('button',{name:'History'}));
+ const timeline=screen.getByRole('log',{name:'Match actions'});timeline.scrollTop=123;
+ fireEvent.click(screen.getByRole('button',{name:'Inspect public reference'}));
+ expect(container.querySelector('.sp-galaxy-layout .dg-galaxy')).not.toBeNull();
+ expect(container.querySelectorAll('.dg-galaxy')).toHaveLength(1);
+ expect(timeline.isConnected).toBe(true);
+ fireEvent.click(within(screen.getByRole('dialog',{name:'Public history inspection'})).getByRole('button',{name:'Close'}));
+ expect(screen.getByRole('log',{name:'Match actions'})).toBe(timeline);expect(timeline.scrollTop).toBe(123);
 });

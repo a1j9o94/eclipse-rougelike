@@ -15,6 +15,7 @@ it("presents the paired alien and Terran sides for each physical board color and
 
 it("shows selected setup, technologies, and source-backed faction constraints without expanding every card", () => {
   render(<FactionPicker selected="planta" onSelect={() => {}} />);
+  fireEvent.click(screen.getByText("Planta · abilities and starting setup"));
   expect(screen.getByText("Explore activations")).toBeVisible();
   expect(screen.getByLabelText("2 Explore activations")).toBeVisible();
   expect(screen.getByText(/fewer blueprint slots/i)).toBeVisible();
@@ -57,5 +58,6 @@ it('describes independently selected reputation, exploration and faction changes
 
 it('passes individual rule options into the selected faction details',()=>{
  render(<FactionPicker selected="draco" onSelect={()=>{}} rulesMode="standard" ruleOptions={{explorationRules:true}}/>);
+ fireEvent.click(screen.getByText('Descendants of Draco · abilities and starting setup'));
  expect(screen.getByText(/draw three sectors/i)).toBeVisible();
 });

@@ -7,9 +7,19 @@ afterEach(cleanup);
 const feed:HistoryFeed={entries:[{revision:5,actorSeatId:'seat-1',actorName:'Planta',round:1,summary:'Moved one ship',details:[],rollbackAvailable:true},{revision:4,actorSeatId:'seat-2',actorName:'Orion',round:1,summary:'Built one ship',details:[],rollbackAvailable:false,rollbackUnavailableReason:'This older action has no saved checkpoint.'}],loading:false,hasOlder:false,loadingOlder:false,error:null,loadOlder:()=>{}};
 it('host can select the exact action to restore before, without submitting immediately',()=>{
  const select=vi.fn();render(<HistoryPanel feed={feed} rollback={{isHost:true,disabled:false,onSelect:select}}/>);
+ fireEvent.click(screen.getByRole('button',{name:'Edit history'}));
  fireEvent.click(screen.getAllByRole('button',{name:'Undo to before this action'})[0]);expect(select).toHaveBeenCalledWith(feed.entries[0]);
  expect(screen.getAllByRole('button',{name:'Undo to before this action'})[1]).toBeDisabled();expect(screen.getByText('This older action has no saved checkpoint.')).toBeVisible();
 });
 it('ordinary players cannot request host rollback',()=>{
  render(<HistoryPanel feed={feed} rollback={{isHost:false,disabled:false,onSelect:vi.fn()}}/>);expect(screen.queryByRole('button',{name:'Undo to before this action'})).toBeNull();
+});
+it('keeps rollback out of normal browsing until the host enters history editing',()=>{
+ const select=vi.fn();render(<HistoryPanel feed={feed} rollback={{isHost:true,disabled:false,onSelect:select}}/>);
+ expect(screen.queryByRole('button',{name:'Undo to before this action'})).not.toBeInTheDocument();
+ fireEvent.click(screen.getByRole('button',{name:'Edit history'}));
+ expect(screen.getAllByRole('button',{name:'Undo to before this action'})).toHaveLength(2);
+ fireEvent.click(screen.getByRole('button',{name:'Done editing history'}));
+ expect(screen.queryByRole('button',{name:'Undo to before this action'})).not.toBeInTheDocument();
+ expect(select).not.toHaveBeenCalled();
 });

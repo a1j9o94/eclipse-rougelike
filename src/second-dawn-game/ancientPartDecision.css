@@ -40,3 +40,5 @@
 .dg-app .dg-ancient-slots p { margin: .5rem 0; font-size: .8rem; }
 .dg-ancient-ship { height: 38px; }
 .dg-ancient-ship .dg-ship-silhouette { height: 34px; width: 34px; flex-basis: 34px; }
+.dg-ancient-layout>section{min-width:0}.dg-ancient-layout .dg-blueprints{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:800px){.dg-ancient-layout{grid-template-columns:minmax(0,1fr)}.dg-ancient-preview{position:static}.dg-ancient-heading{align-items:flex-start;flex-wrap:wrap}}

@@ -12,7 +12,7 @@ function state(){return createGame({seed:1703,warpPortals:true,seats:[{id:'a',fa
 function props(view:PlayerView){return {view,candidates:legalCommands(view),connected:true,busy:false,status:'',onSubmit:vi.fn(),onMenu:vi.fn()};}
 it('places exploration on the same interactive main map with rotation and confirmation in the inspector',()=>{
  const initial=state(),view=getPlayerView(initial,'a')!,p=props(view),ui=render(<SecondDawnBoard {...p}/>);
- fireEvent.click(screen.getByRole('button',{name:'View turn'}));const map=screen.getByRole('group',{name:'Galaxy map'});
+ const map=screen.getByRole('group',{name:'Galaxy map'});
  const explore=legalCommands(view).find(c=>c.command.type==='explore')!.command,result=processGameCommand(initial,'a',explore);if(!result.ok)throw Error(result.error.message);
  const next=getPlayerView(result.state,'a')!;ui.rerender(<SecondDawnBoard {...p} view={next} candidates={legalCommands(next)}/>);
  expect(screen.getAllByRole('group',{name:'Galaxy map'})).toHaveLength(1);expect(screen.getByRole('group',{name:'Galaxy map'})).toBe(map);
@@ -27,7 +27,7 @@ it('selects upkeep abandonment on the main map and preserves it through command-
  const s=state(),home=s.sectors.find(v=>v.owner==='a')!;s.phase='upkeep';s.activeSeatId='a';s.pendingDecision={id:'shortfall',owner:'a',kind:'bankruptcy',shortfall:1,abandonableSectorIds:[home.id]};
  const p=props(getPlayerView(s,'a')!),ui=render(<SecondDawnBoard {...p}/>);
  const map=screen.getByRole('group',{name:'Galaxy map'});expect(ui.container.querySelectorAll('.sd-map')).toHaveLength(1);
- expect(screen.getByRole('button',{name:'Abandon selected sector'})).toBeDisabled();
+ expect(screen.getByRole('button',{name:'Abandon selected sector'})).toBeEnabled();expect(p.onSubmit).not.toHaveBeenCalled();
  fireEvent.click(within(map).getByRole('button',{name:new RegExp(`^Inspect sector ${home.tileId},`)}));
  expect(screen.getByRole('button',{name:'Abandon selected sector'})).toBeEnabled();expect(p.onSubmit).not.toHaveBeenCalled();
  fireEvent.click(within(screen.getByRole('region',{name:'Civilization roster'})).getByRole('button',{name:/Terran Directorate/}));

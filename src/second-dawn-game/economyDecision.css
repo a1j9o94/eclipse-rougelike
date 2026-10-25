@@ -6,3 +6,5 @@
 
 /* Sector decisions use the main galaxy when hosted by the full board. */
 .dg-shared-map-decision-layout{min-width:0}.dg-shared-map-decision-layout>.dg-decision-sector-details{max-height:none;overflow:visible;padding:0}.dg-shared-map-decision-layout .dg-sector-target-strip{margin-bottom:12px}
+
+.dg-allocation-stepper input{width:64px;min-height:44px;text-align:center;border:1px solid #708a95;border-radius:4px;background:#101f29;color:#e6ecef;font-size:20px}.dg-resource-bins section>button{min-height:44px}.dg-discovery-selection-tray{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}.dg-discovery-selection-tray button{min-height:44px}.dg-discovery-selection-tray button[aria-pressed=true]{outline:2px solid #dfc17b}

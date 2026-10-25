@@ -15,9 +15,19 @@ function Harness({ submit = () => {},queued=false }: { submit?: () => void;queue
   const [amount, setAmount] = useActionDraftState('tradeAmount', 1);
   const [sector, setSector] = useActionDraftState('selectedSector', null);
   const guard = useActionDraftGuard();
-  return <><output aria-label="Amount">{amount}</output><output aria-label="Sector">{sector}</output><span>{guard.stale ? 'Review required' : 'Ready'}</span><button onClick={() => setAmount(value => value + 1)}>Increase</button><button onClick={() => setSector('new-sector')}>Navigate</button><button disabled={guard.stale} onClick={() => { guard.markSubmitted({ type: 'trade', from: 'money', to: 'science', amount },queued?'queued':'accepted'); submit(); }}>Submit</button></>;
+  return <><output aria-label="Amount">{amount}</output><output aria-label="Sector">{sector}</output><span>{guard.stale ? 'Review required' : 'Ready'}</span><button onClick={() => setAmount(value => value + 1)}>Increase</button><button onClick={() => setSector('new-sector')}>Navigate</button><button onClick={()=>guard.clear()}>Reset draft</button><button disabled={!guard.canUndo} onClick={guard.undo}>Undo draft edit</button><button disabled={guard.stale} onClick={() => { guard.markSubmitted({ type: 'trade', from: 'money', to: 'science', amount },queued?'queued':'accepted'); submit(); }}>Submit</button></>;
 }
 describe('partitioned local action drafts', () => {
+  it('resets deliberately and undoes local edits without reverting navigation or accepted commands',()=>{
+    const props={matchId:'undo-draft',viewerSeatId:'a',revision:1};
+    const ui=render(<ActionDraftProvider {...props}><Harness/></ActionDraftProvider>);
+    fireEvent.click(screen.getByText('Increase'));fireEvent.click(screen.getByText('Navigate'));
+    fireEvent.click(screen.getByText('Reset draft'));expect(screen.getByLabelText('Amount')).toHaveTextContent('1');
+    fireEvent.click(screen.getByText('Undo draft edit'));expect(screen.getByLabelText('Amount')).toHaveTextContent('2');expect(screen.getByLabelText('Sector')).toHaveTextContent('new-sector');
+    fireEvent.click(screen.getByText('Submit'));
+    ui.rerender(<ActionDraftProvider {...props} revision={2} lastAcceptedCommand={{revision:2,type:'trade'}}><Harness/></ActionDraftProvider>);
+    expect(screen.getByText('Undo draft edit')).toBeDisabled();
+  });
   it('restores a build after refresh without adding a draft-review confirmation', () => {
     const state=createGame({seed:4,seats:[{id:'a',faction:'terran-directorate',controller:'human'},{id:'b',faction:'hydran',controller:'ai'}]});state.activeSeatId='a';state.seats[0].resources.materials=20;
     const view=getPlayerView(state,'a')!;const sectorId=view.sectors.find(sector=>sector.owner==='a')!.id;const submit=vi.fn();
@@ -42,7 +52,7 @@ describe('partitioned local action drafts', () => {
     const ui=render(<ActionDraftProvider matchId="move-match" viewerSeatId="a" revision={0}><MovementPlanner {...props}/></ActionDraftProvider>);
     fireEvent.click(screen.getByRole('checkbox',{name:'Interceptor 1'}));ui.unmount();
     render(<ActionDraftProvider matchId="move-match" viewerSeatId="a" revision={0}><MovementPlanner {...props}/></ActionDraftProvider>);
-    expect(screen.getByRole('checkbox',{name:'Interceptor 1'})).toBeChecked();expect(screen.getByRole('button',{name:/Confirm move/})).toBeEnabled();expect(props.onSubmit).not.toHaveBeenCalled();
+    expect(screen.getByRole('checkbox',{name:'Interceptor 1'})).toBeChecked();expect(screen.getByRole('button',{name:/Move fleet/})).toBeEnabled();expect(props.onSubmit).not.toHaveBeenCalled();
   });
   it('restores typed choices after refresh without submitting and separates seats and matches', () => {
     const submit = vi.fn();
@@ -110,4 +120,17 @@ describe('partitioned local action drafts', () => {
       expect(screen.getByText('Submit')).toBeEnabled();
     }finally{blocked.mockRestore();}
   });
+});
+it('migrates legacy research and frontier drafts without reviving an explicitly cleared activity',()=>{
+ const partition={matchId:'legacy',viewerSeatId:'a'};
+ for(const command of [{type:'research',tileId:'plasma-cannon',track:'military'},{type:'explore',position:{q:2,r:0}}]){
+  const candidate={command,label:'Saved choice',description:''};
+  localStorage.setItem(draftStorageKey(partition),JSON.stringify({version:1,...partition,values:{commandDraft:{revision:4,value:candidate}}}));
+  const restored=readActionDrafts(localStorage,partition);
+  const key=command.type==='research'?'researchDraft':'exploreDraft';
+  expect(restored.values[key]?.value).toEqual(candidate);
+  expect(restored.values.commandDraft).toBeUndefined();
+  localStorage.setItem(draftStorageKey(partition),JSON.stringify({version:1,...partition,values:{commandDraft:{revision:4,value:candidate},[key]:{revision:5,value:null}}}));
+  expect(readActionDrafts(localStorage,partition).values[key]?.value).toBeNull();
+ }
 });

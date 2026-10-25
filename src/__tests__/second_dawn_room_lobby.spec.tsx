@@ -44,21 +44,31 @@ it('lets an expanded room change piece color without changing species',()=>{
  expect(screen.getByRole('button',{name:'Hydran Progress',exact:true})).toBeEnabled();
 });
 it('lets the host agree to optional combat odds before the game starts',()=>{
- const save=vi.fn();render(<RoomSettingsEditor settings={lobby.settings} disabled={false} onSave={save}/>);const toggle=within(screen.getByRole('group',{name:'Individual rule options'})).getByRole('checkbox',{name:/Show estimated combat odds/});expect(toggle).not.toBeChecked();expect(screen.getByText('Preset rules')).toBeVisible();fireEvent.click(toggle);fireEvent.click(screen.getByRole('button',{name:'Save room settings'}));expect(save).toHaveBeenCalledWith({...lobby.settings,showCombatOdds:true});
+ const save=vi.fn();render(<RoomSettingsEditor settings={lobby.settings} disabled={false} onSave={save}/>);fireEvent.click(screen.getByText('Advanced rules'));const toggle=within(screen.getByRole('group',{name:'Individual rule options'})).getByRole('checkbox',{name:/Show estimated combat odds/});expect(toggle).not.toBeChecked();expect(screen.getByText('Preset rules')).toBeVisible();fireEvent.click(toggle);fireEvent.click(screen.getByRole('button',{name:'Save room settings'}));expect(save).toHaveBeenCalledWith({...lobby.settings,showCombatOdds:true});
 });
 it('offers Minor Species as an optional default-off room agreement',()=>{
  const save=vi.fn();render(<RoomSettingsEditor settings={lobby.settings} disabled={false} onSave={save}/>);
+ fireEvent.click(screen.getByText('Advanced rules'));
  const toggle=screen.getByRole('checkbox',{name:'Include Minor Species'});expect(toggle).not.toBeChecked();
  fireEvent.click(toggle);fireEvent.click(screen.getByRole('button',{name:'Save room settings'}));expect(save).toHaveBeenCalledWith({...lobby.settings,minorSpecies:true});
  cleanup();render(<RoomLobby lobby={{...lobby,settings:{...lobby.settings,minorSpecies:true}}} disabled={false} {...callbacks()}/>);
+ fireEvent.click(screen.getByText(/Agreed rules ·/));
  expect(within(screen.getByRole('region',{name:'Agreed room rules'})).getByText('Minor Species enabled')).toBeVisible();
 });
 it('offers the complete less random preset with portals off and independent custom options',()=>{
  const save=vi.fn();render(<RoomSettingsEditor settings={lobby.settings} disabled={false} onSave={save}/>);
+ fireEvent.click(screen.getByText('Advanced rules'));
  fireEvent.click(screen.getByRole('radio',{name:/Régis’s Less Random/}));
  expect(screen.getByText(/10 rounds.*open technology.*public discoveries/i)).toBeVisible();
  expect(screen.getByRole('checkbox',{name:/Base-game warp portals/})).not.toBeChecked();
  expect(screen.getByRole('checkbox',{name:/Base-game warp portals/})).toBeEnabled();
  fireEvent.click(screen.getByRole('button',{name:'Save room settings'}));
  expect(save).toHaveBeenCalledWith(expect.objectContaining({...lobby.settings,rulesMode:'less-random-v1',warpPortals:false,riftCannons:false}));
+});
+it('announces readiness lost after a room change',()=>{
+ const ready={...lobby,seats:lobby.seats.map(seat=>({...seat,ready:true}))};
+ const handlers=callbacks();const ui=render(<RoomLobby lobby={ready} disabled={false} {...handlers}/>);
+ ui.rerender(<RoomLobby lobby={{...ready,seats:ready.seats.map(seat=>({...seat,ready:false}))}} disabled={false} {...handlers}/>);
+ expect(screen.getByRole('status',{name:'Room readiness'})).toHaveTextContent('Readiness cleared');
+ expect(screen.getByRole('button',{name:'Ready to play'})).toBeEnabled();
 });

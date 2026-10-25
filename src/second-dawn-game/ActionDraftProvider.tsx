@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type SetStateAction } from 'react';
 import type { GameCommand } from '../../shared/eclipse/types';
 import { ActionDraftContext } from './actionDraftContext';
-import { DRAFT_KEYS, emptyActionDrafts, isMeaningfulDraft, keysForCommand, readActionDrafts, setDraftValue, writeActionDrafts, type DraftKey, type DraftValues } from './actionDraftStorage';
+import { DRAFT_KEYS, emptyActionDrafts, isMeaningfulDraft, keysForCommand, readActionDrafts, setDraftValue, writeActionDrafts, type DraftEntries, type DraftSnapshot, type DraftKey, type DraftValues } from './actionDraftStorage';
 
 export interface AcceptedDraftCommand { revision:number; type:GameCommand['type'] }
 export interface SavedQueuedActionReceipt {commandId:string;type:GameCommand['type']}
@@ -11,9 +11,13 @@ export function ActionDraftProvider(props:Props) {
 }
 function PartitionProvider({matchId,viewerSeatId,revision,lastAcceptedCommand,lastQueuedCommand,children}:Props) {
   const partition=useMemo(()=>({matchId:matchId??'preview',viewerSeatId}),[matchId,viewerSeatId]);
-  const [snapshot,setSnapshot]=useState(()=>{
-    try{return matchId?readActionDrafts(localStorage,partition):emptyActionDrafts(partition);}catch{return emptyActionDrafts(partition);}
+  const [draftState,setDraftState]=useState<{snapshot:DraftSnapshot;undo:{keys:readonly DraftKey[];values:DraftEntries}[]}>(()=>{
+    let snapshot=emptyActionDrafts(partition);
+    try{if(matchId)snapshot=readActionDrafts(localStorage,partition);}catch{/* In-memory editing remains available. */}
+    return {snapshot,undo:[]};
   });
+  const snapshot=draftState.snapshot;
+  const canUndo=draftState.undo.length>0;
   const [storageAvailable,setStorageAvailable]=useState(true);
   const submitted=useRef<{type:GameCommand['type'];receiptKind:'accepted'|'queued';acceptedBefore:AcceptedDraftCommand|undefined;queuedBefore:SavedQueuedActionReceipt|undefined;values:Partial<Record<DraftKey,string>>}|null>(null);
   const acceptedRef=useRef(lastAcceptedCommand);acceptedRef.current=lastAcceptedCommand;
@@ -28,15 +32,29 @@ function PartitionProvider({matchId,viewerSeatId,revision,lastAcceptedCommand,la
     try{setStorageAvailable(writeActionDrafts(localStorage,snapshot));}catch{setStorageAvailable(false);}
   },[matchId,snapshot]);
   const setValue=useCallback(<K extends DraftKey>(key:K,value:SetStateAction<DraftValues[K]>,initial:DraftValues[K])=>{
-    setSnapshot(previous=>{
+    setDraftState(state=>{
+      const previous=state.snapshot;
       const entry=previous.values[key];
       const current=entry?entry.value as DraftValues[K]:initial;
       const next=typeof value==='function'?(value as (state:DraftValues[K])=>DraftValues[K])(current):value;
-      return setDraftValue(previous,key,next,revision);
+      const updated=setDraftValue(previous,key,next,revision);
+      if(updated!==previous&&(isMeaningfulDraft(key,previous.values)||isMeaningfulDraft(key,updated.values))){
+        return {snapshot:updated,undo:[...state.undo.slice(-29),{keys:[key],values:previous.values}]};
+      }
+      return {...state,snapshot:updated};
     });
   },[revision]);
-  const clear=useCallback((keys?:readonly DraftKey[])=>setSnapshot(previous=>{
-    const values={...previous.values};for(const key of keys??DRAFT_KEYS.filter(key=>isMeaningfulDraft(key,values)))delete values[key];return {...previous,values};
+  const clear=useCallback((keys?:readonly DraftKey[])=>setDraftState(state=>{
+    const previous=state.snapshot,values={...previous.values};
+    const cleared=keys??DRAFT_KEYS.filter(key=>isMeaningfulDraft(key,values));
+    for(const key of cleared)delete values[key];
+    return {snapshot:{...previous,values},undo:[...state.undo.slice(-29),{keys:cleared,values:previous.values}]};
+  }),[]);
+  const undo=useCallback(()=>setDraftState(state=>{
+    const entry=state.undo.at(-1);if(!entry)return state;
+    const values={...state.snapshot.values};
+    for(const key of entry.keys){delete values[key];if(entry.values[key])Object.assign(values,{[key]:entry.values[key]});}
+    return {snapshot:{...state.snapshot,values},undo:state.undo.slice(0,-1)};
   }),[]);
   const markSubmitted=useCallback((command:GameCommand,receiptKind:'accepted'|'queued'='accepted')=>{
     const current=snapshotRef.current;const values:Partial<Record<DraftKey,string>>={};
@@ -53,22 +71,24 @@ function PartitionProvider({matchId,viewerSeatId,revision,lastAcceptedCommand,la
     // response. Only the parent's fresh successful receipt object acknowledges it.
     if(!pending||pending.receiptKind!=='accepted'||!lastAcceptedCommand||lastAcceptedCommand===pending.acceptedBefore||lastAcceptedCommand.type!==pending.type)return;
     submitted.current=null;
-    setSnapshot(previous=>{
+    setDraftState(state=>{
+      const previous=state.snapshot;
       const values={...previous.values};
       for(const key of DRAFT_KEYS)if(pending.values[key]&&JSON.stringify(values[key])===pending.values[key])delete values[key];
-      return {...previous,values};
+      return {snapshot:{...previous,values},undo:[]};
     });
   },[lastAcceptedCommand]);
   useEffect(()=>{
     const pending=submitted.current;
     if(!pending||pending.receiptKind!=='queued'||!lastQueuedCommand||lastQueuedCommand.commandId===pending.queuedBefore?.commandId||lastQueuedCommand.type!==pending.type)return;
     submitted.current=null;
-    setSnapshot(previous=>{
+    setDraftState(state=>{
+      const previous=state.snapshot;
       const values={...previous.values};
       for(const key of DRAFT_KEYS)if(pending.values[key]&&JSON.stringify(values[key])===pending.values[key])delete values[key];
-      return {...previous,values};
+      return {snapshot:{...previous,values},undo:[]};
     });
   },[lastQueuedCommand]);
-  const context=useMemo(()=>({entries:snapshot.values,setValue,stale,draftKeys,clear,markSubmitted,storageAvailable}),[snapshot.values,setValue,stale,draftKeys,clear,markSubmitted,storageAvailable]);
+  const context=useMemo(()=>({entries:snapshot.values,setValue,stale,draftKeys,clear,markSubmitted,storageAvailable,canUndo,undo}),[snapshot.values,setValue,stale,draftKeys,clear,markSubmitted,storageAvailable,canUndo,undo]);
   return <ActionDraftContext.Provider value={context}>{children}</ActionDraftContext.Provider>;
 }

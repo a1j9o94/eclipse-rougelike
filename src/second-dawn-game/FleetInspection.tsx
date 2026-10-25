@@ -40,7 +40,7 @@ function HitFaces({label,computer,shield}:{label:string;computer:number;shield:n
  const description=hitFaceDescription(computer,shield);
  return <div className="dg-hit-preview"><span>{label}</span><div className="dg-hit-faces" role="img" aria-label={`${label}: ${description}`} title={`${description}. Natural 1 misses; natural 6 hits.`}>{[1,2,3,4,5,6].map(face=><span key={face} className={face===6||face!==1&&face+computer-shield>=6?'dg-face-hit':''} aria-hidden="true">{face}</span>)}</div><small>{description}</small></div>;
 }
-export default function FleetInspection({view,sectorId,selectedShipIds,onClose,onDiplomacy,diplomacy,showCombatOdds=false}:{view:PlayerView;sectorId:string;selectedShipIds:readonly string[];showCombatOdds?:boolean;onClose:()=>void;diplomacy?:ReactNode;onDiplomacy?:(seatId:string)=>void}){
+export default function FleetInspection({view,sectorId,selectedShipIds,onClose,onDiplomacy,diplomacy,abilities,showCombatOdds=false}:{view:PlayerView;sectorId:string;selectedShipIds:readonly string[];showCombatOdds?:boolean;onClose:()=>void;diplomacy?:ReactNode;abilities?:ReactNode;onDiplomacy?:(seatId:string)=>void}){
  const panel=useRef<HTMLElement>(null);
  useEffect(()=>{const prior=document.activeElement instanceof HTMLElement?document.activeElement:null;panel.current?.focus();return()=>prior?.focus();},[]);
  const sector=view.sectors.find(s=>s.id===sectorId);
@@ -55,6 +55,7 @@ export default function FleetInspection({view,sectorId,selectedShipIds,onClose,o
   {showCombatOdds&&oddsIds.length>0&&<MovementBattlePreview view={view} shipIds={oddsIds} targetSectorId={sectorId}/>}
   {!profiles.length&&<p>No ships remain at this location.</p>}
   <div className="dg-inspection-ships">{groups.map(ships=><FleetBlueprintCard key={`${ships[0].ship.owner}:${ships[0].ship.type}`} view={view} ships={ships}/>)}</div>
+  {abilities}
   {selected.length>0?<>
    <section aria-label="Your selected fleet" className="dg-inspection-selected"><h3>Your selected fleet</h3><div className="dg-inspection-ships">{selectedGroups.map(ships=><FleetBlueprintCard key={ships[0].ship.type} view={view} ships={ships}/>)}</div></section>
    <section aria-label="Fleet comparison"><h3>Compare with your selected fleet</h3><div className="dg-inspection-matchups">{groups.filter(group=>group[0].ship.owner!==view.viewerSeatId).flatMap(([target])=>selectedGroups.map(([source])=><div className="dg-inspection-comparison" key={`${target.ship.owner}:${target.ship.type}:${source.ship.type}`}>

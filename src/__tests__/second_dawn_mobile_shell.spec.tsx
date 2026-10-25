@@ -105,3 +105,13 @@ it('keeps the first-pass money in the fixed mobile turn control while choosing a
  expect(within(picker).queryByRole('button',{name:/^Pass \+2 money/})).toBeNull();
  expect(screen.getByRole('button',{name:/^Pass \+2 money/})).toBeEnabled();
 });
+it('keeps auto-pass in the stable turn controls before and after passing',()=>{
+ const state=createGame({seed:81,seats:[{id:'a',faction:'eridani',controller:'human'},{id:'b',faction:'hydran',controller:'ai'}]});state.activeSeatId='a';
+ const view=getPlayerView(state,'a')!,props={connected:true,busy:false,status:'',onSubmit:vi.fn(),onMenu:vi.fn()};
+ const ui=render(<Board {...props} view={view} candidates={legalCommands(view)}/>);
+ expect(screen.getByRole('checkbox',{name:'Auto-pass unless attacked'}).closest('.dg-mobile-turn-controls')).not.toBeNull();
+ const passed={...view,revision:view.revision+1,seats:view.seats.map(seat=>seat.id==='a'?{...seat,passed:true}:seat)};
+ ui.rerender(<Board {...props} view={passed} candidates={legalCommands(passed)}/>);
+ expect(screen.getAllByRole('checkbox',{name:'Auto-pass unless attacked'})).toHaveLength(1);
+ expect(screen.getByRole('checkbox',{name:'Auto-pass unless attacked'}).closest('.dg-mobile-turn-controls')).not.toBeNull();
+});

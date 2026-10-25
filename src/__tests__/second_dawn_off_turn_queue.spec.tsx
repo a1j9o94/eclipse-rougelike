@@ -19,10 +19,7 @@ it('keeps off-turn build choices interactive during an opponent decision and que
  const sector=view.sectors.find(sector=>sector.owner==='a')!;
  fireEvent.click(screen.getByRole('button',{name:`Place interceptor in sector ${sector.tileId}`}));
  fireEvent.click(screen.getByRole('button',{name:/Build 1 ship/}));
- const confirmation=screen.getByRole('dialog',{name:'Queue Build'});
- expect(within(confirmation).getByText('Will execute on your turn.')).toBeVisible();
- expect(onQueue).not.toHaveBeenCalled();expect(onSubmit).not.toHaveBeenCalled();
- fireEvent.click(within(confirmation).getByRole('button',{name:'Confirm · will execute on your turn'}));
+ expect(screen.queryByRole('dialog',{name:'Queue Build'})).toBeNull();
  expect(onQueue).toHaveBeenCalledExactlyOnceWith({type:'build',builds:[{component:'interceptor',sectorId:sector.id}]});
  expect(onSubmit).not.toHaveBeenCalled();
 });
@@ -31,8 +28,8 @@ it('allows canceling the saved next action and confirms replacement through the 
  render(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="Saved" onSubmit={vi.fn()} onQueue={onQueue} queuedAction={{command,status:'pending'}} onMenu={vi.fn()}/>);
  expect(screen.getByRole('region',{name:'Queued next action'})).toHaveTextContent('Pass · will execute on your turn');
  fireEvent.click(screen.getByRole('button',{name:'Cancel queued action'}));expect(onQueue).toHaveBeenCalledWith(null);
- fireEvent.click(screen.getByRole('button',{name:/^Pass(?: \+2 money)?$/}));
- expect(screen.getByRole('dialog',{name:'Queue Pass'})).toHaveTextContent('Replaces your queued action.');
+ fireEvent.click(screen.getByRole('button',{name:/^(?:Queue for my turn · )?Pass(?: \+2 money)?$/}));
+ expect(onQueue).toHaveBeenLastCalledWith({type:'pass'});
 });
 it('retains a failed queued command and displays its reason without automatic resubmission',()=>{
  const view=fixture(),onQueue=vi.fn();
@@ -44,31 +41,32 @@ it('keeps a viewer-owned decision authoritative rather than enabling its queue',
  render(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="Saved" onSubmit={vi.fn()} onQueue={onQueue} onMenu={vi.fn()}/>);
  expect(screen.getByRole('button',{name:'Build',exact:true})).toBeDisabled();expect(onQueue).not.toHaveBeenCalled();
 });
-it('returns a reviewed draft to ordinary confirmation when the turn arrives before queue confirmation',()=>{
+it('changes the draft commit from queued to immediate when the turn arrives',()=>{
  const view=fixture(),onQueue=vi.fn(),onSubmit=vi.fn();
  const props={connected:true,busy:false,status:'Saved',onQueue,onSubmit,onMenu:vi.fn()};
  const ui=render(<SecondDawnBoard {...props} view={view} candidates={legalCommands(view)}/>);
- fireEvent.click(screen.getByRole('button',{name:/^Pass(?: \+2 money)?$/}));
- expect(screen.getByRole('dialog',{name:'Queue Pass'})).toBeVisible();
+ fireEvent.click(screen.getByRole('button',{name:'Build',exact:true}));fireEvent.click(screen.getByRole('button',{name:'Add interceptor'}));
+ const sector=view.sectors.find(sector=>sector.owner==='a')!;
+ fireEvent.click(screen.getByRole('button',{name:`Place interceptor in sector ${sector.tileId}`}));
+ expect(screen.getByRole('button',{name:/^Queue for my turn · Build/})).toBeEnabled();
  const next={...view,activeSeatId:'a'};ui.rerender(<SecondDawnBoard {...props} view={next} candidates={legalCommands(next)}/>);
- expect(screen.queryByRole('dialog',{name:'Queue Pass'})).toBeNull();expect(onQueue).not.toHaveBeenCalled();expect(onSubmit).not.toHaveBeenCalled();
- ui.rerender(<SecondDawnBoard {...props} view={view} candidates={legalCommands(view)}/>);
- expect(screen.queryByRole('dialog',{name:'Queue Pass'})).toBeNull();
+ fireEvent.click(screen.getByRole('button',{name:/^Build 1 ship/}));
+ expect(onQueue).not.toHaveBeenCalled();expect(onSubmit).toHaveBeenCalledOnce();
 });
 it('uses the same research card purchase while off-turn and retains its draft before acceptance',()=>{
  const view={...fixture(),technologyMarket:['fusion-drive']},onQueue=vi.fn(),onSubmit=vi.fn();
  render(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="Saved" onQueue={onQueue} onSubmit={onSubmit} onMenu={vi.fn()}/>);
  fireEvent.click(screen.getByRole('button',{name:'Research',exact:true}));fireEvent.click(screen.getByRole('button',{name:/Fusion Drive ×/}));
- const commit=within(screen.getByRole('region',{name:'Research Fusion Drive'})).getByRole('button',{name:'Research · 4 science'});expect(commit).toBeEnabled();fireEvent.click(commit);
- expect(onSubmit).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'Confirm · will execute on your turn'}));
+ const commit=within(screen.getByRole('region',{name:'Research Fusion Drive'})).getByRole('button',{name:'Queue for my turn · Research · 4 science'});expect(commit).toBeEnabled();fireEvent.click(commit);
+ expect(onSubmit).not.toHaveBeenCalled();
  expect(onQueue).toHaveBeenCalledExactlyOnceWith({type:'research',tileId:'fusion-drive',track:'nano'});expect(screen.queryByText('Acquired · Fusion Drive')).toBeNull();
 });
 it('lets off-turn players fit upgrades without inheriting an opponent action budget',()=>{
  const view={...fixture(),actionProgress:{owner:'b',action:'move' as const,remaining:0}},onQueue=vi.fn();
  render(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="Saved" onQueue={onQueue} onSubmit={vi.fn()} onMenu={vi.fn()}/>);
  fireEvent.click(screen.getByRole('button',{name:'Upgrade',exact:true}));fireEvent.click(screen.getByRole('button',{name:'Slot 4: Empty slot'}));fireEvent.click(screen.getByRole('button',{name:'Install Hull in slot 4'}));
- fireEvent.click(screen.getByRole('button',{name:'Apply 1 upgrade'}));expect(screen.getByRole('dialog',{name:'Queue Upgrade'})).toBeVisible();
- fireEvent.click(screen.getByRole('button',{name:'Confirm · will execute on your turn'}));expect(onQueue.mock.calls[0][0]).toMatchObject({type:'upgrade',blueprints:[{shipType:'interceptor',parts:[null,null,null,'hull']}]});
+ fireEvent.click(screen.getByRole('button',{name:'Queue for my turn · Apply 1 upgrade'}));expect(screen.queryByRole('dialog',{name:'Queue Upgrade'})).toBeNull();
+ expect(onQueue.mock.calls[0][0]).toMatchObject({type:'upgrade',blueprints:[{shipType:'interceptor',parts:[null,null,null,'hull']}]});
 });
 it('exposes the ordinary mobile Actions picker off-turn during an opponent choice',()=>{
  vi.stubGlobal('matchMedia',vi.fn((query:string)=>({matches:query.includes('max-width'),media:query,addEventListener:vi.fn(),removeEventListener:vi.fn()})));
@@ -83,12 +81,12 @@ it('plans movement using viewer capacity while the opponent has no move activati
  render(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="Saved" onQueue={onQueue} onSubmit={onSubmit} onMenu={vi.fn()}/>);
  fireEvent.click(screen.getByRole('button',{name:'Move',exact:true}));fireEvent.click(screen.getByRole('checkbox',{name:'Interceptor 1'}));
  fireEvent.click(screen.getByRole('button',{name:new RegExp(`Inspect sector ${target.tileId},`)}));
- fireEvent.click(screen.getByRole('button',{name:/^Execute 1 route/}));
- expect(screen.getByRole('dialog',{name:'Queue Move'})).toHaveTextContent('New action · 1 influence disc');
- fireEvent.click(screen.getByRole('button',{name:'Confirm · will execute on your turn'}));expect(onQueue.mock.calls[0][0]).toMatchObject({type:'move',moves:[{shipId:view.ships.find(ship=>ship.owner==='a')!.id,path:[target.id]}]});expect(onSubmit).not.toHaveBeenCalled();
+ fireEvent.click(screen.getByRole('button',{name:/^Queue for my turn · Move fleet/}));
+ expect(screen.queryByRole('dialog',{name:'Queue Move'})).toBeNull();
+ expect(onQueue.mock.calls[0][0]).toMatchObject({type:'move',moves:[{shipId:view.ships.find(ship=>ship.owner==='a')!.id,path:[target.id]}]});expect(onSubmit).not.toHaveBeenCalled();
 });
 it('keeps failed queue recovery in the ordinary own-turn controls',()=>{
  const view={...fixture(),activeSeatId:'a'},onSubmit=vi.fn(),onQueue=vi.fn();
  render(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="Saved" onQueue={onQueue} onSubmit={onSubmit} queuedAction={{command:{type:'pass'},status:'failed',error:'No longer legal.'}} onMenu={vi.fn()}/>);
- fireEvent.click(screen.getByRole('button',{name:/^Pass(?: \+2 money)?$/}));expect(onSubmit).toHaveBeenCalledWith({type:'pass'});expect(onQueue).not.toHaveBeenCalled();
+ fireEvent.click(screen.getByRole('button',{name:/^(?:Queue for my turn · )?Pass(?: \+2 money)?$/}));expect(onSubmit).toHaveBeenCalledWith({type:'pass'});expect(onQueue).not.toHaveBeenCalled();
 });

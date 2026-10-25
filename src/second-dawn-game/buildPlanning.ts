@@ -31,19 +31,19 @@ export function nextBuildItemId(items: readonly BuildOrderItem[], component: Bui
 
 export function addBuildItem(draft: BuildOrderDraft, component: BuildComponent): BuildOrderDraft {
   const id = nextBuildItemId(draft.items, component);
-  return { items: [...draft.items, { id, component, sectorId: null }], selectedItemId: id, fundingKey: '' };
+  return { ...draft, items: [...draft.items, { id, component, sectorId: null }], selectedItemId: id };
 }
 
 export function removeBuildItem(draft: BuildOrderDraft, id: string): BuildOrderDraft {
   const items = draft.items.filter(item => item.id !== id);
-  return { items, selectedItemId: draft.selectedItemId === id ? items.at(-1)?.id ?? null : draft.selectedItemId, fundingKey: '' };
+  return { ...draft, items, selectedItemId: draft.selectedItemId === id ? items.at(-1)?.id ?? null : draft.selectedItemId };
 }
 
 export function placeBuildItem(draft: BuildOrderDraft, id: string, sectorId: string | null): BuildOrderDraft {
   const previous = draft.items.find(item => item.id === id);
   const items = draft.items.map(item => item.id === id ? { ...item, sectorId } : item);
   const nextUnplaced = previous?.sectorId === null && sectorId !== null ? items.find(item => item.id !== id && item.sectorId === null) : null;
-  return { ...draft, items, selectedItemId: nextUnplaced?.id ?? id, fundingKey: '' };
+  return { ...draft, items, selectedItemId: nextUnplaced?.id ?? id };
 }
 
 export function analyzeBuildOrder(view: PlayerView, draft: BuildOrderDraft): BuildOrderAnalysis {

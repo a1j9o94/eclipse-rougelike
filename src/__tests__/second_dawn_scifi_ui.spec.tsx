@@ -38,7 +38,7 @@ it('shows a Formic convoy as one activation and submits explicit escorts',()=>{
  render(<MovementPlanner view={view} sourceSectorId={source.id} selectedTargetId={target.id} disabled={false} onTargetsChange={()=>{}} onClose={()=>{}} onSubmit={submit}/>);
  fireEvent.click(screen.getByRole('checkbox',{name:'Cruiser 1'}));
  fireEvent.click(screen.getByRole('checkbox',{name:/Interceptor 1.*sectors/i}));
- fireEvent.click(screen.getByRole('button',{name:/Confirm move.*1 activation/i}));
+ fireEvent.click(screen.getByRole('button',{name:/Move fleet.*1 activation/i}));
  expect(submit.mock.calls[0][0].moves).toEqual([{shipId:state.ships.find(s=>s.owner==='a'&&s.type==='cruiser')!.id,path:[target.id],escorts:['escort']}]);
 });
 it('does not offer Formic convoy selectors during a reaction',()=>{
@@ -61,7 +61,7 @@ it('offers Bob factories only for eligible Interceptors and makes the population
  const {state}=fixture('bobiverse');const view=getPlayerView(state,'a');const submit=vi.fn();
  render(<FactionAbilityControls view={view} candidates={legalCommands(view)} disabled={false} onSubmit={submit} onAction={()=>{}}/>);
  expect(screen.getByText(/Load a Materials cube/)).toBeVisible();
- fireEvent.click(screen.getByRole('button',{name:/Load factory/}));
+ fireEvent.click(screen.getByRole('button',{name:/Load factory/}));expect(submit).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'Load selected factory'}));
  expect(submit).toHaveBeenCalledWith({type:'load-factory',shipId:state.ships.find(s=>s.owner==='a')!.id});
 });
 

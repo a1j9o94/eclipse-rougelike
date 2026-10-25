@@ -102,3 +102,5 @@
 .dg-exploration-embedded .dg-placement-map-caption button{min-height:44px;}
 .dg-exploration-embedded .dg-placement-notes{overflow:visible;padding:0;}
 .dg-exploration-embedded .dg-placement-connections{margin-top:12px;padding-top:12px;}
+
+.dg-placement-connections summary{cursor:pointer;min-height:44px;display:flex;align-items:center;color:#edce91}.dg-placement-map-caption button,.dg-placement-inspector-heading button{min-height:44px}

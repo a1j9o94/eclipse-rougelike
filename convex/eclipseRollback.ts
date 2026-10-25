@@ -63,6 +63,8 @@ async function advanceControlRevision(ctx: MutationCtx, match: Doc<'eclipseMatch
   await ctx.db.patch(match._id, { revision: state.revision, snapshotJson: JSON.stringify(state), updatedAt: Date.now() });
 }
 async function pause(ctx: MutationCtx, match: Doc<'eclipseMatchesV1'>): Promise<string | undefined> {
+  const owners=await ctx.db.query('eclipseOwnershipV1').withIndex('by_match_guest',q=>q.eq('matchId',match._id)).collect();
+  for(const owner of owners)if(owner.combatAutomation?.status==='running')await ctx.db.patch(owner._id,{combatAutomation:{...owner.combatAutomation,status:'paused',reason:'undo',scheduledRevision:undefined,expiresAt:undefined}});
   const job = await ctx.db.query('eclipseAiJobsV1').withIndex('by_match', q => q.eq('matchId', match._id)).unique();
   if (job) await ctx.db.patch(job._id, { status: 'waiting', leaseToken: undefined, leaseExpiresAt: undefined, timeoutToken: undefined, updatedAt: Date.now() });
   const timer = await ctx.db.query('eclipseRoomTimersV1').withIndex('by_match', q => q.eq('matchId', match._id)).unique();
@@ -104,7 +106,7 @@ async function finish(ctx: MutationCtx, match: Doc<'eclipseMatchesV1'>, row: Doc
     restored.revision = appliedRevision;
     await ctx.db.patch(match._id, { snapshotJson: JSON.stringify(restored), revision: appliedRevision, round: restored.round, phase: restored.phase, updatedAt: Date.now() });
     const owners=await ctx.db.query('eclipseOwnershipV1').withIndex('by_match_guest',q=>q.eq('matchId',match._id)).collect();
-    for(const owner of owners)await ctx.db.patch(owner._id,{queuedAction:undefined,lastExecutedQueuedCommand:undefined});
+    for(const owner of owners)await ctx.db.patch(owner._id,{queuedAction:undefined,lastExecutedQueuedCommand:undefined,combatAutomation:undefined});
     await syncLeaderboardResult(ctx,match._id,restored);
   }
   await ctx.db.patch(row._id, { status: outcome, resolvedAt: Date.now(), appliedRevision });

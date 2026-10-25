@@ -18,7 +18,7 @@ it('identifies the offering faction with its name, emblem and public color befor
  expect(screen.getByRole('radio',{name:'Decline exchange'})).toHaveAttribute('aria-checked','false');
  expect(screen.getByRole('button',{name:'Choose accept or decline'})).toBeDisabled();
  fireEvent.click(screen.getByRole('radio',{name:'Accept exchange'}));
- fireEvent.click(screen.getByRole('radio',{name:'Materials'}));fireEvent.click(screen.getByRole('button',{name:'Accept ambassadors'}));expect(submit).toHaveBeenCalledWith({type:'resolve',decisionId:'offer',choice:{kind:'diplomacy',accept:true,resource:'materials'}});
+ fireEvent.click(screen.getByRole('button',{name:/Choose materials population/}));fireEvent.click(screen.getByRole('button',{name:'Accept ambassadors'}));expect(submit).toHaveBeenCalledWith({type:'resolve',decisionId:'offer',choice:{kind:'diplomacy',accept:true,resource:'materials'}});
 });
 it('keeps the proposer identity visible while drafting a decline and preserves disabled submission',()=>{
  const view=fixture(),submit=vi.fn();const rendered=render(<DecisionPanel view={view} decision={decision} reputation={[]} disabled={false} onSubmit={submit}/>);

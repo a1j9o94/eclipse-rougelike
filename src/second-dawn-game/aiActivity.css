@@ -6,3 +6,5 @@
 /* Board controls stay in the toolbar and wrap together on narrow layouts. */
 .dg-app .dg-ai-activity { flex-wrap: wrap; }
 .dg-app .dg-ai-activity > [role=status] { flex: 1 1 220px; }
+/* The header already announces the turn; reserve this row for an actual event. */
+.dg-ai-activity>[role=status]:has(>.dg-ai-summary:empty):not(:has(>strong)){display:none}

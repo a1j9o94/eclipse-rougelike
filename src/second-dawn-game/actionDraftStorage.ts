@@ -1,3 +1,4 @@
+import {MINOR_SPECIES, type MinorSpeciesId} from '../../shared/eclipse/minorSpecies';
 import type { BuildOrderDraft } from './buildPlanning';
 import type { MovementRouteDraft } from './movementPlanning';
 import type { ShipBlueprint, BlueprintShipType } from '../../shared/eclipse/blueprints';
@@ -8,7 +9,9 @@ import type { CommandCandidate } from './SecondDawnBoard';
 
 export interface DraftPartition { matchId: string; viewerSeatId: string }
 export interface DraftValues {
-  buildOrder: BuildOrderDraft; movementRoutes: MovementRouteDraft[];
+  buildOrder: BuildOrderDraft; movementRoutes: MovementRouteDraft[]; movementEditIndex: number | null;
+  researchDraft: CommandCandidate | null; exploreDraft: CommandCandidate | null;
+  factionDraft: Extract<GameCommand,{type:'convert-colony-ship'|'load-factory'|'place-guild-portal'|'reverse-engineer'|'buy-activation'}> | null;
   selectedSector: string | null; screen: string; action: GameCommand['type']; commandDraft: CommandCandidate | null;
   researchSelection: string | null; editing: BlueprintShipType | null; playerId: string;
   buildOpen: boolean; moveOpen: boolean; moveSource: string | null; moveTarget: string | null; historyOpen: boolean;
@@ -21,11 +24,13 @@ export interface DraftValues {
   colonization: Record<string, Resource>; colonizationFocus: string | null;
   guildGive: Resource; guildReceive: Resource; guildAmount: number;
   tradeTo: Resource; tradeFrom: Resource; tradeAmount: number;
+  diplomacyPartner:string|null; diplomacyResources:Record<string,Resource>;
+  minorSpeciesSelection:MinorSpeciesId|null; minorSpeciesResources:Partial<Record<MinorSpeciesId,Resource>>;
 }
 export type DraftKey = keyof DraftValues;
 export type DraftEntries = { [K in DraftKey]?: { revision: number; value: DraftValues[K] } };
 export interface DraftSnapshot extends DraftPartition { version: 1; values: DraftEntries }
-export const DRAFT_KEYS: readonly DraftKey[] = ['buildOrder','movementRoutes','selectedSector','screen','action','commandDraft','researchSelection','editing','playerId','buildOpen','moveOpen','moveSource','moveTarget','historyOpen','camera','movement','buildSector','buildCounts','buildFunding','blueprint-interceptor','blueprint-cruiser','blueprint-dreadnought','blueprint-starbase','blueprintSlot-interceptor','blueprintSlot-cruiser','blueprintSlot-dreadnought','blueprintSlot-starbase','influenceSource','influenceDraft','colonization','colonizationFocus','tradeTo','tradeFrom','tradeAmount','guildGive','guildReceive','guildAmount'];
+export const DRAFT_KEYS: readonly DraftKey[] = ['buildOrder','movementRoutes','movementEditIndex','researchDraft','exploreDraft','factionDraft','selectedSector','screen','action','commandDraft','researchSelection','editing','playerId','buildOpen','moveOpen','moveSource','moveTarget','historyOpen','camera','movement','buildSector','buildCounts','buildFunding','blueprint-interceptor','blueprint-cruiser','blueprint-dreadnought','blueprint-starbase','blueprintSlot-interceptor','blueprintSlot-cruiser','blueprintSlot-dreadnought','blueprintSlot-starbase','influenceSource','influenceDraft','colonization','colonizationFocus','tradeTo','tradeFrom','tradeAmount','guildGive','guildReceive','guildAmount','diplomacyPartner','diplomacyResources','minorSpeciesSelection','minorSpeciesResources'];
 const COMPONENTS = ['interceptor','cruiser','dreadnought','starbase','orbital','monolith'];
 const SHIPS = COMPONENTS.slice(0,4);
 const RESOURCES = ['money','science','materials'];
@@ -42,7 +47,15 @@ function blueprint(value: unknown): boolean {
 function publicCommand(value: unknown): boolean {
   if (!record(value) || typeof value.type !== 'string') return false;
   switch(value.type) {
+    case 'convert-colony-ship': return keysOnly(value,['type','resource'])&&RESOURCES.includes(String(value.resource));
+    case 'load-factory': return keysOnly(value,['type','shipId'])&&text(value.shipId);
+    case 'place-guild-portal': return keysOnly(value,['type','sectorId'])&&text(value.sectorId);
+    case 'reverse-engineer': return keysOnly(value,['type','track'])&&['military','grid','nano'].includes(String(value.track));
+    case 'buy-activation': return keysOnly(value,['type','action'])&&['explore','influence','research','upgrade','build','move'].includes(String(value.action));
     case 'explore': return keysOnly(value,['type','position','remote']) && (value.remote===undefined||typeof value.remote==='boolean') && record(value.position) && keysOnly(value.position,['q','r']) && ['q','r'].every(key=>typeof value.position === 'object' && value.position!==null && Math.abs(Number((value.position as Record<string,unknown>)[key]))<=100 && Number.isInteger((value.position as Record<string,unknown>)[key]));
+    case 'place-shrine': return keysOnly(value,['type','sectorId','planetIndex','row','column'])&&text(value.sectorId)&&integer(value.planetIndex,30)&&RESOURCES.includes(String(value.row))&&integer(value.column,2);
+    case 'research-development': return keysOnly(value,['type','developmentId'])&&['ancient-labs-development','quantum-labs'].includes(String(value.developmentId));
+    case 'quantum-research':
     case 'research': return keysOnly(value,['type','tileId','track']) && text(value.tileId) && ['military','grid','nano'].includes(String(value.track));
     case 'influence': return keysOnly(value,['type','removeSectorIds','addSectorIds']) && strings(value.removeSectorIds) && strings(value.addSectorIds);
     case 'upgrade': return keysOnly(value,['type','blueprints']) && Array.isArray(value.blueprints) && value.blueprints.length <= 4 && value.blueprints.every(blueprint);
@@ -60,9 +73,14 @@ function validValue(key: DraftKey, value: unknown): boolean {
   if (key.startsWith('blueprintSlot-')) return integer(value,9);
   if (key.startsWith('blueprint-')) return blueprint(value) && record(value) && value.shipType===key.slice('blueprint-'.length);
   switch(key) {
-    case 'commandDraft': case 'influenceDraft': return candidate(value);
-    case 'selectedSector': case 'researchSelection': case 'moveSource': case 'moveTarget': case 'influenceSource': case 'colonizationFocus': return nullableText(value);
-    case 'screen': return ['Galaxy','Research','Blueprints','Players','Diplomacy','Scoring','Trade','Decision','Activity','Empire'].includes(String(value));
+    case 'commandDraft': case 'influenceDraft': case 'researchDraft': case 'exploreDraft': return candidate(value);
+    case 'factionDraft': return value===null || record(value)&&['convert-colony-ship','load-factory','place-guild-portal','reverse-engineer','buy-activation'].includes(String(value.type))&&publicCommand(value);
+    case 'movementEditIndex': return value===null || integer(value,9);
+    case 'diplomacyPartner': case 'selectedSector': case 'researchSelection': case 'moveSource': case 'moveTarget': case 'influenceSource': case 'colonizationFocus': return nullableText(value);
+    case 'minorSpeciesSelection':return value===null||MINOR_SPECIES.some(species=>species.id===value);
+    case 'diplomacyResources':return record(value)&&Object.keys(value).length<=6&&Object.entries(value).every(([id,resource])=>text(id)&&RESOURCES.includes(String(resource)));
+    case 'minorSpeciesResources':return record(value)&&Object.keys(value).length<=MINOR_SPECIES.length&&Object.entries(value).every(([id,resource])=>MINOR_SPECIES.some(species=>species.id===id)&&RESOURCES.includes(String(resource)));
+    case 'screen': return ['Recruitment','Galaxy','Research','Blueprints','Players','Diplomacy','Scoring','Trade','Decision','Activity','Empire'].includes(String(value));
     case 'action': return ['explore','influence','research','upgrade','build','move','colonize','trade','offer-diplomacy','discard-reputation','pass','end-action','finish-upkeep'].includes(String(value));
     case 'editing': return value===null || SHIPS.includes(String(value));
     case 'playerId': case 'buildSector': case 'buildFunding': return text(value);
@@ -87,6 +105,14 @@ export function readActionDrafts(storage: Pick<Storage,'getItem'>, partition: Dr
     const parsed:unknown=JSON.parse(raw);
     if(!record(parsed)||parsed.version!==1||parsed.matchId!==partition.matchId||parsed.viewerSeatId!==partition.viewerSeatId||!record(parsed.values))return snapshot;
     for(const key of DRAFT_KEYS){const entry=parsed.values[key];if(record(entry)&&keysOnly(entry,['revision','value'])&&integer(entry.revision,1_000_000_000)&&validValue(key,entry.value))Object.assign(snapshot.values,{[key]:{revision:entry.revision,value:entry.value}});}
+    const legacy=snapshot.values.commandDraft;
+    const command=legacy?.value?.command;
+    const action=command?.type==='trade-and-act'?command.action:command;
+    if(legacy&&action&&(action.type==='research'||action.type==='explore')){
+      const key=action.type==='research'?'researchDraft':'exploreDraft';
+      if(!snapshot.values[key])snapshot.values[key]=legacy;
+      delete snapshot.values.commandDraft;
+    }
   } catch { /* Corrupt or blocked browser storage falls back to editable local state. */ }
   return snapshot;
 }
@@ -102,26 +128,33 @@ export function setDraftValue<K extends DraftKey>(snapshot: DraftSnapshot,key:K,
 }
 export function isMeaningfulDraft(key: DraftKey, entries: DraftEntries): boolean {
   const entry=entries[key];if(!entry)return false;
-  if(key==='commandDraft'||key==='influenceDraft')return entry.value!==null;
+  if(key==='diplomacyPartner'||key==='minorSpeciesSelection')return entry.value!==null;
+  if(key==='factionDraft'||key==='commandDraft'||key==='influenceDraft'||key==='researchDraft'||key==='exploreDraft')return entry.value!==null;
   if(key.startsWith('blueprint-'))return true;
   if(key==='buildOrder')return !!entries.buildOrder?.value.items.length;
   if(key==='movementRoutes')return !!entries.movementRoutes?.value.length;
   if(key==='movement')return !!entries.movement?.value.ids.length;
   if(key==='buildCounts')return Object.values(entries.buildCounts!.value).some(count=>count>0);
   if(key==='colonization')return Object.keys(entries.colonization!.value).length>0;
-  return key==='tradeAmount'||key==='tradeFrom'||key==='tradeTo';
+  return key==='tradeAmount'||key==='tradeFrom'||key==='tradeTo'||key==='guildGive'||key==='guildReceive'||key==='guildAmount';
 }
 export function keysForCommand(command: GameCommand): DraftKey[] {
   if(command.type==='trade-and-act')return keysForCommand(command.action);
   const keys:DraftKey[]=['commandDraft'];
   switch(command.type){
-    case 'move':return [...keys,'movement','movementRoutes','moveTarget'];
+    case 'move':return [...keys,'movement','movementRoutes','moveTarget','movementEditIndex'];
     case 'build':return [...keys,'buildOrder','buildCounts','buildFunding'];
-    case 'research': case 'explore': case 'pass': case 'end-action': case 'finish-upkeep':return keys;
+    case 'place-shrine': case 'research-development': case 'quantum-research':
+    case 'research': return [...keys,'researchDraft'];
+    case 'explore': return [...keys,'exploreDraft'];
+    case 'pass': case 'end-action': case 'finish-upkeep':return keys;
     case 'upgrade':return [...keys,...command.blueprints.flatMap(blueprint=>[`blueprint-${blueprint.shipType}` as DraftKey,`blueprintSlot-${blueprint.shipType}` as DraftKey])];
     case 'influence':return [...keys,'influenceDraft','influenceSource'];
     case 'colonize':return [...keys,'colonization','colonizationFocus'];
     case 'trade':return ['tradeTo','tradeFrom','tradeAmount'];
+    case 'convert-colony-ship': case 'load-factory': case 'place-guild-portal': case 'reverse-engineer': case 'buy-activation':return ['factionDraft'];
+    case 'offer-diplomacy':return [...keys,'diplomacyPartner'];
+    case 'buy-minor-species':return [...keys,'minorSpeciesSelection'];
     case 'guild-offer':return ['guildGive','guildReceive','guildAmount'];
     default:return [];
   }

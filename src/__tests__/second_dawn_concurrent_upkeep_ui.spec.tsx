@@ -6,7 +6,6 @@ import {legalCommands} from '../../shared/eclipse/legal';
 import {processGameCommand} from '../../shared/eclipse/engine';
 import type {GameState,PlayerView} from '../../shared/eclipse/types';
 import SecondDawnBoard from '../second-dawn-game/SecondDawnBoard';
-import TurnAttentionNotice from '../second-dawn-game/TurnAttentionNotice';
 import EmpireOverview from '../second-dawn-game/EmpireOverview';
 import AiActivityBar from '../second-dawn-game/AiActivityBar';
 
@@ -25,25 +24,25 @@ const viewOf=(state:GameState)=>getPlayerView(state,'a')!;
 function board(view:PlayerView,onSubmit=vi.fn()){
  return <SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="Saved" onSubmit={onSubmit} onMenu={()=>{}}/>;
 }
-it.each([false,true])('lets a non-active unfinished human review and colonize during upkeep (mobile=%s)',mobile=>{
+it.each([false,true])('lets a non-active unfinished human colonize before collecting income (mobile=%s)',mobile=>{
  mobileViewport(mobile);const onSubmit=vi.fn();render(board(viewOf(fixture()),onSubmit));
- fireEvent.click(screen.getByRole('button',{name:'Review upkeep',exact:true}));
- const details=within(screen.getByRole('complementary',{name:'Selection and action details'}));
- expect(details.getByRole('heading',{name:'Round 1 upkeep'})).toBeVisible();
- fireEvent.click(details.getByRole('button',{name:'Colonize',exact:true}));
+ const settlement=within(screen.getByRole('region',{name:'Upkeep settlement'}));
+ expect(settlement.getByRole('heading',{name:'Collect income'})).toBeVisible();
+ expect(screen.queryByRole('dialog',{name:'Upkeep is ready'})).toBeNull();
+ fireEvent.click(settlement.getByRole('button',{name:/^Colonize ·/}));
  expect(screen.getByRole('region',{name:'Colonization planner'})).toBeVisible();
  expect(onSubmit).not.toHaveBeenCalled();
  fireEvent.click(screen.getByRole('button',{name:'Back to upkeep',exact:true}));
- fireEvent.click(details.getByRole('button',{name:'Finish upkeep',exact:true}));
+ expect(screen.getAllByRole('button',{name:'Collect income',exact:true})).toHaveLength(1);
+ fireEvent.click(settlement.getByRole('button',{name:'Collect income',exact:true}));
  expect(onSubmit).toHaveBeenCalledWith({type:'finish-upkeep'});
 });
 it.each([false,true])('offers conversion before a non-active human finishes upkeep (mobile=%s)',mobile=>{
  mobileViewport(mobile);const onSubmit=vi.fn();render(board(viewOf(fixture()),onSubmit));
- fireEvent.click(screen.getByRole('button',{name:'Dismiss upkeep notice',exact:true}));
  if(mobile){
   fireEvent.click(screen.getByRole('button',{name:'Choose action',exact:true}));
   fireEvent.click(within(screen.getByRole('group',{name:'Choose your action'})).getByRole('button',{name:/Convert/}));
- }else fireEvent.click(screen.getByRole('button',{name:'Convert',exact:true}));
+ }else fireEvent.click(screen.getByRole('button',{name:'Trade',exact:true}));
  const trade=within(screen.getByRole('region',{name:'Convert resources'}));
  fireEvent.click(trade.getByRole('button',{name:'Receive money'}));
  fireEvent.click(trade.getByRole('button',{name:'Pay with materials'}));
@@ -56,30 +55,53 @@ it.each([false,true])('shows completed upkeep progress and prevents repeat econo
  expect(screen.getAllByText('Upkeep complete',{exact:true}).length).toBeGreaterThan(0);
  expect(screen.getAllByText('1 / 3 ready',{exact:true}).length).toBeGreaterThan(0);
  expect(screen.queryByRole('dialog',{name:'Upkeep is ready'})).toBeNull();
- expect(screen.queryByRole('button',{name:'Review upkeep',exact:true})).toBeNull();
- expect(screen.queryByRole('button',{name:'Finish upkeep',exact:true})).toBeNull();
- for(const button of screen.queryAllByRole('button',{name:'Convert',exact:true}))expect(button).toBeDisabled();
+ expect(screen.queryByRole('region',{name:'Upkeep settlement'})).toBeNull();
+ expect(screen.queryByRole('button',{name:'Collect income',exact:true})).toBeNull();
+ for(const button of screen.queryAllByRole('button',{name:/^(Convert|Trade)$/}))expect(button).toBeDisabled();
  expect(screen.queryByRole('button',{name:'Choose action',exact:true})).toBeNull();
 });
 it('does not reannounce upkeep when another player finishes or the compatibility active seat changes',()=>{
- const state=fixture(),onReview=vi.fn(),onOpen=vi.fn();
- const notice=(view:PlayerView)=><TurnAttentionNotice view={view} matchScope="concurrent-upkeep" onReviewUpkeep={onReview} onOpenTurn={onOpen}/>;
- const ui=render(notice(viewOf(state)));
- fireEvent.click(screen.getByRole('button',{name:'Dismiss upkeep notice'}));
+ const state=fixture(),onSubmit=vi.fn();
+ const ui=render(board(viewOf(state),onSubmit));
+ const settlement=screen.getByRole('region',{name:'Upkeep settlement'});
  state.revision++;state.engine!.upkeepDone=['b'];state.activeSeatId='c';
- ui.rerender(notice(viewOf(state)));expect(screen.queryByRole('dialog',{name:'Upkeep is ready'})).toBeNull();
+ ui.rerender(board(viewOf(state),onSubmit));expect(screen.queryByRole('dialog',{name:'Upkeep is ready'})).toBeNull();
+ expect(screen.getByRole('region',{name:'Upkeep settlement'})).toBe(settlement);
+ expect(screen.getAllByText('1 / 3 ready',{exact:true}).length).toBeGreaterThan(0);
  state.revision++;state.activeSeatId='a';state.actionTurnSerial=(state.actionTurnSerial??0)+1;
- ui.rerender(notice(viewOf(state)));expect(screen.queryByRole('dialog',{name:'Upkeep is ready'})).toBeNull();
+ ui.rerender(board(viewOf(state),onSubmit));expect(screen.queryByRole('dialog',{name:'Upkeep is ready'})).toBeNull();
+ expect(screen.getByRole('region',{name:'Upkeep settlement'})).toBe(settlement);
  state.round++;state.engine!.upkeepDone=[];
- ui.rerender(notice(viewOf(state)));expect(screen.getByRole('dialog',{name:'Upkeep is ready'})).toBeVisible();
- expect(onReview).not.toHaveBeenCalled();expect(onOpen).not.toHaveBeenCalled();
+ ui.rerender(board(viewOf(state),onSubmit));expect(screen.queryByRole('dialog',{name:'Upkeep is ready'})).toBeNull();
+ expect(within(settlement).getByText('Round 2')).toBeVisible();
+ expect(onSubmit).not.toHaveBeenCalled();
 });
 it('lets an unfinished player prepare upkeep while another player resolves bankruptcy',()=>{
  const state=fixture();state.pendingDecision={id:'bankruptcy-b',kind:'bankruptcy',owner:'b',shortfall:3,abandonableSectorIds:[state.sectors.find(sector=>sector.owner==='b')!.id]};
- const onSubmit=vi.fn();render(board(viewOf(state),onSubmit));
- fireEvent.click(screen.getByRole('button',{name:'Review upkeep',exact:true}));
- expect(screen.getByRole('heading',{name:'Round 1 upkeep'})).toBeVisible();
- expect(within(screen.getByRole('complementary',{name:'Selection and action details'})).getByRole('button',{name:'Colonize',exact:true})).toBeEnabled();
+ const view=viewOf(state),onSubmit=vi.fn();
+ expect(view.pendingDecision).toBeNull();
+ expect(view.waitingFor).toBeNull();
+ render(board(view,onSubmit));
+ const settlement=within(screen.getByRole('region',{name:'Upkeep settlement'}));
+ expect(settlement.getByRole('heading',{name:'Collect income'})).toBeVisible();
+ expect(settlement.getByRole('button',{name:/^Colonize ·/})).toBeEnabled();
+ expect(settlement.getByRole('button',{name:'Collect income',exact:true})).toBeEnabled();
+ expect(screen.queryByRole('region',{name:/Bankruptcy/})).toBeNull();
+ expect(onSubmit).not.toHaveBeenCalled();
+});
+it.each([false,true])('waits after collecting income while another player resolves bankruptcy (mobile=%s)',mobile=>{
+ mobileViewport(mobile);
+ const state=fixture(['a']);
+ state.pendingDecision={id:'bankruptcy-b',kind:'bankruptcy',owner:'b',shortfall:3,abandonableSectorIds:[state.sectors.find(sector=>sector.owner==='b')!.id]};
+ const view=viewOf(state),onSubmit=vi.fn();
+ expect(view.pendingDecision).toBeNull();
+ expect(view.waitingFor).toBeNull();
+ render(board(view,onSubmit));
+ expect(screen.getAllByText('Upkeep complete',{exact:true}).length).toBeGreaterThan(0);
+ expect(screen.getAllByText('1 / 3 ready',{exact:true}).length).toBeGreaterThan(0);
+ expect(screen.queryByRole('region',{name:'Upkeep settlement'})).toBeNull();
+ expect(screen.queryByRole('button',{name:'Collect income',exact:true})).toBeNull();
+ expect(screen.queryByRole('button',{name:'Choose action',exact:true})).toBeNull();
  expect(onSubmit).not.toHaveBeenCalled();
 });
 it('disables command-center colonization and conversion once this player has completed upkeep',()=>{
@@ -105,8 +127,8 @@ it.each([false,true])('closes mobile upkeep after accepted payment (last player=
  mobileViewport(true);const state=fixture(last?['b','c']:[]),onSubmit=vi.fn();
  state.startSeatId='a';state.firstPasser='a';
  const ui=render(board(viewOf(state),onSubmit));
- fireEvent.click(screen.getByRole('button',{name:'Review upkeep',exact:true}));
- fireEvent.click(within(screen.getByRole('complementary',{name:'Selection and action details'})).getByRole('button',{name:'Finish upkeep',exact:true}));
+ expect(screen.getAllByRole('button',{name:'Collect income',exact:true})).toHaveLength(1);
+ fireEvent.click(screen.getByRole('button',{name:'Collect income',exact:true}));
  expect(onSubmit).toHaveBeenCalledWith({type:'finish-upkeep'});
  const result=processGameCommand(state,'a',{type:'finish-upkeep'});
  expect(result.ok).toBe(true);if(!result.ok)return;
@@ -116,7 +138,8 @@ it.each([false,true])('closes mobile upkeep after accepted payment (last player=
  if(last)expect(view.activeSeatId).toBe('a');
  ui.rerender(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="Saved" onSubmit={onSubmit} onMenu={()=>{}} lastAcceptedCommand={{revision:view.revision,type:'finish-upkeep'}}/>);
  expect(screen.queryByRole('navigation',{name:'Current action'})).toBeNull();
- expect(screen.queryByRole('heading',{name:'Round 1 upkeep'})).toBeNull();
+ expect(screen.queryByRole('region',{name:'Upkeep settlement'})).toBeNull();
+ expect(screen.queryByRole('button',{name:'Collect income',exact:true})).toBeNull();
  if(last)expect(screen.getByRole('button',{name:'Choose action',exact:true})).toBeVisible();
  else expect(screen.getAllByText('Upkeep complete',{exact:true}).length).toBeGreaterThan(0);
 });

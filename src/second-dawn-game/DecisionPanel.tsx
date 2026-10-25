@@ -74,7 +74,7 @@ export default function DecisionPanel({
 }: Props) {
   const [values, setValues] = useState<Record<string, string>>({});
   const neutronBombs = decision.kind === "bombardment" && activeNeutronBombs(view, decision);
-  const [selected, setSelected] = useState<string[]>(() => neutronBombs && decision.kind === "bombardment" ? decision.squareIds.slice(0, decision.hits) : []);
+  const [selected, setSelected] = useState<string[]>(() => decision.kind === "initiative-order" ? [...decision.groupIds] : neutronBombs && decision.kind === "bombardment" ? decision.squareIds.slice(0, decision.hits) : []);
   const value = (key: string, fallback = "") => values[key] ?? fallback;
   const set = (key: string, next: string) =>
     setValues((v) => ({ ...v, [key]: next }));
@@ -109,7 +109,7 @@ export default function DecisionPanel({
     case "diplomacy":
     case "diplomacy-window":
     case "reputation":
-      return <EconomyDecision decision={decision} view={view} candidates={candidates} reputation={reputation} disabled={disabled} onSubmit={onSubmit} />;
+      return <EconomyDecision key={decision.id} decision={decision} view={view} candidates={candidates} reputation={reputation} disabled={disabled} onSubmit={onSubmit} />;
     case "combat-allocation": {
       const dice = decision.dice.filter((d) => d.targets.length);
       valid = dice.every((d) =>
@@ -166,10 +166,10 @@ export default function DecisionPanel({
     case "initiative-order":
       valid = selected.length === decision.groupIds.length;
       choice = { kind: "initiative-order", groupIds: selected };
-      fields = <InitiativeQueue view={view} groupIds={decision.groupIds} selected={selected} onToggle={toggle} />;
+      fields = <InitiativeQueue view={view} groupIds={decision.groupIds} selected={selected} onReorder={setSelected} disabled={disabled} />;
       break;
     case "colonization":
-      return view ? <ColonizationPlanner view={view} candidates={candidates} disabled={disabled} decision={decision} onSubmit={onSubmit} /> : <p role="alert">Reconnect to restore the planet board for this colonization decision.</p>;
+      return view ? <ColonizationPlanner key={decision.id} view={view} candidates={candidates} disabled={disabled} decision={decision} onSubmit={onSubmit} /> : <p role="alert">Reconnect to restore the planet board for this colonization decision.</p>;
   }
   return (
     <section className={`dg-decision ${decision.kind === "combat-allocation" ? "dg-combat-allocation" : ""}`}>
@@ -183,12 +183,8 @@ export default function DecisionPanel({
           onSubmit({ type: "resolve", decisionId: decision.id, choice })
         }
       >
-        {decision.kind === "combat-allocation" ? "Resolve volley" : decision.kind === "bombardment" ? selected.length ? `Confirm: destroy ${selected.length} population` : "Confirm: spare population" : "Confirm choice"}
+        {decision.kind === "combat-allocation" ? "Resolve volley" : decision.kind === "bombardment" ? selected.length ? `Destroy ${selected.length} population` : "Spare population" : "Set firing order"}
       </button>
-      <p className="sd-muted">
-        You may edit this choice until confirmation. Draws and rolls already
-        committed cannot be undone.
-      </p>
     </section>
   );
 }

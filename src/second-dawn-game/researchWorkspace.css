@@ -22,3 +22,5 @@
 .dg-research-developments .dg-development-price svg{width:25px;height:25px}
 .dg-research-developments .sd-tech-card button{margin-top:auto;align-self:flex-start}
 @media(max-width:600px){.dg-research-developments>.sd-tech-grid{grid-template-columns:1fr}.dg-research-developments .sd-tech-card{padding:16px}}
+
+.dg-research-workspace button,.dg-research-workspace summary{min-height:44px}

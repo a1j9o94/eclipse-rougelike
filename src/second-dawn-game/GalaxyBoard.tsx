@@ -7,7 +7,7 @@ import {displayedWormholes} from './visibleConnections';
 import type {BuildOrderItem} from './buildPlanning';
 import type {MovementRoutePreview} from './movementPlanning';
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import type { SpectatorView, PlayerView, Ship } from "../../shared/eclipse/types";
+import type { GameCommand, SpectatorView, PlayerView, Ship } from "../../shared/eclipse/types";
 import { getFaction } from "../../shared/eclipse/catalog";
 import { sectorDefinition } from "../../shared/eclipse/sectors";
 import { adjacentPosition, connectionBetween } from "../../shared/eclipse/geometry";
@@ -26,6 +26,8 @@ interface Props {
   showPrintedWormholes?:boolean;
   plannedBuilds?:readonly BuildOrderItem[];
   plannedMoves?:readonly MovementRoutePreview[];
+  plannedInfluence?:Extract<GameCommand,{type:'influence'}>|null;
+  plannedColonies?:readonly Extract<GameCommand,{type:'colonize'}>['placements'][number][];
   onSelectBuildItem?:(id:string)=>void;
   onInspectFleet?:(sectorId:string)=>void;
   view: PlayerView|SpectatorView;
@@ -64,7 +66,7 @@ const hex = Array.from(
 export default function GalaxyBoard({
   view,
   showPrintedWormholes=false,
-  plannedBuilds=[],plannedMoves=[],onSelectBuildItem,onInspectFleet,
+  plannedBuilds=[],plannedMoves=[],plannedInfluence=null,plannedColonies=[],onSelectBuildItem,onInspectFleet,
   candidates,
   selected,
   legalTargetIds = [],
@@ -301,6 +303,15 @@ export default function GalaxyBoard({
                     <title>Controlled by {owner.name}</title>
                   </g>
                 )}
+                {viewer&&plannedInfluence?.addSectorIds.includes(s.id)&&<g transform="translate(0 -24)" className="dg-draft-influence" role="img" aria-label={`Planned influence disc in sector ${s.tileId}`}>
+                  <circle r="15" fill={seatColor(viewer)} fillOpacity=".3" stroke="#e7e5d6" strokeWidth="2" strokeDasharray="4 3"/>
+                  <g transform="translate(-10 -10) scale(.8333)" color={seatColor(viewer)}><FactionSymbol faction={viewer.faction}/></g>
+                  <text x="14" y="-10" fill="#e7e5d6" fontSize="12" fontWeight="700">+</text><title>Planned control · not submitted</title>
+                </g>}
+                {viewer&&plannedInfluence?.removeSectorIds.includes(s.id)&&<g transform="translate(0 -24)" className="dg-draft-influence is-withdrawal" role="img" aria-label={`Withdraw influence disc from sector ${s.tileId}`}>
+                  <circle r="17" fill="#07121c" fillOpacity=".35" stroke="#f1b98b" strokeWidth="2" strokeDasharray="4 3"/>
+                  <path d="M-10 10 10 -10" stroke="#f1b98b" strokeWidth="3"/><title>Planned withdrawal · control and population remain until submitted</title>
+                </g>}
                 {visibleGroups.map((group,index)=>{
                   const info=ownerInfo(group.owner), two=groups.length>1;
                   const fx=two?(index%2?21:-21):0,fy=Math.floor(index/2)*20;
@@ -318,7 +329,7 @@ export default function GalaxyBoard({
                 })}
                 {compact&&!detail&&fleets.length>0&&<g className="dg-mobile-fleet" transform="translate(0 8)" role="img" aria-label={`${fleets.length} ships; select sector for ship types`}><rect x="-29" y="-14" width="58" height="28" rx="6" fill="#07111d" stroke={ownerInfo(groups[0].owner).color} strokeWidth="2"/><path d="M-24 7 -17 -7 -10 7 -17 3Z M-13 3 -6 -11 1 3 -6 -1Z" fill={ownerInfo(groups[0].owner).color}/>{tilePixels>=40?<text x="14" y="7" textAnchor="middle" fill="#f0e3bc" fontSize="23" fontWeight="700">{fleets.length}</text>:<circle cx="15" r="6" fill="#f0e3bc"/>}</g>}
                 {(!compact||detail)&&groups.length>4&&<g transform="translate(21 20)" className="dg-map-fleet-overflow"><rect x="-20" y="-9" width="40" height="18" rx="3" fill="#152331" stroke="#93a7b8"/><text y="3" textAnchor="middle" fill="#e9dcc2" fontSize="8">+{groups.length-3} types</text><title>Select sector to inspect all {groups.length} fleet groups</title></g>}
-                {(detail||!compact||tilePixels>=70) &&
+                {(detail||!compact||tilePixels>=70||viewer&&plannedColonies.some(placement=>placement.sectorId===s.id)) &&
                   definition.population.map((square, index) => (
                     <g
                       key={index}
@@ -344,6 +355,9 @@ export default function GalaxyBoard({
                           strokeWidth=".7"
                         />
                       )}
+                      {viewer&&plannedColonies.filter(placement=>placement.sectorId===s.id&&placement.squareId===`p${index}`).map(placement=><g key={placement.squareId} className="dg-draft-population" role="img" aria-label={`Planned ${placement.resource} population on ${placement.squareId} in sector ${s.tileId}`}>
+                        <rect x="1" y="-1" width="7" height="7" fill={seatColor(viewer)} fillOpacity=".4" stroke="#fff4cb" strokeWidth="1" strokeDasharray="2 1"/><title>Planned {placement.resource} colony · not submitted</title>
+                      </g>)}
                       {square.advanced && (
                         <rect
                           x="-6.5"
@@ -385,6 +399,9 @@ export default function GalaxyBoard({
                   {owner.faction?.id==='exiles'?<svg x="-10" y="-10" width="20" height="20" viewBox="0 0 96 96" className="dg-map-orbital"><ShipSilhouette type="starbase" faction="exiles"/></svg>:<svg x="-11" y="-10" width="22" height="20" viewBox="0 0 96 96"><StructureSilhouette kind="orbital"/></svg>}
                   <title>Orbital: one money or science population square</title>
                 </g>}
+                {viewer&&plannedColonies.filter(placement=>placement.sectorId===s.id&&placement.squareId==='orbital').map(placement=><g key={placement.squareId} transform="translate(-29 29)" className="dg-draft-population" role="img" aria-label={`Planned ${placement.resource} population on orbital in sector ${s.tileId}`}>
+                  <rect x="2" y="2" width="8" height="8" fill={seatColor(viewer)} fillOpacity=".4" stroke="#fff4cb" strokeWidth="1.2" strokeDasharray="2 1"/><title>Planned {placement.resource} Orbital colony · not submitted</title>
+                </g>)}
                 {s.monolith && <g transform="translate(29 29)" className="dg-map-structure" role="img" aria-label="Monolith: 3 victory points">
                   <svg x="-9" y="-10" width="18" height="20" viewBox="0 0 96 96"><StructureSilhouette kind="monolith"/></svg>
                   <title>Monolith: 3 victory points</title>

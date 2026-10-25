@@ -1,3 +1,5 @@
+import {useState} from 'react';
+import {automaticCombatAllocation} from '../../shared/eclipse/combatAutomation';
 import FactoryBadge from './FactoryBadge';
 import { researchedTechnologyIds } from '../../shared/eclipse/technologies';
 import { getFaction, type FactionId } from "../../shared/eclipse/catalog";
@@ -37,6 +39,18 @@ export function CombatVolleyAllocator({ view, decision, targetLabels, values, se
   motionEnabled?: boolean;
 }) {
   const [dice3dEnabled] = useDice3dEnabled();
+  const [allocationError,setAllocationError]=useState('');
+  const autoAssign=()=>{
+    if(!view)return;
+    try {
+      const {allocations}=automaticCombatAllocation(view,decision);
+      for(const die of decision.dice) {
+        if(die.split)for(const target of die.targets)setValue(`${die.id}/${target}`,String(allocations.filter(item=>item.dieId===die.id&&item.targetId===target).reduce((sum,item)=>sum+(item.damage??0),0)));
+        else setValue(die.id,allocations.find(item=>item.dieId===die.id)?.targetId??'');
+      }
+      setAllocationError('');
+    } catch {setAllocationError('Inspect the current targets before assigning this volley.');}
+  };
   const actionable = decision.dice.filter((die) => die.targets.length && die.hitTargets?.length !== 0);
   const selectedId = values.__selectedDie || actionable.find((die) => !values[die.id])?.id || actionable[0]?.id || "";
   const selected = decision.dice.find((die) => die.id === selectedId);
@@ -71,12 +85,14 @@ export function CombatVolleyAllocator({ view, decision, targetLabels, values, se
       return <article className={`dg-volley-target${hit === false ? " is-miss" : ""}`} key={targetId}>
         <ShipCard view={view} targetId={targetId} label={targetLabels[targetId] ?? targetId} selected={false} hit={hit} onClick={() => selected && !selected.split && selected.hitTargets?.length !== 0 && setValue(selected.id, targetId)}/>
         <div className="dg-target-projection"><span>{hp === undefined ? "HP unknown" : uncertainDamage ? `${hp} HP → unknown` : `${hp} HP → ${Math.max(0, hp-assignedDamage)} HP`}</span><span>{assignedDamage} assigned{uncertainDamage ? ` · +${uncertainDamage} uncertain` : hp !== undefined && assignedDamage > hp ? ` · ${assignedDamage-hp} excess` : ""}</span></div>
-        <p>{explanation}</p>
+        <details><summary>Hit calculation</summary><p>{explanation}</p></details>
         <div className="dg-target-dice">{dice.map((die) => <button type="button" key={die.id} aria-label={`Remove die ${decision.dice.indexOf(die)+1} from ${targetLabels[targetId] ?? targetId}`} onClick={() => setValue(die.id, "")}><EclipseDieFace color={die.weaponColor??"#bac0ce"} face={die.face} decorative/> ×</button>)}</div>
       </article>;
     })}
   </div>;
   return <div className="dg-volley-workspace">
+    {view&&<div className="dg-auto-assign"><button type="button" onClick={autoAssign}>Auto assign</button><small>Adjust any assignment before resolving.</small></div>}
+    {allocationError&&<p role="status">{allocationError}</p>}
     <DiceRoll3D rolls={decision.dice.map(die => ({ id: die.id, face: die.face, color: die.weaponColor ?? "#bac0ce" }))} rollId={JSON.stringify([decision.battleId, decision.dice.map(die => [die.id, die.face])])} enabled={dice3dEnabled && motionEnabled}>
     <div className="dg-dice-tray" role="group" aria-label="Rolled attack dice">
       <header><strong>Volley tray</strong><small>Select a die, then choose its target.</small></header>
@@ -294,35 +310,33 @@ export function RetreatCards({
   );
 }
 
-export function InitiativeQueue({
-  view,
-  groupIds,
-  selected,
-  onToggle,
-}: {
-  view?: PlayerView;
-  groupIds: readonly string[];
-  selected: readonly string[];
-  onToggle: (id: string) => void;
+export function InitiativeQueue({view,groupIds,selected,onReorder,disabled=false}:{
+ view?:PlayerView;
+ groupIds:readonly string[];
+ selected:readonly string[];
+ onReorder:(ids:string[])=>void;
+ disabled?:boolean;
 }) {
-  return (
-    <div className="dg-initiative-queue" role="group" aria-label="Tied firing groups">
-      <p>Click groups in firing order. Click a queued group again to remove it.</p>
-      {groupIds.map((id) => {
-        const [owner, typeValue] = id.split("/");
-        const shipType = typeValue in shipNames ? typeValue as Ship["type"] : undefined;
-        const order = selected.indexOf(id);
-        const label = shipType ? `${ownerName(view, owner)} ${shipClassName(shipType,view?.seats.find(seat=>seat.id===owner)?.faction)}` : id;
-        return (
-          <button key={id} type="button" className={`dg-initiative-card${order >= 0 ? " is-selected" : ""}`} aria-pressed={order >= 0} aria-label={order >= 0 ? `Remove ${label} from firing order` : `Add ${label} to firing order`} onClick={() => onToggle(id)}>
-            <span className="dg-initiative-order">{order >= 0 ? order + 1 : "—"}</span>
-            {shipType && <span className="dg-combat-ship-art"><ShipArt type={shipType} faction={view?.seats.find(seat => seat.id === owner)?.faction} /></span>}
-            <span><strong>{label}</strong><small>{order >= 0 ? "Queued" : "Choose firing position"}</small></span>
-          </button>
-        );
-      })}
-    </div>
-  );
+ const order=[...selected.filter(id=>groupIds.includes(id)),...groupIds.filter(id=>!selected.includes(id))];
+ const move=(index:number,offset:number)=>{
+  const next=[...order],destination=index+offset;
+  if(disabled||destination<0||destination>=next.length)return;
+  [next[index],next[destination]]=[next[destination],next[index]];
+  onReorder(next);
+ };
+ return <div className="dg-initiative-queue" role="group" aria-label="Tied firing groups">
+  <ol className="dg-initiative-strip">{order.map((id,index)=>{
+   const [owner,typeValue]=id.split('/');
+   const shipType=typeValue in shipNames?typeValue as Ship['type']:undefined;
+   const label=shipType?`${ownerName(view,owner)} ${shipClassName(shipType,view?.seats.find(seat=>seat.id===owner)?.faction)}`:id;
+   return <li className="dg-initiative-card is-selected" key={id}>
+    <span className="dg-initiative-order">{index+1}</span>
+    {shipType&&<span className="dg-combat-ship-art"><ShipArt type={shipType} faction={view?.seats.find(seat=>seat.id===owner)?.faction}/></span>}
+    <strong>{label}</strong>
+    <div><button type="button" aria-label={`Move ${label} earlier`} disabled={disabled||index===0} onClick={()=>move(index,-1)}>↑</button><button type="button" aria-label={`Move ${label} later`} disabled={disabled||index===order.length-1} onClick={()=>move(index,1)}>↓</button></div>
+   </li>;
+  })}</ol>
+ </div>;
 }
 
 export function BombardmentTargets({
@@ -352,7 +366,7 @@ export function BombardmentTargets({
       <p><strong>Neutron Bombs available.</strong> Destroy all {allTargets.length} population automatically; no bombardment dice were rolled.</p>
       <div className="dg-bombardment-actions">
         <button type="button" aria-pressed={selected.length > 0} onClick={() => onSelect(allTargets)}>Destroy all {allTargets.length} population with Neutron Bombs</button>
-        <button type="button" aria-pressed={selected.length === 0} onClick={() => onSelect([])}>Spare population</button>
+        <button type="button" aria-pressed={selected.length === 0} onClick={() => onSelect([])}>Clear targets</button>
       </div>
     </div>
   );
@@ -361,7 +375,7 @@ export function BombardmentTargets({
       <p>{selected.length} / {hits} population hits assigned in Sector {sector?.tileId ?? sectorId}. Population attacks are optional; choosing no targets spares all population.</p>
       <div className="dg-bombardment-actions">
         <button type="button" onClick={() => onSelect(allTargets)}>Destroy all available</button>
-        <button type="button" onClick={() => onSelect([])}>Spare population</button>
+        <button type="button" onClick={() => onSelect([])}>Clear targets</button>
       </div>
       <div className="dg-planet-target-grid">
         {squareIds.map((id) => {

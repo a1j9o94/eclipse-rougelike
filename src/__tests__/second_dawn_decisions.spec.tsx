@@ -200,10 +200,9 @@ it("uses ship cards and an editable initiative queue instead of raw combat selec
       onSubmit={submit}
     />,
   );
-  fireEvent.click(screen.getByRole("button", { name: "Add g2 to firing order" }));
-  fireEvent.click(screen.getByRole("button", { name: "Add g1 to firing order" }));
-  expect(screen.getByRole("button", { name: "Remove g2 from firing order" })).toHaveAttribute("aria-pressed", "true");
-  fireEvent.click(screen.getByRole("button", { name: "Confirm choice" }));
+  fireEvent.click(screen.getByRole("button", { name: "Move g2 earlier" }));
+  expect(submit).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Set firing order" }));
   expect(submit).toHaveBeenCalledWith({
     type: "resolve", decisionId: "initiative", choice: { kind: "initiative-order", groupIds: ["g2", "g1"] },
   });
@@ -219,10 +218,10 @@ it("uses population target buttons for bombardment", () => {
       onSubmit={submit}
     />,
   );
-  expect(screen.getByRole("button", { name: "Confirm: spare population" })).toBeEnabled();
+  expect(screen.getByRole("button", { name: "Spare population" })).toBeEnabled();
   expect(screen.getByText(/Population attacks are optional/)).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "Target population square p1" }));
-  fireEvent.click(screen.getByRole("button", { name: "Confirm: destroy 1 population" }));
+  fireEvent.click(screen.getByRole("button", { name: "Destroy 1 population" }));
   expect(submit).toHaveBeenCalledWith({
     type: "resolve", decisionId: "bomb", choice: { kind: "bombardment", squareIds: ["p1"] },
   });
@@ -238,12 +237,12 @@ it("identifies active Neutron Bombs and offers explicit destroy-all and spare ch
   render(<DecisionPanel view={view} decision={{ id: "neutron", owner: "human", kind: "bombardment", sectorId: sector.id, hits: squareIds.length, squareIds }} reputation={[]} disabled={false} onSubmit={submit}/>);
   expect(screen.getByText(/Neutron Bombs available/)).toBeTruthy();
   expect(screen.getByText(/no bombardment dice were rolled/)).toBeTruthy();
-  expect(screen.getByRole("button", { name: `Confirm: destroy ${squareIds.length} population` })).toBeEnabled();
+  expect(screen.getByRole("button", { name: `Destroy ${squareIds.length} population` })).toBeEnabled();
   expect(screen.queryByRole("button", { name: /Target population square/ })).toBeNull();
-  fireEvent.click(screen.getByRole("button", { name: "Spare population" }));
-  expect(screen.getByRole("button", { name: "Confirm: spare population" })).toBeEnabled();
+  fireEvent.click(screen.getByRole("button", { name: "Clear targets" }));
+  expect(screen.getByRole("button", { name: "Spare population" })).toBeEnabled();
   fireEvent.click(screen.getByRole("button", { name: `Destroy all ${squareIds.length} population with Neutron Bombs` }));
-  fireEvent.click(screen.getByRole("button", { name: `Confirm: destroy ${squareIds.length} population` }));
+  fireEvent.click(screen.getByRole("button", { name: `Destroy ${squareIds.length} population` }));
   expect(submit).toHaveBeenCalledWith({ type: "resolve", decisionId: "neutron", choice: { kind: "bombardment", squareIds } });
 });
 

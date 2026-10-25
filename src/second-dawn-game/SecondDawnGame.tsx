@@ -85,6 +85,8 @@ function ConnectedGame() {
   const loginPlayer=useAction(api.eclipsePlayers.loginPlayer);
   const submit = useMutation(api.eclipseMatches.submitCommand);
   const queueCommand = useMutation(api.eclipseMatches.queueCommand);
+  const setCombatAutomation=useMutation(api.eclipseMatches.setCombatAutomation);
+  const automationRequest=useRef<{sessionKey:string;request:{requestId:string;battleId:string;enabled:boolean;expectedRevision:number;expectedControlVersion:number}}|null>(null);
   const [lastQueuedCommand,setLastQueuedCommand]=useState<{commandId:string;type:GameCommand['type'];sessionKey:string}|undefined>();
   const lastQueueRequest=useRef<{sessionKey:string;request:{commandId:string;expectedRevision:number;command:GameCommand|null}}|null>(null);
   const retryAi = useMutation(api.eclipseMatches.retryAi);
@@ -338,6 +340,19 @@ function ConnectedGame() {
       setStatus(`${error instanceof Error?error.message:'Connection interrupted.'} Retry the same choice to recover its confirmation.`);
     }finally{setBusy(false);}
   }
+  async function changeCombatAutomation(enabled:boolean){
+    if(!credential||!matchId||!view?.battle?.id||!recovery.ready||busy||gameControls.blockedReason||gameControls.working)return;
+    const prior=automationRequest.current;
+    const request=prior?.sessionKey===sessionKey&&prior.request.enabled===enabled&&prior.request.battleId===view.battle.id?prior.request:{requestId:crypto.randomUUID(),battleId:view.battle.id,enabled,expectedRevision:view.revision,expectedControlVersion:view.combatAutomation?.controlVersion??0};
+    automationRequest.current={sessionKey,request};setBusy(true);
+    try{
+      const result=await setCombatAutomation({credential,matchId,...request});
+      if(activeSession.current!==sessionKey)return;
+      automationRequest.current=null;
+      setStatus(result.ok?(enabled?'Auto fight enabled for this battle.':'Auto fight paused.'):result.error.message);
+    }catch(error){if(activeSession.current===sessionKey)setStatus(error instanceof Error?error.message:'Could not update Auto fight. Retry to recover the change.');}
+    finally{if(activeSession.current===sessionKey)setBusy(false);}
+  }
   const takeover=view?.multiplayer?.timer?.targetSeatId===view?.viewerSeatId&&(clockExpired||['timed-out','failed'].includes(view?.multiplayer?.timer?.status??''));
   if(watchingRoom&&!roomOverview)return spectatorView
     ? <SpectatorBoard key={roomToken!} view={spectatorView} history={spectatorHistory} connected={connected&&browserOnline} playerNames={spectatorView.playerNames} timer={spectatorView.timer} lifecycle={spectatorView.matchLifecycle} onHome={()=>openHome()} onRoom={()=>setRoomOverview(true)}/>
@@ -349,6 +364,8 @@ function ConnectedGame() {
         matchId={matchId}
         lastAcceptedCommand={acceptedCommand}
         queuedAction={view.queuedAction}
+        combatAutomation={view.combatAutomation}
+        onCombatAutomation={enabled=>{void changeCombatAutomation(enabled);}}
         lastQueuedCommand={lastQueuedCommand?.sessionKey===sessionKey?lastQueuedCommand:undefined}
         onQueue={command=>{void queue(command);}}
         recapOpen={compact&&!!recap.snapshot?.open}
@@ -415,8 +432,8 @@ function ConnectedGame() {
           <section className="dg-room dg-room-creation"><h2>Create multiplayer room</h2><div className="dg-room-creation-grid"><FactionPicker rulesMode={rulesMode} ruleOptions={ruleOptions} selected={faction} onSelect={setFaction} disabled={busy} profile={factionProfile} pieceColor={pieceColor} onPieceColorChange={setPieceColor}/><div><RoomSettingsEditor onRulesChange={selectRules} onProfileChange={chooseProfile} settings={{...DEFAULT_ROOM_SETTINGS,factionProfile,rulesMode,ruleOptions,warpPortals,riftCannons,minorSpecies,showCombatOdds}} disabled={!connected||!credential||busy} onSave={newRoom} saveLabel="Create room"/></div></div><button onClick={()=>setCreatingRoom(false)}>Back</button></section>
         ) : creating ? (
           <section className="dg-setup">
-            <h2>New game</h2><FactionProfilePicker value={factionProfile} rules={ruleConfig} onChange={chooseProfile} disabled={busy}/>
-            <GameRuleSettings value={{...ruleConfig,warpPortals,riftCannons,minorSpecies,showCombatOdds}} disabled={busy} onChange={selectRules}/>
+            <h2>New game</h2><details className="dg-advanced-setup"><summary>Advanced rules</summary><FactionProfilePicker value={factionProfile} rules={ruleConfig} onChange={chooseProfile} disabled={busy}/>
+            <GameRuleSettings value={{...ruleConfig,warpPortals,riftCannons,minorSpecies,showCombatOdds}} disabled={busy} onChange={selectRules}/></details>
             <p className="dg-solo-wait">Solo · Wait for me. No turn timer; your game waits until you return.</p>
             <div className="dg-solo-setup-grid">
             <FactionPicker rulesMode={rulesMode} ruleOptions={ruleOptions} selected={faction} onSelect={setFaction} disabled={busy} profile={factionProfile} pieceColor={pieceColor} onPieceColorChange={setPieceColor}/>{factionRulesMode(ruleConfig)==='less-random-v1'&&getFaction(faction).species==='terran'&&<section className="dg-field"><strong>Alien species ban</strong><ChoiceCards label="Alien species ban" value={bannedFaction} disabled={busy} onChange={value=>setBannedFaction(value as FactionId)} options={listFactionsForProfile(factionProfile).filter(f=>f.species==='alien').map(f=>({value:f.id,label:f.name,visual:<FactionSymbol faction={f.id}/>}))}/></section>}
@@ -449,6 +466,9 @@ function ConnectedGame() {
           </section>
         ) : (
           <>
+            <SavedGames matches={matches} rooms={rooms} onOpen={match=>{
+              store(matchKey,match.matchId);setMatchId(match.matchId);setStatus('');
+            }}/>
             <button
               className="dg-primary"
               disabled={!connected || !credential}
@@ -458,9 +478,7 @@ function ConnectedGame() {
             </button>
             <button disabled={!connected||!credential} onClick={()=>setCreatingRoom(true)}>Create multiplayer room</button>
             <button onClick={()=>setShowLeaderboard(true)}>Leaderboard</button>
-            <SavedGames matches={matches} rooms={rooms} onOpen={match=>{
-              store(matchKey,match.matchId);setMatchId(match.matchId);setStatus('');
-            }}/>
+
 
           </>
         )}

@@ -38,13 +38,13 @@ export default function ScoreWorkspace({view,scores,playerNames,onInspect,onHome
  return <div className="sd-workspace dg-score-workspace">
   <header className="dg-score-heading">
    <div><p className="sd-eyebrow">{final?`THE FINAL DAWN · ROUND ${view.round}`:'YOUR EMPIRE’S PROGRESS'}</p><h1>{final?'Final standings':'Public victory points'}</h1>
-    <p>{final?'Every discovery, alliance and conquest has left its mark.':(publicReputation?'All reputation and variant bonuses are public.':'Your empire, one achievement at a time. Reputation stays hidden until the game ends.')}</p>
+    {!final&&<small>{publicReputation?'Reputation included':'Reputation hidden until game end'}</small>}
    </div>
    {final&&<div className="dg-endgame-actions">{onPlayAgain&&<button className="sd-primary" onClick={onPlayAgain}>Play again</button>}<button onClick={onHome}>Return home</button><button onClick={onGalaxy}>View final galaxy</button></div>}
   </header>
   {final&&winners.length>0&&<div className="dg-victory-banner">
    <div className="dg-victory-emblems">{winners.map(id=><FactionSymbol key={id} faction={view.seats.find(seat=>seat.id===id)!.faction}/>)}</div>
-   <div><span className="sd-eyebrow">{winners.length>1?'SHARED VICTORY':'VICTORY'}</span><strong>{winners.map(name).join(' & ')}</strong><p>Reputation revealed · remaining resources break VP ties.</p></div>
+   <div><span className="sd-eyebrow">{winners.length>1?'SHARED VICTORY':'VICTORY'}</span><strong>{winners.map(name).join(' & ')}</strong><p>{gameRules(view).publicReputation?'Reputation included':'Reputation revealed'} · remaining resources break VP ties.</p></div>
   </div>}
   <section aria-label="Standings" className="dg-score-cards">
    {sorted.map(({score,rank})=>{

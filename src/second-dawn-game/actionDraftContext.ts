@@ -8,12 +8,14 @@ export interface ActionDraftGuard {
   clear: (keys?: readonly DraftKey[]) => void;
   markSubmitted: (command: GameCommand, receiptKind?:'accepted'|'queued') => void;
   storageAvailable: boolean;
+  canUndo: boolean;
+  undo: () => void;
 }
 export interface ActionDraftContextValue extends ActionDraftGuard {
   entries: DraftEntries;
   setValue: <K extends DraftKey>(key: K, value: SetStateAction<DraftValues[K]>, initial: DraftValues[K]) => void;
 }
-const fallback:ActionDraftContextValue={entries:{},stale:false,draftKeys:[],clear:()=>{},markSubmitted:()=>{},storageAvailable:true,setValue:()=>{}};
+const fallback:ActionDraftContextValue={entries:{},stale:false,draftKeys:[],clear:()=>{},markSubmitted:()=>{},storageAvailable:true,setValue:()=>{},canUndo:false,undo:()=>{}};
 export const ActionDraftContext=createContext<ActionDraftContextValue|null>(null);
 export function useActionDraftGuard(): ActionDraftGuard { return useContext(ActionDraftContext)??fallback; }
 /** The same component works standalone; pending decisions explicitly opt out of browser storage. */

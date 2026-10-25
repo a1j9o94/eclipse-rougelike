@@ -1,0 +1,9 @@
+.dg-combat-automation{display:flex;flex-wrap:wrap;align-items:center;gap:.65rem;padding:.75rem;border:1px solid var(--sd-border,#394753);border-radius:.65rem;background:var(--sd-panel,#111c28)}
+.dg-combat-automation>div{display:grid;gap:.2rem;flex:1;min-width:10rem}
+.dg-combat-automation small{color:var(--sd-muted,#acb8c6)}
+.dg-combat-automation>button{min-height:44px;padding:.5rem .9rem}
+.dg-combat-automation details{flex-basis:100%;font-size:.8rem}
+.dg-combat-automation summary{cursor:pointer;min-height:44px;display:flex;align-items:center}
+.dg-combat-automation p{margin:.35rem 0;max-width:65ch}
+.dg-auto-assign{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
+.dg-auto-assign button{min-height:44px}

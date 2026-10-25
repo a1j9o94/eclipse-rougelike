@@ -12,7 +12,8 @@ it.each([false,true])('restricts the passed action picker to reactions (mobile=%
  render(<Board view={view} candidates={legalCommands(view)} connected busy={false} status="Saved" onSubmit={submit} onMenu={vi.fn()}/>);
  if(mobile)fireEvent.click(screen.getByRole('button',{name:'Choose action'}));
  const controls=mobile?within(screen.getByRole('group',{name:'Choose your action'})):screen;
- for(const name of ['Explore','Influence','Research']){const button=controls.getByRole('button',{name:mobile?new RegExp(`^${name}`):name,exact:!mobile});expect(button).toBeDisabled();fireEvent.click(button);}
+ for(const name of ['Explore','Influence']){const button=controls.getByRole('button',{name:mobile?new RegExp(`^${name}`):name,exact:!mobile});expect(button).toBeDisabled();fireEvent.click(button);}
+ expect(controls.getByRole('button',{name:mobile?/^Research/:'Research',exact:!mobile})).toBeEnabled();
  for(const name of ['Upgrade','Build','Move'])expect(controls.getByRole('button',{name:mobile?new RegExp(`^${name}`):name,exact:!mobile})).toBeEnabled();
  expect(submit).not.toHaveBeenCalled();
 });

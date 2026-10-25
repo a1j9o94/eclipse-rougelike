@@ -1,3 +1,4 @@
+import {automaticCombatCommand, combatAutomationPauseReason, type CombatAutomationStatus, type CombatAutomationControlResult} from '../shared/eclipse/combatAutomation';
 import {isScifiCompatible} from '../shared/eclipse/gameRules';
 import { allowsRiftCannons, factionRulesMode, validRuleOptions, type GameRuleOptions } from '../shared/eclipse/gameRules';
 import {syncLeaderboardResult} from './eclipseLeaderboardStore';
@@ -97,6 +98,8 @@ function participation(match: Doc<'eclipseMatchesV1'>, ownership: Doc<'eclipseOw
 }
 
 export interface MatchSummary {
+  /** Whether this owned seat has an action, decision, or unsettled upkeep. */
+  needsInput?: boolean;
   matchId: Id<'eclipseMatchesV1'>;
   seatId: string;
   round: number;
@@ -115,6 +118,7 @@ export type MatchSubmission =
   | { ok: false; error: ValidationError };
 
 export interface MatchPlayerView extends PlayerView {
+  combatAutomation?: CombatAutomationStatus | null;
   queuedAction?:QueuedAction|null;
   lastExecutedQueuedCommand?:QueuedActionReceipt;
   showCombatOdds?:boolean;
@@ -173,7 +177,13 @@ export const listMyMatches = query({
       const match = await ctx.db.get(ownership.matchId);
       if (!match) continue;
       const state = readState(match);
-      results.push({ participation: participation(match, ownership), matchId: match._id, seatId: ownership.seatId, round: match.round, phase: match.phase, revision: match.revision, playerCount: state.seats.length, lastSeenRevision: ownership.lastSeenRevision ?? null, updatedAt: match.updatedAt, ...(match.roomToken ? { roomToken: match.roomToken } : {}), ...(state.rulesMode?{rulesMode:state.rulesMode}:{}), ...(state.ruleOptions?{ruleOptions:state.ruleOptions}:{}) });
+      const seat=state.seats.find(candidate=>candidate.id===ownership.seatId);
+      const needsInput=participation(match,ownership)==='active'&&!!seat&&!seat.eliminated&&state.phase!=='finished'&&(
+        state.phase==='upkeep'?!(state.engine?.upkeepDone??[]).includes(ownership.seatId):
+        state.pendingDecision?state.pendingDecision.owner===ownership.seatId:
+        state.phase==='action'&&state.activeSeatId===ownership.seatId
+      );
+      results.push({ needsInput, participation: participation(match, ownership), matchId: match._id, seatId: ownership.seatId, round: match.round, phase: match.phase, revision: match.revision, playerCount: state.seats.length, lastSeenRevision: ownership.lastSeenRevision ?? null, updatedAt: match.updatedAt, ...(match.roomToken ? { roomToken: match.roomToken } : {}), ...(state.rulesMode?{rulesMode:state.rulesMode}:{}), ...(state.ruleOptions?{ruleOptions:state.ruleOptions}:{}) });
     }
     return results.sort((a, b) => b.updatedAt - a.updatedAt);
   },
@@ -199,6 +209,7 @@ export const getMatchView = query({
     const timer = room && room.humanSeatCount > 1 ? await ctx.db.query('eclipseRoomTimersV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique() : null;
     return view ? {
       ...view,
+      combatAutomation:ownership.combatAutomation?{battleId:ownership.combatAutomation.battleId,status:ownership.combatAutomation.status,reason:ownership.combatAutomation.reason,controlVersion:ownership.combatAutomation.controlVersion}:null,
       queuedAction:ownership.queuedAction?{command:ownership.queuedAction.command,status:ownership.queuedAction.status,...(ownership.queuedAction.error?{error:ownership.queuedAction.error}: {})}:null,
       ...(ownership.lastExecutedQueuedCommand?{lastExecutedQueuedCommand:{revision:ownership.lastExecutedQueuedCommand.revision,type:ownership.lastExecutedQueuedCommand.command.type}}: {}),
       showCombatOdds:match.showCombatOdds??false,
@@ -253,7 +264,7 @@ export const resignMatch = mutation({
     const ownership = await ownedSeat(ctx, args.credential, args.matchId);
     const match = await ctx.db.get(args.matchId);
     if (!ownership || !match) return { ok: false, error: { code: 'NOT_A_SEAT', message: 'This identity does not own a seat in this match.', field: null } };
-    if (!args.commandId.trim() || args.commandId.length > 200 || /^(ai|timeout|queued):/.test(args.commandId) || !Number.isSafeInteger(args.expectedRevision) || args.expectedRevision < 0) {
+    if (!args.commandId.trim() || args.commandId.length > 200 || /^(ai|timeout|queued|combat-auto):/.test(args.commandId) || !Number.isSafeInteger(args.expectedRevision) || args.expectedRevision < 0) {
       return { ok: false, error: { code: 'INVALID_COMMAND', message: 'Provide a unique command ID and valid revision.', field: null } };
     }
     const original = await ctx.db.query('eclipseMatchLifecycleV1').withIndex('by_match_command', q => q.eq('matchId', args.matchId).eq('commandId', args.commandId)).unique();
@@ -276,7 +287,7 @@ export const resignMatch = mutation({
     state.revision += 1;
     const now = Date.now();
     await ctx.db.patch(match._id, { snapshotJson: JSON.stringify(state), revision: state.revision, updatedAt: now, ...(outcome === 'abandoned' ? { lifecycle: 'abandoned' as const } : {}) });
-    await ctx.db.patch(ownership._id, { resignedAt: now, resignationOutcome: outcome, queuedAction:undefined,lastExecutedQueuedCommand:undefined });
+    await ctx.db.patch(ownership._id, { resignedAt: now, resignationOutcome: outcome, queuedAction:undefined,lastExecutedQueuedCommand:undefined,combatAutomation:undefined });
     await ctx.db.insert('eclipseMatchLifecycleV1', { matchId: match._id, actor: seat.id, commandId: args.commandId, expectedRevision: args.expectedRevision, revision: state.revision, outcome, createdAt: now });
     if (outcome === 'abandoned') {
       const room = await ctx.db.query('eclipseRoomsV1').withIndex('by_match', q => q.eq('matchId', match._id)).unique();
@@ -319,7 +330,7 @@ export const submitCommand = mutation({
     // Duplicate delivery returns its original receipt even if the current turn has since timed out.
     const original = await ctx.db.query('eclipseJournalV1').withIndex('by_match_command', q => q.eq('matchId', matchId).eq('commandId', request.commandId)).unique();
     if (!original && match.rollbackPendingId) return { ok: false, error: { code: 'ILLEGAL_ACTION', message: 'The game is paused for a shared undo request.', field: null } };
-    if (!original && /^(ai|timeout|queued):/.test(request.commandId)) return {ok:false, error:{code:'INVALID_COMMAND', message:'This command ID prefix is reserved for server actions.', field:'commandId'}};
+    if (!original && /^(ai|timeout|queued|combat-auto):/.test(request.commandId)) return {ok:false, error:{code:'INVALID_COMMAND', message:'This command ID prefix is reserved for server actions.', field:'commandId'}};
     const room = match.roomToken ? await ctx.db.query('eclipseRoomsV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique() : null;
     const timer = room && room.humanSeatCount > 1 ? await ctx.db.query('eclipseRoomTimersV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique() : null;
     if (!original && timer && (timer.upkeepSeatIds?timer.upkeepSeatIds.includes(ownership.seatId):timer.targetSeatId === ownership.seatId) && (timer.status !== 'active' || timer.deadlineAt <= Date.now())) {
@@ -355,7 +366,7 @@ export const queueCommand=mutation({
   if(!ownership||!match||ownership.resignedAt!==undefined)return reject('NOT_A_SEAT','This identity does not control a seat in this match.');
   const state=readState(match),seat=state.seats.find(s=>s.id===ownership.seatId);
   if(!seat||seat.controller!=='human'||seat.eliminated||match.lifecycle==='abandoned'||state.phase==='finished')return reject('GAME_FINISHED','This seat can no longer queue actions.');
-  if(!commandId.trim()||commandId.length>100||/^(ai|timeout|queued):/.test(commandId)||!Number.isSafeInteger(expectedRevision)||expectedRevision<0)return reject('INVALID_COMMAND','Provide a unique command ID and valid revision.');
+  if(!commandId.trim()||commandId.length>100||/^(ai|timeout|queued|combat-auto):/.test(commandId)||!Number.isSafeInteger(expectedRevision)||expectedRevision<0)return reject('INVALID_COMMAND','Provide a unique command ID and valid revision.');
   const original=await ctx.db.query('eclipseQueueRequestsV1').withIndex('by_match_command',q=>q.eq('matchId',matchId).eq('commandId',commandId)).unique(),requestJson=queueRequestKey(expectedRevision,command);
   if(original)return original.actor===seat.id&&original.requestJson===requestJson?{ok:true,duplicate:true}:reject('COMMAND_ID_REUSED','This command ID already belongs to another request.','commandId');
   const ruleCommand=await ctx.db.query('eclipseJournalV1').withIndex('by_match_command',q=>q.eq('matchId',matchId).eq('commandId',commandId)).unique(),lifecycleCommand=await ctx.db.query('eclipseMatchLifecycleV1').withIndex('by_match_command',q=>q.eq('matchId',matchId).eq('commandId',commandId)).unique();
@@ -415,6 +426,7 @@ async function executeQueuedAction(ctx:MutationCtx,matchId:Id<'eclipseMatchesV1'
 }
 
 export async function scheduleAi(ctx: MutationCtx, matchId: Id<'eclipseMatchesV1'>, state: GameState, preserveAttempts = false): Promise<void> {
+  await synchronizeCombatAutomation(ctx,matchId,state);
   if(await executeQueuedAction(ctx,matchId,state))return;
   const existing = await ctx.db.query('eclipseAiJobsV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique();
 
@@ -624,6 +636,116 @@ export const recoverFailedAiRevision = internalMutation({
     const job = await ctx.db.query('eclipseAiJobsV1').withIndex('by_match', q => q.eq('matchId', matchId)).unique();
     if (job?.status !== 'failed' || job.attempts !== 1 || job.timeoutToken || job.expectedRevision !== expectedRevision || !job.error?.includes('Portal transit costs 1 money.')) return null;
     await scheduleAi(ctx, matchId, readState(match), true);
+    return null;
+  },
+});
+
+/** Opt-in intent belongs to one human and one encounter, never to a device. */
+export const setCombatAutomation = mutation({
+  args: {credential:v.string(),matchId:v.id('eclipseMatchesV1'),battleId:v.string(),enabled:v.boolean(),expectedRevision:v.number(),expectedControlVersion:v.number(),requestId:v.string()},
+  handler: async (ctx,args): Promise<CombatAutomationControlResult> => {
+    const reject=(code:ValidationError['code'],message:string):CombatAutomationControlResult=>({ok:false,error:{code,message,field:null}});
+    const owner=await ownedSeat(ctx,args.credential,args.matchId),match=await ctx.db.get(args.matchId);
+    if(!owner||!match||owner.resignedAt!==undefined)return reject('NOT_A_SEAT','This identity does not control an active seat in this match.');
+    if(!args.requestId.trim()||args.requestId.length>200||!Number.isSafeInteger(args.expectedRevision)||args.expectedRevision<0||!Number.isSafeInteger(args.expectedControlVersion)||args.expectedControlVersion<0)return reject('INVALID_COMMAND','Provide a unique request and current control version.');
+    const requestJson=JSON.stringify({battleId:args.battleId,enabled:args.enabled,expectedRevision:args.expectedRevision,expectedControlVersion:args.expectedControlVersion});
+    const previous=await ctx.db.query('eclipseCombatControlRequestsV1').withIndex('by_match_request',q=>q.eq('matchId',args.matchId).eq('requestId',args.requestId)).unique();
+    if(previous)return previous.actor===owner.seatId&&previous.requestJson===requestJson?{ok:true,duplicate:true}:reject('COMMAND_ID_REUSED','This request already belongs to another control change.');
+    if(match.lifecycle==='abandoned'||match.phase==='finished')return reject('GAME_FINISHED','This game has ended.');
+    const current=owner.combatAutomation;
+    if((current?.controlVersion??0)!==args.expectedControlVersion)return reject('STALE_REVISION','Auto fight changed in another session. Review its current status.');
+    // A pause can race an accepted volley: stop future work without undoing it.
+    if(args.enabled&&match.revision!==args.expectedRevision)return reject('STALE_REVISION','The battle changed. Review the current fleet before enabling Auto fight.');
+    const state=readState(match),view=getPlayerView(state,owner.seatId),battle=state.engine?.battle;
+    if(state.seats.find(seat=>seat.id===owner.seatId)?.controller!=='human')return reject('NOT_A_SEAT','This seat is no longer under your control.');
+    if(!view||!battle||battle.id!==args.battleId||![battle.attacker,battle.defender].includes(owner.seatId))return reject('ILLEGAL_ACTION','Choose your current battle to control Auto fight.');
+    const shipIds=state.ships.filter(ship=>ship.owner===owner.seatId&&ship.sectorId===battle.sectorId).map(ship=>ship.id);
+    if(args.enabled) {
+      if(match.rollbackPendingId)return reject('ILLEGAL_ACTION','Resolve the shared undo before resuming Auto fight.');
+      if(!shipIds.length||combatAutomationPauseReason(view,args.battleId,shipIds))return reject('ILLEGAL_ACTION','Resolve the current battle choice before resuming Auto fight.');
+      const timer=await ctx.db.query('eclipseRoomTimersV1').withIndex('by_match',q=>q.eq('matchId',args.matchId)).unique();
+      if(timer?.targetSeatId===owner.seatId&&(timer.status!=='active'||timer.deadlineAt<=Date.now()))return reject('ILLEGAL_ACTION','The turn timer has expired.');
+    }
+    await ctx.db.patch(owner._id,{combatAutomation:{battleId:args.battleId,shipIds,controlVersion:args.expectedControlVersion+1,status:args.enabled?'running':'paused',reason:args.enabled?null:'manual'}});
+    await ctx.db.insert('eclipseCombatControlRequestsV1',{matchId:args.matchId,requestId:args.requestId,actor:owner.seatId,requestJson,createdAt:Date.now()});
+    if(args.enabled)await synchronizeCombatAutomation(ctx,args.matchId,state);
+    return {ok:true,duplicate:false};
+  },
+});
+
+/** Reconcile every accepted update, including opponent turns, before scheduling. */
+async function synchronizeCombatAutomation(ctx:MutationCtx,matchId:Id<'eclipseMatchesV1'>,state:GameState):Promise<void> {
+  const match=await ctx.db.get(matchId);if(!match)return;
+  const owners=await ctx.db.query('eclipseOwnershipV1').withIndex('by_match_guest',q=>q.eq('matchId',matchId)).collect();
+  const timer=await ctx.db.query('eclipseRoomTimersV1').withIndex('by_match',q=>q.eq('matchId',matchId)).unique();
+  for(const owner of owners) {
+    const intent=owner.combatAutomation;if(!intent||intent.status!=='running')continue;
+    const view=getPlayerView(state,owner.seatId);
+    if(owner.resignedAt!==undefined||match.lifecycle==='abandoned'||state.seats.find(seat=>seat.id===owner.seatId)?.controller!=='human'||!view) {
+      await ctx.db.patch(owner._id,{combatAutomation:undefined});continue;
+    }
+    const reason=match.rollbackPendingId?'undo':combatAutomationPauseReason(view,intent.battleId,intent.shipIds)
+      ??(timer?.targetSeatId===owner.seatId&&(timer.status!=='active'||timer.deadlineAt<=Date.now())?'timeout':null);
+    if(reason) {
+      await ctx.db.patch(owner._id,{combatAutomation:{...intent,status:reason==='complete'?'finished':'paused',reason,scheduledRevision:undefined,expiresAt:undefined}});continue;
+    }
+    // Waiting for another player does not relinquish intent or expose their choice.
+    if(!view.pendingDecision||intent.scheduledRevision===state.revision)continue;
+    await ctx.db.patch(owner._id,{combatAutomation:{...intent,scheduledRevision:state.revision,expiresAt:Date.now()+30000}});
+    const work={matchId,seatId:owner.seatId,battleId:intent.battleId,controlVersion:intent.controlVersion,expectedRevision:state.revision};
+    await ctx.scheduler.runAfter(350,internal.eclipseMatches.runCombatAutomation,work);
+    await ctx.scheduler.runAfter(30000,internal.eclipseMatches.expireCombatAutomation,work);
+  }
+}
+
+/** One transaction, one current eligible choice. Revision and control generation
+ * checks make retries, double dispatch, pause races and restored saves harmless. */
+export const runCombatAutomation=internalMutation({
+  args:{matchId:v.id('eclipseMatchesV1'),seatId:v.string(),battleId:v.string(),controlVersion:v.number(),expectedRevision:v.number()},
+  returns:v.null(),
+  handler:async(ctx,args):Promise<null>=>{
+    const match=await ctx.db.get(args.matchId);
+    if(!match||match.lifecycle==='abandoned'||match.rollbackPendingId||match.revision!==args.expectedRevision)return null;
+    const owner=(await ctx.db.query('eclipseOwnershipV1').withIndex('by_match_guest',q=>q.eq('matchId',args.matchId)).collect()).find(candidate=>candidate.seatId===args.seatId);
+    const intent=owner?.combatAutomation;
+    if(!owner||owner.resignedAt!==undefined||!intent||intent.status!=='running'||intent.battleId!==args.battleId||intent.controlVersion!==args.controlVersion||intent.scheduledRevision!==args.expectedRevision)return null;
+    const state=readState(match);
+    await synchronizeCombatAutomation(ctx,args.matchId,state);
+    const checked=await ctx.db.get(owner._id);
+    if(checked?.combatAutomation?.status!=='running')return null;
+    const view=getPlayerView(state,owner.seatId);if(!view)return null;
+    const commandId=`combat-auto:${owner.seatId}:${args.battleId}:${args.controlVersion}:${args.expectedRevision}`;
+    const original=await ctx.db.query('eclipseJournalV1').withIndex('by_match_command',q=>q.eq('matchId',args.matchId).eq('commandId',commandId)).unique();
+    if(original)return null;
+    let result:ReturnType<typeof commitCommand>;
+    try {
+      const command=automaticCombatCommand(view);if(!command)return null;
+      result=commitCommand({state,journal:[]},owner.seatId,{commandId,expectedRevision:args.expectedRevision,command},profileVersions(state.factionProfile??'base',state.engine?.riftCannons,Boolean(state.minorSpecies)),processGameCommand);
+    } catch {
+      await ctx.db.patch(owner._id,{combatAutomation:{...intent,status:'paused',reason:'error',scheduledRevision:undefined,expiresAt:undefined}});
+      return null;
+    }
+    if(!result.ok) {
+      await ctx.db.patch(owner._id,{combatAutomation:{...intent,status:'paused',reason:'error',scheduledRevision:undefined,expiresAt:undefined}});return null;
+    }
+    // Storage/scheduling errors abort this entire transaction: never retain a
+    // partial snapshot without its journal, timer and subsequent worker.
+    await saveAccepted(ctx,args.matchId,result.aggregate.state,result.aggregate.journal[0],state.round);
+    await reconcileRoomTimerAfterCommand(ctx,match,result.aggregate.state);
+    await scheduleAi(ctx,args.matchId,result.aggregate.state);
+    return null;
+  },
+});
+
+/** A failed dispatch must become visible even when every client is disconnected. */
+export const expireCombatAutomation=internalMutation({
+  args:{matchId:v.id('eclipseMatchesV1'),seatId:v.string(),battleId:v.string(),controlVersion:v.number(),expectedRevision:v.number()},
+  returns:v.null(),
+  handler:async(ctx,args):Promise<null>=>{
+    const match=await ctx.db.get(args.matchId);if(!match||match.revision!==args.expectedRevision)return null;
+    const owner=(await ctx.db.query('eclipseOwnershipV1').withIndex('by_match_guest',q=>q.eq('matchId',args.matchId)).collect()).find(candidate=>candidate.seatId===args.seatId);
+    const intent=owner?.combatAutomation;
+    if(owner&&intent?.status==='running'&&intent.battleId===args.battleId&&intent.controlVersion===args.controlVersion&&intent.scheduledRevision===args.expectedRevision&&(intent.expiresAt??Infinity)<=Date.now())await ctx.db.patch(owner._id,{combatAutomation:{...intent,status:'paused',reason:'error',scheduledRevision:undefined,expiresAt:undefined}});
     return null;
   },
 });

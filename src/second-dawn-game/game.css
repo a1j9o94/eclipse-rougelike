@@ -728,3 +728,37 @@
 .dg-next-action p { margin:.35rem 0 0; }
 .dg-next-action button { flex-shrink:0; }
 @media(max-width:600px) { .dg-next-action { align-items:flex-start; flex-wrap:wrap; margin:.4rem; } }
+
+/* Shared activity controls retain context across navigation. */
+.dg-action-icon{width:23px;height:25px;flex:none;vertical-align:middle;margin-right:6px}
+.dg-activity-dock{display:flex;align-items:center;gap:8px;padding:8px 14px;background:#0c1828;border-block:1px solid #284459;min-width:0;flex-wrap:wrap}
+.dg-activity-dock>span{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#9eb4ca}
+.dg-activity-drafts{display:flex;gap:6px;flex:1;flex-wrap:wrap}
+.dg-activity-dock button{min-height:44px;padding:6px 12px}
+.dg-activity-dock button[aria-pressed=true]{box-shadow:inset 0 -3px #8ce2de;border-color:#8ce2de}
+.dg-upkeep-settlement{margin:10px 16px;padding:14px;background:#102235;border:1px solid #37556d;border-radius:12px}
+.dg-upkeep-settlement header,.dg-upkeep-settlement footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.dg-upkeep-settlement h2{margin:0}
+.dg-settlement-balances{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
+.dg-settlement-balances>div{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dg-settlement-balances svg{width:24px;height:24px}.dg-settlement-balances small{width:100%;color:#bac9d8}
+.dg-encounter-workspace{max-height:100%;overflow:auto;padding:12px;min-height:0;background:#0b1727;border:1px solid #35546c;border-radius:12px}
+.dg-encounter-workspace[hidden]{display:none}
+.dg-advanced-setup{margin-bottom:12px}.dg-advanced-setup>summary{cursor:pointer;padding:12px;min-height:44px}
+.dg-action-economy details>summary{cursor:pointer;padding:8px 0}
+@media(max-width:760px){
+ .dg-mobile-board .dg-mobile-navigation{width:100%;min-width:0;flex-basis:100%;grid-template-columns:repeat(4,minmax(0,1fr))}
+ .dg-mobile-board .dg-mobile-navigation button,.dg-mobile-board .dg-mobile-action-nav button,.dg-mobile-board .dg-mobile-turn-controls button{min-height:44px}
+ .dg-mobile-board .dg-activity-dock{padding:5px 8px;gap:5px;flex-wrap:nowrap}.dg-activity-dock .dg-action-icon{display:none}
+ .dg-mobile-board .dg-activity-drafts{flex-wrap:nowrap;min-width:0;overflow-x:auto;scrollbar-width:thin}
+ .dg-mobile-board .dg-activity-dock button{flex-shrink:0;white-space:nowrap;padding-inline:9px}
+ .dg-mobile-board .dg-activity-dock>span{display:none}
+ .dg-mobile-board .dg-upkeep-settlement{margin:6px 8px;padding:10px}.dg-upkeep-settlement h2{font-size:18px}
+ .dg-mobile-board .dg-encounter-workspace{border-radius:8px;padding:8px}
+}
+@media(prefers-reduced-motion:reduce){.dg-activity-dock *,.dg-encounter-workspace *{scroll-behavior:auto!important}}
+.dg-tabletop:not(.dg-mobile-board) .sd-header .dg-save > span{display:inline;font-size:11px;color:#a9bdc7;max-width:20ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dg-recruit-entry{margin:4px 16px;align-self:flex-start;min-height:44px}
+.dg-public-inspection-backdrop.is-shared-map{background:transparent;justify-content:flex-end;align-items:center;pointer-events:none;padding:20px}
+.dg-public-inspection-backdrop.is-shared-map .dg-public-inspection{pointer-events:auto;width:min(440px,85vw);max-height:80vh;box-shadow:0 8px 40px #000b}
+@media(max-width:760px){.dg-public-inspection-backdrop.is-shared-map{align-items:flex-end;padding:10px 10px 120px}.dg-public-inspection-backdrop.is-shared-map .dg-public-inspection{width:100%;max-height:42vh}}

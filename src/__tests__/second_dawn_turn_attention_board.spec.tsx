@@ -6,17 +6,15 @@ import { legalCommands } from '../../shared/eclipse/legal';
 import SecondDawnBoard from '../second-dawn-game/SecondDawnBoard';
 
 afterEach(cleanup);
-it('opens an upkeep review from the notice without submitting payment until confirmation', () => {
+it('presents upkeep settlement without submitting payment until collection', () => {
   const state = createGame({ seed: 19, warpPortals: false, seats: [{ id: 'a', faction: 'eridani', controller: 'human' }, { id: 'b', faction: 'hydran', controller: 'ai' }] });
   state.phase = 'upkeep';
   const view = getPlayerView(state, 'a')!;
   const onSubmit = vi.fn();
   render(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="Saved" onSubmit={onSubmit} onMenu={() => {}}/>);
-  fireEvent.click(screen.getByRole('button', { name: 'Review upkeep' }));
   expect(onSubmit).not.toHaveBeenCalled();
-  const inspector = screen.getByRole('complementary', { name: 'Selection and action details' });
-  expect(within(inspector).getByRole('region', { name: 'Action cost preview' })).toBeVisible();
-  fireEvent.click(within(inspector).getByRole('button', { name: 'Finish upkeep', exact: true }));
+  const inspector = screen.getByRole('region', { name: 'Upkeep settlement' });
+  fireEvent.click(within(inspector).getByRole('button', { name: 'Collect income', exact: true }));
   expect(onSubmit).toHaveBeenCalledWith({ type: 'finish-upkeep' });
 });
 
@@ -30,7 +28,7 @@ it('keeps direct turn actions available without action-queue controls', () => {
   expect(screen.getByRole('button', { name: 'Explore', exact: true })).toBeVisible();
 });
 
-it('announces a new turn while the player is viewing another pane', () => {
+it('preserves inspection when the next turn arrives', () => {
   const state = createGame({ seed: 31, seats: [{ id: 'a', faction: 'eridani', controller: 'human' }, { id: 'b', faction: 'hydran', controller: 'ai' }] });
   const view = getPlayerView(state, 'a')!;
   const waitingView = { ...view, activeSeatId: 'b' };
@@ -38,7 +36,7 @@ it('announces a new turn while the player is viewing another pane', () => {
   fireEvent.click(within(screen.getByRole('region', { name: 'Civilization roster' })).getByRole('button', { name: /Eridani Empire/ }));
   expect(screen.queryByRole('dialog', { name: 'Your turn' })).not.toBeInTheDocument();
   ui.rerender(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="Saved" onSubmit={vi.fn()} onMenu={() => {}}/>);
-  expect(screen.getByRole('dialog', { name: 'Your turn' })).toBeVisible();
-  fireEvent.click(screen.getByRole('button', { name: 'View turn' }));
+  expect(screen.getByRole('heading', {name:'Eridani Empire'})).toBeVisible();
+  expect(screen.queryByRole('button', { name: 'View turn' })).toBeNull();
   expect(screen.queryByRole('dialog', { name: 'Your turn' })).not.toBeInTheDocument();
 });

@@ -6,3 +6,22 @@
 @media(max-width:760px){.dg-build-dialog,.dg-build-planner{width:100%;max-height:none}.dg-build-body{grid-template-columns:1fr;padding:12px}.dg-build-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.dg-build-footer{position:sticky;bottom:0;flex-wrap:wrap}.dg-build-footer>span{width:100%}}
 
 .dg-build-planner.is-embedded .dg-build-body{grid-template-columns:minmax(0,1fr);padding:12px;gap:14px}.dg-build-planner.is-embedded .dg-build-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.dg-build-planner.is-embedded .dg-build-header{padding:12px}.dg-build-planner.is-embedded .dg-build-header h2{font-size:21px;line-height:1.2;margin:6px 0}.dg-build-planner.is-embedded .dg-build-footer{flex-wrap:wrap;padding:12px;position:sticky;bottom:0;z-index:2}.dg-build-planner.is-embedded .dg-build-footer>span{flex:1 0 100%}.dg-build-planner button:disabled{opacity:.4;cursor:default}.dg-build-planner button:focus-visible{outline:2px solid #edc879;outline-offset:2px}.dg-build-planner button{min-height:44px}.dg-build-planner.is-embedded{height:auto;min-height:100%}.dg-build-planner .dg-build-body{overflow:visible}
+.dg-build-order{flex:0 0 auto;padding:8px 12px 0;border-bottom:1px solid #5b4a35;background:#101b25}
+.dg-build-order .dg-build-empty{margin:0 0 8px;padding:8px;font-size:12px}
+.dg-build-targets{margin-bottom:14px}
+.dg-build-targets summary{cursor:pointer;min-height:44px;align-content:center;font-size:12px;color:#e5ca90}
+.dg-build-targets details>div{display:flex;flex-wrap:wrap;gap:6px}
+.dg-build-targets summary:focus-visible{outline:2px solid #edc879;outline-offset:2px}
+/* The ship catalog scrolls; the current order and its commit remain reachable. */
+.dg-mobile-board.dg-build-mode .sd-main{display:flex;flex-direction:column;overflow:hidden}
+.dg-mobile-board.dg-build-mode .dg-galaxy{flex:0 0 30%;min-height:120px;padding-bottom:42px}
+.dg-mobile-board.dg-build-mode .dg-build-planner.is-embedded{flex:1 1 0;height:auto;min-height:0;max-height:100%}
+.dg-mobile-board.dg-build-mode .dg-build-planner .dg-build-header{flex:0 0 auto;padding:5px 10px}
+.dg-mobile-board.dg-build-mode .dg-build-planner .dg-build-header small{display:none}
+.dg-mobile-board.dg-build-mode .dg-build-planner .dg-build-header h2{font-size:17px;margin:3px 0}
+.dg-mobile-board.dg-build-mode .dg-build-planner .dg-build-body{flex:1 1 auto;overflow:auto;min-height:0;padding:8px 10px;overscroll-behavior:contain}
+.dg-mobile-board.dg-build-mode .dg-build-planner .dg-build-footer{position:static;flex:0 0 auto;padding:6px 10px;gap:5px}
+.dg-mobile-board.dg-build-mode .dg-build-planner .dg-build-footer>span{font-size:11px}
+.dg-mobile-board.dg-build-mode .dg-build-planner .dg-build-footer>button{padding:7px 9px;font-size:12px}
+.dg-mobile-board.dg-build-mode .dg-build-order{padding:4px 8px 0}
+.dg-mobile-board.dg-build-mode .dg-build-tray{padding-bottom:5px}

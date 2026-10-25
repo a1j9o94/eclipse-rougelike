@@ -43,7 +43,7 @@ it('provides planet, fleet, research and trade navigation without submitting com
  fireEvent.click(screen.getByRole('button',{name:'Colonize planets'}));expect(onNavigate).toHaveBeenCalledWith('colonize');
  fireEvent.click(screen.getByRole('button',{name:'Research technology'}));expect(onNavigate).toHaveBeenCalledWith('Research');
  fireEvent.click(screen.getByRole('button',{name:/Convert resources/}));expect(onNavigate).toHaveBeenCalledWith('Trade');
- expect(screen.getByRole('heading',{name:'Faction abilities'})).toBeVisible();expect(screen.getByRole('heading',{name:'Move activations'})).toBeVisible();
+ expect(screen.getByRole('heading',{name:'Faction abilities'})).toBeVisible();fireEvent.click(screen.getByText('Faction effects and restrictions'));expect(screen.getByRole('heading',{name:'Move activations'})).toBeVisible();
 });
 it('labels Exiles Orbital fleet and blueprint controls without renaming other factions Starbases',()=>{
  const state=createGame({seed:42,factionProfile:'expanded-v2',seats:[{id:'a',faction:'exiles',controller:'human'},{id:'b',faction:'orion',controller:'ai'}]});
@@ -58,6 +58,7 @@ it('opponents expose researched effects locally, never own market actions or pri
  const onNavigate=vi.fn();render(<EmpireOverview view={view} seatId="b" onSector={vi.fn()} onNavigate={onNavigate} onBlueprints={vi.fn()}/>);
  expect(screen.getByRole('heading',{name:'Hydran Progress'})).toBeVisible();
  expect(screen.queryByRole('button',{name:'Research technology'})).toBeNull();expect(screen.queryByRole('button',{name:'Colonize planets'})).toBeNull();expect(screen.queryByRole('button',{name:/Convert resources/})).toBeNull();
+ fireEvent.click(screen.getByText(/Owned research ·/));
  fireEvent.click(screen.getByRole('button',{name:'Inspect Advanced Labs'}));
  expect(screen.getByText(/You may colonize advanced science population spaces/)).toBeVisible();expect(onNavigate).not.toHaveBeenCalled();
  expect(screen.queryByText(/987|secret-discovery/)).toBeNull();
@@ -112,6 +113,7 @@ it('reopens the latest private reputation result only on the viewer’s own empi
 it('shows research discounts in the empty command-center technology slots',()=>{
  const view=fixture();view.seats[0].technologies={military:[],grid:['improved-hull'],nano:['nanorobots','fusion-drive']};
  render(<EmpireOverview view={view} seatId="a" onSector={vi.fn()} onNavigate={vi.fn()} onBlueprints={vi.fn()}/>);
+ fireEvent.click(screen.getByText(/Owned research ·/));
  for(const [name,current] of [['Military',0],['Grid',1],['Nano',2]] as const){
   const track=screen.getByRole('group',{name:`${name} technology slots`});
   expect(within(track).getByLabelText(`Empty technology slot ${current+1}: ${current?`−${current}`:'0'} science discount, 0 VP track total`)).toBeVisible();
@@ -129,7 +131,7 @@ it('puts current private reputation and colony supply before planning tracks, wi
  const reputation=screen.getByRole('region',{name:'Your reputation tiles'});
  expect(within(reputation).getByRole('img',{name:'4 VP reputation'})).toBeVisible();
  expect(within(reputation).getByRole('img',{name:'2 VP reputation'})).toBeVisible();
- expect(reputation.compareDocumentPosition(screen.getByRole('heading',{name:'Income & upkeep tracks'}))&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+ expect(reputation.compareDocumentPosition(screen.getByText('Income & upkeep details'))&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
  expect(screen.getByLabelText('Colony ships available')).toHaveTextContent(String(view.seats[0].colonyShipsAvailable));
  const planner=screen.getByText('Empty planets',{exact:true}).closest('details');expect(planner).not.toHaveAttribute('open');
  expect(screen.getByRole('button',{name:'Colonize planets'})).toBeVisible();

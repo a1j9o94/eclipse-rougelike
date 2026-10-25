@@ -81,7 +81,7 @@ export function ResourceChoiceChips({
 }: {
   label: string;
   resources: readonly Resource[];
-  value: Resource;
+  value: Resource | '';
   disabled?: boolean;
   onChange: (value: Resource) => void;
 }) {

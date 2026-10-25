@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createGame } from '../../shared/eclipse/setup';
 import { getPlayerView } from '../../shared/eclipse/protocol';
-import { addBuildItem, analyzeBuildOrder, emptyBuildOrder, placeBuildItem } from '../second-dawn-game/buildPlanning';
+import { addBuildItem, analyzeBuildOrder, emptyBuildOrder, placeBuildItem, removeBuildItem } from '../second-dawn-game/buildPlanning';
 
 function fixture() {
   const state = createGame({ seed: 42, seats: [{ id: 'a', faction: 'terran-directorate', controller: 'human' }, { id: 'b', faction: 'hydran', controller: 'ai' }] });
@@ -12,6 +12,16 @@ function fixture() {
 }
 
 describe('build order planning', () => {
+  it('retains the explicit funding mix while placing, adding, and removing order items', () => {
+    const f=fixture(), fundingKey=JSON.stringify([{from:'science',to:'materials',amount:2}]);
+    let draft={...addBuildItem(emptyBuildOrder(),'interceptor'),fundingKey};
+    draft=placeBuildItem(draft,draft.items[0].id,f.first);
+    expect(draft.fundingKey).toBe(fundingKey);
+    draft=addBuildItem(draft,'cruiser');
+    expect(draft.fundingKey).toBe(fundingKey);
+    draft=removeBuildItem(draft,draft.items[1].id);
+    expect(draft.fundingKey).toBe(fundingKey);
+  });
   it('keeps order pieces while they are independently placed and relocated', () => {
     const f = fixture();
     let draft = addBuildItem(emptyBuildOrder(), 'interceptor');

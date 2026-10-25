@@ -47,3 +47,22 @@ it('keeps discard and redraw explicit in the shared map inspector',()=>{
  fireEvent.click(screen.getByRole('button',{name:'Discard sector'}));expect(submit).toHaveBeenLastCalledWith({type:'resolve',decisionId:decision.id,choice:{kind:'exploration',tileId:null,rotation:0}});
  fireEvent.click(screen.getByRole('button',{name:'Use exploration joker · redraw'}));expect(submit).toHaveBeenLastCalledWith({type:'resolve',decisionId:decision.id,choice:{kind:'exploration',tileId:null,rotation:0,redraw:true}});
 });
+it('preserves a compatible orientation when choosing another saved tile',()=>{
+ const {view,decision}=fixture(),submit=vi.fn();
+ const rotations={...decision,placements:decision.drawnTileIds.flatMap(tileId=>[0,2].map(rotation=>({tileId,rotation})))};
+ render(<ExplorationDecision view={view} decision={rotations} disabled={false} onSubmit={submit}/>);
+ fireEvent.click(screen.getByRole('button',{name:'Rotate counterclockwise'}));fireEvent.click(screen.getByRole('button',{name:'Rotate counterclockwise'}));
+ fireEvent.click(screen.getByRole('button',{name:new RegExp(`Sector ${decision.drawnTileIds[1]}`)}));
+ expect(screen.getByTestId('drawn-exploration-tile')).toHaveAttribute('data-rotation','2');
+ expect(submit).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'Place sector'}));
+ expect(submit).toHaveBeenCalledWith({type:'resolve',decisionId:decision.id,choice:{kind:'exploration',tileId:decision.drawnTileIds[1],rotation:2}});
+});
+it('keeps an incompatible orientation visible and identifies its blocker instead of substituting one',()=>{
+ const {view,decision}=fixture();
+ const rotations={...decision,placements:[{tileId:decision.drawnTileIds[0],rotation:2},{tileId:decision.drawnTileIds[1],rotation:0}]};
+ render(<ExplorationDecision view={view} decision={rotations} disabled={false} onSubmit={vi.fn()}/>);
+ fireEvent.click(screen.getByRole('button',{name:new RegExp(`Sector ${decision.drawnTileIds[1]}`)}));
+ expect(screen.getByTestId('drawn-exploration-tile')).toHaveAttribute('data-rotation','2');
+ expect(screen.getByRole('button',{name:'Place sector'})).toBeDisabled();
+ expect(screen.getByRole('status')).toHaveTextContent('Cannot place');
+});

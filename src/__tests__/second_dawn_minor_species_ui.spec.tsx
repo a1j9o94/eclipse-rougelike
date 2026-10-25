@@ -16,6 +16,7 @@ it('shows the available tiles, money cost and effects, and buys through the actu
  const view=fixture(),onSubmit=vi.fn();render(<MinorSpeciesMarket view={view} disabled={false} onSubmit={onSubmit}/>);
  expect(screen.getAllByRole('article')).toHaveLength(4);
  const tile=screen.getByRole('article',{name:getMinorSpecies('researchers').name});
+ fireEvent.click(within(tile).getByRole('button',{name:/Select/}));
  expect(within(tile).getByText(/science cheaper/)).toBeVisible();
  fireEvent.click(within(tile).getByRole('button',{name:/Buy/}));
  expect(onSubmit).toHaveBeenCalledWith({type:'buy-minor-species',minorSpeciesId:'researchers'});
@@ -23,7 +24,8 @@ it('shows the available tiles, money cost and effects, and buys through the actu
 it('shows funding and turn blockers while allowing people to browse the market',()=>{
  const view=fixture();view.seats[0].resources.money=0;const onSubmit=vi.fn();
  const ui=render(<MinorSpeciesMarket view={view} disabled={false} onSubmit={onSubmit}/>);
- expect(screen.getAllByRole('button',{name:/Buy/}).every(button=>button.hasAttribute('disabled'))).toBe(true);
+ fireEvent.click(screen.getByRole('button',{name:`Select ${getMinorSpecies('researchers').name}`}));
+ expect(screen.getByRole('button',{name:/Buy/})).toBeDisabled();
  expect(screen.getAllByText(/Need .* more money/).length).toBeGreaterThan(0);
  view.seats[0].resources.money=20;view.activeSeatId='b';ui.rerender(<MinorSpeciesMarket view={view} disabled={false} onSubmit={onSubmit}/>);
  expect(screen.getAllByText(/Wait for your action turn/).length).toBeGreaterThan(0);expect(onSubmit).not.toHaveBeenCalled();
@@ -32,6 +34,7 @@ it('requires a deliberate legal population choice and previews the income increa
  const view=fixture();view.seats[0].populationTracks={money:1,science:2,materials:11};const onSubmit=vi.fn();
  render(<MinorSpeciesMarket view={view} disabled={false} onSubmit={onSubmit}/>);
  const tile=screen.getByRole('article',{name:getMinorSpecies('population').name});
+ fireEvent.click(within(tile).getByRole('button',{name:/Select/}));
  expect(within(tile).getByRole('button',{name:/Buy/})).toBeDisabled();
  expect(within(tile).getByRole('button',{name:'Materials population'})).toBeDisabled();
  fireEvent.click(within(tile).getByRole('button',{name:'Science population'}));
@@ -43,6 +46,7 @@ it('requires explicit acknowledgement before a purchase returns a reputation til
  const view=fixture();view.private.reputation=[1,2,3,4];const onSubmit=vi.fn();
  render(<MinorSpeciesMarket view={view} disabled={false} onSubmit={onSubmit}/>);
  const tile=screen.getByRole('article',{name:getMinorSpecies('researchers').name});
+ fireEvent.click(within(tile).getByRole('button',{name:/Select/}));
  expect(within(tile).getByRole('button',{name:/Buy/})).toBeDisabled();
  fireEvent.click(within(tile).getByRole('checkbox',{name:/Return.*1 VP/}));
  fireEvent.click(within(tile).getByRole('button',{name:/Buy/}));
@@ -59,12 +63,14 @@ it('warns about a money shortfall at upkeep before recruiting an ally',()=>{
  const view=fixture();view.seats[0].resources.money=4;view.seats[0].influenceOnTrack=6;view.seats[0].populationTracks.money=1;
  render(<MinorSpeciesMarket view={view} disabled={false} onSubmit={vi.fn()}/>);
  const tile=screen.getByRole('article',{name:getMinorSpecies('researchers').name});
+ fireEvent.click(within(tile).getByRole('button',{name:/Select/}));
  expect(within(tile).getByText('0 money remaining')).toBeVisible();
  expect(within(tile).getByRole('alert')).toHaveTextContent('4 money short at upkeep');
 });
 it('keeps the dedicated ambassador-space explanation after a Minor Species occupies it',()=>{
  const view=fixture();view.seats[0].faction='terran-directorate';view.seats[0].minorSpecies=[{id:'researchers'}];
  render(<DiplomacyPanel view={view} candidates={[]} disabled={false} onSubmit={vi.fn()}/>);
+ fireEvent.click(screen.getByText('Rack capacity and diplomacy rules'));
  expect(screen.getByText(/This faction has one dedicated ambassador space/)).toBeVisible();
  expect(screen.getByText(/1 Minor Species tile occupies this diplomatic rack/)).toBeVisible();
 });

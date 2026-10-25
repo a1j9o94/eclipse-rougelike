@@ -2,3 +2,4 @@
 .dg-completed-games>summary{cursor:pointer;min-height:44px;align-content:center;color:#d5c399;font-size:18px;font-weight:600;}
 .dg-completed-games>summary:focus-visible{outline:2px solid #f0d7a2;outline-offset:4px;border-radius:3px;}
 .dg-completed-games>p{color:#b6bec9;}
+.dg-saves button[data-needs-input=true]{border-color:#ddbf7d;box-shadow:inset 3px 0 #ddbf7d}.dg-saves button[data-needs-input=true] span{color:#f2dca9}

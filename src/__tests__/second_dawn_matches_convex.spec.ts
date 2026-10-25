@@ -98,3 +98,25 @@ describe('Second Dawn authoritative match adapter', () => {
     expect((await t.query(api.eclipseMatches.getMatchView, { ...guest, matchId }))?.pendingDecision).toEqual(pending);
   });
 });
+
+it('projects needs-input only for the owned seat and distinguishes independent upkeep from another player decision',async()=>{
+ const t=convexTest(schema,modules),guest=await t.action(api.eclipseGuests.createGuestSession,{});
+ const {matchId}=await t.mutation(api.eclipseMatches.createMatch,guest);
+ const patch=async(change:(state:GameState)=>void)=>t.run(async ctx=>{const row=await ctx.db.get(matchId);const state=JSON.parse(row!.snapshotJson) as GameState;change(state);await ctx.db.patch(matchId,{snapshotJson:JSON.stringify(state),phase:state.phase});});
+ const summary=async()=>(await t.query(api.eclipseMatches.listMyMatches,guest))[0];
+ await patch(state=>{state.phase='action';state.activeSeatId='seat-1';state.pendingDecision=null;});
+ expect((await summary()).needsInput).toBe(true);
+ await patch(state=>{state.pendingDecision={id:'private-choice',owner:'seat-2',kind:'free-technology',technologyIds:['fusion-drive']};});
+ expect((await summary()).needsInput).toBe(false);
+ expect(await summary()).not.toHaveProperty('pendingDecision');
+ await patch(state=>{state.activeSeatId='seat-2';state.pendingDecision={id:'own-choice',owner:'seat-1',kind:'free-technology',technologyIds:['fusion-drive']};});
+ expect((await summary()).needsInput).toBe(true);
+ await patch(state=>{state.phase='upkeep';state.pendingDecision=null;state.engine!.upkeepDone=['seat-2'];});
+ expect((await summary()).needsInput).toBe(true);
+ await patch(state=>{state.engine!.upkeepDone.push('seat-1');});
+ expect((await summary()).needsInput).toBe(false);
+ await patch(state=>{state.phase='finished';state.pendingDecision=null;});
+ expect((await summary()).needsInput).toBe(false);
+ const stranger=await t.action(api.eclipseGuests.createGuestSession,{});
+ expect(await t.query(api.eclipseMatches.listMyMatches,stranger)).toEqual([]);
+});

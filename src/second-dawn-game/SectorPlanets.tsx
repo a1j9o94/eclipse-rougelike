@@ -57,6 +57,7 @@ interface Props {
   sector: Sector;
   view: PlayerView|SpectatorView;
   candidates: CommandCandidate[];
+  selection?:{label:string;eligibleSquareIds:readonly string[];selectedSquareId?:string|null;onSelect:(squareId:string)=>void;disabled?:boolean;ghost?:'shrine'};
 }
 const resources: Resource[] = ["money", "science", "materials"];
 const advancedNames = {
@@ -69,7 +70,8 @@ const advancedIds = {
   science: "advanced-labs",
   materials: "advanced-mining",
 };
-export default function SectorPlanets({ sector, view, candidates }: Props) {
+export default function SectorPlanets({ sector, view, candidates, selection }: Props) {
+  const PlanetTag=selection?'button':'div';
   const definition = sectorDefinition(Number(sector.tileId))!;
   const own = view.seats.find((s) => s.id === ('viewerSeatId' in view?view.viewerSeatId:undefined));
   const owned = !!own && sector.owner === own.id;
@@ -139,7 +141,12 @@ export default function SectorPlanets({ sector, view, candidates }: Props) {
       {squares.length === 0 && <p>No population squares on this sector.</p>}
       <div className="dg-planet-list">
         {entries.map(({ square, cube, requirement, eligibility }) => (
-          <div
+          <PlanetTag
+            type={selection?'button':undefined}
+            disabled={selection?(selection.disabled||!selection.eligibleSquareIds.includes(square.id)):undefined}
+            aria-pressed={selection?selection.selectedSquareId===square.id:undefined}
+            aria-label={selection?`${selection.label} ${PLANET_NAMES[square.resource]} planet ${square.id} in sector ${sector.tileId}`:undefined}
+            onClick={selection?()=>selection.onSelect(square.id):undefined}
             className="dg-planet-row"
             key={square.id}
             data-planet-square={square.id}
@@ -219,10 +226,11 @@ export default function SectorPlanets({ sector, view, candidates }: Props) {
                 )}
               </svg>
             </div>
-          </div>
+            {selection?.ghost==='shrine'&&selection.selectedSquareId===square.id&&<span className="dg-planet-ghost" role="img" aria-label="Planned Shrine"><StructureSilhouette kind="shrine"/></span>}
+          </PlanetTag>
         ))}
       </div>
-      {squares.length > 0 && (
+      {squares.length > 0 && !selection && (
         <div className="dg-planet-legend">
           <span>
             <svg viewBox="0 0 16 16" aria-hidden="true">
@@ -253,7 +261,7 @@ export default function SectorPlanets({ sector, view, candidates }: Props) {
           </span>
         </div>
       )}
-      {squares.length > 0 && (
+      {squares.length > 0 && !selection && (
         <details className="dg-colonization-details">
           <summary>Colonization requirements</summary>
           {entries.map(({ square, requirement, eligibility }) => (
@@ -279,7 +287,7 @@ export default function SectorPlanets({ sector, view, candidates }: Props) {
           ))}
         </details>
       )}
-      <h3>Sector features</h3>
+      {!selection&&<><h3>Sector features</h3>
       <dl className="dg-sector-facts">
         <div>
           <dt>Control value</dt>
@@ -316,6 +324,7 @@ export default function SectorPlanets({ sector, view, candidates }: Props) {
             : ""}
         </p>
       )}
+      </>}
     </section>
   );
 }

@@ -58,12 +58,12 @@ it('lets an authoritative pending decision keep priority over the handoff redire
  expect(screen.queryByRole('group',{name:'Galaxy map'})).toBeNull();
 });
 
-it.each(['research','upgrade'] as const)('returns to Galaxy after an accepted final %s activation without an end-action command',type=>{
+it.each(['research','upgrade'] as const)('keeps the completed %s activity visible after its final activation',type=>{
  const initial=actionView(type),props=controls(initial),rendered=render(<SecondDawnBoard view={initial} {...props}/>);
  fireEvent.click(screen.getAllByRole('button',{name:type==='research'?'Research':'Upgrade',exact:true})[0]);
  const accepted={...handedOff(initial),actionProgress:null};
  rendered.rerender(<SecondDawnBoard view={accepted} {...controls(accepted)} lastAcceptedCommand={{revision:accepted.revision,type}}/>);
- expect(screen.getByRole('group',{name:'Galaxy map'})).toBeInTheDocument();
+ expect(screen.queryByRole('group',{name:'Galaxy map'})).toBeNull();
  expect(props.onSubmit).not.toHaveBeenCalled();
  fireEvent.click(screen.getAllByRole('button',{name:'Research',exact:true})[0]);
  rendered.rerender(<SecondDawnBoard view={{...accepted,revision:accepted.revision+1}} {...controls(accepted)} lastAcceptedCommand={{revision:accepted.revision,type}}/>);

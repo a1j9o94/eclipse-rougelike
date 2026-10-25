@@ -175,3 +175,5 @@
   height: 13px;
 }
 .dg-sector-facts dt .dg-sector-feature-icon,.dg-feature-note .dg-sector-feature-icon{width:20px;height:20px;vertical-align:middle;color:#e8cc87}
+
+button.dg-planet-row{position:relative;cursor:pointer;text-align:left;background:#142833;border:1px solid #587785;border-radius:6px;padding:9px}button.dg-planet-row:disabled{opacity:.45;cursor:not-allowed}button.dg-planet-row[aria-pressed=true]{outline:2px solid #e1c07c;background:#2c403e}.dg-planet-ghost{position:absolute;right:4px;bottom:3px;color:#e5ca82}.dg-planet-ghost svg{width:28px;height:28px}button.dg-planet-row:focus-visible{outline:2px solid #bce8f0;outline-offset:2px}

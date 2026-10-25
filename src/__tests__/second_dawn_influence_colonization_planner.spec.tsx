@@ -63,6 +63,14 @@ describe("visual influence planner", () => {
     fireEvent.click(screen.getByRole('button', {name:`Withdraw from ${fixture.source.tileId} and control ${fixture.target.tileId}`}));
     expect(submit).toHaveBeenCalledWith(fixture.candidates[1].command);
   });
+  it('selects an explicit transfer source on the same galaxy map',()=>{
+    const fixture=influenceFixture(),submit=vi.fn(),targets=vi.fn();
+    const props={view:fixture.view,candidates:fixture.candidates,disabled:false,onSubmit:submit,onLegalTargetIdsChange:targets};
+    const ui=render(<InfluencePlanner {...props} selectedSectorId={fixture.target.id}/>);
+    fireEvent.click(screen.getByRole('button',{name:'Choose source on map'}));expect(targets).toHaveBeenLastCalledWith([fixture.source.id]);
+    ui.rerender(<InfluencePlanner {...props} selectedSectorId={fixture.source.id}/>);
+    fireEvent.click(screen.getByRole('button',{name:`Withdraw from ${fixture.source.tileId} and control ${fixture.target.tileId}`}));expect(submit).toHaveBeenCalledExactlyOnceWith(fixture.candidates[1].command);
+  });
   it("never stages withdrawal when a controlled sector is selected on the map", () => {
     const fixture=influenceFixture(), submit=vi.fn();
     const remove:GameCommand={type:'influence',removeSectorIds:[fixture.source.id],addSectorIds:[]};
@@ -150,14 +158,13 @@ describe("visual colonization planner", () => {
     expect(screen.getByRole('region',{name:'Colonization consequences'})).toHaveTextContent('Colony ships3 → 1');expect(screen.getByRole('region',{name:'Colonization consequences'})).toHaveTextContent('income 4 → 8 +4');
     fireEvent.click(screen.getByRole('button',{name:'Colonize 2 planets'}));expect(submit.mock.calls[0][0]).toMatchObject({type:'colonize',placements:[{sectorId:fixture.sector.id},{sectorId:second.id}]});expect(processGameCommand(fixture.state,'a',submit.mock.calls[0][0])).toMatchObject({ok:true});
   });
-  it("uses a planet card and resource chip to produce an existing legal colonize command", () => {
+  it("selects a fixed-resource planet and commits its existing legal colonize command", () => {
     const fixture = colonizeFixture();
     const submit = vi.fn();
     render(<ColonizationPlanner view={fixture.view} candidates={fixture.candidates} disabled={false} onSubmit={submit} />);
     fireEvent.click(screen.getByRole("button", { name: /Colonize Money planet p0/ }));
-    expect(screen.getAllByText(/1 colony ship/).length).toBeGreaterThan(0);
-    expect(screen.getByRole("button", { name: "Money population" })).toBeVisible();
-    fireEvent.click(screen.getByRole("button", { name: "Money population" }));
+    expect(screen.getByRole("region",{name:"Colonization consequences"})).toHaveTextContent("Colony ships");
+    expect(screen.queryByRole("button", { name: "Money population" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Colonize 1 planet" }));
     expect(submit).toHaveBeenCalledWith(fixture.candidates[0].command);
     expect(processGameCommand(fixture.state, "a", submit.mock.calls[0][0])).toMatchObject({ ok: true });

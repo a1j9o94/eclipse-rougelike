@@ -26,6 +26,7 @@ it("shows retained ambassadors by faction and keeps opponent reputation face dow
     screen.getByLabelText("Your ambassador from Hydran Progress"),
   ).toBeInTheDocument();
   expect(screen.getByLabelText("Your reputation: 3 VP")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button",{name:"Select relationship with Hydran Progress"}));
   const opponent = screen.getByRole("region", {
     name: "Hydran Progress diplomatic rack",
   });
@@ -56,6 +57,7 @@ it("submits only a supplied legal offer and disables it when disconnected", () =
     onSubmit,
   };
   const { rerender } = render(<DiplomacyPanel {...props} />);
+  fireEvent.click(screen.getByRole("button",{name:"Select relationship with Hydran Progress"}));
   fireEvent.click(
     screen.getByRole("button", {
       name: "Offer ambassador exchange to Hydran Progress",
@@ -77,14 +79,17 @@ it("chooses a legal population cube visually and keeps unavailable resources exp
   const onSubmit = vi.fn();
   render(<DiplomacyPanel view={view} candidates={[
     { command: { type: "offer-diplomacy", to: state.seats[1].id, resource: "science" }, label: "Offer diplomacy", description: "Exchange using science." },
+    { command: { type: "offer-diplomacy", to: state.seats[1].id, resource: "materials" }, label: "Offer diplomacy", description: "Exchange using materials." },
   ]} disabled={false} onSubmit={onSubmit} />);
+  fireEvent.click(screen.getByRole("button",{name:"Select relationship with Hydran Progress"}));
   expect(screen.queryByRole("combobox")).toBeNull();
-  const science = screen.getByRole("button", { name: "Offer science population cube to Hydran Progress" });
-  expect(science).toHaveAttribute("aria-pressed", "true");
+  const science = screen.getByRole("button", { name: "Choose science population for Hydran Progress" });
+  expect(science).toHaveAttribute("aria-pressed", "false");
+  fireEvent.click(science);
   expect(screen.getByText(`Income ${incomeForPopulationAway(2)} → ${incomeForPopulationAway(3)}`)).toBeInTheDocument();
   expect(screen.getByLabelText(`Your science income: ${incomeForPopulationAway(2)} → ${incomeForPopulationAway(3)}`)).toBeInTheDocument();
   expect(screen.queryByText(/Each player loses/)).toBeNull();
-  expect(screen.getByRole("button", { name: "Money population cube unavailable for exchange with Hydran Progress" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Money population unavailable for Hydran Progress" })).toBeDisabled();
   fireEvent.click(science);
   fireEvent.click(screen.getByRole("button", { name: "Offer ambassador exchange to Hydran Progress" }));
   expect(onSubmit).toHaveBeenCalledWith({ type: "offer-diplomacy", to: state.seats[1].id, resource: "science" });
@@ -113,7 +118,7 @@ it("inspects an opponent without rendering the viewer’s secret reputation valu
   expect(screen.getByText(/Traitor card · −2 VP/)).toBeInTheDocument();
 });
 
-it("offers diplomacy from the inspected opponent card only after an explicit resource choice",()=>{const state=(JSON.parse(fixturesJson) as Record<string,GameState>).opening;const view=getPlayerView(state,state.seats[0].id)!;const command={type:'offer-diplomacy' as const,to:state.seats[1].id,resource:'science' as const};const submit=vi.fn();render(<DiplomacyPanel view={view} inspectedSeatId={state.seats[1].id} candidates={[{command,label:'Offer diplomacy',description:'Exchange using science.'}]} disabled={false} onSubmit={submit}/>);expect(submit).not.toHaveBeenCalled();expect(screen.getByText(/Form a relation.*1 VP/i)).toBeTruthy();fireEvent.click(screen.getByRole('button',{name:/Choose science population/i}));fireEvent.click(screen.getByRole('button',{name:/Offer ambassador exchange to Hydran Progress/i}));expect(submit).toHaveBeenCalledWith(command);});
+it("offers diplomacy from the inspected opponent card only after an explicit resource choice",()=>{const state=(JSON.parse(fixturesJson) as Record<string,GameState>).opening;const view=getPlayerView(state,state.seats[0].id)!;const command={type:'offer-diplomacy' as const,to:state.seats[1].id,resource:'science' as const};const submit=vi.fn();render(<DiplomacyPanel view={view} inspectedSeatId={state.seats[1].id} candidates={[{command,label:'Offer diplomacy',description:'Exchange using science.'}]} disabled={false} onSubmit={submit}/>);expect(submit).not.toHaveBeenCalled();expect(screen.getByText(/Form a relation.*1 VP/i)).toBeTruthy();expect(screen.queryByRole('button',{name:/Choose science population/i})).not.toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:/Offer ambassador exchange to Hydran Progress/i}));expect(submit).toHaveBeenCalledWith(command);});
 
 
 it("shows Rho Indi's actual two-ambassador supply", () => {
@@ -121,4 +126,18 @@ it("shows Rho Indi's actual two-ambassador supply", () => {
   render(<DiplomacyPanel view={getPlayerView(state, 'a')!} candidates={[]} disabled={false} onSubmit={() => {}}/>);
   expect(screen.getByText('0 / 2 retained')).toBeVisible();
   expect(screen.getAllByText('Empty ambassador slot')).toHaveLength(2);
+});
+it('selects one relationship and replaces its exchange preview without sending the old offer',()=>{
+ const state=createGame({seed:5,seats:[{id:'a',faction:'terran-directorate',controller:'human'},{id:'b',faction:'hydran',controller:'human'},{id:'c',faction:'planta',controller:'human'},{id:'d',faction:'orion',controller:'human'}]});
+ const view=getPlayerView(state,'a')!,onSubmit=vi.fn();
+ const candidates=['b','c'].flatMap(to=>(['money','science'] as const).map(resource=>({command:{type:'offer-diplomacy' as const,to,resource},label:'Offer',description:''})));
+ render(<DiplomacyPanel view={view} candidates={candidates} disabled={false} onSubmit={onSubmit}/>);
+ expect(screen.queryByRole('button',{name:/Offer ambassador exchange to/})).not.toBeInTheDocument();
+ fireEvent.click(screen.getByRole('button',{name:'Select relationship with Hydran Progress'}));
+ fireEvent.click(screen.getByRole('button',{name:'Choose science population for Hydran Progress'}));
+ fireEvent.click(screen.getByRole('button',{name:'Select relationship with Planta'}));
+ expect(screen.queryByRole('button',{name:'Offer ambassador exchange to Hydran Progress'})).not.toBeInTheDocument();
+ fireEvent.click(screen.getByRole('button',{name:'Choose money population for Planta'}));
+ fireEvent.click(screen.getByRole('button',{name:'Offer ambassador exchange to Planta'}));
+ expect(onSubmit).toHaveBeenCalledExactlyOnceWith({type:'offer-diplomacy',to:'c',resource:'money'});
 });

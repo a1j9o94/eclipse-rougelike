@@ -35,15 +35,15 @@ it('keeps benefit, track, funding, exact cost, and commit beside the selected ti
  expect(submit).toHaveBeenCalledTimes(1);
 });
 
-it('preserves an unfinished purchase while inspecting another technology',()=>{
+it('replaces an unfinished purchase when selecting another market technology',()=>{
  const view=getPlayerView(fixture(),'a')!;
  render(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="" onSubmit={vi.fn()} onMenu={vi.fn()}/>);
  fireEvent.click(screen.getAllByRole('button',{name:'Research',exact:true})[0]);
  fireEvent.click(screen.getByRole('button',{name:/Fusion Drive ×/}));
  fireEvent.click(screen.getByRole('button',{name:/Gluon Computer ×/}));
- expect(screen.getByRole('button',{name:'Return to Fusion Drive draft'})).toBeInTheDocument();
- fireEvent.click(screen.getByRole('button',{name:'Return to Fusion Drive draft'}));
- expect(screen.getByRole('region',{name:'Research Fusion Drive'})).toBeInTheDocument();
+ expect(screen.queryByRole('button',{name:'Return to Fusion Drive draft'})).not.toBeInTheDocument();
+ expect(screen.getByRole('region',{name:'Research Gluon Computer'})).toBeInTheDocument();
+ expect(screen.queryByRole('button',{name:/Research ·/})).not.toBeInTheDocument();
 });
 
 it('shows acquired payoff only after the accepted result owns the tile and keeps research open',()=>{
@@ -65,7 +65,7 @@ it('does not clear or redirect a newer research draft when an earlier receipt se
  const submit=vi.fn();const initialView=getPlayerView(state,'a')!;const props={candidates:legalCommands(initialView),connected:true,busy:false,status:'',onSubmit:submit,onMenu:vi.fn()};
  const rendered=render(<SecondDawnBoard view={initialView} {...props}/>);
  fireEvent.click(screen.getAllByRole('button',{name:'Research',exact:true})[0]);fireEvent.click(screen.getByRole('button',{name:/Fusion Drive ×/}));fireEvent.click(screen.getByRole('button',{name:'Research · 4 science'}));
- fireEvent.click(screen.getByRole('button',{name:/Gluon Computer ×/}));fireEvent.click(screen.getByRole('button',{name:'Research Gluon Computer instead'}));
+ fireEvent.click(screen.getByRole('button',{name:/Gluon Computer ×/}));
  const result=processGameCommand(state,'a',submit.mock.calls[0][0]);if(!result.ok)throw Error(result.error.message);const nextView=getPlayerView(result.state,'a')!;
  rendered.rerender(<SecondDawnBoard view={nextView} {...props} candidates={legalCommands(nextView)} lastAcceptedCommand={{revision:nextView.revision,type:'research'}}/>);
  expect(screen.getByText('Acquired · Fusion Drive')).toBeInTheDocument();

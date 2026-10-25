@@ -79,7 +79,7 @@ it("uses a visual slot canvas and explains locked components without a native pa
   expect(screen.getByRole("group", { name: "Blueprint hardpoints" })).toBeInTheDocument();
   expect(screen.queryByRole("dialog")).toBeNull();
   fireEvent.click(screen.getByRole("button", {name:"Slot 1: Ion Cannon"}));
-  expect(screen.getByRole("dialog", {name:"Interceptor · slot 1"})).toBeInTheDocument();
+  expect(screen.getByRole("region", {name:"Interceptor · slot 1"})).toBeInTheDocument();
   fireEvent.click(screen.getByText(/Unavailable components \(/));
   expect(screen.getByRole("button", { name: /Plasma Cannon blocked: Research Plasma Cannon/ })).toBeDisabled();
 });

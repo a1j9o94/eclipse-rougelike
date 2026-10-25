@@ -70,3 +70,5 @@
 .dg-target-dice .dg-eclipse-die {width:26px;height:26px;flex-basis:26px}
 .dg-result-dice .dg-eclipse-die {padding:0;min-width:40px;min-height:40px;border-radius:7px}
 @media(max-width:600px){.dg-dice-tray{display:flex}.dg-volley-die{flex:1 1 140px}}
+
+.dg-auto-assign{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}.dg-auto-assign button{min-height:44px}.dg-initiative-strip{padding:0;list-style:none;display:grid;gap:.5rem}.dg-initiative-strip li>div{display:flex;gap:.3rem;margin-left:auto}.dg-initiative-strip button{min-width:44px;min-height:44px}.dg-volley-target summary{min-height:44px;display:flex;align-items:center;cursor:pointer}

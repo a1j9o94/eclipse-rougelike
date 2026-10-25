@@ -1,367 +1,74 @@
-import {seatColor} from './factionColors';
-import { useState } from "react";
-import type { CSSProperties } from "react";
-import { getFaction } from "../../shared/eclipse/catalog";
-import { reputationCapacity } from "../../shared/eclipse/battleEngine";
-import type { GameCommand, PlayerView, Resource } from "../../shared/eclipse/types";
-import type { CommandCandidate } from "./SecondDawnBoard";
-import { TradeResourceIcon } from "./TradePanel";
-import { incomeForPopulationAway } from "../../shared/eclipse/tracks";
-import MinorSpeciesMarket,{AcquiredMinorSpecies} from './MinorSpeciesMarket';
+import {useState,type CSSProperties} from 'react';
+import {getFaction} from '../../shared/eclipse/catalog';
+import {reputationCapacity} from '../../shared/eclipse/battleEngine';
+import {gameRules} from '../../shared/eclipse/gameRules';
 import {ambassadorCapacityForSeat} from '../../shared/eclipse/minorSpecies';
-import "./diplomacy.css";
-interface Props {
-  inspectedSeatId?: string;
-  view: PlayerView;
-  candidates: CommandCandidate[];
-  disabled: boolean;
-  onSubmit: (command: GameCommand) => void;
+import type {GameCommand,PlayerView,Seat} from '../../shared/eclipse/types';
+import type {CommandCandidate} from './SecondDawnBoard';
+import {useActionDraftState} from './actionDraftContext';
+import {seatColor} from './factionColors';
+import FactionSymbol from './FactionSymbol';
+import MinorSpeciesMarket,{AcquiredMinorSpecies} from './MinorSpeciesMarket';
+import DiplomacyExchangePreview from './DiplomacyExchangePreview';
+import {diplomacyOfferIssue} from './diplomacyPreview';
+import './diplomacy.css';
+
+interface Props {inspectedSeatId?:string;view:PlayerView;candidates:CommandCandidate[];disabled:boolean;onSubmit:(command:GameCommand)=>void}
+function ReputationRack({view,seat}:{view:PlayerView;seat:Seat}){
+ const exposed=gameRules(view).publicReputation?view.lessRandom?.reputationBySeat[seat.id]:undefined;
+ const count=view.hiddenTileCounts.find(item=>item.seatId===seat.id)?.reputation??0;
+ return <div className="dg-reputation-row">{exposed?exposed.map((vp,index)=><div key={index} className="dg-reputation-token" aria-label={`Public reputation: ${vp} VP`}><strong>{vp}</strong><small>VP</small></div>):Array.from({length:count},(_,index)=><div key={index} className="dg-reputation-back" aria-label="Face-down reputation tile">◇</div>)}<small>{exposed?`${exposed.length} public reputation tiles`:`${count} private reputation ${count===1?'tile':'tiles'}`}</small></div>;
 }
-const names: Record<Resource, string> = { money: "Money", science: "Science", materials: "Materials" };
-const resources: readonly Resource[] = ["money", "science", "materials"];
-export default function DiplomacyPanel({
-  view,
-  inspectedSeatId,
-  candidates,
-  disabled,
-  onSubmit,
-}: Props) {
-  const own = view.seats.find(
-    (s) => s.id === (inspectedSeatId ?? view.viewerSeatId),
-  )!;
-  const viewer = view.seats.find((seat) => seat.id === view.viewerSeatId)!;
-  const isOwn = own.id === view.viewerSeatId;
-  const retainedCount = isOwn
-    ? view.private.reputation.length
-    : (view.hiddenTileCounts.find((h) => h.seatId === own.id)?.reputation ?? 0);
-  const capacity = reputationCapacity(own);
-  const capabilities=getFaction(own.faction).capabilities;
-  const dedicated=capabilities.dedicatedAmbassadorSlots>0;
-  const emptyRackSpaces=Math.max(0,capabilities.reputationSlots+capabilities.dedicatedAmbassadorSlots-own.ambassadors.length-(own.minorSpecies?.length??0)-retainedCount);
-  const emptyAmbassadorSpaces=Math.min(emptyRackSpaces,Math.max(0,ambassadorCapacityForSeat(own)-own.ambassadors.length-(own.minorSpecies?.length??0)));
-  const [chosenResources, setChosenResources] = useState<Record<string, Resource>>({});
-  const offers = candidates.filter((c) => c.command.type === "offer-diplomacy");
-  const returns = candidates.filter(
-    (c) => isOwn && c.command.type === "discard-reputation",
-  );
-  const factionOf = (id: string) =>
-    getFaction(view.seats.find((s) => s.id === id)!.faction);
-  const ambassador = (partnerId: string, ownerId: string) => {
-    const partner = factionOf(partnerId),
-      number = view.seats.findIndex((s) => s.id === partnerId) + 1;
-    const cube = view.seats
-      .find((s) => s.id === ownerId)
-      ?.ambassadorResources?.find((a) => a.from === partnerId)?.resource;
-    return (
-      <div
-        className="dg-ambassador-token"
-        key={partnerId}
-        aria-label={`${ownerId === view.viewerSeatId ? "Your ambassador" : "Ambassador"} from ${partner.name}`}
-        style={{ "--diplomat-color": seatColor(view.seats.find(s=>s.id===partnerId)!) } as CSSProperties}
-      >
-        <svg viewBox="0 0 32 32" aria-hidden="true">
-          <path
-            d="M8 3h16v23l-8 4-8-4Z"
-            fill="currentColor"
-            opacity=".2"
-            stroke="currentColor"
-          />
-          <circle cx="16" cy="11" r="4" fill="currentColor" />
-          <path
-            d="M10 24v-3a6 6 0 0 1 12 0v3"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          />
-        </svg>
-        <div>
-          <strong>
-            Player {number} · {partner.name}
-          </strong>
-          <small>{cube ? `${names[cube]} population cube · ` : ""}1 VP</small>
-        </div>
-      </div>
-    );
-  };
-  return (
-    <div className="dg-diplomacy-panel">
-      <p className="sd-eyebrow">DIPLOMACY & REPUTATION</p>
-      <h1>
-        {isOwn
-          ? "Your diplomatic rack"
-          : `${getFaction(own.faction).name} diplomatic rack`}
-      </h1>
-      <p className="dg-diplomacy-intro">
-        Ambassadors are retained here beside your combat reputation. Each
-        ambassador is worth 1 VP; your reputation values stay private.
-      </p>
-      {isOwn&&<MinorSpeciesMarket view={view} disabled={disabled} onSubmit={onSubmit}/>}
-      {view.seats.length < 4 && (
-        <p className="sd-callout">
-          Ambassador exchanges are available in games with 4–6 players. Combat
-          reputation is still available in this game.
-        </p>
-      )}
-      <section
-        className="dg-diplomatic-rack"
-        aria-label={
-          isOwn
-            ? "Your diplomatic rack"
-            : `${getFaction(own.faction).name} diplomatic rack`
-        }
-      >
-        <div className="dg-rack-heading">
-          <h2>Ambassadors</h2>
-          <span>{own.ambassadors.length} / {getFaction(own.faction).capabilities.ambassadorSupply} retained</span>
-        </div>
-        <div className="dg-ambassador-row">
-          {own.ambassadors.map((id) => ambassador(id, own.id))}
-          {Array.from(
-            { length: Math.min(emptyAmbassadorSpaces,Math.max(0,capabilities.ambassadorSupply-own.ambassadors.length)) },
-            (_, i) => (
-              <div key={`empty-${i}`} className="dg-ambassador-empty">
-                {view.minorSpecies?'Empty shared space':'Empty ambassador slot'}
-              </div>
-            ),
-          )}
-        </div>
-        <p className="dg-rack-note">
-          {dedicated
-            ? "This faction has one dedicated ambassador space. Further ambassadors occupy shared reputation spaces."
-            : "Ambassadors share space with reputation tiles on your faction’s track."}{" "}
-          Exchanging ambassadors moves one population cube off each player’s
-          track.
-        </p>
-        {(own.minorSpecies?.length??0)>0&&<p className="dg-rack-note">{own.minorSpecies!.length} Minor Species {own.minorSpecies!.length===1?'tile occupies':'tiles occupy'} this diplomatic rack. {emptyRackSpaces} empty spaces remain.</p>}
-        <AcquiredMinorSpecies seat={own}/>
-        <div className="dg-rack-heading">
-          <h2>Combat reputation</h2>
-          <span>
-            {retainedCount} / {capacity} available spaces
-          </span>
-        </div>
-        <div className="dg-reputation-row">
-          {isOwn
-            ? view.private.reputation.map((vp, i) => (
-                <div
-                  key={i}
-                  className="dg-reputation-token"
-                  aria-label={`Your reputation: ${vp} VP`}
-                >
-                  <strong>{vp}</strong>
-                  <small>VP</small>
-                </div>
-              ))
-            : Array.from({ length: retainedCount }, (_, i) => (
-                <div
-                  key={i}
-                  className="dg-reputation-back"
-                  aria-label="Face-down reputation tile"
-                >
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path
-                      d="M12 2l8 5v10l-8 5-8-5V7Z M12 7l4 5-4 5-4-5Z"
-                      fill="none"
-                      stroke="currentColor"
-                    />
-                  </svg>
-                </div>
-              ))}
-          {Array.from(
-            { length: Math.max(0, capacity - retainedCount) },
-            (_, i) => (
-              <div
-                key={`empty-${i}`}
-                className="dg-reputation-empty"
-                aria-label="Empty reputation space"
-              >
-                ·
-              </div>
-            ),
-          )}
-        </div>
-        {returns.length > 0 && (
-          <div className="dg-reputation-returns">
-            <p>
-              Return a reputation tile to free room for an ambassador. Its
-              points are lost.
-            </p>
-            {returns.map((candidate, i) => (
-              <button
-                key={i}
-                disabled={disabled}
-                onClick={() => onSubmit(candidate.command)}
-              >
-                {candidate.label}
-              </button>
-            ))}
-          </div>
-        )}
-        {own.traitor && (
-          <p className="dg-traitor">
-            Traitor card · {getFaction(own.faction).special?.ignoresTraitorPenalty?'0':'−2'} VP. The holder cannot form new diplomatic
-            relations.
-          </p>
-        )}
-      </section>
-      {!isOwn && (()=>{
-        const partnerOffers=offers.filter(candidate=>candidate.command.type==='offer-diplomacy'&&candidate.command.to===own.id);
-        if(!partnerOffers.length)return null;
-        const selectedResource=chosenResources[own.id];
-        const chosen=partnerOffers.find(candidate=>candidate.command.type==='offer-diplomacy'&&candidate.command.resource===selectedResource);
-        const faction=getFaction(own.faction);
-        return <section className="dg-diplomacy-offer dg-inspected-offer" aria-label={`Offer diplomacy to ${faction.name}`}>
-          <h2>Form a relation · 1 VP ambassador</h2>
-          <p>Each civilization exchanges an ambassador and returns one population cube to its track. Choose your cube deliberately; inspecting this civilization sends nothing.</p>
-          <div className="dg-diplomacy-cube-choices" role="group" aria-label={`Your population cube for ${faction.name}`}>
-            {resources.map(resource=>{const candidate=partnerOffers.find(item=>item.command.type==='offer-diplomacy'&&item.command.resource===resource);const before=incomeForPopulationAway(viewer.populationTracks[resource]);const after=incomeForPopulationAway(Math.min(11,viewer.populationTracks[resource]+1));return <button key={resource} type="button" className={`dg-diplomacy-cube${selectedResource===resource?' is-selected':''}`} aria-label={candidate?`Choose ${resource} population for ${faction.name}`:`${names[resource]} population unavailable for ${faction.name}`} aria-pressed={selectedResource===resource} disabled={disabled||!candidate} onClick={()=>candidate&&setChosenResources(current=>({...current,[own.id]:resource}))}><TradeResourceIcon resource={resource}/><span><strong>{names[resource]}</strong><small>{candidate?`Income ${before} → ${after}`:'Unavailable'}</small></span></button>;})}
-          </div>
-          {chosen?.command.type==='offer-diplomacy'&&<button className="sd-primary" disabled={disabled} aria-label={`Offer ambassador exchange to ${faction.name}`} onClick={()=>onSubmit(chosen.command)}>Offer ambassador exchange</button>}
-        </section>;
-      })()}
-      {isOwn && (
-        <>
-          <h2>Other civilizations</h2>
-          <div className="dg-diplomacy-partners">
-            {view.seats
-              .filter((s) => s.id !== own.id)
-              .map((seat) => {
-                const faction = getFaction(seat.faction);
-                const partnerOffers = offers.filter(
-                  (c) =>
-                    c.command.type === "offer-diplomacy" &&
-                    c.command.to === seat.id,
-                );
-                const chosen =
-                  partnerOffers.find(
-                    (c) =>
-                      c.command.type === "offer-diplomacy" &&
-                      c.command.resource === chosenResources[seat.id],
-                  ) ?? partnerOffers[0];
-                const chosenOffer =
-                  chosen?.command.type === "offer-diplomacy"
-                    ? chosen.command
-                    : null;
-                const count =
-                  view.hiddenTileCounts.find((h) => h.seatId === seat.id)
-                    ?.reputation ?? 0;
-                return (
-                  <section
-                    className="dg-diplomatic-rack dg-partner-rack"
-                    key={seat.id}
-                    aria-label={`${faction.name} diplomatic rack`}
-                    style={
-                      {
-                        "--diplomat-color": seatColor(seat),
-                      } as CSSProperties
-                    }
-                  >
-                    <div className="dg-rack-heading">
-                      <h3>
-                        <span className="dg-diplomat-number">
-                          {view.seats.findIndex((s) => s.id === seat.id) + 1}
-                        </span>
-                        {faction.name}
-                      </h3>
-                      {seat.traitor && (
-                        <span className="dg-traitor">Traitor · {faction.special?.ignoresTraitorPenalty?'0':'−2'} VP</span>
-                      )}
-                    </div>
-                    <p>
-                      {own.ambassadors.includes(seat.id)
-                        ? "Ambassadors exchanged with you."
-                        : "No diplomatic relation with you."}
-                    </p>
-                    <div className="dg-ambassador-row">
-                      {seat.ambassadors.map((id) => ambassador(id, seat.id))}
-                      {!seat.ambassadors.length && (
-                        <small>No ambassadors retained.</small>
-                      )}
-                    </div>
-                    <AcquiredMinorSpecies seat={seat}/>
-                    <div className="dg-reputation-row">
-                      {Array.from({ length: count }, (_, i) => (
-                        <div
-                          key={i}
-                          className="dg-reputation-back"
-                          aria-label="Face-down reputation tile"
-                        >
-                          <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path
-                              d="M12 2l8 5v10l-8 5-8-5V7Z M12 7l4 5-4 5-4-5Z"
-                              fill="none"
-                              stroke="currentColor"
-                            />
-                          </svg>
-                        </div>
-                      ))}
-                      <small>
-                        {count} private reputation{" "}
-                        {count === 1 ? "tile" : "tiles"}
-                      </small>
-                    </div>
-                    {chosenOffer && (
-                      <div className="dg-diplomacy-offer">
-                        <p>Choose the population cube each civilization returns to its population track.</p>
-                        <div className="dg-diplomacy-cube-choices" role="group" aria-label={`Population cube to exchange with ${faction.name}`}>
-                          {resources.map((resource) => {
-                            const offer = partnerOffers.find((candidate) => candidate.command.type === "offer-diplomacy" && candidate.command.resource === resource);
-                            const available = Boolean(offer);
-                            const selected = chosenOffer.resource === resource;
-                            const incomeBefore = incomeForPopulationAway(own.populationTracks[resource]);
-                            const incomeAfter = incomeForPopulationAway(Math.min(11, own.populationTracks[resource] + 1));
-                            const label = available
-                              ? `Offer ${resource} population cube to ${faction.name}`
-                              : `${names[resource]} population cube unavailable for exchange with ${faction.name}`;
-                            return <button
-                              key={resource}
-                              className={`dg-diplomacy-cube${selected ? " is-selected" : ""}`}
-                              type="button"
-                              aria-label={label}
-                              aria-pressed={selected}
-                              disabled={disabled || !available}
-                              onClick={() => available && setChosenResources((current) => ({ ...current, [seat.id]: resource }))}
-                            >
-                              <TradeResourceIcon resource={resource} />
-                              <span><strong>{names[resource]}</strong><small>{available ? `Income ${incomeBefore} → ${incomeAfter}` : "No legal exchange with this cube"}</small></span>
-                              {selected && <b aria-hidden="true">✓</b>}
-                            </button>;
-                          })}
-                        </div>
-                        <p className="dg-diplomacy-exchange" aria-live="polite" aria-label={`Your ${chosenOffer.resource} income: ${incomeForPopulationAway(own.populationTracks[chosenOffer.resource])} → ${incomeForPopulationAway(Math.min(11, own.populationTracks[chosenOffer.resource] + 1))}`}><TradeResourceIcon resource={chosenOffer.resource} /> Your {chosenOffer.resource} income: {incomeForPopulationAway(own.populationTracks[chosenOffer.resource])} → {incomeForPopulationAway(Math.min(11, own.populationTracks[chosenOffer.resource] + 1))}. Exchange ambassadors.</p>
-                        <button
-                          className="sd-primary"
-                          disabled={disabled}
-                          onClick={() => onSubmit(chosenOffer)}
-                          aria-label={`Offer ambassador exchange to ${faction.name}`}
-                        >
-                          Offer ambassador exchange
-                        </button>
-                      </div>
-                    )}
-                  </section>
-                );
-              })}
-          </div>
-        </>
-      )}
-      {isOwn && offers.length === 0 && view.seats.length >= 4 && (
-        <p className="dg-rack-note">
-          No ambassador exchange is currently available. Both players need
-          connected controlled sectors, room on their tracks, an available
-          population cube, and no shared or hostile occupied sectors. A traitor
-          cannot exchange ambassadors. Complete any outstanding decision first.
-        </p>
-      )}
-      <p className="dg-rack-note">
-        Ending your action with ships in a diplomatic partner’s territory or a
-        sector containing their ships breaks that relation and gives you the
-        traitor card. You may pass through while unpinned and leave before
-        ending the action. Both ambassadors and population cubes are returned
-        through the game’s choices. The card remains with its holder until
-        another player breaks a diplomatic relation and takes it; it does not
-        reset each round.
-      </p>
-    </div>
-  );
+function Ambassadors({view,seat}:{view:PlayerView;seat:Seat}){
+ return <div className="dg-ambassador-row">{seat.ambassadors.map(id=>{
+  const partner=view.seats.find(item=>item.id===id);if(!partner)return null;
+  const resource=seat.ambassadorResources?.find(item=>item.from===id)?.resource;
+  return <div key={id} className="dg-ambassador-token" aria-label={`${seat.id===view.viewerSeatId?'Your ambassador':'Ambassador'} from ${getFaction(partner.faction).name}`} style={{'--diplomat-color':seatColor(partner)} as CSSProperties}><FactionSymbol faction={partner.faction}/><div><strong>{getFaction(partner.faction).name}</strong><small>{resource?`${resource} cube · `:''}1 VP</small></div></div>;
+ })}</div>;
+}
+export default function DiplomacyPanel({view,inspectedSeatId,candidates,disabled,onSubmit}:Props){
+ const viewer=view.seats.find(seat=>seat.id===view.viewerSeatId)!;
+ const inspected=view.seats.find(seat=>seat.id===inspectedSeatId)??viewer;
+ const own=inspected.id===viewer.id;
+ const privateMatches=view.private.seatId===viewer.id;
+ const [selectedPartner,setSelectedPartner]=useActionDraftState('diplomacyPartner',null);
+ const [chosenResources,setChosenResources]=useActionDraftState('diplomacyResources',{});
+ const [selectedReputation,setSelectedReputation]=useState<{index:number;value:number}|null>(null);
+ const partner=own?view.seats.find(seat=>seat.id===selectedPartner):inspected;
+ const offers=candidates.flatMap(candidate=>candidate.command.type==='offer-diplomacy'?[candidate.command]:[]);
+ const partnerOffers=offers.filter(command=>command.to===partner?.id);
+ const choices=partnerOffers.map(command=>command.resource);
+ const resource=partner?(chosenResources[partner.id]??(choices.length===1?choices[0]:undefined)):undefined;
+ const chosen=partnerOffers.find(command=>command.resource===resource);
+ const returns=candidates.flatMap(candidate=>candidate.command.type==='discard-reputation'?[candidate.command]:[]);
+ const retainedCount=privateMatches?view.private.reputation.length:view.hiddenTileCounts.find(item=>item.seatId===viewer.id)?.reputation??0;
+ const capacity=reputationCapacity(viewer),capabilities=getFaction(viewer.faction).capabilities;
+ const emptyRackSpaces=Math.max(0,capabilities.reputationSlots+capabilities.dedicatedAmbassadorSlots-viewer.ambassadors.length-(viewer.minorSpecies?.length??0)-retainedCount);
+ const emptyAmbassadorSpaces=Math.min(emptyRackSpaces,Math.max(0,ambassadorCapacityForSeat(viewer)-viewer.ambassadors.length-(viewer.minorSpecies?.length??0)),Math.max(0,capabilities.ambassadorSupply-viewer.ambassadors.length));
+ const selectedReturn=selectedReputation&&privateMatches&&view.private.reputation[selectedReputation.index]===selectedReputation.value?returns.find(command=>command.values.length===1&&command.values[0]===selectedReputation.value):undefined;
+ return <div className="dg-diplomacy-panel">
+  <h1>{own?'Diplomacy':`${getFaction(inspected.faction).name} diplomacy`}</h1>
+  {own&&<nav className="dg-relationship-overview" aria-label="Relationships">{view.seats.filter(seat=>seat.id!==viewer.id).map(seat=><button key={seat.id} type="button" aria-label={`Select relationship with ${getFaction(seat.faction).name}`} aria-pressed={selectedPartner===seat.id} onClick={()=>setSelectedPartner(seat.id)}><FactionSymbol faction={seat.faction}/><strong>{getFaction(seat.faction).name}</strong><small>{viewer.ambassadors.includes(seat.id)?'Ambassadors exchanged':seat.traitor?'Traitor':offers.some(command=>command.to===seat.id)?'Exchange available':'No relation'}</small></button>)}</nav>}
+  {partner&&<section className="dg-diplomatic-rack dg-partner-rack" aria-label={`${getFaction(partner.faction).name} diplomatic rack`}>
+   <header className="dg-rack-heading"><h2>{getFaction(partner.faction).name}</h2></header>
+   <Ambassadors view={view} seat={partner}/><ReputationRack view={view} seat={partner}/>
+   {partner.traitor&&<p className="dg-traitor">Traitor card · {getFaction(partner.faction).special?.ignoresTraitorPenalty?'0':'−2'} VP. Cannot form new diplomatic relations.</p>}
+   {partnerOffers.length>0?<div className="dg-diplomacy-offer"><h3>Form a relation · 1 VP ambassador</h3><DiplomacyExchangePreview seat={viewer} partner={partner} resources={choices} resource={resource} onResourceChange={next=>setChosenResources(current=>({...current,[partner.id]:next}))} disabled={disabled}/><button className="sd-primary" disabled={disabled||!chosen} aria-label={`Offer ambassador exchange to ${getFaction(partner.faction).name}`} onClick={()=>{if(chosen&&!disabled)onSubmit(chosen);}}>Offer ambassador exchange</button></div>:<p role="status">{diplomacyOfferIssue(view,viewer,partner)??'No legal ambassador exchange is available.'}</p>}
+   {(partner.minorSpecies?.length??0)>0&&<details><summary>Recruited Minor Species</summary><AcquiredMinorSpecies seat={partner}/></details>}
+  </section>}
+  {own&&<>
+   <section className="dg-diplomatic-rack" aria-label="Your diplomatic rack">
+    <header className="dg-rack-heading"><h2>Your ambassadors</h2><span>{viewer.ambassadors.length} / {capabilities.ambassadorSupply} retained</span></header>
+    <Ambassadors view={view} seat={viewer}/>
+    <div className="dg-ambassador-row">{Array.from({length:emptyAmbassadorSpaces},(_,index)=><div key={index} className="dg-ambassador-empty">{view.minorSpecies?'Empty shared space':'Empty ambassador slot'}</div>)}</div>
+    <div className="dg-rack-heading"><h2>Reputation</h2><span>{retainedCount} / {capacity} spaces</span></div>
+    {privateMatches?<div className="dg-reputation-row">{view.private.reputation.map((vp,index)=><button key={index} type="button" className="dg-reputation-token" aria-label={`Your reputation: ${vp} VP`} aria-pressed={selectedReputation?.index===index&&selectedReputation.value===vp} disabled={disabled||!returns.some(command=>command.values.length===1&&command.values[0]===vp)} onClick={()=>setSelectedReputation({index,value:vp})}><strong>{vp}</strong><small>VP</small></button>)}</div>:<ReputationRack view={view} seat={viewer}/>}
+    {selectedReputation&&privateMatches&&<div className="dg-reputation-returns"><p>Free 1 rack space · lose {selectedReputation.value} VP.</p><button className="sd-primary" disabled={disabled||!selectedReturn} onClick={()=>{if(selectedReturn&&!disabled)onSubmit(selectedReturn);}}>Return selected reputation · lose {selectedReputation.value} VP</button>{!selectedReturn&&<p role="status">This tile can no longer be returned. Select an available tile.</p>}</div>}
+    {viewer.traitor&&<p className="dg-traitor">Traitor card · {getFaction(viewer.faction).special?.ignoresTraitorPenalty?'0':'−2'} VP. Cannot form new diplomatic relations.</p>}
+    <details><summary>Rack capacity and diplomacy rules</summary><p className="dg-rack-note">{capabilities.dedicatedAmbassadorSlots>0?'This faction has one dedicated ambassador space. Further ambassadors occupy shared reputation spaces.':'Ambassadors share space with reputation tiles on your faction’s track.'}</p>{(viewer.minorSpecies?.length??0)>0&&<p className="dg-rack-note">{viewer.minorSpecies!.length} Minor Species {viewer.minorSpecies!.length===1?'tile occupies':'tiles occupy'} this diplomatic rack. {emptyRackSpaces} empty spaces remain.</p>}<p>{gameRules(view).publicReputation?'Reputation is public in this game.':'Your reputation values stay private.'}</p><p>Ending an action with ships in a partner’s territory or sharing a sector breaks that relation. Both ambassadors return and you take the Traitor card.</p></details>
+    {(viewer.minorSpecies?.length??0)>0&&<details><summary>Recruited Minor Species</summary><AcquiredMinorSpecies seat={viewer}/></details>}
+   </section>
+   <MinorSpeciesMarket view={view} disabled={disabled} onSubmit={onSubmit}/>
+  </>}
+ </div>;
 }

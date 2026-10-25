@@ -33,3 +33,4 @@
 /* Public details can be long; retain the sole exit above scrolling map/content. */
 .dg-public-inspection > header{position:sticky;top:-18px;z-index:20;margin:-18px -18px 0;padding:18px;background:#101d28;border-bottom:1px solid #4d5b60}
 @media(max-width:600px){.dg-public-inspection > header{top:-14px;margin:-14px -14px 0;padding:14px}}
+.dg-history-panel header{display:flex;align-items:center;flex-wrap:wrap;gap:8px}.dg-history-panel header h2{margin-right:auto}.dg-history-panel header button,.dg-history-inspect{min-height:44px}.dg-history-round{font-size:14px;color:#eed7a7;padding:8px 0;border-bottom:1px solid #685b42}.dg-history-panel header button[aria-pressed=true]{border-color:#e6bc72;color:#e6bc72}

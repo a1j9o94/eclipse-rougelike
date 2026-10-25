@@ -32,3 +32,4 @@
 .eo-colonies>summary:focus-visible{outline:2px solid #f7d997;outline-offset:3px}
 .eo-research{margin-top:16px}
 @media(max-width:700px){.eo-quick-status{grid-template-columns:1fr;gap:12px}.eo-colony-supply{gap:12px}.eo-colony-supply header{width:auto;flex:1}.eo-colony-supply button{width:100%;margin:0}.eo-colonies>summary>span{width:100%;padding-left:18px}}
+.eo-reference>summary{cursor:pointer;min-height:44px;display:flex;align-items:center;color:#e6cc93}.eo-reference>summary:focus-visible{outline:2px solid #e6cc93;outline-offset:4px}.eo-reference:not([open]){margin:8px 0}

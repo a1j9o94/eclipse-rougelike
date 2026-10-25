@@ -1,3 +1,4 @@
+import {useCommitLabel} from './commitContext';
 import AdvancedPlanetBadge from './AdvancedPlanetBadge';
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useActionDraftGuard, useActionDraftState } from './actionDraftContext';
@@ -41,10 +42,13 @@ function SectorChoice({ sectorId, view, purpose, selected, disabled, onClick }: 
 
 /** Every staged choice is an authoritative candidate, including transfer and refresh. */
 export default function InfluencePlanner({ view, candidates, disabled, onSubmit, selectedSectorId, onLegalTargetIdsChange, onSectorFocus }: InfluencePlannerProps) {
+  const commitLabel=useCommitLabel();
   const choices = useMemo(() => influenceChoices(candidates), [candidates]);
   const [sourceId, setSourceId] = useActionDraftState('influenceSource',null);
   const [draft, setDraft] = useActionDraftState('influenceDraft',null);
   const [focusedId,setFocusedId] = useState<string|null>(()=>draft?.command.type==='influence' ? draft.command.addSectorIds[0]??null : null);
+  const [choosingSource,setChoosingSource]=useState(false);
+  const [sourceIssue,setSourceIssue]=useState<string|null>(null);
   const draftGuard=useActionDraftGuard();
   const firstSelection=useRef(true);
   const own=view.seats.find(seat=>seat.id===view.viewerSeatId);
@@ -52,7 +56,9 @@ export default function InfluencePlanner({ view, candidates, disabled, onSubmit,
   const owner=view.seats.find(seat=>seat.id===selected?.owner);
   const transfers=useMemo(()=>[...choices.transfersBySource.values()].flat(),[choices]);
   const targetIds=useMemo(()=>[...new Set([...choices.addOnly,...transfers].flatMap(candidate=>candidate.command.type==='influence'?candidate.command.addSectorIds:[]))],[choices,transfers]);
-  const selectedTransfers=transfers.filter(candidate=>candidate.command.type==='influence'&&candidate.command.addSectorIds[0]===focusedId);
+  const selectedTransfers=useMemo(()=>transfers.filter(candidate=>candidate.command.type==='influence'&&candidate.command.addSectorIds[0]===focusedId),[transfers,focusedId]);
+  const sourceIds=useMemo(()=>[...new Set(selectedTransfers.flatMap(candidate=>candidate.command.type==='influence'?candidate.command.removeSectorIds:[]))],[selectedTransfers]);
+  const mapTargetIds=choosingSource?sourceIds:targetIds;
   const draftLegal=!!draft&&candidates.some(candidate=>JSON.stringify(candidate.command)===JSON.stringify(draft.command));
   const preview=draft?previewCommand(view,draft.command):null;
   const removed=draft?.command.type==='influence'?draft.command.removeSectorIds:[];
@@ -60,17 +66,25 @@ export default function InfluencePlanner({ view, candidates, disabled, onSubmit,
   const tile=(id:string)=>view.sectors.find(sector=>sector.id===id)?.tileId??id;
   const confirmation=removed.length ? added.length ? `Withdraw from ${removed.map(tile).join(', ')} and control ${added.map(tile).join(', ')}` : `Withdraw from sector ${removed.map(tile).join(', ')}` : added.length ? `Take control of sector ${added.map(tile).join(', ')}` : 'Confirm refresh colony ships';
   const chooseTarget=(id:string)=>{
-    setFocusedId(id);setSourceId(null);
-    setDraft(choices.addOnly.find(candidate=>candidate.command.type==='influence'&&candidate.command.addSectorIds[0]===id)??null);
+    setFocusedId(id);setChoosingSource(false);setSourceIssue(null);
+    if(sourceId&&targetIds.includes(id)){
+      const transfer=transfers.find(candidate=>candidate.command.type==='influence'&&candidate.command.removeSectorIds[0]===sourceId&&candidate.command.addSectorIds[0]===id);
+      setDraft(transfer??{command:{type:'influence',removeSectorIds:[sourceId],addSectorIds:[id]},label:'Transfer control',description:''});
+    }else setDraft(choices.addOnly.find(candidate=>candidate.command.type==='influence'&&candidate.command.addSectorIds[0]===id)??null);
   };
-  useEffect(()=>{onLegalTargetIdsChange?.(targetIds);},[onLegalTargetIdsChange,targetIds]);
+  const chooseSource=(id:string)=>{
+    const transfer=selectedTransfers.find(candidate=>candidate.command.type==='influence'&&candidate.command.removeSectorIds[0]===id);
+    if(!transfer){setSourceIssue('Choose a highlighted controlled sector whose disc can reach this destination.');return;}
+    setSourceId(id);setDraft(transfer);setChoosingSource(false);setSourceIssue(null);
+  };
+  useEffect(()=>{onLegalTargetIdsChange?.(mapTargetIds);},[onLegalTargetIdsChange,mapTargetIds]);
   useEffect(()=>{
     if(firstSelection.current){firstSelection.current=false;if(draft)return;}
-    if(selectedSectorId)chooseTarget(selectedSectorId);
+    if(selectedSectorId){if(choosingSource)chooseSource(selectedSectorId);else chooseTarget(selectedSectorId);}
     // Map selection is a deliberate draft change. Candidate refresh must not replace a saved selection.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[selectedSectorId]);
-  const reset=()=>{setSourceId(null);setDraft(null);setFocusedId(null);};
+  const reset=()=>{setSourceId(null);setDraft(null);setFocusedId(null);setChoosingSource(false);setSourceIssue(null);};
   const hasChoices=!!choices.refresh||choices.removeOnly.length>0||targetIds.length>0;
 
   return <section className="dg-influence-planner" aria-label="Influence planner">
@@ -81,14 +95,17 @@ export default function InfluencePlanner({ view, candidates, disabled, onSubmit,
       <h3>Sector {selected.tileId}</h3>
       {selected.owner===view.viewerSeatId?<p>You already control this sector.</p>:owner?<p>Controlled by {getFaction(owner.faction).name??owner.faction}. You cannot take control with Influence.</p>:targetIds.includes(selected.id)?<p>{sectorDefinition(Number(selected.tileId))?.victoryPoints??0} VP · Control unlocks its empty planets for colonization.</p>:<p>You cannot control this sector now. It needs a legal connection and no blocking enemy ships.</p>}
       {selected.owner===view.viewerSeatId&&<p>Choose an uncontrolled sector to expand. Giving up territory is a separate option below.</p>}
+      {sourceId&&choices.addOnly.some(candidate=>candidate.command.type==='influence'&&candidate.command.addSectorIds[0]===focusedId)&&<button type="button" disabled={disabled} onClick={()=>{setSourceId(null);setDraft(choices.addOnly.find(candidate=>candidate.command.type==='influence'&&candidate.command.addSectorIds[0]===focusedId)??null);}}>Use a disc from the track</button>}
       {selectedTransfers.length>0&&<details className="dg-influence-transfer" open={!choices.addOnly.some(candidate=>candidate.command.type==='influence'&&candidate.command.addSectorIds[0]===focusedId)}>
         <summary>{choices.addOnly.some(candidate=>candidate.command.type==='influence'&&candidate.command.addSectorIds[0]===focusedId)?'Use a disc from an existing sector instead':'Choose a sector to give up for its disc'}</summary>
+        <button type="button" disabled={disabled} aria-pressed={choosingSource} onClick={()=>{setChoosingSource(true);setSourceIssue(null);}}>Choose source on map</button>
+        {choosingSource&&<p role="status">Choose a highlighted source · destination stays sector {selected.tileId}.</p>}{sourceIssue&&<p role="alert">{sourceIssue}</p>}
         <p>This withdraws control from the source. Its population returns and you lose its sector points.</p>
-        <div className="dg-influence-sector-list">{selectedTransfers.map(candidate=>candidate.command.type==='influence'&&<SectorChoice key={candidate.command.removeSectorIds.join('-')} sectorId={candidate.command.removeSectorIds[0]} view={view} purpose="transfer" selected={draft===candidate} disabled={disabled} onClick={()=>{if(candidate.command.type==='influence')setSourceId(candidate.command.removeSectorIds[0]);setDraft(candidate);}}/>)}</div>
+        <div className="dg-influence-sector-list">{selectedTransfers.map(candidate=>candidate.command.type==='influence'&&<SectorChoice key={candidate.command.removeSectorIds.join('-')} sectorId={candidate.command.removeSectorIds[0]} view={view} purpose="transfer" selected={sourceId===candidate.command.removeSectorIds[0]} disabled={disabled} onClick={()=>{if(candidate.command.type==='influence')chooseSource(candidate.command.removeSectorIds[0]);}}/>)}</div>
       </details>}
     </section>}
     {draft&&<footer className={`dg-influence-confirm ${removed.length?'is-withdrawal':''}`}>
-      {!draftLegal&&<p role="status">This saved influence choice is no longer legal. Choose another sector or clear the draft.</p>}
+      {!draftLegal&&<p role="status">{sourceId&&added.length?`The disc from sector ${tile(sourceId)} cannot control sector ${added.map(tile).join(', ')}. Choose another source or use a disc from the track.`:'This influence choice is no longer available. Choose another sector or reset the draft.'}</p>}
       <div className="dg-influence-stakes" aria-label="Territory consequences">
         {removed.map(id=>{const sector=view.sectors.find(item=>item.id===id);return sector?<p key={id}><strong>Withdraw from sector {sector.tileId}</strong> · lose {sectorDefinition(Number(sector.tileId))?.victoryPoints??0} sector VP · {sector.population.length} population cubes return in the next choice.</p>:null;})}
         {added.map(id=><p key={id}><strong>Take control of sector {tile(id)}</strong> · gain {sectorDefinition(Number(tile(id)))?.victoryPoints??0} sector VP.</p>)}
@@ -96,8 +113,8 @@ export default function InfluencePlanner({ view, candidates, disabled, onSubmit,
       </div>
       {preview&&<p className="dg-influence-cost">Round-end upkeep: {preview.upkeepAfter} money · {preview.resourcesAfter.money + preview.moneyIncomeAfter - preview.upkeepAfter < 0 ? `${preview.upkeepAfter - preview.resourcesAfter.money - preview.moneyIncomeAfter} money short` : `${preview.resourcesAfter.money + preview.moneyIncomeAfter - preview.upkeepAfter} money left`}{preview.populationChoiceMayChangeIncome?' before population choices':''}</p>}
       <details className="dg-influence-cost-details"><summary>Action and upkeep details</summary><ActionEconomy view={view} action="influence" preview={preview}/></details>
-      <button type="button" className={removed.length?'dg-influence-danger':'sd-primary'} disabled={disabled||draftGuard.stale||!draftLegal} onClick={()=>{if(!disabled&&!draftGuard.stale&&draftLegal)onSubmit(draft.command);}}>{confirmation}</button>
-      <button type="button" disabled={disabled} onClick={reset}>Clear selection</button>
+      <button type="button" className={removed.length?'dg-influence-danger':'sd-primary'} disabled={disabled||draftGuard.stale||!draftLegal} onClick={()=>{if(!disabled&&!draftGuard.stale&&draftLegal)onSubmit(draft.command);}}>{commitLabel(confirmation)}</button>
+      <button type="button" disabled={disabled} onClick={reset}>Reset draft</button>
     </footer>}
     {targetIds.length>0&&<section className="dg-influence-destinations" aria-label="Available sectors to control"><h3>Available sectors</h3><div className="dg-influence-sector-list">{targetIds.map(id=><SectorChoice key={id} sectorId={id} view={view} purpose="control" selected={focusedId===id} disabled={disabled} onClick={()=>{chooseTarget(id);onSectorFocus?.(id);}}/>)}</div></section>}
     <div className="dg-influence-other">

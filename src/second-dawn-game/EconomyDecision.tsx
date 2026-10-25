@@ -1,18 +1,18 @@
+import DiplomacyExchangePreview from './DiplomacyExchangePreview';
 import {seatColor} from './factionColors';
 import {useContext,useEffect,useMemo,useRef,useState} from 'react';
 import {DecisionMapContext} from './decisionMapContext';
 import type {CSSProperties,ReactNode} from 'react';
-import type {DecisionChoice,GameCommand,PendingDecision,PlayerView,Resource,Track} from '../../shared/eclipse/types';
+import type {DecisionChoice,GameCommand,PendingDecision,PlayerView,Resource} from '../../shared/eclipse/types';
 import type {LegalCommandCandidate} from '../../shared/eclipse/legal';
 import {getFaction} from '../../shared/eclipse/catalog';
 import {previewCommand} from '../../shared/eclipse/commandPreview';
 import {incomeForPopulationAway,upkeepForEmptyInfluenceSlots} from '../../shared/eclipse/tracks';
-import {TECHNOLOGIES} from '../../shared/eclipse/technologies';
 import {sectorDefinition} from '../../shared/eclipse/sectors';
 import {ChoiceCards,ResourceChoiceChips} from './DecisionChoicePrimitives';
 import {TradeResourceIcon} from './TradePanel';
 import TradePanel from './TradePanel';
-import TechnologyStats from './TechnologyStats';
+import ResearchWorkspace from './ResearchWorkspace';
 import SectorPlanets from './SectorPlanets';
 import SectorFleet from './SectorFleet';
 import GalaxyBoard from './GalaxyBoard';
@@ -27,33 +27,27 @@ export interface EconomyDecisionProps {decision:EconomyChoice;view?:PlayerView;c
 const resources:Resource[]=['money','science','materials'];
 const names:Record<Resource,string>={money:'Money',science:'Science',materials:'Materials'};
 function DecisionFrame({title,children,choice,label,valid=true,...props}:EconomyDecisionProps&{title:string;children:ReactNode;choice:DecisionChoice;label:string;valid?:boolean}){
- return <section className="dg-economy-decision" aria-label={title}><header><small>SAVED DECISION</small><h2>{title}</h2></header><div className="dg-economy-decision-body">{children}</div><footer><button className="sd-primary" disabled={props.disabled||!valid} onClick={()=>props.onSubmit({type:'resolve',decisionId:props.decision.id,choice})}>{label}</button><small>Your choices stay editable until confirmation.</small></footer></section>;
+ return <section className="dg-economy-decision" aria-label={title}><header><h2>{title}</h2></header><div className="dg-economy-decision-body">{children}</div><footer><button className="sd-primary" disabled={props.disabled||!valid} onClick={()=>props.onSubmit({type:'resolve',decisionId:props.decision.id,choice})}>{label}</button></footer></section>;
 }
 
 function ResourceAllocation(props:EconomyDecisionProps&{decision:Extract<EconomyChoice,{kind:'population-return'|'resource-reward'}>}){
  const {decision,view,disabled}=props,seat=view?.seats.find(s=>s.id===decision.owner);
- const [counts,setCounts]=useState<Record<Resource,number>>({money:0,science:0,materials:0});
  const allowed=decision.kind==='population-return'?decision.resources:resources;
+ const [counts,setCounts]=useState<Record<Resource,number>>(()=>({...{money:0,science:0,materials:0},...(allowed.length===1?{[allowed[0]]:decision.count}:{})}));
  const total=resources.reduce((sum,r)=>sum+counts[r],0),isReturn=decision.kind==='population-return';
  const countLimit=(r:Resource)=>isReturn&&decision.destination!=='graveyard'&&seat?seat.populationTracks[r]+1:decision.count;
- const valid=total===decision.count&&resources.every(r=>counts[r]<=countLimit(r));
- const choice:DecisionChoice={kind:decision.kind,resources:resources.flatMap(r=>Array.from({length:counts[r]},()=>r))};
+ const valid=total===decision.count&&resources.every(r=>Number.isSafeInteger(counts[r])&&counts[r]>=0&&counts[r]<=countLimit(r));
+ const choice:DecisionChoice={kind:decision.kind,resources:valid?resources.flatMap(r=>Array.from({length:counts[r]},()=>r)):[]};
  return <DecisionFrame {...props} title={isReturn?'Return population':'Allocate resource reward'} label={isReturn?'Confirm population return':'Confirm reward'} valid={valid} choice={choice}>
   <div className="dg-allocation-pool" aria-label="Unassigned choices"><StatIcon kind="population"/><strong>{decision.count-total}</strong><span>of {decision.count} {isReturn?'cubes':'rewards'} remaining</span></div>
   {isReturn&&<p>{decision.destination==='graveyard'?'Returned cubes go to your graveyard.':'Place each cube back on an eligible population track. This changes future income.'}</p>}
-  <div className="dg-resource-bins">{allowed.map(r=><section key={r} aria-label={`${names[r]} allocation`}><TradeResourceIcon resource={r}/><h3>{names[r]}</h3><div className="dg-allocation-stepper"><button aria-label={`Remove ${r} allocation`} disabled={disabled||counts[r]===0} onClick={()=>setCounts(c=>({...c,[r]:c[r]-1}))}>−</button><output>{counts[r]}</output><button aria-label={`Add ${r} allocation`} disabled={disabled||total>=decision.count||counts[r]>=countLimit(r)} onClick={()=>setCounts(c=>({...c,[r]:c[r]+1}))}>+</button></div>{!isReturn?<><strong>+{counts[r]*decision.perChoice} {r}</strong>{seat&&<small>{seat.resources[r]} → {seat.resources[r]+counts[r]*decision.perChoice} held</small>}</>:seat&&decision.destination!=='graveyard'?<small>Income {incomeForPopulationAway(seat.populationTracks[r])} → {incomeForPopulationAway(Math.max(-1,seat.populationTracks[r]-counts[r]))}</small>:<small>{counts[r]} cubes to graveyard</small>}</section>)}</div>
+  <div className="dg-resource-bins">{allowed.map(r=><section key={r} aria-label={`${names[r]} allocation`}><TradeResourceIcon resource={r}/><h3>{names[r]}</h3>{allowed.length>1?<div className="dg-allocation-stepper"><button aria-label={`Remove ${r} allocation`} disabled={disabled||counts[r]===0} onClick={()=>setCounts(c=>({...c,[r]:c[r]-1}))}>−</button><input type="number" min="0" max={Math.min(decision.count,countLimit(r))} aria-label={`${names[r]} allocation`} disabled={disabled} value={counts[r]} onChange={event=>{const value=Number(event.target.value);if(Number.isFinite(value))setCounts(current=>({...current,[r]:value}));}}/><button aria-label={`Add ${r} allocation`} disabled={disabled||total>=decision.count||counts[r]>=countLimit(r)} onClick={()=>setCounts(c=>({...c,[r]:c[r]+1}))}>+</button></div>:<p>{counts[r]} {isReturn?'cubes':'rewards'}</p>}{allowed.length>1&&<button type="button" disabled={disabled||total>=decision.count||counts[r]>=countLimit(r)} onClick={()=>setCounts(current=>({...current,[r]:Math.min(countLimit(r),current[r]+Math.max(0,decision.count-total))}))}>Put remaining here</button>}{(!Number.isSafeInteger(counts[r])||counts[r]<0||counts[r]>countLimit(r))&&<p role="alert">Choose a whole number from 0 to {countLimit(r)}.</p>}{!isReturn?<><strong>+{counts[r]*decision.perChoice} {r}</strong>{seat&&<small>{seat.resources[r]} → {seat.resources[r]+counts[r]*decision.perChoice} held</small>}</>:seat&&decision.destination!=='graveyard'?<small>Income {incomeForPopulationAway(seat.populationTracks[r])} → {incomeForPopulationAway(Math.max(-1,seat.populationTracks[r]-counts[r]))}</small>:<small>{counts[r]} cubes to graveyard</small>}</section>)}</div>
+  {total>decision.count&&<p role="alert">Remove {total-decision.count} excess allocation{total-decision.count===1?'':'s'} before confirming.</p>}
  </DecisionFrame>;
 }
 
 function FreeTechnology(props:EconomyDecisionProps&{decision:Extract<EconomyChoice,{kind:'free-technology'}>}){
- const [selected,setSelected]=useState(''),[track,setTrack]=useState<Track>('military');
- const choices=props.candidates.flatMap(c=>c.command.type==='resolve'&&c.command.choice.kind==='free-technology'?[c.command.choice]:[]);
- const tracks=choices.filter(c=>c.technologyId===selected).map(c=>c.track);
- const chosenTrack=tracks.includes(track)?track:tracks[0];
- return <DecisionFrame {...props} title="Choose a free technology" label="Confirm free technology" valid={Boolean(selected&&chosenTrack)} choice={{kind:'free-technology',technologyId:selected,track:chosenTrack??'military'}}>
-  <div className="dg-free-technologies">{props.decision.technologyIds.map(id=>{const tech=TECHNOLOGIES.find(t=>t.id===id);if(!tech)return null;return <button key={id} aria-label={`Choose free ${tech.name}`} aria-pressed={selected===id} disabled={props.disabled||!choices.some(c=>c.technologyId===id)} onClick={()=>setSelected(id)}><span className="dg-free-badge">FREE</span><strong>{tech.name}</strong><TechnologyStats technology={tech}/>{!choices.some(c=>c.technologyId===id)&&<small>No legal track space</small>}</button>;})}</div>
-  {selected&&<section><h3>Place on your research board</h3><ChoiceCards label="Research track" value={chosenTrack??''} disabled={props.disabled} onChange={value=>setTrack(value as Track)} options={[...new Set(tracks)].map(value=>({value,label:value[0].toUpperCase()+value.slice(1),visual:<StatIcon kind="discovery"/>}))}/></section>}
- </DecisionFrame>;
+ return <ResearchWorkspace mode="reward" view={props.view} decisionId={props.decision.id} technologyIds={props.decision.technologyIds} candidates={props.candidates} disabled={props.disabled} onSubmit={props.onSubmit}/>;
 }
 
 function ReputationChoice(props:EconomyDecisionProps&{decision:Extract<EconomyChoice,{kind:'reputation'}>}){
@@ -62,7 +56,7 @@ function ReputationChoice(props:EconomyDecisionProps&{decision:Extract<EconomyCh
 
 function DiplomacyChoice(props:EconomyDecisionProps&{decision:Extract<EconomyChoice,{kind:'diplomacy'|'diplomacy-window'}>}){
  const {decision,view}=props;
- const [partner,setPartner]=useState('finish'),[response,setResponse]=useState(''),[resource,setResource]=useState<Resource>(decision.populationSources[0]??'money');
+ const [partner,setPartner]=useState('finish'),[response,setResponse]=useState(''),[resource,setResource]=useState<Resource|undefined>(undefined);
  const choices=props.candidates.flatMap(c=>c.command.type==='resolve'?[c.command.choice]:[]);
  const seat=view?.seats.find(s=>s.id===decision.owner);
  const factionName=(id:string)=>{const s=view?.seats.find(s=>s.id===id);return s?getFaction(s.faction).name:'Civilization';};
@@ -70,11 +64,13 @@ function DiplomacyChoice(props:EconomyDecisionProps&{decision:Extract<EconomyCho
 
  const offering=decision.kind==='diplomacy-window'?partner!=='finish':response==='yes';
  const sources=decision.populationSources.filter(r=>!props.candidates.length||choices.some(c=>decision.kind==='diplomacy-window'?c.kind==='diplomacy-window'&&c.offerTo===partner&&c.resource===r:c.kind==='diplomacy'&&c.accept&&c.resource===r));
- const selectedResource=sources.includes(resource)?resource:sources[0]??resource;
- const choice:DecisionChoice=decision.kind==='diplomacy-window'?{kind:decision.kind,offerTo:partner==='finish'?null:partner,resource:selectedResource}:{kind:decision.kind,accept:response==='yes',resource:selectedResource};
- return <DecisionFrame {...props} title={decision.kind==='diplomacy'?'Ambassador exchange':'Post-combat diplomacy'} label={decision.kind==='diplomacy-window'?(offering?'Offer ambassadors':'Finish diplomacy and continue'):response==='yes'?'Accept ambassadors':response==='no'?'Decline and continue':'Choose accept or decline'} choice={choice} valid={decision.kind==='diplomacy-window'?(!offering||sources.length>0):Boolean(response)&&(!offering||sources.length>0)}>
+ const selectedResource=resource??(sources.length===1?sources[0]:undefined);
+ const resourceLegal=selectedResource!==undefined&&sources.includes(selectedResource);
+ const exchangePartner=decision.kind==='diplomacy'?proposer:view?.seats.find(candidate=>candidate.id===partner);
+ const choice:DecisionChoice=decision.kind==='diplomacy-window'?{kind:decision.kind,offerTo:partner==='finish'?null:partner,resource:selectedResource??'money'}:{kind:decision.kind,accept:response==='yes',resource:selectedResource??'money'};
+ return <DecisionFrame {...props} title={decision.kind==='diplomacy'?'Ambassador exchange':'Post-combat diplomacy'} label={decision.kind==='diplomacy-window'?(offering?'Offer ambassadors':'Finish diplomacy and continue'):response==='yes'?'Accept ambassadors':response==='no'?'Decline and continue':'Choose accept or decline'} choice={choice} valid={decision.kind==='diplomacy-window'?(!offering||resourceLegal):Boolean(response)&&(!offering||resourceLegal)}>
   {decision.kind==='diplomacy-window'?<ChoiceCards label="Diplomacy partner" value={partner} onChange={setPartner} disabled={props.disabled} options={[{value:'finish',label:'Finish diplomacy',description:'No more offers this round. Continue toward upkeep.',visual:<StatIcon kind="influence"/>},...decision.eligibleSeatIds.map(id=>({value:id,label:factionName(id),description:'Exchange ambassadors · 1 VP each',visual:<span className="dg-faction-choice-mark">{(view?.seats.findIndex(s=>s.id===id)??0)+1}</span>}))]}/>:<><div className="dg-ambassador-offer" role="group" aria-label={`Ambassador offer from ${factionName(decision.proposer)}`} style={proposer?{'--ambassador-faction':seatColor(proposer)} as CSSProperties:undefined}>{proposer&&<FactionSymbol faction={proposer.faction}/>}<div><small>AMBASSADOR OFFER FROM</small><h3>{factionName(decision.proposer)}</h3><p>Offers an ambassador{decision.proposerResource?` with a ${decision.proposerResource} population cube`:''}.</p></div></div><p>Choose how to respond. Declining closes this request and lets play continue.</p><ChoiceCards label="Diplomatic response" value={response} onChange={setResponse} disabled={props.disabled} options={[{value:'yes',label:'Accept exchange',description:'Choose your ambassador’s population cube and gain 1 VP.',visual:<StatIcon kind="population"/>},{value:'no',label:'Decline exchange',description:'No ambassadors are exchanged. Continue the game.',visual:<StatIcon kind="shield"/>}]}/></>}
-  {offering&&<section><h3>Choose your ambassador’s population cube</h3>{sources.length?<ResourceChoiceChips label="Ambassador population" resources={sources} value={selectedResource} disabled={props.disabled} onChange={setResource}/>:<p>Return reputation tiles to free an ambassador slot before accepting.</p>}{seat&&sources.length>0&&<p>{names[selectedResource]} income: {incomeForPopulationAway(seat.populationTracks[selectedResource])} → {incomeForPopulationAway(Math.min(11,seat.populationTracks[selectedResource]+1))} · 1 VP ambassador</p>}</section>}
+  {offering&&<section>{seat&&exchangePartner?<DiplomacyExchangePreview seat={seat} partner={exchangePartner} resources={sources} resource={selectedResource} onResourceChange={setResource} disabled={props.disabled} offeredResource={decision.kind==='diplomacy'?decision.proposerResource:undefined}/>:sources.length>1?<ResourceChoiceChips label="Ambassador population" resources={sources} value={selectedResource??''} disabled={props.disabled} onChange={setResource}/>:selectedResource?<p>{names[selectedResource]} population cube</p>:null}{!sources.length&&<p>No eligible population cube or ambassador slot remains for this exchange.</p>}</section>}
   <p>Reputation values remain private. Betraying a partner later gives you the traitor card ({seat&&getFaction(seat.faction).special?.ignoresTraitorPenalty?'0':'−2'} VP).</p>
  </DecisionFrame>;
 }
@@ -83,7 +79,7 @@ function SectorDecision(props:EconomyDecisionProps&{decision:Extract<EconomyChoi
  const {decision,view}=props;
  const sharedMap=useContext(DecisionMapContext);
  const eligible=useMemo(()=>decision.kind==='control'?[decision.sectorId]:decision.kind==='bankruptcy'?decision.abandonableSectorIds:decision.sectorIds,[decision]);
- const [selected,setSelected]=useState(decision.kind==='control'?decision.sectorId:''),[accept,setAccept]=useState('');
+ const [selected,setSelected]=useState(eligible.length===1?eligible[0]:''),[accept,setAccept]=useState('');
  const mapSelection=sharedMap?.selectedSectorId;
  const previousMapSelection=useRef(mapSelection);
  useEffect(()=>{

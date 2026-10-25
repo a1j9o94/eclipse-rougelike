@@ -11,6 +11,38 @@ describe('visual build planner',()=>{
  it('auto-places a new piece only for a legal Build-here shortcut',()=>{const f=fixture(),submit=vi.fn();render(<BuildPlanner {...f} defaultPlacementSectorId={f.sectorId} disabled={false} onClose={()=>{}} onSubmit={submit}/>);fireEvent.click(screen.getByRole('button',{name:'Add interceptor'}));expect(screen.getByRole('button',{name:/1. Interceptor Sector/})).toBeVisible();expect(screen.getByRole('button',{name:/Build 1 ship/})).toBeEnabled();});
  it('assembles first, places pieces independently, and submits one atomic order',()=>{const f=fixture(),first=f.state.sectors.find(s=>s.id===f.sectorId)!;f.state.sectors.push({...first,id:'second-yard',tileId:'305',position:{q:first.position.q+2,r:first.position.r},population:[]});f.view=getPlayerView(f.state,'a')!;const submit=vi.fn();render(<BuildPlanner {...f} disabled={false} onClose={()=>{}} onSubmit={submit}/>);fireEvent.click(screen.getByRole('button',{name:'Add interceptor'}));fireEvent.click(screen.getByRole('button',{name:'Add cruiser'}));expect(screen.getByText('2 pieces still need a sector')).toBeVisible();place('cruiser','305');place('interceptor');fireEvent.click(screen.getByRole('button',{name:/Build 2 ships/}));const command=submit.mock.calls[0][0] as GameCommand;expect(command).toMatchObject({type:'build',builds:[{component:'interceptor',sectorId:f.sectorId},{component:'cruiser',sectorId:'second-yard'}]});expect(processGameCommand(f.state,'a',command).ok).toBe(true);});
  it('publishes map ghosts and handles serial map placement requests',()=>{const f=fixture(),ghosts=vi.fn(),targets=vi.fn(),submit=vi.fn();const ui=render(<BuildPlanner {...f} embedded disabled={false} placementRequest={null} onPlacementPreview={ghosts} onLegalTargetsChange={targets} onClose={()=>{}} onSubmit={submit}/>);expect(screen.queryByRole('dialog')).toBeNull();fireEvent.click(screen.getByRole('button',{name:'Add interceptor'}));expect(ghosts.mock.calls.at(-1)?.[0]).toMatchObject({component:'interceptor',sectorId:null,items:[{component:'interceptor'}]});expect(targets.mock.calls.at(-1)?.[0]).toContain(f.sectorId);ui.rerender(<BuildPlanner {...f} embedded disabled={false} placementRequest={{sectorId:f.sectorId,serial:1}} onPlacementPreview={ghosts} onLegalTargetsChange={targets} onClose={()=>{}} onSubmit={submit}/>);expect(screen.getByRole('button',{name:/1. Interceptor Sector/})).toBeVisible();});
+ it('keeps the map primary and exposes the destination catalog on request',()=>{
+  const f=fixture();render(<BuildPlanner {...f} embedded disabled={false} onClose={()=>{}} onSubmit={vi.fn()}/>);
+  fireEvent.click(screen.getByRole('button',{name:'Add interceptor'}));
+  expect(screen.getByText('Choose a highlighted sector on the map.')).toBeVisible();
+  expect(screen.getByRole('button',{name:'Place interceptor in sector 221'})).not.toBeVisible();
+  fireEvent.click(screen.getByText('Choose from sector list'));
+  place('interceptor');
+  expect(screen.getByRole('button',{name:/1. Interceptor Sector 221/})).toBeVisible();
+  expect(screen.getByRole('button',{name:/Build 1 ship/})).toBeEnabled();
+ });
+ it('retains an unavailable payment and permits explicit correction when only one alternative remains',()=>{
+  const f=fixture();f.state.seats[0].resources={money:4,science:4,materials:1};f.view=getPlayerView(f.state,'a')!;
+  const submit=vi.fn(),props={...f,defaultPlacementSectorId:f.sectorId,disabled:false,onClose:()=>{},onSubmit:submit};
+  const ui=render(<BuildPlanner {...props}/>);
+  fireEvent.click(screen.getByRole('button',{name:'Add interceptor'}));
+  fireEvent.click(screen.getByRole('button',{name:'Pay 4 science'}));
+  f.state.seats[0].resources.science=0;
+  ui.rerender(<BuildPlanner {...props} view={getPlayerView(f.state,'a')!}/>);
+  expect(screen.getByText('Your selected payment is no longer available. Choose a payment below.')).toBeVisible();
+  expect(screen.getByRole('button',{name:/Build 1 ship/})).toBeDisabled();
+  expect(screen.getByRole('img',{name:'Spend 4 science'})).toBeVisible();
+  const alternative=screen.getByRole('button',{name:'Pay 4 money'});
+  expect(alternative).toHaveAttribute('aria-pressed','false');
+  expect(screen.queryByRole('img',{name:'Spend 4 money'})).toBeNull();
+  fireEvent.click(alternative);
+  expect(screen.queryByText('Your selected payment is no longer available. Choose a payment below.')).toBeNull();
+  fireEvent.click(screen.getByRole('button',{name:/Convert & Build 1 ship/}));
+  expect(submit).toHaveBeenCalledTimes(1);
+  const command=submit.mock.calls[0][0] as GameCommand;
+  expect(command).toMatchObject({type:'trade-and-act',trades:[{from:'money',to:'materials',amount:2}]});
+  expect(processGameCommand(f.state,'a',command).ok).toBe(true);
+ });
  it('shows capabilities and technology or finite-supply blockers',()=>{const f=fixture();f.view.seats[0].technologies={military:[],grid:[],nano:[]};f.view.ships.push(...Array.from({length:7},(_,i)=>({...f.view.ships.find(s=>s.owner==='a')!,id:`extra-${i}`})));render(<BuildPlanner {...f} disabled onClose={()=>{}} onSubmit={()=>{}}/>);expect(screen.getByText('Research Starbase first.')).toBeVisible();expect(screen.getByText('All interceptors are deployed.')).toBeVisible();expect(screen.getByText(/Hull 1 · move 1/)).toBeVisible();});
  it('funds the placed order atomically and supports returning a piece to the tray',()=>{const f=fixture();f.state.seats[0].resources={money:4,science:0,materials:1};f.view=getPlayerView(f.state,'a')!;const submit=vi.fn();render(<BuildPlanner {...f} disabled={false} onClose={()=>{}} onSubmit={submit}/>);fireEvent.click(screen.getByRole('button',{name:'Add interceptor'}));place('interceptor');expect(screen.getByText('Conversion required')).toBeVisible();expect(within(screen.getByRole('region',{name:'Action cost preview'})).getByText(/money: 4 → 0/)).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'Return to tray'}));expect(screen.getByRole('button',{name:/Build 1 ship/})).toBeDisabled();place('interceptor');fireEvent.click(screen.getByRole('button',{name:/Convert & Build 1 ship/}));const command=submit.mock.calls[0][0] as GameCommand;expect(command.type).toBe('trade-and-act');expect(processGameCommand(f.state,'a',command).ok).toBe(true);});
 });

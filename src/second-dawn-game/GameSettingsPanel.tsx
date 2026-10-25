@@ -9,7 +9,7 @@ export interface GameSettingsPanelProps {
  followAi?:boolean;onFollowAiChange?:(enabled:boolean)=>void;
  autoPass?:{enabled:boolean;paused:boolean;disabled:boolean;disabledReason?:string;onChange:(enabled:boolean)=>void};
 }
-export default function GameSettingsPanel({title='Game settings',motionEnabled,onMotionChange,onClose,followAi,onFollowAiChange,autoPass,onHistory,onGameMenu}:GameSettingsPanelProps){
+export default function GameSettingsPanel({title='Preferences',motionEnabled,onMotionChange,onClose,followAi,onFollowAiChange,autoPass,onHistory,onGameMenu}:GameSettingsPanelProps){
  const [dice3d,setDice3d]=useDice3dEnabled();
  const [diceSound,setDiceSound]=useDiceSoundEnabled();
  const [diceVolume,setDiceVolume]=useDiceSoundVolume();
@@ -19,7 +19,6 @@ export default function GameSettingsPanel({title='Game settings',motionEnabled,o
   if(event.key==='Escape'){event.stopPropagation();onClose();}
   if(event.key==='Tab'){const elements=Array.from(ref.current?.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled)')??[]);const first=elements[0],last=elements.at(-1);if(event.shiftKey&&(document.activeElement===first||document.activeElement===ref.current)){event.preventDefault();last?.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}}
  }}><header><div><small>MAKE YOURSELF AT HOME</small><h2>{title}</h2></div><button onClick={onClose} aria-label="Close settings">×</button></header>
- {(onHistory||onGameMenu)&&<div className="dg-settings-game-actions">{onHistory&&<button onClick={onHistory}>History &amp; undo</button>}{onGameMenu&&<button onClick={onGameMenu}>Leave or resign game</button>}</div>}
  <label><span><strong>3D combat dice</strong><small>Dice tumble across the game screen. Turn off for instant results.</small></span><input type="checkbox" checked={dice3d} onChange={event=>setDice3d(event.target.checked)}/></label>
  <label><span><strong>Animations</strong><small>Movement, combat and action effects.</small></span><input type="checkbox" checked={motionEnabled} onChange={event=>onMotionChange(event.target.checked)}/></label>
  <label><span><strong>Dice sounds</strong><small>Hear the dice tumble and settle, even with animations off.</small></span><input type="checkbox" checked={diceSound} onChange={event=>setDiceSound(event.target.checked)}/></label>
@@ -30,6 +29,7 @@ export default function GameSettingsPanel({title='Game settings',motionEnabled,o
  {autoPass.disabled&&autoPass.disabledReason&&<p>{autoPass.disabledReason}</p>}
  {autoPass.enabled&&autoPass.paused&&<div className="dg-settings-auto-pass-status"><p role="status">Attacked · reactions restored</p><button disabled={autoPass.disabled} onClick={()=>autoPass.onChange(true)}>Resume auto-pass</button></div>}</>}
  {dice3d&&!motionEnabled&&<p>Animations are off. Dice results appear instantly.</p>}
- <p>Sound and display preferences save automatically in this browser. Reduced-motion settings are respected.</p>
+ <p>Display and sound saved in this browser · reduced motion is respected.</p>
+ {(onHistory||onGameMenu)&&<section className="dg-settings-game-controls" aria-label="Game controls"><h3>Game controls</h3><div className="dg-settings-game-actions">{onHistory&&<button onClick={onHistory}>History &amp; undo</button>}{onGameMenu&&<button onClick={onGameMenu}>Return home or resign</button>}</div></section>}
  </section></div>;
 }

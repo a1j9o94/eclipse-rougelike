@@ -93,7 +93,7 @@ describe('visual movement planning',()=>{
   fireEvent.click(screen.getByRole('checkbox',{name:'Interceptor 1'}));
   expect(screen.getByText('2 / 3 move activations selected')).toBeInTheDocument();
   expect(rendered.container.querySelectorAll('.dg-movement-route p')).toHaveLength(1);
-  fireEvent.click(screen.getByRole('button',{name:/Confirm move.*2 activations/}));
+  fireEvent.click(screen.getByRole('button',{name:/Move fleet.*2 activations/}));
   expect(submit).toHaveBeenCalledTimes(1);expect(submit.mock.calls[0][0].moves.map((move:{shipId:string})=>move.shipId)).toEqual([ship.id,ship.id]);
  });
  it('derives an exact multi-ship command accepted by the authoritative engine',()=>{
@@ -115,20 +115,20 @@ describe('visual movement planning',()=>{
   fireEvent.click(screen.getByRole('checkbox',{name:/Interceptor 1/}));
   expect(targets).toHaveBeenLastCalledWith(expect.arrayContaining([target.id]));expect(submit).not.toHaveBeenCalled();
   rendered.rerender(<MovementPlanner {...props} selectedTargetId={target.id}/>);
-  fireEvent.click(screen.getByRole('button',{name:/Confirm move/}));expect(submit).toHaveBeenCalledTimes(1);
+  fireEvent.click(screen.getByRole('button',{name:/Move fleet/}));expect(submit).toHaveBeenCalledTimes(1);
  });
  it('queues, reorders, and executes the combined route command once',()=>{
   const {state,source,middle,target,ship}=chainFixture();state.ships.push({...ship,id:'spare'});const submit=vi.fn();const previews=vi.fn();const selection=vi.fn();
   const props={view:getPlayerView(state,'a')!,sourceSectorId:source.id,selectedTargetId:middle.id,disabled:false,onTargetsChange:vi.fn(),onClose:vi.fn(),onSubmit:submit,onRoutePreview:previews,onSelectionChange:selection};
   const rendered=render(<MovementPlanner {...props}/>);
   fireEvent.click(screen.getByRole('checkbox',{name:/Interceptor 1/}));
-  fireEvent.click(screen.getByRole('button',{name:/Queue route/}));
-  expect(screen.getByRole('region',{name:/Queued movement routes/})).toHaveTextContent(/Queued routes · 1/);
+  fireEvent.click(screen.getByRole('button',{name:/Add another route/}));
+  expect(screen.getByRole('region',{name:/Movement routes/})).toHaveTextContent(/Routes · 1/);
   expect(selection).toHaveBeenLastCalledWith({sourceSectorId:source.id,shipIds:[],targetSectorId:null});
   rendered.rerender(<MovementPlanner {...props} sourceSectorId={middle.id} selectedTargetId={target.id}/>);
   fireEvent.click(screen.getByRole('checkbox',{name:/Interceptor 1/}));
-  fireEvent.click(screen.getByRole('button',{name:/Queue route/}));
-  fireEvent.click(screen.getByRole('button',{name:/Execute 2 routes/}));
+  fireEvent.click(screen.getByRole('button',{name:/Add another route/}));
+  fireEvent.click(screen.getByRole('button',{name:/Move fleet/}));
   expect(submit).toHaveBeenCalledWith({type:'move',moves:[{shipId:ship.id,path:[middle.id]},{shipId:ship.id,path:[target.id]}]});
   expect(previews).toHaveBeenLastCalledWith(expect.arrayContaining([expect.objectContaining({status:'valid'})]));
  });
@@ -136,23 +136,23 @@ describe('visual movement planning',()=>{
   const {state,source,middle,target,ship}=chainFixture();const submit=vi.fn();
   const props={view:getPlayerView(state,'a')!,sourceSectorId:source.id,selectedTargetId:middle.id,disabled:false,onTargetsChange:vi.fn(),onClose:vi.fn(),onSubmit:submit,onRoutePreview:vi.fn(),onSelectionChange:vi.fn()};
   const rendered=render(<MovementPlanner {...props}/>);
-  fireEvent.click(screen.getByRole('checkbox',{name:/Interceptor 1/}));fireEvent.click(screen.getByRole('button',{name:/Queue route/}));
+  fireEvent.click(screen.getByRole('checkbox',{name:/Interceptor 1/}));fireEvent.click(screen.getByRole('button',{name:/Add another route/}));
   rendered.rerender(<MovementPlanner {...props} sourceSectorId={middle.id} selectedTargetId={target.id}/>);
   fireEvent.click(screen.getByRole('checkbox',{name:/Interceptor 1/}));
-  expect(screen.getByText(/Execute includes the selected route/)).toBeInTheDocument();
-  fireEvent.click(screen.getByRole('button',{name:/Execute 2 routes/}));
+  expect(screen.getByRole('button',{name:/Move fleet/})).toBeEnabled();
+  fireEvent.click(screen.getByRole('button',{name:/Move fleet/}));
   expect(submit).toHaveBeenCalledWith({type:'move',moves:[{shipId:ship.id,path:[middle.id]},{shipId:ship.id,path:[target.id]}]});
   expect(state.ships.find(candidate=>candidate.id===ship.id)?.sectorId).toBe(source.id);
  });
  it('marks reordered dependent routes rejected and refuses their execution',()=>{
   const {state,source,middle,target}=chainFixture();const props={view:getPlayerView(state,'a')!,sourceSectorId:source.id,selectedTargetId:middle.id,disabled:false,onTargetsChange:vi.fn(),onClose:vi.fn(),onSubmit:vi.fn(),onRoutePreview:vi.fn(),onSelectionChange:vi.fn()};
   const rendered=render(<MovementPlanner {...props}/>);
-  fireEvent.click(screen.getByRole('checkbox',{name:/Interceptor 1/}));fireEvent.click(screen.getByRole('button',{name:/Queue route/}));
+  fireEvent.click(screen.getByRole('checkbox',{name:/Interceptor 1/}));fireEvent.click(screen.getByRole('button',{name:/Add another route/}));
   rendered.rerender(<MovementPlanner {...props} sourceSectorId={middle.id} selectedTargetId={target.id}/>);
-  fireEvent.click(screen.getByRole('checkbox',{name:/Interceptor 1/}));fireEvent.click(screen.getByRole('button',{name:/Queue route/}));
+  fireEvent.click(screen.getByRole('checkbox',{name:/Interceptor 1/}));fireEvent.click(screen.getByRole('button',{name:/Add another route/}));
   fireEvent.click(screen.getByRole('button',{name:/Move queued route 2 earlier/}));
   expect(screen.getByText(/No friendly ships here|Select only mobile ships/)).toBeInTheDocument();
-  expect(screen.getByRole('button',{name:/Execute 2 routes/})).toBeDisabled();
+  expect(screen.getByRole('button',{name:/Move fleet/})).toBeDisabled();
  });
  it('explains stationary starbases and asks for a source rather than a dropdown',()=>{
   const {state,source}=fixture();state.ships.push({...state.ships[0],id:'base',owner:'a',sectorId:source.id,type:'starbase'});
