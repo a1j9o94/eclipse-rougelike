@@ -36,5 +36,6 @@ it('automatically assigns a manual preview without submitting it',()=>{
  render(<CombatVolleyAllocator view={view} decision={decision} targetLabels={{[target]:'Enemy'}} values={{}} setValue={setValue} motionEnabled={false}/>);
  fireEvent.click(screen.getByRole('button',{name:'Auto assign'}));
  expect(setValue).toHaveBeenCalledWith('die',target);
- expect(screen.getByText('Adjust any assignment before resolving.')).toBeTruthy();
+ expect(screen.getByRole('button',{name:'Target Enemy · hit'})).toBeEnabled();
+ expect(screen.queryByRole('button',{name:'Resolve volley'})).toBeNull();
 });

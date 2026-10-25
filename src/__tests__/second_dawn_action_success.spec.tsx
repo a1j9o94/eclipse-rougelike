@@ -11,7 +11,6 @@ it('accepts updated command receipts silently while retaining authoritative subm
  const view=getPlayerView(state,'a')!;const onSubmit=vi.fn();
  const props={view,candidates:legalCommands(view),connected:true,busy:false,status:'Saved',onSubmit,onMenu:()=>{}};
  const ui=render(<SecondDawnBoard {...props}/>);
- fireEvent.click(screen.getByRole('button',{name:'View turn'}));
  fireEvent.click(screen.getByRole('button',{name:/^Pass/}));
  expect(onSubmit).toHaveBeenCalledWith({type:'pass'});
  ui.rerender(<SecondDawnBoard {...props} lastAcceptedCommand={{revision:1,type:'pass'}}/>);

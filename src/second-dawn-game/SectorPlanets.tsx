@@ -1,3 +1,7 @@
+import {useState,Fragment} from 'react';
+import {TECHNOLOGIES} from '../../shared/eclipse/technologies';
+import {describeTechnology} from './itemDescriptions';
+import PopulationCube from './PopulationCube';
 import AdvancedPlanetBadge from './AdvancedPlanetBadge';
 import { researchedTechnologyIds } from '../../shared/eclipse/technologies';
 import StructureSilhouette from './StructureSilhouette';
@@ -57,7 +61,7 @@ interface Props {
   sector: Sector;
   view: PlayerView|SpectatorView;
   candidates: CommandCandidate[];
-  selection?:{label:string;eligibleSquareIds:readonly string[];selectedSquareId?:string|null;onSelect:(squareId:string)=>void;disabled?:boolean;ghost?:'shrine'};
+  selection?:{label:string;eligibleSquareIds:readonly string[];selectedSquareId?:string|null;onSelect:(squareId:string)=>void;disabled?:boolean;ghost?:'shrine';planned?:Record<string,Resource>};
 }
 const resources: Resource[] = ["money", "science", "materials"];
 const advancedNames = {
@@ -71,7 +75,9 @@ const advancedIds = {
   materials: "advanced-mining",
 };
 export default function SectorPlanets({ sector, view, candidates, selection }: Props) {
-  const PlanetTag=selection?'button':'div';
+  const [inspectedSquare,setInspectedSquare]=useState<string|null>(null);
+  const [inspectedTechnology,setInspectedTechnology]=useState<string|null>(null);
+  const PlanetTag='button';
   const definition = sectorDefinition(Number(sector.tileId))!;
   const own = view.seats.find((s) => s.id === ('viewerSeatId' in view?view.viewerSeatId:undefined));
   const owned = !!own && sector.owner === own.id;
@@ -113,16 +119,16 @@ export default function SectorPlanets({ sector, view, candidates, selection }: P
     );
     const requirement = square.advanced
       ? square.resource === "gray"
-        ? "Requires the chosen resource’s advanced technology, or Metasynthesis."
-        : `Requires ${advancedNames[square.resource as Resource]}, or Metasynthesis.`
+        ? "Requires an advanced resource technology or Metasynthesis"
+        : `Requires ${advancedNames[square.resource as Resource]} or Metasynthesis`
       : null;
     const eligibility =
-      !own || !owned || cube
+      !own || !owned || cube || selection?.eligibleSquareIds.includes(square.id)
         ? null
         : legal.length
-          ? `Can colonize: ${legal.map((r) => PLANET_NAMES[r]).join(" / ")} · 1 colony ship`
+          ? null
           : !unlocked.length
-            ? "Research required before colonizing."
+            ? requirement
             : own.colonyShipsAvailable === 0
               ? "No colony ship available."
               : unlocked.every((r) => own.populationTracks[r] >= 11)
@@ -130,7 +136,8 @@ export default function SectorPlanets({ sector, view, candidates, selection }: P
                 : view.activeSeatId !== own.id
                   ? "Colonize during your turn or upkeep."
                   : "Colonization is unavailable during the current phase or decision.";
-    return { square, cube, requirement, eligibility, legal };
+    const technologyId=square.advanced&&!unlocked.length&&square.resource!=='gray'?advancedIds[square.resource as Resource]:null;
+    return { square, cube, requirement, eligibility, legal,technologyId };
   });
   return (
     <section
@@ -140,20 +147,20 @@ export default function SectorPlanets({ sector, view, candidates, selection }: P
       <h3>Planets & population</h3>
       {squares.length === 0 && <p>No population squares on this sector.</p>}
       <div className="dg-planet-list">
-        {entries.map(({ square, cube, requirement, eligibility }) => (
-          <PlanetTag
-            type={selection?'button':undefined}
-            disabled={selection?(selection.disabled||!selection.eligibleSquareIds.includes(square.id)):undefined}
+        {entries.map(({ square, cube, eligibility,technologyId,legal }) => (
+          <Fragment key={square.id}><PlanetTag
+            type="button"
+            aria-disabled={selection&&(!selection.eligibleSquareIds.includes(square.id)||selection.disabled)?true:undefined}
+            aria-expanded={inspectedSquare===square.id}
             aria-pressed={selection?selection.selectedSquareId===square.id:undefined}
-            aria-label={selection?`${selection.label} ${PLANET_NAMES[square.resource]} planet ${square.id} in sector ${sector.tileId}`:undefined}
-            onClick={selection?()=>selection.onSelect(square.id):undefined}
-            className="dg-planet-row"
+            aria-label={`${selection?.label??'Inspect'} ${PLANET_NAMES[square.resource]} planet ${square.id} in sector ${sector.tileId}`}
+            onClick={()=>{if(selection&&!selection.disabled&&selection.eligibleSquareIds.includes(square.id)){selection.onSelect(square.id);return;}setInspectedSquare(current=>current===square.id?null:square.id);setInspectedTechnology(null);}}
+            className={`dg-planet-row${eligibility?' is-blocked':''}${selection?.planned?.[square.id]?' is-planned':''}`}
             key={square.id}
             data-planet-square={square.id}
             style={{ color: PLANET_COLORS[square.resource] }}
             title={[
               `${PLANET_NAMES[square.resource]}${square.advanced ? " advanced" : ""} planet. ${cube ? `Occupied by a ${PLANET_NAMES[cube.resource]} cube.` : "Empty population square."}`,
-              requirement,
               eligibility,
             ]
               .filter(Boolean)
@@ -186,7 +193,7 @@ export default function SectorPlanets({ sector, view, candidates, selection }: P
             </span>
             <div className="dg-planet-caption">
               <strong>{PLANET_NAMES[square.resource]}</strong>
-              <svg
+              {selection?.planned?.[square.id]?<PopulationCube resource={selection.planned[square.id]} planned color={cubeColor}/>:              <svg
                 className="dg-population-cube"
                 viewBox="0 0 20 20"
                 role="img"
@@ -224,10 +231,16 @@ export default function SectorPlanets({ sector, view, candidates, selection }: P
                     strokeWidth="1.3"
                   />
                 )}
-              </svg>
+              </svg>}
+              {selection?.planned?.[square.id]&&<span className="dg-planet-selected-mark" aria-hidden="true">✓</span>}
             </div>
+            {eligibility&&<span className="dg-planet-lock" role="img" aria-label="Unavailable planet"><svg viewBox="0 0 20 20"><path d="M6 9V6a4 4 0 0 1 8 0v3M4 9h12v9H4Z" fill="none" stroke="currentColor" strokeWidth="1.7"/></svg></span>}
             {selection?.ghost==='shrine'&&selection.selectedSquareId===square.id&&<span className="dg-planet-ghost" role="img" aria-label="Planned Shrine"><StructureSilhouette kind="shrine"/></span>}
-          </PlanetTag>
+          </PlanetTag>{inspectedSquare===square.id&&<div className="dg-planet-inspection" role="region" aria-label={`${PLANET_NAMES[square.resource]} planet details`}>
+            {eligibility?<p role="status">{eligibility}</p>:<p>{cube?`${PLANET_NAMES[cube.resource]} population`:legal.length?`${legal.map(resource=>PLANET_NAMES[resource]).join(' / ')} · 1 colony ship`:square.resource==='orbital'?'Money or Science population':square.resource==='gray'?'One Money, Science or Materials population':`${PLANET_NAMES[square.resource]} population`}</p>}
+            {technologyId&&<button type="button" aria-expanded={inspectedTechnology===technologyId} onClick={()=>setInspectedTechnology(current=>current===technologyId?null:technologyId)}>Inspect {advancedNames[square.resource as Resource]}</button>}
+            {inspectedTechnology===technologyId&&technologyId&&<p>{describeTechnology(TECHNOLOGIES.find(technology=>technology.id===technologyId)!)}</p>}
+          </div>}</Fragment>
         ))}
       </div>
       {squares.length > 0 && !selection && (
@@ -261,42 +274,16 @@ export default function SectorPlanets({ sector, view, candidates, selection }: P
           </span>
         </div>
       )}
-      {squares.length > 0 && !selection && (
-        <details className="dg-colonization-details">
-          <summary>Colonization requirements</summary>
-          {entries.map(({ square, requirement, eligibility }) => (
-            <div key={square.id}>
-              <strong>
-                {PLANET_NAMES[square.resource]}
-                {square.advanced ? " · Advanced" : ""}
-              </strong>
-              {square.resource === "gray" && (
-                <p>Choose Money, Science or Materials.</p>
-              )}
-              {square.resource === "orbital" && <p>Choose Money or Science.</p>}
-              {requirement && <p>{requirement}</p>}
-              {eligibility && <p>{eligibility}</p>}
-              {!requirement && !eligibility && (
-                <p>
-                  {owned
-                    ? "Use one colony ship and a matching population cube for an empty square."
-                    : "Only this sector’s controller can colonize its empty squares."}
-                </p>
-              )}
-            </div>
-          ))}
-        </details>
-      )}
       {!selection&&<><h3>Sector features</h3>
       <dl className="dg-sector-facts">
         <div>
           <dt>Control value</dt>
           <dd>{definition.victoryPoints} VP</dd>
         </div>
-        <div>
+        {definition.artifacts>0&&<div>
           <dt><SectorFeatureIcon kind="artifact"/> Artifacts</dt>
           <dd>{definition.artifacts}</dd>
-        </div>
+        </div>}
       </dl>
       {definition.artifacts > 0 && (
         <p className="dg-feature-note">

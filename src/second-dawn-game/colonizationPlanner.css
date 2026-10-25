@@ -3,3 +3,13 @@
 .dg-colonization-square.is-focused{border-color:#d8b874;box-shadow:inset 0 0 0 1px #d8b87455}
 
 .dg-colonization-resource{margin:0;padding:0;border:0}.dg-colonization-resource button{min-height:44px}.dg-colonization-resource>button{display:block;margin-top:12px}.dg-colonization-resource>p{display:flex;gap:8px;align-items:center;font-size:14px}.dg-colonization-confirm>details{margin:12px 0}.dg-colonization-confirm>details>summary{cursor:pointer;min-height:44px}
+
+.dg-colonization-layout{display:flex;flex-direction:column;gap:12px;margin-top:12px}.dg-colonization-layout .dg-sector-planets>h3{display:none}.dg-colonization-layout .dg-planet-list{grid-template-columns:repeat(2,minmax(0,1fr))}.dg-colonization-layout .dg-planet-row{min-height:70px}.dg-colonization-resource{background:none;padding:0}.dg-colonization-resource>button{margin-top:4px}.dg-colonization-payoff{display:flex;flex-wrap:wrap;gap:9px 15px;padding:0;border:0;background:none;font-size:12px}.dg-colonization-payoff>span{display:flex;align-items:center;gap:6px;text-align:left}.dg-colonization-payoff svg{width:22px;height:22px}.dg-colonization-payoff small{display:block;color:#a7bac9}.dg-planet-selected-mark{position:absolute;right:8px;bottom:7px;font-weight:700}.dg-planet-row.is-planned{border-style:dashed;border-color:#9adbd6;background:#17333c}
+
+@media(max-width:760px){.dg-colonization-confirm{flex-direction:column;align-items:stretch}.dg-colonization-confirm .dg-commit-actions{flex-wrap:wrap}.dg-colonization-confirm .dg-commit-summary{display:grid;gap:8px}.dg-colonization-confirm .dg-colonization-payoff{gap:6px 12px}}
+
+.dg-colonization-planner{height:100%;min-height:0;display:flex;flex-direction:column;box-sizing:border-box;overflow:hidden}.dg-colonization-planner>header{flex:none}.dg-colonization-body{flex:1;min-height:0;overflow:auto}.dg-colonization-body>.dg-colonization-payoff{margin-top:10px;padding-block:8px}.dg-colonization-confirm{flex:none;flex-direction:row;align-items:center;min-height:56px;padding:6px 8px}.dg-colonization-ship-cost{display:flex;align-items:center;gap:7px;white-space:nowrap}.dg-colonization-ship-cost svg{width:24px;height:24px}.dg-colonization-confirm .dg-commit-actions{flex-wrap:wrap}.dg-colonization-confirm .dg-commit-actions>button{padding:8px 10px}.dg-colonization-confirm .dg-commit-summary{display:block}
+
+.dg-colonization-confirm{padding-block:4px}.dg-colonization-confirm .dg-commit-actions>button{height:44px;min-height:44px;box-sizing:border-box}
+
+.dg-app .dg-colonization-confirm{position:relative;padding:5px 8px;min-height:56px}.dg-app .dg-colonization-confirm .dg-commit-actions>button{margin:0}

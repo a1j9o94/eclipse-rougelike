@@ -20,7 +20,7 @@ it('inspects sectors on mobile during an exchange without exposing or altering a
  const submit=vi.fn();
  const {container}=render(<SecondDawnBoard matchId={partition.matchId} view={view} candidates={legalCommands(view)} connected busy={false} status="" onSubmit={submit} onMenu={vi.fn()}/>);
  fireEvent.click(screen.getByRole('radio',{name:'Accept exchange'}));
- fireEvent.click(screen.getByRole('radio',{name:'Science'}));
+ fireEvent.click(screen.getByRole('button',{name:/Choose science population/}));
  fireEvent.click(screen.getByRole('button',{name:'View galaxy'}));
  const map=screen.getByRole('group',{name:'Galaxy map'});
  expect(screen.queryByRole('button',{name:/Relocate planned/})).toBeNull();
@@ -30,5 +30,5 @@ it('inspects sectors on mobile during an exchange without exposing or altering a
  expect(submit).not.toHaveBeenCalled();
  expect(readActionDrafts(localStorage,partition).values.buildOrder?.value).toEqual(order);
  fireEvent.click(screen.getByRole('button',{name:'Return to ambassador exchange'}));
- expect(screen.getByRole('radio',{name:'Science'})).toHaveAttribute('aria-checked','true');
+ expect(screen.getByRole('button',{name:/Choose science population/})).toHaveAttribute('aria-pressed','true');
 });

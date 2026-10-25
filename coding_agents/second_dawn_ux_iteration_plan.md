@@ -1,5 +1,7 @@
 # Second Dawn UX: discoverable strategy and tactile play
 
+Current direction: [Eclipse visual play redesign plan](eclipse_visual_play_plan.md). This new plan governs the next presentation and usability iteration, including removal of routine rules panels and the revised placement of Recruit allies. The implementation ledger below is historical; visual and human UX acceptance remain open.
+
 Status: P1–P5 implementation and engineering review complete; release verification and human playtests tracked below.
 Product owner: Adrian Obleton.
 Source baseline reviewed: `ca764d429e4fe2ead0bba37eda6bf5fb83bb6879`.

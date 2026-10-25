@@ -7,9 +7,21 @@
 .dg-app .dg-movement-route p{flex-wrap:wrap}.dg-movement-route strong small{font-weight:400;color:#c7b588;white-space:nowrap}.dg-movement-route span{overflow-wrap:anywhere}
 .dg-app .dg-movement-result{padding:9px 11px;border-left:3px solid #8bc8a6;border-radius:4px;background:#173b3066;color:#b7e6ca}
 .dg-app .dg-movement-capacity{font-weight:700;color:#e8c77f}
-.dg-app .dg-movement-confirm{display:grid;gap:7px}
-.dg-app .dg-movement-confirm button+button{background:transparent;color:#ddcfb3;border-color:#73633e;font-weight:500}
 .dg-movement-queue{display:grid;gap:6px;padding:9px;border:1px solid #526b7c;border-radius:7px;background:#102130}.dg-movement-queue h3{margin:0;font-size:14px}.dg-movement-queue>div{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;align-items:center;gap:5px;padding:6px;border-left:3px solid #83c6dd;background:#172b3a;font-size:12px}.dg-movement-queue>div.is-rejected{border-left-color:#dc8c76;background:#3b2527}.dg-movement-queue small{grid-column:1/-1;color:#f0b5a5}.dg-movement-queue button{min-height:30px;padding:3px 7px;background:transparent;color:#dce6ef;border:1px solid #63798b;border-radius:4px}
 /* Keep departure editing with the workspace title, including narrow inspectors. */
 .dg-movement-planner > header{flex-wrap:wrap}.dg-movement-heading-copy{flex:1 1 140px;min-width:0}.dg-movement-header-actions{display:flex;align-items:center;flex-wrap:wrap;gap:6px;max-width:100%}.dg-movement-header-actions button{min-height:44px}
 .dg-movement-odds{margin:12px 0;padding:12px;border:1px solid #687f85;border-radius:8px;background:#132630}.dg-movement-odds-lead{display:flex;align-items:baseline;gap:10px}.dg-movement-odds-lead strong{font-size:30px;color:#e4cb8c}.dg-movement-odds-lead span{font-size:12px;color:#c6d9dd}.dg-movement-odds-meter{height:6px;border-radius:3px;background:#38404c;margin:8px 0;overflow:hidden}.dg-movement-odds-meter span{display:block;height:100%;background:#bcb684}.sd-inspector .dg-movement-odds p{font-size:12px;line-height:1.45;margin:7px 0}.sd-inspector .dg-movement-odds details{margin:8px 0 0;font-size:11px}.dg-movement-odds summary{cursor:pointer;color:#c8d5dc}
+.dg-movement-planner{display:flex;flex-direction:column;min-height:0;gap:7px}
+.dg-movement-body{min-height:0;overflow:auto;flex:1 1 auto}
+.dg-movement-budget{display:block;font-size:12px;color:#c9d3db;margin:0 0 7px}
+.dg-movement-confirm.dg-commit-bar{position:static;flex:0 0 auto;padding:8px}
+.dg-movement-confirm .dg-commit-summary>p{font-size:12px;margin:4px 0}
+.dg-movement-planner>header .dg-eyebrow{display:none}
+.dg-movement-planner>header h2{font-size:17px;margin:0}
+.dg-movement-queue>header{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:44px}
+.dg-movement-queue>header h3{margin:0;font-size:12px}
+.dg-movement-queue>header button{min-height:44px;font-size:12px;padding:6px 9px}
+.dg-movement-queue>div>button{min-width:44px;min-height:44px}
+.dg-app .dg-movement-confirm.dg-commit-bar{flex-wrap:nowrap}
+.dg-movement-confirm .dg-commit-summary{flex:1 1 0;min-width:0}
+.dg-movement-confirm .dg-commit-actions{flex:0 0 auto;max-width:50%}

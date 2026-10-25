@@ -91,7 +91,7 @@ describe('visual movement planning',()=>{
   const {state,source,target,ship}=chainFixture();const submit=vi.fn();
   const rendered=render(<MovementPlanner view={getPlayerView(state,'a')!} sourceSectorId={source.id} selectedTargetId={target.id} disabled={false} onTargetsChange={vi.fn()} onClose={vi.fn()} onSubmit={submit}/>);
   fireEvent.click(screen.getByRole('checkbox',{name:'Interceptor 1'}));
-  expect(screen.getByText('2 / 3 move activations selected')).toBeInTheDocument();
+  expect(screen.getByLabelText('Move activations')).toHaveTextContent('2 / 3 moves');
   expect(rendered.container.querySelectorAll('.dg-movement-route p')).toHaveLength(1);
   fireEvent.click(screen.getByRole('button',{name:/Move fleet.*2 activations/}));
   expect(submit).toHaveBeenCalledTimes(1);expect(submit.mock.calls[0][0].moves.map((move:{shipId:string})=>move.shipId)).toEqual([ship.id,ship.id]);

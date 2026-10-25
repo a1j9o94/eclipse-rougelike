@@ -22,6 +22,7 @@ export interface DraftValues {
   'blueprintSlot-interceptor': number; 'blueprintSlot-cruiser': number; 'blueprintSlot-dreadnought': number; 'blueprintSlot-starbase': number;
   influenceSource: string | null; influenceDraft: CommandCandidate | null;
   colonization: Record<string, Resource>; colonizationFocus: string | null;
+  guildOfferSelection:string|null; guildOfferAmounts:Record<string,number>;
   guildGive: Resource; guildReceive: Resource; guildAmount: number;
   tradeTo: Resource; tradeFrom: Resource; tradeAmount: number;
   diplomacyPartner:string|null; diplomacyResources:Record<string,Resource>;
@@ -30,7 +31,7 @@ export interface DraftValues {
 export type DraftKey = keyof DraftValues;
 export type DraftEntries = { [K in DraftKey]?: { revision: number; value: DraftValues[K] } };
 export interface DraftSnapshot extends DraftPartition { version: 1; values: DraftEntries }
-export const DRAFT_KEYS: readonly DraftKey[] = ['buildOrder','movementRoutes','movementEditIndex','researchDraft','exploreDraft','factionDraft','selectedSector','screen','action','commandDraft','researchSelection','editing','playerId','buildOpen','moveOpen','moveSource','moveTarget','historyOpen','camera','movement','buildSector','buildCounts','buildFunding','blueprint-interceptor','blueprint-cruiser','blueprint-dreadnought','blueprint-starbase','blueprintSlot-interceptor','blueprintSlot-cruiser','blueprintSlot-dreadnought','blueprintSlot-starbase','influenceSource','influenceDraft','colonization','colonizationFocus','tradeTo','tradeFrom','tradeAmount','guildGive','guildReceive','guildAmount','diplomacyPartner','diplomacyResources','minorSpeciesSelection','minorSpeciesResources'];
+export const DRAFT_KEYS: readonly DraftKey[] = ['buildOrder','movementRoutes','movementEditIndex','researchDraft','exploreDraft','factionDraft','selectedSector','screen','action','commandDraft','researchSelection','editing','playerId','buildOpen','moveOpen','moveSource','moveTarget','historyOpen','camera','movement','buildSector','buildCounts','buildFunding','blueprint-interceptor','blueprint-cruiser','blueprint-dreadnought','blueprint-starbase','blueprintSlot-interceptor','blueprintSlot-cruiser','blueprintSlot-dreadnought','blueprintSlot-starbase','influenceSource','influenceDraft','colonization','colonizationFocus','tradeTo','tradeFrom','tradeAmount','guildGive','guildReceive','guildAmount','guildOfferSelection','guildOfferAmounts','diplomacyPartner','diplomacyResources','minorSpeciesSelection','minorSpeciesResources'];
 const COMPONENTS = ['interceptor','cruiser','dreadnought','starbase','orbital','monolith'];
 const SHIPS = COMPONENTS.slice(0,4);
 const RESOURCES = ['money','science','materials'];
@@ -76,7 +77,7 @@ function validValue(key: DraftKey, value: unknown): boolean {
     case 'commandDraft': case 'influenceDraft': case 'researchDraft': case 'exploreDraft': return candidate(value);
     case 'factionDraft': return value===null || record(value)&&['convert-colony-ship','load-factory','place-guild-portal','reverse-engineer','buy-activation'].includes(String(value.type))&&publicCommand(value);
     case 'movementEditIndex': return value===null || integer(value,9);
-    case 'diplomacyPartner': case 'selectedSector': case 'researchSelection': case 'moveSource': case 'moveTarget': case 'influenceSource': case 'colonizationFocus': return nullableText(value);
+    case 'guildOfferSelection': case 'diplomacyPartner': case 'selectedSector': case 'researchSelection': case 'moveSource': case 'moveTarget': case 'influenceSource': case 'colonizationFocus': return nullableText(value);
     case 'minorSpeciesSelection':return value===null||MINOR_SPECIES.some(species=>species.id===value);
     case 'diplomacyResources':return record(value)&&Object.keys(value).length<=6&&Object.entries(value).every(([id,resource])=>text(id)&&RESOURCES.includes(String(resource)));
     case 'minorSpeciesResources':return record(value)&&Object.keys(value).length<=MINOR_SPECIES.length&&Object.entries(value).every(([id,resource])=>MINOR_SPECIES.some(species=>species.id===id)&&RESOURCES.includes(String(resource)));
@@ -92,6 +93,7 @@ function validValue(key: DraftKey, value: unknown): boolean {
     case 'buildCounts': return record(value)&&keysOnly(value,COMPONENTS)&&COMPONENTS.every(component=>integer(value[component],100));
     case 'colonization': return record(value)&&Object.keys(value).length<=100&&Object.entries(value).every(([id,resource])=>text(id)&&RESOURCES.includes(String(resource)));
     case 'guildGive': case 'guildReceive': case 'tradeTo': case 'tradeFrom': return RESOURCES.includes(String(value));
+    case 'guildOfferAmounts':return record(value)&&Object.keys(value).length<=100&&Object.entries(value).every(([id,amount])=>text(id)&&integer(amount)&&amount>0);
     case 'guildAmount': case 'tradeAmount': return integer(value) && value>0;
     default: return false;
   }
@@ -128,7 +130,7 @@ export function setDraftValue<K extends DraftKey>(snapshot: DraftSnapshot,key:K,
 }
 export function isMeaningfulDraft(key: DraftKey, entries: DraftEntries): boolean {
   const entry=entries[key];if(!entry)return false;
-  if(key==='diplomacyPartner'||key==='minorSpeciesSelection')return entry.value!==null;
+  if(key==='guildOfferSelection'||key==='diplomacyPartner'||key==='minorSpeciesSelection')return entry.value!==null;
   if(key==='factionDraft'||key==='commandDraft'||key==='influenceDraft'||key==='researchDraft'||key==='exploreDraft')return entry.value!==null;
   if(key.startsWith('blueprint-'))return true;
   if(key==='buildOrder')return !!entries.buildOrder?.value.items.length;
@@ -155,6 +157,7 @@ export function keysForCommand(command: GameCommand): DraftKey[] {
     case 'convert-colony-ship': case 'load-factory': case 'place-guild-portal': case 'reverse-engineer': case 'buy-activation':return ['factionDraft'];
     case 'offer-diplomacy':return [...keys,'diplomacyPartner'];
     case 'buy-minor-species':return [...keys,'minorSpeciesSelection'];
+    case 'accept-guild-offer':return ['guildOfferSelection'];
     case 'guild-offer':return ['guildGive','guildReceive','guildAmount'];
     default:return [];
   }

@@ -1,28 +1,29 @@
 import {continuesAction} from './actionCapacity';
-import FactionActionBenefit from './FactionActionBenefit';
-import type {GameCommand,PlayerView} from '../../shared/eclipse/types';
+import type {Action,GameCommand,PlayerView,Resource} from '../../shared/eclipse/types';
 import type {CommandPreview} from '../../shared/eclipse/commandPreview';
-import {affordableActionCapacity,upkeepForecast,upkeepForecastAfter} from './upkeepForecast';
-import {PlanetIcon} from './SectorPlanets';
-export default function ActionEconomy({view,action,preview}:{view:PlayerView;action:GameCommand['type'];preview:CommandPreview|null}){
- const own=view.seats.find(s=>s.id===view.viewerSeatId)!;const base=upkeepForecast(view);
- const reactionsOnly=view.phase==='action'&&own.passed&&!own.eliminated;
- const reaction=reactionsOnly&&['upgrade','build','move'].includes(action);
- const ongoing=['explore','influence','research','upgrade','build','move'].includes(action)&&continuesAction(view,action as import('../../shared/eclipse/types').Action);
- const consumesDisc=['explore','influence','research','upgrade','build','move'].includes(action)&&!ongoing;
- const bill=preview?.upkeepAfter??(consumesDisc?base.nextUpkeep:base.upkeep);
- const income=preview?.moneyIncomeAfter??base.income,money=preview?.resourcesAfter.money??base.money;
- const balance=bill===null?null:money+income-bill;
- const projected=preview?upkeepForecastAfter({money,income,influenceDiscs:preview.influenceAfter,passed:own.passed,eliminated:own.eliminated}):base;
- const capacity=affordableActionCapacity(projected);
- const forecastLead=preview?'After this':'Current forecast';
- const capacityLabel=capacity.status==='affordable'?`${forecastLead}: ${capacity.actions} affordable ${capacity.actions===1?'action':'actions'}`:capacity.status==='unfunded'?`${forecastLead}: ${capacity.shortfall} money short at round end`:capacity.status==='no-discs'?`${forecastLead}: no discs for another ordinary action`:capacity.status==='passed'?(reactionsOnly?'Reactions only · Upgrade, Build or Move':'Passed · no ordinary actions remain'):'Eliminated · no ordinary actions remain';
- const upkeepLabel=bill===null?'No influence discs remain.':preview||!consumesDisc?`Round-end upkeep: ${base.upkeep} → ${bill} money`:<><span>If started: </span><span>Round-end upkeep: {base.upkeep} → {bill} money</span></>;
- return <section className="dg-action-economy" aria-label="Action cost preview">
-  <strong>{reaction?(ongoing?'Continue this reaction · no extra disc':'New reaction · 1 activation · 1 influence disc'):consumesDisc?'New action · 1 influence disc':ongoing?'Continue this action · no extra disc':'No action disc needed'}</strong>
-  {preview&&(['money','science','materials'] as const).filter(r=>preview.resourcesAfter[r]!==own.resources[r]).map(r=><p className="dg-action-resourcecost" key={r}><svg viewBox="0 0 20 20" aria-hidden="true"><PlanetIcon resource={r}/></svg>{r}: {own.resources[r]} → {preview.resourcesAfter[r]} now</p>)}
-  {preview&&bill!==base.upkeep&&<p>{upkeepLabel}</p>}
-  {balance!==null&&balance<0&&<p className="dg-danger">{Math.abs(balance)} money short at round end · this warning does not prevent a legal action.</p>}
-  <details><summary>Round-end forecast</summary><p>{upkeepLabel}</p>{balance!==null&&<p className={balance<0?'dg-danger':''}>{money} money + {income} income − {bill} upkeep = <b>{balance<0?`${-balance} short`:`${balance} left`}</b></p>}<p>{capacityLabel}{preview?.populationChoiceMayChangeIncome?' · conditional on population choice':''}</p>{reaction&&<p>Resource costs, available pieces and blueprint slots still apply.</p>}{!reaction&&<FactionActionBenefit factionId={own.faction} action={action}/>}</details>
+import {upkeepForecast} from './upkeepForecast';
+import TradeResourceIcon from './TradeResourceIcon';
+import './activityPrimitives.css';
+const ordinary:readonly string[]=['explore','influence','research','upgrade','build','move'];
+function Disc(){return <svg viewBox="0 0 20 20" aria-hidden="true"><ellipse cx="10" cy="11" rx="7" ry="5" fill="none" stroke="currentColor" strokeWidth="1.6"/><path d="M3 8a7 5 0 0 1 14 0v3M3 8v3" fill="none" stroke="currentColor" strokeWidth="1.6"/></svg>;}
+export default function ActionEconomy({view,action,preview,omitResources=[]}:{view:PlayerView;action:GameCommand['type'];preview:CommandPreview|null;omitResources?:readonly Resource[]}){
+ if(!preview)return null;
+ const own=view.seats.find(seat=>seat.id===view.viewerSeatId)!;
+ const base=upkeepForecast(view);
+ const ordinaryAction=ordinary.includes(action)?action as Action:['research-development','quantum-research','reverse-engineer','place-shrine'].includes(action)?'research':null;
+ const discCost=ordinaryAction&&!continuesAction(view,ordinaryAction)?1:action==='resolve'?Math.max(0,own.influenceOnTrack-preview.influenceAfter):0;
+ const changes=(['money','science','materials'] as const).filter(resource=>!omitResources.includes(resource)&&preview.resourcesAfter[resource]!==own.resources[resource]);
+ const spent=changes.filter(resource=>preview.resourcesAfter[resource]<own.resources[resource]);
+ const gained=changes.filter(resource=>preview.resourcesAfter[resource]>own.resources[resource]);
+ const upkeepChanged=preview.upkeepAfter!==base.upkeep,incomeChanged=preview.moneyIncomeAfter!==base.income;
+ const shortfall=preview.moneyBalanceAfter<0&&(preview.moneyBalanceAfter<base.balance||upkeepChanged);
+ if(!discCost&&!changes.length&&!upkeepChanged&&!incomeChanged&&!shortfall)return null;
+ const values=(resources:readonly Resource[])=>resources.map(resource=><span className="dg-cost-value" key={resource} aria-label={`${Math.abs(preview.resourcesAfter[resource]-own.resources[resource])} ${resource}`}><TradeResourceIcon resource={resource}/><b>{Math.abs(preview.resourcesAfter[resource]-own.resources[resource])}</b></span>);
+ return <section className="dg-cost-strip" aria-label="Action cost preview">
+  {(discCost>0||spent.length>0)&&<div className="dg-cost-group"><small>Pay now</small>{discCost>0&&<span className="dg-cost-value" aria-label={`${discCost} influence ${discCost===1?'disc':'discs'}`}><Disc/><b>{discCost}</b></span>}{values(spent)}</div>}
+  {gained.length>0&&<div className="dg-cost-group"><small>Receive</small>{values(gained)}</div>}
+  {(upkeepChanged||incomeChanged)&&<div className="dg-cost-group"><small>Round end</small>{upkeepChanged&&<span className="dg-cost-value" aria-label={`Upkeep ${base.upkeep} to ${preview.upkeepAfter} money`}><TradeResourceIcon resource="money"/>{base.upkeep} → {preview.upkeepAfter}</span>}{incomeChanged&&<span className="dg-cost-value" aria-label={`Money income ${base.income} to ${preview.moneyIncomeAfter}`}><TradeResourceIcon resource="money"/>+{base.income} → +{preview.moneyIncomeAfter}{preview.populationChoiceMayChangeIncome?'*':''}</span>}</div>}
+  {shortfall&&<span className="dg-cost-warning" role="status"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2 19 18H1Z M10 7v5M10 14v1" fill="none" stroke="currentColor" strokeWidth="1.6"/></svg>{Math.abs(preview.moneyBalanceAfter)} money short at round end</span>}
+  {preview.populationChoiceMayChangeIncome&&<small>* Pending population choice</small>}
  </section>;
 }

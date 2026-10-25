@@ -1,3 +1,4 @@
+import WormholeMark from './WormholeMark';
 import FactoryBadge from './FactoryBadge';
 import StructureSilhouette from './StructureSilhouette';
 import BuildPieceSilhouette from './BuildPieceSilhouette';
@@ -30,6 +31,7 @@ interface Props {
   plannedColonies?:readonly Extract<GameCommand,{type:'colonize'}>['placements'][number][];
   onSelectBuildItem?:(id:string)=>void;
   onInspectFleet?:(sectorId:string)=>void;
+  selectionMode?:boolean;
   view: PlayerView|SpectatorView;
   candidates: CommandCandidate[];
   selected: string | null;
@@ -66,7 +68,7 @@ const hex = Array.from(
 export default function GalaxyBoard({
   view,
   showPrintedWormholes=false,
-  plannedBuilds=[],plannedMoves=[],plannedInfluence=null,plannedColonies=[],onSelectBuildItem,onInspectFleet,
+  plannedBuilds=[],plannedMoves=[],plannedInfluence=null,plannedColonies=[],onSelectBuildItem,onInspectFleet,selectionMode=false,
   candidates,
   selected,
   legalTargetIds = [],
@@ -280,10 +282,7 @@ export default function GalaxyBoard({
                   const p = wormholePoint(edge, 0);
                   const label=kind==='printed'?'Open wormhole; no matching exit on a placed neighbor.':kind==='generator'?'Connected by your Wormhole Generator.':'Connected wormhole pair.';
                   return <g key={edge} data-wormhole-edge={edge} data-wormhole-kind={kind} transform={`translate(${p.x} ${p.y}) rotate(${-edge*60})`} className="dg-wormhole-gate" role="img" aria-label={label}>
-                    <path d="M0 -11V11" stroke="#0b1822" strokeWidth="6"/>
-                    <path className={kind==='printed'?'dg-wormhole-opening':'dg-wormhole-connected'} d="M0 -11V11" fill="none" stroke={kind==='printed'?'#e2eaf0':kind==='generator'?'#8cd8e5':'#efca77'} strokeWidth={kind==='printed'?3:4} strokeDasharray={kind==='printed'?'1 4':kind==='generator'?'5 3':undefined} strokeLinecap="round"/>
-                    <path d="M-4 -12H3 M-4 12H3" stroke={kind==='printed'?'#c8d9e3':kind==='generator'?'#8cd8e5':'#efca77'} strokeWidth="2"/>
-                    <title>{label}</title>
+                    <WormholeMark kind={kind}/>
                   </g>;
                 })}
                 <text
@@ -317,7 +316,8 @@ export default function GalaxyBoard({
                   const fx=two?(index%2?21:-21):0,fy=Math.floor(index/2)*20;
                   const name=group.type[0].toUpperCase()+group.type.slice(1);
                   const factories=fleets.filter(ship=>ship.owner===group.owner&&ship.type===group.type&&ship.factoryPopulation).length;
-                  return <g key={`${group.owner}-${group.type}`} data-fleet-card={group.type} data-galaxy-target={onInspectFleet?`fleet:${s.id}`:undefined} role={onInspectFleet?"button":"img"} tabIndex={onInspectFleet?0:undefined} onClick={onInspectFleet?e=>{e.stopPropagation();onInspectFleet(s.id);}:undefined} onKeyDown={onInspectFleet?e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();onInspectFleet(s.id);}}:undefined} aria-label={`${info.name}: ${group.count} ${name}${group.count>1?'s':''}${factories?`, ${factories} Materials factories`:''}`} transform={`translate(${fx} ${fy})`} color={info.color} className="dg-map-fleet-card">
+                  const inspectable=!!onInspectFleet&&!selectionMode&&!legalTargetIds.includes(s.id);
+                  return <g key={`${group.owner}-${group.type}`} data-fleet-card={group.type} data-galaxy-target={inspectable?`fleet:${s.id}`:undefined} role={inspectable?"button":"img"} tabIndex={inspectable?0:undefined} onClick={inspectable?e=>{e.stopPropagation();onInspectFleet?.(s.id);}:undefined} onKeyDown={inspectable?e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();onInspectFleet?.(s.id);}}:undefined} aria-label={`${info.name}: ${group.count} ${name}${group.count>1?'s':''}${factories?`, ${factories} Materials factories`:''}`} transform={`translate(${fx} ${fy})`} color={info.color} className="dg-map-fleet-card">
                     <rect x="-20" y="-9" width="40" height="18" rx="3" fill="#08121b" stroke={info.color} strokeWidth=".8"/>
                     <rect x="-20" y="-9" width="40" height="18" rx="3" fill={info.color} opacity=".13"/>
                     <svg x="-20" y="-9" width="22" height="18" viewBox="0 0 24 24">
@@ -520,6 +520,7 @@ export default function GalaxyBoard({
         </span>
       </div>
       <div className="sd-map-controls">
+        {selected&&onInspectFleet&&<button aria-label="Inspect selected fleet" onClick={()=>onInspectFleet(selected)}>Fleet</button>}
         <button
           aria-label="Zoom out"
           onClick={() => updateCamera({...camera,zoom:Math.max(.6,+(zoom-.2).toFixed(1))})}

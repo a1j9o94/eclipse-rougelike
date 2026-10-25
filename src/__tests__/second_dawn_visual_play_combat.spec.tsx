@@ -1,0 +1,61 @@
+import {afterEach,expect,it,vi} from 'vitest';
+import {cleanup,fireEvent,render,screen,within} from '@testing-library/react';
+import {getPlayerView} from '../../shared/eclipse/protocol';
+import type {GameState,PendingDecision} from '../../shared/eclipse/types';
+import fixtures from '../second-dawn-game/reviewFixtures.json?raw';
+import BattleOverview from '../second-dawn-game/BattleOverview';
+import DecisionPanel from '../second-dawn-game/DecisionPanel';
+import DiscoveryDecision from '../second-dawn-game/DiscoveryDecision';
+afterEach(cleanup);
+function combatView(){const state=(JSON.parse(fixtures) as Record<string,GameState>).combat;return getPlayerView(state,state.pendingDecision!.owner)!;}
+it('keeps a compact battle context without duplicating the encounter title',()=>{
+ const view=combatView();render(<BattleOverview view={view} compact showHeading={false}/>);
+ expect(screen.queryByRole('heading',{name:/Battle · Sector/})).toBeNull();
+ const fleet=screen.getByRole('region',{name:/Defender fleet/});
+ expect(screen.getByRole('button',{name:'Inspect defending fleet'})).toHaveTextContent('1 ship');
+ expect(screen.getByRole('button',{name:'Inspect defending fleet'})).toHaveAttribute('aria-expanded','false');
+ fireEvent.click(screen.getByRole('button',{name:'Inspect defending fleet'}));
+ expect(within(fleet).getByRole('img',{name:/HP:/})).toBeVisible();
+});
+it('shows remaining assignments, selected targets and projected destruction beside the shared commit',()=>{
+ const view=combatView(),target=view.ships.find(ship=>ship.owner===view.battle!.defender)!;
+ const decision:Extract<PendingDecision,{kind:'combat-allocation'}>={id:'visual-allocation',kind:'combat-allocation',owner:view.viewerSeatId,battleId:view.battle!.id!,dice:[{id:'shot',face:6,damage:4,weaponColor:'red',weaponKind:'cannon',computer:0,targets:[target.id],hitTargets:[target.id]}]};
+ const submit=vi.fn();render(<DecisionPanel view={view} decision={decision} disabled={false} reputation={[]} onSubmit={submit} motionEnabled={false}/>);
+ expect(screen.getByRole('heading',{name:'Assign hits · 1 remaining'})).toBeVisible();
+ fireEvent.click(screen.getByRole('button',{name:new RegExp(`Target ${target.id}`)}));
+ expect(screen.getByRole('heading',{name:'Assign hits · Ready'})).toBeVisible();
+ expect(screen.getByRole('button',{name:new RegExp(`Target ${target.id}`)})).toHaveAttribute('aria-pressed','true');
+ expect(screen.getByText('Will destroy')).toBeVisible();
+ const commit=screen.getByRole('region',{name:'Commit action'});
+ expect(commit).toHaveTextContent('1 ship will be destroyed');
+ expect(submit).not.toHaveBeenCalled();
+ fireEvent.click(within(commit).getByRole('button',{name:'Resolve volley'}));
+ expect(submit).toHaveBeenCalledExactlyOnceWith({type:'resolve',decisionId:decision.id,choice:{kind:'combat-allocation',allocations:[{dieId:'shot',targetId:target.id}]}});
+});
+it('keeps both discovery alternatives before the commitment and shows deferred consequences without opening rules',()=>{
+ const decision:Extract<PendingDecision,{kind:'discovery'}>={id:'discovery',owner:'a',kind:'discovery',tileId:'ancient-warp-portal',options:['keep','use']};
+ render(<DiscoveryDecision decision={decision} disabled={false} onSubmit={vi.fn()}/>);
+ const alternatives=screen.getByRole('radiogroup',{name:'Discovery reward'}),commit=screen.getByRole('region',{name:'Discovery commitment'});
+ expect(within(alternatives).getAllByRole('radio')).toHaveLength(2);
+ expect(alternatives.compareDocumentPosition(commit)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+ expect(screen.getByText('Links every portal · 2 VP to final controller')).toBeVisible();
+ expect(commit.querySelector('.dg-commit-bar')).not.toBeNull();
+});
+it.each([false,true])('updates the same battlefield ships through assignment, waiting and destruction without appending result tables (history arrived=%s)',withHistory=>{
+ const view=combatView(),target=view.ships.find(ship=>ship.owner===view.battle!.defender)!;
+ const decision:Extract<PendingDecision,{kind:'combat-allocation'}>={id:'scene-volley',kind:'combat-allocation',owner:view.viewerSeatId,battleId:view.battle!.id!,dice:[{id:'shot',face:6,damage:4,weaponColor:'red',weaponKind:'cannon',targets:[target.id],hitTargets:[target.id]}]};
+ view.pendingDecision=decision;
+ const controls=<DecisionPanel view={view} decision={decision} disabled={false} reputation={[]} onSubmit={vi.fn()} motionEnabled={false}/>;
+ const ui=render(<BattleOverview view={view} integrated controls={controls} fastPlayback/>);
+ const ship=ui.container.querySelector(`[data-ship-id="${target.id}"]`)!;
+ expect(screen.getAllByRole('button',{name:new RegExp(`Target ${target.id}`)})).toHaveLength(1);
+ fireEvent.click(screen.getByRole('button',{name:new RegExp(`Target ${target.id}`)}));
+ expect(within(ship as HTMLElement).getByText('Will destroy')).toBeVisible();
+ const next={...view,pendingDecision:null,ships:view.ships.filter(ship=>ship.id!==target.id),revision:view.revision+1};
+ const volley={battleId:view.battle!.id!,attacker:view.viewerSeatId,dice:decision.dice,impacts:[{dieId:'shot',targetId:target.id,damage:4,hit:true}],targets:[{id:target.id,shipType:target.type,owner:target.owner,hpBefore:1,hpAfter:0,excess:3,destroyed:true}]};
+ ui.rerender(<BattleOverview view={next} integrated controls={<p>Waiting for opponent</p>} recentVolleys={withHistory?[volley]:[]} fastPlayback/>);
+ expect(ui.container.querySelector(`[data-ship-id="${target.id}"]`)).toBe(ship);
+ expect(within(ship as HTMLElement).getByText('Destroyed')).toBeVisible();
+ expect(screen.queryByRole('region',{name:'Recent combat impacts'})).toBeNull();
+ expect(screen.queryByText('BATTLE RESULTS')).toBeNull();
+});

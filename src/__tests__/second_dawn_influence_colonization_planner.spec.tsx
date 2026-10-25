@@ -155,7 +155,7 @@ describe("visual colonization planner", () => {
     render(<ColonizationPlanner view={fixture.view} candidates={[...fixture.candidates,{command:secondCommand,label:'Colonize second money',description:'Use one colony ship.'}]} disabled={false} onSubmit={submit} onColonizableSectorIdsChange={sectors} onSectorFocus={focus}/>);
     expect(sectors).toHaveBeenLastCalledWith(expect.arrayContaining([fixture.sector.id,second.id]));fireEvent.click(screen.getByRole('button',{name:new RegExp(`Colonize Money planet p0 in sector ${fixture.sector.tileId}$`)}));
     fireEvent.click(screen.getAllByRole('button',{name:new RegExp(`Sector ${second.tileId}`)})[1]);expect(focus).toHaveBeenCalledWith(second.id);fireEvent.click(screen.getByRole('button',{name:new RegExp(`Colonize Money planet p0 in sector ${second.tileId}$`)}));
-    expect(screen.getByRole('region',{name:'Colonization consequences'})).toHaveTextContent('Colony ships3 → 1');expect(screen.getByRole('region',{name:'Colonization consequences'})).toHaveTextContent('income 4 → 8 +4');
+    expect(screen.getByLabelText('Colony ships 3 → 1')).toBeInTheDocument();expect(screen.getByRole('region',{name:'Colonization consequences'})).toHaveTextContent('income 4 → 8');
     fireEvent.click(screen.getByRole('button',{name:'Colonize 2 planets'}));expect(submit.mock.calls[0][0]).toMatchObject({type:'colonize',placements:[{sectorId:fixture.sector.id},{sectorId:second.id}]});expect(processGameCommand(fixture.state,'a',submit.mock.calls[0][0])).toMatchObject({ok:true});
   });
   it("selects a fixed-resource planet and commits its existing legal colonize command", () => {
@@ -163,7 +163,7 @@ describe("visual colonization planner", () => {
     const submit = vi.fn();
     render(<ColonizationPlanner view={fixture.view} candidates={fixture.candidates} disabled={false} onSubmit={submit} />);
     fireEvent.click(screen.getByRole("button", { name: /Colonize Money planet p0/ }));
-    expect(screen.getByRole("region",{name:"Colonization consequences"})).toHaveTextContent("Colony ships");
+    expect(screen.getByLabelText(/Colony ships 3 →/)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Money population" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Colonize 1 planet" }));
     expect(submit).toHaveBeenCalledWith(fixture.candidates[0].command);
@@ -175,7 +175,7 @@ describe("visual colonization planner", () => {
     const submit = vi.fn();
     render(<ColonizationPlanner view={fixture.view} candidates={[]} disabled={false} onSubmit={submit} />);
     expect(screen.queryByRole("combobox")).toBeNull();
-    expect(screen.getByText(/No compatible empty planets/)).toBeVisible();
+    expect(screen.getByText(/No available planets/)).toBeVisible();
     expect(submit).not.toHaveBeenCalled();
   });
 

@@ -1,0 +1,70 @@
+import {cleanup,fireEvent,render,screen,within} from '@testing-library/react';
+import {afterEach,expect,it,vi} from 'vitest';
+import {createGame} from '../../shared/eclipse/setup';
+import {getPlayerView} from '../../shared/eclipse/protocol';
+import {initialBlueprints} from '../../shared/eclipse/blueprints';
+import InfluencePlanner from '../second-dawn-game/InfluencePlanner';
+import MovementPlanner from '../second-dawn-game/MovementPlanner';
+import BuildPlanner from '../second-dawn-game/BuildPlanner';
+import BlueprintEditor from '../second-dawn-game/BlueprintEditor';
+import {ActionDraftProvider} from '../second-dawn-game/ActionDraftProvider';
+afterEach(cleanup);
+function buildFixture(){const state=createGame({seed:42,seats:[{id:'a',faction:'terran-directorate',controller:'human'},{id:'b',faction:'hydran',controller:'ai'}]});state.activeSeatId='a';state.seats[0].resources={money:20,science:0,materials:20};return {view:getPlayerView(state,'a'),sectorId:state.sectors.find(s=>s.owner==='a')!.id};}
+it('shows pieces without an empty ledger, error, or competing embedded exits',()=>{
+ render(<BuildPlanner {...buildFixture()} embedded disabled={false} onClose={vi.fn()} onSubmit={vi.fn()}/>);
+ expect(screen.getByRole('button',{name:'Add interceptor'})).toBeEnabled();
+ expect(screen.queryByText('Total materials')).toBeNull();
+ expect(screen.queryByText('Choose at least one piece.')).toBeNull();
+ expect(screen.queryByRole('region',{name:'Action cost preview'})).toBeNull();
+ expect(screen.queryByRole('button',{name:/Close/})).toBeNull();
+ expect(screen.queryByRole('button',{name:/Build 0/})).toBeNull();
+});
+it('switches a compact Build catalog into placement and adds another piece only explicitly',()=>{
+ const f=buildFixture(),submit=vi.fn(),stage=vi.fn();
+ const props={...f,embedded:true,compact:true,disabled:false,onClose:vi.fn(),onSubmit:submit,onStageChange:stage};
+ const ui=render(<BuildPlanner {...props}/>);
+ fireEvent.click(screen.getByRole('button',{name:'Add interceptor'}));
+ expect(stage).toHaveBeenLastCalledWith('placement');
+ expect(screen.queryByRole('button',{name:'Add cruiser'})).toBeNull();
+ expect(screen.getByRole('button',{name:/1. Interceptor Needs a sector/})).toBeVisible();
+ ui.rerender(<BuildPlanner {...props} placementRequest={{sectorId:f.sectorId,serial:1}}/>);
+ fireEvent.click(screen.getByRole('button',{name:'Add piece'}));
+ expect(stage).toHaveBeenLastCalledWith('catalog');
+ fireEvent.click(screen.getByRole('button',{name:'Add cruiser'}));
+ expect(screen.getByRole('button',{name:/1. Interceptor Sector/})).toBeVisible();
+ expect(screen.getByRole('button',{name:/2. Cruiser Needs a sector/})).toBeVisible();
+ expect(screen.getByRole('button',{name:/Build 2 ships/})).toBeDisabled();
+ expect(submit).not.toHaveBeenCalled();
+});
+it('keeps the selected fitting slot and changed capabilities together with one integrated scope',()=>{
+ const bp=initialBlueprints('terran-directorate')[0];
+ render(<ActionDraftProvider viewerSeatId="a" revision={1}><BlueprintEditor faction="terran-directorate" blueprint={bp} technologies={[]} storedParts={[]} capacity={2} disabled={false} onSubmit={vi.fn()}/></ActionDraftProvider>);
+ fireEvent.click(screen.getByRole('button',{name:'Slot 4: Empty slot'}));
+ fireEvent.click(screen.getByRole('button',{name:'Install Hull in slot 4'}));
+ const context=screen.getByRole('region',{name:'Selected ship and hardpoint'});
+ expect(within(context).getByText('Slot 4 · Hull')).toBeVisible();
+ expect(within(context).getByText('Damage to destroy 1 → 2')).toBeVisible();
+ fireEvent.click(within(context).getByLabelText('Inspect ship capabilities'));
+ expect(within(context).getByLabelText('Ship capability details')).toBeVisible();
+ fireEvent.click(within(context).getByLabelText('Inspect ship capabilities'));
+ expect(screen.queryByRole('button',{name:'Undo last edit'})).toBeNull();
+ expect(screen.queryByRole('button',{name:'Reset draft'})).toBeNull();
+ expect(screen.queryByRole('button',{name:'Close component picker'})).toBeNull();
+ fireEvent.click(within(context).getByRole('button',{name:'Restore slot 4'}));
+ expect(screen.getByRole('button',{name:'Slot 4: Empty slot'})).toBeVisible();
+ expect(screen.getByRole('button',{name:'Apply 0 upgrades'})).toBeDisabled();
+});
+
+it('keeps an embedded Move focused on ships without a competing exit or empty activation narration',()=>{const f=buildFixture();render(<MovementPlanner view={f.view} sourceSectorId={f.sectorId} selectedTargetId={null} embedded disabled={false} onClose={vi.fn()} onTargetsChange={vi.fn()} onSubmit={vi.fn()}/>);expect(screen.queryByRole('button',{name:'Close movement planner'})).toBeNull();expect(screen.queryByText(/0 \/ .*move activations selected/)).toBeNull();expect(screen.getByRole('checkbox',{name:'Interceptor 1'})).toBeVisible();});
+it('shows an Influence territory change without repeated requirements or forecast panels',()=>{const f=buildFixture();const target=f.view.sectors.find(sector=>sector.owner===null)!;render(<InfluencePlanner view={f.view} candidates={[{command:{type:'influence',removeSectorIds:[],addSectorIds:[target.id]},label:'Control',description:'Control'}]} selectedSectorId={target.id} disabled={false} onSubmit={vi.fn()}/>);expect(screen.queryByText(/Control unlocks its empty planets/)).toBeNull();expect(screen.queryByText('Action and upkeep details')).toBeNull();expect(screen.queryByRole('button',{name:'Reset draft'})).toBeNull();expect(screen.getByRole('button',{name:`Take control of sector ${target.tileId}`})).toBeEnabled();});
+it('uses inspectable capability icons on Build pieces and omits empty equipment values',()=>{render(<BuildPlanner {...buildFixture()} embedded disabled={false} onClose={vi.fn()} onSubmit={vi.fn()}/>);const ship=screen.getByRole('article',{name:'Interceptor'});expect(within(ship).getByRole('img',{name:/hit points: 1/})).toBeVisible();expect(within(ship).queryByRole('img',{name:/computer: \+0|shield: −0/})).toBeNull();fireEvent.click(within(ship).getByLabelText('Inspect Interceptor capabilities'));expect(within(ship).getByText(/sector per activation/)).toBeVisible();});
+it('keeps Influence costs and territory consequences with the selected sector, leaving one compact commit',()=>{
+ const f=buildFixture(),target=f.view.sectors.find(sector=>sector.owner===null)!;
+ render(<InfluencePlanner view={f.view} candidates={[{command:{type:'influence',removeSectorIds:[],addSectorIds:[target.id]},label:'Control',description:'Control'}]} selectedSectorId={target.id} disabled={false} onSubmit={vi.fn()}/>);
+ const selected=screen.getByRole('region',{name:'Selected influence sector'});
+ expect(within(selected).getByLabelText('Territory consequences')).toBeVisible();
+ expect(within(selected).getByRole('region',{name:'Action cost preview'})).toBeVisible();
+ const commit=screen.getByRole('button',{name:`Take control of sector ${target.tileId}`}).closest('footer')!;
+ expect(within(commit).queryByRole('region',{name:'Action cost preview'})).toBeNull();
+ expect(within(commit).getAllByRole('button')).toHaveLength(1);
+});

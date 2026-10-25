@@ -1,5 +1,5 @@
 import {afterEach,expect,it,vi} from 'vitest';
-import {cleanup,render,screen,within} from '@testing-library/react';
+import {cleanup,fireEvent,render,screen,within} from '@testing-library/react';
 import {createGame} from '../../shared/eclipse/setup';
 import {getPlayerView} from '../../shared/eclipse/protocol';
 import type {GameCommand,Track} from '../../shared/eclipse/types';
@@ -19,20 +19,18 @@ function show(track:Track|null){
  const purchases=(['military','grid','nano'] as const).map(track=>({command:{type:'research',tileId:'soliton-cannon',track} as GameCommand,label:'Research',description:''}));
  return <ResearchWorkspace view={view} purchases={purchases} selected={track?'soliton-cannon':null} draft={track?purchases.find(p=>p.command.type==='research'&&p.command.track===track)!:null} disabled={false} stale={false} stillLegal acquired={null} onSelect={vi.fn()} onDraft={vi.fn()} onSubmit={vi.fn()}/>;
 }
-it('shows printed base and minimum alongside the lowest available rare research price',()=>{
+it('shows the lowest effective rare price before arithmetic inspection',()=>{
  render(show(null));const card=within(screen.getByRole('article',{name:'Soliton Cannon technology'}));
- expect(card.getByText('Base 9')).toBeVisible();
- expect(card.getByText('Minimum 7')).toBeVisible();
- expect(card.getByText(/Best discount/)).toHaveTextContent('Best discount −4');
+ expect(card.queryByText('Base 9')).not.toBeInTheDocument();
  expect(card.getByRole('img',{name:/Research cost: from 7 science/})).toBeVisible();
- expect(card.getByText('Minimum price reached')).toBeVisible();
+ expect(card.queryByText('Minimum price reached')).not.toBeInTheDocument();
 });
 it('keeps the cost breakdown on selection and updates it for the chosen track including Minor Species',()=>{
  const ui=render(show('military'));let card=within(screen.getByRole('article',{name:'Soliton Cannon technology'}));
- expect(card.getByText('Base 9')).toBeVisible();expect(card.getByText('Minimum 7')).toBeVisible();
- expect(card.getByText('Discount −4')).toBeVisible();expect(card.getByRole('img',{name:/Research cost: 7 science/})).toBeVisible();
+ fireEvent.click(card.getByRole('button',{name:'Inspect research price'}));
+ expect(card.getByText('Base 9 − discount 4 · minimum 7 → 7 science')).toBeVisible();expect(card.getByRole('img',{name:/Research cost: 7 science/})).toBeVisible();
  ui.rerender(show('nano'));card=within(screen.getByRole('article',{name:'Soliton Cannon technology'}));
- expect(card.getByText('Discount −1')).toBeVisible();expect(card.getByRole('img',{name:/Research cost: 8 science/})).toBeVisible();
+ expect(card.getByText('Base 9 − discount 1 · minimum 7 → 8 science')).toBeVisible();expect(card.getByRole('img',{name:/Research cost: 8 science/})).toBeVisible();
  expect(card.queryByText('Minimum price reached')).toBeNull();
- expect(card.getByRole('button',{name:'Research · 8 science'})).toBeVisible();
+ expect(screen.getByRole('button',{name:'Research · 8 science'})).toBeVisible();
 });

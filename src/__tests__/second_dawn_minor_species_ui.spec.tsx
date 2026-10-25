@@ -64,8 +64,8 @@ it('warns about a money shortfall at upkeep before recruiting an ally',()=>{
  render(<MinorSpeciesMarket view={view} disabled={false} onSubmit={vi.fn()}/>);
  const tile=screen.getByRole('article',{name:getMinorSpecies('researchers').name});
  fireEvent.click(within(tile).getByRole('button',{name:/Select/}));
- expect(within(tile).getByText('0 money remaining')).toBeVisible();
- expect(within(tile).getByRole('alert')).toHaveTextContent('4 money short at upkeep');
+ expect(within(tile).getByLabelText('4 money')).toHaveTextContent('4');
+ expect(within(tile).getByRole('status')).toHaveTextContent('4 money short at round end');
 });
 it('keeps the dedicated ambassador-space explanation after a Minor Species occupies it',()=>{
  const view=fixture();view.seats[0].faction='terran-directorate';view.seats[0].minorSpecies=[{id:'researchers'}];

@@ -50,11 +50,17 @@ function PartitionProvider({matchId,viewerSeatId,revision,lastAcceptedCommand,la
     for(const key of cleared)delete values[key];
     return {snapshot:{...previous,values},undo:[...state.undo.slice(-29),{keys:cleared,values:previous.values}]};
   }),[]);
-  const undo=useCallback(()=>setDraftState(state=>{
-    const entry=state.undo.at(-1);if(!entry)return state;
-    const values={...state.snapshot.values};
-    for(const key of entry.keys){delete values[key];if(entry.values[key])Object.assign(values,{[key]:entry.values[key]});}
-    return {snapshot:{...state.snapshot,values},undo:state.undo.slice(0,-1)};
+  const canUndoFor=useCallback((keys:readonly DraftKey[])=>draftState.undo.some(entry=>entry.keys.some(key=>keys.includes(key))),[draftState.undo]);
+  const undo=useCallback((keys?:readonly DraftKey[])=>setDraftState(state=>{
+    let index=state.undo.length-1;
+    while(index>=0&&keys&&!state.undo[index].keys.some(key=>keys.includes(key)))index--;
+    if(index<0)return state;
+    const entry=state.undo[index],values={...state.snapshot.values};
+    const restored=entry.keys.filter(key=>!keys||keys.includes(key));
+    for(const key of restored){delete values[key];if(entry.values[key])Object.assign(values,{[key]:entry.values[key]});}
+    const remaining=entry.keys.filter(key=>!restored.includes(key));
+    const history=state.undo.flatMap((item,i)=>i!==index?[item]:remaining.length?[{...item,keys:remaining}]:[]);
+    return {snapshot:{...state.snapshot,values},undo:history};
   }),[]);
   const markSubmitted=useCallback((command:GameCommand,receiptKind:'accepted'|'queued'='accepted')=>{
     const current=snapshotRef.current;const values:Partial<Record<DraftKey,string>>={};
@@ -89,6 +95,6 @@ function PartitionProvider({matchId,viewerSeatId,revision,lastAcceptedCommand,la
       return {snapshot:{...previous,values},undo:[]};
     });
   },[lastQueuedCommand]);
-  const context=useMemo(()=>({entries:snapshot.values,setValue,stale,draftKeys,clear,markSubmitted,storageAvailable,canUndo,undo}),[snapshot.values,setValue,stale,draftKeys,clear,markSubmitted,storageAvailable,canUndo,undo]);
+  const context=useMemo(()=>({entries:snapshot.values,setValue,stale,draftKeys,clear,markSubmitted,storageAvailable,canUndo,canUndoFor,undo}),[snapshot.values,setValue,stale,draftKeys,clear,markSubmitted,storageAvailable,canUndo,canUndoFor,undo]);
   return <ActionDraftContext.Provider value={context}>{children}</ActionDraftContext.Provider>;
 }

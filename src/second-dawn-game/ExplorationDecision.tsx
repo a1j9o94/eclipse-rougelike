@@ -16,6 +16,7 @@ import SectorFleet from './SectorFleet';
 import FactionSymbol from './FactionSymbol';
 import {useMobileLayout} from './mobileLayout';
 import './exploration.css';
+import CommitBar from './CommitBar';
 interface Props {view:PlayerView;decision:Extract<PendingDecision,{kind:'exploration'}>;disabled:boolean;onSubmit:(command:GameCommand)=>void}
 function RotateIcon({clockwise}:{clockwise:boolean}){
  return <svg viewBox="0 0 24 24" aria-hidden="true" style={{transform:clockwise?undefined:'scaleX(-1)'}}><path d="M20 10a8 8 0 1 0-1 8 M20 3v7h-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>;
@@ -28,6 +29,7 @@ export default function ExplorationDecision({view,decision,disabled,onSubmit}:Pr
  const preview=deriveExplorePreview(view,decision,tileId,rotation);
  const mapped=useMemo(()=>createExplorationMapView(view,decision,tileId,rotation)!,[view,decision,tileId,rotation]);
  const [localSelected,setLocalSelected]=useState(mapped.sector.id);
+ const [inspectionOpen,setInspectionOpen]=useState(false);
  const selected=sharedMap?.selectedSectorId??localSelected;
  const setSelected=(id:string)=>{if(sharedMap)sharedMap.selectSector(id);else setLocalSelected(id);};
  const setPresentation=sharedMap?.setPresentation;
@@ -55,19 +57,18 @@ export default function ExplorationDecision({view,decision,disabled,onSubmit}:Pr
   return()=>{cancelAnimationFrame(frame);observer?.disconnect();};
  },[compact,focusPositions]);
  const inspected=mapped.view.sectors.find(sector=>sector.id===selected)??mapped.sector;
+ const inspectingNeighbor=inspected.id!==mapped.sector.id;
  const neighbors=preview.neighbors.filter(n=>n.sector);
  const factionFor=(owner:string|null)=>{const seat=view.seats.find(seat=>seat.id===owner);return seat?getFaction(seat.faction):null;};
- const inspect=(id:string)=>{setSelected(id);if(compact)inspector.current?.scrollIntoView({behavior:'auto',block:'start'});else if(inspector.current)inspector.current.scrollTop=0;};
+ const inspect=(id:string)=>{setSelected(id);setInspectionOpen(true);if(compact)inspector.current?.scrollIntoView({behavior:'auto',block:'start'});else if(inspector.current)inspector.current.scrollTop=0;};
  const resolve=(selectedTile:string|null,drawAnother=false,redraw=false)=>onSubmit({type:'resolve',decisionId:decision.id,choice:{kind:'exploration',tileId:selectedTile,rotation:selectedTile?rotation:0,...(drawAnother?{drawAnother:true}:{}),...(redraw?{redraw:true}:{})}});
  const chooseTile=(id:string)=>{setTileId(id);setSelected(mapped.sector.id);};
  const focusNewSector=()=>{setSelected(mapped.sector.id);if(sharedMap)sharedMap.focusSector(mapped.sector.id);else setCamera(focusCamera.current);};
  return <section className={`dg-exploration-decision${sharedMap?' dg-exploration-embedded':''}`}>
-  <header className="dg-explore-heading"><div><h2>{sharedMap?`Sector ${tileId}`:'Exploration'}</h2></div>{!sharedMap&&<span>Drawn sector <strong>{tileId}</strong> · preview</span>}</header>
+  <header className="dg-explore-heading"><h2>Place sector {tileId}</h2><button className="dg-explore-inspect" aria-expanded={inspectionOpen||inspectingNeighbor} onClick={()=>{if(inspectingNeighbor){setSelected(mapped.sector.id);setInspectionOpen(false);}else setInspectionOpen(open=>!open);}}>Inspect sector</button><button aria-label="Focus new sector" onClick={focusNewSector}>⌖</button></header>
   {decision.drawnTileIds.length>1&&<nav className="dg-drawn-choices" aria-label="Drawn sectors">{decision.drawnTileIds.map(id=><button key={id} aria-pressed={tileId===id} onClick={()=>chooseTile(id)}>Sector {id}<small>{sectorDefinition(Number(id))!.victoryPoints} VP · {sectorDefinition(Number(id))!.population.length} planets</small></button>)}</nav>}
-  <div className="dg-placement-verdict" data-legal={preview.legal} role="status"><strong>{preview.legal?'✓ Ready to place':'× Cannot place this orientation'}</strong>{!preview.legal&&<span>Align a wormhole with an exploration source.</span>}</div>
   <div className="dg-explore-layout">
    <div ref={mapStage} className="dg-placement-stage" role="region" aria-label="Exploration placement preview" data-testid="drawn-exploration-tile" data-rotation={rotation}>
-    <div className="dg-placement-map-caption"><span>New sector {tileId} · not yet placed</span><button onClick={focusNewSector}>Focus new sector</button></div>
     <div className="dg-drawn-feature-strip" role="group" aria-label="Drawn sector contents">
      <span title="Sector victory points" aria-label={`${preview.tile!.victoryPoints} victory points`}><strong>{preview.tile!.victoryPoints}</strong> VP</span>
      {preview.tile!.population.map((planet,index)=><span key={index} className="dg-drawn-planet" role="img" title={`${planet.advanced?'Advanced':'Standard'} ${planet.resource==='gray'?'any resource':planet.resource} planet`} aria-label={`${planet.advanced?'Advanced':'Standard'} ${planet.resource==='gray'?'any resource':planet.resource} planet`} style={{color:({money:'#e7bd67',science:'#b397da',materials:'#b89675',gray:'#b5c3cd'})[planet.resource]}}><svg viewBox="0 0 20 20" aria-hidden="true"><PlanetIcon resource={planet.resource}/></svg>{planet.advanced&&<AdvancedPlanetBadge className="dg-drawn-advanced" decorative/>}</span>)}
@@ -79,22 +80,21 @@ export default function ExplorationDecision({view,decision,disabled,onSubmit}:Pr
 
     {!sharedMap&&<GalaxyBoard showPrintedWormholes view={mapped.view} candidates={[]} selected={selected} legalTargetIds={[mapped.sector.id]} targetLabel="new sector preview" compact={compact} camera={camera} onCameraChange={setCamera} onSelect={inspect} onInspectFleet={inspect} onExplore={()=>{}}/>}
    </div>
-   <aside ref={inspector} className="dg-placement-notes" aria-label="Exploration sector inspection">
+   <details className="dg-placement-inspection" open={inspectionOpen||inspectingNeighbor} onToggle={event=>{if(!inspectingNeighbor)setInspectionOpen(event.currentTarget.open);}}><summary>Inspect sector</summary><aside ref={inspector} className="dg-placement-notes" aria-label="Exploration sector inspection">
     <div className="dg-placement-inspector-heading"><h3>{inspected.id===mapped.sector.id?`New sector ${tileId}`:`Sector ${inspected.tileId}`}</h3>{inspected.id!==mapped.sector.id&&<button onClick={()=>inspect(mapped.sector.id)}>Inspect new sector</button>}</div>
     <p className="dg-explore-owner">{factionFor(inspected.owner)?<><FactionSymbol faction={factionFor(inspected.owner)!.id}/>{factionFor(inspected.owner)!.name}{inspected.owner===view.viewerSeatId?' · You':''}</>:'Uncontrolled'}</p>
     <h3>Fleet</h3><SectorFleet view={mapped.view} sectorId={inspected.id}/>
-    {inspected.id===mapped.sector.id&&preview.tile!.ancients>0&&<p>These Ancient defenders arrive with the sector.</p>}
     <SectorPlanets view={mapped.view} sector={inspected} candidates={[]}/>
     <details className="dg-placement-connections"><summary>Connections & wormholes</summary><div className="dg-placement-edge-key" aria-label="Wormhole legend"><span><i className="dg-key-wormhole"/>Connected pair</span><span><i className="dg-key-opening"/>Open exit · unmatched</span></div><ul>{neighbors.map(n=>{
      const faction=factionFor(n.sector!.owner);
      return <li key={n.edge} data-connection={n.connection}><button onClick={()=>inspect(n.sector!.id)}><span className={n.connection==='closed'?'closed':'connected'} aria-hidden="true">{n.connection==='closed'?'×':'✓'}</span>{faction&&<FactionSymbol faction={faction.id}/>}<strong>{faction?.name??'Uncontrolled'}<small>Sector {n.sector!.tileId}</small></strong></button><p>{n.connection==='paired'?'Wormholes aligned':n.connection==='generator'?'Connected by your Wormhole Generator':n.connection==='warp'?'Connected by warp portals':'No matching connection'}{n.sourceEligible?' · exploration source':''}</p></li>;
     })}</ul><p>One connection to an exploration source is enough.</p>{preview.remotePortalSectorIds.length>0&&<p>Warp portal links: {preview.remotePortalSectorIds.map(id=>view.sectors.find(sector=>sector.id===id)?.tileId??id).join(', ')}.</p>}</details>
-   </aside>
+   </aside></details>
   </div>
-  <footer className="dg-exploration-controls">
+  <div className="dg-exploration-controls">
    <div className="dg-rotation-controls"><button data-sound="detent" aria-label="Rotate counterclockwise" onClick={()=>setRotation(r=>(r+1)%6)}><RotateIcon clockwise={false}/> Rotate left</button><span aria-label={`Orientation ${rotation+1} of 6`}>{Array.from({length:6},(_,i)=><i key={i} className={i===rotation?'active':''}/>)}</span><button data-sound="detent" aria-label="Rotate clockwise" onClick={()=>setRotation(r=>(r+5)%6)}>Rotate right <RotateIcon clockwise/></button></div>
-   <div className="dg-placement-actions"><button className="sd-primary" disabled={disabled||!preview.legal} onClick={()=>resolve(tileId)}>Place sector</button><button disabled={disabled} onClick={()=>resolve(null)}>Discard sector</button>{decision.redrawAvailable&&<button disabled={disabled} onClick={()=>resolve(null,false,true)}>Use exploration joker · redraw</button>}{decision.canDrawAnother&&<button disabled={disabled} onClick={()=>resolve(null,true)}>Draw second Draco sector</button>}</div>
-
-  </footer>
+   {(decision.redrawAvailable||decision.canDrawAnother)&&<div className="dg-placement-actions">{decision.redrawAvailable&&<button disabled={disabled} onClick={()=>resolve(null,false,true)}>Use exploration joker · redraw</button>}{decision.canDrawAnother&&<button disabled={disabled} onClick={()=>resolve(null,true)}>Draw second Draco sector</button>}</div>}
+   <CommitBar summary={!preview.legal?<span className="dg-placement-ready" data-legal={false} role="status">Cannot place · align a wormhole</span>:undefined}><button className="sd-primary" disabled={disabled||!preview.legal} onClick={()=>resolve(tileId)}>Place sector</button><button disabled={disabled} onClick={()=>resolve(null)}>Discard sector</button></CommitBar>
+  </div>
  </section>;
 }

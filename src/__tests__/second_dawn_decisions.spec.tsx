@@ -123,7 +123,7 @@ describe("persistent match decision controls", () => {
         reputation={[]}
       />,
     );
-    expect(screen.getByText(/cannot fire in this stalemate/i)).toBeTruthy();
+    expect(screen.getByText(/Weapons cannot fire/)).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Roll dice" })).toBeNull();
     expect(screen.getByText(/No legal retreat route/)).toBeTruthy();
   });
@@ -176,7 +176,7 @@ it("automatically allocates a die that cannot hit any target without asking for 
     />,
   );
   expect(screen.queryByRole("button", { name: /Target enemy/i })).toBeNull();
-  expect(screen.getByText(/no hit/i)).toBeTruthy();
+  expect(screen.getByText(/All dice missed/)).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "Resolve volley" }));
   expect(submit).toHaveBeenCalledWith({
     type: "resolve",
@@ -219,7 +219,7 @@ it("uses population target buttons for bombardment", () => {
     />,
   );
   expect(screen.getByRole("button", { name: "Spare population" })).toBeEnabled();
-  expect(screen.getByText(/Population attacks are optional/)).toBeTruthy();
+  expect(screen.getByRole('button',{name:'Target population square p1'})).toHaveAttribute('aria-pressed','false');
   fireEvent.click(screen.getByRole("button", { name: "Target population square p1" }));
   fireEvent.click(screen.getByRole("button", { name: "Destroy 1 population" }));
   expect(submit).toHaveBeenCalledWith({
@@ -235,8 +235,7 @@ it("identifies active Neutron Bombs and offers explicit destroy-all and spare ch
   const view = getPlayerView(state, "human")!;
   const submit = vi.fn();
   render(<DecisionPanel view={view} decision={{ id: "neutron", owner: "human", kind: "bombardment", sectorId: sector.id, hits: squareIds.length, squareIds }} reputation={[]} disabled={false} onSubmit={submit}/>);
-  expect(screen.getByText(/Neutron Bombs available/)).toBeTruthy();
-  expect(screen.getByText(/no bombardment dice were rolled/)).toBeTruthy();
+  expect(screen.getByText(/Neutron Bombs · no roll/)).toBeVisible();
   expect(screen.getByRole("button", { name: `Destroy ${squareIds.length} population` })).toBeEnabled();
   expect(screen.queryByRole("button", { name: /Target population square/ })).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "Clear targets" }));
@@ -253,8 +252,7 @@ it("does not advertise Neutron Bombs when the defender has Neutron Absorber", ()
   const sector = state.sectors.find(candidate => candidate.owner === "enemy")!;
   const view = getPlayerView(state, "human")!;
   render(<DecisionPanel view={view} decision={{ id: "absorbed", owner: "human", kind: "bombardment", sectorId: sector.id, hits: 1, squareIds: sector.population.map(cube => cube.squareId) }} reputation={[]} disabled={false} onSubmit={vi.fn()}/>);
-  expect(screen.queryByText(/Neutron Bombs available/)).toBeNull();
-  expect(screen.queryByText(/no bombardment dice were rolled/)).toBeNull();
+  expect(screen.queryByText(/Neutron Bombs · no roll/)).toBeNull();
   expect(screen.getAllByRole("button", { name: /Target population square/ }).length).toBeGreaterThan(0);
 });
 

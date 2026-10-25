@@ -31,3 +31,5 @@
 .eo-overview .dg-minor-acquired .dg-minor-grid,.dg-partner-rack .dg-minor-grid { grid-template-columns:1fr; }
 
 .dg-minor-select{display:flex;align-items:center;gap:8px;min-height:44px}.dg-minor-select[aria-pressed=true]{outline:2px solid #cbb075}.dg-minor-card>small{color:#d9bd87}
+
+.dg-minor-card.is-selected{outline:2px solid #9adbd6;border-color:#9adbd6}.dg-minor-card .dg-commit-bar{margin:12px -12px -12px;position:static}.dg-minor-card .dg-commit-actions{width:100%}.dg-minor-card .dg-minor-buy{width:100%;min-height:44px}.dg-minor-market>header p:empty{display:none}

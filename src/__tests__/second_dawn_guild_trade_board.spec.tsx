@@ -18,6 +18,7 @@ function board(viewer:'guild'|'buyer'){
  const onSubmit=vi.fn();
  render(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="" onSubmit={onSubmit} onMenu={vi.fn()}/>);
  fireEvent.click(screen.getByRole('button',{name:'Trade',exact:true}));
+ fireEvent.click(screen.getByRole('button',{name:'Guild exchange',exact:true}));
  return onSubmit;
 }
 
@@ -29,6 +30,8 @@ it('lets the Spacing Guild post a resource offer from the game Trade screen',()=
 
 it('lets another player accept a Guild offer from the game Trade screen',()=>{
  const onSubmit=board('buyer');
+ fireEvent.click(screen.getByRole('button',{name:'Select offer: receive materials for science'}));
+ fireEvent.click(screen.getByRole('button',{name:'Max',exact:true}));
  fireEvent.click(screen.getByRole('button',{name:'Pay 2 science · receive 2 materials'}));
  expect(onSubmit).toHaveBeenCalledWith({type:'accept-guild-offer',offerId:'offer',amount:2});
 });

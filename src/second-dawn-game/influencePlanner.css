@@ -2,3 +2,25 @@
 .dg-influence-stakes{display:grid;gap:6px;margin:8px 0;padding:9px;border:1px solid #596d80;border-radius:6px;background:#111f2c}.dg-influence-stakes p{margin:0;color:#bfd0dd;font-size:11px}.dg-influence-stakes strong{color:#ebcd7c}
 .dg-influence-selected{padding:14px;margin:12px 0;background:#172a34;border:1px solid #749994;border-radius:8px}.dg-influence-selected h3{margin:0;color:#f0d9a8;font:24px Georgia,serif}.dg-influence-selected p{font-size:13px;line-height:1.5}.dg-influence-destinations{margin-top:18px}.dg-influence-destinations h3{font-size:13px;color:#c8d8dc}.dg-influence-planets{display:flex;gap:5px;margin-top:6px}.dg-influence-planets>span{position:relative;display:inline-flex;color:#c6ba92}.dg-influence-planets svg{width:20px;height:20px}.dg-influence-planets .dg-influence-advanced{position:absolute;right:-4px;top:-4px;width:11px;height:11px}.dg-influence-other{margin-top:20px;border-top:1px solid #344a56;padding-top:6px}.dg-influence-withdraw,.dg-influence-transfer{font-size:13px;line-height:1.5}.dg-influence-withdraw summary,.dg-influence-transfer summary{padding:10px 0;cursor:pointer;color:#dfb8ac}.dg-influence-withdraw p,.dg-influence-transfer p{color:#d7b4a9}.dg-influence-sector.is-withdrawal{border-color:#815c57}.dg-influence-sector.is-withdrawal .dg-influence-hex{background:#a87870}.dg-influence-confirm.is-withdrawal{border-color:#b36f67}.dg-influence-confirm.is-withdrawal .dg-influence-stakes strong{color:#f0b3a4}.dg-influence-planner .dg-influence-danger{color:#ffe1d8;background:#643b36;border:1px solid #d59283;min-height:44px;white-space:normal}.dg-influence-planner button:focus-visible,.dg-influence-planner summary:focus-visible{outline:2px solid #f0d9a8;outline-offset:3px}
 .sd-inspector .dg-influence-selected{padding:10px;margin:8px 0}.sd-inspector .dg-influence-selected h3{margin:0;font:20px Georgia,serif}.sd-inspector .dg-influence-selected p{font-size:12px;line-height:1.4;margin:6px 0}.sd-inspector .dg-influence-transfer{margin:8px 0 0}.sd-inspector .dg-influence-transfer summary{padding:5px 0;font-size:11px}.sd-inspector .dg-influence-cost-details{margin:5px 0;font-size:11px}.sd-inspector .dg-influence-stakes{margin:5px 0;padding:7px}.sd-inspector .dg-influence-confirm .dg-influence-cost{font-size:12px;margin:6px 0;color:#ead49d}.sd-inspector .dg-influence-withdraw{margin-top:8px}.sd-inspector .dg-influence-destinations h3{margin:8px 0;font-size:13px}.sd-inspector .dg-influence-other{margin-top:10px}.sd-inspector .dg-influence-sector small{white-space:normal}
+.dg-influence-planner{display:flex;flex-direction:column;min-height:0;gap:8px}
+.dg-influence-planner>header{padding-bottom:6px;align-items:center}
+.dg-influence-planner>header h2{font-size:17px;margin:0}
+.dg-influence-planner>header small{display:none}
+.dg-influence-planner>header output{display:flex;gap:5px;align-items:center;font-size:11px}
+.dg-influence-planner>header output b{font-size:18px}
+.dg-influence-destinations{margin-top:0;font-size:13px}
+.dg-influence-destinations summary{min-height:44px;align-content:center;cursor:pointer}
+.dg-influence-confirm.dg-commit-bar{position:static;flex:0 0 auto;margin-top:0;padding:8px}
+.dg-app .dg-influence-confirm.dg-commit-bar button{margin:0}
+.dg-influence-stakes p{font-size:12px}
+.dg-influence-selected{padding:8px;margin:0}
+.dg-influence-selected h3{font-size:17px}
+.dg-influence-other{margin-top:0;padding-top:0;border:0}
+.dg-influence-refresh{margin:0;padding:7px;min-height:44px}
+.dg-app .dg-influence-confirm.dg-commit-bar{flex-wrap:nowrap;margin:0}
+.dg-influence-confirm .dg-commit-actions{flex:0 0 auto;margin-left:auto}
+.dg-influence-confirm .dg-commit-actions>button{white-space:normal;min-width:95px}
+.dg-influence-body{flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain}
+.dg-influence-preview{display:grid;gap:6px;margin-top:7px}
+.dg-app .dg-influence-preview .dg-influence-stakes{padding:0;margin:0;border:0;background:none}
+.dg-app .dg-influence-preview .dg-influence-stakes p{margin:0;font-size:12px;line-height:1.4}

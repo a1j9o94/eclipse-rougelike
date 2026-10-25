@@ -1,12 +1,11 @@
 import {useCommitLabel} from './commitContext';
-import AdvancedPlanetBadge from './AdvancedPlanetBadge';
+import CommitBar from './CommitBar';
 import {DecisionMapContext} from './decisionMapContext';
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useActionDraftGuard, useActionDraftState } from './actionDraftContext';
-import { previewCommand } from "../../shared/eclipse/commandPreview";
 import type { GameCommand, PendingDecision, PlayerView, Resource } from "../../shared/eclipse/types";
-import ActionEconomy from "./ActionEconomy";
-import { PlanetIcon, type PlanetResource } from "./SectorPlanets";
+import SectorPlanets from "./SectorPlanets";
+import ActionIcon from './ActionIcon';
 import { TradeResourceIcon } from "./TradePanel";
 import type { CommandCandidate } from "./SecondDawnBoard";
 import { colonizationOptions, decisionColonizationOptions, previewColonizationDraft, type PlanetOption } from "./colonizationPlanning";
@@ -14,8 +13,7 @@ import "./colonizationPlanner.css";
 
 type ColonizeCommand = Extract<GameCommand, { type: "colonize" }>;
 const resourceName = (resource: Resource) => resource[0].toUpperCase() + resource.slice(1);
-const planetName = (resource: PlanetResource) =>
-  resource === "gray" ? "Any resource" : resource === "orbital" ? "Orbital" : resourceName(resource);
+
 
 export interface ColonizationPlannerProps {
   view: PlayerView;
@@ -69,7 +67,6 @@ export default function ColonizationPlanner({
       ? { type: "resolve", decisionId: decision.id, choice: { kind: "colonization", placements } }
       : normalCommand
     : undefined, [decision, normalCommand, placements]);
-  const preview = !decision && placements.length ? previewCommand(view, normalCommand) : null;
   const own = view.seats.find((seat) => seat.id === view.viewerSeatId);
   const sectors = useMemo(()=>[...new Set(options.map((option) => option.sectorId))],[options]);
   useEffect(()=>{if(!setMapPresentation)return;setMapPresentation({view,legalTargetIds:sectors,targetLabel:'available planet',plannedColonies:placements});return()=>setMapPresentation(null);},[setMapPresentation,view,sectors,placements]);
@@ -92,61 +89,27 @@ export default function ColonizationPlanner({
   return (
     <section className="dg-colonization-planner" aria-label="Colonization planner">
       <header>
-        <div><small>COLONIZATION</small><h2>Populate your controlled sectors</h2></div>
+        <div><small>COLONIZATION</small><h2>Colonize</h2></div>
         <output aria-label="Colony ships available"><b>{own?.colonyShipsAvailable ?? 0}</b><span>colony ships ready</span></output>
       </header>
-      <p>No action disc · Place population on open planets</p>
-      {!options.length ? (
-        <p role="status">No compatible empty planets can be colonized now. You may need a colony ship, population cube, advanced technology, or your action turn.</p>
-      ) : (
-        <div className="dg-colonization-layout">
-          <section className="dg-colonization-squares" aria-labelledby="colonize-square-title">
-            <h3 id="colonize-square-title">Open population spaces</h3>
-            {sectors.length>1&&<nav className="dg-colonization-sectors" aria-label="Colonizable sectors">{sectors.map(id=>{const sector=view.sectors.find(candidate=>candidate.id===id)!;const selectedCount=placements.filter(placement=>placement.sectorId===id).length;return <button key={id} type="button" aria-pressed={selectedSectorId===id} onClick={()=>{setLocalSectorId(id);onSectorFocus?.(id);decisionMap?.selectSector(id);decisionMap?.focusSector(id);}}>Sector {sector.tileId}<small>{selectedCount?`${selectedCount} selected`:`${options.filter(option=>option.sectorId===id).length} open`}</small></button>;})}</nav>}
-            {visibleOptions.map((option) => {
-              const sector = view.sectors.find((candidate) => candidate.id === option.sectorId)!;
-              const key = `${option.sectorId}:${option.squareId}`;
-              const isSelected = !!chosen[key];
-              return (
-                <button
-                  type="button"
-                  key={`${option.sectorId}:${option.squareId}`}
-                  className={`dg-colonization-square ${isSelected ? "is-selected" : focusedKey===key ? "is-focused" : ""}`}
-                  aria-pressed={isSelected}
-                  aria-label={`Colonize ${planetName(option.resource)} planet ${option.squareId} in sector ${sector.tileId}${option.advanced ? ", advanced" : ""}`}
-                  disabled={disabled}
-                  onClick={() => choosePlanet(option)}
-                >
-                  <span className="dg-colonization-orb" style={{ color: option.resource === "science" ? "#b397da" : option.resource === "materials" ? "#b89675" : option.resource === "money" ? "#e7bd67" : "#b5c3cd" }}>
-                    <svg viewBox="0 0 20 20" aria-hidden="true"><PlanetIcon resource={option.resource} /></svg>
-                    {option.advanced && <AdvancedPlanetBadge className="dg-colonization-advanced"/>}
-                  </span>
-                  <span><strong>{planetName(option.resource)}</strong><small>Sector {sector.tileId} · {option.advanced ? "Advanced" : "Standard"}</small></span>
-                </button>
-              );
-            })}
-          </section>
-          <aside className="dg-colonization-detail">
-            {selected ? (
-              <section className="dg-colonization-resource" aria-label="Population cube choice">
-                <h3>Population cube</h3>
-                {allowedResources.length===1?<p><TradeResourceIcon resource={allowedResources[0]}/>{resourceName(allowedResources[0])} population planned</p>:<div>{allowedResources.map((choice) => <button key={choice} type="button" aria-label={`${resourceName(choice)} population`} aria-pressed={chosen[`${selected.sectorId}:${selected.squareId}`] === choice} disabled={disabled} onClick={() => chooseResource(choice)}><TradeResourceIcon resource={choice}/><span>{resourceName(choice)}</span><small>{own?.populationTracks[choice] ?? 0} on track</small></button>)}</div>}
-                {chosen[`${selected.sectorId}:${selected.squareId}`]&&<button type="button" disabled={disabled} onClick={()=>setChosen(current=>Object.fromEntries(Object.entries(current).filter(([key])=>key!==`${selected.sectorId}:${selected.squareId}`)))}>Remove this colony</button>}
-              </section>
-            ) : <p>Select a planet to see its compatible population cubes.</p>}
-          </aside>
-        </div>
-      )}
+      <div className="dg-colonization-body">
+      {!options.length ? <p role="status">{own?.colonyShipsAvailable===0?'No colony ships ready.':'No available planets.'}</p> : <div className="dg-colonization-layout">
+        {sectors.length>1&&<nav className="dg-colonization-sectors" aria-label="Colonizable sectors">{sectors.map(id=>{const sector=view.sectors.find(candidate=>candidate.id===id)!;const selectedCount=placements.filter(placement=>placement.sectorId===id).length;return <button key={id} type="button" aria-pressed={selectedSectorId===id} onClick={()=>{setLocalSectorId(id);onSectorFocus?.(id);decisionMap?.selectSector(id);decisionMap?.focusSector(id);}}>Sector {sector.tileId}{selectedCount>0&&<small>{selectedCount} planned</small>}</button>;})}</nav>}
+        {view.sectors.filter(sector=>sector.id===selectedSectorId).map(sector=><SectorPlanets key={sector.id} sector={sector} view={view} candidates={[...candidates]} selection={{label:'Colonize',eligibleSquareIds:visibleOptions.map(option=>option.squareId),selectedSquareId:focused?.squareId,disabled,planned:Object.fromEntries(placements.filter(placement=>placement.sectorId===sector.id).map(placement=>[placement.squareId,placement.resource])),onSelect:squareId=>{const option=visibleOptions.find(item=>item.squareId===squareId);if(option)choosePlanet(option);}}}/>)}
+        {selected&&<section className="dg-colonization-resource" aria-label="Population cube choice">
+          {allowedResources.length>1&&<><h3>Choose population</h3><div>{allowedResources.map(choice=><button key={choice} type="button" aria-label={`${resourceName(choice)} population`} aria-pressed={chosen[`${selected.sectorId}:${selected.squareId}`]===choice} disabled={disabled} onClick={()=>chooseResource(choice)}><TradeResourceIcon resource={choice}/><span>{resourceName(choice)}</span></button>)}</div></>}
+          {chosen[`${selected.sectorId}:${selected.squareId}`]&&<button type="button" disabled={disabled} onClick={()=>setChosen(current=>Object.fromEntries(Object.entries(current).filter(([key])=>key!==`${selected.sectorId}:${selected.squareId}`)))}>Remove this colony</button>}
+        </section>}
+      </div>}
       {invalidPlacements.map(([key,resource])=><p key={key} role="status">{resourceName(resource)} colony on sector {view.sectors.find(sector=>sector.id===key.split(':')[0])?.tileId??'no longer present'}, space {key.split(':')[1]}, is no longer available. <button type="button" onClick={()=>setChosen(current=>Object.fromEntries(Object.entries(current).filter(([id])=>id!==key)))}>Remove unavailable colony</button></p>)}
+      {placements.length>0&&<div className="dg-colonization-payoff" role="region" aria-label="Colonization consequences">{consequences.resources.filter(resource=>resource.placements>0).map(resource=><span key={resource.resource}><TradeResourceIcon resource={resource.resource}/><span>{resourceName(resource.resource)} income <b>{resource.incomeBefore} → {resource.incomeAfter}</b><small>Round end</small></span></span>)}</div>}
+      {placements.length > 0 && !withinSupply && <p className="dg-danger" role="status">{placements.length>consequences.colonyShipsBefore?`Need ${placements.length} colony ships; ${consequences.colonyShipsBefore} ready. `:''}{consequences.resources.filter(resource=>resource.placements>resource.cubesBefore).map(resource=>`Need ${resource.placements} ${resource.resource} cubes; ${resource.cubesBefore} available.`).join(' ')}</p>}
+      </div>
       {(command || decision) && (
-        <footer className="dg-colonization-confirm">
-          <details><summary>Action and upkeep details</summary><ActionEconomy view={view} action="colonize" preview={preview} /></details>
-          <section className="dg-colonization-payoff" aria-label="Colonization consequences"><h3>What this changes</h3><p><strong>Colony ships</strong><span>{consequences.colonyShipsBefore} → {consequences.colonyShipsAfter}</span></p>{consequences.resources.filter(resource=>resource.placements>0).map(resource=><p key={resource.resource}><strong>{resourceName(resource.resource)}</strong><span>{resource.cubesBefore} → {resource.cubesAfter} cubes · income {resource.incomeBefore} → {resource.incomeAfter} <b>+{resource.incomeDelta}</b></span></p>)}</section>
-          <p>{placements.length ? `Populate ${placements.length} planet${placements.length === 1 ? "" : "s"} across ${new Set(placements.map(placement=>placement.sectorId)).size} sector${new Set(placements.map(placement=>placement.sectorId)).size===1?'':'s'}.` : "You may finish without placing population."}</p>
-          {placements.length > 0 && !withinSupply && <p className="dg-danger" role="status">{placements.length>consequences.colonyShipsBefore?`Need ${placements.length} colony ships; ${consequences.colonyShipsBefore} ready. `:''}{consequences.resources.filter(resource=>resource.placements>resource.cubesBefore).map(resource=>`Need ${resource.placements} ${resource.resource} cubes; ${resource.cubesBefore} available.`).join(' ')}</p>}
+        <CommitBar className="dg-colonization-confirm" summary={placements.length>0&&<span className="dg-colonization-ship-cost" aria-label={`Colony ships ${consequences.colonyShipsBefore} → ${consequences.colonyShipsAfter}`}><ActionIcon kind="colonize"/><span className="sr-only">Colony ships </span><b>{consequences.colonyShipsBefore} → {consequences.colonyShipsAfter}</b></span>}>
           {command && <button type="button" className="sd-primary" disabled={disabled || !withinSupply || !draftLegal || (!decision&&draftGuard.stale)} onClick={() => {if(!decision)draftGuard.markSubmitted(command);onSubmit(command);}}>{commitLabel(decision ? "Finish colonization" : `Colonize ${placements.length} planet${placements.length===1?'':'s'}`)}</button>}
           {decision && <button type="button" disabled={disabled} onClick={() => onSubmit({ type: "resolve", decisionId: decision.id, choice: { kind: "colonization", placements: [] } })}>Finish without colonizing</button>}
-        </footer>
+        </CommitBar>
       )}
     </section>
   );

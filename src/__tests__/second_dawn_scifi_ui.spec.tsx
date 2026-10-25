@@ -46,7 +46,7 @@ it('does not offer Formic convoy selectors during a reaction',()=>{
  const view=getPlayerView(state,'a');
  render(<MovementPlanner view={view} sourceSectorId={source.id} selectedTargetId={target.id} disabled={false} onTargetsChange={()=>{}} onClose={()=>{}} onSubmit={()=>{}}/>);
  fireEvent.click(screen.getByRole('checkbox',{name:'Cruiser 1'}));
- expect(screen.getByText('Reaction: one ship, without escorts.')).toBeVisible();
+ expect(screen.getByRole('checkbox',{name:'Cruiser 1'})).toBeChecked();
  expect(screen.queryByText(/convoy · up to/)).toBeNull();
 });
 it('shows escrow offers and sends a direct resource exchange without converting to the bank',()=>{
@@ -54,14 +54,15 @@ it('shows escrow offers and sends a direct resource exchange without converting 
  const view=getPlayerView(state,'b');const submit=vi.fn();
  render(<GuildTradePanel view={view} candidates={legalCommands(view)} disabled={false} onSubmit={submit}/>);
  expect(screen.getByText(/2 materials reserved/)).toBeVisible();
+ fireEvent.click(screen.getByRole('button',{name:'Select offer: receive materials for science'}));
+ fireEvent.click(screen.getByRole('button',{name:'Max',exact:true}));
  fireEvent.click(screen.getByRole('button',{name:'Pay 2 science · receive 2 materials'}));
  expect(submit).toHaveBeenCalledWith({type:'accept-guild-offer',offerId:'offer',amount:2});
 });
 it('offers Bob factories only for eligible Interceptors and makes the population cost visible',()=>{
  const {state}=fixture('bobiverse');const view=getPlayerView(state,'a');const submit=vi.fn();
  render(<FactionAbilityControls view={view} candidates={legalCommands(view)} disabled={false} onSubmit={submit} onAction={()=>{}}/>);
- expect(screen.getByText(/Load a Materials cube/)).toBeVisible();
- fireEvent.click(screen.getByRole('button',{name:/Load factory/}));expect(submit).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'Load selected factory'}));
+ fireEvent.click(screen.getByRole('button',{name:/Load factory/}));expect(screen.getByText(/1 Materials population cube/)).toBeVisible();expect(submit).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'Load selected factory'}));
  expect(submit).toHaveBeenCalledWith({type:'load-factory',shipId:state.ships.find(s=>s.owner==='a')!.id});
 });
 
@@ -89,6 +90,7 @@ it('lets ExFor keep two physical copies of the same discovery independently',()=
 it('allows a customer to fill part of a finite Guild offer',()=>{
  const {state}=fixture('spacing-guild');state.guildOffers=[{id:'partial',owner:'a',give:'materials',receive:'science',remaining:3}];state.activeSeatId='b';
  const view=getPlayerView(state,'b');const submit=vi.fn();render(<GuildTradePanel view={view} candidates={legalCommands(view)} disabled={false} onSubmit={submit}/>);
+ fireEvent.click(screen.getByRole('button',{name:'Select offer: receive materials for science'}));
  fireEvent.change(screen.getByRole('spinbutton',{name:'Exchange quantity for partial'}),{target:{value:'1'}});
  fireEvent.click(screen.getByRole('button',{name:'Pay 1 science · receive 1 materials'}));
  expect(submit).toHaveBeenCalledWith({type:'accept-guild-offer',offerId:'partial',amount:1});

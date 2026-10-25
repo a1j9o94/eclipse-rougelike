@@ -29,6 +29,7 @@
 .dg-reputation-auto > svg { width: 29px; height: 29px; color: #e0c783; }
 .dg-reputation-auto p { margin: 0; }
 .dg-reputation-auto small { display: block; color: #a9bdc7; padding-top: 4px; font-size: 11px; }
+.dg-reputation-summary>header>button{width:44px;height:44px;min-height:44px;flex-basis:44px}.dg-reputation-summary details>summary{min-height:44px;display:flex;align-items:center;font-size:12px}.dg-battlefield-controls .dg-reputation-summary{width:auto;margin:10px 16px;box-shadow:none}.dg-reputation-summary .dg-reputation-private{font-size:11px;letter-spacing:.04em}
 @media(max-width:480px){
  .dg-reputation-summary { padding: 11px 12px; }
  .dg-reputation-result-body { gap: 12px; flex-wrap: wrap; }

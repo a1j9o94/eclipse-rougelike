@@ -36,7 +36,6 @@ export default function ResearchedTechnologies({seat,view,onInspect,selectedId,d
           })}{Array.from({length:Math.max(0,RESEARCH_TRACK_CAPACITY-researched)},(_,index)=><ResearchDiscountSlot className="dg-owned-slot" key={`empty-${index}`} index={researched+index} minorSpecies={seat.minorSpecies}/>)}</div>
         </section>;
       })}</div>
-      <p className="dg-discount-explanation">Discounts reduce science costs on that track, never below a technology’s minimum price.</p>
       {!onInspect&&detail&&<div className="dg-owned-description"><strong>{detail.name}</strong><p>{describeTechnology(detail)}</p></div>}
     </details>
   </section>;

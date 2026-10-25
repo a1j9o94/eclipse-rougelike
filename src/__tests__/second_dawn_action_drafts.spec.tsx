@@ -1,3 +1,4 @@
+import ActivityDock from '../second-dawn-game/ActivityDock';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { ActionDraftProvider } from '../second-dawn-game/ActionDraftProvider';
@@ -15,7 +16,7 @@ function Harness({ submit = () => {},queued=false }: { submit?: () => void;queue
   const [amount, setAmount] = useActionDraftState('tradeAmount', 1);
   const [sector, setSector] = useActionDraftState('selectedSector', null);
   const guard = useActionDraftGuard();
-  return <><output aria-label="Amount">{amount}</output><output aria-label="Sector">{sector}</output><span>{guard.stale ? 'Review required' : 'Ready'}</span><button onClick={() => setAmount(value => value + 1)}>Increase</button><button onClick={() => setSector('new-sector')}>Navigate</button><button onClick={()=>guard.clear()}>Reset draft</button><button disabled={!guard.canUndo} onClick={guard.undo}>Undo draft edit</button><button disabled={guard.stale} onClick={() => { guard.markSubmitted({ type: 'trade', from: 'money', to: 'science', amount },queued?'queued':'accepted'); submit(); }}>Submit</button></>;
+  return <><output aria-label="Amount">{amount}</output><output aria-label="Sector">{sector}</output><span>{guard.stale ? 'Review required' : 'Ready'}</span><button onClick={() => setAmount(value => value + 1)}>Increase</button><button onClick={() => setSector('new-sector')}>Navigate</button><button onClick={()=>guard.clear()}>Reset draft</button><button disabled={!guard.canUndo} onClick={()=>guard.undo()}>Undo draft edit</button><button disabled={guard.stale} onClick={() => { guard.markSubmitted({ type: 'trade', from: 'money', to: 'science', amount },queued?'queued':'accepted'); submit(); }}>Submit</button></>;
 }
 describe('partitioned local action drafts', () => {
   it('resets deliberately and undoes local edits without reverting navigation or accepted commands',()=>{
@@ -133,4 +134,16 @@ it('migrates legacy research and frontier drafts without reviving an explicitly 
   localStorage.setItem(draftStorageKey(partition),JSON.stringify({version:1,...partition,values:{commandDraft:{revision:4,value:candidate},[key]:{revision:5,value:null}}}));
   expect(readActionDrafts(localStorage,partition).values[key]?.value).toBeNull();
  }
+});
+it('undoes the current activity without undoing a later edit to another draft',()=>{
+ function ScopedUndo(){const [trade,setTrade]=useActionDraftState('tradeAmount',1),[build,setBuild]=useActionDraftState('guildAmount',1);const guard=useActionDraftGuard();return <><span aria-label="Trade amount">{trade}</span><span aria-label="Build payment">{build}</span><button onClick={()=>setTrade(3)}>Change trade</button><button onClick={()=>setBuild(4)}>Change build</button><button onClick={()=>guard.undo(['tradeAmount'])}>Undo trade</button></>;}
+ render(<ActionDraftProvider matchId="scoped-undo" viewerSeatId="a" revision={1}><ScopedUndo/></ActionDraftProvider>);
+ fireEvent.click(screen.getByText('Change trade'));fireEvent.click(screen.getByText('Change build'));fireEvent.click(screen.getByText('Undo trade'));
+ expect(screen.getByLabelText('Trade amount')).toHaveTextContent('1');expect(screen.getByLabelText('Build payment')).toHaveTextContent('4');
+});
+it('can undo a reset after the current activity no longer has a draft',()=>{
+ function ResetActivity(){const [amount,setAmount]=useActionDraftState('tradeAmount',1);return <><output aria-label="Activity amount">{amount}</output><button onClick={()=>setAmount(3)}>Edit activity</button><ActivityDock current="trade" disabled={false} onResume={()=>{}}/></>;}
+ render(<ActionDraftProvider matchId="reset-activity" viewerSeatId="a" revision={1}><ResetActivity/></ActionDraftProvider>);
+ fireEvent.click(screen.getByText('Edit activity'));fireEvent.click(screen.getByRole('button',{name:'Reset trade draft'}));
+ expect(screen.getByRole('button',{name:'Undo draft edit'})).toBeEnabled();fireEvent.click(screen.getByRole('button',{name:'Undo draft edit'}));expect(screen.getByLabelText('Activity amount')).toHaveTextContent('3');
 });

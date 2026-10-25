@@ -1,31 +1,96 @@
-.dg-part-picker-backdrop{position:fixed;inset:0;z-index:180;display:grid;place-items:center;padding:20px;background:#030910bf;backdrop-filter:blur(5px);color:#dce4e9;font-family:inherit;overscroll-behavior:contain}
-.dg-part-picker{width:min(850px,100%);max-height:min(850px,calc(100dvh - 40px));display:flex;flex-direction:column;min-height:0;min-width:0;overflow:hidden;border:1px solid #8e7951;border-radius:12px;background:radial-gradient(ellipse at top left,#35455366,transparent 60%),#111c26;box-shadow:0 20px 90px #000b}
-.dg-part-picker-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 20px 12px;flex-shrink:0}.dg-part-picker-heading h2{margin:5px 0 0;color:#eddbb4;font:600 23px Georgia,serif}.dg-part-picker button{font:inherit;cursor:pointer}.dg-part-picker button:disabled{cursor:default;opacity:.58}.dg-part-picker-heading button,.dg-part-picker-filters button{min-height:44px;padding:7px 12px;border:1px solid #596771;border-radius:5px;background:#1a2a36;color:#dce4e9}.dg-part-picker button:focus-visible,.dg-part-picker-scroll:focus-visible,.dg-part-picker summary:focus-visible{outline:2px solid #ead092;outline-offset:2px}
-.dg-part-picker-current{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 20px 12px;padding:11px 13px;border:1px solid #465864;background:#0c1620;border-radius:6px;flex-shrink:0}.dg-part-picker-current>div:first-child{display:grid;gap:4px;min-width:0}.dg-part-picker-current small{font-size:12px;color:#aebfc9}.dg-part-picker-current strong{color:#e5d2ac;font-size:16px}.dg-part-picker-current .dg-part-stats{margin:0;gap:8px}.dg-part-picker-current .dg-stat-badge{min-width:0;grid-template-columns:20px auto;grid-template-rows:22px 12px}.dg-part-picker-current .dg-stat-icon{width:19px;height:19px}.dg-part-picker-current .dg-stat-badge strong{font-size:19px}
-.dg-part-picker-filters{display:flex;gap:6px;overflow:auto;padding:0 20px 12px;flex-shrink:0;scrollbar-width:thin}.dg-part-picker-filters button{flex:0 0 auto;font-size:13px}.dg-part-picker-filters button[aria-pressed=true]{background:#4b402a;border-color:#d4b575;color:#ffe4ae}
-.dg-part-picker-scroll{min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 20px 20px;scrollbar-width:thin;touch-action:pan-y}.dg-part-picker-hint{margin:0 0 12px;font-size:13px;line-height:1.45;color:#bdcbd3}.dg-part-picker-warning{margin:0 0 12px;padding:11px;border-left:3px solid #d8ac6e;background:#47381f;color:#f3d3a3;font-size:13px;line-height:1.45}.dg-part-picker .dg-part-group{margin:0 0 16px}.dg-part-picker .dg-part-group h3{font-size:12px;color:#c6b184;letter-spacing:.08em;text-transform:uppercase;margin:0 0 7px}.dg-part-picker .dg-parts-tray-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:0}.dg-part-picker .dg-part-choice{min-width:0;min-height:145px;padding:13px;border-radius:6px}.dg-part-picker .dg-part-choice-title{font-size:15px}.dg-part-picker .dg-part-choice small{font-size:12px;line-height:1.5}.dg-part-picker-stock{margin-top:auto;color:#dbc183;font-size:12px}.dg-part-picker .dg-part-picker-restore{min-height:0;width:100%;margin:8px 0;border-style:dashed;gap:5px}.dg-part-picker-footer{flex-shrink:0;padding:12px 20px;border-top:1px solid #40505c;background:#0e1921;color:#abbecb;font-size:12px;line-height:1.4}.dg-part-picker .dg-unavailable-parts{font-size:13px}.dg-part-picker .dg-unavailable-parts summary{padding:10px 0}.dg-part-picker .dg-unavailable-parts button{font-size:13px}.dg-part-picker .dg-unavailable-parts button small{font-size:12px;line-height:1.4}
-@media(max-width:600px){.dg-part-picker-backdrop{padding:8px}.dg-part-picker{max-height:calc(100dvh - 16px);width:100%;border-radius:10px}.dg-part-picker-heading{padding:13px 12px 10px}.dg-part-picker-heading h2{font-size:20px}.dg-part-picker-current{margin:0 12px 10px;padding:9px;flex-wrap:wrap}.dg-part-picker-current .dg-part-stats{gap:7px}.dg-part-picker-filters{padding:0 12px 10px}.dg-part-picker-scroll{padding:0 12px 14px}.dg-part-picker .dg-parts-tray-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.dg-part-picker .dg-part-choice{padding:10px;min-height:150px}.dg-part-picker .dg-part-choice-title{font-size:14px}.dg-part-picker-footer{padding:10px 12px max(10px,env(safe-area-inset-bottom))}}
-
-.dg-blueprint-editor .dg-blueprint-slot{scroll-margin-block:20px 155px}
-@media(max-width:600px){.dg-mobile-board .dg-blueprint-canvas-heading{gap:8px}.dg-mobile-board .dg-blueprint-canvas-heading p{font-size:12px;line-height:1.4}.dg-mobile-board .dg-blueprint-canvas-heading>span{font-size:10px}.dg-mobile-board .dg-blueprint-editor .dg-blueprint-slot{min-height:118px;gap:5px}.dg-mobile-board .dg-blueprint-editor .dg-blueprints{gap:7px}}
-@media(max-height:450px){.dg-part-picker-heading{padding:6px 12px}.dg-part-picker-heading h2{display:none}.dg-part-picker-heading button{min-height:36px}.dg-part-picker-current{margin:0 12px 6px;padding:7px 10px}.dg-part-picker-current>div:first-child{display:flex;align-items:center;gap:8px}.dg-part-picker-current>div:first-child>small{display:none}.dg-part-picker-filters{padding:0 12px 6px}.dg-part-picker-filters button{min-height:36px}.dg-part-picker-footer,.dg-part-picker-hint{display:none}}
-@media(max-height:300px){.dg-part-picker-current .dg-part-stats{display:none}.dg-part-picker-current strong{font-size:14px}}
-@media(max-width:350px){.dg-part-picker .dg-parts-tray-grid{grid-template-columns:1fr}.dg-part-picker-heading h2{font-size:16px}.dg-part-picker-heading{gap:8px}.dg-part-picker-heading .dg-yard-eyebrow{font-size:10px}}
-.dg-part-picker-heading>div{min-width:0}.dg-part-picker-heading h2{overflow-wrap:anywhere}.dg-part-picker-heading>button{flex-shrink:0}
-
-@media(max-width:600px){.dg-part-picker-heading{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px 12px;align-items:center}.dg-part-picker-heading>div{display:contents}.dg-part-picker-heading .dg-yard-eyebrow{grid-column:1;grid-row:1}.dg-part-picker-heading h2{grid-column:1 / -1;grid-row:2;margin:0}.dg-part-picker-heading>button{grid-column:2;grid-row:1}}
-
-/* The ship and its component tray remain in one editable workspace. */
-.dg-fitting-workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,1fr);gap:16px;align-items:start}
-.dg-part-picker-inline{position:sticky;top:0;width:100%;max-height:650px;max-height:min(650px,75dvh);box-shadow:none}
-.dg-part-picker-inline .dg-part-picker-heading{padding:12px}
-.dg-part-picker-inline .dg-part-picker-heading h2{font-size:18px}
-.dg-part-picker-inline .dg-part-picker-current{margin:0 12px 10px}
-.dg-part-picker-inline .dg-part-picker-filters{padding:0 12px 10px}
-.dg-part-picker-inline .dg-part-picker-scroll{padding:0 12px 12px}
-.dg-part-picker-inline .dg-parts-tray-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-.dg-part-picker-inline .dg-part-choice{min-height:130px;padding:10px}
-@media(max-width:900px){.dg-fitting-workspace{grid-template-columns:minmax(0,1fr)}.dg-part-picker-inline{position:static;max-height:450px;max-height:50dvh}.dg-part-picker-inline .dg-part-picker-heading{display:flex}.dg-part-picker-inline .dg-part-picker-heading>div{display:block}.dg-part-picker-inline .dg-part-picker-heading h2{font-size:18px}.dg-part-picker-inline .dg-part-picker-filters button{min-height:44px}}
-.dg-fitting-hardpoint{min-width:0}.dg-fitting-hardpoint>.dg-blueprint-slot{width:100%;height:100%}.dg-hardpoint-blocker{display:block;color:#d9b895;line-height:1.4;margin-top:6px}.dg-upgrade-classes{display:flex;flex-wrap:wrap;gap:6px 16px;list-style:none;padding:0}.dg-upgrade-classes strong{text-transform:capitalize}
-.dg-app .dg-blueprint-editor .dg-fitting-workspace .dg-blueprints{grid-template-columns:repeat(2,minmax(0,1fr))}.dg-fitting-hardpoint strong,.dg-fitting-hardpoint small{overflow-wrap:anywhere}
-@media(max-width:350px){.dg-app .dg-blueprint-editor .dg-fitting-workspace .dg-blueprints{grid-template-columns:minmax(0,1fr)}}
+.dg-blueprint-editor,.dg-ancient-install{display:flex;flex-direction:column;min-width:0;min-height:0;gap:8px}
+.dg-fitting-summary{display:flex;flex-direction:column;align-items:stretch;gap:6px;margin:0;padding:10px 12px;background:#111d27;border:1px solid #4e606b;flex:0 0 auto}
+.dg-fitting-summary-top{display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px;font-size:13px}
+.dg-fitting-class{text-transform:capitalize;font-size:16px;color:#ecdcba}
+.dg-fitting-summary-top small{margin-left:auto;color:#c4ced4}
+.dg-fitting-capabilities{display:flex;align-items:center;flex-wrap:wrap;gap:6px 16px}
+.dg-fitting-summary .dg-ship-capabilities{display:flex;flex-wrap:wrap;gap:8px 12px;padding:0;margin:0}
+.dg-fitting-summary .dg-stat-badge{min-width:0;grid-template-columns:18px auto;grid-template-rows:21px 12px}
+.dg-fitting-summary .dg-stat-badge strong{font-size:16px}
+.dg-fitting-summary .dg-stat-badge small{font-size:9px}
+.dg-fitting-summary .dg-stat-icon{width:18px;height:18px}
+.dg-fitting-changes{display:flex;gap:5px 12px;flex-wrap:wrap;font-size:12px;color:#e6d399}
+.dg-fitting-selected-slot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;border-top:1px solid #344b59;padding-top:5px}
+.dg-fitting-selected-slot>button{margin-left:auto;min-height:44px;font-size:12px}
+.dg-fitting-effect{font-size:12px;color:#bdccd5}
+.dg-fitting-workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,1fr);gap:12px;min-height:0;flex:1 1 auto;align-items:stretch}
+.dg-fitting-workspace .dg-blueprint-canvas{min-height:0;overflow:auto;margin:0;padding:10px}
+.dg-fitting-hardpoint{min-width:0}
+.dg-fitting-hardpoint>.dg-blueprint-slot{width:100%;height:100%}
+.dg-fitting-hardpoint strong,.dg-fitting-hardpoint small{overflow-wrap:anywhere}
+.dg-hardpoint-blocker{display:block;color:#d9b895;font-size:12px;line-height:1.4;margin-top:6px}
+.dg-app .dg-blueprint-editor .dg-fitting-workspace .dg-blueprints{grid-template-columns:repeat(2,minmax(0,1fr))}
+.dg-upgrade-classes{display:flex;gap:6px 12px;flex-wrap:wrap;list-style:none;padding:0;margin:0;font-size:12px}
+.dg-upgrade-classes strong{text-transform:capitalize}
+.dg-part-picker{display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden;border:1px solid #4e606b;border-radius:7px;background:#111c26}
+.dg-part-picker-inline{position:static;width:100%;max-height:620px;box-shadow:none}
+.dg-part-picker-heading{padding:8px 12px;flex:0 0 auto}
+.dg-part-picker-heading h2{margin:0;font-size:16px;color:#eddbb4}
+.dg-part-picker-heading .dg-yard-eyebrow{display:none}
+.dg-part-picker-current{display:flex;align-items:center;justify-content:space-between;margin:0 12px 8px;padding:8px;border:1px solid #465864;border-radius:4px;font-size:12px}
+.dg-part-picker-current>div{display:grid;gap:3px}
+.dg-part-picker-current .dg-part-stats{margin:0}
+.dg-part-picker-filters{display:flex;gap:5px;overflow-x:auto;flex:0 0 auto;padding:0 10px 7px;scrollbar-width:thin}
+.dg-part-picker-filters button{flex:0 0 auto;font-size:12px;min-height:44px;padding:6px 10px}
+.dg-part-picker-filters button[aria-pressed=true]{border-bottom:3px solid #e7cd8b}
+.dg-part-picker-scroll{min-height:0;flex:1 1 auto;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:0 10px 10px}
+.dg-part-picker .dg-part-group{margin:0 0 12px}
+.dg-part-picker .dg-part-group h3{margin:5px 0;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#bac8d1}
+.dg-part-picker .dg-parts-tray-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0}
+.dg-part-picker .dg-part-choice{min-width:0;min-height:110px;padding:9px;border-radius:5px;font-size:13px}
+.dg-part-picker .dg-part-choice.is-selected{outline:2px solid #e4c579;outline-offset:-2px}
+.dg-part-picker .dg-part-choice-title{font-size:14px}
+.dg-part-picker .dg-part-choice small{font-size:12px;line-height:1.4}
+.dg-part-picker-stock,.dg-ancient-stock{font-size:12px;color:#cbb58b}
+.dg-part-picker-warning{margin:0 0 10px;padding:8px;border-left:3px solid #ddad67;font-size:13px;background:#382d22}
+.dg-part-picker .dg-part-picker-restore{min-height:44px;width:100%;margin:6px 0;border-style:dashed}
+.dg-unavailable-parts{font-size:13px}
+.dg-unavailable-parts summary{min-height:44px;align-content:center;cursor:pointer}
+.dg-unavailable-parts button{display:flex;flex-direction:column;width:100%;padding:8px;text-align:left;min-height:44px}
+.dg-unavailable-parts button[aria-disabled=true]{color:#b7c1c8;border-style:dashed}
+.dg-part-picker button:focus-visible,.dg-part-picker-scroll:focus-visible,.dg-part-picker summary:focus-visible{outline:2px solid #ead092;outline-offset:2px}
+.dg-upgrade-confirm.dg-commit-bar{position:static;flex:0 0 auto;z-index:auto}
+.dg-upgrade-summary{font-size:12px}
+.dg-fitting-reset{font-size:12px;position:relative}
+.dg-fitting-reset summary{min-height:44px;align-content:center;cursor:pointer}
+.dg-fitting-reset[open]>button{position:absolute;bottom:100%;right:0;white-space:nowrap;background:#142431;z-index:2}
+.dg-app.dg-mobile-board .dg-blueprint-editor{flex:1 1 auto;overflow:hidden;gap:5px}
+.dg-app.dg-mobile-board .dg-blueprint-editor .dg-fitting-summary{padding:6px 8px;margin:0;gap:4px}
+.dg-app.dg-mobile-board .dg-fitting-summary-top{gap:4px 10px;font-size:12px}
+.dg-app.dg-mobile-board .dg-fitting-class{font-size:14px}
+.dg-app.dg-mobile-board .dg-fitting-summary .dg-ship-capabilities{gap:5px 9px}
+.dg-app.dg-mobile-board .dg-fitting-summary .dg-stat-badge small{display:none}
+.dg-app.dg-mobile-board .dg-fitting-summary .dg-stat-badge{grid-template-rows:21px}
+.dg-app.dg-mobile-board .dg-fitting-selected-slot{gap:4px;padding-top:3px}
+.dg-app.dg-mobile-board .dg-fitting-effect{display:none}
+.dg-app.dg-mobile-board .dg-fitting-workspace{display:flex;flex-direction:column;gap:5px;overflow:hidden}
+.dg-app.dg-mobile-board .dg-fitting-workspace .dg-blueprint-canvas{flex:0 0 auto;padding:0;border:0;background:none;overflow:visible}
+.dg-app.dg-mobile-board .dg-blueprint-canvas-heading{display:none}
+.dg-app.dg-mobile-board .dg-blueprint-editor .dg-fitting-workspace .dg-blueprints{display:flex;flex-wrap:nowrap;gap:5px;overflow-x:auto;margin:0;padding:2px 2px 4px}
+.dg-app.dg-mobile-board .dg-fitting-hardpoint{flex:0 0 92px}
+.dg-app.dg-mobile-board .dg-blueprint-editor .dg-blueprint-slot{min-height:64px;max-height:72px;padding:5px;gap:3px}
+.dg-app.dg-mobile-board .dg-blueprint-slot .dg-part-stats,.dg-app.dg-mobile-board .dg-blueprint-slot>small{display:none}
+.dg-app.dg-mobile-board .dg-blueprint-slot>strong{font-size:11px}
+.dg-app.dg-mobile-board .dg-blueprint-slot .dg-slot-title{font-size:9px}
+.dg-app.dg-mobile-board .dg-part-picker-inline{flex:1 1 0;max-height:none}
+.dg-app.dg-mobile-board .dg-part-picker-heading,.dg-app.dg-mobile-board .dg-part-picker-current{display:none}
+.dg-app.dg-mobile-board .dg-part-picker-filters{padding:4px 6px}
+.dg-app.dg-mobile-board .dg-part-picker .dg-part-choice{min-height:102px}
+.dg-app.dg-mobile-board .dg-upgrade-confirm.dg-commit-bar{padding:6px 8px}
+.dg-fitting-summary .dg-fitting-summary-top>.dg-ship-silhouette{width:26px;height:26px;flex:0 0 26px}
+.dg-fitting-energy{position:relative}
+.dg-fitting-energy summary{cursor:pointer;min-height:30px;align-content:center}
+.dg-fitting-energy>span{position:absolute;top:100%;left:0;z-index:5;white-space:nowrap;padding:8px;border:1px solid #6e7a82;background:#111d27}
+.dg-app .dg-fitting-summary .dg-fitting-energy,.dg-app .dg-fitting-summary .dg-fitting-stat-inspect{margin:0}
+.dg-app .dg-fitting-summary .dg-fitting-summary-top>.dg-ship-silhouette{width:26px;height:26px;flex-basis:26px}
+.dg-fitting-stat-inspect{position:relative}
+.dg-fitting-stat-inspect>summary{min-height:44px}
+.dg-app .dg-fitting-stat-help{position:absolute;z-index:6;top:100%;left:0;display:grid;grid-template-columns:1fr auto;gap:6px 12px;width:min(300px,80vw);max-height:240px;overflow:auto;margin:4px 0;padding:10px;background:#132632;border:1px solid #658297;border-radius:5px;font-size:12px}
+.dg-fitting-stat-help dd{margin:0;text-align:right}
+.dg-fitting-selected-slot>small{font-size:11px;color:#becbd3}
+.dg-app.dg-mobile-board .dg-upgrade-confirm .dg-upgrade-summary{display:none}
+.dg-app.dg-mobile-board .dg-upgrade-confirm .dg-commit-actions{flex:0 0 auto}
+.dg-app.dg-mobile-board .dg-upgrade-confirm .dg-commit-actions>.sd-primary{white-space:nowrap}
+.dg-app.dg-mobile-board .dg-upgrade-confirm .dg-commit-actions>.sd-primary[data-queued=true]{white-space:normal}
+.dg-app .dg-upgrade-confirm.dg-commit-bar{flex-wrap:nowrap}
+.dg-app .dg-upgrade-confirm .dg-commit-summary{flex:1 1 0;min-width:0}

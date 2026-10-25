@@ -1,3 +1,4 @@
+import {SHRINE_COSTS} from './shrines';
 import { availableTechnologyMarket, remoteExplorationSources, guildMovementTolls } from './scifiActions';
 import { researchedTechnologyIds } from './technologies';
 import { upkeepSeatUnfinished } from './upkeep';
@@ -53,10 +54,9 @@ import type {
   Seat,
   Sector,
   Track,
-  Resource,
 } from "./types";
 
-const SHRINE_COSTS:Record<Resource,readonly [number,number,number]>={science:[2,3,4],money:[3,4,5],materials:[4,5,6]};
+
 /** The nine board spaces are independent; each row grants a permanent reward when emptied. */
 export function placeShrine(state:GameState,seat:Seat,command:Extract<GameCommand,{type:'place-shrine'}>):void{
   requireRule(seat.faction==='lyra','Only the Enlightened of Lyra build Shrines.');

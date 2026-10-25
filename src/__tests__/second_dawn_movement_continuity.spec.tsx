@@ -33,7 +33,7 @@ it('keeps the departure context and moves a second ship elsewhere without reopen
  const first=processGameCommand(state,'a',submit.mock.calls[0][0]);expect(first.ok).toBe(true);if(!first.ok)return;first.state.revision=state.revision+1;
  ui.rerender(board(first.state,submit,{revision:first.state.revision,type:'move'}));
  expect(screen.getByRole('heading',{name:`Depart sector ${source.tileId}`})).toBeInTheDocument();
- expect(screen.getByText('2 moves left in this action')).toBeInTheDocument();
+ expect(screen.getByText('2 moves available')).toBeInTheDocument();
  expect(screen.getByRole('checkbox',{name:'Interceptor 1'})).not.toBeChecked();
  fireEvent.click(screen.getByRole('checkbox',{name:'Interceptor 1'}));fireEvent.click(destination(targets[1].tileId));
  fireEvent.click(screen.getByRole('button',{name:/Move fleet/}));expect(submit).toHaveBeenCalledTimes(2);
@@ -53,7 +53,7 @@ it('waits for the accepted board before completing an exhausted move action',()=
  const result=processGameCommand(state,'a',submit.mock.calls[0][0]);expect(result.ok).toBe(true);if(!result.ok)return;result.state.revision=state.revision+1;
  const receipt={revision:result.state.revision,type:'move' as const};
  ui.rerender(board(state,submit,receipt));expect(screen.getByRole('region',{name:'Move fleet'})).toBeInTheDocument();
- expect(within(screen.getByRole('region',{name:'Move fleet'})).getByRole('button',{name:/Move fleet/})).toBeDisabled();
+ expect(within(screen.getByRole('region',{name:'Move fleet'})).getByRole('button',{name:'Finish action'})).toBeDisabled();
  ui.rerender(board(result.state,submit,receipt));expect(screen.getByRole('region',{name:'Move fleet'})).toHaveTextContent('Movement complete.');
 });
 

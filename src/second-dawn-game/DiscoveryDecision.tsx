@@ -9,6 +9,7 @@ import BuildPieceSilhouette from './BuildPieceSilhouette';
 import ShipPartStats, { StatBadge } from './ShipPartStats';
 import { PlanetIcon } from './SectorPlanets';
 import './discoveryDecision.css';
+import CommitBar from './CommitBar';
 export interface DiscoveryDecisionProps {
   decision: Extract<PendingDecision, { kind: 'discovery' }>;
   view?: PlayerView;
@@ -43,6 +44,18 @@ function rewardAction(effect: DiscoveryEffect): string {
     case 'end-game-bonus': return 'Keep end-game bonus';
   }
 }
+function consequence(effect:DiscoveryEffect):string|null {
+ switch(effect.kind){
+  case 'resources': return 'Added now';
+  case 'ancient-ship-part': return effect.placement==='outside-grid'?'Permanent · outside the grid':'Free install or store · replaced ancient parts are lost';
+  case 'free-technology': return 'Lowest printed cost · no science paid';
+  case 'place-unbuilt-ship': return 'Uses an unbuilt Cruiser and your current blueprint';
+  case 'place-structure': return effect.structure==='orbital'?'Unpopulated · colonize for income':'3 VP to final controller';
+  case 'place-warp-portal': return 'Links every portal · 2 VP to final controller';
+  case 'choice-resources': return `Choose ${effect.amount} resources`;
+  case 'end-game-bonus': return 'Scored at game end';
+ }
+}
 export function DiscoveryRewardStats({ effect,faction }: { effect: DiscoveryEffect;faction?:FactionId }) {
   if (effect.kind === 'ancient-ship-part') return <ShipPartStats partId={effect.part}/>;
   const details = explanation(effect);
@@ -52,7 +65,7 @@ export function DiscoveryRewardStats({ effect,faction }: { effect: DiscoveryEffe
     {effect.kind === 'place-unbuilt-ship' && <PieceReward piece="cruiser" explanation={details} faction={faction}/>}
     {effect.kind === 'place-structure' && <><PieceReward piece={effect.structure} explanation={details} faction={faction}/>{effect.structure === 'monolith' ? <StatBadge icon="discovery" value="3 VP" label="final controller" explanation={details}/> : <ResourceReward resource="materials" amount={effect.bonusMaterials}/>}</>}
     {effect.kind === 'place-warp-portal' && <><StatBadge icon="warp-portal" value="+1" label="warp portal" explanation={details}/><StatBadge icon="discovery" value="2 VP" label="final controller" explanation={details}/></>}
-    {effect.kind === 'choice-resources' && <><ResourceReward resource="money" amount={effect.money}/><StatBadge icon="discovery" value={`${effect.amount}`} label="chosen resources" explanation={details}/></>}
+    {effect.kind === 'choice-resources' && <>{effect.money>0&&<ResourceReward resource="money" amount={effect.money}/>}<StatBadge icon="discovery" value={`${effect.amount}`} label="chosen resources" explanation={details}/></>}
     {effect.kind === 'end-game-bonus' && <StatBadge icon="discovery" value="+1 VP" label={effect.bonus === 'artifacts' ? 'per artifact' : 'per 3 reputation VP'} explanation={details}/>}
   </div>;
 }
@@ -81,13 +94,13 @@ export default function DiscoveryDecision({ decision, view, disabled, onSubmit }
   const selectedOption=option??(legalOptions.length===1?legalOptions[0]:null);
   const canCommit=selectedOption==='use'?useAvailable:selectedOption==='keep'?keepAvailable:false;
   const sector = view?.sectors.find(candidate => candidate.id === decision.sectorId);
-  const commitLabel=selectedOption==='keep'?'Keep for 2 VP':selectedOption==='use'?decision.reserveForFourthTechnology?`Reserve ${discovery.name}`:rewardAction(discovery.effect):'Choose reward or points';
+  const commitLabel=selectedOption==='keep'?'Keep for 2 VP':selectedOption==='use'?decision.reserveForFourthTechnology?`Reserve ${discovery.name}`:rewardAction(discovery.effect):'Collect discovery';
   const submit=()=>{
     if(disabled||!canCommit||!selectedOption)return;
     onSubmit({type:'resolve',decisionId:decision.id,choice:{kind:'discovery',option:selectedOption,...(decision.availableTileIds?{discoveryId:selectedDiscoveryId??undefined}:{})}});
   };
   return <section className="dg-discovery-decision">
-    <span className="dg-yard-eyebrow">{decision.reserveForFourthTechnology?'Reserve starting discovery':'Discovery'}{sector?` · Sector ${sector.tileId}`:''}</span>
+    {(decision.reserveForFourthTechnology||sector)&&<span className="dg-yard-eyebrow">{decision.reserveForFourthTechnology?'Reserve starting discovery':`Sector ${sector!.tileId}`}</span>}
     <h2><SectorFeatureIcon kind="discovery"/> {decision.availableTileIds?'Public discovery supply':discovery.name}</h2>
     {decision.availableTileIds&&<>
       {decision.availableTileIds.length>10&&<label className="dg-discovery-search">Find a discovery<input value={search} onChange={event=>setSearch(event.target.value)} placeholder="Search discoveries"/></label>}
@@ -98,8 +111,9 @@ export default function DiscoveryDecision({ decision, view, disabled, onSubmit }
     </>}
     {!decision.reserveForFourthTechnology&&<div className={`dg-discovery-alternatives${decision.availableTileIds?' is-public-selection':''}`} role="radiogroup" aria-label="Discovery reward">
       <section className={`dg-discovery-reward ${selectedOption==='use'?'dg-discovery-selected':''}`}>
-        <label className="dg-discovery-side"><input type="radio" name={`discovery-${decision.id}`} checked={selectedOption==='use'} disabled={disabled||!useAvailable} onChange={()=>setOption('use')}/>Use {discovery.name}</label>
+        <label className="dg-discovery-side"><input type="radio" aria-label={`Use ${discovery.name}`} name={`discovery-${decision.id}`} checked={selectedOption==='use'} disabled={disabled||!useAvailable} onChange={()=>setOption('use')}/><span>Use reward</span></label>
         {!decision.availableTileIds&&<DiscoveryRewardStats effect={discovery.effect} faction={seat?.faction}/>}
+        <p className="dg-discovery-consequence">{consequence(discovery.effect)}</p>
       </section>
       {decision.options.includes('keep')&&<section className={`dg-discovery-reward dg-discovery-vp ${selectedOption==='keep'?'dg-discovery-selected':''}`}>
         <label className="dg-discovery-side"><input type="radio" name={`discovery-${decision.id}`} checked={selectedOption==='keep'} disabled={disabled||!keepAvailable} onChange={()=>setOption('keep')}/>Keep for 2 VP</label>
@@ -109,6 +123,6 @@ export default function DiscoveryDecision({ decision, view, disabled, onSubmit }
     {!availableSelection&&<p className="dg-danger" role="status">This discovery is no longer in the public supply. Choose another.</p>}
     {availableSelection&&!useAvailable&&decision.options.includes('use')&&<p className="dg-danger" role="status">{noTechnology?'No eligible lowest-cost technology remains. Choose points or another discovery.':'The reward cannot be used in this position.'}</p>}
     <details className="dg-discovery-details"><summary>Reward details · {discovery.name}</summary><p>{decision.reserveForFourthTechnology?'Reserved until your fourth technology; the reward is not applied now.':explanation(discovery.effect)}</p></details>
-    <section className="dg-discovery-commit" aria-label="Discovery commitment"><button type="button" className="sd-primary" disabled={disabled||!canCommit} onClick={submit}>{commitLabel}</button></section>
+    <section className="dg-discovery-commit" aria-label="Discovery commitment"><CommitBar summary={decision.reserveForFourthTechnology?'Activates after your fourth technology':undefined}><button type="button" className="sd-primary" disabled={disabled||!canCommit} onClick={submit}>{commitLabel}</button></CommitBar></section>
   </section>;
 }

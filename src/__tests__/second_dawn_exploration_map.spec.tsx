@@ -36,6 +36,7 @@ it('shows the drawn sector on the real galaxy with visible contents and readable
  render(<ExplorationDecision view={view} decision={decision} disabled={false} onSubmit={submit}/>);
  const map=screen.getByRole('group',{name:'Galaxy map'});
  expect(within(map).getAllByRole('button',{name:/^Inspect sector /})).toHaveLength(view.sectors.length+1);
+ fireEvent.click(screen.getByRole('button',{name:'Inspect sector',exact:true}));
  expect(screen.getByRole('heading',{name:'Planets & population'})).toBeVisible();
  expect(screen.getAllByRole('img',{name:'Advanced planet'}).length).toBeGreaterThan(0);
  expect(screen.getByRole('group',{name:new RegExp(`Ancients · ${tile.ancients} Ancient`)})).toBeVisible();

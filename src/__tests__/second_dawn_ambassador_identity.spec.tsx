@@ -23,7 +23,7 @@ it('identifies the offering faction with its name, emblem and public color befor
 it('keeps the proposer identity visible while drafting a decline and preserves disabled submission',()=>{
  const view=fixture(),submit=vi.fn();const rendered=render(<DecisionPanel view={view} decision={decision} reputation={[]} disabled={false} onSubmit={submit}/>);
  fireEvent.click(screen.getByRole('radio',{name:'Decline exchange'}));expect(screen.getByRole('group',{name:'Ambassador offer from Hydran Progress'})).toBeVisible();expect(submit).not.toHaveBeenCalled();
- expect(screen.getByText(/No ambassadors are exchanged/)).toBeInTheDocument();
+ expect(screen.getByText(/Keep your population/)).toBeInTheDocument();
  rendered.rerender(<DecisionPanel view={view} decision={decision} reputation={[]} disabled onSubmit={submit}/>);expect(screen.getByRole('button',{name:'Decline and continue'})).toBeDisabled();
 });
 it('confirms a declined offer without choosing a population cube',()=>{

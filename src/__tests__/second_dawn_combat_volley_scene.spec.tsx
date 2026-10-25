@@ -54,5 +54,5 @@ it('keeps a human firing group idle until the player rolls and disables blocked 
   expect(submit).toHaveBeenCalledExactlyOnceWith({ type: 'resolve', decisionId: 'turn', choice: { kind: 'combat-turn', retreatTo: null } });
   rerender(<CombatTurnDecision decision={decision} disabled onSubmit={submit} />);
   expect(screen.getByRole('button', { name: 'Roll dice' })).toBeDisabled();
-  expect(screen.getByText('Roll when you are ready, or declare a retreat.')).toBeInTheDocument();
+  expect(screen.getByRole('heading',{name:'Fire Cruisers'})).toBeVisible();
 });

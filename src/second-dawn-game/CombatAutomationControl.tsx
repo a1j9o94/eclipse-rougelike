@@ -28,10 +28,10 @@ export default function CombatAutomationControl({view,status,disabled,onChange}:
  const available=ships.length>0&&!blocker&&current?.status!=='finished';
  const text=running?'Auto fight running':current?.reason?reasons[current.reason]:'Manual combat';
  return <section className="dg-combat-automation" aria-label="Battle automation">
-  <div><strong role="status">{text}</strong><small>This battle only · pauses for losses and choices</small></div>
+  <div><strong role="status">{text}</strong></div>
   <button type="button" disabled={disabled||(!running&&!available)} aria-describedby="combat-auto-help" onClick={()=>onChange(!running)}>
    {running?'Pause Auto fight':current?.status==='paused'?'Resume Auto fight':'Auto fight'}
   </button>
-  <details id="combat-auto-help"><summary>How Auto fight works</summary><p>Fires and assigns damage while you are away. It stops for your ship losses, retreat, special choices, errors, or the end of this battle. Resume explicitly after reviewing the fleet. Consumables and rewards stay yours to choose. Pausing stops future orders; accepted orders remain committed.</p></details>
+  <details id="combat-auto-help"><summary aria-label="How Auto fight works">?</summary><p>Fires and assigns damage while you are away. It stops for your ship losses, retreat, special choices, errors, or the end of this battle. Resume explicitly after reviewing the fleet. Consumables and rewards stay yours to choose. Pausing stops future orders; accepted orders remain committed.</p></details>
  </section>;
 }

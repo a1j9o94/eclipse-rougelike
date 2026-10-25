@@ -1,3 +1,4 @@
+import {SHRINE_COSTS} from './shrines';
 import { availableTechnologyMarket, remoteExplorationSources, guildMovementTolls, scifiOptionalCommands } from './scifiActions';
 import { factionRulesMode } from './gameRules';
 import { researchedTechnologyIds } from './technologies';
@@ -529,7 +530,7 @@ export function legalCommands(
       : seat.influenceOnTrack > 0 &&
         (!seat.passed || ["upgrade", "build", "move"].includes(action));
   if(view.phase==='action'&&seat.faction==='lyra'&&!seat.passed&&!progress?.shrinePlaced&&(!progress?(seat.influenceOnTrack>0):progress.owner===seat.id&&progress.action==='research')){
-    const costs={science:[2,3,4],money:[3,4,5],materials:[4,5,6]} as const;
+
     for(const sector of controlled){
       const planets=sectorDefinition(Number(sector.tileId))?.population??[];
       for(let planetIndex=0;planetIndex<planets.length;planetIndex++){
@@ -538,7 +539,7 @@ export function legalCommands(
         for(const row of RESOURCES){
           if(planet.resource!==row&&planet.resource!=='gray')continue;
           for(const column of [0,1,2] as const){
-            const cost=costs[row][column];
+            const cost=SHRINE_COSTS[row][column];
             if(seat.resources[row]<cost||(seat.shrines??[]).some(shrine=>shrine.row===row&&shrine.column===column))continue;
             add({type:'place-shrine',sectorId:sector.id,planetIndex,row,column},`Place ${row} Shrine in ${sector.id}`,`${cost} ${row}. One Shrine during this Research action.`);
           }

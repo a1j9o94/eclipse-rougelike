@@ -19,37 +19,35 @@ it('uses a compact Galaxy-first shell with Empire, Players and Activity navigati
  expect(screen.getByRole('heading',{name:'Eridani Empire'})).toBeInTheDocument();
  fireEvent.click(screen.getByRole('button',{name:'Research technology'}));
  expect(screen.getByRole('heading',{name:'Research',exact:true})).toBeInTheDocument();
- fireEvent.click(screen.getAllByRole('button',{name:/×/})[0]);
  expect(document.querySelector('.dg-mobile-sheet')).toHaveAttribute('data-sheet-state','closed');
- expect(screen.getByRole('region',{name:/Research /})).toBeVisible();
+ expect(screen.getByRole('region',{name:'Research workspace'})).toBeVisible();
 });
 it('opens actions as one visual chooser and returns to map selection for movement',()=>{
  setup();fireEvent.click(screen.getByRole('button',{name:'Choose action'}));
  const picker=screen.getByRole('group',{name:'Choose your action'});
  fireEvent.click(within(picker).getByRole('button',{name:/Move/}));
  expect(screen.getByRole('group',{name:'Galaxy map'})).toBeInTheDocument();
- expect(screen.getByRole('button',{name:'Expand Move details'})).toBeInTheDocument();
- fireEvent.click(screen.getByRole('button',{name:'Expand Move details'}));
+ expect(document.querySelector('.dg-mobile-sheet')).toHaveAttribute('data-sheet-state','expanded');
  expect(screen.getByRole('region',{name:'Move fleet'})).toBeInTheDocument();
 });
 it('keeps the build tray visible below the galaxy on mobile and starts global Build unplaced',()=>{
  const rendered=setup();fireEvent.click(screen.getByRole('button',{name:'Choose action'}));const picker=screen.getByRole('group',{name:'Choose your action'});fireEvent.click(within(picker).getByRole('button',{name:/Build/}));
- expect(screen.getByRole('group',{name:'Galaxy map'})).toBeVisible();expect(screen.getByRole('region',{name:'Assemble your build order'})).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'Add interceptor'}));expect(screen.getByRole('button',{name:/1. Interceptor Unplaced/})).toBeVisible();expect(rendered.container.querySelector('.dg-mobile-sheet')).toHaveAttribute('data-sheet-state','closed');
+ expect(screen.getByRole('region',{name:'Assemble your build order'})).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'Add interceptor'}));expect(screen.getByRole('button',{name:/1. Interceptor Needs a sector/})).toBeVisible();expect(rendered.container.querySelector('.dg-mobile-sheet')).toHaveAttribute('data-sheet-state','closed');
 });
 it('prioritizes the saved pending decision and keeps a direct return after inspection',()=>{
  const state=(JSON.parse(fixtures)as Record<string,GameState>).combat;setup(state);
- expect(screen.getByRole('heading',{name:/Combat allocation/i})).toBeInTheDocument();
+ expect(screen.getByRole('heading',{name:/Assign hits/i})).toBeInTheDocument();
  fireEvent.click(screen.getByRole('button',{name:'Empire',exact:true}));
  expect(screen.getByRole('button',{name:'Return to combat allocation'})).toBeInTheDocument();
  fireEvent.click(screen.getByRole('button',{name:'Return to combat allocation'}));
- expect(screen.getByRole('heading',{name:/Combat allocation/i})).toBeInTheDocument();
+ expect(screen.getByRole('heading',{name:/Assign hits/i})).toBeInTheDocument();
 });
 it('opens one compact sector sheet that can expand and dismiss',()=>{
  setup();fireEvent.click(screen.getAllByRole('button',{name:/^Inspect sector/})[0]);
  const sheet=screen.getByRole('complementary',{name:'Selection and action details'});
  expect(sheet).toHaveAttribute('data-sheet-state','peek');
  fireEvent.click(screen.getByRole('button',{name:/Expand Sector/}));expect(sheet).toHaveAttribute('data-sheet-state','expanded');
- fireEvent.click(screen.getByRole('button',{name:'Dismiss details'}));expect(sheet).toHaveAttribute('data-sheet-state','closed');
+ fireEvent.click(screen.getByRole('button',{name:'Close activity'}));expect(sheet).toHaveAttribute('data-sheet-state','closed');
 });
 
 it('preserves manual mobile inspection when another AI seat starts acting',()=>{
@@ -71,7 +69,7 @@ it('provides a reachable AI recovery button on mobile and disables it while offl
  const view=getPlayerView(createGame({seed:81,seats:[{id:'a',faction:'eridani',controller:'human'},{id:'b',faction:'hydran',controller:'ai'}]}),'a')!;
  const retry=vi.fn();const props={view,candidates:[],busy:false,status:'',onSubmit:vi.fn(),onMenu:vi.fn(),aiFailure:'AI job interrupted.',onRetryAi:retry};
  const rendered=render(<Board {...props} connected/>);
- expect(screen.getByText('AI job interrupted.')).toBeVisible();
+ expect(screen.getByRole('button',{name:'AI paused · retry'})).toHaveAttribute('title','AI job interrupted.');
  fireEvent.click(screen.getByRole('button',{name:'AI paused · retry'}));expect(retry).toHaveBeenCalledOnce();
  rendered.rerender(<Board {...props} connected={false}/>);expect(screen.getByRole('button',{name:'AI paused · retry'})).toBeDisabled();
 });
@@ -93,7 +91,7 @@ it('resumes automatic AI following after an acknowledged human end-action withou
 it('opens Upgrade directly on the player blueprint and keeps the details sheet closed',()=>{
  const rendered=setup();fireEvent.click(screen.getByRole('button',{name:'Choose action'}));
  fireEvent.click(within(screen.getByRole('group',{name:'Choose your action'})).getByRole('button',{name:/^Upgrade/}));
- expect(screen.getByRole('heading',{name:/^Edit interceptor$/i})).toBeInTheDocument();
+ expect(screen.getByRole('region',{name:'Selected ship and hardpoint'})).toBeInTheDocument();
  expect(screen.getByRole('group',{name:'Blueprint hardpoints'})).toBeVisible();
  expect(rendered.container.querySelector('.dg-mobile-sheet')).toHaveAttribute('data-sheet-state','closed');
  expect(screen.queryByRole('dialog')).toBeNull();

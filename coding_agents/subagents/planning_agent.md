@@ -957,3 +957,15 @@ Outcome: play selected audition C at 120 BPM through menus and matches. Acceptan
 ## 2026-10-25 — effortless choices
 
 Outcome, acceptance, rollback and fail-first tests: [delivery ledger](../effortless_ux_delivery.md). Supervisor coordinates selection/economy, fitting/rewards, and combat agents with a shared-shell integration stream. The newer user attachment supersedes the earlier UX audit and prior iteration assumptions.
+
+## October 25 2026 visual play redesign plan
+
+Outcome: routine Eclipse play is guided by objects, short labels, and visible consequences, with a usable desktop/mobile workspace and no repeated rules or economy paragraphs. Plan: [Eclipse visual play redesign](../eclipse_visual_play_plan.md).
+
+Acceptance: remove the screenshot's repeated colonization/Explore/empty-Build panels; place Recruit allies with Colonize and Trade in both action interfaces; preserve exact rule costs and draft behavior; pass distinct functional, visual, and observed human gates. Fail-first tests cover empty versus invalid workflows, correct immediate/deferred costs, a single recruitment entry, local blockers, control scope, and unchanged existing privacy/deduplication guarantees.
+
+Risk and rollback: icons must remain understandable, deferred costs must not look immediate, and required strategic warnings must survive simplification. Reuse authoritative previews and legality; preserve storage compatibility. This turn changes planning documents only. No gameplay implementation or release is included.
+
+### Visual play implementation — October 25, 2026
+
+User approved implementation and subsequently clarified persistent combat, shared wormhole symbols and principled interaction affordances. Supervisor plus the three assigned agents implemented the shared contracts and audited complete workflows. Evidence, bounded test results, browser geometry, risks, and explicit human-acceptance limits are in [visual_play_delivery.md](../visual_play_delivery.md) and its three linked slice ledgers. Functional/representative visual checks pass; observed newcomer/expert sessions remain open. The repository's standing authorization governs the Git-triggered production release.

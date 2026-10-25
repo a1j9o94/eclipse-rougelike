@@ -19,3 +19,13 @@
 .dg-app.dg-mobile-board .sd-workspace .dg-trade-confirm { position:sticky; bottom:0; min-height:48px; background:#d3b478; color:#17222b; }
 
 .dg-trade-quantity>button{width:44px;height:44px}
+
+.dg-trade-quantity label{display:flex;align-items:center;gap:8px}.dg-trade-quantity input{width:76px;min-height:44px;font-size:20px;text-align:center}.dg-trade-panel>.dg-commit-bar{margin-top:14px}.dg-trade-balance{flex-wrap:wrap}.dg-trade-balance>span{min-width:0}
+
+.dg-exchange-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.dg-exchange-tabs button{min-height:44px}.dg-exchange-tabs [aria-pressed=true]{border-color:#9adbd6;box-shadow:inset 0 -2px #9adbd6}.dg-exchange-reservation{font-size:12px;color:#b8cbd6}.dg-trade-panel .dg-commit-actions{flex-wrap:wrap}.dg-trade-panel .dg-commit-bar{position:static}
+
+.dg-guild-offer{padding:12px;margin-top:12px;border:1px solid #526b7b;border-radius:6px;background:#11202e}.dg-guild-offer.is-selected{outline:2px solid #9adbd6;border-color:#9adbd6}.dg-guild-offer>button{min-height:44px}.dg-guild-offer p{font-size:12px}.dg-guild-offer input{max-width:90px;min-height:44px}
+
+.dg-trade-choices [aria-disabled=true]{background:#111b26;border-style:dashed;color:#a8bac7}.dg-trade-choices [aria-disabled=true] small{font-size:10px}.dg-resource-blocker{font-size:12px;border-left:2px solid #bdab76;padding-left:8px}.dg-trade-choices button:hover{border-color:#9adbd6}.dg-trade-choices button:focus-visible{outline:2px solid #9adbd6;outline-offset:2px}
+
+.sd-workspace:has(>.dg-trade-panel){height:100%;min-height:0;box-sizing:border-box;overflow:hidden}.sd-workspace>.dg-trade-panel{height:100%;min-height:0;display:flex;flex-direction:column;gap:8px}.dg-trade-body{display:grid;gap:12px;min-height:0;overflow:auto;flex:1;align-content:start}.dg-trade-panel>.dg-commit-bar{flex:none}.dg-trade-panel>.dg-exchange-tabs{flex:none}@media(max-width:760px){.sd-workspace:has(>.dg-trade-panel){padding-bottom:8px}.dg-trade-body{gap:8px}.dg-trade-body>header{display:flex;align-items:center;justify-content:space-between;gap:8px}.dg-trade-body>header h3{margin:0}}

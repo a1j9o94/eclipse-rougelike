@@ -1,3 +1,4 @@
+import {SHRINE_COSTS} from './shrines';
 import { guildMovementTolls } from './scifiActions';
 import { factionRulesMode } from './gameRules';
 import {DEVELOPMENTS,quantumResearchCost} from './developments';
@@ -55,8 +56,12 @@ export function previewCommand(
     "move",
     "influence",
   ];
-  if ((actions.some((a) => a === command.type) || command.type === 'research-development' || command.type === 'quantum-research' || command.type === 'reverse-engineer') && !view.actionProgress)
+  if ((actions.some((a) => a === command.type) || command.type === 'research-development' || command.type === 'quantum-research' || command.type === 'reverse-engineer' || command.type === 'place-shrine') && !view.actionProgress)
     influence--;
+  if(command.type==='place-shrine'){
+    resources[command.row]-=SHRINE_COSTS[command.row][command.column];
+    if(command.row==='materials'&&(seat.shrines??[]).filter(shrine=>shrine.row==='materials').length===2)influence++;
+  }
   if(command.type === 'research-development') { const d=DEVELOPMENTS.find(d=>d.id===command.developmentId)!;resources[d.resource]-=d.cost; }
   if(command.type === 'quantum-research') resources.science-=quantumResearchCost(seat,command.tileId as TechnologyId,command.track)??0;
   if (command.type === "build")

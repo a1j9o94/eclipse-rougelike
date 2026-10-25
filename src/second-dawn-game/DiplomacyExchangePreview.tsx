@@ -32,5 +32,6 @@ export default function DiplomacyExchangePreview({seat,partner,resources,resourc
   {resource&&!legal&&<p role="alert">Your selected {resource} cube is no longer available. Choose another population resource.</p>}
   {offeredResource&&<div className="dg-exchange-cube-path"><TradeResourceIcon resource={offeredResource}/><span>{partnerName} {offeredResource} cube → your ambassador</span></div>}
   <p className="dg-exchange-rack-preview">1 ambassador · +1 VP · uses 1 rack space on each side</p>
+  <small>Betrayal: traitor card {getFaction(seat.faction).special?.ignoresTraitorPenalty?'0':'−2'} VP</small>
  </section>;
 }

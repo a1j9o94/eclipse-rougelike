@@ -18,7 +18,7 @@ it('enables the build control when the full order is placed, and submits the exa
  const f=fixture('build'),submit=vi.fn();render(<BuildPlanner view={f.view} sectorId={f.source.id} embedded disabled={false} onClose={vi.fn()} onSubmit={submit}/>);
  fireEvent.click(screen.getByRole('button',{name:'Add interceptor'}));expect(screen.queryByRole('dialog',{name:'Build order ready'})).toBeNull();
  fireEvent.click(screen.getByText('Choose from sector list'));fireEvent.click(screen.getByRole('button',{name:`Place interceptor in sector ${f.source.tileId}`}));
- expect(screen.queryByRole('dialog',{name:'Build order ready'})).toBeNull();const alert=screen.getByRole('region',{name:'Assemble your build order'});expect(within(alert).getByRole('region',{name:'Action cost preview'})).toBeVisible();expect(submit).not.toHaveBeenCalled();
+ expect(screen.queryByRole('dialog',{name:'Build order ready'})).toBeNull();const alert=screen.getByRole('region',{name:'Assemble your build order'});expect(within(alert).getByRole('button',{name:'Build 1 ship · 3 materials'})).toBeEnabled();expect(submit).not.toHaveBeenCalled();
  fireEvent.click(within(alert).getByRole('button',{name:/^Build 1 ship/}));expect(submit).toHaveBeenCalledTimes(1);
  const command=submit.mock.calls[0][0] as GameCommand;expect(command).toEqual({type:'build',builds:[{component:'interceptor',sectorId:f.source.id}]});expect(processGameCommand(f.state,'a',command).ok).toBe(true);
 });
@@ -50,7 +50,7 @@ it('includes resource conversion in the build preview and sends it atomically wi
  const f=fixture('build');f.state.seats[0].resources={money:4,science:0,materials:1};f.view=getPlayerView(f.state,'a')!;const submit=vi.fn();
  render(<BuildPlanner view={f.view} sectorId={f.source.id} embedded disabled={false} onClose={vi.fn()} onSubmit={submit}/>);
  fireEvent.click(screen.getByRole('button',{name:'Add interceptor'}));fireEvent.click(screen.getByText('Choose from sector list'));fireEvent.click(screen.getByRole('button',{name:`Place interceptor in sector ${f.source.tileId}`}));
- expect(screen.queryByRole('dialog',{name:'Build order ready'})).toBeNull();const alert=screen.getByRole('region',{name:'Assemble your build order'});expect(within(alert).getByText(/money: 4 → 0/)).toBeVisible();expect(within(alert).getByRole('button',{name:/Convert & Build/})).toBeEnabled();
+ expect(screen.queryByRole('dialog',{name:'Build order ready'})).toBeNull();const alert=screen.getByRole('region',{name:'Assemble your build order'});expect(within(alert).getByLabelText('4 money')).toBeVisible();expect(within(alert).getByRole('button',{name:/Convert & Build/})).toBeEnabled();
  fireEvent.click(within(alert).getByRole('button',{name:/^Convert & Build 1 ship/}));const command=submit.mock.calls[0][0] as GameCommand;expect(command.type).toBe('trade-and-act');expect(processGameCommand(f.state,'a',command).ok).toBe(true);
 });
 it('keeps incomplete build and movement allowances quiet',()=>{

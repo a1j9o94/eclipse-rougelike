@@ -31,7 +31,7 @@ export function OutsideGridModule({partId,children}:{partId:ShipPartId;children?
   {children}
  </div>;
 }
-export function ShipCapabilities({stats,neutral=false,showEnergy=true,showWeapons=false}:{stats:ShipStats;neutral?:boolean;showEnergy?:boolean;showWeapons?:boolean}){
+export function ShipCapabilities({stats,neutral=false,showEnergy=true,showWeapons=false,omitZero=false}:{stats:ShipStats;omitZero?:boolean;neutral?:boolean;showEnergy?:boolean;showWeapons?:boolean}){
  const weapons=stats.weapons.reduce<ShipStats['weapons']>((groups,weapon)=>{
   const match=groups.find(group=>group.kind===weapon.kind&&group.color===weapon.color&&group.damage===weapon.damage);
   if(match)match.dice+=weapon.dice;else groups.push({...weapon});
@@ -39,10 +39,10 @@ export function ShipCapabilities({stats,neutral=false,showEnergy=true,showWeapon
  },[]);
  return <div className="dg-ship-capabilities" role="group" aria-label="Blueprint totals">
   <StatBadge icon="hull" value={stats.hull+1} label="hit points" explanation="Maximum damage capacity per undamaged ship, including its base hit point."/>
-  <StatBadge icon="initiative" value={stats.initiative} label="initiative" explanation="Higher initiative fires first within each phase; defender wins ties."/>
-  <StatBadge icon="computer" value={`+${stats.computer}`} label="computer" explanation="Add to attack rolls. Natural 1 always misses; natural 6 always hits."/>
-  <StatBadge icon="shield" value={`−${stats.shield}`} label="shield" explanation="Subtract from enemy attack rolls against this ship."/>
-  <StatBadge icon="drive" value={stats.movement} label="movement" explanation="Sectors moved per activation. Zero means immobile."/>
+  {(!omitZero||stats.initiative>0)&&<StatBadge icon="initiative" value={stats.initiative} label="initiative" explanation="Higher initiative fires first within each phase; defender wins ties."/>}
+  {(!omitZero||stats.computer>0)&&<StatBadge icon="computer" value={`+${stats.computer}`} label="computer" explanation="Add to attack rolls. Natural 1 always misses; natural 6 always hits."/>}
+  {(!omitZero||stats.shield>0)&&<StatBadge icon="shield" value={`−${stats.shield}`} label="shield" explanation="Subtract from enemy attack rolls against this ship."/>}
+  {(!omitZero||stats.movement>0)&&<StatBadge icon="drive" value={stats.movement} label="movement" explanation="Sectors moved per activation. Zero means immobile."/>}
   {!neutral&&showEnergy&&<StatBadge icon="energy" value={`${stats.energyConsumption}/${stats.energyProduction}`} label="energy used" explanation={`${stats.energyConsumption} energy used of ${stats.energyProduction} produced.`}/>}
   {showWeapons&&weapons.map((weapon,index)=><StatBadge key={index} icon={weapon.kind} value={`${weapon.dice} × ${weapon.color==='magenta'?'0–3':weapon.damage}`} label={`${weapon.color} ${weapon.kind}`} explanation={weapon.color==='magenta'?'Rift dice ignore computers and shields and may damage your own ships.':`${weapon.dice} ${weapon.color} dice, ${weapon.damage} damage per hit. ${weapon.kind==='missile'?'Fire once at battle start.':'Fire each combat round.'}`} color={({yellow:'#f0d477',orange:'#ffb076',blue:'#91c9ff',red:'#ff9391',magenta:'#f094dc'})[weapon.color]}/>)}
   {showWeapons&&weapons.length===0&&<span className="dg-unarmed-summary">Unarmed</span>}

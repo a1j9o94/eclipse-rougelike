@@ -1,3 +1,5 @@
+import {legalCommands} from '../../shared/eclipse/legal';
+import {processGameCommand} from '../../shared/eclipse/engine';
 import { describe, it, expect } from "vitest";
 import { previewCommand } from "../../shared/eclipse/commandPreview";
 import { createGame } from "../../shared/eclipse/setup";
@@ -58,4 +60,22 @@ it('warns on ending an action in a partner sector, not on passing through',()=>{
  expect(preview.betrayedPartners).toEqual(['b']);
  expect(preview.populationChoiceMayChangeIncome).toBe(true);
  expect(view.seats[0].traitor).toBe(false);
+});
+it.each([false,true])('matches the accepted Shrine resource and disc change, continuing=%s',continuing=>{
+ const state=createGame({seed:238,seats:[{id:'a',faction:'lyra',controller:'human'},{id:'b',faction:'eridani',controller:'human'}],factionProfile:'expanded-v2'});
+ state.activeSeatId='a';state.seats[0].influenceOnTrack=7;
+ if(continuing)state.engine!.action={owner:'a',action:'research',remaining:0};
+ const home=state.sectors.find(sector=>sector.owner==='a')!;
+ const command={type:'place-shrine',sectorId:home.id,planetIndex:1,row:'science',column:0} as const;
+ const preview=previewCommand(getPlayerView(state,'a')!,command),result=processGameCommand(state,'a',command);
+ expect(result.ok).toBe(true);if(!result.ok)return;
+ expect(preview.resourcesAfter).toEqual(result.state.seats[0].resources);expect(preview.influenceAfter).toBe(result.state.seats[0].influenceOnTrack);
+});
+it('includes the visible influence reward when completing the Materials Shrine row',()=>{
+ const state=createGame({seed:238,seats:[{id:'a',faction:'lyra',controller:'human'},{id:'b',faction:'eridani',controller:'human'}],factionProfile:'expanded-v2'});
+ state.activeSeatId='a';const seat=state.seats[0];seat.resources.materials=10;seat.influenceOnTrack=7;
+ seat.shrines=[{sectorId:'prior-a',planetIndex:0,row:'materials',column:0},{sectorId:'prior-b',planetIndex:0,row:'materials',column:1}];
+ const view=getPlayerView(state,'a')!,command=legalCommands(view).find(candidate=>candidate.command.type==='place-shrine'&&candidate.command.row==='materials'&&candidate.command.column===2)!.command;
+ const preview=previewCommand(view,command),result=processGameCommand(state,'a',command);expect(result.ok).toBe(true);if(!result.ok)return;
+ expect(preview.resourcesAfter).toEqual(result.state.seats[0].resources);expect(preview.influenceAfter).toBe(result.state.seats[0].influenceOnTrack);expect(preview.influenceAfter).toBe(7);
 });

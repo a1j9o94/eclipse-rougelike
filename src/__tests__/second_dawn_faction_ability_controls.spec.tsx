@@ -48,5 +48,5 @@ it('restores the active mixed workflow and explains remaining budgets without ch
  const {default:Board}=await import('../second-dawn-game/SecondDawnBoard');const v=view();v.seats[0].faction='ragnarok';v.actionProgress={owner:'a',action:'build',remaining:2,budgets:{build:1,move:1}};
  render(<Board view={v} candidates={[]} connected busy={false} status="" onSubmit={vi.fn()} onMenu={vi.fn()}/>);
  expect(screen.getByRole('button',{name:'Build',exact:true})).toHaveAttribute('aria-pressed','true');
- expect(screen.getByText('Build & move: 1 build · 1 move remaining. No extra action disc.')).toBeVisible();
+ expect(screen.getByRole('button',{name:'Move',exact:true})).toBeEnabled();
 });

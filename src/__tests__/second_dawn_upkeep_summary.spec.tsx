@@ -4,19 +4,13 @@ import {createGame} from '../../shared/eclipse/setup';
 import {getPlayerView} from '../../shared/eclipse/protocol';
 import UpkeepSummary from '../second-dawn-game/UpkeepSummary';
 afterEach(cleanup);
-it('keeps the header to an action count and puts the economic breakdown in its disclosure',()=>{
- const rendered=render(<UpkeepSummary view={view()}/>);
- const summary=rendered.container.querySelector('summary')!;
- expect(within(summary).getByText('3 actions affordable')).toBeInTheDocument();
- expect(within(summary).queryByText(/Round-end upkeep/)).toBeNull();
- expect(within(summary).queryByText(/Next action:/)).toBeNull();
- expect(summary).toHaveAttribute('title',expect.stringContaining('10 influence discs'));
- fireEvent.click(summary);
- expect(rendered.container.querySelector('details')).toHaveAttribute('open');
- expect(screen.getByText('2 money + 3 income − 1 upkeep = 4 left')).toBeVisible();
-});
 function view(){const state=createGame({seed:9,seats:[{id:'a',faction:'hydran',controller:'human'},{id:'b',faction:'eridani',controller:'ai'}]});const seat=state.seats[0];seat.resources.money=2;seat.populationTracks.money=1;seat.influenceOnTrack=10;return getPlayerView(state,'a')!;}
-it('shows the actual round-end bill, income equation, and next-disc forecast without selecting an action',()=>{render(<UpkeepSummary view={view()}/>);expect(screen.getByLabelText('Current upkeep: 1 money; 4 money left at round end')).toBeInTheDocument();expect(screen.getByText('Next action: 2 upkeep · 3 left')).toBeInTheDocument();fireEvent.click(screen.getByText('Round-end upkeep'));expect(screen.getByText('2 money + 3 income − 1 upkeep = 4 left')).toBeInTheDocument();});
-it('warns about the next action crossing into a shortfall and identifies additional activations correctly',()=>{const v=view();v.seats[0].influenceOnTrack=7;v.actionProgress={owner:'a',action:'move',remaining:1};render(<UpkeepSummary view={v}/>);expect(screen.getByText('Next new action: 7 upkeep · 2 short')).toBeInTheDocument();expect(screen.getByText(/remaining Move activation uses no additional disc/i)).toBeInTheDocument();});
-it('labels a passed player as reactions only during the action phase and explains the limits',()=>{const v=view();v.phase='action';v.seats[0].passed=true;const rendered=render(<UpkeepSummary view={v}/>);const summary=rendered.container.querySelector('summary')!;expect(within(summary).getByText('Reactions only')).toBeInTheDocument();expect(screen.getByText('Next reaction: 2 upkeep · 3 left')).toBeInTheDocument();expect(summary).toHaveAttribute('title',expect.stringContaining('Upgrade, Build or Move'));fireEvent.click(summary);expect(screen.getByText(/one activation, using one influence disc/)).toBeVisible();expect(screen.getByText(/Resource costs, available pieces and blueprint slots still apply/)).toBeVisible();});
-it('keeps passed status outside the action phase instead of promising reactions',()=>{const v=view();v.phase='combat';v.seats[0].passed=true;const rendered=render(<UpkeepSummary view={v}/>);const summary=rendered.container.querySelector('summary')!;expect(within(summary).getByText('Passed')).toBeInTheDocument();expect(screen.queryByText('Reactions only')).not.toBeInTheDocument();});
+it('keeps only the round-end balance in the header and opens its breakdown deliberately',()=>{
+ const rendered=render(<UpkeepSummary view={view()}/>),summary=screen.getByLabelText('Round-end balance: 4 money');
+ expect(within(summary).getByText('4')).toBeInTheDocument();expect(within(summary).queryByText(/actions affordable/)).toBeNull();
+ expect(screen.getByText('Held')).not.toBeVisible();fireEvent.click(summary);expect(rendered.container.querySelector('details')).toHaveAttribute('open');
+ expect(screen.getByText('Held')).toBeVisible();expect(screen.getByText('−1')).toBeVisible();expect(screen.getByText('+3')).toBeVisible();
+});
+it('makes an actual shortfall visible without a rules paragraph',()=>{const v=view();v.seats[0].resources.money=0;v.seats[0].influenceOnTrack=6;render(<UpkeepSummary view={v}/>);expect(screen.getByLabelText('Round-end balance: -4 money')).toHaveTextContent('4 short');});
+it('does not replace combat status with the player’s prior pass state',()=>{const v=view();v.phase='combat';v.seats[0].passed=true;render(<UpkeepSummary view={v}/>);expect(screen.queryByText(/Passed|Reactions only/)).toBeNull();expect(screen.getByLabelText('Round-end balance: 4 money')).toBeInTheDocument();});
+it('omits forecasts once final scores are shown',()=>{const v=view();v.phase='finished';const {container}=render(<UpkeepSummary view={v}/>);expect(container).toBeEmptyDOMElement();});

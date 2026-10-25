@@ -50,3 +50,11 @@ it('keeps real connections distinct from unconnected printed openings when highl
  expect(holes).toContainEqual({edge:0,kind:'wormhole'});
  expect(holes.filter(hole=>hole.kind==='printed')).toHaveLength(5);
 });
+it('selects a legal sector when its fleet artwork is tapped and keeps inspection explicit',()=>{
+ const {view,from}=fixture();view.ships[0].sectorId=from.id;
+ const select=vi.fn(),inspect=vi.fn();const props={view,candidates:[],onSelect:select,onExplore:vi.fn(),onInspectFleet:inspect,legalTargetIds:[from.id]};
+ const ui=render(<GalaxyBoard {...props} selected={from.id}/>);
+ const ship=ui.container.querySelector('[data-galaxy-target="sector:from"] [data-fleet-card]')!;fireEvent.click(ship);
+ expect(select).toHaveBeenCalledExactlyOnceWith(from.id);expect(inspect).not.toHaveBeenCalled();
+ fireEvent.click(ui.getByRole('button',{name:'Inspect selected fleet'}));expect(inspect).toHaveBeenCalledExactlyOnceWith(from.id);
+});

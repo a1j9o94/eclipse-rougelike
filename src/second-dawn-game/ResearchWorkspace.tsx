@@ -1,9 +1,9 @@
+import CommitBar from './CommitBar';
+import {technologyBenefit} from './technologyBenefit';
 import {useCommitLabel} from './commitContext';
 import {availableTechnologyMarket} from '../../shared/eclipse/scifiActions';
-import {factionRulesMode} from '../../shared/eclipse/gameRules';
 import {gameRules} from '../../shared/eclipse/gameRules';
 import { researchedTechnologyIds } from '../../shared/eclipse/technologies';
-import {tradeQuote} from '../../shared/eclipse/catalog';
 import {fundingOptions} from '../../shared/eclipse/funding';
 import {TradeResourceIcon} from './TradePanel';
 import {previewCommand} from '../../shared/eclipse/commandPreview';
@@ -16,7 +16,7 @@ import {ChoiceCards} from './DecisionChoicePrimitives';
 import FundingPlanSelector from './FundingPlanSelector';
 import ActionEconomy from './ActionEconomy';
 import {describeTechnology} from './itemDescriptions';
-import ResearchCost,{ScienceBudget} from './ResearchCost';
+import ResearchCost from './ResearchCost';
 import ResearchedTechnologies from './ResearchedTechnologies';
 import TechnologyStats from './TechnologyStats';
 import AdvancedPopulationPreview from './AdvancedPopulationPreview';
@@ -41,7 +41,7 @@ export default function ResearchWorkspace(props:PurchaseResearchProps|RewardRese
 }
 
 function TechnologyContents({technology,view,price,children}:{technology:Technology;view?:PlayerView;price?:ReactNode;children?:ReactNode}){
- return <>{children}{price}<TechnologyStats technology={technology}/>{view&&<AdvancedPopulationPreview view={view} technology={technology}/>}</>;
+ return <>{children}<TechnologyStats technology={technology}/><span className="dg-tech-benefit">{technologyBenefit(technology)}</span>{price}{view&&<AdvancedPopulationPreview view={view} technology={technology}/>}</>;
 }
 
 function RewardResearchWorkspace({decisionId,technologyIds,view,candidates,disabled,onSubmit}:RewardResearchProps){
@@ -59,13 +59,14 @@ function RewardResearchWorkspace({decisionId,technologyIds,view,candidates,disab
  return <section className="sd-workspace dg-research-workspace dg-research-reward" aria-label="Choose a free technology"><div className="dg-research-heading"><h2>Choose a free technology</h2><span className="dg-free-badge">FREE</span></div><div className="sd-tech-grid">{technologyIds.map(id=>{
   const technology=TECHNOLOGIES.find(item=>item.id===id);if(!technology)return null;
   const available=choices.some(choice=>choice.technologyId===id);
-  return <article key={id} className={`dg-research-card${selected===id?' is-selected':''}`} aria-label={`${technology.name} technology`}><button type="button" className="sd-tech" aria-label={`Choose free ${technology.name}`} aria-pressed={selected===id} disabled={disabled} onClick={()=>choose(id)}><strong>{technology.name}</strong><TechnologyContents technology={technology} view={view}/>{!available&&<small>No eligible market copy or track space</small>}</button>{selected===id&&<section className="dg-research-local" aria-label={`Free ${technology.name}`}><p>{describeTechnology(technology)}</p>{!available&&<p role="alert">This technology no longer has an eligible market copy and track.</p>}{tracks.length>1?<ChoiceCards label="Research track" value={chosenTrack??''} disabled={disabled} onChange={value=>setTrack(value as Track)} options={tracks.map(value=>({value,label:humanize(value)}))}/>:tracks.length===1?<p>{humanize(tracks[0])} track · free</p>:null}{chosenTrack&&!tracks.includes(chosenTrack)&&<p role="alert">The selected {humanize(chosenTrack)} track is no longer available.{tracks.length===1&&<button type="button" onClick={()=>setTrack(tracks[0])}>Use {humanize(tracks[0])} track</button>}</p>}</section>}</article>;
- })}</div><button type="button" className="sd-primary" disabled={disabled||!valid} onClick={()=>{if(valid&&selected&&chosenTrack)onSubmit({type:'resolve',decisionId,choice:{kind:'free-technology',technologyId:selected,track:chosenTrack}});}}>Confirm free technology</button></section>;
+  return <article key={id} className={`dg-research-card${selected===id?' is-selected':''}`} aria-label={`${technology.name} technology`}><button type="button" className="sd-tech" aria-label={`Choose free ${technology.name}`} aria-pressed={selected===id} disabled={disabled} onClick={()=>choose(id)}><strong>{technology.name}</strong><TechnologyContents technology={technology} view={view}/>{!available&&<small>No eligible market copy or track space</small>}</button>{selected===id&&<section className="dg-research-local" aria-label={`Free ${technology.name}`}>{!available&&<p role="alert">This technology no longer has an eligible market copy and track.</p>}{tracks.length>1?<ChoiceCards label="Research track" value={chosenTrack??''} disabled={disabled} onChange={value=>setTrack(value as Track)} options={tracks.map(value=>({value,label:humanize(value)}))}/>:tracks.length===1?<p>{humanize(tracks[0])} track · free</p>:null}{chosenTrack&&!tracks.includes(chosenTrack)&&<p role="alert">The selected {humanize(chosenTrack)} track is no longer available.{tracks.length===1&&<button type="button" onClick={()=>setTrack(tracks[0])}>Use {humanize(tracks[0])} track</button>}</p>}</section>}</article>;
+ })}</div>{selected&&<CommitBar summary={<span>{TECHNOLOGIES.find(technology=>technology.id===selected)?.name} · Free</span>}><button type="button" className="sd-primary" aria-label="Confirm free technology" disabled={disabled||!valid} onClick={()=>{if(valid&&selected&&chosenTrack)onSubmit({type:'resolve',decisionId,choice:{kind:'free-technology',technologyId:selected,track:chosenTrack}});}}>Take technology</button></CommitBar>}</section>;
 }
 
 function PurchaseResearchWorkspace({view,purchases,selected,draft,disabled,stale,stillLegal,acquired,onSelect,onDraft,onSubmit}:PurchaseResearchProps){
  const commitLabel=useCommitLabel();
  const detailRef=useRef<HTMLElement>(null);
+ const [effectInspected,setEffectInspected]=useState(false);
  const [inspectedId,setInspectedId]=useState<TechnologyId|null>(null);
  const inspectedTech=TECHNOLOGIES.find(technology=>technology.id===inspectedId);
  const seat=view.seats.find(s=>s.id===view.viewerSeatId)!;
@@ -98,7 +99,7 @@ function PurchaseResearchWorkspace({view,purchases,selected,draft,disabled,stale
   const candidates=purchases.filter(candidate=>techIdOf(candidate)===id);
   const priorTrack=preferredTrack??(previous?.type==='research'||previous?.type==='quantum-research'?previous.track:undefined);
   const candidate=candidates.find(option=>{const action=commandOf(option);return (action?.type==='research'||action?.type==='quantum-research')&&action.type===previous?.type&&action.track===priorTrack;})??candidates.find(option=>{const action=commandOf(option);return (action?.type==='research'||action?.type==='quantum-research')&&action.track===priorTrack;})??candidates[0];
-  onSelect(id,false);
+  setEffectInspected(false);onSelect(id,false);
   if(!candidate){onDraft(null);return;}
   const action=commandOf(candidate);
   if(previous?.type==='research'&&priorTrack&&TECHNOLOGIES.find(technology=>technology.id===id)?.track==='rare'&&action?.type==='research'&&action.track!==priorTrack){onDraft({...candidate,command:{type:'research',tileId:id,track:priorTrack}});return;}
@@ -115,39 +116,40 @@ function PurchaseResearchWorkspace({view,purchases,selected,draft,disabled,stale
    {(owned.has(selectedTech.id)||!view.technologyMarket.includes(selectedTech.id))&&<header><div><p className="sd-eyebrow">SELECTED TECHNOLOGY</p><h2>{selectedTech.name}</h2></div><TechnologyStats technology={selectedTech}/></header>}
    {unavailableReason&&<p className="dg-research-blocker" role="alert">{unavailableReason}</p>}
    {selected!==null&&!owned.has(selected)&&(!draftId||draftId===selected)&&<>
-    {gameRules(view).technologyVariant&&quantumOptions.length>0&&<div className="dg-research-commit"><p><strong>Quantum Labs</strong> can hold this technology outside a full track.</p>{quantumOptions.map(option=><button key={option.track} className="sd-primary" disabled={disabled||stale||!canResearch||seat.resources.science<option.cost||!view.technologyMarket.includes(selected)} aria-pressed={chosen?.type==='quantum-research'&&chosen.track===option.track} onClick={()=>onDraft({command:{type:'quantum-research',tileId:selected,track:option.track},label:`Research ${selectedTech.name} in Quantum Labs`,description:'Place in Quantum Labs instead of a research track.'})}>Use Quantum Labs · {option.cost} science · {humanize(option.track)}</button>)}</div>}
-    {draft&&scienceCost!==null&&<div className="dg-research-commit">
-     {draft.command.type==='trade-and-act'&&<p className="dg-research-conversion-summary"><strong>Convert these resources</strong><span>{draft.command.trades.map(trade=><span key={trade.from}><TradeResourceIcon resource={trade.from}/><b>{tradeQuote(seat.faction,trade.from,trade.to,trade.amount,factionRulesMode(view))?.input??0}</b><small>{trade.from}</small></span>)}</span></p>}
-     {chosen?.type==='quantum-research'&&<p className="dg-research-track-summary">Place in <strong>Quantum Labs</strong> · {humanize(chosen.track)}</p>}
-     {chosen?.type==='research'&&selectedTech.track==='rare'&&<p className="dg-research-track-summary">Research on the <strong>{humanize(chosen.track)}</strong> track</p>}
-     {preview&&preview.moneyBalanceAfter<0&&<p className="dg-danger" role="alert">{Math.abs(preview.moneyBalanceAfter)} money short at upkeep after this action.</p>}
-     <button className="sd-primary dg-research-buy" aria-label={commitLabel(`${draft.command.type==='trade-and-act'?'Convert & ':''}Research · ${scienceCost} science`)} disabled={disabled||stale||!stillLegal} onClick={()=>onSubmit(draft.command)}><span>{commitLabel(draft.command.type==='trade-and-act'?'Convert & research':'Research')}</span><span><TradeResourceIcon resource="science"/><strong>{scienceCost}</strong></span></button>
-     <p className="dg-research-after"><strong>{preview?.resourcesAfter.science} science remaining</strong> after acquisition.</p>
-     <button className="dg-research-cancel" onClick={()=>onDraft(null)}>Reset draft</button>{stale&&<p className="dg-danger">The game changed. Review this research choice before submitting again.</p>}
-    </div>}
+    {gameRules(view).technologyVariant&&quantumOptions.length>0&&<div className="dg-research-commit"><p><strong>Quantum Labs</strong> can hold this technology outside a full track.</p>{quantumOptions.map(option=><button key={option.track} disabled={disabled||stale||!canResearch||seat.resources.science<option.cost||!view.technologyMarket.includes(selected)} aria-pressed={chosen?.type==='quantum-research'&&chosen.track===option.track} onClick={()=>onDraft({command:{type:'quantum-research',tileId:selected,track:option.track},label:`Research ${selectedTech.name} in Quantum Labs`,description:'Place in Quantum Labs instead of a research track.'})}>Use Quantum Labs · {option.cost} science · {humanize(option.track)}</button>)}</div>}
     {chosen?.type!=='quantum-research'&&options.length>1&&<ChoiceCards label="Research track" value={chosen?.type==='research'?chosen.track:''} disabled={disabled} onChange={track=>selected&&selectPurchase(selected,track as Track)} options={options.flatMap(candidate=>{const command=commandOf(candidate);return command?.type==='research'?[{value:command.track,label:humanize(command.track),description:`${seat.technologies[command.track].length} / 7 researched`}]:[];})}/>}
-    {draft?.command.type==='trade-and-act'&&<details className="dg-research-options"><summary>Change conversion</summary><FundingPlanSelector view={view} command={draft.command} disabled={disabled} onChange={command=>onDraft({...draft,command})}/></details>}
-    {draft&&<details className="dg-research-options"><summary>Action and upkeep details</summary><ActionEconomy view={view} action="research" preview={preview}/></details>}
+    {draft?.command.type==='trade-and-act'&&<div className="dg-research-options"><FundingPlanSelector view={view} command={draft.command} disabled={disabled} onChange={command=>onDraft({...draft,command})}/></div>}
+    {chosen?.type==='quantum-research'&&<p className="dg-research-track-summary">Place in <strong>Quantum Labs</strong> · {humanize(chosen.track)}</p>}
+    {chosen?.type==='research'&&selectedTech.track==='rare'&&<p className="dg-research-track-summary">Research on the <strong>{humanize(chosen.track)}</strong> track</p>}
+    {stale&&<p className="dg-danger">The game changed. Review this research choice before submitting again.</p>}
+
    </>}
-   <p className="dg-tech-effect">{describeTechnology(selectedTech)}</p><AdvancedPopulationPreview view={view} technology={selectedTech} detailed/>
+   <div className="dg-tech-inspections">{chosenCost?.ok&&<ResearchCost inspectionOnly cost={scienceCost} available={seat.resources.science} pricing={{base:selectedTech.baseCost,minimum:selectedTech.minimumCost,discount:chosenCost.discount}}/>}<button type="button" className="dg-effect-inspect" aria-expanded={effectInspected} onClick={()=>setEffectInspected(value=>!value)}>Inspect effect <span aria-hidden="true">⌄</span></button></div>{effectInspected&&<p className="dg-tech-effect">{describeTechnology(selectedTech)}</p>}<AdvancedPopulationPreview view={view} technology={selectedTech} detailed/>
   </section>;
- return <div className="sd-workspace dg-research-workspace">
-  <p className="sd-eyebrow">AVAILABLE TECHNOLOGY</p>
-  <div className="dg-research-heading"><h1>Research</h1><ScienceBudget available={seat.resources.science}/></div>
+ const specialPanel=special&&<section className="dg-research-local" aria-label="Special research preview">{special.command.type==='place-shrine'&&<p>{special.description}</p>}{!stillLegal&&<p role="alert">This placement or purchase is no longer available. Select another option.</p>}</section>;
+ const researchCommit=draft&&!special&&selectedTech&&!owned.has(selectedTech.id)&&draftId===selected&&scienceCost!==null?<CommitBar className="dg-research-footer" summary={<><div className="dg-research-selected-context"><strong>{selectedTech.name}</strong><TechnologyStats technology={selectedTech}/></div><ActionEconomy view={view} action="research" preview={preview}/></>}><button className="sd-primary dg-research-buy" aria-label={commitLabel(`${draft.command.type==='trade-and-act'?'Convert & ':''}Research · ${scienceCost} science`)} disabled={disabled||stale||!stillLegal} onClick={()=>onSubmit(draft.command)}>{commitLabel(draft.command.type==='trade-and-act'?'Convert & research':'Research')}</button></CommitBar>:special?<CommitBar className="dg-research-footer" summary={<><strong>{special.command.type==='place-shrine'?`${humanize(special.command.row)} Shrine`:DEVELOPMENTS.find(development=>development.id===(special.command.type==='research-development'?special.command.developmentId:''))?.name}</strong><ActionEconomy view={view} action="research" preview={specialPreview}/></>}><button className="sd-primary" aria-label={commitLabel(special.label)} disabled={disabled||stale||!stillLegal} onClick={()=>onSubmit(special.command)}>{commitLabel(special.command.type==='place-shrine'?'Place Shrine':'Acquire')}</button></CommitBar>:null;
+
+ return <div className="sd-workspace dg-research-workspace" role="region" aria-label="Research workspace">
+
+  <div className="dg-research-heading"><h1>Research</h1></div>
+  <div className="dg-research-body">
   {seat.faction==='lyra'&&<ShrineWorkspace view={view} candidates={shrineOptions} draft={draft} disabled={disabled||stale} onDraft={onDraft}/>}
+  {special?.command.type==='place-shrine'&&specialPanel}
   {acquired&&owned.has(acquired)&&<div className="dg-research-acquired" role="status"><strong>Acquired · {TECHNOLOGIES.find(t=>t.id===acquired)?.name}</strong><span>{describeTechnology(TECHNOLOGIES.find(t=>t.id===acquired)!)}</span></div>}
 
-  {gameRules(view).technologyVariant&&<section className="dg-research-developments" aria-label="Developments"><h2>Developments</h2><p>These stay beside your research tracks.</p><div className="sd-tech-grid">{DEVELOPMENTS.map(development=>{const ownedDevelopment=seat.developments?.find(item=>item.id===development.id);return <article key={development.id} className="sd-tech-card"><h3>{development.name}</h3><p>{development.description}</p><p className="dg-development-price"><TradeResourceIcon resource={development.resource}/><strong> {development.cost}</strong></p>{ownedDevelopment?<small>{ownedDevelopment.technologyId?`Filled · ${TECHNOLOGIES.find(t=>t.id===ownedDevelopment.technologyId)?.name??ownedDevelopment.technologyId} · +1 VP`:'Acquired'}</small>:<button className="sd-primary" disabled={disabled||stale||!canResearch||seat.resources[development.resource]<development.cost||!developmentAvailable(view,development.id)} aria-pressed={special?.command.type==='research-development'&&special.command.developmentId===development.id} onClick={()=>onDraft({command:{type:'research-development',developmentId:development.id},label:`Acquire ${development.name} · ${development.cost} ${development.resource}`,description:development.description})}>Acquire</button>}</article>;})}</div></section>}
-  {special&&<section className="dg-research-local" aria-label="Special research preview"><h2>{special.label}</h2><p>{special.description}</p>{specialPreview&&<div className="dg-research-conversion-summary">{(['money','science','materials'] as const).filter(resource=>seat.resources[resource]!==specialPreview.resourcesAfter[resource]).map(resource=><span key={resource}><TradeResourceIcon resource={resource}/>{seat.resources[resource]} → {specialPreview.resourcesAfter[resource]}</span>)}</div>}{!stillLegal&&<p role="alert">This placement or purchase is no longer available. Select another option.</p>}<button className="sd-primary" disabled={disabled||stale||!stillLegal} onClick={()=>onSubmit(special.command)}>{commitLabel(special.label)}</button><button onClick={()=>onDraft(null)}>Reset draft</button><details><summary>Action and upkeep details</summary><ActionEconomy view={view} action="research" preview={specialPreview}/></details></section>}
+  {gameRules(view).technologyVariant&&<section className="dg-research-developments" aria-label="Developments"><h2>Developments</h2><div className="sd-tech-grid">{DEVELOPMENTS.map(development=>{const ownedDevelopment=seat.developments?.find(item=>item.id===development.id);return <article key={development.id} className="sd-tech-card"><h3>{development.name}</h3><p>{development.description}</p><p className="dg-development-price"><TradeResourceIcon resource={development.resource}/><strong> {development.cost}</strong></p>{ownedDevelopment?<small>{ownedDevelopment.technologyId?`Filled · ${TECHNOLOGIES.find(t=>t.id===ownedDevelopment.technologyId)?.name??ownedDevelopment.technologyId} · +1 VP`:'Acquired'}</small>:<button disabled={disabled||stale||!canResearch||seat.resources[development.resource]<development.cost||!developmentAvailable(view,development.id)} aria-pressed={special?.command.type==='research-development'&&special.command.developmentId===development.id} onClick={()=>onDraft({command:{type:'research-development',developmentId:development.id},label:`Acquire ${development.name} · ${development.cost} ${development.resource}`,description:development.description})}>Acquire</button>}{special?.command.type==='research-development'&&special.command.developmentId===development.id&&specialPanel}</article>;})}</div></section>}
+
   {selectedTech&&(owned.has(selectedTech.id)||!view.technologyMarket.includes(selectedTech.id))&&selectedPanel}
-  <h2 className="dg-market-heading">Available technologies</h2>
+
   <div className="sd-tech-grid">{['military','grid','nano','rare'].map(track=><section key={track}><h2>{humanize(track)}</h2>{market.filter(({tech})=>tech.track===track).map(({tech,costs,bestPrice})=>{const id=tech.id;
    const exactPrice=selected===id&&draftId===id&&chosenCost?.ok?chosenCost:null;
    const displayedPrice=exactPrice??bestPrice;
    const candidate=purchases.find(c=>techIdOf(c)===id);
-   return <article className={`dg-research-card${selected===id&&!special?' is-selected':''}`} aria-label={`${tech.name} technology`} key={id}><button className="sd-tech" title={describeTechnology(tech)} aria-pressed={selected===id&&!special} key={id} onClick={()=>owned.has(id)?setInspectedId(id):selectPurchase(id)}><strong>{tech.name} ×{view.technologyMarket.filter(t=>t===id).length}</strong>{(view.technologyReservations??[]).filter(r=>r.tileId===id).map(r=><small key={r.owner}>1 copy reserved {r.owner===seat.id?'for you':'by a rival'} · expires next owner turn or round end</small>)}<ResearchCost cost={selected===id&&chosen?.type==='quantum-research'?scienceCost:displayedPrice?.scienceCost??null} available={seat.resources.science} owned={owned.has(id)} from={!exactPrice&&new Set(costs).size>1} pricing={{base:tech.baseCost,minimum:tech.minimumCost,discount:displayedPrice?.discount??null}}/><TechnologyContents technology={tech} view={view}/>{candidate?.command.type==='trade-and-act'&&<small className="dg-conversion-available">Conversion available</small>}</button>{selected===id&&!owned.has(id)&&selectedPanel}</article>;
+   return <article className={`dg-research-card${owned.has(id)?' is-owned':''}${selected===id&&!special?' is-selected':''}`} aria-label={`${tech.name} technology`} key={id}><button className="sd-tech" title={describeTechnology(tech)} aria-pressed={selected===id&&!special} key={id} onClick={()=>owned.has(id)?setInspectedId(id):selectPurchase(id)}><strong>{tech.name} ×{view.technologyMarket.filter(t=>t===id).length}</strong>{(view.technologyReservations??[]).filter(r=>r.tileId===id).map(r=><small key={r.owner}>1 copy reserved {r.owner===seat.id?'for you':'by a rival'} · expires next owner turn or round end</small>)}<TechnologyContents technology={tech} view={view}/><ResearchCost inspectable={false} cost={selected===id&&chosen?.type==='quantum-research'?scienceCost:displayedPrice?.scienceCost??null} available={seat.resources.science} owned={owned.has(id)} from={!exactPrice&&new Set(costs).size>1} pricing={{base:tech.baseCost,minimum:tech.minimumCost,discount:displayedPrice?.discount??null}}/>{candidate?.command.type==='trade-and-act'&&<small className="dg-conversion-available">Conversion available</small>}</button>{selected===id&&!owned.has(id)&&selectedPanel}</article>;
   })}</section>)}</div>
   <ResearchedTechnologies view={view} seat={seat} defaultOpen={false}/>
-  {inspectedTech&&<GameDialog title={inspectedTech.name} closeLabel="Close technology inspection" onClose={()=>setInspectedId(null)}><section aria-label={`Research ${inspectedTech.name}`}><TechnologyStats technology={inspectedTech}/><p>Already researched. Inspect its active effect above.</p><p>{describeTechnology(inspectedTech)}</p><AdvancedPopulationPreview view={view} technology={inspectedTech} detailed/></section></GameDialog>}
+  </div>
+  {researchCommit}
+  {inspectedTech&&<GameDialog title={inspectedTech.name} closeLabel="Close technology inspection" onClose={()=>setInspectedId(null)}><section aria-label={`Research ${inspectedTech.name}`}><TechnologyStats technology={inspectedTech}/><p>{describeTechnology(inspectedTech)}</p><AdvancedPopulationPreview view={view} technology={inspectedTech} detailed/></section></GameDialog>}
  </div>;
 }

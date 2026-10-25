@@ -24,6 +24,8 @@ describe("Less Random decision controls",()=>{
   expect(table).toHaveAccessibleName("Super Joker table result");
   expect(screen.getByLabelText("yellow die 1: face 3, 1 damage")).toBeVisible();
   expect(screen.getByLabelText("red die 2: face 4, 4 damage")).toBeVisible();
+  fireEvent.click(screen.getByRole("radio",{name:"Use table result"}));
+  expect(submit).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole("button",{name:"Use shown table result"}));
   expect(submit).toHaveBeenCalledWith({type:"resolve",decisionId:"joker",choice:{kind:"super-joker",action:"table"}});
  });
@@ -46,6 +48,7 @@ describe("Less Random decision controls",()=>{
   fireEvent.click(screen.getByRole("button",{name:"Undo last reputation step"}));
   expect(screen.getByLabelText("Reputation draft")).toHaveTextContent("Track: 1");
   fireEvent.click(screen.getByRole("button",{name:"Upgrade 1→2 · 1"}));
+  fireEvent.click(screen.getByLabelText('Draft options'));
   fireEvent.click(screen.getByRole("button",{name:"Reset reputation draft"}));
   expect(screen.getByLabelText("Reputation draft")).toHaveTextContent("Track: 1");
  });
@@ -55,9 +58,9 @@ describe("Less Random decision controls",()=>{
   const first:PendingDecision={id:"rep-one",owner:"a",kind:"less-random-reputation",draws:2,capacity:2};
   const ui=render(<DecisionPanel decision={first} view={current} reputation={[]} disabled={false} onSubmit={vi.fn()}/>);
   fireEvent.click(screen.getByRole("button",{name:"Add 1 VP · 1 draw"}));
-  expect(screen.getByText("1 draws left. Add a 1 VP tile, or spend draws to upgrade a tile.")).toBeVisible();
+  expect(screen.getByRole('status')).toHaveTextContent('1 draws left');
   ui.rerender(<DecisionPanel decision={{...first,id:"rep-two",owner:"b"}} view={current} reputation={[]} disabled={false} onSubmit={vi.fn()}/>);
-  expect(screen.getByText("2 draws left. Add a 1 VP tile, or spend draws to upgrade a tile.")).toBeVisible();
+  expect(screen.getByRole('status')).toHaveTextContent('2 draws left');
   expect(screen.getByRole("button",{name:"Undo last reputation step"})).toBeDisabled();
  });
 });

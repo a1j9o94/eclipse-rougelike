@@ -177,3 +177,5 @@
 .dg-sector-facts dt .dg-sector-feature-icon,.dg-feature-note .dg-sector-feature-icon{width:20px;height:20px;vertical-align:middle;color:#e8cc87}
 
 button.dg-planet-row{position:relative;cursor:pointer;text-align:left;background:#142833;border:1px solid #587785;border-radius:6px;padding:9px}button.dg-planet-row:disabled{opacity:.45;cursor:not-allowed}button.dg-planet-row[aria-pressed=true]{outline:2px solid #e1c07c;background:#2c403e}.dg-planet-ghost{position:absolute;right:4px;bottom:3px;color:#e5ca82}.dg-planet-ghost svg{width:28px;height:28px}button.dg-planet-row:focus-visible{outline:2px solid #bce8f0;outline-offset:2px}
+
+.dg-planet-row{position:relative}.dg-planet-row.is-blocked{background:#101b24;border-color:#43505b}.dg-planet-lock{position:absolute;right:5px;top:5px;color:#b4bec6}.dg-planet-lock svg{width:15px;height:15px}.dg-planet-inspection{grid-column:1/-1;border-left:2px solid #8bafbb;padding:7px 10px;background:#101d28}.dg-planet-inspection p{margin:3px 0;font-size:12px}.dg-planet-inspection button{min-height:44px}.dg-planet-row[aria-expanded=true]{outline:2px solid #8bafbb;outline-offset:-2px}

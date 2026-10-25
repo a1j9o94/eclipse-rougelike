@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import SectorPlanets from "../second-dawn-game/SectorPlanets";
 import fixturesJson from "../second-dawn-game/reviewFixtures.json?raw";
 import type { GameState } from "../../shared/eclipse/types";
@@ -21,7 +21,10 @@ it("lists every printed planet including empty advanced spaces with their techno
     screen.getAllByRole("img", { name: "Empty population square" }).length,
   ).toBeGreaterThan(0);
   expect(screen.getAllByText("Advanced").length).toBeGreaterThan(0);
-  expect(screen.getByText(/Advanced Economy/)).toBeInTheDocument();
+  expect(screen.queryByText('Colonization requirements')).not.toBeInTheDocument();
+  const advanced=sectorDefinition(Number(sector.tileId))!.population.findIndex(square=>square.advanced&&square.resource==='money');
+  fireEvent.click(screen.getByRole('button',{name:`Inspect Money planet p${advanced} in sector ${sector.tileId}`}));
+  expect(screen.getByText(/Requires Advanced Economy/)).toBeInTheDocument();
 });
 it("matches occupied cubes by square id and shows gray/orbital choices and actual legal colony eligibility", () => {
   const state = (JSON.parse(fixturesJson) as Record<string, GameState>).opening;
@@ -49,9 +52,8 @@ it("matches occupied cubes by square id and shows gray/orbital choices and actua
   );
   expect(screen.getByLabelText("Occupied · Money cube")).toBeInTheDocument();
   expect(screen.getAllByText("Orbital")[0]).toBeInTheDocument();
-  expect(
-    screen.getByText("Can colonize: Science · 1 colony ship"),
-  ).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button",{name:`Inspect Orbital planet orbital in sector ${sector.tileId}`}));
+  expect(screen.getByText("Science · 1 colony ship")).toBeInTheDocument();
 });
 
 it("uses population cubes and advanced symbols instead of repeating status words on each planet", () => {

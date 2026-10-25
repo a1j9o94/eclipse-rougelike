@@ -11,7 +11,8 @@ import ShipSilhouette from "./ShipSilhouette";
 import { StatIcon, type StatIconName } from "./ShipPartStats";
 import "./battleOverview.css";
 import type { GameEvent } from "../../shared/eclipse/types";
-import { useState } from "react";
+import { useMemo,useRef,useState,type ReactNode } from "react";
+import {BattlefieldContext,type BattlefieldAllocation} from './battlefieldContext';
 import DiceRoll3D from "./DiceRoll3D";
 import EclipseDieFace from "./EclipseDieFace";
 import NeutralShipArmament from "./NeutralShipArmament";
@@ -87,12 +88,13 @@ function VolleyScene({ volley, view, knownShips, still, awaitingDice }: {
   </div>;
 }
 /** Public result cards survive the active fleet and battle being removed. */
-export function CombatPlayback({ volleys, view, knownShips = [], fast = false, soundEligible = false }: {
+export function CombatPlayback({ volleys, view, knownShips = [], fast = false, soundEligible = false,inline=false }: {
   volleys: readonly PublicVolley[];
   view?: PlayerView;
   knownShips?: readonly Pick<Ship, "id" | "owner" | "type" | "orbitalShip">[];
   fast?: boolean;
   soundEligible?: boolean;
+  inline?:boolean;
 }) {
   const [skippedRollId, setSkippedRollId] = useState<string | null>(null);
   const [settledRoll, setSettledRoll] = useState<string | null>(null);
@@ -106,6 +108,7 @@ export function CombatPlayback({ volleys, view, knownShips = [], fast = false, s
   const awaitingDice = dice3dEnabled && !isFast && opponentRolls.length > 0 && settledRoll !== opponentRollId;
   useCombatVolleySounds({volleys,eligible:soundEligible,awaitingDice,skipped:skipMotion});
   if (!volleys.length) return null;
+  if(inline)return <div className="dg-battlefield-last-roll" aria-label="Last volley"><DiceRoll3D skipped={skipMotion} rolls={opponentRolls} rollId={opponentRollId} onComplete={()=>setSettledRoll(opponentRollId)} enabled={dice3dEnabled&&!isFast&&opponentRolls.length>0}><div className="dg-result-dice">{volleys.at(-1)!.dice.map(die=><span key={die.id} aria-label={`Roll ${die.face}, ${die.damage} damage`}><EclipseDieFace color={die.weaponColor??'#bac0ce'} face={die.face} decorative/></span>)}</div></DiceRoll3D><small>{destroyedCount?`${destroyedCount} ${destroyedCount===1?'ship':'ships'} destroyed`:'Volley resolved'}</small>{!isFast&&awaitingDice&&<button onClick={()=>setSkippedRollId(opponentRollId)}>Skip volley animation</button>}</div>;
   return (
     <section className={`dg-combat-playback${isFast ? " is-fast" : ""}`} aria-label="Recent combat impacts">
       <header>
@@ -214,10 +217,56 @@ function BattleStat({
     </span>
   );
 }
+/** One persistent encounter canvas. Historical impacts update these same ships. */
+function Battlefield({view,volleys,knownShips,fast,soundEligible,children}:{view:PlayerView;volleys:readonly PublicVolley[];knownShips:readonly Pick<Ship,'id'|'owner'|'type'|'orbitalShip'>[];fast:boolean;soundEligible:boolean;children:ReactNode}){
+ const battle=view.battle!;
+ const [allocation,setAllocation]=useState<BattlefieldAllocation|null>(null);
+ const context=useMemo(()=>({setAllocation}),[]);
+ const [inspected,setInspected]=useState<string|null>(null);
+ const ships=useRef(new Map<string,Ship>());
+ for(const ship of view.ships)if(ship.sectorId===battle.sectorId&&[battle.attacker,battle.defender].includes(ship.owner))ships.current.set(ship.id,ship);
+ const encounterVolleys=volleys.filter(volley=>volley.battleId===battle.id),latest=encounterVolleys.at(-1);
+ for(const volley of encounterVolleys)for(const target of volley.targets){const known=knownShips.find(ship=>ship.id===target.id);const type=target.shipType??known?.type,owner=target.owner??known?.owner;if(type&&owner&&!ships.current.has(target.id))ships.current.set(target.id,{id:target.id,type,owner,orbitalShip:target.orbitalShip??known?.orbitalShip,sectorId:battle.sectorId,damage:0});}
+ const statsFor=(ship:Ship)=>{const seat=view.seats.find(candidate=>candidate.id===ship.owner),blueprint=seat?.blueprints.find(candidate=>candidate.shipType===ship.type);return ship.type==='ancient'||ship.type==='guardian'||ship.type==='gcds'?neutralBlueprint(`${ship.type}-standard`).stats:seat&&blueprint?deriveBlueprintStats(seat.faction,publicBlueprint(blueprint)):null;};
+ const inspection=inspected?ships.current.get(inspected):null,inspectedStats=inspection?statsFor(inspection):null;
+ return <BattlefieldContext.Provider value={context}><section className="dg-battlefield" aria-label="Active battle overview">
+  <div className="dg-battlefield-stage" aria-label="Battlefield">
+   {[battle.attacker,battle.defender].map((owner,side)=>{const seat=view.seats.find(candidate=>candidate.id===owner);return <section className={`dg-battlefield-fleet is-${side===0?'attacker':'defender'}`} key={owner} aria-label={`${side===0?'Attacker':'Defender'} fleet: ${seat?getFaction(seat.faction).name:owner}`}>
+    <h3><i style={{background:seat?seatColor(seat):'#b9a566'}} aria-hidden="true"/>{owner===view.viewerSeatId?'Your fleet':seat?getFaction(seat.faction).name:owner==='ancient'?'Ancients':owner==='guardian'?'Guardians':'Galactic Center'}<small>{side===0?'Attacking':'Defending'}</small></h3>
+    <div className="dg-battlefield-ships">{[...ships.current.values()].filter(ship=>ship.owner===owner).map((ship,index)=>{
+     const live=view.ships.find(candidate=>candidate.id===ship.id),stats=statsFor(ship),maximum=stats?stats.hull+1:0;
+     const latestImpact=encounterVolleys.flatMap(volley=>volley.targets).filter(target=>target.id===ship.id).at(-1);
+     // Ships remain public when they retreat. Removal is authoritative even if
+     // the separate history query has not delivered this volley yet.
+     const gone=!live,retreated=!!live&&live.sectorId!==battle.sectorId,destroyed=gone;
+     const hp=gone?latestImpact?.hpAfter??0:Math.max(0,maximum-live.damage),target=allocation&&allocation.decisionId===view.pendingDecision?.id?allocation.targets.find(target=>target.id===ship.id):undefined;
+     const title=ship.orbitalShip?'Orbital':names[ship.type],planned=target?.damage??0;
+     const firing=view.pendingDecision?.owner===owner&&(view.pendingDecision.kind==='combat-turn'?view.pendingDecision.shipType===ship.type:view.pendingDecision.kind==='combat-allocation'?view.pendingDecision.dice.some(die=>die.sourceShipId===ship.id||!die.sourceShipId&&die.sourceShipType===ship.type):false);
+     return <article className={`dg-battlefield-ship${target?' is-target':''}${target?.assigned?' is-planned':''}${destroyed?' is-destroyed':''}${retreated?' has-retreated':''}${firing?' is-firing':''}`} key={ship.id} data-ship-id={ship.id}>
+      <button type="button" className="dg-battlefield-piece" aria-label={target?`Target ${target.label}${target.hit===undefined?'':target.hit?' · hit':' · miss'}`:`Inspect ${title} ${index+1}${destroyed?', destroyed':retreated?', retreated':''}`} aria-pressed={target?target.assigned:inspected===ship.id} onClick={()=>target?allocation?.onTarget(ship.id):setInspected(current=>current===ship.id?null:ship.id)}>
+       <span className="dg-battlefield-art">{ship.type==='ancient'||ship.type==='guardian'||ship.type==='gcds'?<NeutralShipSilhouette type={ship.type}/>:<ShipSilhouette type={ship.type} faction={seat?.faction} orbital={ship.orbitalShip}/>}<b aria-hidden="true">{destroyed?'×':target?.assigned?'✓':''}</b></span>
+       <strong>{title}{index>0?` ${index+1}`:''}</strong>
+       {firing&&<small className="dg-firing-mark">Firing</small>}
+       <span className="dg-hull-pips" aria-label={`${hp} of ${maximum} HP`}>{Array.from({length:Math.min(maximum,12)},(_,i)=><i key={i} data-state={i>=hp?'lost':i>=hp-planned?'planned':'intact'}/>)}</span>
+       <span className="dg-battlefield-health">{destroyed?'Destroyed':retreated?'Retreated':target?.uncertainDamage?`${hp} HP → unknown`:planned?`${hp} → ${Math.max(0,hp-planned)} HP`:`${hp} / ${maximum} HP`}</span>
+       {target?.destroyed&&<strong className="dg-destruction-preview">Will destroy</strong>}
+       {target?.hit===false&&<small>Selected die misses</small>}
+      </button>
+      {target&&<div className="dg-battlefield-target-tools">{target.assigned&&<button className="dg-battlefield-clear" aria-label={`Clear hits on ${target.label}`} onClick={()=>allocation?.onClear(ship.id)}>Clear hits{target.excess?` · ${target.excess} excess`:''}</button>}<button className="dg-battlefield-info" aria-label={`Hit calculation for ${target.label}`} aria-expanded={inspected===ship.id} onClick={()=>setInspected(current=>current===ship.id?null:ship.id)}>ⓘ</button></div>}
+     </article>;
+    })}</div>
+   </section>;})}
+  </div>
+  {inspection&&inspectedStats&&<div className="dg-battlefield-inspection" aria-label="Selected ship capabilities"><strong>{names[inspection.type]}</strong><span>{allocation?.targets.find(target=>target.id===inspection.id)?.explanation??`Hull ${inspectedStats.hull+1} · shield ${inspectedStats.shield} · computer +${inspectedStats.computer} · initiative ${inspectedStats.initiative}`}</span><button onClick={()=>setInspected(null)}>Close ship details</button></div>}
+  <div className="dg-battlefield-controls">{latest&&view.pendingDecision?.kind!=='combat-allocation'&&<CombatPlayback inline volleys={[latest]} view={view} fast={fast} soundEligible={soundEligible}/>} {children}</div>
+ </section></BattlefieldContext.Provider>;
+}
 /** Active engagement only; all stats come from the same public blueprints as combat. */
-export default function BattleOverview({ view, recentVolleys = [], knownShips = [], fastPlayback = false, soundEligible = false }: { view: PlayerView; recentVolleys?: readonly NonNullable<GameEvent["combatVolley"]>[]; knownShips?: readonly Pick<Ship, "id" | "owner" | "type" | "orbitalShip">[]; fastPlayback?: boolean; soundEligible?: boolean }) {
+export default function BattleOverview({ view, recentVolleys = [], knownShips = [], fastPlayback = false, soundEligible = false, compact=false, showHeading=true,integrated=false,controls }: { view: PlayerView; recentVolleys?: readonly NonNullable<GameEvent["combatVolley"]>[]; knownShips?: readonly Pick<Ship, "id" | "owner" | "type" | "orbitalShip">[]; fastPlayback?: boolean; soundEligible?: boolean; compact?:boolean; showHeading?:boolean;integrated?:boolean;controls?:ReactNode }) {
+  const [expanded,setExpanded]=useState<Record<string,boolean>>({});
   const battle = view.battle;
   if (!battle) return null;
+  if(integrated)return <Battlefield key={battle.id??`${battle.sectorId}:${battle.attacker}:${battle.defender}`} view={view} volleys={recentVolleys} knownShips={knownShips} fast={fastPlayback} soundEligible={soundEligible}>{controls}</Battlefield>;
   const inSector = view.ships.filter((s) => s.sectorId === battle.sectorId);
   const ownerName = (id: string) => {
     const seat = view.seats.find((s) => s.id === id);
@@ -232,9 +281,9 @@ export default function BattleOverview({ view, recentVolleys = [], knownShips = 
     (s) => s.owner !== battle.attacker && s.owner !== battle.defender,
   );
   return (
-    <section className="dg-battle-overview" aria-label="Active battle overview">
+    <section className={`dg-battle-overview${compact?' is-compact':''}`} aria-label="Active battle overview">
       <header>
-        <h2>Battle · Sector {sector?.tileId ?? battle.sectorId}</h2>
+        {showHeading&&<h2>Battle · Sector {sector?.tileId ?? battle.sectorId}</h2>}
         <span>
           {battle.stage === "missiles"
             ? "Opening missile volley"
@@ -255,17 +304,24 @@ export default function BattleOverview({ view, recentVolleys = [], knownShips = 
           const seat = view.seats.find((s) => s.id === side.id),
             fleet = inSector.filter((s) => s.owner === side.id),
             types = [...new Set(fleet.map((s) => s.type))];
+          const health=fleet.reduce((total,ship)=>{const blueprint=seat?.blueprints.find(item=>item.shipType===ship.type);const stats=ship.type==='ancient'||ship.type==='guardian'||ship.type==='gcds'?neutralBlueprint(`${ship.type}-standard`).stats:seat&&blueprint?deriveBlueprintStats(seat.faction,publicBlueprint(blueprint)):null;return total+(stats?Math.max(0,stats.hull+1-ship.damage):0);},0);
+          const first=fleet[0];
           return (
             <section
               className="dg-battle-side"
               key={side.role}
               aria-label={`${side.role} fleet: ${ownerName(side.id)}`}
               style={{
-                borderColor: seat
+                borderColor: compact?'#435561':seat
                   ? seatColor(seat)
                   : "#c0a56b",
               }}
             >
+              {compact&&<button type="button" className="dg-battle-summary-toggle" aria-label={`Inspect ${side.role==='Attacker'?'attacking':'defending'} fleet`} aria-expanded={!!expanded[side.id]} onClick={()=>setExpanded(current=>({...current,[side.id]:!current[side.id]}))}>
+                <span className="dg-battle-mini-art" style={{color:seat?seatColor(seat):'#c0a56b'}}>{first&&(first.type==='ancient'||first.type==='guardian'||first.type==='gcds'?<NeutralShipSilhouette type={first.type}/>:<ShipSilhouette type={first.type} faction={seat?.faction} orbital={first.orbitalShip}/>)}</span>
+                <span><strong>{side.id===view.viewerSeatId?'Your fleet':ownerName(side.id)}</strong><small>{fleet.length} {fleet.length===1?'ship':'ships'} · {health} HP</small></span><span aria-hidden="true">{expanded[side.id]?'⌃':'⌄'}</span>
+              </button>}
+              <div hidden={compact&&!expanded[side.id]} className="dg-battle-fleet-details">
               <h3>
                 <small>{side.role}</small>
                 {ownerName(side.id)}
@@ -405,6 +461,7 @@ export default function BattleOverview({ view, recentVolleys = [], knownShips = 
                   );
                 })}
               </details>
+              </div>
             </section>
           );
         })}

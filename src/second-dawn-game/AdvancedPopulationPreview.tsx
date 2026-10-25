@@ -16,10 +16,10 @@ export default function AdvancedPopulationPreview({ view, technology, detailed =
       <b aria-hidden="true">{eligible}</b><span aria-hidden="true">empty planet{eligible === 1 ? '' : 's'}<small>in your sectors</small></span>
     </div>
     {detailed && <div className="dg-advanced-detail">
-      <p>{newOptions === 0 ? eligible ? 'Already unlocked by your researched technologies.' : 'No eligible empty advanced planets in your sectors.' : resource === 'all' ? `${newOptions} planet${newOptions === 1 ? ' gains' : 's gain'} new resource options after research.` : `${newOptions} newly unlocked for ${resource} after research.`} {resource === 'all' ? 'Each gray planet holds one cube.' : 'Includes advanced gray planets.'}</p>
+      <p>{newOptions === 0 ? eligible ? 'Already unlocked.' : 'No eligible planets.' : resource === 'all' ? `${newOptions} planets gain resource options.` : `${newOptions} newly unlocked for ${resource}.`}</p>
       <strong>Up to {populationCapacity} population with current supplies</strong>
       <span className="dg-advanced-supplies">{colonyShips} colony ship{colonyShips === 1 ? '' : 's'} · {cubes.map(cube => `${cube.available} ${cube.resource}`).join(' / ')} cube{cubes.reduce((sum,cube)=>sum+cube.available,0) === 1 ? '' : 's'} available</span>
-      <small>After research, choose planets to colonize during your turn. Research does not place population.</small>
+      <small>Colonize after research</small>
     </div>}
   </div>;
 }

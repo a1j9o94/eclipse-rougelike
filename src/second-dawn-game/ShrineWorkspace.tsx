@@ -1,3 +1,4 @@
+import {SHRINE_COSTS as prices} from '../../shared/eclipse/shrines';
 import {useState} from 'react';
 import type {GameCommand,PlayerView,Resource} from '../../shared/eclipse/types';
 import type {LegalCommandCandidate} from '../../shared/eclipse/legal';
@@ -8,7 +9,7 @@ import './shrineWorkspace.css';
 type ShrineCommand=Extract<GameCommand,{type:'place-shrine'}>;
 interface Props {view:PlayerView;candidates:readonly LegalCommandCandidate[];draft:LegalCommandCandidate|null;disabled:boolean;onDraft:(draft:LegalCommandCandidate|null)=>void}
 const rows:readonly Resource[]=['science','money','materials'];
-const prices:Record<Resource,readonly [number,number,number]>={science:[2,3,4],money:[3,4,5],materials:[4,5,6]};
+
 const rewards:Record<Resource,string>={science:'Wormhole Generator',money:'Discovery',materials:'Influence disc'};
 const name=(value:string)=>value[0].toUpperCase()+value.slice(1);
 /** Choose a physical Shrine from its track, then a compatible planet in controlled territory. */

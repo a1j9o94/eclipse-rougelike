@@ -16,7 +16,7 @@ it('keeps the command center scrollable while an upkeep choice retains its selec
  const view=getPlayerView(state,'a')!,onSubmit=vi.fn();
  const {container}=render(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="" onSubmit={onSubmit} onMenu={vi.fn()}/>);
  fireEvent.click(screen.getByRole('button',{name:sector.tileId,exact:true}));
- fireEvent.click(within(screen.getByRole('region',{name:'Civilization roster'})).getByRole('button',{name:/Terran Directorate/}));
+ fireEvent.click(screen.getByRole('button',{name:'Table & activity'}));fireEvent.click(within(screen.getByRole('region',{name:'Civilization roster'})).getByRole('button',{name:/Terran Directorate/}));
  expect(screen.getByRole('heading',{name:'Faction abilities'})).toBeVisible();
  expect(container.querySelector('.dg-map-choice-controls[hidden]')).not.toBeNull();
  expect(container.querySelector('.dg-map-choice-controls .sd-map')).toBeNull();

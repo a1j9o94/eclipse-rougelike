@@ -257,3 +257,71 @@
 .dg-volley-scene.is-awaiting-dice .dg-volley-impact-flash,
 .dg-volley-scene.is-awaiting-dice .dg-volley-wreck-mark {animation-play-state:paused}
 .dg-volley-flight [data-weapon-color="magenta"] {stroke:#f094dc}
+
+/* One encounter canvas: ship positions survive every decision and resolved volley. */
+.dg-battlefield{display:flex;flex-direction:column;flex:1;min-height:0;min-width:0;overflow:auto;background:radial-gradient(ellipse at 50% 35%,#1d344755,transparent 65%),#0b1520}
+.dg-battlefield-stage{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:16px;min-height:180px;flex:1;align-content:center}
+.dg-battlefield-fleet{min-width:0;display:flex;flex-direction:column;gap:12px}
+.dg-battlefield-fleet>h3{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0;color:#e2e8e9;font-size:14px}
+.dg-battlefield-fleet>h3>i{height:9px;width:9px;border-radius:50%;flex:none}
+.dg-battlefield-fleet>h3>small{margin-left:auto;color:#a7bbc9;font-size:11px;font-weight:400}
+.dg-battlefield-ships{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;align-items:flex-start}
+.dg-battlefield-ship{width:clamp(100px,11vw,156px);min-width:0;min-height:250px;position:relative}
+.dg-battlefield-piece{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;border:1px solid transparent!important;border-radius:12px;padding:10px!important;background:transparent!important;color:#dce7ec;min-height:44px;cursor:pointer}
+.dg-battlefield-art{display:block;position:relative;width:clamp(70px,9vw,116px);height:clamp(70px,9vw,116px)}
+.dg-battlefield-art>svg{width:100%!important;height:100%!important}
+.dg-battlefield-art>b{position:absolute;right:0;bottom:0;color:#ecd18b;font-size:22px}
+.dg-battlefield-piece>strong{font-size:13px;line-height:1.2}
+.dg-battlefield-health{font-size:13px;font-variant-numeric:tabular-nums;color:#c0d2df}
+.dg-hull-pips{display:flex;gap:3px;flex-wrap:wrap;justify-content:center;max-width:112px}
+.dg-hull-pips>i{width:13px;height:6px;border-radius:2px;border:1px solid #92c1c0;background:#9dd0c0}
+.dg-hull-pips>[data-state=lost]{background:transparent;border-color:#62727e}
+.dg-hull-pips>[data-state=planned]{background:repeating-linear-gradient(135deg,#f3b18c 0 2px,transparent 2px 4px);border-color:#f3b18c}
+.is-target>.dg-battlefield-piece{border-color:#708d9f!important;background:#172c3b!important}
+.is-target>.dg-battlefield-piece:hover{border-color:#e5c982!important}
+.is-planned>.dg-battlefield-piece{border-color:#e5c982!important;box-shadow:inset 0 0 0 1px #e5c982;background:#263334!important}
+.is-destroyed .dg-battlefield-art>svg{opacity:.32;filter:grayscale(.8)}
+.is-destroyed .dg-battlefield-art>b{inset:0;display:grid;place-items:center;font-size:58px;color:#f4b393}
+.has-retreated .dg-battlefield-art{opacity:.4}
+.dg-battlefield-clear{width:100%;min-height:44px;margin-top:4px;font-size:12px}
+.dg-battlefield-controls{flex:0 0 auto;min-width:0;border-top:1px solid #344b5b;background:#0d1b27}
+.dg-battlefield-controls>.dg-decision{margin:0;padding:12px 16px 0;max-width:none}
+.dg-battlefield-controls .dg-decision>h2{font-size:18px;line-height:1.3;font-weight:600;text-transform:none;margin:0 auto 10px;max-width:820px}
+.dg-battlefield-controls .dg-volley-workspace{max-width:820px;margin-inline:auto}.dg-firing-mark{font-size:11px;color:#ecd18b}.is-firing>.dg-battlefield-piece{background:#23353d!important;border-color:#637f8e!important}
+.dg-battlefield-controls .dg-volley-aim{display:block}
+.dg-battlefield-controls .dg-dice-tray{border:0;background:transparent;box-shadow:none;padding:0 0 12px}
+.dg-battlefield-controls .dg-decision-commit{margin:0 -16px}
+.dg-battlefield-controls .dg-combat-turn-heading{display:none}
+.dg-battlefield-controls .dg-combat-turn>.dg-commit-bar{margin:0 -16px}
+.dg-battlefield-controls>p[role=status]{margin:0;padding:18px;text-align:center;color:#c6d5df}
+.dg-battlefield-last-roll{display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 12px;color:#c2d2dc}
+.dg-battlefield-last-roll .dg-result-dice{margin:0}.dg-battlefield-last-roll .dg-result-dice>span{border:0;padding:0}
+.dg-battlefield-inspection{padding:8px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#172b39;color:#cbdae4;font-size:13px}
+.dg-battlefield-inspection button{min-height:44px;margin-left:auto}
+.dg-battlefield button:focus-visible{outline:2px solid #efcf85;outline-offset:3px}
+.dg-battle-overview.is-compact .dg-battle-sides{gap:8px}
+.dg-battle-overview.is-compact .dg-battle-side{padding:0}
+.dg-battle-summary-toggle{display:flex;align-items:center;gap:8px;width:100%;text-align:left;min-height:64px;border:0!important;background:transparent!important;padding:8px!important}
+.dg-battle-summary-toggle>span:nth-child(2){display:grid;gap:5px;min-width:0;flex:1}.dg-battle-summary-toggle strong{font-size:12px}.dg-battle-summary-toggle small{font-size:12px;color:#bfd0dc}
+.dg-battle-mini-art,.dg-battle-mini-art>svg{height:36px!important;width:36px!important;flex:none}
+.is-compact .dg-battle-fleet-details{padding:10px}
+@media(max-width:760px){
+ .dg-battlefield-stage{gap:10px;padding:10px;min-height:170px}
+ .dg-battlefield-fleet{gap:8px}.dg-battlefield-fleet>h3{font-size:12px;gap:5px;align-items:center}.dg-battlefield-fleet>h3>small{display:none}
+ .dg-battlefield-ships{gap:8px}.dg-battlefield-ship{width:100%;max-width:142px;min-height:190px}.dg-battlefield-art{width:66px;height:66px}
+ .dg-battlefield-piece{padding:7px!important;gap:4px}.dg-battlefield-piece>strong{font-size:12px}.dg-battlefield-health{font-size:12px}
+ .dg-battlefield-controls>.dg-decision{padding:10px 10px 0}.dg-battlefield-controls .dg-decision-commit,.dg-battlefield-controls .dg-combat-turn>.dg-commit-bar{margin:0 -10px}
+ .dg-battlefield-controls .dg-volley-die{flex:0 1 auto;min-width:110px;min-height:48px;padding:6px}
+ .dg-battlefield-controls .dg-volley-die strong{font-size:12px}.dg-battlefield-controls .dg-volley-die .dg-eclipse-die{width:30px;height:30px;flex-basis:30px}
+ .dg-battlefield-controls .dg-dice-tray>header{min-height:44px}.dg-battlefield-controls .dg-dice-tray header button{min-height:44px;padding:6px 10px}
+ .dg-battlefield-controls .dg-commit-summary{max-width:52%}.dg-battlefield-last-roll{padding:6px;gap:8px}
+}
+.is-battlefield-tray .dg-volley-die{position:relative;flex:0 0 84px!important;min-width:84px!important;min-height:82px!important;display:flex;flex-direction:column;gap:5px;padding:9px!important;align-items:center;justify-content:center}
+.is-battlefield-tray .dg-die-provenance{display:none}.dg-die-damage{font-size:12px!important}.dg-die-state{position:absolute;right:5px;top:3px;font-size:15px;color:#ecd18b}
+.dg-die-inspection{position:relative;margin-left:auto;margin-right:10px}.dg-die-inspection>summary{min-height:44px;display:flex;align-items:center;font-size:12px;cursor:pointer;color:#bdcdda}
+.dg-die-inspection>p{position:absolute;right:0;bottom:100%;z-index:10;margin:0;padding:12px;border:1px solid #6b8391;border-radius:8px;background:#182b3a;width:220px;max-width:70vw;font-size:13px;color:#deebee;box-shadow:0 6px 20px #0009}
+@media(max-width:760px){.is-battlefield-tray .dg-volley-die{flex-basis:84px!important;min-width:84px!important;min-height:72px!important}.dg-battlefield-controls .dg-commit-summary{font-size:12px}}
+.dg-battlefield{overflow:hidden}.dg-battlefield-stage{overflow:auto;align-content:start;padding-top:24px}.dg-battlefield-controls{flex-shrink:1;overflow:auto;min-height:0}
+.dg-battlefield-target-tools{display:flex;gap:5px;justify-content:flex-end;min-height:44px}.dg-battlefield-target-tools>button{min-height:44px;margin:0}.dg-battlefield-clear{flex:1}.dg-battlefield-info{width:44px;min-width:44px;font-size:19px;padding:4px!important}
+.dg-battlefield-controls .dg-result-dice{flex-wrap:nowrap;overflow-x:auto;min-width:0}.dg-battlefield-controls .dg-result-dice>span{flex-shrink:0}.dg-battlefield-controls .dg-reroll-options{flex-wrap:nowrap;overflow-x:auto}.dg-battlefield-controls .dg-reroll-options>button{flex-shrink:0}
+@media(min-width:761px){.dg-battlefield-stage{padding-top:clamp(24px,8vh,80px)}}

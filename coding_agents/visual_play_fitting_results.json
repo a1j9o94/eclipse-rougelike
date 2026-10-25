@@ -1,0 +1,735 @@
+{
+  "viewports": [
+    "360x740",
+    "390x844",
+    "1440x900"
+  ],
+  "fitting_and_build": [
+    {
+      "width": 360,
+      "height": 740,
+      "flow": "build-empty",
+      "errors": [],
+      "overflow": false,
+      "summary": null,
+      "slots": null,
+      "parts": null,
+      "commit": null,
+      "map": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "bottom": 0
+      },
+      "tools": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "bottom": 0
+      },
+      "catalog": {
+        "x": 13,
+        "y": 154,
+        "width": 334,
+        "height": 771,
+        "bottom": 925
+      },
+      "order": {
+        "x": 1,
+        "y": 64,
+        "width": 358,
+        "height": 44,
+        "bottom": 108
+      }
+    },
+    {
+      "width": 360,
+      "height": 740,
+      "flow": "build-placement",
+      "errors": [],
+      "overflow": false,
+      "summary": null,
+      "slots": null,
+      "parts": null,
+      "commit": {
+        "x": 1,
+        "y": 623,
+        "width": 358,
+        "height": 58,
+        "bottom": 680
+      },
+      "map": {
+        "x": 0,
+        "y": 63,
+        "width": 360,
+        "height": 300,
+        "bottom": 363
+      },
+      "tools": {
+        "x": 45,
+        "y": 301,
+        "width": 269,
+        "height": 54,
+        "bottom": 355
+      },
+      "catalog": null,
+      "order": {
+        "x": 1,
+        "y": 364,
+        "width": 358,
+        "height": 75,
+        "bottom": 439
+      }
+    },
+    {
+      "width": 360,
+      "height": 740,
+      "flow": "build-ready",
+      "errors": [],
+      "overflow": false,
+      "summary": null,
+      "slots": null,
+      "parts": null,
+      "commit": {
+        "x": 1,
+        "y": 623,
+        "width": 358,
+        "height": 58,
+        "bottom": 680
+      },
+      "map": {
+        "x": 0,
+        "y": 63,
+        "width": 360,
+        "height": 300,
+        "bottom": 363
+      },
+      "tools": {
+        "x": 16,
+        "y": 301,
+        "width": 327,
+        "height": 54,
+        "bottom": 355
+      },
+      "catalog": null,
+      "order": {
+        "x": 1,
+        "y": 364,
+        "width": 358,
+        "height": 75,
+        "bottom": 439
+      }
+    },
+    {
+      "width": 360,
+      "height": 740,
+      "flow": "upgrade",
+      "errors": [],
+      "overflow": false,
+      "summary": {
+        "x": 8,
+        "y": 132,
+        "width": 344,
+        "height": 182,
+        "bottom": 314
+      },
+      "slots": {
+        "x": 8,
+        "y": 325,
+        "width": 344,
+        "height": 75,
+        "bottom": 400
+      },
+      "parts": {
+        "x": 9,
+        "y": 458,
+        "width": 342,
+        "height": 152,
+        "bottom": 610
+      },
+      "commit": {
+        "x": 8,
+        "y": 616,
+        "width": 344,
+        "height": 57,
+        "bottom": 673
+      },
+      "map": null,
+      "tools": null,
+      "catalog": null,
+      "order": null
+    },
+    {
+      "width": 360,
+      "height": 740,
+      "flow": "upgrade-scrolled",
+      "errors": [],
+      "overflow": false,
+      "summary": {
+        "x": 8,
+        "y": 132,
+        "width": 344,
+        "height": 182,
+        "bottom": 314
+      },
+      "slots": {
+        "x": 8,
+        "y": 325,
+        "width": 344,
+        "height": 75,
+        "bottom": 400
+      },
+      "parts": {
+        "x": 9,
+        "y": 458,
+        "width": 342,
+        "height": 152,
+        "bottom": 610
+      },
+      "commit": {
+        "x": 8,
+        "y": 616,
+        "width": 344,
+        "height": 57,
+        "bottom": 673
+      },
+      "map": null,
+      "tools": null,
+      "catalog": null,
+      "order": null
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "flow": "build-empty",
+      "errors": [],
+      "overflow": false,
+      "summary": null,
+      "slots": null,
+      "parts": null,
+      "commit": null,
+      "map": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "bottom": 0
+      },
+      "tools": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "bottom": 0
+      },
+      "catalog": {
+        "x": 13,
+        "y": 154,
+        "width": 364,
+        "height": 743,
+        "bottom": 897
+      },
+      "order": {
+        "x": 1,
+        "y": 64,
+        "width": 388,
+        "height": 44,
+        "bottom": 108
+      }
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "flow": "build-placement",
+      "errors": [],
+      "overflow": false,
+      "summary": null,
+      "slots": null,
+      "parts": null,
+      "commit": {
+        "x": 1,
+        "y": 727,
+        "width": 388,
+        "height": 58,
+        "bottom": 784
+      },
+      "map": {
+        "x": 0,
+        "y": 63,
+        "width": 390,
+        "height": 332,
+        "bottom": 395
+      },
+      "tools": {
+        "x": 60,
+        "y": 333,
+        "width": 269,
+        "height": 54,
+        "bottom": 387
+      },
+      "catalog": null,
+      "order": {
+        "x": 1,
+        "y": 396,
+        "width": 388,
+        "height": 75,
+        "bottom": 471
+      }
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "flow": "build-ready",
+      "errors": [],
+      "overflow": false,
+      "summary": null,
+      "slots": null,
+      "parts": null,
+      "commit": {
+        "x": 1,
+        "y": 727,
+        "width": 388,
+        "height": 58,
+        "bottom": 784
+      },
+      "map": {
+        "x": 0,
+        "y": 63,
+        "width": 390,
+        "height": 332,
+        "bottom": 395
+      },
+      "tools": {
+        "x": 31,
+        "y": 333,
+        "width": 327,
+        "height": 54,
+        "bottom": 387
+      },
+      "catalog": null,
+      "order": {
+        "x": 1,
+        "y": 396,
+        "width": 388,
+        "height": 75,
+        "bottom": 471
+      }
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "flow": "upgrade",
+      "errors": [],
+      "overflow": false,
+      "summary": {
+        "x": 8,
+        "y": 132,
+        "width": 374,
+        "height": 182,
+        "bottom": 314
+      },
+      "slots": {
+        "x": 8,
+        "y": 319,
+        "width": 374,
+        "height": 75,
+        "bottom": 394
+      },
+      "parts": {
+        "x": 9,
+        "y": 452,
+        "width": 372,
+        "height": 262,
+        "bottom": 714
+      },
+      "commit": {
+        "x": 8,
+        "y": 720,
+        "width": 374,
+        "height": 57,
+        "bottom": 777
+      },
+      "map": null,
+      "tools": null,
+      "catalog": null,
+      "order": null
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "flow": "upgrade-scrolled",
+      "errors": [],
+      "overflow": false,
+      "summary": {
+        "x": 8,
+        "y": 132,
+        "width": 374,
+        "height": 182,
+        "bottom": 314
+      },
+      "slots": {
+        "x": 8,
+        "y": 319,
+        "width": 374,
+        "height": 75,
+        "bottom": 394
+      },
+      "parts": {
+        "x": 9,
+        "y": 452,
+        "width": 372,
+        "height": 262,
+        "bottom": 714
+      },
+      "commit": {
+        "x": 8,
+        "y": 720,
+        "width": 374,
+        "height": 57,
+        "bottom": 777
+      },
+      "map": null,
+      "tools": null,
+      "catalog": null,
+      "order": null
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "flow": "build-empty",
+      "errors": [],
+      "overflow": false,
+      "summary": null,
+      "slots": null,
+      "parts": null,
+      "commit": null,
+      "map": {
+        "x": 0,
+        "y": 81,
+        "width": 888,
+        "height": 819,
+        "bottom": 900
+      },
+      "tools": {
+        "x": 20,
+        "y": 847,
+        "width": 292,
+        "height": 43,
+        "bottom": 890
+      },
+      "catalog": {
+        "x": 912,
+        "y": 174,
+        "width": 393,
+        "height": 757,
+        "bottom": 931
+      },
+      "order": {
+        "x": 900,
+        "y": 92,
+        "width": 417,
+        "height": 36,
+        "bottom": 128
+      }
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "flow": "build-placement",
+      "errors": [],
+      "overflow": false,
+      "summary": null,
+      "slots": null,
+      "parts": null,
+      "commit": {
+        "x": 900,
+        "y": 828,
+        "width": 417,
+        "height": 62,
+        "bottom": 889
+      },
+      "map": {
+        "x": 0,
+        "y": 81,
+        "width": 888,
+        "height": 819,
+        "bottom": 900
+      },
+      "tools": {
+        "x": 20,
+        "y": 847,
+        "width": 292,
+        "height": 43,
+        "bottom": 890
+      },
+      "catalog": {
+        "x": 912,
+        "y": 285,
+        "width": 393,
+        "height": 757,
+        "bottom": 1041
+      },
+      "order": {
+        "x": 900,
+        "y": 92,
+        "width": 417,
+        "height": 79,
+        "bottom": 171
+      }
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "flow": "build-ready",
+      "errors": [],
+      "overflow": false,
+      "summary": null,
+      "slots": null,
+      "parts": null,
+      "commit": {
+        "x": 900,
+        "y": 828,
+        "width": 417,
+        "height": 62,
+        "bottom": 889
+      },
+      "map": {
+        "x": 0,
+        "y": 81,
+        "width": 888,
+        "height": 819,
+        "bottom": 900
+      },
+      "tools": {
+        "x": 20,
+        "y": 847,
+        "width": 348,
+        "height": 43,
+        "bottom": 890
+      },
+      "catalog": {
+        "x": 912,
+        "y": 336,
+        "width": 393,
+        "height": 757,
+        "bottom": 1092
+      },
+      "order": {
+        "x": 900,
+        "y": 92,
+        "width": 417,
+        "height": 79,
+        "bottom": 171
+      }
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "flow": "upgrade",
+      "errors": [],
+      "overflow": false,
+      "summary": {
+        "x": 14,
+        "y": 165,
+        "width": 1300,
+        "height": 179,
+        "bottom": 344
+      },
+      "slots": {
+        "x": 14,
+        "y": 352,
+        "width": 644,
+        "height": 459,
+        "bottom": 811
+      },
+      "parts": {
+        "x": 671,
+        "y": 512,
+        "width": 642,
+        "height": 298,
+        "bottom": 810
+      },
+      "commit": {
+        "x": 14,
+        "y": 819,
+        "width": 1300,
+        "height": 67,
+        "bottom": 886
+      },
+      "map": null,
+      "tools": null,
+      "catalog": null,
+      "order": null
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "flow": "upgrade-scrolled",
+      "errors": [],
+      "overflow": false,
+      "summary": {
+        "x": 14,
+        "y": 165,
+        "width": 1300,
+        "height": 179,
+        "bottom": 344
+      },
+      "slots": {
+        "x": 14,
+        "y": 352,
+        "width": 644,
+        "height": 459,
+        "bottom": 811
+      },
+      "parts": {
+        "x": 671,
+        "y": 512,
+        "width": 642,
+        "height": 298,
+        "bottom": 810
+      },
+      "commit": {
+        "x": 14,
+        "y": 819,
+        "width": 1300,
+        "height": 67,
+        "bottom": 886
+      },
+      "map": null,
+      "tools": null,
+      "catalog": null,
+      "order": null
+    }
+  ],
+  "spatial_and_reward": [
+    {
+      "width": 360,
+      "height": 740,
+      "flow": "move",
+      "errors": [],
+      "overflow": false,
+      "commits": [
+        {
+          "y": 614,
+          "height": 59,
+          "bottom": 673
+        }
+      ]
+    },
+    {
+      "width": 360,
+      "height": 740,
+      "flow": "influence",
+      "errors": [],
+      "overflow": false,
+      "commits": [
+        {
+          "y": 615,
+          "height": 58,
+          "bottom": 673
+        }
+      ]
+    },
+    {
+      "width": 360,
+      "height": 740,
+      "flow": "ancient",
+      "errors": [],
+      "overflow": false,
+      "commits": [
+        {
+          "y": 570,
+          "height": 57,
+          "bottom": 627
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "flow": "move",
+      "errors": [],
+      "overflow": false,
+      "commits": [
+        {
+          "y": 718,
+          "height": 59,
+          "bottom": 777
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "flow": "influence",
+      "errors": [],
+      "overflow": false,
+      "commits": [
+        {
+          "y": 719,
+          "height": 58,
+          "bottom": 777
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "flow": "ancient",
+      "errors": [],
+      "overflow": false,
+      "commits": [
+        {
+          "y": 674,
+          "height": 57,
+          "bottom": 731
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "flow": "move",
+      "errors": [],
+      "overflow": false,
+      "commits": [
+        {
+          "y": 382.1875,
+          "height": 63,
+          "bottom": 445.1875
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "flow": "influence",
+      "errors": [],
+      "overflow": false,
+      "commits": [
+        {
+          "y": 503.6875,
+          "height": 60,
+          "bottom": 563.6875
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "flow": "ancient",
+      "errors": [],
+      "overflow": false,
+      "commits": [
+        {
+          "y": 794.5,
+          "height": 61,
+          "bottom": 855.5
+        }
+      ]
+    }
+  ],
+  "acceptance_limits": "Agent browser evidence covers the recorded scenarios; human newcomer/expert play remains open. Final Influence shortage is visible on the selected sector; footer is 58px at both phone sizes."
+}

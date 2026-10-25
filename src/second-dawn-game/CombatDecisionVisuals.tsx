@@ -1,5 +1,7 @@
-import {useState} from 'react';
+import {useContext,useLayoutEffect,useState} from 'react';
+import {BattlefieldContext} from './battlefieldContext';
 import {automaticCombatAllocation} from '../../shared/eclipse/combatAutomation';
+import {combatAllocationPreview,combatHitPreview,combatTargetStats} from './combatAllocationPreview';
 import FactoryBadge from './FactoryBadge';
 import { researchedTechnologyIds } from '../../shared/eclipse/technologies';
 import { getFaction, type FactionId } from "../../shared/eclipse/catalog";
@@ -39,6 +41,7 @@ export function CombatVolleyAllocator({ view, decision, targetLabels, values, se
   motionEnabled?: boolean;
 }) {
   const [dice3dEnabled] = useDice3dEnabled();
+  const battlefield=useContext(BattlefieldContext);
   const [allocationError,setAllocationError]=useState('');
   const autoAssign=()=>{
     if(!view)return;
@@ -55,6 +58,7 @@ export function CombatVolleyAllocator({ view, decision, targetLabels, values, se
   const selectedId = values.__selectedDie || actionable.find((die) => !values[die.id])?.id || actionable[0]?.id || "";
   const selected = decision.dice.find((die) => die.id === selectedId);
   const assignedTo = (targetId: string) => decision.dice.filter((die) => !die.split && values[die.id] === targetId);
+  const projection=combatAllocationPreview(view,decision,values);
   const targetIds = [...new Set(decision.dice.flatMap((die) => die.targets))];
   const shipStats = (targetId: string) => {
     const ship = view?.ships.find((candidate) => candidate.id === targetId);
@@ -73,41 +77,52 @@ export function CombatVolleyAllocator({ view, decision, targetLabels, values, se
     if (die.face === 6) return true;
     return die.computer !== undefined && shield !== undefined ? die.face + die.computer - shield >= 6 : undefined;
   };
+  const setAllocation=battlefield?.setAllocation;
+  useLayoutEffect(()=>{
+    if(!setAllocation)return;
+    const choices=decision.dice.filter(die=>die.targets.length&&die.hitTargets?.length!==0);
+    const selected=decision.dice.find(die=>die.id===(values.__selectedDie||choices.find(die=>!values[die.id])?.id||choices[0]?.id));
+    const projection=combatAllocationPreview(view,decision,values);
+    setAllocation({decisionId:decision.id,targets:projection.targets.map(target=>{const shield=combatTargetStats(view,target.id)?.shield,hit=selected?combatHitPreview(selected,target.id,shield):undefined;return {...target,label:targetLabels[target.id]??target.id,hit,explanation:!selected?'Select a die to inspect its hit.':selected.weaponColor==='magenta'?'Rift damage ignores computers and shields.':selected.face===6?'Natural 6 always hits.':selected.face===1?'Natural 1 always misses.':hit===undefined?'Legacy hit preview is unknown.':selected.computer===undefined||shield===undefined?`Recorded ${hit?'hit':'miss'} · modifiers unavailable`:`${selected.face} + ${selected.computer??0} computer − ${shield??0} shield · ${hit?'hit':'miss'}`};}),onTarget:id=>{if(selected&&!selected.split&&selected.hitTargets?.length!==0)setValue(selected.id,id);},onClear:id=>{for(const die of decision.dice){if(die.split)setValue(`${die.id}/${id}`,'0');else if(values[die.id]===id)setValue(die.id,'');}}});
+    return()=>setAllocation(null);
+  },[setAllocation,decision,view,values,setValue,targetLabels]);
   const targetGrid = <div className="dg-volley-targets" role="group" aria-label="Volley targets">
     {targetIds.map((targetId) => {
-      const stats = shipStats(targetId); const ship = view?.ships.find((candidate) => candidate.id === targetId);
-      const dice = assignedTo(targetId); let assignedDamage = 0; let uncertainDamage = 0;
-      for (const die of dice) { const hit = hitFor(die, targetId, stats?.shield); if (hit === true) assignedDamage += die.damage; else if (hit === undefined) uncertainDamage += die.damage; }
-      for (const die of decision.dice.filter(candidate => candidate.split)) assignedDamage += Number(values[`${die.id}/${targetId}`] ?? "0");
-      const hp = stats && ship ? Math.max(0, stats.hull + 1 - ship.damage) : undefined;
+      const stats = shipStats(targetId);
+      const dice = assignedTo(targetId);
+      const {damage:assignedDamage,uncertainDamage,hp,destroyed,assigned}=projection.targets.find(target=>target.id===targetId)!;
       const hit = selected ? hitFor(selected, targetId, stats?.shield) : undefined;
       const explanation = selected ? selected.weaponColor === "magenta" ? `${eclipseDieFace("magenta",selected.face).label}. Rift damage ignores computers and shields.` : selected.face === 1 ? "Natural 1 always misses." : selected.face === 6 ? "Natural 6 always hits." : hit === undefined ? `Roll ${selected.face}; computer or shield provenance is unavailable, so this legacy hit preview is unknown.` : `${selected.face} + ${selected.computer} computer vs shield ${stats?.shield} ${hit ? "hits" : "misses"}.` : "Select a die to preview this target.";
-      return <article className={`dg-volley-target${hit === false ? " is-miss" : ""}`} key={targetId}>
-        <ShipCard view={view} targetId={targetId} label={targetLabels[targetId] ?? targetId} selected={false} hit={hit} onClick={() => selected && !selected.split && selected.hitTargets?.length !== 0 && setValue(selected.id, targetId)}/>
+      return <article className={`dg-volley-target${hit === false ? " is-miss" : ""}${assigned?' is-planned':''}${destroyed?' will-destroy':''}`} key={targetId}>
+        <ShipCard view={view} targetId={targetId} label={targetLabels[targetId] ?? targetId} selected={assigned} hit={hit} onClick={() => selected && !selected.split && selected.hitTargets?.length !== 0 && setValue(selected.id, targetId)}/>
         <div className="dg-target-projection"><span>{hp === undefined ? "HP unknown" : uncertainDamage ? `${hp} HP → unknown` : `${hp} HP → ${Math.max(0, hp-assignedDamage)} HP`}</span><span>{assignedDamage} assigned{uncertainDamage ? ` · +${uncertainDamage} uncertain` : hp !== undefined && assignedDamage > hp ? ` · ${assignedDamage-hp} excess` : ""}</span></div>
-        <details><summary>Hit calculation</summary><p>{explanation}</p></details>
+        {destroyed&&<strong className="dg-destruction-preview">Will destroy</strong>}
         <div className="dg-target-dice">{dice.map((die) => <button type="button" key={die.id} aria-label={`Remove die ${decision.dice.indexOf(die)+1} from ${targetLabels[targetId] ?? targetId}`} onClick={() => setValue(die.id, "")}><EclipseDieFace color={die.weaponColor??"#bac0ce"} face={die.face} decorative/> ×</button>)}</div>
+        <details><summary>Hit calculation</summary><p>{explanation}</p></details>
       </article>;
     })}
   </div>;
   return <div className="dg-volley-workspace">
-    {view&&<div className="dg-auto-assign"><button type="button" onClick={autoAssign}>Auto assign</button><small>Adjust any assignment before resolving.</small></div>}
     {allocationError&&<p role="status">{allocationError}</p>}
+    <div className="dg-volley-aim">
     <DiceRoll3D rolls={decision.dice.map(die => ({ id: die.id, face: die.face, color: die.weaponColor ?? "#bac0ce" }))} rollId={JSON.stringify([decision.battleId, decision.dice.map(die => [die.id, die.face])])} enabled={dice3dEnabled && motionEnabled}>
-    <div className="dg-dice-tray" role="group" aria-label="Rolled attack dice">
-      <header><strong>Volley tray</strong><small>Select a die, then choose its target.</small></header>
+    <div className={`dg-dice-tray${battlefield?' is-battlefield-tray':''}`} role="group" aria-label="Rolled attack dice">
+      <header><strong>Your dice</strong>{battlefield&&selected&&<details className="dg-die-inspection"><summary>Die info</summary><p>{selected.weaponColor&&selected.weaponKind?`${selected.weaponColor} ${selected.weaponKind}`:'Weapon unavailable'} · {selected.damage} damage{selected.computer===undefined?' · computer unavailable':` · computer +${selected.computer}`}{selected.weaponColor==='magenta'?' · ignores shields; backfire applies':''}</p></details>}{view&&<button type="button" onClick={autoAssign}>Auto assign</button>}</header>
+      <div className="dg-volley-rolls">
       {decision.dice.map((die, index) => {
         const assigned = !die.split && values[die.id];
         const weapon = die.weaponKind && die.weaponColor ? `${die.weaponColor} ${die.weaponKind}` : "Unknown weapon";
         const label = `Die ${index + 1}, roll ${die.face}, ${weapon}, ${die.damage} damage${die.weaponColor==="magenta"&&(die.face===5||die.face===6)?", 1 self-damage":""}${assigned ? `, assigned to ${targetLabels[assigned] ?? assigned}` : ""}`;
         return <button type="button" key={die.id} className={`dg-volley-die is-${die.weaponColor ?? "unknown"}${selectedId === die.id ? " is-selected" : ""}${assigned ? " is-assigned" : ""}${die.hitTargets?.length === 0 ? " is-auto-miss" : ""}`} aria-label={label} aria-pressed={selectedId === die.id} onClick={() => die.hitTargets?.length !== 0 && setValue("__selectedDie", die.id)}>
-          <EclipseDieFace color={die.weaponColor??"#bac0ce"} face={die.face} decorative/><span><strong>{die.weaponColor==="magenta"?"Rift cannon":weapon}</strong><small>{die.weaponColor==="magenta"?`${eclipseDieFace("magenta",die.face).label.replace("Rift die: ","")} · ignores shields`: `${die.damage} damage · ${die.computer === undefined ? "computer unknown" : `computer +${die.computer}`}`}</small></span>
+          <EclipseDieFace color={die.weaponColor??"#bac0ce"} face={die.face} decorative/><span className="dg-die-provenance"><strong>{die.weaponColor==="magenta"?"Rift cannon":weapon}</strong><small>{die.weaponColor==="magenta"?`${eclipseDieFace("magenta",die.face).label.replace("Rift die: ","")} · ignores shields`: `${die.damage} damage · ${die.computer === undefined ? "computer unknown" : `computer +${die.computer}`}`}</small></span>{battlefield&&<><small className="dg-die-damage">{die.damage} damage</small><b className="dg-die-state" aria-hidden="true">{assigned?'✓':die.hitTargets?.length===0?'×':''}</b></>}
         </button>;
       })}
-      {decision.dice.some((die) => die.hitTargets?.length === 0) && <p className="dg-all-miss-note">No enemy target needed · blank rolls miss; hollow Rift bursts cause self-damage automatically.</p>}
+      </div>
+      {decision.dice.some((die) => die.hitTargets?.length === 0) && <p className="dg-all-miss-note">Dashed dice need no target{decision.dice.some(die=>die.weaponColor==='magenta')?' · Rift backfire still applies':''}.</p>}
     </div>
     </DiceRoll3D>
-    {!selected ? <p className="dg-all-miss-note">{decision.dice.some(die=>die.weaponColor==="magenta")?"No enemy damage to assign. Any Rift backfire is resolved automatically on your Rift-armed ships.":"No hit. Every die misses all opposing ships; no allocation is needed."}</p> : selected.split && selected.hitTargets?.length !== 0 ? <><SplitDamageCards view={view} targetLabels={targetLabels} dieNumber={decision.dice.indexOf(selected) + 1} targets={selected.targets} damage={selected.damage} values={Object.fromEntries(selected.targets.map((target) => [target, Number(values[`${selected.id}/${target}`] ?? "0")]))} onChange={(target, next) => setValue(`${selected.id}/${target}`, String(next))}/>{targetGrid}</> : targetGrid}
+    {!selected ? <p className="dg-all-miss-note">{decision.dice.some(die=>die.weaponColor==="magenta")?"No enemy damage · Rift backfire still applies.":"All dice missed · no targets needed."}</p> : selected.split && selected.hitTargets?.length !== 0 ? <><SplitDamageCards view={view} targetLabels={targetLabels} dieNumber={decision.dice.indexOf(selected) + 1} targets={selected.targets} damage={selected.damage} values={Object.fromEntries(selected.targets.map((target) => [target, Number(values[`${selected.id}/${target}`] ?? "0")]))} onChange={(target, next) => setValue(`${selected.id}/${target}`, String(next))}/>{!battlefield&&targetGrid}</> : !battlefield&&targetGrid}
+    </div>
   </div>;
 }
 
@@ -181,7 +196,7 @@ function ShipCard({
         {owner && <small>{owner}</small>}
         {ship && <small>{condition}</small>}{ship?.factoryPopulation&&<small className="dg-factory-status"><FactoryBadge/>Materials factory · cube returns if destroyed</small>}
       </span>
-      <span className="dg-combat-hit-mark" aria-hidden="true">{hit === false ? "MISS" : selected ? "TARGET" : ""}</span>
+      <span className="dg-combat-hit-mark" aria-hidden="true">{hit === false ? "MISS" : selected ? "✓ Assigned" : "Assign hit"}</span>
     </button>
   );
 }
@@ -305,7 +320,7 @@ export function RetreatCards({
           </button>
         );
       })}
-      {forced && <p className="dg-forced-retreat">Your ships cannot fire in this stalemate. Choose a connected, controlled retreat sector.</p>}
+      {forced && <p className="dg-forced-retreat">Weapons cannot fire · retreat required.</p>}
     </div>
   );
 }
@@ -361,21 +376,12 @@ export function BombardmentTargets({
   const sector = view?.sectors.find((candidate) => candidate.id === sectorId);
   const definition = sector ? sectorDefinition(Number(sector.tileId)) : undefined;
   const allTargets = squareIds.slice(0, hits);
-  if (neutronBombs) return (
-    <div className="dg-bombardment-targets" role="group" aria-label="Neutron Bombs choice">
-      <p><strong>Neutron Bombs available.</strong> Destroy all {allTargets.length} population automatically; no bombardment dice were rolled.</p>
-      <div className="dg-bombardment-actions">
-        <button type="button" aria-pressed={selected.length > 0} onClick={() => onSelect(allTargets)}>Destroy all {allTargets.length} population with Neutron Bombs</button>
-        <button type="button" aria-pressed={selected.length === 0} onClick={() => onSelect([])}>Clear targets</button>
-      </div>
-    </div>
-  );
   return (
-    <div className="dg-bombardment-targets" role="group" aria-label="Population targets">
-      <p>{selected.length} / {hits} population hits assigned in Sector {sector?.tileId ?? sectorId}. Population attacks are optional; choosing no targets spares all population.</p>
+    <div className="dg-bombardment-targets" role="group" aria-label={neutronBombs?'Neutron Bombs choice':'Population targets'}>
+      <p>{neutronBombs?'Neutron Bombs · no roll':`${selected.length} / ${hits} hits assigned`} · Sector {sector?.tileId ?? sectorId}</p>
       <div className="dg-bombardment-actions">
-        <button type="button" onClick={() => onSelect(allTargets)}>Destroy all available</button>
-        <button type="button" onClick={() => onSelect([])}>Clear targets</button>
+        <button type="button" aria-pressed={selected.length===allTargets.length} onClick={() => onSelect(allTargets)}>{neutronBombs?`Destroy all ${allTargets.length} population with Neutron Bombs`:'Select all available'}</button>
+        <button type="button" aria-pressed={selected.length===0} onClick={() => onSelect([])}>Clear targets</button>
       </div>
       <div className="dg-planet-target-grid">
         {squareIds.map((id) => {
@@ -384,7 +390,8 @@ export function BombardmentTargets({
           const advanced = squareIndex >= 0 && definition?.population[squareIndex]?.advanced;
           const name = cube ? `${cube.resource[0].toUpperCase()}${cube.resource.slice(1)}${advanced ? " advanced" : ""} population` : `${advanced ? "Advanced " : ""}population square`;
           const isSelected = selected.includes(id);
-          return <button key={id} type="button" className={`dg-planet-target${isSelected ? " is-selected" : ""}`} aria-pressed={isSelected} aria-label={`Target population square ${id}`} disabled={!isSelected && selected.length >= hits} onClick={() => onToggle(id)}><span className="dg-planet-target-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><PlanetIcon resource={cube?.resource ?? "gray"} /></svg></span><strong>{name}</strong><small>{isSelected ? "Targeted" : "Available target"}</small></button>;
+          const contents=<><span className="dg-planet-target-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><PlanetIcon resource={cube?.resource ?? "gray"} /></svg></span><strong>{name}</strong><small>{isSelected ? "× Will be removed" : "Keep population"}</small></>;
+          return neutronBombs?<div key={id} className={`dg-planet-target${isSelected?' is-selected':''}`} role="img" aria-label={`${name}, ${isSelected?'will be removed':'spared'}`}>{contents}</div>:<button key={id} type="button" className={`dg-planet-target${isSelected ? " is-selected" : ""}`} aria-pressed={isSelected} aria-label={`Target population square ${id}`} disabled={!isSelected && selected.length >= hits} onClick={() => onToggle(id)}>{contents}</button>;
         })}
       </div>
     </div>

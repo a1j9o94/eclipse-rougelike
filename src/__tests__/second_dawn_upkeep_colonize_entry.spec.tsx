@@ -24,6 +24,7 @@ it.each([false,true])('opens colonies from settlement and collects once without 
  const {onSubmit}=show();
  fireEvent.click(settlement().getByRole('button',{name:/Colonize/}));
  expect(screen.getByRole('region',{name:'Colonization planner'})).toBeVisible();expect(onSubmit).not.toHaveBeenCalled();
+ fireEvent.click(screen.getByRole('button',{name:'Close activity'}));
  fireEvent.click(settlement().getByRole('button',{name:'Collect income'}));
  expect(screen.queryByRole('dialog',{name:'Colonize before upkeep'})).toBeNull();
  expect(onSubmit).toHaveBeenCalledExactlyOnceWith({type:'finish-upkeep'});
@@ -41,13 +42,13 @@ it.each(['no ships','no open planets','enemy present'] as const)('omits unavaila
 it('updates settlement after colonizing without also collecting income',()=>{
  const state=fixture();const {onSubmit,props,rerender}=show(state);
  fireEvent.click(settlement().getByRole('button',{name:/Colonize/}));
- fireEvent.click(screen.getByRole('button',{name:/^Colonize .* planet .* in sector/}));
- fireEvent.click(screen.getByRole('button',{name:'Colonize 1 planet'}));
+ fireEvent.click(screen.getAllByRole('button',{name:/^Colonize .* planet .* in sector/}).find(button=>button.getAttribute('aria-disabled')!=='true')!);
+ fireEvent.click(screen.getByRole('button',{name:/^Colonize 1/}));
  const command=onSubmit.mock.calls[0][0] as GameCommand;
  const result=processGameCommand(state,'a',command);expect(result.ok).toBe(true);if(!result.ok)return;
  const view=getPlayerView({...result.state,revision:1},'a')!;
  rerender(<SecondDawnBoard {...props} view={view} candidates={legalCommands(view)} lastAcceptedCommand={{revision:1,type:'colonize'}}/>);
- expect(settlement().getByRole('button',{name:'Collect income'})).toBeEnabled();expect(onSubmit).toHaveBeenCalledTimes(1);
+ fireEvent.click(screen.getByRole('button',{name:'Close activity'}));expect(settlement().getByRole('button',{name:'Collect income'})).toBeEnabled();expect(onSubmit).toHaveBeenCalledTimes(1);
 });
 it('disables settlement controls during a connection loss',()=>{
  const {onSubmit,props,rerender}=show();rerender(<SecondDawnBoard {...props} connected={false}/>);

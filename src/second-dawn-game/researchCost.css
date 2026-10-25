@@ -15,3 +15,5 @@
 .dg-research-cost-breakdown > span:last-child:not(:nth-child(2)) { color:#d8c0ef; }
 .dg-research-cost-details .dg-research-price { margin:.35rem 0 0; }
 .dg-research-minimum-note { display:block; margin-top:4px; font-size:11px; color:#c1b4d1; }
+
+.dg-price-inspect{min-height:44px;padding:6px 8px;text-align:left;background:transparent;border:0;text-decoration:underline;color:#b8cfdb}.dg-price-arithmetic{display:block;padding:7px;background:#101c28;color:#cad3dd;font-size:12px}.dg-research-price{justify-content:flex-start;gap:10px}.dg-research-price>small{color:#bac5cb}

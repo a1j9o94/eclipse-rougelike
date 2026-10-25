@@ -23,7 +23,7 @@ it('rotates the drawn tile in its real neighborhood, explains legality, and subm
   const rotation=(first-step+6)%6;
   expect(screen.getByTestId('drawn-exploration-tile')).toHaveAttribute('data-rotation',String(rotation));
   expect(screen.getByRole('button',{name:'Place sector'})).toHaveProperty('disabled',!legal.has(rotation));
-  expect(screen.getByRole('status').textContent).toMatch(legal.has(rotation)?/Ready to place/:/Cannot place/);
+  if(legal.has(rotation))expect(screen.queryByRole('status')).toBeNull();else expect(screen.getByRole('status')).toHaveTextContent('Cannot place');
   fireEvent.click(screen.getByRole('button',{name:'Rotate clockwise'}));
  }
  expect(submit).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'Place sector'}));expect(submit).toHaveBeenCalledWith({type:'resolve',decisionId:decision.id,choice:{kind:'exploration',tileId:decision.drawnTileIds[0],rotation:first}});
@@ -37,7 +37,7 @@ it('resets the displayed tile when a joker redraw keeps the same decision id',()
  const replacement=decision.drawnTileIds[0]==='101'?'102':'101';const redrawn={...decision,drawnTileIds:[replacement],placements:[{tileId:replacement,rotation:0}]};
  const rendered=render(<DecisionPanel view={view} decision={decision} reputation={[]} disabled={false} onSubmit={vi.fn()}/>);
  rendered.rerender(<DecisionPanel view={view} decision={redrawn} reputation={[]} disabled={false} onSubmit={vi.fn()}/>);
- expect(screen.getByText((_,element)=>element?.textContent===`Drawn sector ${replacement} · preview`)).toBeTruthy();
+ expect(screen.getByRole('heading',{name:`Place sector ${replacement}`})).toBeVisible();
 });
 it('keeps both saved Draco draws available and commits the chosen tile at its displayed rotation',()=>{
  const setup=createGame({seed:543,warpPortals:true,seats:[{id:'a',faction:'draco',controller:'human'},{id:'b',faction:'hydran',controller:'ai'}]});

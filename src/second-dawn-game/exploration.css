@@ -104,3 +104,17 @@
 .dg-exploration-embedded .dg-placement-connections{margin-top:12px;padding-top:12px;}
 
 .dg-placement-connections summary{cursor:pointer;min-height:44px;display:flex;align-items:center;color:#edce91}.dg-placement-map-caption button,.dg-placement-inspector-heading button{min-height:44px}
+.dg-explore-layout{grid-template-columns:minmax(0,1fr);overflow:auto;display:flex;flex-direction:column}
+.dg-placement-stage{flex:1;min-height:240px}.dg-placement-inspection{flex:none}.dg-placement-inspection>summary{min-height:44px;display:flex;align-items:center;cursor:pointer;color:#b9cdda;font-size:13px}
+.dg-placement-inspection[open]{padding-bottom:10px}.dg-explore-heading h2{font:600 21px/1.3 system-ui,sans-serif}
+.dg-exploration-controls{display:flex;flex-direction:column;align-items:stretch;padding:0;position:relative}
+.dg-exploration-controls>.dg-commit-bar{width:100%}.dg-rotation-controls{padding:6px 0}.dg-placement-ready{font-size:12px;color:#b8d7c1}.dg-placement-ready[data-legal=false]{color:#f2b9a5}
+.dg-exploration-embedded .dg-explore-layout{order:2;gap:0}.dg-exploration-embedded .dg-exploration-controls{order:3;padding:0;gap:0;border:0}.dg-exploration-embedded .dg-placement-stage{min-height:0;border:0}.dg-exploration-embedded .dg-placement-map-caption{display:none}
+.dg-mobile-board .dg-exploration-controls{position:relative;padding:0;gap:0;align-items:stretch}.dg-mobile-board .dg-placement-stage{height:clamp(240px,40dvh,340px);min-height:240px}.dg-mobile-board .dg-exploration-embedded .dg-placement-stage{height:auto;min-height:0}
+.dg-exploration-controls .dg-commit-bar{flex-wrap:wrap}.dg-exploration-controls .dg-commit-summary{flex:1}.dg-exploration-controls .dg-commit-actions{flex-wrap:wrap}.dg-exploration-controls .dg-commit-actions>button{flex:1}
+.dg-explore-heading>button{min-height:44px;min-width:44px;padding:5px;font-size:23px}.dg-app .dg-exploration-decision .dg-explore-heading h2{font:600 18px/1.3 system-ui,sans-serif;margin:0}
+.dg-exploration-embedded .dg-explore-heading{flex-wrap:nowrap;align-items:center}.dg-exploration-decision.dg-exploration-embedded{gap:5px}
+.dg-exploration-embedded .dg-placement-inspection>summary{font-size:12px;min-height:44px}.dg-exploration-embedded .dg-drawn-feature-strip{padding:3px 6px}
+.dg-exploration-controls .dg-commit-summary:has(>.sr-only){display:none}.dg-exploration-controls .dg-commit-bar .dg-commit-actions{flex-wrap:nowrap}.dg-exploration-controls .dg-commit-actions>button{white-space:nowrap}
+@media(max-width:760px){.dg-exploration-embedded .dg-rotation-controls{padding:4px 0;gap:8px}.dg-exploration-embedded .dg-rotation-controls button{font-size:12px;min-height:44px;padding:5px}.dg-exploration-embedded .dg-explore-layout{gap:0}.dg-exploration-controls .dg-commit-actions>button{font-size:13px}.dg-exploration-controls .dg-commit-bar{padding-inline:0}}
+.dg-placement-inspection:not([open]){display:none}.dg-placement-inspection>summary{display:none!important}.dg-explore-heading>.dg-explore-inspect{font-size:12px;padding:6px;min-width:0;white-space:nowrap;margin-left:auto}.dg-exploration-embedded .dg-explore-heading{gap:6px}.dg-explore-heading h2{min-width:0}

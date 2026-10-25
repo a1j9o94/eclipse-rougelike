@@ -1,16 +1,15 @@
 import { useState } from 'react';
 import FittingHardpoints from './FittingHardpoints';
-import { ShipCapabilities } from './BlueprintLoadout';
+import FittingSummary from './FittingSummary';
+import CommitBar from './CommitBar';
 import './upgradePartPicker.css';
-import { deriveBlueprintStats, effectiveBlueprintParts, validateBlueprint, type ShipBlueprint } from '../../shared/eclipse/blueprints';
+import { effectiveBlueprintParts, validateBlueprint, type ShipBlueprint } from '../../shared/eclipse/blueprints';
 import { getShipPart, isShipPartId, type ShipPartId } from '../../shared/eclipse/parts';
 import type { LegalCommandCandidate } from '../../shared/eclipse/legal';
 import type { Blueprint, GameCommand, PendingDecision, PlayerView, ShipType } from '../../shared/eclipse/types';
 import ShipPartStats from './ShipPartStats';
-import ShipSilhouette from './ShipSilhouette';
 import type {AncientShipPartId} from '../../shared/eclipse/discoveries';
 import {researchedTechnologyIds,type TechnologyId} from '../../shared/eclipse/technologies';
-import { describeWeapons } from './itemDescriptions';
 import './ancientPartDecision.css';
 export interface AncientPartDecisionProps {
   view: PlayerView;
@@ -47,14 +46,6 @@ export default function AncientPartDecision({ view, decision, candidates, disabl
   const draft = chosen?.blueprint ? typedBlueprint(chosen.blueprint) : null;
   const changedSlot = draft?.parts.findIndex((id,index)=>id!==blueprint.parts[index])??-1;
   const previousPart = changedSlot>=0?installed[changedSlot]:null;
-  const before = deriveBlueprintStats(seat.faction,blueprint);
-  const after = draft?deriveBlueprintStats(seat.faction,draft):null;
-  const stats = after ? [
-    ['Energy available',before.energyProduction-before.energyConsumption,after.energyProduction-after.energyConsumption],
-    ['Movement',before.movement,after.movement],['Initiative',before.initiative,after.initiative],
-    ['Computer',before.computer,after.computer],['Shield',before.shield,after.shield],
-    ['Damage to destroy',before.hull+1,after.hull+1],['Weapons (dice × damage)',describeWeapons(before),describeWeapons(after)],
-  ] : [];
   const chooseClass = (type:ShipType) => {setShipType(type);setSelection(current=>({...current,storage:false}));};
   const chooseBlueprint = (next:Blueprint|null|undefined) => {
     if(next===undefined)return;
@@ -69,24 +60,22 @@ export default function AncientPartDecision({ view, decision, candidates, disabl
     return [[index,reason] as const];
   }));
   return <section className="dg-ancient-install">
-    <header className="dg-ancient-heading"><div><span className="dg-yard-eyebrow">Discovered ship part</span><h2>{part.name}</h2></div><ShipPartStats partId={part.id}/></header>
-    <div className="dg-ancient-classes" aria-label="Ship class">{seat.blueprints.map(item=><button key={item.shipType} aria-pressed={item.shipType===shipType} disabled={disabled} onClick={()=>chooseClass(item.shipType)}>{item.shipType[0].toUpperCase()+item.shipType.slice(1)}</button>)}<button aria-pressed={!!chosen&&chosen.blueprint===null} disabled={disabled||!storage} onClick={()=>chooseBlueprint(storage?.blueprint)}>Store for later</button></div>
-    <div className="dg-ancient-layout">
-      <section><div className="dg-ancient-ship"><ShipSilhouette type={shipType} faction={seat.faction}/><h3>{shipType} · {draft?'installation preview':'current loadout'}</h3></div>
-        {part.placement==='outside'&&<button disabled={disabled||!installs.length} onClick={()=>chooseBlueprint(installs[0]?.blueprint)}>Install outside the grid</button>}
-        <ShipCapabilities stats={after??before} showEnergy showWeapons/>
+    <header className="dg-ancient-heading"><h2>{part.name}</h2><ShipPartStats partId={part.id}/></header>
+    <div className="dg-ancient-destinations"><div className="dg-ancient-classes" aria-label="Ship class">{seat.blueprints.map(item=><button key={item.shipType} aria-pressed={!stored&&item.shipType===shipType} disabled={disabled} onClick={()=>chooseClass(item.shipType)}>{item.shipType[0].toUpperCase()+item.shipType.slice(1)}</button>)}</div><button className="dg-ancient-store" aria-label="Store for later" aria-pressed={!!chosen&&chosen.blueprint===null} disabled={disabled||!storage} onClick={()=>chooseBlueprint(storage?.blueprint)}>Store</button></div>
+    <FittingSummary faction={seat.faction} blueprint={blueprint} draft={draft??blueprint} selectedSlot={changedSlot>=0?changedSlot:null}/>
+    <div className="dg-fitting-workspace dg-ancient-layout">
+      <section className="dg-blueprint-canvas" aria-label="Blueprint hardpoints">
         <FittingHardpoints faction={seat.faction} blueprint={blueprint} draft={draft??blueprint} selectedSlot={changedSlot>=0?changedSlot:null} disabled={disabled} blockedSlots={blockedSlots} onSelect={index=>chooseBlueprint(slotOption(index)?.blueprint)}/>
-        {blueprint.outsideParts.length>0&&<div className="dg-ancient-existing"><h4>Permanent parts outside the grid</h4>{blueprint.outsideParts.map(id=><div key={id}>{getShipPart(id).name}<ShipPartStats partId={id}/></div>)}</div>}
-
+        {blueprint.outsideParts.length>0&&<div className="dg-ancient-existing"><h4>Permanent parts</h4>{blueprint.outsideParts.map(id=><div key={id}>{getShipPart(id).name}<ShipPartStats partId={id}/></div>)}</div>}
       </section>
       <section className="dg-ancient-preview" aria-label="Installation preview">
-        <h3>{chosen?.blueprint===null?'Store this part':draft?'Installation preview':'Select a destination'}</h3>
+        {part.placement==='outside'&&<button disabled={disabled||!installs.length} onClick={()=>chooseBlueprint(installs[0]?.blueprint)}>Install outside the grid</button>}
         {!chosen&&classDraft&&<p role="alert">This placement is no longer legal. Choose another slot or store the part.</p>}
-        {chosen?.blueprint===null&&<p>Keep {part.name} in storage. Install it later with an Upgrade action.</p>}
-        {draft&&<>{part.placement==='outside'&&<p className="dg-ancient-replacement">No component replaced · installed permanently outside the grid</p>}{previousPart&&getShipPart(previousPart).access.kind==='ancient'&&<p className="dg-danger">The replaced ancient part is removed from the game.</p>}<table><thead><tr><th>Ship statistic</th><th>Now</th><th>After</th></tr></thead><tbody>{stats.filter(([,a,b])=>a!==b).map(([label,a,b])=><tr key={label} className={a!==b?'dg-stat-changed':''}><th>{label}</th><td>{a}</td><td>{b}{a!==b?' *':''}</td></tr>)}</tbody></table><small>Only changed statistics are shown.</small></>}
-        <button className="sd-primary" disabled={disabled||!chosen} onClick={()=>{if(chosen)onSubmit(chosen.command);}}>{chosen?.blueprint===null?'Store':'Install free'}</button>
-        {draft&&<details className="dg-ancient-all-stats"><summary>All ship statistics</summary><table><thead><tr><th>Ship statistic</th><th>Now</th><th>After</th></tr></thead><tbody>{stats.map(([label,a,b])=><tr key={label}><th>{label}</th><td>{a}</td><td>{b}</td></tr>)}</tbody></table></details>}
+        {chosen?.blueprint===null&&<p>Store {part.name} for a later Upgrade.</p>}
+        {draft&&part.placement==='outside'&&<p>No component replaced · installed permanently outside the grid</p>}
+        {draft&&previousPart&&getShipPart(previousPart).access.kind==='ancient'&&<p className="dg-danger">The replaced ancient part is removed from the game.</p>}
       </section>
     </div>
+    <CommitBar><button className="sd-primary" disabled={disabled||!chosen} onClick={()=>{if(chosen)onSubmit(chosen.command);}}>{chosen?.blueprint===null?'Store':'Install free'}</button></CommitBar>
   </section>;
 }

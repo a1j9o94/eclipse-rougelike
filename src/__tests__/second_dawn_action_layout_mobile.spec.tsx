@@ -15,7 +15,7 @@ it('groups ordinary and other options in the mobile action sheet', () => {
     { type: 'trade', label: 'Convert', description: 'Convert resources', disabled: false },
   ]} onSelect={select} />);
   expect(within(screen.getByRole('group', { name: 'Ordinary actions' })).getAllByRole('button')).toHaveLength(2);
-  expect(within(screen.getByRole('group', { name: 'Other options' })).getAllByRole('button')).toHaveLength(2);
+  expect(within(screen.getByRole('group', { name: 'Other actions' })).getAllByRole('button')).toHaveLength(2);
   expect(screen.getByRole('button', { name: /Trade/ })).toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: /Research/ }));
   expect(select).toHaveBeenCalledExactlyOnceWith('research');
@@ -35,4 +35,9 @@ it('uses the turn area for auto-pass after a player has passed', () => {
   const footer = screen.getByRole('contentinfo');
   fireEvent.click(within(footer).getByRole('checkbox', { name: 'Auto-pass unless attacked' }));
   expect(change).toHaveBeenCalledExactlyOnceWith(true);
+});
+it('gives a pending choice its own return target without overlapping turn controls',()=>{
+ render(<MobileNavigation selected="Empire" onSelect={vi.fn()} onActions={vi.fn()} pending onDecision={vi.fn()} pendingLabel="Return to discovery" onBack={vi.fn()} onTurn={{label:'Pass',disabled:false,submit:vi.fn()}} afterPass={<span>Automatic turn preferences</span>}/>);
+ expect(screen.getByRole('button',{name:'Return to discovery'})).toBeInTheDocument();
+ expect(screen.queryByRole('button',{name:'Pass'})).toBeNull();expect(document.querySelector('.dg-mobile-turn-controls')).toBeNull();
 });

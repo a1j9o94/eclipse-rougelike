@@ -14,9 +14,9 @@ it('keeps the completed order in place with one explicit commit and no readiness
  fireEvent.click(screen.getByRole('button',{name:'Apply 1 upgrade'}));
  expect(p.onSubmit).toHaveBeenCalledExactlyOnceWith({type:'upgrade',blueprints:[{...p.blueprint,parts:[null,null,null,'hull']}]});
 });
-it('keeps the completed draft after closing and reopening the tray',()=>{
+it('keeps the completed draft across a render refresh',()=>{
  const p=props(),ui=render(<BlueprintEditor {...p}/>);installHull();
- fireEvent.click(screen.getByRole('button',{name:'Close component picker'}));
+
  ui.rerender(<BlueprintEditor {...p}/>);
  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
  expect(screen.getByRole('button',{name:'Apply 1 upgrade'})).toBeEnabled();

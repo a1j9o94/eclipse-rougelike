@@ -51,7 +51,7 @@ it("prevents relocating a previously installed ancient part", () => {
     />,
   );
   fireEvent.click(screen.getByRole("button", { name: "Slot 1: Ion Cannon" }));
-  expect(screen.getByRole("button", { name: /Shard Hull blocked:.*cannot be relocated/ })).toBeDisabled();
+  expect(screen.getByRole("button", { name: /Shard Hull blocked:.*cannot be relocated/ })).toHaveAttribute('aria-disabled','true');
 });
 
 it("allows restoring an installed Ancient part to its original slot while still blocking relocation",()=>{
@@ -59,8 +59,8 @@ it("allows restoring an installed Ancient part to its original slot while still 
  fireEvent.click(screen.getByRole('button',{name:'Slot 4: Shard Hull'}));fireEvent.click(screen.getByRole('button',{name:'Reveal printed component in slot 4'}));
  fireEvent.click(screen.getByRole('button',{name:'Slot 4: Empty slot'}));
  expect(screen.getByRole('button',{name:'Install Shard Hull in slot 4'})).toBeEnabled();
- fireEvent.click(screen.getByRole('button',{name:'Close component picker'}));
- fireEvent.click(screen.getByRole('button',{name:'Slot 1: Ion Cannon'}));expect(screen.getByRole('button',{name:/Shard Hull blocked:.*cannot be relocated/})).toBeDisabled();
+
+ fireEvent.click(screen.getByRole('button',{name:'Slot 1: Ion Cannon'}));expect(screen.getByRole('button',{name:/Shard Hull blocked:.*cannot be relocated/})).toHaveAttribute('aria-disabled','true');
 });
 
 it('shows selected part effects and current versus draft ship statistics', () => {
@@ -68,9 +68,8 @@ it('shows selected part effects and current versus draft ship statistics', () =>
   fireEvent.click(screen.getByRole('button', { name: 'Slot 1: Ion Cannon' }));
   fireEvent.click(screen.getByRole('button', { name: 'Install Plasma Cannon in slot 1' }));
   expect(screen.getByTestId('slot-effect-1').textContent).toMatch(/2 damage.*2 energy/);
-  expect(screen.getByRole('columnheader', { name: 'Current' })).toBeTruthy();
-  expect(screen.getByRole('columnheader', { name: 'Draft' })).toBeTruthy();
-  expect(screen.getByText(/Higher initiative fires first/)).toBeTruthy();
+  expect(screen.getByLabelText('Changed capabilities')).toHaveTextContent('Weapons');
+  expect(screen.queryByText(/Higher initiative fires first/)).toBeNull();
 });
 
 it("uses a visual slot canvas and explains locked components without a native part selector", () => {
@@ -81,7 +80,7 @@ it("uses a visual slot canvas and explains locked components without a native pa
   fireEvent.click(screen.getByRole("button", {name:"Slot 1: Ion Cannon"}));
   expect(screen.getByRole("region", {name:"Interceptor · slot 1"})).toBeInTheDocument();
   fireEvent.click(screen.getByText(/Unavailable components \(/));
-  expect(screen.getByRole("button", { name: /Plasma Cannon blocked: Research Plasma Cannon/ })).toBeDisabled();
+  expect(screen.getByRole("button", { name: /Plasma Cannon blocked: Research Plasma Cannon/ })).toHaveAttribute('aria-disabled','true');
 });
 
 it('identifies the ship silhouette and explains draft energy in the shipyard', () => {
@@ -125,7 +124,7 @@ it('renders Muon Source as a module inside the blueprint without consuming a har
 
 it('keeps reactor and live capabilities beside the editor title without repeating energy in the summary', () => {
   render(<BlueprintEditor faction="terran-directorate" blueprint={initialBlueprints('terran-directorate')[0]} technologies={['plasma-cannon']} storedParts={[]} capacity={2} disabled={false} onSubmit={vi.fn()} />);
-  const header = screen.getByRole('heading', {name: 'Edit interceptor'}).closest('header')!;
+  const header = screen.getByRole('region', {name: 'Selected ship and hardpoint'});
   const summary = within(header).getByRole('group', {name: 'Blueprint totals'});
   expect(within(summary).getByRole('img', {name: /^hit points: 1/})).toBeInTheDocument();
   expect(within(summary).getByRole('img', {name: /cannon.*1 × 1/})).toBeInTheDocument();

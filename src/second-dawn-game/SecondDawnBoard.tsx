@@ -4,8 +4,11 @@ import CombatAutomationControl from './CombatAutomationControl';
 import type {CombatAutomationStatus} from '../../shared/eclipse/combatAutomation';
 import ActivityDock, {type DraftActivity} from './ActivityDock';
 import ActionIcon from './ActionIcon';
+import CommitBar from './CommitBar';
+import {ACTION_ENTRIES} from './actionRegistry';
 import {DecisionMapContext,type DecisionMapPresentation} from './decisionMapContext';
 import {galaxyPoint} from './galaxyGeometry';
+import {DicePresentationVisibilityContext} from './dice3d/visibility';
 import {CommitContext} from './commitContext';
 import UpkeepSettlement from './UpkeepSettlement';
 import {gameRoundLimit,gameRules} from '../../shared/eclipse/gameRules';
@@ -102,6 +105,7 @@ import MobileActionPicker,{type MobileActionOption} from './MobileActionPicker';
 import './mobileBoard.css';
 import './choiceWorkspace.css';
 import './actionRail.css';
+import './visualPlay.css';
 import {ActionDraftProvider,type SavedQueuedActionReceipt} from './ActionDraftProvider';
 import {useActionDraftGuard,useActionDraftState} from './actionDraftContext';
 import ActionDraftNotice from './ActionDraftNotice';
@@ -209,6 +213,8 @@ function SecondDawnBoardContent({
   const [fitRequest,setFitRequest]=useState(0);
   const [historyOpen,setHistoryOpen] = useActionDraftState('historyOpen',false);
   const [settingsOpen,setSettingsOpen]=useState(false);
+  const [boardToolsOpen,setBoardToolsOpen]=useState(false);
+  const [buildStage,setBuildStage]=useState<'catalog'|'placement'>('catalog');
   const [motionEnabled,changeMotion]=useMotionEnabled();
   const aiPresentation=useAiPresentation(view,history?.entries??[],motionEnabled);
   useEffect(()=>{setReviewAi(false);},[aiPresentation.actor?.id]);
@@ -383,6 +389,8 @@ function SecondDawnBoardContent({
       const id=activeDecisionMap.legalTargetIds[0];if(id)focusDecisionSector(id);
     }
   },[spatialDecision,activeDecisionMap,pendingId,view.pendingDecision,focusDecisionSector]);
+  const desktopRestored=useRef(false);
+  useEffect(()=>{if(compact||desktopRestored.current)return;desktopRestored.current=true;if(draft&&screen==='Galaxy')setInspectorOpen(true);},[compact,draft,screen]);
   const mobileRestored=useRef(false);
   useEffect(()=>{if(!compact||mobileRestored.current)return;mobileRestored.current=true;if(!pendingId&&(draft||moveOpen||['influence','colonize'].includes(action))){setMobileActionMode(true);setMobileSheet(action==='research'?'closed':'peek');}},[compact,pendingId,draft,moveOpen,action]);
   const restoreChoiceFocus=useRef(false);
@@ -436,13 +444,14 @@ function SecondDawnBoardContent({
   const browseTechnologies=()=>{setScreen('Research');setEmpireMapSeat(null);setInspectorOpen(false);setHistoryOpen(false);setReviewAi(false);setAiDismissed(true);setMobileSheet('closed');setMobileActionsOpen(false);setMobileActionMode(false);};
   const researchReadOnly=!!planningView.pendingDecision||!!planningView.waitingFor||view.phase!=='action'||own.passed||planningView.activeSeatId!==own.id||!!planningView.actionProgress&&planningView.actionProgress.action!=='research';
   const activate = (type: GameCommand["type"]) => {
-    setAuxiliaryActivity(null);
+    setAuxiliaryActivity(null);setBoardToolsOpen(false);
+    if(type==='buy-minor-species'){setScreen('Recruitment');setBuildOpen(false);setMoveOpen(false);setInspectorOpen(false);setMobileActionMode(true);setMobileActionsOpen(false);setMobileSheet('closed');setHistoryOpen(false);return;}
     if(type==='research'&&researchReadOnly){browseTechnologies();return;}
     setUpkeepBrowsing(false);
     setEmpireMapSeat(null);
     setInspectorOpen(['explore','influence','move','colonize','build','end-action'].includes(type));
     if(!queueMode&&diplomacyDecision && type === 'explore'){showDecisionMap();return;}
-    if(compact){setMobileActionsOpen(false);setMobileActionMode(!directTurnActions.includes(type));setMobileSheet(['explore','influence','move','colonize','build'].includes(type)?'peek':'closed');}
+    if(compact){setMobileActionsOpen(false);setMobileActionMode(!directTurnActions.includes(type));setMobileSheet(['influence','move','colonize'].includes(type)?'expanded':type==='explore'?'peek':'closed');}
     setReviewAi(false);setAiDismissed(true);
     setHistoryOpen(false);
     setActionFocus(n=>n+1);
@@ -537,20 +546,25 @@ function SecondDawnBoardContent({
     if(restoredAction==='upgrade'){setPlayerId(own.id);if(!editing)setEditing((keys.find(key=>key.startsWith('blueprint-'))?.slice(10)??'interceptor')as BlueprintShipType);}
     setMobileSheet(['explore','influence','colonize','move'].includes(restoredAction)?'expanded':'closed');
   };
-  const mobileNavigate=(destination:MobileDestination)=>{if(destination==='Galaxy'){browseGalaxy();return;}setEmpireMapSeat(null);setScreen(destination);setHistoryOpen(false);setMobileActionMode(false);setMobileActionsOpen(false);setMobileSheet('closed');setAiDismissed(true);if(destination==='Players')setPlayerId(own.id);};
-  const mobileActionOptions:MobileActionOption[]=(['explore','influence','research','upgrade','build','move','colonize','trade','offer-diplomacy']as GameCommand['type'][]).filter(type=>!directTurnActions.includes(type)||candidates.some(candidate=>candidate.command.type===type)).map(type=>({type,label:actionLabel(type),description:type==='research'&&researchReadOnly?'Browse technologies & discounts':unavailableAfterPassing(type)?'Passed · only Upgrade, Build and Move reactions remain.':type==='explore'?'Choose a frontier':type==='move'?'Choose ships & destination':type==='build'?'Choose pieces, then deploy':type==='influence'?'Choose a sector to control':type==='colonize'?'Populate your planets':type==='research'?'Technologies & effects':type==='upgrade'?'Edit ship loadouts':type==='trade'?'Convert resources':'Available choices',disabled:type==='research'?!!interactionBlockedReason:blocked||unavailableAfterPassing(type)||!!planningView.pendingDecision||view.phase==='finished'||(view.phase!=='action'&&['explore','influence','research','upgrade','build','move'].includes(type))}));
+  const mobileNavigate=(destination:MobileDestination)=>{setBoardToolsOpen(false);if(destination==='Galaxy'){browseGalaxy();return;}setEmpireMapSeat(null);setScreen(destination);setHistoryOpen(false);setMobileActionMode(false);setMobileActionsOpen(false);setMobileSheet('closed');setAiDismissed(true);if(destination==='Players')setPlayerId(own.id);};
+  const mobileActionOptions:MobileActionOption[]=ACTION_ENTRIES.filter(entry=>entry.type!=='buy-minor-species'||!!view.minorSpecies).filter(entry=>entry.type!=='offer-diplomacy'||candidates.some(candidate=>candidate.command.type===entry.type)).map(({type,label,cue,group})=>({type,label,description:cue,disabled:type==='explore'&&diplomacyDecision?blocked:type==='buy-minor-species'?!!interactionBlockedReason:type==='research'?!!interactionBlockedReason:blocked||unavailableAfterPassing(type)||!!planningView.pendingDecision||view.phase==='finished'||(view.phase!=='action'&&group==='ordinary')||(group==='other'&&!candidates.some(candidate=>candidate.command.type===type))}));
+  const currentActionHasDraft=Boolean(draft)||(action==='build'&&buildOrder.items.length>0)||(action==='move'&&(movementDraft.ids.length>0||moveRoutePreviews.length>0))||(action==='influence'&&!!influenceDraft)||(action==='colonize'&&plannedColonies.length>0)||(action==='upgrade'&&draftGuard.draftKeys.some(key=>key.startsWith('blueprint-')));
   const mobileTurnType=(['end-action','pass'] as const).find(type=>candidates.some(candidate=>candidate.command.type===type));
   const onMoveSelection=useCallback(({sourceSectorId,targetSectorId}:{sourceSectorId:string|null;targetSectorId:string|null})=>{setMoveSource(sourceSectorId);setMoveTarget(targetSectorId);setMoveTargets([]);},[setMoveSource,setMoveTarget]);
   const projectedShipSector=(id:string,original:string)=>{let current=original;for(const route of moveRoutePreviews)if(route.status==='valid')for(const path of route.paths)if(path.shipId===id)current=path.path.at(-1)??current;return current;};
   const openEconomyTracks=()=>{setPlayerId(own.id);setScreen(compact?'Empire':'Players');setHistoryOpen(false);setMobileSheet('closed');setMobileActionMode(false);setMobileActionsOpen(false);setEmpireMapSeat(null);setAiDismissed(true);setEconomyFocusRequest(request=>request+1);};
   const empireOverview=(seatId:string)=><EmpireOverview view={view} planningView={planningView} seatId={seatId} focusEconomyTracks={seatId===own.id?economyFocusRequest:0} buildOrder={buildOrder} buildUnavailableReason={!connected?'Reconnect to build.':busy?'Saving your last command.':draftGuard.stale?'Restore the current turn before building.':undefined} onBuild={shipType=>{if(blocked||draftGuard.stale||seatId!==own.id)return;const option=empireBuildOptions(planningView,buildOrder).find(option=>option.shipType===shipType);if(!option||option.disabledReason)return;activate('build');setBuildPlacement(null);setBuildOrder(current=>addBuildItem(current,shipType));}} onSector={sectorId=>{setInspectorOpen(true);setEmpireMapSeat(seatId);setSelected(sectorId);setScreen('Galaxy');setHistoryOpen(false);setAiDismissed(true);setMobileActionMode(false);setMobileSheet(compact?'expanded':'closed');setMobileActionsOpen(false);}} onBlueprints={shipType=>{setPlayerId(seatId);setEditing(shipType??null);setScreen('Blueprints');setMobileSheet('closed');setMobileActionMode(false);}} onNavigate={destination=>{setPlayerId(seatId);if(destination==='colonize'){activate('colonize');return;}setScreen(destination);setMobileSheet('closed');setMobileActionMode(false);setHistoryOpen(false);if(destination==='Research')setAction('research');if(destination==='Trade')setAction('trade');}}/>;
-  const buildPlanner=<BuildPlanner embedded view={planningView} defaultPlacementSectorId={buildHereSector} sectorId={buildHereSector} placementRequest={buildPlacement} onLegalTargetsChange={setBuildTargets} disabled={blocked||!!lastAcceptedCommand&&lastAcceptedCommand.revision>view.revision} onClose={()=>{setBuildOpen(false);setBuildTargets([]);}} onSubmit={command=>{const action=command.type==='trade-and-act'?command.action:command;if(!queueMode)pendingBuild.current={receipt:lastAcceptedCommand,type:command.type,count:action.type==='build'?action.builds.length:0};onSubmit(command);}}/>;
+  const buildPlanner=<BuildPlanner embedded compact={compact} onStageChange={setBuildStage} view={planningView} defaultPlacementSectorId={buildHereSector} sectorId={buildHereSector} placementRequest={buildPlacement} onLegalTargetsChange={setBuildTargets} disabled={blocked||!!lastAcceptedCommand&&lastAcceptedCommand.revision>view.revision} onClose={()=>{setBuildOpen(false);setBuildTargets([]);}} onSubmit={command=>{const action=command.type==='trade-and-act'?command.action:command;if(!queueMode)pendingBuild.current={receipt:lastAcceptedCommand,type:command.type,count:action.type==='build'?action.builds.length:0};onSubmit(command);}}/>;
+  const activeActivity=buildOpen||moveOpen||['Research','Blueprints','Trade','Recruitment','Diplomacy'].includes(screen)||screen==='Galaxy'&&inspectorOpen;
+  const closeActivity=()=>{if(needsUpkeep(view))setAction('finish-upkeep');setBuildOpen(false);setMoveOpen(false);setInspectorOpen(false);setMobileActionMode(false);setMobileSheet('closed');setMobileActionsOpen(false);setScreen('Galaxy');setAuxiliaryActivity(null);setHistoryOpen(false);};
+  const activityTools=!view.pendingDecision?<ActivityDock current={screen==='Recruitment'?'recruitment':screen==='Diplomacy'?'offer-diplomacy':auxiliaryActivity??action} editing={editing} disabled={blocked} onResume={resumeActivity}/>:null;
+  const encounterVisible=!!encounterId&&(screen==='Decision'||screen==='Galaxy')&&!empireMapSeat;
   return (
     <CommitContext.Provider value={queueMode}>
     <DecisionMapContext.Provider value={mapDecision?{selectedSectorId:selected,selectSector:setSelected,focusSector:focusDecisionSector,setPresentation:publishDecisionMap}:null}>
-    <main onClickCapture={sound.capture} onClick={sound.clicked} className={`sd-app dg-app dg-tabletop${!compact&&!desktopInspectorVisible?' dg-inspector-collapsed':''}${['Players','Empire'].includes(screen)&&!historyOpen?' dg-empire-mode':''}${buildOpen&&!inspectingGalaxy&&screen==='Galaxy'?' dg-build-mode':''}${compact?' dg-mobile-board':''}${spatialDecisionOpen?' dg-spatial-decision':''}`} data-motion={motionEnabled?'on':'off'} data-mobile-screen={compact?screen:undefined} style={compact?{"--mobile-sheet-top":`${mobileWorkspaceTop}px`,"--mobile-footer-height":`${mobileBottomInset}px`}as CSSProperties:undefined}>
-      {compact?<MobileHeader view={view} connected={connected} busy={busy} score={ownScore.total} turnClock={turnClock} onMenu={onMenu} onSettings={()=>setSettingsOpen(true)} onOpenTracks={openEconomyTracks} onScore={()=>{setScreen('Scoring');setMobileSheet('closed');setMobileActionMode(false);}}/>:<><header className="sd-header">
-        <div className="sd-brand">
+    <main onClickCapture={sound.capture} onClick={sound.clicked} data-build-stage={buildStage} className={`sd-app dg-app dg-tabletop dg-visual-play${encounterVisible?' dg-in-battle':''}${!compact&&!desktopInspectorVisible?' dg-inspector-collapsed':''}${['Players','Empire'].includes(screen)&&!historyOpen?' dg-empire-mode':''}${buildOpen&&!inspectingGalaxy&&screen==='Galaxy'?' dg-build-mode':''}${compact?' dg-mobile-board':''}${spatialDecisionOpen?' dg-spatial-decision':''}${screen==='Galaxy'&&!inspectingGalaxy&&(moveOpen||['influence','colonize'].includes(action)||action==='explore'&&draft)?' dg-spatial-action':''}`} data-motion={motionEnabled?'on':'off'} data-mobile-screen={compact?screen:undefined} style={compact?{"--mobile-sheet-top":`${mobileWorkspaceTop}px`,"--mobile-footer-height":`${mobileBottomInset}px`}as CSSProperties:undefined}>
+      {compact?<MobileHeader activityLabel={encounterVisible?`Battle · ${view.sectors.find(sector=>sector.id===battleContext?.sectorId)?.tileId}`:undefined} activityControls={encounterVisible&&onCombatAutomation?<CombatAutomationControl view={view} status={combatAutomation} disabled={blocked} onChange={onCombatAutomation}/>:undefined} onTable={()=>setBoardToolsOpen(open=>!open)} onCloseActivity={activeActivity?closeActivity:undefined} activityTools={encounterVisible?<button onClick={()=>setInspectSector(battleContext?.sectorId??null)}>Inspect fleet</button>:activityTools} view={view} connected={connected} busy={busy} score={ownScore.total} turnClock={turnClock} onMenu={onMenu} onSettings={()=>setSettingsOpen(true)} onOpenTracks={openEconomyTracks} onScore={()=>{setScreen('Scoring');setMobileSheet('closed');setMobileActionMode(false);}}/>:<><header className="sd-header">
+        {activeActivity&&<button className="dg-close-activity" aria-label="Close activity" onClick={closeActivity}>←</button>}<div className="sd-brand">
           <span className="sd-eclipse" />
           <div>
             <strong>ECLIPSE</strong>
@@ -594,21 +608,21 @@ function SecondDawnBoardContent({
                 ? "Unsaved engine fixture"
                 : busy
                   ? "Saving…"
-                  : `Saved · revision ${view.revision}`
+                  : "Saved"
               : "Disconnected · waiting to reconnect"}
           </span>
-          <button className="dg-history-toggle" aria-pressed={historyOpen} onClick={()=>{setHistoryOpen(open=>!open);setInspectorOpen(true);if(screen==='Decision')setScreen('Galaxy');}}>History</button>
-          <button onClick={()=>setSettingsOpen(true)}>Settings</button><button onClick={onMenu}>{menuLabel}</button>
+          <button aria-expanded={boardToolsOpen} onClick={()=>setBoardToolsOpen(open=>!open)}>Table & activity</button><button className="dg-history-toggle" aria-pressed={historyOpen} onClick={()=>{setHistoryOpen(open=>!open);setInspectorOpen(true);if(screen==='Decision')setScreen('Galaxy');}}>History</button>
+          <details className="dg-shell-menu"><summary aria-label="Game tools">•••</summary><div>{activityTools}<button onClick={()=>setSettingsOpen(true)}>Preferences</button><button onClick={onMenu}>{menuLabel}</button></div></details>
         </div>
       </header></>}
       {queueMode&&!queuedAction&&<p className="dg-queue-planning-hint" role="status">Choose your next action · will execute on your turn.</p>}
       {queuedAction&&<section className="dg-next-action" aria-label="Queued next action"><div><strong>{humanize((queuedAction.command.type==='trade-and-act'?queuedAction.command.action:queuedAction.command).type)}{queuedAction.status==='pending'?' · will execute on your turn':' · could not execute'}</strong>{queuedActionSummary(queuedAction.command,view)&&<p>{queuedActionSummary(queuedAction.command,view)}</p>}{queuedAction.error&&<p role="alert">{queuedAction.error}</p>}</div><button type="button" disabled={!onQueue||blocked} onClick={()=>onQueue?.(null)}>Cancel queued action</button></section>}
       {!view.pendingDecision&&<div className="dg-board-draft-notice"><ActionDraftNotice/></div>}
-      {needsUpkeep(view)&&!view.pendingDecision&&<UpkeepSettlement view={view} disabled={blocked||!candidates.some(candidate=>candidate.command.type==='finish-upkeep')} onCollect={()=>finishUpkeep({type:'finish-upkeep'})} onColonize={canColonizeAtUpkeep?openUpkeepColonization:undefined}/>}
-      {view.minorSpecies&&<button className="dg-recruit-entry" onClick={()=>{setScreen('Recruitment');setMobileActionMode(false);setMobileSheet('closed');setHistoryOpen(false);}}>Recruit allies</button>}
-      {!view.pendingDecision&&<ActivityDock current={screen==='Recruitment'?'recruitment':screen==='Diplomacy'?'offer-diplomacy':auxiliaryActivity??action} disabled={blocked} onResume={resumeActivity}/>}
+
+      {compact&&aiFailure&&<button className="dg-recovery-inline" disabled={!connected} title={aiFailure} onClick={onRetryAi}>AI paused · retry</button>}
+      {!compact&&view.pendingDecision&&screen!=='Decision'&&!encounterVisible&&<button className="dg-pending-return" onClick={returnToChoice}>Return to {choiceLabel(view.pendingDecision)}</button>}
       <div className="sd-layout">
-        <aside className="sd-players">
+        <aside className="sd-players" hidden={!boardToolsOpen}><button className="dg-table-close" onClick={()=>setBoardToolsOpen(false)}>Close table details</button>
           <div className="dg-turn-order-label" title={gameRules(view).passOrderTurnOrder?'Action turns follow last round’s pass order. Passed players can still react; eliminated players appear last.':'Clockwise action order. Passed players can still react; eliminated players appear last.'}>{view.phase==='action'&&gameRules(view).passOrderTurnOrder?'Pass-order turns →':view.phase==='action'?'Turn order →':'Seat order →'}</div>
           <div
             className="sd-player-list"
@@ -625,7 +639,7 @@ function SecondDawnBoardContent({
                 onClick={() => {
                   setReviewAi(false);setAiDismissed(true);
                   setPlayerId(seat.id);
-                  setScreen("Players");
+                  setScreen("Players");setBoardToolsOpen(false);
                 }}
               >
                 <span className="sd-owner"><FactionSymbol faction={seat.faction}/></span>
@@ -656,7 +670,7 @@ function SecondDawnBoardContent({
               </button>
             ))}
           </div>
-          {compact&&aiFailure&&<div className="dg-mobile-ai-recovery" role="alert"><p>{aiFailure}</p><button disabled={!connected} onClick={onRetryAi}>AI paused · retry</button></div>}
+
           <AiActivityBar statusInHeader upkeep={view.phase==='upkeep'?(needsUpkeep(view)?'preparing':'complete'):undefined} currentAction={view.actionProgress?.owner===own.id&&!view.pendingDecision?(view.actionProgress.budgets?`Build & move: ${view.actionProgress.budgets.build??0} build · ${view.actionProgress.budgets.move??0} move remaining. No extra action disc.`:`Continue ${view.actionProgress.action}: ${view.actionProgress.remaining} activations remaining.`):undefined} takeover={aiTakeover} thinking={aiThinking} following={followAi} onFollowChange={changeFollowAi} humanDecision={!!view.pendingDecision} paused={!!aiFailure} actor={aiPresentation.actor} recent={aiPresentation.recent} humanTurn={!!view.pendingDecision||(!view.waitingFor&&(view.phase==='upkeep'?needsUpkeep(view):view.activeSeatId===own.id))} finished={view.phase==='finished'} motionEnabled={motionEnabled} onMotionChange={changeMotion} onWatch={()=>{setInspectorOpen(true);if(compact)setMobileSheet('peek');setFollowAi(true);setAiDismissed(false);setReviewAi(!aiPresentation.actor);setHistoryOpen(false);setScreen('Galaxy');setCamera(null);setFitRequest(n=>n+1);}}>
             {view.phase==='upkeep'&&<span className="dg-upkeep-progress" role="status">{upkeepReadyCount(view)}</span>}
             <SectorDecks view={view}/>
@@ -676,23 +690,19 @@ function SecondDawnBoardContent({
         </aside>
         <section className="sd-main" ref={workspaceRef}>
 
-          {encounterId&&<section key={encounterId} className="dg-encounter-workspace" aria-label="Battle workspace" hidden={screen!=='Decision'&&screen!=='Galaxy'||!!empireMapSeat}>
-            <header className="dg-choice-header"><strong>Battle · sector {view.sectors.find(sector=>sector.id===battleContext?.sectorId)?.tileId}</strong><button onClick={()=>{setInspectSector(battleContext?.sectorId??null);}}>Inspect fleet</button></header>
-            {onCombatAutomation&&<CombatAutomationControl view={view} status={combatAutomation} disabled={blocked} onChange={onCombatAutomation}/>}
-            <BattleOverview soundEligible={!!playback&&sound.combatLive(playback.revision)} view={view.battle?view:{...view,battle:battleContext}} fastPlayback={!motionEnabled} recentVolleys={playback?.volleys??[]} knownShips={[...knownShips.current.values()]}/>
-            {view.pendingDecision&&!spatialDecision?pendingDecisionPanel:<p role="status">{view.battle?`Waiting for ${view.waitingFor?faction(view.waitingFor.owner)?.name??'your opponent':'your opponent'}’s combat decision.`:'Battle complete'}</p>}
-            {combatReputationVisible&&<ReputationSummary view={view} onDismiss={dismissCombatReputation}/>}
-          </section>}
-          {!encounterId&&view.pendingDecision&&!spatialDecision&&<ChoiceWorkspace key={view.pendingDecision.id} decision={view.pendingDecision} open={screen==='Decision'} onMinimize={showDecisionMap}>
-            {(selected&&view.pendingDecision.kind!=='exploration'||view.pendingDecision.kind==='discovery')&&<div className="dg-decision-location">{selected&&<><strong>Sector {sector?.tileId??selected}</strong><button onClick={()=>setInspectSector(selected)}>Inspect location</button></>}{view.pendingDecision.kind==='discovery'&&<button type="button" onClick={browseTechnologies}>Browse technologies</button>}</div>}
+          {encounterId&&<DicePresentationVisibilityContext.Provider value={encounterVisible&&!inspectSector&&!settingsOpen&&!publicInspection?.active}><section key={encounterId} className="dg-encounter-workspace" aria-label="Battle workspace" hidden={screen!=='Decision'&&screen!=='Galaxy'||!!empireMapSeat}>
+            <header className="dg-choice-header"><strong>Battle · sector {view.sectors.find(sector=>sector.id===battleContext?.sectorId)?.tileId}</strong><div>{onCombatAutomation&&<CombatAutomationControl view={view} status={combatAutomation} disabled={blocked} onChange={onCombatAutomation}/>}<button onClick={()=>{setInspectSector(battleContext?.sectorId??null);}}>Inspect fleet</button></div></header>
+            <BattleOverview integrated compact={compact} showHeading={false} controls={<>{view.pendingDecision&&!spatialDecision?pendingDecisionPanel:<p role="status">{view.battle?`Waiting for ${view.waitingFor?faction(view.waitingFor.owner)?.name??'your opponent':'your opponent'}`:'Battle complete'}</p>}{combatReputationVisible&&<ReputationSummary view={view} onDismiss={dismissCombatReputation}/>}</>} soundEligible={!!playback&&sound.combatLive(playback.revision)} view={view.battle?view:{...view,battle:battleContext}} fastPlayback={!motionEnabled} recentVolleys={playback?.volleys??[]} knownShips={[...knownShips.current.values()]}/>
+          </section></DicePresentationVisibilityContext.Provider>}
+          {!encounterId&&view.pendingDecision&&!spatialDecision&&<ChoiceWorkspace key={view.pendingDecision.id} decision={view.pendingDecision} open={screen==='Decision'} onMinimize={showDecisionMap} tools={(selected&&view.pendingDecision.kind!=='exploration'||view.pendingDecision.kind==='discovery')?<details className="dg-choice-inspect"><summary>Inspect</summary><div>{selected&&<button onClick={()=>setInspectSector(selected)}>Sector {sector?.tileId??selected}</button>}{view.pendingDecision.kind==='discovery'&&<button onClick={browseTechnologies}>Technologies</button>}</div></details>:undefined}>
             {pendingDecisionPanel}
           </ChoiceWorkspace>}
           <div className="dg-board-surface" inert={screen==='Decision'&&!spatialDecision&&!retreatMapActive} aria-hidden={screen==='Decision'&&!spatialDecision&&!retreatMapActive?true:undefined}>
           {screen==='Galaxy'&&!encounterId&&combatAftermath}
           {encounterId&&(screen==='Galaxy'||screen==='Decision')&&!empireMapSeat&&!spatialDecision&&!retreatMapActive?null:compact&&screen==='Activity' ? <div className="sd-workspace dg-mobile-activity"><h1>Activity</h1>{activityRecap}<HistoryPanel rollback={historyRollback} feed={history??{entries:[],loading:false,hasOlder:false,loadingOlder:false,error:null,loadOlder:()=>{}}}/></div>
-          : compact&&screen==='Empire' ? <div className="sd-workspace dg-mobile-empire">{draftGuard.draftKeys.length>0&&!view.pendingDecision&&<button className="dg-mobile-resume-draft" onClick={resumeSavedAction}>Resume saved action</button>}{empireOverview(own.id)}</div>
+          : needsUpkeep(view)&&!view.pendingDecision&&screen==='Galaxy'&&!browsingUpkeep&&action!=='colonize' ? <div className="sd-workspace dg-upkeep-workspace"><UpkeepSettlement view={view} disabled={blocked||!candidates.some(candidate=>candidate.command.type==='finish-upkeep')} onCollect={()=>finishUpkeep({type:'finish-upkeep'})} onColonize={canColonizeAtUpkeep?openUpkeepColonization:undefined}/><button onClick={browseGalaxy}>View galaxy</button></div> : compact&&screen==='Empire' ? <div className="sd-workspace dg-mobile-empire">{draftGuard.draftKeys.length>0&&!view.pendingDecision&&<button className="dg-mobile-resume-draft" onClick={resumeSavedAction}>Resume saved action</button>}{empireOverview(own.id)}</div>
           : screen === "Recruitment" ? (<div className="sd-workspace"><MinorSpeciesMarket view={planningView} disabled={blocked} onSubmit={onSubmit}/></div>) : screen === "Trade" ? (
-            <div className="sd-workspace"><TradePanel view={planningView} candidates={candidates} disabled={blocked} onSubmit={onSubmit}/></div>
+            <div className="sd-workspace"><TradePanel exchangeMode={auxiliaryActivity==='guild-trade'?'guild':'bank'} onExchangeModeChange={mode=>setAuxiliaryActivity(mode==='guild'?'guild-trade':null)} view={planningView} candidates={candidates} disabled={blocked} onSubmit={onSubmit}/></div>
           ) : screen === "Scoring" ? (
             <ScoreWorkspace view={view} scores={liveScores} playerNames={playerNames} onInspect={(seatId,category)=>publicInspection?.request({kind:'score',seatId,category})} onHome={onHome??onMenu} onPlayAgain={onPlayAgain??onMenu} onGalaxy={()=>{setScreen('Galaxy');setMobileSheet('closed');setMobileActionMode(false);}}/>
           ) : screen === "Diplomacy" ? (
@@ -701,8 +711,8 @@ function SecondDawnBoardContent({
             <div className="sd-workspace">{empireOverview(inspectedPlayer.id)}<DiplomacyPanel view={planningView} candidates={candidates} disabled={blocked} onSubmit={onSubmit} inspectedSeatId={inspectedPlayer.id}/></div>
           ) : screen === "Blueprints" ? (
             <div className="sd-workspace">
-              <p className="sd-eyebrow">PUBLIC BLUEPRINTS</p>
-              <div className="dg-blueprint-heading"><h1>Ship blueprints</h1>
+
+              <div className="dg-blueprint-heading" hidden={!!editing&&inspectedPlayer.id===own.id}><h1>Upgrade</h1>
               <label className="dg-blueprint-owner">Civilization <select aria-label="Blueprint civilization" value={inspectedPlayer.id} onChange={event => {setPlayerId(event.target.value); setEditing(null);}}>{view.seats.map(seat => <option key={seat.id} value={seat.id}>{faction(seat.id)?.name}{seat.id === own.id ? " (you)" : ""}</option>)}</select></label></div>
               <nav className="dg-class-selector" aria-label="Ship classes">
                 {inspectedPlayer.blueprints.map(bp => <button key={bp.shipType} aria-pressed={editing === bp.shipType} disabled={getFaction(inspectedPlayer.faction).componentSupply?.[bp.shipType]===0} title={getFaction(inspectedPlayer.faction).componentSupply?.[bp.shipType]===0?`${getFaction(inspectedPlayer.faction).name} does not use this ship class.`:undefined} onClick={() => {setEditing(bp.shipType); setAction("upgrade");}}>{shipClassName(bp.shipType,inspectedPlayer.faction)}</button>)}
@@ -829,9 +839,7 @@ function SecondDawnBoardContent({
               >
                 Edit your blueprint
               </button>}
-              <p className="sd-muted">
-                All ships of a class use the same blueprint. Your unconfirmed drafts are kept when switching classes.
-              </p>
+
             </div>
           ) : screen === "Research" ? (
             <><ResearchWorkspace view={planningView} purchases={researchReadOnly?[]:purchases} selected={researchSelection as TechnologyId|null} draft={researchDraft} disabled={blocked||researchReadOnly} stale={draftGuard.stale} stillLegal={isLegalDraft(researchDraft)} acquired={acquiredResearch} onSelect={(id,owned)=>{setResearchSelection(id);if(compact){setMobileSheet('closed');setMobileActionsOpen(false);setMobileActionMode(!owned&&!researchReadOnly);}if(inspectorRef.current)inspectorRef.current.scrollTop=0;}} onDraft={next=>{if(!researchReadOnly)setResearchDraft(next);}} onSubmit={onSubmit}/></>
@@ -848,16 +856,20 @@ function SecondDawnBoardContent({
                 </div>
                 <span>{view.sectors.length} sectors</span>
               </div>
-              <GalaxyBoard plannedInfluence={!inspectingGalaxy&&action==='influence'&&influenceDraft?.command.type==='influence'?influenceDraft.command:null} plannedColonies={activeDecisionMap?.plannedColonies??(!inspectingGalaxy&&action==='colonize'?plannedColonies:[])} showPrintedWormholes={activeDecisionMap?.showPrintedWormholes} plannedBuilds={buildOpen&&!inspectingGalaxy?buildOrder.items:[]} plannedMoves={moveOpen&&!inspectingGalaxy?moveRoutePreviews:[]} onSelectBuildItem={id=>setBuildOrder(current=>({...current,selectedItemId:id}))} onInspectFleet={id=>{if(spatialDecision&&!view.sectors.some(sector=>sector.id===id)){setSelected(id);returnToChoice();return;}setInspectSector(id);setInspectDiplomacy(null);}} compact={compact} camera={camera??undefined} onCameraChange={setCamera} fitRequest={fitRequest} activity={aiPresentation.activity} targetLabel={mapDecision?activeDecisionMap?.targetLabel??'eligible sector':buildOpen?"legal deployment sector":moveOpen?"legal move destination":action==='colonize'?"available planet":"legal influence target"} view={decisionMapView} candidates={inspectingGalaxy?[]:moveOpen||action!=="explore"?candidates.filter(c=>c.command.type!=="explore"):candidates} selected={selected} legalTargetIds={inspectionTargets.length?inspectionTargets:mapDecision?activeDecisionMap?.legalTargetIds??[]:inspectingGalaxy?[]:buildOpen?[...buildTargets]:moveOpen?moveTargets:action==='influence'?influenceTargets:action==='colonize'?[...colonyTargets]:[]} onSelect={id=>{
+              <GalaxyBoard selectionMode={!!activeDecisionMap||!inspectingGalaxy&&(buildOpen||moveOpen||['influence','colonize'].includes(action))} plannedInfluence={!inspectingGalaxy&&action==='influence'&&influenceDraft?.command.type==='influence'?influenceDraft.command:null} plannedColonies={activeDecisionMap?.plannedColonies??(!inspectingGalaxy&&action==='colonize'?plannedColonies:[])} showPrintedWormholes={activeDecisionMap?.showPrintedWormholes} plannedBuilds={buildOpen&&!inspectingGalaxy?buildOrder.items:[]} plannedMoves={moveOpen&&!inspectingGalaxy?moveRoutePreviews:[]} onSelectBuildItem={id=>setBuildOrder(current=>({...current,selectedItemId:id}))} onInspectFleet={id=>{if(spatialDecision&&!view.sectors.some(sector=>sector.id===id)){setSelected(id);returnToChoice();return;}setInspectSector(id);setInspectDiplomacy(null);}} compact={compact} camera={camera??undefined} onCameraChange={setCamera} fitRequest={fitRequest} activity={aiPresentation.activity} targetLabel={mapDecision?activeDecisionMap?.targetLabel??'eligible sector':buildOpen?"legal deployment sector":moveOpen?"legal move destination":action==='colonize'?"available planet":"legal influence target"} view={decisionMapView} candidates={inspectingGalaxy?[]:moveOpen||action!=="explore"?candidates.filter(c=>c.command.type!=="explore"):candidates} selected={selected} legalTargetIds={inspectionTargets.length?inspectionTargets:mapDecision?activeDecisionMap?.legalTargetIds??[]:inspectingGalaxy?[]:buildOpen?[...buildTargets]:moveOpen?moveTargets:action==='influence'?influenceTargets:action==='colonize'?[...colonyTargets]:[]} onSelect={id=>{
                 if(spatialDecision){setSelected(id);setScreen('Decision');setHistoryOpen(false);setInspectorOpen(true);setMobileSheet('expanded');setMobileActionsOpen(false);return;}
                 setHistoryOpen(false);setSelected(id);setInspectorOpen(true);setReviewAi(false);setAiDismissed(true);if(compact){setMobileSheet(action==='influence'||moveOpen&&moveTargets.includes(id)?'expanded':'peek');setMobileActionsOpen(false);}
                 if(inspectingGalaxy)return;
+                if(compact&&(moveOpen||buildOpen||['influence','colonize'].includes(action))){
+                  const destination=view.sectors.find(item=>item.id===id),source=moveOpen?view.sectors.find(item=>item.id===moveSource):undefined;
+                  if(destination){const to=galaxyPoint(destination.position),from=source?galaxyPoint(source.position):to;setCamera({center:{x:(from.x+to.x)/2,y:(from.y+to.y)/2},zoom:source?2:2.5});}
+                }
                 if(buildOpen){setBuildPlacement(prior=>({sectorId:id,serial:(prior?.serial??0)+1}));}
                 else if(moveOpen){
                   if(!moveSource||(!moveTargets.includes(id)&&view.ships.some(ship=>projectedShipSector(ship.id,ship.sectorId)===id&&ship.owner===own.id))){setMoveSource(id);setMoveTarget(null);}
                   else setMoveTarget(id);
                 } else if(action === "build" && view.sectors.some(s=>s.id===id&&s.owner===own.id)) setBuildOpen(true);
-              }} onExplore={candidate => { setSelected(null);setReviewAi(false);setAiDismissed(true); setInspectorOpen(true); if(compact){setMobileSheet('expanded');setMobileActionMode(true);setMobileActionsOpen(false);} setMoveOpen(false);setMoveTargets([]);setHistoryOpen(false); setAction("explore"); setExploreDraft(candidate); setActionFocus(n=>n+1); }} />
+              }} onExplore={candidate => { setSelected(null);setReviewAi(false);setAiDismissed(true); setInspectorOpen(true); if(compact){setMobileSheet('expanded');setMobileActionMode(true);setMobileActionsOpen(false);} setMoveOpen(false);setMoveTargets([]);setHistoryOpen(false); setAction("explore"); setExploreDraft(candidate); if(compact&&candidate.command.type==='explore')setCamera({center:galaxyPoint(candidate.command.position),zoom:2.5});setActionFocus(n=>n+1); }} />
               {buildResult&&<p className="dg-plan-result" role="status">{buildResult}</p>}
               {compact&&buildOpen&&!inspectingGalaxy&&buildPlanner}
             </>
@@ -865,7 +877,7 @@ function SecondDawnBoardContent({
           </div>
         </section>
         <aside hidden={!compact&&!desktopInspectorVisible} id="sector-details" tabIndex={-1} className={`sd-inspector ${historyOpen ? "dg-inspector-history" : ""}${compact?' dg-mobile-sheet':''}`} data-sheet-state={compact?(buildOpen&&!inspectingGalaxy?'closed':mobileSheet):undefined} ref={inspectorRef} aria-label="Selection and action details">
-          {compact&&<div className="dg-mobile-sheet-header"><button className="dg-mobile-sheet-expand" aria-label={`${mobileSheet==='expanded'?'Collapse':'Expand'} ${spatialDecisionOpen?choiceLabel(view.pendingDecision!):mobileActionsOpen?'Actions':showAiPanel?'AI action':mobileActionMode?actionLabel(action):screen==='Research'?'Technology':sector?`Sector ${sector.tileId}`:'Details'} details`} onClick={()=>setMobileSheet(mobileSheet==='expanded'?'peek':'expanded')}><span aria-hidden="true">{mobileSheet==='expanded'?'⌄':'⌃'}</span><strong>{spatialDecisionOpen?choiceLabel(view.pendingDecision!):mobileActionsOpen?'Choose an action':showAiPanel?'AI action':mobileActionMode?actionLabel(action):screen==='Research'?'Technology':sector?`Sector ${sector.tileId}`:'Details'}</strong><small>{mobileSheet==='expanded'?'Show galaxy':'View details'}</small></button><button aria-label="Dismiss details" onClick={()=>{if(spatialDecisionOpen){showDecisionMap();return;}setMobileSheet('closed');setMobileActionsOpen(false);setAiDismissed(true);}}>×</button></div>}
+          {compact&&<div className="dg-mobile-sheet-header"><button className="dg-mobile-sheet-expand" aria-label={`${mobileSheet==='expanded'?'Collapse':'Expand'} ${spatialDecisionOpen?choiceLabel(view.pendingDecision!):mobileActionsOpen?'Actions':showAiPanel?'AI action':mobileActionMode?actionLabel(action):screen==='Research'?'Technology':sector?`Sector ${sector.tileId}`:'Details'} details`} onClick={()=>setMobileSheet(mobileSheet==='expanded'?'peek':'expanded')}><span aria-hidden="true">{mobileSheet==='expanded'?'⌄':'⌃'}</span><strong>{spatialDecisionOpen?choiceLabel(view.pendingDecision!):mobileActionsOpen?'Choose an action':showAiPanel?'AI action':mobileActionMode?actionLabel(action):screen==='Research'?'Technology':sector?`Sector ${sector.tileId}`:'Details'}</strong><small>{mobileSheet==='expanded'?'Show galaxy':'View details'}</small></button>{mobileActionsOpen&&<button aria-label="Close action chooser" onClick={()=>{setMobileSheet('closed');setMobileActionsOpen(false);}}>×</button>}</div>}
           <div ref={mobileSheetBodyRef} className={`dg-inspector-body${compact?' dg-mobile-sheet-body':''}`}>
           {compact&&mobileActionsOpen?<>{draftGuard.draftKeys.length>0&&!view.pendingDecision&&<button className="dg-mobile-resume-draft" onClick={resumeSavedAction}>Resume saved action</button>}<MobileActionPicker options={mobileActionOptions} onSelect={activate}/></>:''}
           {spatialDecision&&view.pendingDecision&&<section key={view.pendingDecision.id} hidden={!spatialDecisionOpen||historyOpen} className="dg-map-choice-controls" aria-label={`${choiceLabel(view.pendingDecision)} controls`} onKeyDown={event=>{if(event.key==='Escape'){event.stopPropagation();showDecisionMap();}}}>
@@ -875,7 +887,7 @@ function SecondDawnBoardContent({
           <div className="dg-inspector-content" hidden={spatialDecisionOpen&&!historyOpen||compact&&mobileActionsOpen}>
 
           {historyOpen ? <HistoryPanel rollback={historyRollback} feed={history ?? {entries:[],loading:false,hasOlder:false,loadingOlder:false,error:null,loadOlder:()=>{}}}/> : showAiPanel && aiPresentation.action ? <><AiActionPanel view={view} entry={aiPresentation.action} onInspectSector={id=>{setSelected(id);setScreen('Galaxy');setAiDismissed(true);setReviewAi(false);if(compact)setMobileSheet('peek');}}/></> : buildOpen && !inspectingGalaxy && screen === "Galaxy" && !compact ? buildPlanner : moveOpen && !inspectingGalaxy && screen === "Galaxy" ? <>
-            <MovementPlanner showCombatOdds={showCombatOdds} onChangeSource={()=>{setMoveSource(null);setMoveTarget(null);setMoveTargets([]);}} onRoutePreview={setMoveRoutePreviews} onSelectionChange={onMoveSelection} key={moveSource} view={planningView} sourceSectorId={moveSource} selectedTargetId={moveTarget} disabled={blocked||!!lastAcceptedCommand&&lastAcceptedCommand.revision>view.revision} result={movementResult} onDone={candidates.some(candidate=>candidate.command.type==='end-action')?()=>{const command:GameCommand={type:'end-action'};if(previewCommand(view,command).betrayedPartners.length)activate('end-action');else onSubmit(command);}:undefined} onTargetsChange={setMoveTargets} onClose={()=>{setMoveOpen(false);setMoveTargets([]);}} onSubmit={command=>{if(!queueMode)pendingMove.current={receipt:lastAcceptedCommand,ships:command.type==='move'?new Set(command.moves.map(move=>move.shipId)).size:0};setMovementResult('');onSubmit(command);}}/>
+            <MovementPlanner embedded showCombatOdds={showCombatOdds} onChangeSource={()=>{setMoveSource(null);setMoveTarget(null);setMoveTargets([]);}} onRoutePreview={setMoveRoutePreviews} onSelectionChange={onMoveSelection} key={moveSource} view={planningView} sourceSectorId={moveSource} selectedTargetId={moveTarget} disabled={blocked||!!lastAcceptedCommand&&lastAcceptedCommand.revision>view.revision} result={movementResult} onDone={candidates.some(candidate=>candidate.command.type==='end-action')?()=>{const command:GameCommand={type:'end-action'};if(previewCommand(view,command).betrayedPartners.length)activate('end-action');else onSubmit(command);}:undefined} onTargetsChange={setMoveTargets} onClose={()=>{setMoveOpen(false);setMoveTargets([]);}} onSubmit={command=>{if(!queueMode)pendingMove.current={receipt:lastAcceptedCommand,ships:command.type==='move'?new Set(command.moves.map(move=>move.shipId)).size:0};setMovementResult('');onSubmit(command);}}/>
           </> : screen === 'Galaxy' && action === 'influence' && !inspectingGalaxy ? <InfluencePlanner onSectorFocus={setSelected} key={view.revision} view={planningView} candidates={candidates} selectedSectorId={selected} onLegalTargetIdsChange={setInfluenceTargets} disabled={blocked} onSubmit={onSubmit}/>
           : screen === 'Galaxy' && action === 'colonize' && !inspectingGalaxy ? <><ColonizationPlanner onColonizableSectorIdsChange={setColonyTargets} onSectorFocus={setSelected} view={planningView} candidates={candidates} selectedSectorId={selected} disabled={blocked} onSubmit={onSubmit}/></>
           : <>
@@ -908,7 +920,7 @@ function SecondDawnBoardContent({
           ) : action === 'finish-upkeep' && view.phase === 'upkeep' && !browsingUpkeep ? (
             <><h2>Round {view.round} upkeep</h2><p>Review production and your civilization’s upkeep before continuing. You can convert resources first if needed.</p><button type="button" onClick={browseTechnologies}>Browse technologies</button>{canColonizeAtUpkeep&&<><p>You can still populate an open planet before collecting income.</p><button type="button" disabled={blocked} onClick={openUpkeepColonization}>Colonize</button></>}</>
           ) : auxiliaryActivity!=='faction' && action === 'explore' && draft?.command.type === 'explore' ? (
-            <><h2>Explore new sector</h2><p>Confirm this frontier to draw a sector, then choose its orientation.</p>{draft?.command.type==='explore'&&draft.command.remote&&<p>Remote prospecting · outer sector beside any explored sector. Normal influence cost and placement rules apply; onward exploration may reach inner rings.</p>}<ExploreOdds view={view} position={draft.command.position}/></>
+            <div className="dg-frontier-preview"><div className="dg-face-down-sector" aria-label="Undiscovered sector"><ActionIcon kind="explore"/><span>?</span></div><h2>Explore{draft.command.remote?' · Remote':''}</h2><details><summary>Sector odds</summary><ExploreOdds view={view} position={draft.command.position}/></details></div>
           ) : sector ? (
             <>
               <h2>Sector {sector.tileId}</h2>
@@ -990,7 +1002,7 @@ function SecondDawnBoardContent({
                   view.pendingDecision.kind,
                 ))) && (
               <div className="dg-action-panel" ref={actionPanelRef}>
-                <p className="sd-eyebrow">{actionLabel(action).toUpperCase()}</p>
+
                 <ActionEconomy view={planningView} action={action} preview={draftPreview}/>
                 {available.length === 0 ? (
                   <p>
@@ -1008,10 +1020,10 @@ function SecondDawnBoardContent({
                   })():null}
                 {draft && (
                   <>
-                    <h3>{draft.label}</h3>
-                    {draft.command.type === "trade-and-act" ? <FundingPlanSelector view={planningView} command={draft.command} disabled={blocked} onChange={command=>setDraft({...draft,command})}/> : <p>{draft.description}</p>}
+                    {draft.command.type!=='explore'&&<h3>{draft.label}</h3>}
+                    {draft.command.type === "trade-and-act" ? <FundingPlanSelector view={planningView} command={draft.command} disabled={blocked} onChange={command=>setDraft({...draft,command})}/> : null}
                     {!!draftPreview?.betrayedPartners.length && <p className="dg-danger">Breaks diplomacy with {draftPreview.betrayedPartners.map(id => faction(id)?.name ?? id).join(", ")}. You take the traitor card ({getFaction(own.faction).special?.ignoresTraitorPenalty?'0':'−2'} VP), return these ambassadors, and cannot form new relations while holding it.</p>}
-                    <button
+                    <CommitBar><button
                       className="sd-primary"
                       disabled={blocked || draftGuard.stale || !stillLegal}
                       onClick={() => {
@@ -1019,9 +1031,8 @@ function SecondDawnBoardContent({
                         else onSubmit(draft.command);
                       }}
                     >
-                      {draft.command.type === "end-action" ? "End action and break diplomacy" : draft.command.type === "trade-and-act" ? `Convert & ${draft.command.action.type}` : draft.command.type === "finish-upkeep" ? "Collect income" : queueMode ? "Queue for my turn" : draft.command.type === 'explore' ? 'Explore · 1 influence disc' : draft.label}
-                    </button>
-                    <button onClick={() => setDraft(null)}>Cancel draft</button>
+                      {draft.command.type === "end-action" ? "End action and break diplomacy" : draft.command.type === "trade-and-act" ? `Convert & ${draft.command.action.type}` : draft.command.type === "finish-upkeep" ? "Collect income" : queueMode ? "Queue for my turn" : draft.command.type === 'explore' ? 'Draw sector' : draft.label}
+                    </button></CommitBar>
                   </>
                 )}
               </div>
@@ -1029,9 +1040,8 @@ function SecondDawnBoardContent({
           </>}
           </div></div>
         </aside>
-        {!compact&&<nav className="dg-action-rail" aria-label="Turn actions">
-          <div className="dg-action-rail-primary"><small>ACTIONS</small>{(['explore','influence','research','upgrade','build','move'] as const).map(type=><button key={type} type="button" aria-pressed={action===type&&!view.pendingDecision&&view.phase==='action'} disabled={type==='research'?!!interactionBlockedReason:!!interactionBlockedReason||view.phase==='finished'||(unavailableAfterPassing(type)&&!(diplomacyDecision&&type==='explore'))||(!(diplomacyDecision&&type==='explore')&&(Boolean(planningView.pendingDecision)||view.phase!=='action'))} title={unavailableAfterPassing(type)?'Passed this round: only Upgrade, Build and Move reactions remain.':undefined} onClick={()=>activate(type)}><ActionIcon kind={type}/>{actionLabel(type)}</button>)}</div>
-          <div className="dg-action-rail-utility"><small>OTHER OPTIONS</small>{(['colonize','trade','offer-diplomacy'] as const).filter(type=>type!=='offer-diplomacy'||candidates.some(candidate=>candidate.command.type===type)).map(type=><button key={type} type="button" aria-pressed={action===type&&!view.pendingDecision} disabled={blocked||!candidates.some(candidate=>candidate.command.type===type)||(view.phase==='upkeep'&&!needsUpkeep(view)&&type==='trade')} onClick={()=>activate(type)}><ActionIcon kind={type}/>{type==='trade'?'Trade':actionLabel(type)}</button>)}</div>
+        {!compact&&!encounterVisible&&<nav className="dg-action-rail" aria-label="Turn actions">
+          {(['ordinary','other'] as const).map(group=><div key={group} role="group" aria-label={group==='ordinary'?'Ordinary actions':'Other actions'} className={group==='ordinary'?'dg-action-rail-primary':'dg-action-rail-utility'}><small>{group==='ordinary'?'ACTIONS':'OTHER ACTIONS'}</small>{mobileActionOptions.filter(option=>ACTION_ENTRIES.find(entry=>entry.type===option.type)?.group===group).map(option=><button key={option.type} type="button" aria-pressed={option.type==='buy-minor-species'?screen==='Recruitment':action===option.type&&!view.pendingDecision&&view.phase==='action'} disabled={option.disabled} onClick={()=>activate(option.type)}><ActionIcon kind={option.type}/>{option.label}</button>)}</div>)}
           <div className="dg-action-rail-turn"><small>TURN</small>{(['end-action','pass'] as const).filter(type=>candidates.some(candidate=>candidate.command.type===type)).map(type=><button className="dg-action-rail-turn-button" key={type} type="button" disabled={blocked} onClick={()=>activate(type)}>{queueMode?'Queue for my turn · ':''}{type==='pass'&&own.passed?'Pass reaction':actionLabel(type)}</button>)}{!candidates.some(candidate=>['finish-upkeep','end-action','pass'].includes(candidate.command.type))&&<span className="dg-action-rail-turn-status">{own.passed?'Passed · waiting':'Waiting for your turn'}</span>}{view.phase!=='finished'&&!own.eliminated&&<AutoPassControl enabled={own.autoPassUnlessAttacked??false} paused={own.autoPassPausedRound===view.round} disabled={!connected||busy} disabledReason={!connected?'Reconnect to change auto-pass.':busy?'Saving your change…':undefined} onChange={enabled=>onSubmit({type:'set-auto-pass',enabled})}/>}</div>
         </nav>}
       </div>
@@ -1040,7 +1050,7 @@ function SecondDawnBoardContent({
       {settingsOpen&&<GameSettingsPanel onHistory={()=>{setSettingsOpen(false);setHistoryOpen(true);setInspectorOpen(true);if(compact){setScreen("Activity");setMobileSheet("closed");setMobileActionMode(false);}}} onGameMenu={()=>{setSettingsOpen(false);onMenu();}} motionEnabled={motionEnabled} onMotionChange={changeMotion} followAi={followAi} onFollowAiChange={changeFollowAi} autoPass={view.phase!=='finished'&&!own.eliminated?{enabled:own.autoPassUnlessAttacked??false,paused:own.autoPassPausedRound===view.round,disabled:blocked,disabledReason:interactionBlockedReason??(!connected?'Reconnect to change auto-pass.':busy?'Saving your change…':undefined),onChange:enabled=>onSubmit({type:'set-auto-pass',enabled})}:undefined} onClose={()=>setSettingsOpen(false)}/>}
       {inspectSector&&<FleetInspection abilities={!inspectingGalaxy?<FactionAbilityControls objectSectorId={inspectSector} globalActions={false} onPreview={()=>setAuxiliaryActivity('faction')} view={planningView} candidates={candidates} disabled={blocked} onSubmit={onSubmit} onAction={activate}/>:undefined} showCombatOdds={showCombatOdds} view={view} sectorId={inspectSector} selectedShipIds={movementDraft.ids.length?movementDraft.ids:[...new Set(moveRoutePreviews.flatMap(route=>route.draft.shipIds))]} onClose={()=>{setInspectSector(null);setInspectDiplomacy(null);}} onDiplomacy={setInspectDiplomacy} diplomacy={inspectDiplomacy?<DiplomacyPanel view={planningView} candidates={candidates} inspectedSeatId={inspectDiplomacy} disabled={blocked} onSubmit={onSubmit}/>:undefined}/>}
       {compact&&status&&!/^(Saved|Saving|Applied to the isolated|Engine fixture review)/.test(status)&&<div className="dg-mobile-feedback" role="status" aria-live="polite">{status}</div>}
-      {compact&&<MobileNavigation selected={mobileDestination} onSelect={mobileNavigate} onActions={!view.pendingDecision&&view.phase!=='finished'&&(view.phase==='upkeep'?needsUpkeep(view):view.activeSeatId===own.id||queueMode)&&!mobileActionMode?()=>{setMobileActionsOpen(true);setMobileSheet('expanded');setHistoryOpen(false);setAiDismissed(true);}:undefined} onTurn={!mobileActionMode&&mobileTurnType?{label:`${queueMode?'Queue for my turn · ':''}${mobileTurnType==='pass'&&own.passed?'Pass reaction':actionLabel(mobileTurnType)}`,disabled:blocked,submit:()=>activate(mobileTurnType)}:undefined} afterPass={view.phase==='action'&&!own.eliminated?<AutoPassControl enabled={own.autoPassUnlessAttacked??false} paused={own.autoPassPausedRound===view.round} disabled={!connected||busy} disabledReason={!connected?'Reconnect to change auto-pass.':busy?'Saving your change…':undefined} onChange={enabled=>onSubmit({type:'set-auto-pass',enabled})}/>:undefined} pending={!!view.pendingDecision&&(screen!=='Decision'||spatialDecision&&mobileSheet!=='expanded')} pendingLabel={view.pendingDecision?`Return to ${choiceLabel(view.pendingDecision)}`:undefined} onDecision={returnToChoice} onConfirm={mobileActionMode&&draft&&action!=='research'?{label:queueMode?'Queue for my turn':draft.command.type==='finish-upkeep'?'Collect income':draft.command.type==='explore'?'Explore':'Commit action',disabled:blocked||draftGuard.stale||!stillLegal,submit:()=>draft.command.type==='finish-upkeep'?finishUpkeep(draft.command):onSubmit(draft.command)}:undefined} onEndAction={mobileActionMode&&!draft&&candidates.some(candidate=>candidate.command.type==='end-action')?()=>activate('end-action'):undefined} actionLabel={mobileActionMode?`${actionLabel(action)}${planningView.actionProgress?` · ${planningView.actionProgress.budgets?.[action as import("../../shared/eclipse/types").Action]??planningView.actionProgress.remaining} left`:''}`:undefined} onBack={()=>{setMobileActionMode(false);setMobileSheet('closed');setMobileActionsOpen(false);setScreen('Galaxy');}} onDetails={mobileActionMode&&!['research','upgrade','trade'].includes(action)?()=>{if(action==='build')setBuildOpen(true);else setMobileSheet('expanded');}:undefined}/>}
+      {compact&&<MobileNavigation selected={mobileDestination} onSelect={mobileNavigate} onActions={!view.pendingDecision&&view.phase!=='finished'&&(view.phase==='upkeep'?needsUpkeep(view):view.activeSeatId===own.id||queueMode)&&!mobileActionMode?()=>{setMobileActionsOpen(true);setMobileSheet('expanded');setHistoryOpen(false);setAiDismissed(true);}:undefined} onTurn={(!mobileActionMode||mobileTurnType==='end-action'&&action===planningView.actionProgress?.action&&!currentActionHasDraft)&&mobileTurnType?{label:`${queueMode?'Queue for my turn · ':''}${mobileTurnType==='pass'&&own.passed?'Pass reaction':actionLabel(mobileTurnType)}`,disabled:blocked,submit:()=>activate(mobileTurnType)}:undefined} afterPass={view.phase==='action'&&!own.eliminated?<AutoPassControl enabled={own.autoPassUnlessAttacked??false} paused={own.autoPassPausedRound===view.round} disabled={!connected||busy} disabledReason={!connected?'Reconnect to change auto-pass.':busy?'Saving your change…':undefined} onChange={enabled=>onSubmit({type:'set-auto-pass',enabled})}/>:undefined} pending={!!view.pendingDecision&&(screen!=='Decision'||spatialDecision&&mobileSheet!=='expanded')} pendingLabel={view.pendingDecision?`Return to ${choiceLabel(view.pendingDecision)}`:undefined} onDecision={returnToChoice} onBack={closeActivity}/>}
     </main>
     </DecisionMapContext.Provider>
     </CommitContext.Provider>
