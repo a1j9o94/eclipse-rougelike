@@ -41,6 +41,12 @@ describe('verified historical checkpoint reconstruction', () => {
     }
     expect(game).toEqual(before);
   });
+  it('restores shuffled physical seating without changing historical random streams', () => {
+    const game = record({...base, randomizeStartingPositions: true, randomizeStartingPlayer: true, minorSpecies: true});
+    for (const targetRevision of [1, 3, game.entries.length]) {
+      expect(recoverHistoryCheckpoint({...game, targetRevision})).toEqual({ok: true, checkpoint: game.checkpoints[targetRevision - 1]});
+    }
+  });
   it('restores expanded factions, private initial discovery and custom colors', () => {
     const game = record({ seed: 0, warpPortals: false, randomizeStartingPlayer: true, factionProfile: 'expanded-v1', seats: [
       { id: 'one', faction: 'magellan', controller: 'human', pieceColor: 'red' },

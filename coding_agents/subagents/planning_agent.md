@@ -944,3 +944,12 @@ Outcome: play selected audition C at 120 BPM through menus and matches. Acceptan
 - Decision Log: repair the live command/candidate mismatch and expose the already implemented Guild panel in the Trade workspace. Preserve current trade rates and portal fees.
 - Follow-ups: verify the specific room advances after backend release and perform human Guild offer exchange playtest.
 - Release follow-up decision: add an internal operator recovery for the exact revision and portal-toll failure so the already stalled room can resume without requiring a player refresh. Its fail-first test confirms stale revisions and repeated calls cannot schedule another job.
+
+## 2026-10-25 — Random starting positions
+- Outcome: repeated new games with the same factions vary each faction's location and neighbours.
+- Acceptance: solo and URL-room starts shuffle physical clockwise seats, retaining player IDs, factions, home sectors and ships; all player counts keep valid layouts; existing saves and deterministic historical setup remain compatible.
+- Risks/rollback: turn order must follow physical seating; replay recovery must reproduce setup. Roll back this commit if release checks fail; no saved-state migration.
+- Tests (fail first): setup variation and identity/geometry checks for 2–6 players; same-seed determinism; legacy omitted/false compatibility; history recovery after shuffled setup; live solo/room integration.
+- Decision: use an independent salted seeded stream to shuffle setup seats, leaving the persisted gameplay random stream unchanged. Enable only at live match creation callsites.
+- Follow-ups: none beyond deployment verification.
+- Result: reproduced fixed positions before the change; all 98 relevant tests across 17 suites pass after implementation. `npm run lint`, `npm run build` (Convex codegen, both TypeScript checks, Vite), and `git diff --check` pass. Independent focused agent reviewed live callsites, clockwise ordering and replay compatibility, and verified integration regressions.

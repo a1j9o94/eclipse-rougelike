@@ -40,6 +40,8 @@ export interface GameSetup {
   riftCannons?: boolean;
   /** Live matches opt in; omitted preserves historical deterministic fixture setup. */
   randomizeStartingPlayer?: boolean;
+  /** Live matches shuffle clockwise seats; omitted preserves historical setup. */
+  randomizeStartingPositions?: boolean;
   /** Omitted preserves the standard game, including historical deterministic setups. */
   rulesMode?: "standard" | "less-random-v1";
   ruleOptions?: GameRuleOptions;
@@ -97,7 +99,12 @@ export function createGame(config: GameSetup): GameState {
     reputation.state,
     BASE_COMPONENTS.sectorIds.guardians,
   );
-  const seats: Seat[] = config.seats.map((s) => {
+  // A separate setup stream keeps the gameplay stream and history recovery
+  // unchanged: saved seats already contain the final physical clockwise order.
+  const physicalSeats = config.randomizeStartingPositions
+    ? shuffle(randomSeed((config.seed ^ 0x73656174) >>> 0), config.seats).items
+    : config.seats;
+  const seats: Seat[] = physicalSeats.map((s) => {
     const f = getFaction(s.faction);
     const technologies: Seat["technologies"] = {
       military: [],
