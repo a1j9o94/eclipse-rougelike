@@ -28,19 +28,23 @@ function renderBoard(mobile: boolean) {
   return { onSubmit, scroll };
 }
 
-it.each([false, true])('opens own Command Center tracks from the affordable-action number (mobile: %s)', mobile => {
+it.each([false, true])('opens own Command Center tracks from the header economy controls (mobile: %s)', mobile => {
   const { onSubmit, scroll } = renderBoard(mobile);
-  const indicator = screen.getByRole('button', { name: /actions affordable.*income and upkeep tracks/i });
-  fireEvent.click(indicator);
+  if (mobile) fireEvent.click(screen.getByRole('button', { name: 'Open income and upkeep tracks in Command Center' }));
+  else {
+    fireEvent.doubleClick(screen.getByLabelText(/more actions? affordable this round/));
+    fireEvent.click(screen.getByRole('button', {name: 'Inspect economy tracks'}));
+  }
   expect(screen.getByRole('heading', { name: 'Income & upkeep tracks' })).toBeVisible();
   expect(within(screen.getByRole('region', { name: 'Economy tracks' })).getByRole('region', { name: 'Money income track' })).toBeVisible();
   expect(scroll).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
   expect(onSubmit).not.toHaveBeenCalled();
 });
 
-it('retains the short forecast explanation behind the This round disclosure', () => {
+it('keeps gold detail behind double-click without navigating away from play', () => {
   renderBoard(false);
-  fireEvent.click(screen.getByText('This round'));
-  expect(screen.getByText(/Forecast assumes no further trading/)).toBeVisible();
+  fireEvent.doubleClick(screen.getByLabelText(/more actions? affordable this round/));
+  expect(screen.getByText('Held')).toBeVisible();
+  expect(screen.getByText(/Purchase costs and later income changes/)).toBeVisible();
   expect(screen.queryByRole('heading', { name: 'Income & upkeep tracks' })).toBeNull();
 });

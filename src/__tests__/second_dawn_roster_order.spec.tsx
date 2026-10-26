@@ -10,8 +10,9 @@ function names(){return within(screen.getByRole('region',{name:'Civilization ros
 it('shows the active player then clockwise turns and preserves faction inspection after rotation',()=>{
  const state=fixture();state.activeSeatId='c';
  const ui=render(<SecondDawnBoard view={getPlayerView(state,'a')!} {...props}/>);
+ fireEvent.click(screen.getByRole('button',{name:'Table & activity'}));
  expect(names()).toEqual(['Planta','Orion Hegemony','Hydran Progress','Eridani Empire']);
- expect(screen.getByText('Turn order →')).toBeInTheDocument();
+ expect(screen.getByRole('navigation',{name:'Turn order'})).toBeVisible();
  const hydran=within(screen.getByRole('region',{name:'Civilization roster'})).getByRole('button',{name:/Hydran Progress/});
  const color=hydran.style.getPropertyValue('--owner');
  state.activeSeatId='d';state.revision++;
@@ -25,6 +26,7 @@ it('shows the active player then clockwise turns and preserves faction inspectio
 it('keeps passed reaction turns in clockwise order, places eliminated seats last, and identifies next round first',()=>{
  const state=fixture();state.activeSeatId='c';state.firstPasser='a';state.startSeatId='a';state.seats[0].passed=true;state.seats[3].eliminated=true;
  render(<SecondDawnBoard view={getPlayerView(state,'a')!} {...props}/>);
+ fireEvent.click(screen.getByRole('button',{name:'Table & activity'}));
  expect(names()).toEqual(['Planta','Hydran Progress','Eridani Empire','Orion Hegemony']);
  const roster=within(screen.getByRole('region',{name:'Civilization roster'}));
  expect(roster.getByRole('button',{name:/Hydran Progress/})).toHaveTextContent('Next round first');
@@ -33,5 +35,6 @@ it('keeps passed reaction turns in clockwise order, places eliminated seats last
 it('anchors non-action phases to the start tile rather than combat decision ownership',()=>{
  const state=fixture();state.phase='combat';state.startSeatId='c';state.activeSeatId='b';
  render(<SecondDawnBoard view={getPlayerView(state,'a')!} {...props}/>);
+ fireEvent.click(screen.getByRole('button',{name:'Table & activity'}));
  expect(names()).toEqual(['Planta','Orion Hegemony','Hydran Progress','Eridani Empire']);
 });

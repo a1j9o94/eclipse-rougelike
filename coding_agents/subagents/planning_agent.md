@@ -969,3 +969,7 @@ Risk and rollback: icons must remain understandable, deferred costs must not loo
 ### Visual play implementation — October 25, 2026
 
 User approved implementation and subsequently clarified persistent combat, shared wormhole symbols and principled interaction affordances. Supervisor plus the three assigned agents implemented the shared contracts and audited complete workflows. Evidence, bounded test results, browser geometry, risks, and explicit human-acceptance limits are in [visual_play_delivery.md](../visual_play_delivery.md) and its three linked slice ledgers. Functional/representative visual checks pass; observed newcomer/expert sessions remain open. The repository's standing authorization governs the Git-triggered production release.
+
+## October 26, 2026 — header navigation repair
+
+Outcome: aligned header controls, visible and operable tools/economy dropdowns, and persistent compact turn order. Acceptance, fail-first browser evidence, shared CSS ownership, and rollback are recorded in [header_navigation_repair.md](../header_navigation_repair.md). Supervisor coordinates focused planning/turn-order, implementation, and browser-regression agents. The additional strip must preserve usable mobile workspaces.

@@ -18,6 +18,8 @@
     "typecheck:eclipse": "tsc -p tsconfig.eclipse.json",
     "test:second-dawn": "vitest run --maxWorkers=1 src/__tests__/second_dawn",
     "test:second-dawn:visual": "node tools/second-dawn-check-visual.mjs",
+    "test:second-dawn:header": "node tools/second-dawn-check-header.mjs",
+    "test:second-dawn:inspector-scroll": "node tools/second-dawn-check-inspector-scroll.mjs",
     "test:ci": "vitest run --pool=forks --reporter=dot",
     "test:ci:shard1": "NODE_OPTIONS=--max-old-space-size=4096 vitest run --pool=forks --maxWorkers=1 --reporter=dot --shard=1/6",
     "test:ci:shard2": "NODE_OPTIONS=--max-old-space-size=4096 vitest run --pool=forks --maxWorkers=1 --reporter=dot --shard=2/6",

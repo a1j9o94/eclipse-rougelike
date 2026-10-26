@@ -5,12 +5,23 @@ import {getPlayerView} from '../../shared/eclipse/protocol';
 import UpkeepSummary from '../second-dawn-game/UpkeepSummary';
 afterEach(cleanup);
 function view(){const state=createGame({seed:9,seats:[{id:'a',faction:'hydran',controller:'human'},{id:'b',faction:'eridani',controller:'ai'}]});const seat=state.seats[0];seat.resources.money=2;seat.populationTracks.money=1;seat.influenceOnTrack=10;return getPlayerView(state,'a')!;}
-it('keeps only the round-end balance in the header and opens its breakdown deliberately',()=>{
- const rendered=render(<UpkeepSummary view={view()}/>),summary=screen.getByLabelText('Round-end balance: 4 money');
- expect(within(summary).getByText('4')).toBeInTheDocument();expect(within(summary).queryByText(/actions affordable/)).toBeNull();
- expect(screen.getByText('Held')).not.toBeVisible();fireEvent.click(summary);expect(rendered.container.querySelector('details')).toHaveAttribute('open');
+it('leads with remaining affordable actions and opens gold details on double-click',()=>{
+ const rendered=render(<UpkeepSummary view={view()}/>),summary=screen.getByLabelText(/3 more actions affordable this round/);
+ expect(within(summary).getByText('3 actions affordable')).toBeInTheDocument();expect(within(summary).queryByText(/money|Round end|4/)).toBeNull();
+ expect(screen.getByText('Held')).not.toBeVisible();fireEvent.click(summary,{detail:1});expect(rendered.container.querySelector('details')).not.toHaveAttribute('open');
+ fireEvent.doubleClick(summary);expect(rendered.container.querySelector('details')).toHaveAttribute('open');
  expect(screen.getByText('Held')).toBeVisible();expect(screen.getByText('−1')).toBeVisible();expect(screen.getByText('+3')).toBeVisible();
+ fireEvent.doubleClick(summary);expect(screen.getByText('Held')).not.toBeVisible();
 });
-it('makes an actual shortfall visible without a rules paragraph',()=>{const v=view();v.seats[0].resources.money=0;v.seats[0].influenceOnTrack=6;render(<UpkeepSummary view={v}/>);expect(screen.getByLabelText('Round-end balance: -4 money')).toHaveTextContent('4 short');});
-it('does not replace combat status with the player’s prior pass state',()=>{const v=view();v.phase='combat';v.seats[0].passed=true;render(<UpkeepSummary view={v}/>);expect(screen.queryByText(/Passed|Reactions only/)).toBeNull();expect(screen.getByLabelText('Round-end balance: 4 money')).toBeInTheDocument();});
+it('retains keyboard and assistive activation of the details',()=>{
+ const rendered=render(<UpkeepSummary view={view()}/>),summary=screen.getByLabelText(/3 more actions affordable this round/);
+ summary.focus();fireEvent.keyDown(summary,{key:'Enter'});expect(screen.getByText('Held')).toBeVisible();
+ fireEvent.keyDown(summary,{key:'Escape'});expect(rendered.container.querySelector('details')).not.toHaveAttribute('open');expect(summary).toHaveFocus();
+ fireEvent.keyDown(summary,{key:' '});expect(screen.getByText('Held')).toBeVisible();
+ fireEvent.keyDown(summary,{key:' '});expect(screen.getByText('Held')).not.toBeVisible();
+ fireEvent.click(summary,{detail:0});expect(screen.getByText('Held')).toBeVisible();
+});
+it('shows no affordable actions for an unfunded round and keeps the amount in its details',()=>{const v=view();v.seats[0].resources.money=0;v.seats[0].influenceOnTrack=6;render(<UpkeepSummary view={v}/>);const summary=screen.getByLabelText(/0 more actions affordable this round/);expect(summary).toHaveTextContent('0 actions affordable');expect(summary).not.toHaveTextContent('4 short');fireEvent.doubleClick(summary);expect(screen.getByText('−7')).toBeVisible();expect(screen.getByText('-4')).toBeVisible();});
+it('does not replace combat status with the player’s prior pass state',()=>{const v=view();v.phase='combat';v.seats[0].passed=true;render(<UpkeepSummary view={v}/>);expect(screen.queryByText(/Passed|Reactions only/)).toBeNull();expect(screen.getByText('Combat')).toBeInTheDocument();});
+it('does not promise new actions after passing or exhausting influence discs',()=>{const v=view();v.seats[0].passed=true;const ui=render(<UpkeepSummary view={v}/>);expect(screen.getByText('Passed')).toBeInTheDocument();v.seats[0].passed=false;v.seats[0].influenceOnTrack=0;v.seats[0].resources.money=100;ui.rerender(<UpkeepSummary view={v}/>);expect(screen.getByText('No action discs')).toBeInTheDocument();});
 it('omits forecasts once final scores are shown',()=>{const v=view();v.phase='finished';const {container}=render(<UpkeepSummary view={v}/>);expect(container).toBeEmptyDOMElement();});

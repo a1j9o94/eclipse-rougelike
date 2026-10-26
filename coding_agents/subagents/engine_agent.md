@@ -409,3 +409,31 @@ Validation: initial four queue tests failed before implementation; ownership-dec
 - Decision: quote Guild tolls across the full coordinated move before offering an AI candidate. A connected owner requests one automatic recovery for a failed ordinary AI decision; the server preserves the attempt count and rejects a second automatic retry for the same revision. The existing manual retry remains available after the bound is reached.
 - TDD: the portal candidate test first failed with the exact unaffordable two-ship command; the recovery test first failed because the mutation did not exist. All 24 tests in the three focused suites now pass. `npm run lint` and `npm run build` pass.
 - Follow-up: after release, check the reported room advances past revision 155 and that the AI status clears. No saved-game migration is needed.
+
+## 2026-10-26 — Header control alignment and popover visibility
+
+- File: `src/second-dawn-game/visualPlay.css`; no game state, command, or saved-data changes.
+- Root causes reproduced in a real browser before the fix: the desktop header clipped popovers with `overflow-y:hidden`; inherited page-level disclosure margins moved Game tools and Round end 12px below adjacent controls.
+- Header controls now share scoped zero disclosure margins and 44px action targets. The desktop strip can wrap complete groups and does not clip overlays; both header variants place their menus above board sheets and the table roster.
+- Header media rules now match the actual compact-layout query, including tablet widths through 1023px and short coarse-pointer screens. Other responsive content rules retain their existing scope.
+- Mobile sheet height uses the measured workspace boundary and footer height, so the restored turn-order strip consumes its actual height without covering map choices or commit controls.
+- Verification: browser geometry, hit-testing, and real Preferences/Game menu clicks are covered by `tools/second-dawn-check-header.mjs`; the root delivery ledger records final gates and viewport results.
+
+### Inspector scrolling follow-up
+
+- A real postbattle control state exposed an unbounded inner decision body: at 1366×768 the Confirm button extended to y1058, while wheel events stopped at the inner `overscroll-behavior:contain` surface instead of scrolling the outer inspector.
+- The shared inspector now establishes a finite flex boundary. Ordinary sector details own one scrolling body; spatial choices and structured action planners bound their existing bodies and keep commits outside scrolling content. Influence sector lists use that same body instead of nesting another vertical scrollbar. Hidden battle, empire, and placement layouts retain their existing visibility rules.
+- Added `tools/second-dawn-check-inspector-scroll.mjs`. It derives postbattle control using 12 accepted engine commands, checks real wheel input for long sector information, control choices, and an ordinary Influence draft with expanded source/destination lists across five desktop/tablet/phone sizes, verifies commits remain visible, and confirms control and Influence through `processGameCommand`. All 15 viewport/workflow checks passed; no forced clicks or programmatic scroll jumps substitute for wheel input.
+
+## 2026-10-26 — Always-visible turn order
+
+- Restored a compact 48px turn-order strip below the desktop/mobile header. Faction symbols and names remain visible without opening Table & activity; current turn, viewer, passed/eliminated seats, and independent upkeep readiness are explicit. Buttons open the existing empire inspection.
+- Reused `rosterTurnOrder` and stable `seatColor` rather than constructing a separate turn sequence. Passed seats retain reaction turns; eliminated seats appear last; non-action phases show seat order without falsely marking an action turn. Full roster details remain in Table & activity with the duplicate order heading removed.
+- Horizontal scrolling keeps names readable on phones. A new turn resets to the active-first chip; ordinary state updates preserve manual scrolling. Targets remain 44px with keyboard focus visible inside the scroller.
+- TDD: five initial board tests failed for the missing visible strip; the subsequent horizontal-scroll reset test failed before the effect was added. Final related batch passed 23 tests across four suites (strip, detailed roster, pass-order rules, mobile shell), and targeted ESLint passed. Root owns final lint/build and browser gate; header stylesheet uses measured workspace geometry for the added row.
+
+## 2026-10-26 — Affordable actions first, gold detail on double-click
+
+- User preference: the visible desktop economy control shows remaining affordable ordinary actions; round-end money belongs in its detail view. `UpkeepSummary` again uses the existing `affordableActionCapacity(upkeepForecast(view))` result as its primary value. No game or projection mathematics changed.
+- Mouse single-click leaves the indicator compact; double-click toggles the income/upkeep breakdown. Enter, Space, and assistive activation remain available; Escape closes the detail and returns focus. Passed, eliminated, empty-disc, and non-action phases use accurate status labels instead of promising playable actions. The compact mobile holdings layout remains unchanged.
+- TDD: five updated summary expectations failed before implementation. All 17 tests in the summary, affordability, and Command Center navigation suites now pass; targeted ESLint and diff checks pass. Stale ActionEconomy paragraph assertions were replaced with equivalent projected-capacity checks, retaining expected numeric budgets without restoring removed prose. The browser header checker covers real double-click and keyboard behavior at desktop widths.
