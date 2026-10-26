@@ -437,3 +437,21 @@ Validation: initial four queue tests failed before implementation; ownership-dec
 - User preference: the visible desktop economy control shows remaining affordable ordinary actions; round-end money belongs in its detail view. `UpkeepSummary` again uses the existing `affordableActionCapacity(upkeepForecast(view))` result as its primary value. No game or projection mathematics changed.
 - Mouse single-click leaves the indicator compact; double-click toggles the income/upkeep breakdown. Enter, Space, and assistive activation remain available; Escape closes the detail and returns focus. Passed, eliminated, empty-disc, and non-action phases use accurate status labels instead of promising playable actions. The compact mobile holdings layout remains unchanged.
 - TDD: five updated summary expectations failed before implementation. All 17 tests in the summary, affordability, and Command Center navigation suites now pass; targeted ESLint and diff checks pass. Stale ActionEconomy paragraph assertions were replaced with equivalent projected-capacity checks, retaining expected numeric budgets without restoring removed prose. The browser header checker covers real double-click and keyboard behavior at desktop widths.
+
+### Affordable-actions disclosure reliability follow-up
+
+- The user reported missed clicks and selected trigger text. This supersedes the earlier double-click interaction: the indicator now uses the browser’s native single-click disclosure, with no click-count filtering, timing, or custom keyboard toggling. Affordable-action counts and all economy calculations remain unchanged.
+- Text selection is disabled only on the summary control; breakdown content remains selectable. Escape from within the open detail closes it and restores trigger focus.
+- Two first-click tests failed against the prior implementation. All 17 summary, affordability, and Command Center navigation tests now pass. Native Enter/Space behavior and text-selection protection are checked in the real-browser header suite because jsdom does not emulate keyboard activation of native summary elements.
+
+### Player-card containment follow-up
+
+- The detailed roster inherited six columns inside a 720px popup, unconstrained text flex items, and a shrinking list on phones. Faction/status text and VP could therefore escape the selected card border.
+- `visualPlay.css` now lays out complete cards in a responsive grid, with a dedicated emblem, a wrapping identity/status column, and a reserved VP column. Cards retain natural heights; the table panel owns vertical scrolling. The mobile popup is anchored below the header and turn-order strip, keeping Close table details accessible. Persistent turn-order presentation and semantics are unchanged.
+- Added `tools/second-dawn-check-player-cards.mjs`: ten fail-first browser cases cover three/six players at 320, 390, 761, 1366, and 1920px, including an unusually long unbroken player name. Text ranges, faction symbols and VP must remain inside each card border; the table remains in the viewport with an unobstructed Close control, and actual player inspection clicks succeed. All ten cases pass; phone screenshots were visually reviewed.
+
+### Rift feedback and compact battle reward follow-up
+
+- Verified the engine already applies both backfire outcomes; presentation now distinguishes them from blank misses on the compact die and commit summary, and labels actual own-fleet damage on the persistent ship and receipt. Result dice expose semantic accessible images. All values use the existing shared rule helper and authoritative receipt; engine math is unchanged.
+- A real browser resolve caught the expanded reputation panel obscuring damage and continuation on short screens. The battle-only reward now starts compact, with native disclosure for drawn/retained tiles and bounded detail scrolling. Continue remains available when expanded.
+- Four initial Rift component assertions and two subsequent accessibility assertions failed first; relevant tests and three actual engine-backed browser flows pass. Full release gates and production verification are supervised in `coding_agents/game_control_feedback.md`.

@@ -108,7 +108,18 @@ export function CombatPlayback({ volleys, view, knownShips = [], fast = false, s
   const awaitingDice = dice3dEnabled && !isFast && opponentRolls.length > 0 && settledRoll !== opponentRollId;
   useCombatVolleySounds({volleys,eligible:soundEligible,awaitingDice,skipped:skipMotion});
   if (!volleys.length) return null;
-  if(inline)return <div className="dg-battlefield-last-roll" aria-label="Last volley"><DiceRoll3D skipped={skipMotion} rolls={opponentRolls} rollId={opponentRollId} onComplete={()=>setSettledRoll(opponentRollId)} enabled={dice3dEnabled&&!isFast&&opponentRolls.length>0}><div className="dg-result-dice">{volleys.at(-1)!.dice.map(die=><span key={die.id} aria-label={`Roll ${die.face}, ${die.damage} damage`}><EclipseDieFace color={die.weaponColor??'#bac0ce'} face={die.face} decorative/></span>)}</div></DiceRoll3D><small>{destroyedCount?`${destroyedCount} ${destroyedCount===1?'ship':'ships'} destroyed`:'Volley resolved'}</small>{!isFast&&awaitingDice&&<button onClick={()=>setSkippedRollId(opponentRollId)}>Skip volley animation</button>}</div>;
+  if(inline){
+    const latest=volleys.at(-1)!;
+    const backfire=latest.targets.reduce((sum,target)=>sum+(target.owner===latest.attacker?Math.max(0,target.hpBefore-target.hpAfter):0),0);
+    return <div className="dg-battlefield-last-roll" aria-label="Last volley">
+      <DiceRoll3D skipped={skipMotion} rolls={opponentRolls} rollId={opponentRollId} onComplete={()=>setSettledRoll(opponentRollId)} enabled={dice3dEnabled&&!isFast&&opponentRolls.length>0}>
+        <div className="dg-result-dice">{latest.dice.map(die=><span role="img" key={die.id} aria-label={die.weaponColor==='magenta'?eclipseDieFace('magenta',die.face).label:`Roll ${die.face}, ${die.damage} damage`}><EclipseDieFace color={die.weaponColor??'#bac0ce'} face={die.face} decorative/></span>)}</div>
+      </DiceRoll3D>
+      <small>{destroyedCount?`${destroyedCount} ${destroyedCount===1?'ship':'ships'} destroyed`:'Volley resolved'}</small>
+      {backfire>0&&<small className="dg-rift-backfire">{backfire} self-damage</small>}
+      {!isFast&&awaitingDice&&<button onClick={()=>setSkippedRollId(opponentRollId)}>Skip volley animation</button>}
+    </div>;
+  }
   return (
     <section className={`dg-combat-playback${isFast ? " is-fast" : ""}`} aria-label="Recent combat impacts">
       <header>
@@ -122,7 +133,7 @@ export function CombatPlayback({ volleys, view, knownShips = [], fast = false, s
       {volleys.map((volley, index) => (
         <article className="dg-playback-volley" key={`${volley.battleId}:${volley.dice.map(die => die.id).join(",")}:${index}`}>
           <VolleyScene volley={volley} view={view} knownShips={knownShips} still={isFast} awaitingDice={awaitingDice}/>
-          <div className="dg-result-dice">{volley.dice.map(die => <span key={die.id} className={`is-${die.weaponColor ?? "unknown"}`} aria-label={die.weaponColor==="magenta"?eclipseDieFace("magenta",die.face).label:`Roll ${die.face}, ${die.damage} damage`}><EclipseDieFace color={die.weaponColor??"#bac0ce"} face={die.face} decorative/><small>{die.weaponColor && die.weaponKind ? `${die.weaponColor} ${die.weaponKind}` : "weapon unavailable"}</small></span>)}</div>
+          <div className="dg-result-dice">{volley.dice.map(die => <span role="img" key={die.id} className={`is-${die.weaponColor ?? "unknown"}`} aria-label={die.weaponColor==="magenta"?eclipseDieFace("magenta",die.face).label:`Roll ${die.face}, ${die.damage} damage`}><EclipseDieFace color={die.weaponColor??"#bac0ce"} face={die.face} decorative/><small>{die.weaponColor && die.weaponKind ? `${die.weaponColor} ${die.weaponKind}` : "weapon unavailable"}</small></span>)}</div>
           <ul className="dg-impact-targets">{volley.targets.map(target => {
             const knownShip = knownShips.find(ship => ship.id === target.id) ?? view?.ships.find(ship => ship.id === target.id);
             const type = target.shipType ?? knownShip?.type;
@@ -236,6 +247,8 @@ function Battlefield({view,volleys,knownShips,fast,soundEligible,children}:{view
     <div className="dg-battlefield-ships">{[...ships.current.values()].filter(ship=>ship.owner===owner).map((ship,index)=>{
      const live=view.ships.find(candidate=>candidate.id===ship.id),stats=statsFor(ship),maximum=stats?stats.hull+1:0;
      const latestImpact=encounterVolleys.flatMap(volley=>volley.targets).filter(target=>target.id===ship.id).at(-1);
+     const backfireImpact=latest?.attacker===ship.owner?latest.targets.find(target=>target.id===ship.id):undefined;
+     const backfire=backfireImpact?Math.max(0,backfireImpact.hpBefore-backfireImpact.hpAfter):0;
      // Ships remain public when they retreat. Removal is authoritative even if
      // the separate history query has not delivered this volley yet.
      const gone=!live,retreated=!!live&&live.sectorId!==battle.sectorId,destroyed=gone;
@@ -249,6 +262,7 @@ function Battlefield({view,volleys,knownShips,fast,soundEligible,children}:{view
        {firing&&<small className="dg-firing-mark">Firing</small>}
        <span className="dg-hull-pips" aria-label={`${hp} of ${maximum} HP`}>{Array.from({length:Math.min(maximum,12)},(_,i)=><i key={i} data-state={i>=hp?'lost':i>=hp-planned?'planned':'intact'}/>)}</span>
        <span className="dg-battlefield-health">{destroyed?'Destroyed':retreated?'Retreated':target?.uncertainDamage?`${hp} HP → unknown`:planned?`${hp} → ${Math.max(0,hp-planned)} HP`:`${hp} / ${maximum} HP`}</span>
+       {backfire>0&&<small className="dg-rift-backfire">Rift backfire · {backfire} damage</small>}
        {target?.destroyed&&<strong className="dg-destruction-preview">Will destroy</strong>}
        {target?.hit===false&&<small>Selected die misses</small>}
       </button>

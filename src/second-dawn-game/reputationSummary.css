@@ -30,6 +30,15 @@
 .dg-reputation-auto p { margin: 0; }
 .dg-reputation-auto small { display: block; color: #a9bdc7; padding-top: 4px; font-size: 11px; }
 .dg-reputation-summary>header>button{width:44px;height:44px;min-height:44px;flex-basis:44px}.dg-reputation-summary details>summary{min-height:44px;display:flex;align-items:center;font-size:12px}.dg-battlefield-controls .dg-reputation-summary{width:auto;margin:10px 16px;box-shadow:none}.dg-reputation-summary .dg-reputation-private{font-size:11px;letter-spacing:.04em}
+.dg-reputation-summary.is-compact{padding:4px 10px;margin:4px 12px 8px}
+.dg-reputation-summary.is-compact>.dg-reputation-disclosure{border:0;padding:0}
+.dg-reputation-disclosure>summary{gap:12px;padding:4px!important;background:transparent!important;border:0!important}
+.dg-reputation-disclosure>summary>span:not(.dg-reputation-result-tile){display:grid;gap:3px}
+.dg-reputation-disclosure>summary strong[role=status]{font-size:16px;color:#f0db9b}
+.dg-reputation-disclosure>summary small{color:#bfccd1}
+.dg-battlefield-controls:has(>.dg-reputation-summary){display:flex;flex-direction:column}
+.dg-battlefield-controls>.dg-reputation-summary{flex:0 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain}
+.dg-battlefield-controls:has(>.dg-reputation-summary)>:is(.dg-commit-bar,.dg-battlefield-last-roll){flex-shrink:0}
 @media(max-width:480px){
  .dg-reputation-summary { padding: 11px 12px; }
  .dg-reputation-result-body { gap: 12px; flex-wrap: wrap; }

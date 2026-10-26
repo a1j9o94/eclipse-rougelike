@@ -32,7 +32,7 @@ it.each([false, true])('opens own Command Center tracks from the header economy 
   const { onSubmit, scroll } = renderBoard(mobile);
   if (mobile) fireEvent.click(screen.getByRole('button', { name: 'Open income and upkeep tracks in Command Center' }));
   else {
-    fireEvent.doubleClick(screen.getByLabelText(/more actions? affordable this round/));
+    fireEvent.click(screen.getByLabelText(/more actions? affordable this round/),{detail:1});
     fireEvent.click(screen.getByRole('button', {name: 'Inspect economy tracks'}));
   }
   expect(screen.getByRole('heading', { name: 'Income & upkeep tracks' })).toBeVisible();
@@ -41,9 +41,9 @@ it.each([false, true])('opens own Command Center tracks from the header economy 
   expect(onSubmit).not.toHaveBeenCalled();
 });
 
-it('keeps gold detail behind double-click without navigating away from play', () => {
+it('opens gold detail with one click without navigating away from play', () => {
   renderBoard(false);
-  fireEvent.doubleClick(screen.getByLabelText(/more actions? affordable this round/));
+  fireEvent.click(screen.getByLabelText(/more actions? affordable this round/),{detail:1});
   expect(screen.getByText('Held')).toBeVisible();
   expect(screen.getByText(/Purchase costs and later income changes/)).toBeVisible();
   expect(screen.queryByRole('heading', { name: 'Income & upkeep tracks' })).toBeNull();

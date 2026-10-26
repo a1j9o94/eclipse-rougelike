@@ -187,7 +187,7 @@ export default function DecisionPanel({
     <section className={`dg-decision ${decision.kind === "combat-allocation" ? "dg-combat-allocation" : ""}`}>
       <h2>{volley?`Assign hits · ${volley.remaining?`${volley.remaining} remaining`:'Ready'}`:decision.kind==='bombardment'?'Choose population to destroy':'Order firing groups'}</h2>
       {fields}
-      <section className="dg-decision-commit" aria-label="Commit action"><CommitBar summary={volley?<span aria-live="polite">{volley.remaining?`${volley.remaining} assignment${volley.remaining===1?'':'s'} left`:volley.destroyed?`${volley.destroyed} ship${volley.destroyed===1?'':'s'} will be destroyed`:volley.damage?`${volley.damage} damage assigned`:volley.uncertainDamage?'Hit preview unknown':'No damage'}{volley.destroyed>0&&volley.targets.some(target=>target.excess>0)?` · ${volley.targets.reduce((sum,target)=>sum+target.excess,0)} excess`:''}</span>:undefined}>
+      <section className="dg-decision-commit" aria-label="Commit action"><CommitBar summary={volley?<span aria-live="polite">{volley.remaining?`${volley.remaining} assignment${volley.remaining===1?'':'s'} left`:volley.destroyed?`${volley.destroyed} ship${volley.destroyed===1?'':'s'} will be destroyed`:volley.damage?`${volley.damage} damage assigned`:volley.uncertainDamage?'Hit preview unknown':volley.backfire?'No enemy damage':'No damage'}{volley.backfire?` · ${volley.backfire} self-damage`:''}{volley.destroyed>0&&volley.targets.some(target=>target.excess>0)?` · ${volley.targets.reduce((sum,target)=>sum+target.excess,0)} excess`:''}</span>:undefined}>
       <button
         className="sd-primary"
         disabled={disabled || !valid}

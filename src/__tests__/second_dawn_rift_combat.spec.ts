@@ -4,6 +4,7 @@ import { attackDieHits, riftDieOutcome, allocateRiftBackfire } from '../../share
 import { initialBlueprints } from '../../shared/eclipse/blueprints';
 import { randomInt, randomSeed } from '../../shared/eclipse/random';
 import { processGameCommand } from '../../shared/eclipse/engine';
+import { automaticCombatCommand } from '../../shared/eclipse/combatAutomation';
 import { getPlayerView } from '../../shared/eclipse/protocol';
 import { advanceRound } from '../../shared/eclipse/rounds';
 import type { GameState, Seat, GameEvent } from '../../shared/eclipse/types';
@@ -193,5 +194,25 @@ describe('Rift dice and compulsory backfire',()=>{
   const d=roll(s,[6]);expect(d.dice[0].targets).toEqual([]);
   resolveCombatChoice(s,'a',d,{kind:'combat-allocation',allocations:[]},[]);
   expect(s.ships.map(ship=>ship.id)).toEqual(['b-i','plain']);
+ });
+ it.each([5,6])('applies face %i backfire to surviving friendly hull identically through manual and auto-fight commands',face=>{
+  const s=riftFixture();s.seats[0].blueprints[0].parts[3]='hull';
+  // Keep the opponent alive so round cleanup cannot repair the observed damage.
+  s.seats[1].blueprints[0].parts=['hull','hull','hull','hull'];
+  const d=roll(s,[face]);
+  const before=structuredClone(s);
+  const manual=processGameCommand(s,'a',{type:'resolve',decisionId:d.id,choice:{kind:'combat-allocation',allocations:face===5?[{dieId:d.dice[0].id,targetId:'b-i'}]:[]}});
+  const command=automaticCombatCommand(getPlayerView(s,'a')!);
+  expect(command).not.toBeNull();
+  const automatic=processGameCommand(s,'a',command!);
+  expect(s).toEqual(before);
+  expect(manual.ok).toBe(true);expect(automatic.ok).toBe(true);
+  if(!manual.ok||!automatic.ok)throw new Error('Expected both combat commands to resolve');
+  expect(automatic.state).toEqual(manual.state);
+  expect(automatic.state.ships.find(ship=>ship.id==='a-i')).toMatchObject({damage:1});
+  expect(automatic.events.find(event=>event.combatVolley)?.combatVolley?.targets).toEqual(expect.arrayContaining([
+   expect.objectContaining({id:'a-i',owner:'a',hpBefore:2,hpAfter:1,destroyed:false}),
+   expect.objectContaining({id:'b-i',owner:'b',hpBefore:5,hpAfter:face===5?2:5,destroyed:false}),
+  ]));
  });
 });

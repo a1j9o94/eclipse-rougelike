@@ -23,3 +23,14 @@ it('renders nothing without an owner summary or for mismatched private ownership
  const view=fixture();view.private.seatId='b';const ui=render(<ReputationSummary view={view} onDismiss={()=>{}}/>);expect(ui.container).toBeEmptyDOMElement();
  view.private.seatId='a';delete view.private.reputationSummary;ui.rerender(<ReputationSummary view={view} onDismiss={()=>{}}/>);expect(ui.container).toBeEmptyDOMElement();
 });
+it('keeps the battle reward compact while its draw and collection open on demand',()=>{
+ render(<ReputationSummary view={fixture()} onDismiss={()=>{}} compact/>);
+ expect(screen.getByRole('status')).toHaveTextContent('Kept 4 VP');
+ expect(screen.getByRole('group',{name:'Reputation drawn',hidden:true})).not.toBeVisible();
+ fireEvent.click(screen.getByText('Private reputation · details'));
+ expect(screen.getByRole('group',{name:'Reputation drawn'})).toBeVisible();
+ fireEvent.click(screen.getByText('Your reputation · 11 VP'));
+ expect(screen.getByRole('group',{name:'Your retained reputation'})).toBeVisible();
+ fireEvent.click(screen.getByText('Private reputation · details'));
+ expect(screen.getByRole('group',{name:'Reputation drawn',hidden:true})).not.toBeVisible();
+});

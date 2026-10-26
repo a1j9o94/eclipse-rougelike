@@ -1,6 +1,6 @@
 import {deriveBlueprintStats,neutralBlueprint} from '../../shared/eclipse/blueprints';
 import {publicBlueprint} from '../../shared/eclipse/legal';
-import {attackDieHits} from '../../shared/eclipse/combat';
+import {attackDieHits,riftDieOutcome} from '../../shared/eclipse/combat';
 import type {PendingDecision,PlayerView} from '../../shared/eclipse/types';
 
 type Allocation=Extract<PendingDecision,{kind:'combat-allocation'}>;
@@ -33,5 +33,6 @@ export function combatAllocationPreview(view:PlayerView|undefined,decision:Alloc
   return {id,hp,damage,uncertainDamage,assigned,excess:hp===undefined?0:Math.max(0,damage-hp),destroyed:hp!==undefined&&hp>0&&damage>=hp};
  });
  const destroyed=targets.filter(target=>target.destroyed).length;
- return {remaining,targets,destroyed,damage:targets.reduce((sum,target)=>sum+target.damage,0),uncertainDamage:targets.reduce((sum,target)=>sum+target.uncertainDamage,0)};
+ const backfire=decision.dice.reduce((sum,die)=>sum+(die.weaponColor==='magenta'?riftDieOutcome(die.face).backfire:0),0);
+ return {remaining,targets,destroyed,backfire,damage:targets.reduce((sum,target)=>sum+target.damage,0),uncertainDamage:targets.reduce((sum,target)=>sum+target.uncertainDamage,0)};
 }

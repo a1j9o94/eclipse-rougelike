@@ -294,7 +294,7 @@
 .dg-battlefield-controls .dg-combat-turn-heading{display:none}
 .dg-battlefield-controls .dg-combat-turn>.dg-commit-bar{margin:0 -16px}
 .dg-battlefield-controls>p[role=status]{margin:0;padding:18px;text-align:center;color:#c6d5df}
-.dg-battlefield-last-roll{display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 12px;color:#c2d2dc}
+.dg-battlefield-last-roll{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px;padding:8px 12px;color:#c2d2dc}
 .dg-battlefield-last-roll .dg-result-dice{margin:0}.dg-battlefield-last-roll .dg-result-dice>span{border:0;padding:0}
 .dg-battlefield-inspection{padding:8px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#172b39;color:#cbdae4;font-size:13px}
 .dg-battlefield-inspection button{min-height:44px;margin-left:auto}
@@ -318,6 +318,7 @@
 }
 .is-battlefield-tray .dg-volley-die{position:relative;flex:0 0 84px!important;min-width:84px!important;min-height:82px!important;display:flex;flex-direction:column;gap:5px;padding:9px!important;align-items:center;justify-content:center}
 .is-battlefield-tray .dg-die-provenance{display:none}.dg-die-damage{font-size:12px!important}.dg-die-state{position:absolute;right:5px;top:3px;font-size:15px;color:#ecd18b}
+.dg-rift-backfire,.dg-die-backfire{color:#ffbd98;font-size:12px!important}.dg-die-backfire{white-space:nowrap}.dg-volley-die.has-backfire{border-color:#e5a478}
 .dg-die-inspection{position:relative;margin-left:auto;margin-right:10px}.dg-die-inspection>summary{min-height:44px;display:flex;align-items:center;font-size:12px;cursor:pointer;color:#bdcdda}
 .dg-die-inspection>p{position:absolute;right:0;bottom:100%;z-index:10;margin:0;padding:12px;border:1px solid #6b8391;border-radius:8px;background:#182b3a;width:220px;max-width:70vw;font-size:13px;color:#deebee;box-shadow:0 6px 20px #0009}
 @media(max-width:760px){.is-battlefield-tray .dg-volley-die{flex-basis:84px!important;min-width:84px!important;min-height:72px!important}.dg-battlefield-controls .dg-commit-summary{font-size:12px}}

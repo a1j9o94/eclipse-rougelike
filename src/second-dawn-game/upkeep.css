@@ -1,5 +1,6 @@
 .dg-upkeep-summary { position: relative; flex: 0 0 206px; border-left: 1px solid #66573a; padding-left: 16px; align-self: center; }
 .dg-upkeep-summary summary { cursor: pointer; list-style: none; }
+.dg-upkeep-summary > summary { -webkit-user-select: none; user-select: none; }
 .dg-upkeep-summary summary::-webkit-details-marker { display:none; }
 .dg-upkeep-summary summary > span { display:block; font-size:10px; color:#d5cab1; letter-spacing:.08em; text-transform:uppercase; }
 .dg-upkeep-summary strong { display:block; margin:3px 0; font-size:15px; line-height:1.2; color:#a0d3b6; font-weight:700; }

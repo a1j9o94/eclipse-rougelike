@@ -1,6 +1,7 @@
 import {useContext,useLayoutEffect,useState} from 'react';
 import {BattlefieldContext} from './battlefieldContext';
 import {automaticCombatAllocation} from '../../shared/eclipse/combatAutomation';
+import {riftDieOutcome} from '../../shared/eclipse/combat';
 import {combatAllocationPreview,combatHitPreview,combatTargetStats} from './combatAllocationPreview';
 import FactoryBadge from './FactoryBadge';
 import { researchedTechnologyIds } from '../../shared/eclipse/technologies';
@@ -107,28 +108,29 @@ export function CombatVolleyAllocator({ view, decision, targetLabels, values, se
     <div className="dg-volley-aim">
     <DiceRoll3D rolls={decision.dice.map(die => ({ id: die.id, face: die.face, color: die.weaponColor ?? "#bac0ce" }))} rollId={JSON.stringify([decision.battleId, decision.dice.map(die => [die.id, die.face])])} enabled={dice3dEnabled && motionEnabled}>
     <div className={`dg-dice-tray${battlefield?' is-battlefield-tray':''}`} role="group" aria-label="Rolled attack dice">
-      <header><strong>Your dice</strong>{battlefield&&selected&&<details className="dg-die-inspection"><summary>Die info</summary><p>{selected.weaponColor&&selected.weaponKind?`${selected.weaponColor} ${selected.weaponKind}`:'Weapon unavailable'} · {selected.damage} damage{selected.computer===undefined?' · computer unavailable':` · computer +${selected.computer}`}{selected.weaponColor==='magenta'?' · ignores shields; backfire applies':''}</p></details>}{view&&<button type="button" onClick={autoAssign}>Auto assign</button>}</header>
+      <header><strong>Your dice</strong>{battlefield&&selected&&<details className="dg-die-inspection"><summary>Die info</summary><p>{selected.weaponColor==='magenta'?`${eclipseDieFace('magenta',selected.face).label} · ignores computers and shields`:`${selected.weaponColor&&selected.weaponKind?`${selected.weaponColor} ${selected.weaponKind}`:'Weapon unavailable'} · ${selected.damage} damage${selected.computer===undefined?' · computer unavailable':` · computer +${selected.computer}`}`}</p></details>}{view&&<button type="button" onClick={autoAssign}>Auto assign</button>}</header>
       <div className="dg-volley-rolls">
       {decision.dice.map((die, index) => {
         const assigned = !die.split && values[die.id];
+        const backfire=die.weaponColor==='magenta'?riftDieOutcome(die.face).backfire:0;
         const weapon = die.weaponKind && die.weaponColor ? `${die.weaponColor} ${die.weaponKind}` : "Unknown weapon";
         const label = `Die ${index + 1}, roll ${die.face}, ${weapon}, ${die.damage} damage${die.weaponColor==="magenta"&&(die.face===5||die.face===6)?", 1 self-damage":""}${assigned ? `, assigned to ${targetLabels[assigned] ?? assigned}` : ""}`;
-        return <button type="button" key={die.id} className={`dg-volley-die is-${die.weaponColor ?? "unknown"}${selectedId === die.id ? " is-selected" : ""}${assigned ? " is-assigned" : ""}${die.hitTargets?.length === 0 ? " is-auto-miss" : ""}`} aria-label={label} aria-pressed={selectedId === die.id} onClick={() => die.hitTargets?.length !== 0 && setValue("__selectedDie", die.id)}>
-          <EclipseDieFace color={die.weaponColor??"#bac0ce"} face={die.face} decorative/><span className="dg-die-provenance"><strong>{die.weaponColor==="magenta"?"Rift cannon":weapon}</strong><small>{die.weaponColor==="magenta"?`${eclipseDieFace("magenta",die.face).label.replace("Rift die: ","")} · ignores shields`: `${die.damage} damage · ${die.computer === undefined ? "computer unknown" : `computer +${die.computer}`}`}</small></span>{battlefield&&<><small className="dg-die-damage">{die.damage} damage</small><b className="dg-die-state" aria-hidden="true">{assigned?'✓':die.hitTargets?.length===0?'×':''}</b></>}
+        return <button type="button" key={die.id} className={`dg-volley-die is-${die.weaponColor ?? "unknown"}${selectedId === die.id ? " is-selected" : ""}${assigned ? " is-assigned" : ""}${backfire?' has-backfire':die.hitTargets?.length === 0 ? " is-auto-miss" : ""}`} aria-label={label} aria-pressed={selectedId === die.id} onClick={() => die.hitTargets?.length !== 0 && setValue("__selectedDie", die.id)}>
+          <EclipseDieFace color={die.weaponColor??"#bac0ce"} face={die.face} decorative/><span className="dg-die-provenance"><strong>{die.weaponColor==="magenta"?"Rift cannon":weapon}</strong><small>{die.weaponColor==="magenta"?`${eclipseDieFace("magenta",die.face).label.replace("Rift die: ","")} · ignores shields`: `${die.damage} damage · ${die.computer === undefined ? "computer unknown" : `computer +${die.computer}`}`}</small></span>{battlefield&&<><small className="dg-die-damage">{die.damage} damage</small>{backfire>0&&<small className="dg-die-backfire">{backfire} self-damage</small>}<b className="dg-die-state" aria-hidden="true">{assigned?'✓':backfire?'!':die.hitTargets?.length===0?'×':''}</b></>}
         </button>;
       })}
       </div>
-      {decision.dice.some((die) => die.hitTargets?.length === 0) && <p className="dg-all-miss-note">Dashed dice need no target{decision.dice.some(die=>die.weaponColor==='magenta')?' · Rift backfire still applies':''}.</p>}
+      {decision.dice.some(die=>die.hitTargets?.length===0&&(die.weaponColor!=='magenta'||!riftDieOutcome(die.face).backfire))&&<p className="dg-all-miss-note">Dashed dice need no target.</p>}
     </div>
     </DiceRoll3D>
-    {!selected ? <p className="dg-all-miss-note">{decision.dice.some(die=>die.weaponColor==="magenta")?"No enemy damage · Rift backfire still applies.":"All dice missed · no targets needed."}</p> : selected.split && selected.hitTargets?.length !== 0 ? <><SplitDamageCards view={view} targetLabels={targetLabels} dieNumber={decision.dice.indexOf(selected) + 1} targets={selected.targets} damage={selected.damage} values={Object.fromEntries(selected.targets.map((target) => [target, Number(values[`${selected.id}/${target}`] ?? "0")]))} onChange={(target, next) => setValue(`${selected.id}/${target}`, String(next))}/>{!battlefield&&targetGrid}</> : !battlefield&&targetGrid}
+    {!selected ? <p className="dg-all-miss-note">{projection.backfire?"No enemy damage to assign · backfire resolves with this volley.":"All dice missed · no targets needed."}</p> : selected.split && selected.hitTargets?.length !== 0 ? <><SplitDamageCards view={view} targetLabels={targetLabels} dieNumber={decision.dice.indexOf(selected) + 1} targets={selected.targets} damage={selected.damage} values={Object.fromEntries(selected.targets.map((target) => [target, Number(values[`${selected.id}/${target}`] ?? "0")]))} onChange={(target, next) => setValue(`${selected.id}/${target}`, String(next))}/>{!battlefield&&targetGrid}</> : !battlefield&&targetGrid}
     </div>
   </div>;
 }
 
 export function CombatVolleyResult({ volley }: { volley: NonNullable<import("../../shared/eclipse/types").GameEvent["combatVolley"]> }) {
   return <div className="dg-volley-result" aria-label="Resolved combat volley">
-    <div className="dg-result-dice">{volley.dice.map((die) => <span key={die.id} className={`is-${die.weaponColor ?? "unknown"}`} aria-label={die.weaponColor==="magenta"?eclipseDieFace("magenta",die.face).label:`Roll ${die.face}, ${die.damage} damage`}><EclipseDieFace color={die.weaponColor??"#bac0ce"} face={die.face} decorative/><small>{die.weaponColor && die.weaponKind ? `${die.weaponColor} ${die.weaponKind}` : "weapon unavailable"}</small></span>)}</div>
+    <div className="dg-result-dice">{volley.dice.map((die) => <span role="img" key={die.id} className={`is-${die.weaponColor ?? "unknown"}`} aria-label={die.weaponColor==="magenta"?eclipseDieFace("magenta",die.face).label:`Roll ${die.face}, ${die.damage} damage`}><EclipseDieFace color={die.weaponColor??"#bac0ce"} face={die.face} decorative/><small>{die.weaponColor && die.weaponKind ? `${die.weaponColor} ${die.weaponKind}` : "weapon unavailable"}</small></span>)}</div>
     <ul>{volley.targets.map((target) => <li key={target.id}><strong>{target.id}</strong><span>{target.hpBefore} → {target.hpAfter} HP</span>{target.destroyed && <b>Destroyed</b>}{target.excess > 0 && <small>{target.excess} excess</small>}</li>)}</ul>
   </div>;
 }

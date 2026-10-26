@@ -19,6 +19,8 @@
     "test:second-dawn": "vitest run --maxWorkers=1 src/__tests__/second_dawn",
     "test:second-dawn:visual": "node tools/second-dawn-check-visual.mjs",
     "test:second-dawn:header": "node tools/second-dawn-check-header.mjs",
+    "test:second-dawn:player-cards": "node tools/second-dawn-check-player-cards.mjs",
+    "test:second-dawn:rift-feedback": "node tools/second-dawn-check-rift-feedback.mjs",
     "test:second-dawn:inspector-scroll": "node tools/second-dawn-check-inspector-scroll.mjs",
     "test:ci": "vitest run --pool=forks --reporter=dot",
     "test:ci:shard1": "NODE_OPTIONS=--max-old-space-size=4096 vitest run --pool=forks --maxWorkers=1 --reporter=dot --shard=1/6",

@@ -38,11 +38,11 @@ it('reports passed, eliminated, and empty-disc capacity without inventing ordina
  expect(affordableActionCapacity(upkeepForecast(v))).toMatchObject({status:'no-discs',actions:0});
 });
 
-it('leads with affordable capacity and exposes the same calculation on double-click',()=>{
+it('leads with affordable capacity and exposes the same calculation on one click',()=>{
  const v=view();v.seats[0].resources.money=2;v.seats[0].populationTracks.money=1;v.seats[0].influenceOnTrack=10;
  render(<UpkeepSummary view={v}/>);
  expect(screen.getByText('3 actions affordable')).toBeInTheDocument();
- fireEvent.doubleClick(screen.getByLabelText(/3 more actions affordable this round/));
+ fireEvent.click(screen.getByLabelText(/3 more actions affordable this round/),{detail:1});
  expect(screen.getByText('Held').nextElementSibling).toHaveTextContent('2');
  expect(screen.getByText('Income').nextElementSibling).toHaveTextContent('+3');
  expect(screen.getByText('Upkeep').nextElementSibling).toHaveTextContent('−1');

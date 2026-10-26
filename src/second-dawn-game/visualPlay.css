@@ -1,7 +1,8 @@
 /* Shared activity shell: the object gets the stage; inspection opens on demand. */
 .dg-visual-play { isolation:isolate; }
 .dg-visual-play [hidden] { display:none!important; }
-.dg-app.dg-tabletop.dg-visual-play:not(.dg-mobile-board) .sd-layout { grid-template-rows:minmax(0,1fr); position:relative; }
+.dg-app.dg-tabletop.dg-visual-play .sd-layout { position:relative; }
+.dg-app.dg-tabletop.dg-visual-play:not(.dg-mobile-board) .sd-layout { grid-template-rows:minmax(0,1fr); }
 .dg-app.dg-tabletop.dg-visual-play:not(.dg-mobile-board) .sd-main,
 .dg-app.dg-tabletop.dg-visual-play:not(.dg-mobile-board) .sd-inspector,
 .dg-visual-play .dg-action-rail { grid-row:1; }
@@ -20,7 +21,14 @@
 .dg-visual-play .dg-influence-body .dg-influence-sector-list { max-height:none;overflow:visible; }
 .dg-app.dg-tabletop.dg-visual-play .sd-players { position:absolute;z-index:60;inset:8px 126px auto auto;width:min(720px,calc(100% - 32px));max-height:calc(100% - 16px);overflow:auto;padding:14px;border:1px solid #8f7850;background:#14212b;box-shadow:0 16px 50px #000a; }
 .dg-visual-play .dg-table-close { float:right;min-height:44px;margin-bottom:6px; }
-.dg-visual-play .sd-player-list { clear:both; }
+/* A roster card owns its emblem, wrapping identity and score at every width. */
+.dg-app.dg-tabletop.dg-visual-play .sd-player-list { clear:both;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));flex:0 0 auto;gap:8px;margin:0;padding:0;overflow:visible; }
+.dg-app.dg-tabletop.dg-visual-play .sd-player { display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:10px;width:100%;min-width:0;min-height:68px;margin:0;padding:10px!important;text-align:left; }
+.dg-visual-play .sd-player>div { min-width:0; }
+.dg-app.dg-tabletop.dg-visual-play .sd-player strong { font-size:14px;line-height:1.3;font-weight:600;overflow-wrap:anywhere; }
+.dg-app.dg-tabletop.dg-visual-play .sd-player small { font-size:11px;line-height:1.4;white-space:normal;overflow-wrap:anywhere; }
+.dg-visual-play .sd-player .dg-roster-vp { justify-self:end;min-width:2.5ch;margin:0;font-size:18px;line-height:1.1;text-align:center;white-space:nowrap; }
+.dg-app.dg-mobile-board.dg-visual-play .sd-players { inset:8px 8px auto auto;width:min(720px,calc(100% - 16px)); }
 .dg-visual-play :is(.sd-header,.dg-mobile-header) { position:relative;z-index:100; }
 /* Header controls share one baseline; their popovers must escape the strip. */
 .dg-app.dg-tabletop.dg-visual-play:not(.dg-mobile-board) .sd-header { min-height:62px;padding:6px 12px;gap:8px 12px;flex-wrap:wrap;overflow:visible; }
@@ -95,8 +103,6 @@
  .dg-visual-play .dg-mobile-header:not(:has(.dg-activity-back)) .dg-mobile-turn,.dg-visual-play .dg-mobile-header:not(:has(.dg-activity-back)) .dg-mobile-resources { grid-column:1/3; }
 }
 @media(max-width:760px) {
- .dg-app.dg-tabletop.dg-visual-play .sd-players { inset:8px 8px auto;width:calc(100% - 16px);box-sizing:border-box; }
- .dg-visual-play .sd-player-list { display:flex!important;overflow:auto; }
  .dg-visual-play .dg-mobile-footer { padding:2px 4px; }
  .dg-visual-play .dg-mobile-navigation button { min-height:48px;padding:3px 2px; }
  .dg-visual-play .dg-mobile-navigation button[aria-pressed=true] { background:none;border-bottom:2px solid #84c7cb; }

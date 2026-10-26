@@ -973,3 +973,7 @@ User approved implementation and subsequently clarified persistent combat, share
 ## October 26, 2026 — header navigation repair
 
 Outcome: aligned header controls, visible and operable tools/economy dropdowns, and persistent compact turn order. Acceptance, fail-first browser evidence, shared CSS ownership, and rollback are recorded in [header_navigation_repair.md](../header_navigation_repair.md). Supervisor coordinates focused planning/turn-order, implementation, and browser-regression agents. The additional strip must preserve usable mobile workspaces.
+
+## October 26, 2026 — controls, player cards, and Rift feedback
+
+Outcome and fail-first gates: [game_control_feedback.md](../game_control_feedback.md). The latest request replaces the double-click disclosure with reliable native activation, repairs the table's selected-player bounds, and verifies Rift self-damage end to end. Preserve engine rules; correct any misleading feedback discovered during that verification. Supervisor coordinates three focused implementation/testing agents and owns combat presentation and release.

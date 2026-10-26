@@ -27,4 +27,5 @@ it('describes a backfire-only volley as no enemy damage, never a natural-six hit
 it('identifies own-fleet impacts as Rift backfire in combat playback',()=>{
   render(<CombatPlayback fast volleys={[{battleId:'b',sectorId:'s',attacker:'p',defender:'q',dice:[{id:'d',face:6,damage:0,weaponColor:'magenta',weaponKind:'cannon'}],impacts:[{dieId:'d',targetId:'own',hit:true,damage:1}],targets:[{id:'own',owner:'p',shipType:'interceptor',hpBefore:1,hpAfter:0,destroyed:true,excess:0}]}]}/>);
   expect(screen.getAllByText(/Rift backfire/).length).toBeGreaterThan(0);
+  expect(screen.getByRole('img',{name:'Rift die: 0 damage, 1 self-damage'})).toBeVisible();
 });

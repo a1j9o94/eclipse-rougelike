@@ -124,16 +124,19 @@ async function assertHeader(page, width, active, shortfall=false) {
   const summary = upkeep.locator('summary');
   assert.match(await summary.innerText(),/\d+ actions? affordable/,`${width}: header does not prioritize affordable actions`);
   await summary.click();
-  assert(!await upkeep.evaluate(element=>element.open),`${width}: single click unexpectedly opens economy details`);
-  await summary.dblclick();
+  assert(await upkeep.evaluate(element=>element.open),`${width}: single click cannot open economy details`);
   assert.equal(await header.evaluate(element=>element.getBoundingClientRect().height),closedHeaderHeight,`${width}: upkeep menu changes header height`);
   await assertUncovered(upkeep.locator(':scope > div'), `${width}: Round-end panel`);
   const tracks = upkeep.getByRole('button', {name: 'Inspect economy tracks', exact: true});
   await assertUncovered(tracks, `${width}: Inspect economy tracks`);
   // Pointer actionability uses browser hit testing; leave the current activity in place.
   await tracks.click({trial: true});
+  await summary.click();
+  assert(!await upkeep.evaluate(element=>element.open),`${width}: single click cannot close economy details`);
+  await page.evaluate(()=>getSelection()?.removeAllRanges());
   await summary.dblclick();
-  assert(!await upkeep.evaluate(element=>element.open),`${width}: double click cannot close economy details`);
+  assert(!await upkeep.evaluate(element=>element.open),`${width}: consecutive native clicks fail to toggle economy details twice`);
+  assert.equal(await page.evaluate(()=>getSelection()?.toString()??''),'',`${width}: repeated clicks select header text`);
   await summary.focus();
   await page.keyboard.press('Enter');
   assert(await upkeep.evaluate(element=>element.open),`${width}: keyboard cannot open economy details`);
