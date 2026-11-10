@@ -32,27 +32,27 @@ it.each([false,true])('lets a non-active unfinished human colonize before collec
  fireEvent.click(settlement.getByRole('button',{name:/^Colonize ·/}));
  expect(screen.getByRole('region',{name:'Colonization planner'})).toBeVisible();
  expect(onSubmit).not.toHaveBeenCalled();
- fireEvent.click(screen.getByRole('button',{name:'Back to upkeep',exact:true}));
+ fireEvent.click(screen.getByRole('button',{name:'Return to upkeep',exact:true}));
  expect(screen.getAllByRole('button',{name:'Collect income',exact:true})).toHaveLength(1);
- fireEvent.click(settlement.getByRole('button',{name:'Collect income',exact:true}));
- expect(onSubmit).toHaveBeenCalledWith({type:'finish-upkeep'});
+ fireEvent.click(within(screen.getByRole('region',{name:'Upkeep settlement'})).getByRole('button',{name:'Collect income',exact:true}));
+ expect(onSubmit).toHaveBeenCalledExactlyOnceWith({type:'finish-upkeep'});
 });
 it.each([false,true])('offers conversion before a non-active human finishes upkeep (mobile=%s)',mobile=>{
  mobileViewport(mobile);const onSubmit=vi.fn();render(board(viewOf(fixture()),onSubmit));
  if(mobile){
   fireEvent.click(screen.getByRole('button',{name:'Choose action',exact:true}));
-  fireEvent.click(within(screen.getByRole('group',{name:'Choose your action'})).getByRole('button',{name:/Convert/}));
+  fireEvent.click(within(screen.getByRole('group',{name:'Choose your action'})).getByRole('button',{name:/^Trade/}));
  }else fireEvent.click(screen.getByRole('button',{name:'Trade',exact:true}));
  const trade=within(screen.getByRole('region',{name:'Convert resources'}));
  fireEvent.click(trade.getByRole('button',{name:'Receive money'}));
  fireEvent.click(trade.getByRole('button',{name:'Pay with materials'}));
  const commit=trade.getByRole('button',{name:'Confirm conversion'});
  expect(commit).toBeEnabled();fireEvent.click(commit);
- expect(onSubmit).toHaveBeenCalledWith({type:'trade',from:'materials',to:'money',amount:1});
+ expect(onSubmit).toHaveBeenCalledExactlyOnceWith({type:'trade',from:'materials',to:'money',amount:1});
 });
 it.each([false,true])('shows completed upkeep progress and prevents repeat economy choices (mobile=%s)',mobile=>{
  mobileViewport(mobile);const view=viewOf(fixture(['a']));render(board(view));
- expect(screen.getAllByText('Upkeep complete',{exact:true}).length).toBeGreaterThan(0);
+ expect(within(screen.getByRole('navigation',{name:'Seat order'})).getByRole('button',{name:/Eridani Empire You Ready/})).toBeVisible();
  expect(screen.getAllByText('1 / 3 ready',{exact:true}).length).toBeGreaterThan(0);
  expect(screen.queryByRole('dialog',{name:'Upkeep is ready'})).toBeNull();
  expect(screen.queryByRole('region',{name:'Upkeep settlement'})).toBeNull();
@@ -97,7 +97,7 @@ it.each([false,true])('waits after collecting income while another player resolv
  expect(view.pendingDecision).toBeNull();
  expect(view.waitingFor).toBeNull();
  render(board(view,onSubmit));
- expect(screen.getAllByText('Upkeep complete',{exact:true}).length).toBeGreaterThan(0);
+ expect(within(screen.getByRole('navigation',{name:'Seat order'})).getByRole('button',{name:/Eridani Empire You Ready/})).toBeVisible();
  expect(screen.getAllByText('1 / 3 ready',{exact:true}).length).toBeGreaterThan(0);
  expect(screen.queryByRole('region',{name:'Upkeep settlement'})).toBeNull();
  expect(screen.queryByRole('button',{name:'Collect income',exact:true})).toBeNull();
@@ -141,5 +141,5 @@ it.each([false,true])('closes mobile upkeep after accepted payment (last player=
  expect(screen.queryByRole('region',{name:'Upkeep settlement'})).toBeNull();
  expect(screen.queryByRole('button',{name:'Collect income',exact:true})).toBeNull();
  if(last)expect(screen.getByRole('button',{name:'Choose action',exact:true})).toBeVisible();
- else expect(screen.getAllByText('Upkeep complete',{exact:true}).length).toBeGreaterThan(0);
+ else expect(within(screen.getByRole('navigation',{name:'Seat order'})).getByRole('button',{name:/Eridani Empire You Ready/})).toBeVisible();
 });

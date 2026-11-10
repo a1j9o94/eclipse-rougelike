@@ -24,13 +24,18 @@ it('places exploration on the same interactive main map with rotation and confir
  expect(p.onSubmit).toHaveBeenCalledWith(expect.objectContaining({type:'resolve',decisionId:next.pendingDecision!.id,choice:expect.objectContaining({kind:'exploration'})}));
 });
 it('selects upkeep abandonment on the main map and preserves it through command-center inspection',()=>{
- const s=state(),home=s.sectors.find(v=>v.owner==='a')!;s.phase='upkeep';s.activeSeatId='a';s.pendingDecision={id:'shortfall',owner:'a',kind:'bankruptcy',shortfall:1,abandonableSectorIds:[home.id]};
+ const s=state(),home=s.sectors.find(v=>v.owner==='a')!;
+ const secondSector=s.sectors.find(v=>!v.owner)!;
+ secondSector.owner='a';
+ s.phase='upkeep';
+ s.activeSeatId='a';
+ s.pendingDecision={id:'shortfall',owner:'a',kind:'bankruptcy',shortfall:1,abandonableSectorIds:[secondSector.id,home.id]};
  const p=props(getPlayerView(s,'a')!),ui=render(<SecondDawnBoard {...p}/>);
  const map=screen.getByRole('group',{name:'Galaxy map'});expect(ui.container.querySelectorAll('.sd-map')).toHaveLength(1);
- expect(screen.getByRole('button',{name:'Abandon selected sector'})).toBeEnabled();expect(p.onSubmit).not.toHaveBeenCalled();
+ expect(screen.getByRole('button',{name:'Abandon selected sector'})).toBeDisabled();expect(p.onSubmit).not.toHaveBeenCalled();
  fireEvent.click(within(map).getByRole('button',{name:new RegExp(`^Inspect sector ${home.tileId},`)}));
  expect(screen.getByRole('button',{name:'Abandon selected sector'})).toBeEnabled();expect(p.onSubmit).not.toHaveBeenCalled();
- fireEvent.click(within(screen.getByRole('region',{name:'Civilization roster'})).getByRole('button',{name:/Terran Directorate/}));
+ fireEvent.click(within(screen.getByRole('navigation',{name:'Seat order'})).getByRole('button',{name:/Terran Directorate/}));
  fireEvent.click(screen.getByRole('button',{name:'Return to upkeep shortfall'}));
  expect(screen.getByRole('button',{name:home.tileId,exact:true})).toHaveAttribute('aria-pressed','true');
  fireEvent.click(screen.getByRole('button',{name:'Abandon selected sector'}));
@@ -51,7 +56,7 @@ it('opens spatial decisions in the existing mobile sheet with a return after dis
  const p=props(getPlayerView(s,'a')!),ui=render(<SecondDawnBoard {...p}/>);
  expect(ui.container.querySelectorAll('.sd-map')).toHaveLength(1);
  expect(ui.container.querySelector('.dg-mobile-sheet')).toHaveAttribute('data-sheet-state','expanded');
- fireEvent.click(screen.getByRole('button',{name:'Dismiss details'}));
+ fireEvent.click(screen.getByRole('button',{name:'Collapse portal placement details'}));
  fireEvent.click(screen.getByRole('button',{name:'Return to portal placement'}));
  expect(ui.container.querySelector('.dg-mobile-sheet')).toHaveAttribute('data-sheet-state','expanded');expect(p.onSubmit).not.toHaveBeenCalled();
 });
@@ -69,8 +74,8 @@ it('keeps real fleet inspection available while an upkeep choice remains editabl
  const s=state(),home=s.sectors.find(v=>v.owner==='a')!;s.phase='upkeep';s.pendingDecision={id:'shortfall',owner:'a',kind:'bankruptcy',shortfall:1,abandonableSectorIds:[home.id]};
  const p=props(getPlayerView(s,'a')!);render(<SecondDawnBoard {...p}/>);
  fireEvent.click(screen.getByRole('button',{name:home.tileId,exact:true}));
- fireEvent.click(screen.getByRole('button',{name:'Hydran Progress: 1 Interceptor'}));
- expect(screen.getByRole('dialog',{name:/Fleet inspection/})).toBeVisible();
+ fireEvent.click(screen.getByRole('button',{name:'Inspect selected fleet'}));
+ expect(screen.getByRole('dialog',{name:`Fleet inspection · sector ${home.tileId}`})).toBeVisible();
  fireEvent.click(screen.getByRole('button',{name:'Return to plan'}));
  expect(screen.getByRole('button',{name:'Abandon selected sector'})).toBeEnabled();expect(p.onSubmit).not.toHaveBeenCalled();
 });

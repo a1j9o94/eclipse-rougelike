@@ -27,19 +27,17 @@ it.each([false,true])('browses technology while preserving its income settlement
  expect(screen.getByRole('region',{name:'Research Improved Hull'})).toBeVisible();
  expect(within(screen.getByRole('article',{name:'Improved Hull technology'})).queryByRole('button',{name:/Research ·/})).toBeNull();
  expect(screen.queryByRole('navigation',{name:'Current action'})).toBeNull();
- expect(screen.getByRole('region',{name:'Upkeep settlement'})).toBe(settlement);
- expect(settlement.textContent).toBe(balances);
- expect(screen.getAllByRole('button',{name:'Collect income',exact:true})).toHaveLength(1);
- fireEvent.click(screen.getByRole('button',{name:'Back to upkeep'}));
- expect(within(settlement).getByRole('heading',{name:'Collect income'})).toBeVisible();
- expect(settlement.textContent).toBe(balances);
+ expect(screen.queryByRole('button',{name:'Collect income',exact:true})).toBeNull();
+ fireEvent.click(screen.getByRole('button',{name:'Return to upkeep'}));
+ expect(screen.getByRole('heading',{name:'Collect income'})).toBeVisible();
+ expect(screen.getByRole('region',{name:'Upkeep settlement'}).textContent).toBe(balances);
  expect(screen.getAllByRole('button',{name:'Collect income',exact:true})).toHaveLength(1);
  expect(onSubmit).not.toHaveBeenCalled();
 });
 it('keeps the top Research button available for inspection during upkeep',()=>{
  const view=fixture();render(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="" onSubmit={vi.fn()} onMenu={vi.fn()}/>);
  const research=screen.getByRole('button',{name:'Research',exact:true});expect(research).toBeEnabled();fireEvent.click(research);
- expect(screen.getByRole('heading',{name:'Available technologies'})).toBeVisible();
+ expect(screen.getByRole('region',{name:'Research workspace'})).toBeVisible();
 });
 it.each([false,true])('returns from Research to the full galaxy and can inspect before finishing upkeep, mobile=%s',mobile=>{
  if(mobile)vi.stubGlobal('matchMedia',vi.fn((query:string)=>({matches:query.includes('max-width'),media:query,addEventListener:vi.fn(),removeEventListener:vi.fn()})));
@@ -47,17 +45,21 @@ it.each([false,true])('returns from Research to the full galaxy and can inspect 
  const settlement=screen.getByRole('region',{name:'Upkeep settlement'});
  const balances=settlement.textContent;
  browseTechnologies(mobile);
- fireEvent.click(screen.getByRole('button',{name:'View galaxy'}));
- expect(screen.queryByRole('heading',{name:'Available technologies'})).toBeNull();
+ if(mobile)fireEvent.click(within(screen.getByRole('navigation',{name:'Mobile game navigation'})).getByRole('button',{name:'Galaxy'}));
+ else {
+  fireEvent.click(screen.getByRole('button',{name:'Table & activity'}));
+  fireEvent.click(screen.getByRole('button',{name:'View galaxy'}));
+  fireEvent.click(screen.getByRole('button',{name:'Close table details'}));
+ }
+ expect(screen.queryByRole('region',{name:'Research workspace'})).toBeNull();
  expect(screen.getByRole('button',{name:/^Inspect sector 001,/})).toBeVisible();
  expect(screen.queryByRole('navigation',{name:'Current action'})).toBeNull();
  fireEvent.click(screen.getByRole('button',{name:/^Inspect sector 001,/}));
  expect(screen.getByRole('heading',{name:'Fleet',hidden:mobile})).toBeInTheDocument();
- expect(screen.getByRole('region',{name:'Upkeep settlement'})).toBe(settlement);
- expect(settlement.textContent).toBe(balances);
- fireEvent.click(screen.getByRole('button',{name:'Back to upkeep'}));
- expect(within(settlement).getByRole('heading',{name:'Collect income'})).toBeVisible();
- expect(settlement.textContent).toBe(balances);
+ expect(screen.queryByRole('region',{name:'Upkeep settlement'})).toBeNull();
+ fireEvent.click(screen.getByRole('button',{name:'Return to upkeep'}));
+ expect(screen.getByRole('heading',{name:'Collect income'})).toBeVisible();
+ expect(screen.getByRole('region',{name:'Upkeep settlement'}).textContent).toBe(balances);
  expect(screen.getAllByRole('button',{name:'Collect income',exact:true})).toHaveLength(1);
  expect(onSubmit).not.toHaveBeenCalled();
 });
