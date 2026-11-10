@@ -1,5 +1,5 @@
 import type {GameRuleOptions} from '../../shared/eclipse/gameRules';
-import {type CSSProperties} from "react";
+import {useState,type CSSProperties} from "react";
 import { BASE_FACTIONS, getFaction, listFactionsForProfile, type FactionProfile, type CivilizationColor, type FactionId } from "../../shared/eclipse/catalog";
 import { TECHNOLOGIES } from "../../shared/eclipse/technologies";
 import TechnologyStats from "./TechnologyStats";
@@ -44,17 +44,39 @@ function Resources({ faction }: { faction: (typeof BASE_FACTIONS)[number] }) {
 export default function FactionPicker({ selected, onSelect, disabled = false, unavailableColors = {}, profile="base", rulesMode, ruleOptions, unavailableFactions={}, pieceColor, onPieceColorChange }: FactionPickerProps) {
   const active = getFaction(selected);
   const expanded=profile!=='base';
+  const [rolledFaction, setRolledFaction] = useState<FactionId | null>(null);
+  const factions = listFactionsForProfile(profile);
+  const eligible = factions.filter(faction => !unavailableFactions[faction.id] && (expanded || !unavailableColors[faction.color]));
+  const rollOptions = eligible.length > 1 ? eligible.filter(faction => faction.id !== selected) : eligible;
+  const canRoll = !disabled && rollOptions.length > 0 && (!expanded || colors.some(color => !unavailableColors[color]));
+  const select = (faction: FactionId) => {
+    setRolledFaction(null);
+    onSelect(faction);
+  };
+  const roll = () => {
+    const faction = rollOptions[Math.floor(Math.random() * rollOptions.length)];
+    setRolledFaction(faction.id);
+    onSelect(faction.id);
+  };
   const presentation = factionPresentation(selected,{rulesMode,ruleOptions});
   const technologies = active.startingTechnologies.flatMap(id => TECHNOLOGIES.filter(technology => technology.id === id));
   return <section className="dg-faction-picker" aria-label="Choose civilization">
     <header><div><small>YOUR CIVILIZATION</small><h2>Choose a faction board</h2></div><p>{expanded?"Choose your civilization, then your pieces. Each faction and piece color can only be used once.":"Each color has an alien and Terran side. A color can only be used once."}</p></header>
-    {expanded?<div className="dg-expanded-factions" role="group" aria-label="Expanded civilizations">{listFactionsForProfile(profile).map(faction=>{const unavailable=unavailableFactions[faction.id];const effect=factionPresentation(faction.id,{rulesMode,ruleOptions}).benefits[0];return <button key={faction.id} type="button" aria-pressed={selected===faction.id} aria-label={`${faction.name}${unavailable?`. ${unavailable}`:''}`} disabled={disabled||!!unavailable} onClick={()=>{onSelect(faction.id);}}><FactionSymbol faction={faction.id}/><strong>{faction.name}</strong><small>{unavailable??`${effect.value??''} ${effect.label}`}</small></button>;})}</div>:<div className="dg-faction-pairs">
+    <div className="dg-faction-roll">
+      <button type="button" disabled={!canRoll} onClick={roll}>{rolledFaction===selected ? "Reroll faction" : "Random faction"}</button>
+      <span role="status">{rolledFaction===selected ? <>Rolled <strong>{active.name}</strong></> : ""}</span>
+    </div>
+    {expanded?<div className="dg-expanded-factions" role="group" aria-label="Expanded civilizations">{factions.map(faction=>{const unavailable=unavailableFactions[faction.id];const effect=factionPresentation(faction.id,{rulesMode,ruleOptions}).benefits[0];return <button key={faction.id} type="button" aria-pressed={selected===faction.id} aria-label={`${faction.name}${unavailable?`. ${unavailable}`:''}`} disabled={disabled||!!unavailable} onClick={()=>select(faction.id)}><FactionSymbol faction={faction.id}/><strong>{faction.name}</strong><small>{unavailable??`${effect.value??''} ${effect.label}`}</small></button>;})}</div>:<div className="dg-faction-pairs">
       {colors.map(color => {
         const pair = BASE_FACTIONS.filter(faction => faction.color === color);
         const unavailable = unavailableColors[color];
         return <section key={color} className={`dg-faction-pair dg-faction-${color}`} aria-label={`${color[0].toUpperCase() + color.slice(1)} civilization board`}>
           <span className="dg-faction-color" aria-hidden="true" />
-          <div>{pair.map(faction => <button key={faction.id} type="button" aria-label={`${faction.name}, ${color[0].toUpperCase() + color.slice(1)} board${unavailable ? `. ${unavailable}` : ""}`} aria-pressed={selected === faction.id} disabled={disabled || !!unavailable} onClick={() => {onSelect(faction.id);}}><FactionSymbol faction={faction.id}/><strong>{faction.name}</strong><small>{faction.species === "alien" ? "Alien side" : "Terran side"}</small></button>)}</div>
+          <div>{pair.map(faction => {
+            const factionUnavailable = unavailableFactions[faction.id];
+            const reason = unavailable ?? factionUnavailable;
+            return <button key={faction.id} type="button" aria-label={`${faction.name}, ${color[0].toUpperCase() + color.slice(1)} board${reason ? `. ${reason}` : ""}`} aria-pressed={selected === faction.id} disabled={disabled || !!reason} onClick={() => select(faction.id)}><FactionSymbol faction={faction.id}/><strong>{faction.name}</strong><small>{(unavailable ? undefined : factionUnavailable) ?? (faction.species === "alien" ? "Alien side" : "Terran side")}</small></button>;
+          })}</div>
           {unavailable && <small className="dg-faction-unavailable">{unavailable}</small>}
         </section>;
       })}

@@ -44,3 +44,13 @@ it('reserves one Ancient copy in the draft and makes it available again after re
 it('keeps the draft unchanged when selecting the part already active in a printed slot',()=>{
  const submit=mount();fireEvent.click(screen.getByRole('button',{name:'Slot 1: Ion Cannon'}));fireEvent.click(screen.getByRole('button',{name:'Install Ion Cannon in slot 1'}));expect(screen.queryByRole('dialog')).toBeNull();expect(screen.getByRole('button',{name:'Apply 0 upgrades'})).toBeDisabled();expect(submit).not.toHaveBeenCalled();
 });
+
+it('puts drives first when replacing a cruiser drive while retaining the full inventory',()=>{
+ const blueprint=initialBlueprints('terran-directorate').find(bp=>bp.shipType==='cruiser')!;
+ render(<BlueprintEditor faction="terran-directorate" blueprint={blueprint} technologies={['fusion-drive']} storedParts={[]} capacity={2} disabled={false} onSubmit={vi.fn()}/>);
+ fireEvent.click(screen.getByRole('button',{name:/^Slot \d+: Nuclear Drive$/}));
+ const replacements=screen.getByLabelText('Replacement components');
+ expect(within(replacements).getAllByRole('heading')[0]).toHaveTextContent('Drives');
+ expect(within(replacements).getByRole('button',{name:/Install Fusion Drive/})).toBeVisible();
+ expect(within(replacements).getByRole('region',{name:'Weapons'})).toBeVisible();
+});

@@ -1,12 +1,12 @@
 import {useEffect,useRef} from 'react';
 import type {RefObject,PointerEvent as ReactPointerEvent,MouseEvent as ReactMouseEvent} from 'react';
 import {createGalaxyGesture,screenToGalaxyViewport,zoomGalaxyAt,type GalaxyCamera,type GalaxyViewport} from './galaxyGestures';
-interface Options {svgRef:RefObject<SVGSVGElement|null>;camera:GalaxyCamera;viewport:{x:number;y:number;width:number;height:number};maxZoom:number;onCameraChange:(camera:GalaxyCamera)=>void;onTap:(target:string)=>void}
-export function useGalaxyGestures({svgRef,camera,viewport,maxZoom,onCameraChange,onTap}:Options){
+interface Options {svgRef:RefObject<SVGSVGElement|null>;camera:GalaxyCamera;viewport:{x:number;y:number;width:number;height:number};maxZoom:number;cameraLocked?:boolean;onCameraChange:(camera:GalaxyCamera)=>void;onTap:(target:string)=>void}
+export function useGalaxyGestures({svgRef,camera,viewport,maxZoom,cameraLocked=false,onCameraChange,onTap}:Options){
  const gesture=useRef(createGalaxyGesture());
  const currentCamera=useRef(camera);currentCamera.current=camera;
  const dimensions=(svg:SVGSVGElement):GalaxyViewport=>{const rect=svg.getBoundingClientRect();return {...viewport,clientLeft:rect.left,clientTop:rect.top,clientWidth:rect.width,clientHeight:rect.height};};
- const latest=useRef({viewport,maxZoom,onCameraChange});latest.current={viewport,maxZoom,onCameraChange};
+ const latest=useRef({viewport,maxZoom,cameraLocked,onCameraChange});latest.current={viewport,maxZoom,cameraLocked,onCameraChange};
  useEffect(()=>{
   const svg=svgRef.current;if(!svg)return;
   let safariStart:{camera:GalaxyCamera;scale:number}|null=null,lastSafariEnd=-Infinity;
@@ -16,7 +16,7 @@ export function useGalaxyGestures({svgRef,camera,viewport,maxZoom,onCameraChange
    // Native listeners must be non-passive: React wheel listeners cannot reliably
    // cancel the browser's page zoom during a Mac trackpad pinch.
    event.preventDefault();
-   if(gesture.current.active()||safariStart||performance.now()-lastSafariEnd<100)return;
+   if(latest.current.cameraLocked||gesture.current.active()||safariStart||performance.now()-lastSafariEnd<100)return;
    const bounds=dimensions();
    if(!event.ctrlKey){
     const dx=event.deltaX*(event.deltaMode===1?16:event.deltaMode===2?bounds.clientWidth:1);
@@ -39,8 +39,9 @@ export function useGalaxyGestures({svgRef,camera,viewport,maxZoom,onCameraChange
    if(gesture.current.active())return;
    const scale=event.scale;if(scale===undefined||!Number.isFinite(scale)||scale<=0)return;
    event.preventDefault();
-   if(event.type==='gesturestart'){safariStart={camera:currentCamera.current,scale};return;}
    if(event.type==='gestureend'){safariStart=null;lastSafariEnd=performance.now();return;}
+   if(latest.current.cameraLocked)return;
+   if(event.type==='gesturestart'){safariStart={camera:currentCamera.current,scale};return;}
    if(!safariStart)return;
    const bounds=dimensions();
    const point=screenToGalaxyViewport({x:event.clientX??bounds.clientLeft+bounds.clientWidth/2,y:event.clientY??bounds.clientTop+bounds.clientHeight/2},bounds);
@@ -62,7 +63,7 @@ export function useGalaxyGestures({svgRef,camera,viewport,maxZoom,onCameraChange
   },
   onPointerMove(event:ReactPointerEvent<SVGSVGElement>){
    const next=gesture.current.move({id:event.pointerId,x:event.clientX,y:event.clientY,target:null},currentCamera.current,dimensions(event.currentTarget),maxZoom);
-   if(next){currentCamera.current=next;onCameraChange(next);}
+   if(next&&!cameraLocked){currentCamera.current=next;onCameraChange(next);}
   },
   onPointerUp(event:ReactPointerEvent<SVGSVGElement>){
    const target=gesture.current.up(event.pointerId);

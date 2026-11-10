@@ -51,7 +51,19 @@ export default function ColonizationPlanner({
   const [chosen, setChosen] = useActionDraftState('colonization',{}, {enabled:!decision});
   const [focusedKey, setFocusedKey] = useActionDraftState('colonizationFocus',null, {enabled:!decision});
   const draftGuard=useActionDraftGuard();
-  const invalidPlacements=Object.entries(chosen).filter(([key,resource])=>!options.some(option=>`${option.sectorId}:${option.squareId}`===key&&option.resources.includes(resource)));
+  const placedCubes = useMemo(() => new Map<string, Resource>(view.sectors
+    .filter(sector => sector.owner === view.viewerSeatId)
+    .flatMap(sector => sector.population.map(cube => [`${sector.id}:${cube.squareId}`, cube.resource] as const))), [view.sectors, view.viewerSeatId]);
+  // The board can receive the placed cube without a local command receipt, for
+  // example after reopening the match during a connection interruption.
+  useEffect(() => {
+    if (!Object.entries(chosen).some(([key, resource]) => placedCubes.get(key) === resource)) return;
+    setChosen(current => Object.fromEntries(Object.entries(current).filter(([key, resource]) => placedCubes.get(key) !== resource)));
+    if (focusedKey && placedCubes.has(focusedKey) && placedCubes.get(focusedKey) === chosen[focusedKey]) setFocusedKey(null);
+  }, [chosen, placedCubes, focusedKey, setChosen, setFocusedKey]);
+  const invalidPlacements = Object.entries(chosen).filter(([key, resource]) =>
+    placedCubes.get(key) !== resource &&
+    !options.some(option => `${option.sectorId}:${option.squareId}` === key && option.resources.includes(resource)));
   const draftLegal=invalidPlacements.length===0;
   const focused = options.find((option) => `${option.sectorId}:${option.squareId}` === focusedKey) ?? null;
   const placements = useMemo(() => options.flatMap((option) => {
@@ -93,6 +105,16 @@ export default function ColonizationPlanner({
         <output aria-label="Colony ships available"><b>{own?.colonyShipsAvailable ?? 0}</b><span>colony ships ready</span></output>
       </header>
       <div className="dg-colonization-body">
+      {invalidPlacements.map(([key, resource]) => {
+        const separator = key.lastIndexOf(':');
+        const sector = view.sectors.find(sector => sector.id === key.slice(0, separator));
+        return <p key={key} role="status">
+          {resourceName(resource)} colony on sector {sector?.tileId ?? 'no longer present'}, space {key.slice(separator + 1)}, is no longer available.{' '}
+          <button type="button" onClick={() => setChosen(current => Object.fromEntries(Object.entries(current).filter(([id]) => id !== key)))}>
+            Remove unavailable colony
+          </button>
+        </p>;
+      })}
       {!options.length ? <p role="status">{own?.colonyShipsAvailable===0?'No colony ships ready.':'No available planets.'}</p> : <div className="dg-colonization-layout">
         {sectors.length>1&&<nav className="dg-colonization-sectors" aria-label="Colonizable sectors">{sectors.map(id=>{const sector=view.sectors.find(candidate=>candidate.id===id)!;const selectedCount=placements.filter(placement=>placement.sectorId===id).length;return <button key={id} type="button" aria-pressed={selectedSectorId===id} onClick={()=>{setLocalSectorId(id);onSectorFocus?.(id);decisionMap?.selectSector(id);decisionMap?.focusSector(id);}}>Sector {sector.tileId}{selectedCount>0&&<small>{selectedCount} planned</small>}</button>;})}</nav>}
         {view.sectors.filter(sector=>sector.id===selectedSectorId).map(sector=><SectorPlanets key={sector.id} sector={sector} view={view} candidates={[...candidates]} selection={{label:'Colonize',eligibleSquareIds:visibleOptions.map(option=>option.squareId),selectedSquareId:focused?.squareId,disabled,planned:Object.fromEntries(placements.filter(placement=>placement.sectorId===sector.id).map(placement=>[placement.squareId,placement.resource])),onSelect:squareId=>{const option=visibleOptions.find(item=>item.squareId===squareId);if(option)choosePlanet(option);}}}/>)}
@@ -101,7 +123,6 @@ export default function ColonizationPlanner({
           {chosen[`${selected.sectorId}:${selected.squareId}`]&&<button type="button" disabled={disabled} onClick={()=>setChosen(current=>Object.fromEntries(Object.entries(current).filter(([key])=>key!==`${selected.sectorId}:${selected.squareId}`)))}>Remove this colony</button>}
         </section>}
       </div>}
-      {invalidPlacements.map(([key,resource])=><p key={key} role="status">{resourceName(resource)} colony on sector {view.sectors.find(sector=>sector.id===key.split(':')[0])?.tileId??'no longer present'}, space {key.split(':')[1]}, is no longer available. <button type="button" onClick={()=>setChosen(current=>Object.fromEntries(Object.entries(current).filter(([id])=>id!==key)))}>Remove unavailable colony</button></p>)}
       {placements.length>0&&<div className="dg-colonization-payoff" role="region" aria-label="Colonization consequences">{consequences.resources.filter(resource=>resource.placements>0).map(resource=><span key={resource.resource}><TradeResourceIcon resource={resource.resource}/><span>{resourceName(resource.resource)} income <b>{resource.incomeBefore} → {resource.incomeAfter}</b><small>Round end</small></span></span>)}</div>}
       {placements.length > 0 && !withinSupply && <p className="dg-danger" role="status">{placements.length>consequences.colonyShipsBefore?`Need ${placements.length} colony ships; ${consequences.colonyShipsBefore} ready. `:''}{consequences.resources.filter(resource=>resource.placements>resource.cubesBefore).map(resource=>`Need ${resource.placements} ${resource.resource} cubes; ${resource.cubesBefore} available.`).join(' ')}</p>}
       </div>

@@ -977,3 +977,37 @@ Outcome: aligned header controls, visible and operable tools/economy dropdowns, 
 ## October 26, 2026 — controls, player cards, and Rift feedback
 
 Outcome and fail-first gates: [game_control_feedback.md](../game_control_feedback.md). The latest request replaces the double-click disclosure with reliable native activation, repairs the table's selected-player bounds, and verifies Rift self-damage end to end. Preserve engine rules; correct any misleading feedback discovered during that verification. Supervisor coordinates three focused implementation/testing agents and owns combat presentation and release.
+
+## November 2026 player feedback
+
+**Outcome** — Keep games moving through colonization, discovery, upgrading,
+combat and upkeep, with optional faction randomization and a persistent
+whole-galaxy camera.
+
+**Acceptance criteria**
+
+- Rho Indi can colonize advanced money squares after researching Advanced Economy.
+  Reopening a game reconciles saved placements against the board and offers
+  recovery for invalid drafts.
+- The Rift Cannon discovery choices and cruiser drive replacements are reachable
+  on phone, small laptop and desktop viewports. Confirm remains accessible.
+- Galaxy browsing has a visible path back to upkeep or its pending shortfall.
+  Shortfall conversion receives money from an affordable source. Abandonment
+  remains a separate action.
+- A volley can resolve with unused damage only after lethal damage covers the
+  opposing fleet. Rift backfire and split-damage validation still apply.
+- Random faction selects a different legal faction when one is available in
+  solo or a room. The current pick remains visible before confirmation.
+- Fixed fit persists as a browser preference and follows the galaxy bounds as
+  sectors appear. Unlocking restores manual controls.
+
+**Verification** — Reproduce missing behavior with focused regression tests
+before implementation. Exercise game-engine commands and real Chromium layouts
+at 390×740, 1280×720 and 1440×900, plus shorter mobile colonization viewports.
+Run focused Vitest suites, lint and build before release.
+
+**Decision log and rollback** — Use flexible layouts and bounded scrolling for
+the crowded panels. Random faction rolls immediately in the picker. Fixed fit
+is opt-in and leaves the existing default camera behavior available. Changes
+use existing match commands and require no data migration. Revert this change
+set and rebuild to roll back.

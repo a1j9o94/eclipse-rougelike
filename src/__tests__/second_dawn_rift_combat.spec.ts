@@ -189,6 +189,39 @@ describe('Rift dice and compulsory backfire',()=>{
   const result=processGameCommand(s,'a',{type:'resolve',decisionId:d.id,choice:{kind:'combat-allocation',allocations:[]}});
   expect(result.ok).toBe(false);expect(s).toEqual(before);
  });
+ it('leaves a surplus Rift hit unassigned while resolving its backfire',()=>{
+  const s=riftFixture();
+  s.ships.push({id:'a-j',owner:'a',type:'interceptor',sectorId:'s',damage:0,arrival:3});
+  const d=roll(s,[3,5]);
+  const allocations=[{dieId:d.dice[0].id,targetId:'b-i'}];
+  const result=processGameCommand(s,'a',{type:'resolve',decisionId:d.id,choice:{kind:'combat-allocation',allocations}});
+  expect(result.ok).toBe(true);
+  if(!result.ok)return;
+  const volley=result.events.find(event=>event.combatVolley)?.combatVolley;
+  expect(volley?.impacts).toEqual([
+   {dieId:d.dice[0].id,targetId:'b-i',damage:1,hit:true},
+   {dieId:d.dice[1].id,targetId:'a-i',damage:1,hit:true},
+  ]);
+  expect(result.state.ships.map(ship=>ship.id)).toEqual(['a-j']);
+ });
+ it('rejects the same partial assignment while an enemy survives',()=>{
+  const s=riftFixture();
+  s.ships.push({id:'a-j',owner:'a',type:'interceptor',sectorId:'s',damage:0,arrival:3},
+   {id:'b-j',owner:'b',type:'interceptor',sectorId:'s',damage:0,arrival:4});
+  const d=roll(s,[3,5]);
+  const result=processGameCommand(s,'a',{type:'resolve',decisionId:d.id,choice:{kind:'combat-allocation',allocations:[{dieId:d.dice[0].id,targetId:'b-i'}]}});
+  expect(result.ok).toBe(false);
+ });
+ it('accepts only the split antimatter damage needed to destroy the opposing ships',()=>{
+  const s=fixture();
+  s.seats[0].technologies.nano.push('antimatter-splitter');
+  s.seats[0].blueprints[0].parts[0]='antimatter-cannon';
+  const d=roll(s,[6]);
+  expect(d.dice[0].split).toBe(true);
+  const submit=(damage:number)=>processGameCommand(s,'a',{type:'resolve',decisionId:d.id,choice:{kind:'combat-allocation',allocations:[{dieId:d.dice[0].id,targetId:'b-i',damage}]}});
+  expect(submit(5).ok).toBe(false);
+  expect(submit(1)).toMatchObject({ok:true,state:{ships:[{id:'a-i'}]}});
+ });
  it('accepts no target selection on a backfire-only die and never damages a ship without a Rift part',()=>{
   const s=riftFixture();s.ships.push({id:'plain',owner:'a',type:'dreadnought',sectorId:'s',damage:0});
   const d=roll(s,[6]);expect(d.dice[0].targets).toEqual([]);

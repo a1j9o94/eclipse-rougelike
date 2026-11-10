@@ -156,6 +156,13 @@
 .dg-galaxy-compact .sd-map-controls>span{font-size:12px;min-width:36px;text-align:center}
 .dg-galaxy-compact .sd-map-controls .dg-sector-list-toggle{display:block;font-size:13px}
 .dg-galaxy-compact .sd-map-controls .dg-pan-button{display:none}
+.dg-galaxy-compact .sd-map-controls{justify-content:safe center}
+.dg-app .dg-galaxy.dg-fixed-fit-view{padding-bottom:96px}
+.dg-app .dg-galaxy.dg-galaxy-compact.dg-fixed-fit-view{padding:35px 0 60px}
+.dg-fixed-fit-view > svg,.dg-fixed-fit-view > svg:active{cursor:default}
+.dg-visual-play:is(.dg-spatial-action,.dg-spatial-decision):has(.dg-mobile-sheet[data-sheet-state=expanded]) .dg-galaxy-compact.dg-fixed-fit-view{padding:35px 0 60px}
+.sd-map-controls .dg-fixed-fit{white-space:nowrap}
+.sd-map-controls .dg-fixed-fit[aria-pressed=true]{background:#453c29;border-color:#baa063;color:#f5e4b3}
 .dg-galaxy-compact .dg-galaxy-overview{display:none}
 .dg-galaxy-compact .dg-map-key{bottom:62px;left:4px;right:4px;font-size:9px;gap:8px;padding:3px 5px}
 .dg-galaxy-compact .dg-map-key span:nth-child(n+3){display:none}

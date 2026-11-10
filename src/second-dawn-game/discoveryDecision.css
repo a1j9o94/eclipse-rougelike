@@ -1,4 +1,7 @@
 .dg-discovery-decision { max-width: 1050px; }
+.dg-choice-body>.dg-discovery-decision{display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
+.dg-discovery-body{flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain;padding:2px 4px}
+.dg-discovery-commit{flex:0 0 auto}
 .dg-discovery-decision h2 { margin: .65rem 0 1rem; font: 1.8rem Georgia, serif; color: #edd7a7; }
 .dg-discovery-alternatives { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(220px, 1fr); gap: 1rem; margin: 1rem 0; }
 .dg-discovery-reward { padding: 1rem; border: 1px solid #645944; background: linear-gradient(135deg,#2c3030,#111a24); }

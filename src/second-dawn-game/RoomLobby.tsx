@@ -46,18 +46,37 @@ export default function RoomLobby({lobby,disabled,onJoin,onLeave,onFaction,onRea
  const own=lobby.seats.find(s=>s.slot===lobby.viewerSlot),waiting=lobby.status==='waiting';
  const profile=lobby.settings.factionProfile??'base',expanded=profile!=='base';
  const unavailable:UnavailableFactionColors={},unavailableFactions:Partial<Record<FactionId,string>>={};
- for(const seat of lobby.seats)if(seat.occupied&&seat.faction&&seat.slot!==lobby.viewerSlot){unavailable[seat.pieceColor??getFaction(seat.faction).color]=`Chosen by ${seat.username??`player ${seat.slot}`}`;unavailableFactions[seat.faction]=`Chosen by ${seat.username??`player ${seat.slot}`}`;}
+ for(const seat of lobby.seats)if(seat.occupied&&seat.faction&&seat.slot!==lobby.viewerSlot){
+  const name=seat.username??`player ${seat.slot}`;
+  unavailable[expanded?(seat.pieceColor??getFaction(seat.faction).color):getFaction(seat.faction).color]=`Chosen by ${name}`;
+  unavailableFactions[seat.faction]=`Chosen by ${name}`;
+  if(seat.bannedFaction)unavailableFactions[seat.bannedFaction]=`Banned by ${name}`;
+ }
  const options=listFactionsForProfile(profile);
- const available=options.find(f=>expanded?!unavailableFactions[f.id]:!unavailable[f.color])?.id??'terran-directorate';
+ const factionMode=factionRulesMode(lobby.settings);
+ const alienChoices=options.filter(faction=>faction.species==='alien'&&!unavailableFactions[faction.id]);
+ if(factionMode==='less-random-v1'&&alienChoices.length===0){
+  for(const faction of options)if(faction.species==='terran')unavailableFactions[faction.id]??='No available alien species to ban';
+ }
+ const availableFactions=options.filter(faction=>!unavailableFactions[faction.id]&&(expanded||!unavailable[faction.color]));
+ const available=availableFactions[0]?.id??'terran-directorate';
  const [joiningFaction,setJoiningFaction]=useState<FactionId>(available),[copied,setCopied]=useState(false),[joiningColor,setJoiningColor]=useState<CivilizationColor>('red');
- const validJoining=options.some(f=>f.id===joiningFaction)&&(expanded?!unavailableFactions[joiningFaction]:!unavailable[getFaction(joiningFaction).color]);
+ const validJoining=availableFactions.some(faction=>faction.id===joiningFaction);
  const selected=own?.faction??(validJoining?joiningFaction:available);
- const isTerran=getFaction(selected).species==='terran'&&factionRulesMode(lobby.settings)==='less-random-v1';
- const bannedByOthers=new Set(lobby.seats.filter(seat=>seat.slot!==lobby.viewerSlot).flatMap(seat=>seat.bannedFaction?[seat.bannedFaction]:[]));
- const alienChoices=options.filter(faction=>faction.species==='alien'&&faction.id!==selected&&!unavailableFactions[faction.id]&&!bannedByOthers.has(faction.id));
- const [bannedFaction,setBannedFaction]=useState<FactionId|undefined>(()=>alienChoices[0]?.id);
- const selectedBan=own?.bannedFaction??bannedFaction;
+ const isTerran=getFaction(selected).species==='terran'&&factionMode==='less-random-v1';
+ const [bannedFaction,setBannedFaction]=useState<FactionId>();
+ const validBan=(faction: FactionId|undefined)=>alienChoices.find(candidate=>candidate.id===faction)?.id;
+ const draftBan=validBan(bannedFaction)??alienChoices[0]?.id;
+ const selectedBan=own?.faction?validBan(own.bannedFaction):draftBan;
  const color=own?.pieceColor??(!unavailable[joiningColor]?joiningColor:(Object.keys(FACTION_COLORS) as CivilizationColor[]).find(c=>!unavailable[c])??'red');
+ const selectFaction=(faction:FactionId)=>{
+  setJoiningFaction(faction);
+  if(!own)return;
+  const ban=factionMode==='less-random-v1'&&getFaction(faction).species==='terran'?(selectedBan??draftBan):undefined;
+  if(ban)onFaction(faction,expanded?color:undefined,ban);
+  else if(expanded)onFaction(faction,color);
+  else onFaction(faction);
+ };
  const invite=`${window.location.origin}${roomInvitePath(lobby.roomToken)}`;
  const canStart=roomCanStart({...lobby.settings,seats:lobby.seats});
  const readySeats=lobby.seats.filter(seat=>seat.ready).map(seat=>seat.slot).join(',');
@@ -77,8 +96,8 @@ export default function RoomLobby({lobby,disabled,onJoin,onLeave,onFaction,onRea
    <p className="dg-room-rule">{waiting?'Everyone chooses a faction and readies up. The host then starts the galaxy.':'This room is already playing. Existing players can return to their seats.'}</p>
    {waiting&&lobby.viewerIsHost&&<details className="dg-room-settings-disclosure"><summary>Edit room settings</summary><RoomSettingsEditor key={JSON.stringify(lobby.settings)} settings={lobby.settings} disabled={disabled} onSave={onSettings}/><p>Changing settings clears all ready states.</p></details>}
    {waiting&&own&&<button disabled={disabled} onClick={onLeave}>Leave room</button>}
-  </aside><div className="dg-room-faction">{waiting?<><FactionPicker rulesMode={lobby.settings.rulesMode} ruleOptions={lobby.settings.ruleOptions} selected={selected} profile={profile} pieceColor={color} onPieceColorChange={next=>{setJoiningColor(next);if(own){if(isTerran)onFaction(selected,next,selectedBan);else onFaction(selected,next);}}} unavailableFactions={unavailableFactions} unavailableColors={unavailable} disabled={disabled} onSelect={f=>{setJoiningFaction(f);if(own){const banRequired=factionRulesMode(lobby.settings)==='less-random-v1'&&getFaction(f).species==='terran';if(expanded){if(banRequired)onFaction(f,color,selectedBan);else onFaction(f,color);}else if(banRequired)onFaction(f,undefined,selectedBan);else onFaction(f);}}}/>{isTerran&&<section className="dg-field"><strong>Alien species ban</strong><ChoiceCards label="Alien species ban" value={selectedBan??''} disabled={disabled} onChange={next=>{const ban=next as FactionId;setBannedFaction(ban);if(own)onFaction(selected,expanded?color:undefined,ban);}} options={alienChoices.map(faction=>({value:faction.id,label:faction.name,visual:<FactionSymbol faction={faction.id}/> }))}/><small>Terran setup excludes one unchosen alien species.</small></section>}<p className="dg-room-rule">{own&&!own.faction?'Choose a faction to ready up. ':''}{isTerran&&!selectedBan?'Choose an alien ban before readying up. ':''}Faction or roster changes clear everyone’s ready state.</p></>:<section className="dg-room-started"><h2>{lobby.status==='finished'?'Final standings await':'The galaxy is underway'}</h2><p>{own?'Your seat and every accepted choice are saved automatically.':'Watch every player and inspect the public galaxy. Private choices stay with their owners.'}</p></section>}</div></div>
+  </aside><div className="dg-room-faction">{waiting?<><FactionPicker rulesMode={lobby.settings.rulesMode} ruleOptions={lobby.settings.ruleOptions} selected={selected} profile={profile} pieceColor={color} onPieceColorChange={next=>{setJoiningColor(next);if(own){if(isTerran)onFaction(selected,next,selectedBan??draftBan);else onFaction(selected,next);}}} unavailableFactions={unavailableFactions} unavailableColors={unavailable} disabled={disabled} onSelect={selectFaction}/>{isTerran&&<section className="dg-field"><strong>Alien species ban</strong><ChoiceCards label="Alien species ban" value={selectedBan??''} disabled={disabled} onChange={next=>{const ban=next as FactionId;setBannedFaction(ban);if(own)onFaction(selected,expanded?color:undefined,ban);}} options={alienChoices.map(faction=>({value:faction.id,label:faction.name,visual:<FactionSymbol faction={faction.id}/> }))}/><small>Terran setup excludes one unchosen alien species.</small></section>}<p className="dg-room-rule">{own&&!own.faction?'Choose a faction to ready up. ':''}{isTerran&&!selectedBan?'Choose an alien ban before readying up. ':''}Faction or roster changes clear everyone’s ready state.</p></>:<section className="dg-room-started"><h2>{lobby.status==='finished'?'Final standings await':'The galaxy is underway'}</h2><p>{own?'Your seat and every accepted choice are saved automatically.':'Watch every player and inspect the public galaxy. Private choices stay with their owners.'}</p></section>}</div></div>
   {waiting&&readinessNotice&&!own?.ready&&<p role="status" aria-label="Room readiness" className="dg-room-readiness">Readiness cleared · review your civilization and ready up again.</p>}
-  <footer className="dg-room-footer"><span>{waiting?`${lobby.seats.filter(s=>s.occupied&&s.ready).length} / ${lobby.settings.humanSeatCount} players ready`:'Game saved in this room'}</span>{waiting?own?<><button disabled={disabled||!own.faction||(isTerran&&!selectedBan)} title={!own.faction?"Choose a faction before readying up.":isTerran&&!selectedBan?'Choose an alien ban before readying up.':undefined} className={own.ready?'':'dg-primary'} onClick={()=>onReady(!own.ready)}>{own.ready?'Not ready':'Ready to play'}</button>{lobby.viewerIsHost&&<button className="dg-primary" disabled={disabled||!canStart} onClick={onStart}>Start room game</button>}</>:<button className="dg-primary" disabled={disabled||!lobby.seats.some(s=>!s.occupied)||Boolean(expanded?unavailableFactions[selected]:unavailable[getFaction(selected).color])||(isTerran&&!selectedBan)} onClick={()=>{if(isTerran)onJoin(selected,expanded?color:undefined,selectedBan);else if(expanded)onJoin(selected,color);else onJoin(selected);}}>Join room</button>:<button className="dg-primary" onClick={onEnter}>{lobby.status==='finished'?'View final game':own?'Return to game':'Watch game'}</button>}</footer>
+  <footer className="dg-room-footer"><span>{waiting?`${lobby.seats.filter(s=>s.occupied&&s.ready).length} / ${lobby.settings.humanSeatCount} players ready`:'Game saved in this room'}</span>{waiting?own?<><button disabled={disabled||!own.faction||(isTerran&&!selectedBan)} title={!own.faction?"Choose a faction before readying up.":isTerran&&!selectedBan?'Choose an alien ban before readying up.':undefined} className={own.ready?'':'dg-primary'} onClick={()=>onReady(!own.ready)}>{own.ready?'Not ready':'Ready to play'}</button>{lobby.viewerIsHost&&<button className="dg-primary" disabled={disabled||!canStart} onClick={onStart}>Start room game</button>}</>:<button className="dg-primary" disabled={disabled||!lobby.seats.some(s=>!s.occupied)||!availableFactions.some(faction=>faction.id===selected)||(expanded&&Boolean(unavailable[color]))||(isTerran&&!selectedBan)} onClick={()=>{if(isTerran)onJoin(selected,expanded?color:undefined,selectedBan);else if(expanded)onJoin(selected,color);else onJoin(selected);}}>Join room</button>:<button className="dg-primary" onClick={onEnter}>{lobby.status==='finished'?'View final game':own?'Return to game':'Watch game'}</button>}</footer>
  </div></main>;
 }

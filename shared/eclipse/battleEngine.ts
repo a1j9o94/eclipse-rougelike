@@ -468,6 +468,7 @@ function applyAllocation(
       "Target must be an opposing ship in this battle.",
     );
   }
+  let incompleteAllocation: string | undefined;
   for (const die of b.dice ?? []) {
     const assigned = allocations.filter((a) => a.dieId === die.id),
       split = b.splitDice?.includes(die.id) ?? false;
@@ -475,12 +476,13 @@ function applyAllocation(
       const hittable = targets.filter((t) =>
         attackDieHits(die, stats(state, t).shield),
       );
+      const assignedDamage = assigned.reduce((n, a) => n + (a.damage ?? die.damage), 0);
       requireRule(
-        (hittable.length === 0 && assigned.length === 0) ||
-          assigned.reduce((n, a) => n + (a.damage ?? die.damage), 0) ===
-            die.damage,
-        "Assign all four antimatter damage, or none when no target can be hit.",
+        assignedDamage <= die.damage,
+        "Split damage cannot exceed the rolled damage.",
       );
+      if (hittable.length && assignedDamage < die.damage)
+        incompleteAllocation ??= "Assign all antimatter damage while an opposing ship survives.";
       for (const a of assigned) {
         const amount = a.damage ?? die.damage;
         requireRule(
@@ -495,9 +497,13 @@ function applyAllocation(
     } else if (die.weaponColor === "magenta" && die.damage === 0) {
       requireRule(assigned.length === 0, "A Rift miss or backfire-only face has no opposing target.");
     } else {
-      requireRule(assigned.length === 1, "Assign each die exactly once.");
-      const a = assigned[0],
-        target = targets.find((t) => t.id === a.targetId)!;
+      requireRule(assigned.length <= 1, "Assign each die at most once.");
+      const a = assigned[0];
+      if (!a) {
+        incompleteAllocation ??= "Assign each die while an opposing ship survives.";
+        continue;
+      }
+      const target = targets.find((t) => t.id === a.targetId)!;
       requireRule(
         a.damage === undefined || a.damage === die.damage,
         "This weapon cannot split damage.",
@@ -509,6 +515,12 @@ function applyAllocation(
         impacts.push({ dieId: die.id, targetId: a.targetId, damage: die.damage, hit: true });
       } else impacts.push({ dieId: die.id, targetId: a.targetId, damage: 0, hit: false });
     }
+  }
+  if (incompleteAllocation) {
+    requireRule(
+      targets.every(target => (damage.get(target.id) ?? 0) >= hpBefore.get(target.id)!),
+      incompleteAllocation,
+    );
   }
   const backfireDice = (b.dice ?? []).filter(d => d.weaponColor === "magenta" && riftDieOutcome(d.face).backfire);
   let backfireIndex = 0;

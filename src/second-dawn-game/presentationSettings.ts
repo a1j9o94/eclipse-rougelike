@@ -68,3 +68,4 @@ function displayPreference(name:string,defaultValue:()=>boolean,fallback:boolean
 }
 export const useMotionEnabled=displayPreference('motion',()=>!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches,false);
 export const useFollowAiEnabled=displayPreference('follow-ai',()=>true,true);
+export const useFixedFitEnabled=displayPreference('fixed-fit',()=>false,false);

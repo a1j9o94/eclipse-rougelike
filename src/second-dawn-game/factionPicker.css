@@ -6,3 +6,7 @@
 
 .dg-faction-profile{border:0;padding:0;margin:12px 0 20px}.dg-faction-profile legend{font-size:14px;color:#e8d3a8;margin-bottom:8px}.dg-faction-profile>div{display:flex;gap:8px}.dg-faction-profile button{flex:1;text-align:left;padding:12px;border:1px solid #526475}.dg-faction-profile button strong,.dg-faction-profile button small{display:block}.dg-faction-profile button small{font-size:12px;margin-top:6px;line-height:1.4;color:#bccbd7}.dg-faction-profile button[aria-pressed=true]{border-color:#efd27b;background:#403b2d}.dg-faction-profile>p{font-size:12px;color:#bccbd7;line-height:1.5}@media(max-width:500px){.dg-faction-profile>div{flex-direction:column}}
 .dg-faction-detail>summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:600;color:#edd7a7}.dg-faction-detail>summary:focus-visible{outline:2px solid #edd7a7;outline-offset:4px}.dg-faction-detail:not([open]){display:block}
+.dg-faction-roll{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:12px;color:#b5c3ca;font-size:13px}
+.dg-faction-picker .dg-faction-roll button{min-height:44px;padding:8px 14px;margin:0;border:1px solid #8f7850;border-radius:5px;background:#24333e;color:#efdbaf}
+.dg-faction-roll strong{color:#efdbaf}
+@media(max-width:800px){.dg-lobby .dg-faction-roll button{scroll-margin-block-end:110px}}

@@ -1,5 +1,5 @@
 import {afterEach,expect,it,vi} from 'vitest';
-import {cleanup,render,screen,within} from '@testing-library/react';
+import {cleanup,fireEvent,render,screen,within} from '@testing-library/react';
 import {getPlayerView} from '../../shared/eclipse/protocol';
 import {processGameCommand} from '../../shared/eclipse/engine';
 import type {PendingDecision} from '../../shared/eclipse/types';
@@ -8,6 +8,26 @@ import DecisionPanel from '../second-dawn-game/DecisionPanel';
 import {riftCombatReviewFixture} from '../second-dawn-game/riftReviewFixture';
 
 afterEach(cleanup);
+it.each([false,true])('allows skipping extra assignments only when all opposing ships will be destroyed (surviving ship: %s)',survivor=>{
+ const state=riftCombatReviewFixture(),view=getPlayerView(state,state.pendingDecision!.owner)!;
+ const original=view.pendingDecision as Extract<PendingDecision,{kind:'combat-allocation'}>;
+ const die=original.dice[0],targetId=die.targets[0];
+ const decision={...original,dice:[die,{...die,id:'split-surplus',face:6,weaponColor:'red' as const,damage:4,split:true}]};
+ // A split-only hit list can omit ships, so the whole opposing fleet comes from the battle.
+ if(survivor)view.ships.push({...view.ships.find(ship=>ship.id===targetId)!,id:'surviving-opponent'});
+ const onSubmit=vi.fn();
+ render(<DecisionPanel view={view} decision={decision} reputation={[]} disabled={false} onSubmit={onSubmit} motionEnabled={false}/>);
+ const resolve=screen.getByRole('button',{name:'Resolve volley'});
+ expect(resolve).toBeDisabled();
+ fireEvent.click(screen.getByRole('button',{name:`Target ${targetId} · hit`}));
+ if(survivor)expect(resolve).toBeDisabled();
+ else {
+  expect(resolve).toBeEnabled();
+  expect(screen.getByRole('region',{name:'Commit action'})).toHaveTextContent('Surplus damage is optional');
+  fireEvent.click(resolve);
+  expect(onSubmit).toHaveBeenCalledWith({type:'resolve',decisionId:decision.id,choice:{kind:'combat-allocation',allocations:[{dieId:die.id,targetId}]}});
+ }
+});
 it.each([5,6])('distinguishes Rift backfire from a miss in the compact die and commit summary (face %s)',face=>{
  const state=riftCombatReviewFixture(),view=getPlayerView(state,state.pendingDecision!.owner);
  const original=view.pendingDecision as Extract<PendingDecision,{kind:'combat-allocation'}>;

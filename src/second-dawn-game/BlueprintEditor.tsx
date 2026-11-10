@@ -98,25 +98,27 @@ export default function BlueprintEditor({
   });
   return (
     <section className="dg-blueprint-editor">
-      <FittingSummary faction={faction} blueprint={blueprint} draft={draft} selectedSlot={selectedSlot} allowance={{used:installations,limit:capacity}} onRestore={()=>editDraft(current=>({...current,parts:current.parts.map((part,index)=>index===selectedSlot?blueprint.parts[index]:part)}))}/>
-      <div className="dg-fitting-workspace">
-      <section className="dg-blueprint-canvas" aria-label="Blueprint hardpoints">
-        <div className="dg-blueprint-canvas-heading">
-          <div><h3>Blueprint hardpoints</h3></div>
-          <span>{draft.parts.length} slots</span>
+      <div className="dg-fitting-body">
+        <FittingSummary faction={faction} blueprint={blueprint} draft={draft} selectedSlot={selectedSlot} allowance={{used:installations,limit:capacity}} onRestore={()=>editDraft(current=>({...current,parts:current.parts.map((part,index)=>index===selectedSlot?blueprint.parts[index]:part)}))}/>
+        <div className="dg-fitting-workspace">
+        <section className="dg-blueprint-canvas" aria-label="Blueprint hardpoints">
+          <div className="dg-blueprint-canvas-heading">
+            <div><h3>Blueprint hardpoints</h3></div>
+            <span>{draft.parts.length} slots</span>
+          </div>
+          <FittingHardpoints faction={faction} blueprint={blueprint} draft={draft} selectedSlot={selectedSlot} onSelect={setSelectedSlot}/>
+          {availableOutside.length>0&&<div className="dg-outside-loadout" role="group" aria-label="Outside-grid parts">
+            {availableOutside.map(part=><OutsideGridModule key={part.id} partId={part.id}>
+              <label className="dg-outside-install">
+                <input type="checkbox" aria-label={`${part.name} ${blueprint.outsideParts.includes(part.id)?'installed permanently':'installation'}`} disabled={disabled||blueprint.outsideParts.includes(part.id)} checked={draft.outsideParts.includes(part.id)}
+                  onChange={event=>editDraft(current=>({...current,outsideParts:event.target.checked?[...current.outsideParts,part.id]:current.outsideParts.filter(id=>id!==part.id)}))}/>
+                <span>{blueprint.outsideParts.includes(part.id)?'Installed · Permanent':draft.outsideParts.includes(part.id)?'In draft':'Install module'}</span>
+              </label>
+            </OutsideGridModule>)}
+          </div>}
+        </section>
+        <UpgradePartPicker key={selectedSlot} blueprint={blueprint} draft={draft} slot={selectedSlot} printed={selectedPrinted} inventory={inventory} disabled={disabled} onSelect={installPart}/>
         </div>
-        <FittingHardpoints faction={faction} blueprint={blueprint} draft={draft} selectedSlot={selectedSlot} onSelect={setSelectedSlot}/>
-        {availableOutside.length>0&&<div className="dg-outside-loadout" role="group" aria-label="Outside-grid parts">
-          {availableOutside.map(part=><OutsideGridModule key={part.id} partId={part.id}>
-            <label className="dg-outside-install">
-              <input type="checkbox" aria-label={`${part.name} ${blueprint.outsideParts.includes(part.id)?'installed permanently':'installation'}`} disabled={disabled||blueprint.outsideParts.includes(part.id)} checked={draft.outsideParts.includes(part.id)}
-                onChange={event=>editDraft(current=>({...current,outsideParts:event.target.checked?[...current.outsideParts,part.id]:current.outsideParts.filter(id=>id!==part.id)}))}/>
-              <span>{blueprint.outsideParts.includes(part.id)?'Installed · Permanent':draft.outsideParts.includes(part.id)?'In draft':'Install module'}</span>
-            </label>
-          </OutsideGridModule>)}
-        </div>}
-      </section>
-      <UpgradePartPicker blueprint={blueprint} draft={draft} slot={selectedSlot} printed={selectedPrinted} inventory={inventory} disabled={disabled} onSelect={installPart}/>
       </div>
       {order.blueprints.length>1&&<ul className="dg-upgrade-classes" aria-label="Changed ship classes">{order.blueprints.map(item=><li key={item.shipType}><strong>{item.shipType}</strong> · {item.parts.filter((part,index)=>part!==originals.find(original=>original.shipType===item.shipType)?.parts[index]).length+item.outsideParts.filter(part=>!originals.find(original=>original.shipType===item.shipType)?.outsideParts.includes(part)).length} changes</li>)}</ul>}
       {order.issues.map(issue=><p className="dg-danger" role="alert" key={issue}>{issue}</p>)}

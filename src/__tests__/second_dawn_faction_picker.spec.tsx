@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
+import { useState } from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { expect, it, vi } from "vitest";
 import FactionPicker from "../second-dawn-game/FactionPicker";
 import { factionPresentation } from "../second-dawn-game/factionPresentation";
+import type { FactionId } from "../../shared/eclipse/catalog";
 
 it("presents the paired alien and Terran sides for each physical board color and selects one directly", () => {
   const select = vi.fn();
@@ -29,6 +31,31 @@ it("marks an unavailable board color with its reason and preserves keyboard-visi
   const hydran = screen.getByRole("button", { name: /Hydran Progress.*Blue is already used/ });
   expect(hydran).toBeDisabled();
   expect(screen.getByText("Blue is already used by an AI opponent.")).toBeVisible();
+});
+
+it("rolls an available faction, reveals it, and can reroll a different faction", () => {
+  function Setup() {
+    const [faction, setFaction] = useState<FactionId>("terran-directorate");
+    return <FactionPicker selected={faction} onSelect={setFaction} unavailableColors={{ red: "Taken" }} />;
+  }
+  const random = vi.spyOn(Math, "random").mockReturnValue(0);
+  try {
+    render(<Setup />);
+    fireEvent.click(screen.getByRole("button", { name: "Random faction" }));
+    expect(screen.getByRole("status")).toHaveTextContent("Hydran Progress");
+    expect(screen.getByRole("button", { name: /Hydran Progress.*Blue board/ })).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(screen.getByRole("button", { name: "Reroll faction" }));
+    expect(screen.getByRole("status")).not.toHaveTextContent(/Hydran Progress|Eridani Empire/);
+  } finally {
+    random.mockRestore();
+  }
+});
+
+it("disables a random roll when an expanded lobby has no free piece colors", () => {
+  const select = vi.fn();
+  render(<FactionPicker selected="hydran" profile="expanded-v2" onSelect={select} onPieceColorChange={() => {}}
+    unavailableColors={{ red: "Taken", blue: "Taken", green: "Taken", yellow: "Taken", white: "Taken", black: "Taken" }} />);
+  expect(screen.getByRole("button", { name: "Random faction" })).toBeDisabled();
 });
 
 it("keeps the presentation facts aligned with the actual catalog/engine exception mapping", () => {

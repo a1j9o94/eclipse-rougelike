@@ -124,21 +124,15 @@ export default function DecisionPanel({
       return <EconomyDecision key={decision.id} decision={decision} view={view} candidates={candidates} reputation={reputation} disabled={disabled} onSubmit={onSubmit} />;
     case "combat-allocation": {
       const dice = decision.dice.filter((d) => d.targets.length);
-      valid = dice.every((d) =>
-        d.hitTargets?.length === 0
-          ? true
-          : d.split
-            ? d.targets.every(
-                (target) =>
-                  Number.isInteger(Number(value(`${d.id}/${target}`, "0"))) &&
-                  Number(value(`${d.id}/${target}`, "0")) >= 0,
-              ) &&
-              d.targets.reduce(
-                (sum, target) => sum + Number(value(`${d.id}/${target}`, "0")),
-                0,
-              ) === d.damage
-            : d.targets.includes(value(d.id)),
-      );
+      valid = dice.every((d) => {
+        if (d.hitTargets?.length === 0) return true;
+        const surplus = volley?.surplus;
+        if (!d.split) return d.targets.includes(value(d.id)) || (!value(d.id) && !!surplus);
+        const amounts = d.targets.map(target => Number(value(`${d.id}/${target}`, "0")));
+        const assigned = amounts.reduce((sum, amount) => sum + amount, 0);
+        return amounts.every(amount => Number.isInteger(amount) && amount >= 0) &&
+          (surplus ? assigned <= d.damage : assigned === d.damage);
+      });
       choice = {
         kind: "combat-allocation",
         allocations: dice.flatMap((d) =>
@@ -185,9 +179,9 @@ export default function DecisionPanel({
   }
   return (
     <section className={`dg-decision ${decision.kind === "combat-allocation" ? "dg-combat-allocation" : ""}`}>
-      <h2>{volley?`Assign hits · ${volley.remaining?`${volley.remaining} remaining`:'Ready'}`:decision.kind==='bombardment'?'Choose population to destroy':'Order firing groups'}</h2>
+      <h2>{volley?`Assign hits · ${volley.remaining&&!volley.surplus?`${volley.remaining} remaining`:'Ready'}`:decision.kind==='bombardment'?'Choose population to destroy':'Order firing groups'}</h2>
       {fields}
-      <section className="dg-decision-commit" aria-label="Commit action"><CommitBar summary={volley?<span aria-live="polite">{volley.remaining?`${volley.remaining} assignment${volley.remaining===1?'':'s'} left`:volley.destroyed?`${volley.destroyed} ship${volley.destroyed===1?'':'s'} will be destroyed`:volley.damage?`${volley.damage} damage assigned`:volley.uncertainDamage?'Hit preview unknown':volley.backfire?'No enemy damage':'No damage'}{volley.backfire?` · ${volley.backfire} self-damage`:''}{volley.destroyed>0&&volley.targets.some(target=>target.excess>0)?` · ${volley.targets.reduce((sum,target)=>sum+target.excess,0)} excess`:''}</span>:undefined}>
+      <section className="dg-decision-commit" aria-label="Commit action"><CommitBar summary={volley?<span aria-live="polite">{volley.remaining&&!volley.surplus?`${volley.remaining} assignment${volley.remaining===1?'':'s'} left`:volley.destroyed?`${volley.destroyed} ship${volley.destroyed===1?'':'s'} will be destroyed`:volley.damage?`${volley.damage} damage assigned`:volley.uncertainDamage?'Hit preview unknown':volley.backfire?'No enemy damage':'No damage'}{volley.backfire?` · ${volley.backfire} self-damage`:''}{volley.surplus?' · Surplus damage is optional':''}{volley.destroyed>0&&volley.targets.some(target=>target.excess>0)?` · ${volley.targets.reduce((sum,target)=>sum+target.excess,0)} excess`:''}</span>:undefined}>
       <button
         className="sd-primary"
         disabled={disabled || !valid}

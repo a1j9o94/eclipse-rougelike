@@ -29,6 +29,31 @@ it('offers join with a free visual faction choice and hides host controls from v
  expect(screen.queryByRole('button',{name:'Start room game'})).toBeNull();
  fireEvent.click(screen.getByRole('button',{name:/Planta, Green board/}));fireEvent.click(screen.getByRole('button',{name:'Join room'}));expect(handlers.onJoin).toHaveBeenCalledExactlyOnceWith('planta');
 });
+it('rolls an available expanded faction while keeping the viewer’s piece color',()=>{
+ const handlers=callbacks();
+ const random=vi.spyOn(Math,'random').mockReturnValue(0);
+ try {
+  render(<RoomLobby lobby={{...lobby,settings:{...lobby.settings,rulesMode:'less-random-v1',factionProfile:'expanded-v2'},seats:[{...lobby.seats[0],faction:'hydran',pieceColor:'green'},{...lobby.seats[1],faction:'terran-alliance',pieceColor:'red',bannedFaction:'eridani'}]}} disabled={false} {...handlers}/>);
+  expect(screen.getByRole('button',{name:/Eridani Empire.*Banned by/})).toBeDisabled();
+  fireEvent.click(screen.getByRole('button',{name:'Random faction'}));
+  expect(handlers.onFaction.mock.calls[0]?.[0]).not.toMatch(/^(eridani|hydran|terran-alliance)$/);
+  expect(handlers.onFaction.mock.calls[0]?.[1]).toBe('green');
+  expect(handlers.onFaction).toHaveBeenCalledTimes(1);
+ } finally {
+  random.mockRestore();
+ }
+});
+it('rolls a Terran in a Less Random lobby with an available alien ban',()=>{
+ const handlers=callbacks();
+ const random=vi.spyOn(Math,'random').mockReturnValue(0.999);
+ try {
+  render(<RoomLobby lobby={{...lobby,settings:{...lobby.settings,rulesMode:'less-random-v1'},seats:[lobby.seats[0],{...lobby.seats[1],faction:'terran-directorate',bannedFaction:'eridani'}]}} disabled={false} {...handlers}/>);
+  fireEvent.click(screen.getByRole('button',{name:'Random faction'}));
+  expect(handlers.onFaction).toHaveBeenCalledExactlyOnceWith('terran-alliance',undefined,'hydran');
+ } finally {
+  random.mockRestore();
+ }
+});
 it('edits timer with visual presets and validates custom bounds before saving',()=>{
  const change=vi.fn();render(<RoomSettingsEditor settings={lobby.settings} disabled={false} onSave={change}/>);
  fireEvent.click(screen.getByRole('button',{name:'48 hours',exact:true}));fireEvent.click(screen.getByRole('button',{name:'Save room settings'}));expect(change).toHaveBeenLastCalledWith({...lobby.settings,timerMs:172800000});

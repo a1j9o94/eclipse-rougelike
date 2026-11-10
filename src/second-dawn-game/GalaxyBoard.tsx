@@ -43,6 +43,8 @@ interface Props {
   compact?: boolean;
   camera?: GalaxyCamera;
   onCameraChange?: (camera:GalaxyCamera)=>void;
+  fixedFit?: boolean;
+  onFixedFitChange?: (enabled:boolean)=>void;
   onSelect: (id: string) => void;
   onExplore: (candidate: CommandCandidate) => void;
 }
@@ -79,6 +81,8 @@ export default function GalaxyBoard({
   compact:compactProp,
   camera:controlledCamera,
   onCameraChange,
+  fixedFit=false,
+  onFixedFitChange,
   onSelect,
   onExplore,
 }: Props) {
@@ -117,14 +121,15 @@ export default function GalaxyBoard({
     .filter((s) => s.owner === ('viewerSeatId' in view?view.viewerSeatId:undefined))
     .map((s) => galaxyPoint(s.position));
   const [localCamera,setLocalCamera]=useState<GalaxyCamera>(()=>controlledCamera??{zoom:initialFit||compact?1:view.sectors.length>20?1.4:1.6,center:initialFit||compact||!owned.length?center:{x:owned.reduce((n,p)=>n+p.x,0)/owned.length,y:owned.reduce((n,p)=>n+p.y,0)/owned.length}});
-  const camera=controlledCamera??localCamera,zoom=camera.zoom;
+  const fittedCamera={zoom:1,center};
+  const camera=fixedFit?fittedCamera:controlledCamera??localCamera,zoom=camera.zoom;
   const updateCamera=(next:GalaxyCamera)=>{setLocalCamera(next);onCameraChange?.(next);};
   const appliedFit=useRef(controlledCamera?fitRequest:0);
-  useEffect(()=>{if(appliedFit.current===fitRequest)return;appliedFit.current=fitRequest;const next={zoom:1,center:{x:center.x,y:center.y}};setLocalCamera(next);onCameraChange?.(next);},[fitRequest,center.x,center.y,onCameraChange]);
+  useEffect(()=>{if(appliedFit.current===fitRequest)return;appliedFit.current=fitRequest;if(fixedFit)return;const next={zoom:1,center:{x:center.x,y:center.y}};setLocalCamera(next);onCameraChange?.(next);},[fitRequest,center.x,center.y,onCameraChange,fixedFit]);
   const tilePixels=TILE_RADIUS*2*zoom*Math.min(mapSize.width/(maxX-minX),mapSize.height/(maxY-minY));
   const detail=compact?tilePixels>=115:view.sectors.length<15||zoom>=1.6;
   const maximumZoom=compact?5:3;
-  const gestures=useGalaxyGestures({svgRef,camera,viewport:{x:minX,y:minY,width:maxX-minX,height:maxY-minY},maxZoom:maximumZoom,onCameraChange:updateCamera,onTap:target=>{
+  const gestures=useGalaxyGestures({svgRef,camera,viewport:{x:minX,y:minY,width:maxX-minX,height:maxY-minY},maxZoom:maximumZoom,cameraLocked:fixedFit,onCameraChange:updateCamera,onTap:target=>{
     if(target.startsWith('build:'))onSelectBuildItem?.(target.slice(6));
     else if(target.startsWith('fleet:'))onInspectFleet?.(target.slice(6));
     else if(target.startsWith('sector:'))onSelect(target.slice(7));
@@ -150,7 +155,7 @@ export default function GalaxyBoard({
     };
   };
   return (
-    <div className={`sd-map dg-galaxy${compact?' dg-galaxy-compact':''}${compact&&!detail?' dg-mobile-overview':''}`}>
+    <div className={`sd-map dg-galaxy${compact?' dg-galaxy-compact':''}${compact&&!detail?' dg-mobile-overview':''}${fixedFit?' dg-fixed-fit-view':''}`}>
       <svg
         ref={svgRef}
         viewBox={`${minX} ${minY} ${maxX - minX} ${maxY - minY}`}
@@ -516,13 +521,14 @@ export default function GalaxyBoard({
           {detail
             ? "Outlined planets are advanced · Fit shows whole galaxy"
             : "Fit shows whole galaxy"}{" "}
-          · Drag to pan
+          {fixedFit?'· Camera locked':'· Drag to pan'}
         </span>
       </div>
       <div className="sd-map-controls">
         {selected&&onInspectFleet&&<button aria-label="Inspect selected fleet" onClick={()=>onInspectFleet(selected)}>Fleet</button>}
         <button
           aria-label="Zoom out"
+          disabled={fixedFit}
           onClick={() => updateCamera({...camera,zoom:Math.max(.6,+(zoom-.2).toFixed(1))})}
         >
           −
@@ -530,17 +536,20 @@ export default function GalaxyBoard({
         <span aria-live="off" aria-label="Galaxy zoom">{Math.round(zoom * 100)}%</span>
         <button
           aria-label="Zoom in"
+          disabled={fixedFit}
           onClick={() => updateCamera({...camera,zoom:Math.min(maximumZoom,+(zoom+.2).toFixed(1))})}
         >
           +
         </button>
         <button
+          disabled={fixedFit}
           onClick={() => {
-            updateCamera({zoom:1,center});
+            updateCamera(fittedCamera);
           }}
         >
           Fit
         </button>
+        {onFixedFitChange&&<button type="button" className="dg-fixed-fit" aria-pressed={fixedFit} title="Keep the whole galaxy in view as you play" onClick={()=>{updateCamera(fittedCamera);onFixedFitChange(!fixedFit);}}>Fixed fit</button>}
         <button ref={listToggleRef} className="dg-sector-list-toggle" aria-expanded={sectorListOpen} onClick={()=>setSectorListOpen(open=>!open)}>Sectors</button>
         {[
           { label: "left", x: -70, y: 0, symbol: "←" },
@@ -552,6 +561,7 @@ export default function GalaxyBoard({
             key={p.label}
             aria-label={`Pan ${p.label}`}
             className="dg-pan-button"
+            disabled={fixedFit}
             onClick={() => updateCamera({...camera,center:{x:camera.center.x-p.x/zoom,y:camera.center.y-p.y/zoom}})}
           >
             {p.symbol}

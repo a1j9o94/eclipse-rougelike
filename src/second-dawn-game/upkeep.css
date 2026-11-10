@@ -18,3 +18,24 @@
 .dg-app .dg-action-economy .dg-danger { color:#f6a4a1; }
 .dg-action-resourcecost { display:flex; align-items:center; gap:6px; text-transform:capitalize; }
 .dg-action-resourcecost svg { width:19px; height:19px; color:#d5bb83; }
+
+.dg-app .dg-upkeep-return {
+  align-self: start;
+  justify-self: start;
+  margin: 4px 16px 6px;
+  min-height: 36px;
+  border-color: #c29f5d;
+  background: #51401f;
+  color: #f7dfa9;
+}
+
+@media (max-width: 760px) {
+  .dg-app.dg-visual-play.dg-spatial-decision:has(.dg-mobile-sheet[data-sheet-state=expanded] .dg-upkeep-trade) {
+    --upkeep-map-height: clamp(0px, calc(100dvh - var(--mobile-sheet-top) - var(--mobile-footer-height) - 425px), 180px);
+    --spatial-panel-height: calc(100dvh - var(--mobile-sheet-top) + 4px - var(--mobile-footer-height) - var(--upkeep-map-height));
+  }
+  .dg-app.dg-visual-play.dg-spatial-decision:has(.dg-mobile-sheet[data-sheet-state=expanded] .dg-upkeep-trade) .dg-galaxy {
+    height: var(--upkeep-map-height);
+    min-height: var(--upkeep-map-height);
+  }
+}

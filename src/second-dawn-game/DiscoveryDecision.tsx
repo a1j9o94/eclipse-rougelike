@@ -100,29 +100,31 @@ export default function DiscoveryDecision({ decision, view, disabled, onSubmit }
     onSubmit({type:'resolve',decisionId:decision.id,choice:{kind:'discovery',option:selectedOption,...(decision.availableTileIds?{discoveryId:selectedDiscoveryId??undefined}:{})}});
   };
   return <section className="dg-discovery-decision">
-    {(decision.reserveForFourthTechnology||sector)&&<span className="dg-yard-eyebrow">{decision.reserveForFourthTechnology?'Reserve starting discovery':`Sector ${sector!.tileId}`}</span>}
-    <h2><SectorFeatureIcon kind="discovery"/> {decision.availableTileIds?'Public discovery supply':discovery.name}</h2>
-    {decision.availableTileIds&&<>
-      {decision.availableTileIds.length>10&&<label className="dg-discovery-search">Find a discovery<input value={search} onChange={event=>setSearch(event.target.value)} placeholder="Search discoveries"/></label>}
-      <div className="dg-discovery-pool" role="radiogroup" aria-label="Public discovery pool">{decision.availableTileIds.filter(tileId=>DISCOVERIES.find(tile=>tile.id===tileId)?.name.toLowerCase().includes(search.toLowerCase())).map((tileId,index)=>{
-        const tile=DISCOVERIES.find(candidate=>candidate.id===tileId);if(!tile)return null;
-        return <article key={`${tileId}:${index}`} className={`dg-discovery-pool-card ${selectedDiscoveryId===tileId?'dg-discovery-selected':''}`}><button type="button" role="radio" aria-checked={selectedDiscoveryId===tileId} aria-label={tile.name} disabled={disabled} onClick={()=>setSelectedDiscoveryId(tileId)}><strong>{tile.name}</strong><DiscoveryRewardStats effect={tile.effect} faction={seat?.faction}/></button></article>;
-      })}</div>
-    </>}
-    {!decision.reserveForFourthTechnology&&<div className={`dg-discovery-alternatives${decision.availableTileIds?' is-public-selection':''}`} role="radiogroup" aria-label="Discovery reward">
-      <section className={`dg-discovery-reward ${selectedOption==='use'?'dg-discovery-selected':''}`}>
-        <label className="dg-discovery-side"><input type="radio" aria-label={`Use ${discovery.name}`} name={`discovery-${decision.id}`} checked={selectedOption==='use'} disabled={disabled||!useAvailable} onChange={()=>setOption('use')}/><span>Use reward</span></label>
-        {!decision.availableTileIds&&<DiscoveryRewardStats effect={discovery.effect} faction={seat?.faction}/>}
-        <p className="dg-discovery-consequence">{consequence(discovery.effect)}</p>
-      </section>
-      {decision.options.includes('keep')&&<section className={`dg-discovery-reward dg-discovery-vp ${selectedOption==='keep'?'dg-discovery-selected':''}`}>
-        <label className="dg-discovery-side"><input type="radio" name={`discovery-${decision.id}`} checked={selectedOption==='keep'} disabled={disabled||!keepAvailable} onChange={()=>setOption('keep')}/>Keep for 2 VP</label>
-        {!decision.availableTileIds&&<StatBadge icon="discovery" value="2 VP" label="discovery points" explanation="Keep the tile for two victory points instead of receiving its reward."/>}
-      </section>}
-    </div>}
-    {!availableSelection&&<p className="dg-danger" role="status">This discovery is no longer in the public supply. Choose another.</p>}
-    {availableSelection&&!useAvailable&&decision.options.includes('use')&&<p className="dg-danger" role="status">{noTechnology?'No eligible lowest-cost technology remains. Choose points or another discovery.':'The reward cannot be used in this position.'}</p>}
-    <details className="dg-discovery-details"><summary>Reward details · {discovery.name}</summary><p>{decision.reserveForFourthTechnology?'Reserved until your fourth technology; the reward is not applied now.':explanation(discovery.effect)}</p></details>
+    <div className="dg-discovery-body" role="region" aria-label="Discovery choices" tabIndex={0}>
+      {(decision.reserveForFourthTechnology||sector)&&<span className="dg-yard-eyebrow">{decision.reserveForFourthTechnology?'Reserve starting discovery':`Sector ${sector!.tileId}`}</span>}
+      <h2><SectorFeatureIcon kind="discovery"/> {decision.availableTileIds?'Public discovery supply':discovery.name}</h2>
+      {decision.availableTileIds&&<>
+        {decision.availableTileIds.length>10&&<label className="dg-discovery-search">Find a discovery<input value={search} onChange={event=>setSearch(event.target.value)} placeholder="Search discoveries"/></label>}
+        <div className="dg-discovery-pool" role="radiogroup" aria-label="Public discovery pool">{decision.availableTileIds.filter(tileId=>DISCOVERIES.find(tile=>tile.id===tileId)?.name.toLowerCase().includes(search.toLowerCase())).map((tileId,index)=>{
+          const tile=DISCOVERIES.find(candidate=>candidate.id===tileId);if(!tile)return null;
+          return <article key={`${tileId}:${index}`} className={`dg-discovery-pool-card ${selectedDiscoveryId===tileId?'dg-discovery-selected':''}`}><button type="button" role="radio" aria-checked={selectedDiscoveryId===tileId} aria-label={tile.name} disabled={disabled} onClick={()=>setSelectedDiscoveryId(tileId)}><strong>{tile.name}</strong><DiscoveryRewardStats effect={tile.effect} faction={seat?.faction}/></button></article>;
+        })}</div>
+      </>}
+      {!decision.reserveForFourthTechnology&&<div className={`dg-discovery-alternatives${decision.availableTileIds?' is-public-selection':''}`} role="radiogroup" aria-label="Discovery reward">
+        <section className={`dg-discovery-reward ${selectedOption==='use'?'dg-discovery-selected':''}`}>
+          <label className="dg-discovery-side"><input type="radio" aria-label={`Use ${discovery.name}`} name={`discovery-${decision.id}`} checked={selectedOption==='use'} disabled={disabled||!useAvailable} onChange={()=>setOption('use')}/><span>Use reward</span></label>
+          {!decision.availableTileIds&&<DiscoveryRewardStats effect={discovery.effect} faction={seat?.faction}/>}
+          <p className="dg-discovery-consequence">{consequence(discovery.effect)}</p>
+        </section>
+        {decision.options.includes('keep')&&<section className={`dg-discovery-reward dg-discovery-vp ${selectedOption==='keep'?'dg-discovery-selected':''}`}>
+          <label className="dg-discovery-side"><input type="radio" name={`discovery-${decision.id}`} checked={selectedOption==='keep'} disabled={disabled||!keepAvailable} onChange={()=>setOption('keep')}/>Keep for 2 VP</label>
+          {!decision.availableTileIds&&<StatBadge icon="discovery" value="2 VP" label="discovery points" explanation="Keep the tile for two victory points instead of receiving its reward."/>}
+        </section>}
+      </div>}
+      {!availableSelection&&<p className="dg-danger" role="status">This discovery is no longer in the public supply. Choose another.</p>}
+      {availableSelection&&!useAvailable&&decision.options.includes('use')&&<p className="dg-danger" role="status">{noTechnology?'No eligible lowest-cost technology remains. Choose points or another discovery.':'The reward cannot be used in this position.'}</p>}
+      <details className="dg-discovery-details"><summary>Reward details · {discovery.name}</summary><p>{decision.reserveForFourthTechnology?'Reserved until your fourth technology; the reward is not applied now.':explanation(discovery.effect)}</p></details>
+    </div>
     <section className="dg-discovery-commit" aria-label="Discovery commitment"><CommitBar summary={decision.reserveForFourthTechnology?'Activates after your fourth technology':undefined}><button type="button" className="sd-primary" disabled={disabled||!canCommit} onClick={submit}>{commitLabel}</button></CommitBar></section>
   </section>;
 }

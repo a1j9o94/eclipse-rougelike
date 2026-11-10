@@ -33,6 +33,13 @@ export function combatAllocationPreview(view:PlayerView|undefined,decision:Alloc
   return {id,hp,damage,uncertainDamage,assigned,excess:hp===undefined?0:Math.max(0,damage-hp),destroyed:hp!==undefined&&hp>0&&damage>=hp};
  });
  const destroyed=targets.filter(target=>target.destroyed).length;
+ const battle=view?.battle;
+ const enemy=battle?.id===decision.battleId
+  ? decision.owner===battle.attacker ? battle.defender : decision.owner===battle.defender ? battle.attacker : undefined
+  : undefined;
+ // Split dice omit ships they cannot hit. Check the full opposing fleet before allowing surplus.
+ const enemyShips=enemy&&battle?view?.ships.filter(ship=>ship.owner===enemy&&ship.sectorId===battle.sectorId):undefined;
+ const surplus=remaining>0&&!!enemyShips?.length&&enemyShips.every(ship=>targets.some(target=>target.id===ship.id&&target.destroyed));
  const backfire=decision.dice.reduce((sum,die)=>sum+(die.weaponColor==='magenta'?riftDieOutcome(die.face).backfire:0),0);
- return {remaining,targets,destroyed,backfire,damage:targets.reduce((sum,target)=>sum+target.damage,0),uncertainDamage:targets.reduce((sum,target)=>sum+target.uncertainDamage,0)};
+ return {remaining,surplus,targets,destroyed,backfire,damage:targets.reduce((sum,target)=>sum+target.damage,0),uncertainDamage:targets.reduce((sum,target)=>sum+target.uncertainDamage,0)};
 }

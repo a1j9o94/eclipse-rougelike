@@ -3,8 +3,9 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { createGame } from "../../shared/eclipse/setup";
 import { getPlayerView } from "../../shared/eclipse/protocol";
+import { legalCommands } from "../../shared/eclipse/legal";
 import { processGameCommand } from "../../shared/eclipse/engine";
-import type { GameCommand } from "../../shared/eclipse/types";
+import type { GameCommand, GameState } from "../../shared/eclipse/types";
 import InfluencePlanner from "../second-dawn-game/InfluencePlanner";
 import ColonizationPlanner from "../second-dawn-game/ColonizationPlanner";
 import { ActionDraftProvider } from "../second-dawn-game/ActionDraftProvider";
@@ -207,5 +208,115 @@ describe("visual colonization planner", () => {
         ],
       },
     });
+  });
+});
+
+function rhoAdvancedEconomyFixture() {
+  const state = createGame({
+    seed: 19,
+    factionProfile: "expanded-v2",
+    seats: [
+      { id: "a", faction: "rho-indi", controller: "human" },
+      { id: "b", faction: "hydran", controller: "human" },
+    ],
+  });
+  state.activeSeatId = "a";
+  state.seats.forEach((seat) => { seat.resources.money = 20; });
+  state.seats[0].resources.science = 20;
+  if (!state.technologyMarket.includes("advanced-economy")) state.technologyMarket.push("advanced-economy");
+  const home = state.sectors.find((sector) => sector.owner === "a")!;
+  const run = (before: GameState, actor: string, command: GameCommand) => {
+    const result = processGameCommand(before, actor, command);
+    if (!result.ok) throw new Error(result.error.message);
+    return { ...result.state, revision: before.revision + 1 };
+  };
+  const researched = run(state, "a", { type: "research", tileId: "advanced-economy", track: "grid" });
+  const ready = researched.activeSeatId === "b" ? run(researched, "b", { type: "pass" }) : researched;
+  return { researched: ready, home, run };
+}
+
+it("places an advanced money colony after Rho Indi researches Advanced Economy and clears the accepted draft", () => {
+  const { researched, home, run } = rhoAdvancedEconomyFixture();
+  const onSubmit = vi.fn<(command: GameCommand) => void>();
+  const ui = (state: GameState, accepted = false) => {
+    const view = getPlayerView(state, "a")!;
+    return <ActionDraftProvider viewerSeatId="a" revision={view.revision} lastAcceptedCommand={accepted ? { type: "colonize", revision: view.revision } : undefined}>
+      <ColonizationPlanner view={view} candidates={legalCommands(view)} disabled={false} onSubmit={onSubmit} />
+    </ActionDraftProvider>;
+  };
+  const rendered = render(ui(researched));
+  fireEvent.click(screen.getByRole("button", { name: /Colonize Money planet p0 in sector 236/ }));
+  expect(screen.getByRole("img", { name: /planned/i })).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "Colonize 1 planet" }));
+  expect(onSubmit).toHaveBeenCalledExactlyOnceWith({
+    type: "colonize", placements: [{ sectorId: home.id, squareId: "p0", resource: "money" }],
+  });
+  const placed = run(researched, "a", onSubmit.mock.calls[0][0]);
+  expect(placed.seats[0].colonyShipsAvailable).toBe(researched.seats[0].colonyShipsAvailable - 1);
+  expect(placed.sectors.find((sector) => sector.id === home.id)?.population).toContainEqual({
+    sectorId: home.id, squareId: "p0", resource: "money",
+  });
+  rendered.rerender(ui(placed, true));
+  expect(screen.queryByRole("img", { name: /planned/i })).toBeNull();
+
+  const upkeep = run(placed, "a", { type: "pass" });
+  expect(upkeep.phase).toBe("upkeep");
+  const nextRound = run(run(upkeep, "b", { type: "finish-upkeep" }), "a", { type: "finish-upkeep" });
+  expect(nextRound.round).toBe(2);
+  expect(nextRound.sectors.find((sector) => sector.id === home.id)?.population.some((cube) => cube.squareId === "p0")).toBe(true);
+});
+
+it("recovers a saved Rho Indi colony draft when the placed cube is already on the server", () => {
+  const { researched, home, run } = rhoAdvancedEconomyFixture();
+  researched.sectors.find((sector) => sector.id === home.id)!.orbital = true;
+  const onSubmit = vi.fn<(command: GameCommand) => void>();
+  const ui = (state: GameState) => {
+    const view = getPlayerView(state, "a")!;
+    return <ActionDraftProvider matchId="rho-recover-colony" viewerSeatId="a" revision={view.revision}>
+      <ColonizationPlanner view={view} candidates={legalCommands(view)} disabled={false} onSubmit={onSubmit} />
+    </ActionDraftProvider>;
+  };
+  const original = render(ui(researched));
+  fireEvent.click(screen.getByRole("button", { name: /Colonize Money planet p0 in sector 236/ }));
+  fireEvent.click(screen.getByRole("button", { name: "Colonize 1 planet" }));
+  const placed = run(researched, "a", onSubmit.mock.calls[0][0]);
+  original.unmount();
+
+  const reopened = render(ui(placed));
+  expect(screen.queryByRole("button", { name: "Remove unavailable colony" })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: /Colonize Orbital planet orbital in sector 236/ }));
+  fireEvent.click(screen.getByRole("button", { name: "Money population" }));
+  const confirm = screen.getByRole("button", { name: "Colonize 1 planet" });
+  expect(confirm).toBeEnabled();
+  fireEvent.click(confirm);
+  expect(onSubmit).toHaveBeenLastCalledWith({
+    type: "colonize", placements: [{ sectorId: home.id, squareId: "orbital", resource: "money" }],
+  });
+  reopened.unmount();
+  localStorage.clear();
+});
+
+it("lets a player remove a stale advanced colony and submit a different legal placement", () => {
+  const { researched, home } = rhoAdvancedEconomyFixture();
+  researched.sectors.find((sector) => sector.id === home.id)!.orbital = true;
+  const onSubmit = vi.fn();
+  const ui = (state: GameState) => {
+    const view = getPlayerView(state, "a")!;
+    return <ColonizationPlanner view={view} candidates={legalCommands(view)} disabled={false} onSubmit={onSubmit} />;
+  };
+  const rendered = render(ui(researched));
+  fireEvent.click(screen.getByRole("button", { name: /Colonize Money planet p0 in sector 236/ }));
+  const rolledBack = structuredClone(researched);
+  rolledBack.seats[0].technologies.grid = rolledBack.seats[0].technologies.grid.filter(id => id !== "advanced-economy");
+  rendered.rerender(ui(rolledBack));
+  fireEvent.click(screen.getByRole("button", { name: /Colonize Orbital planet orbital in sector 236/ }));
+  fireEvent.click(screen.getByRole("button", { name: "Science population" }));
+  const confirm = screen.getByRole("button", { name: "Colonize 1 planet" });
+  expect(confirm).toBeDisabled();
+  fireEvent.click(screen.getByRole("button", { name: "Remove unavailable colony" }));
+  expect(confirm).toBeEnabled();
+  fireEvent.click(confirm);
+  expect(onSubmit).toHaveBeenCalledExactlyOnceWith({
+    type: "colonize", placements: [{ sectorId: home.id, squareId: "orbital", resource: "science" }],
   });
 });
