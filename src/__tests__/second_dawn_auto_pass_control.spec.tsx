@@ -41,7 +41,7 @@ it('keeps auto-pass visible during a build draft and preserves the order through
  expect(submit).toHaveBeenCalledExactlyOnceWith({type:'set-auto-pass',enabled:true});
  state.seats[0].autoPassUnlessAttacked=true;state.revision++;
  ui.rerender(<Board view={getPlayerView(state,'a')!} {...props} lastAcceptedCommand={{revision:1,type:'set-auto-pass'}}/>);
- expect(screen.getByRole('checkbox',{name:'Auto-pass unless attacked'})).toBeChecked();expect(screen.getByText(/0 placed · 1 unplaced/)).toBeVisible();
+ expect(screen.getByRole('checkbox',{name:'Auto-pass unless attacked'})).toBeChecked();expect(screen.getByRole('button',{name:'1. Interceptor Needs a sector'})).toBeVisible();
 });
 it('keeps auto-pass available in empire inspection and does not navigate away when an off-turn preference saves',async()=>{
  const {createGame}=await import('../../shared/eclipse/setup');const {getPlayerView}=await import('../../shared/eclipse/protocol');
@@ -49,24 +49,27 @@ it('keeps auto-pass available in empire inspection and does not navigate away wh
  const state=createGame({seed:6,seats:[{id:'a',faction:'hydran',controller:'human'},{id:'b',faction:'eridani',controller:'ai'}]});state.activeSeatId='b';
  const submit=vi.fn(),props={candidates:[],connected:true,busy:false,status:'Saved',onSubmit:submit,onMenu:vi.fn()};
  const ui=render(<Board view={getPlayerView(state,'a')!} {...props}/>);
- fireEvent.click(within(screen.getByRole('region',{name:'Civilization roster'})).getByRole('button',{name:/Hydran Progress/}));
+ fireEvent.click(within(screen.getByRole('navigation',{name:'Turn order'})).getByRole('button',{name:/Hydran Progress/}));
  fireEvent.click(screen.getByRole('checkbox',{name:'Auto-pass unless attacked'}));
  state.seats[0].autoPassUnlessAttacked=true;state.revision++;
  ui.rerender(<Board view={getPlayerView(state,'a')!} {...props} lastAcceptedCommand={{revision:1,type:'set-auto-pass'}}/>);
  expect(screen.getByRole('heading',{name:'Hydran Progress',exact:true})).toBeVisible();
  expect(screen.getByRole('checkbox',{name:'Auto-pass unless attacked'})).toBeChecked();
 });
-it('offers the same auto-pass and follow controls in Settings without closing the dialog',async()=>{
+it('offers the same auto-pass and follow controls in Preferences without closing the dialog',async()=>{
  const {createGame}=await import('../../shared/eclipse/setup');const {getPlayerView}=await import('../../shared/eclipse/protocol');
  const {default:Board}=await import('../second-dawn-game/SecondDawnBoard');
  const state=createGame({seed:6,seats:[{id:'a',faction:'hydran',controller:'human'},{id:'b',faction:'eridani',controller:'ai'}]});state.activeSeatId='b';
  const submit=vi.fn(),props={candidates:[],connected:true,busy:false,status:'Saved',onSubmit:submit,onMenu:vi.fn()};
  const ui=render(<Board view={getPlayerView(state,'a')!} {...props}/>);
- fireEvent.click(screen.getByRole('button',{name:'Settings',exact:true}));const dialog=within(screen.getByRole('dialog',{name:'Game settings'}));
+ fireEvent.click(screen.getByLabelText('Game tools'));
+ fireEvent.click(screen.getByRole('button',{name:'Preferences',exact:true}));
+ const dialog=within(screen.getByRole('dialog',{name:'Preferences'}));
  fireEvent.click(dialog.getByRole('checkbox',{name:/Auto-pass unless attacked/}));expect(submit).toHaveBeenCalledExactlyOnceWith({type:'set-auto-pass',enabled:true});
  state.seats[0].autoPassUnlessAttacked=true;state.revision++;
  ui.rerender(<Board view={getPlayerView(state,'a')!} {...props} lastAcceptedCommand={{revision:1,type:'set-auto-pass'}}/>);
  expect(dialog.getByRole('checkbox',{name:/Auto-pass unless attacked/})).toBeChecked();
- fireEvent.click(dialog.getByRole('checkbox',{name:/Follow AI/}));expect(screen.getByRole('button',{name:'Follow AI'})).toHaveAttribute('aria-pressed','false');
+ const follow=dialog.getByRole('checkbox',{name:/Follow AI/});expect(follow).toBeChecked();
+ fireEvent.click(follow);expect(follow).not.toBeChecked();
  expect(localStorage.getItem('eclipse.second-dawn.follow-ai.v1')).toBe('off');
 });

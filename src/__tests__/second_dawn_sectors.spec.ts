@@ -1,11 +1,22 @@
 import { describe, expect, it } from "vitest";
 import { SECTORS, sectorDefinition } from "../../shared/eclipse/sectors";
-import { BASE_FACTIONS } from "../../shared/eclipse/catalog";
+import { BASE_COMPONENTS, BASE_FACTIONS } from "../../shared/eclipse/catalog";
+
+const expansionHomeIds = [233, 234, 236, 238, 277, 299];
 
 describe("Second Dawn physical sector faces", () => {
   it("includes exactly the base 54 tiles represented by 60 faces", () => {
-    expect(SECTORS).toHaveLength(60);
-    expect(new Set(SECTORS.map((s) => s.id)).size).toBe(60);
+    const baseIds = [
+      1,
+      ...BASE_COMPONENTS.sectorIds.inner,
+      ...BASE_COMPONENTS.sectorIds.middle,
+      ...BASE_COMPONENTS.sectorIds.outer,
+      ...BASE_COMPONENTS.sectorIds.guardians,
+      ...BASE_FACTIONS.map((faction) => faction.homeSector),
+    ];
+    expect(baseIds).toHaveLength(60);
+    expect(SECTORS.filter((sector) => baseIds.includes(sector.id))).toHaveLength(60);
+    expect(SECTORS.filter((sector) => !baseIds.includes(sector.id)).map((sector) => sector.id)).toEqual(expansionHomeIds);
     expect(SECTORS.filter((s) => s.id >= 101 && s.id <= 110)).toHaveLength(10);
     expect(
       SECTORS.filter(
@@ -76,12 +87,18 @@ describe("Second Dawn physical sector faces", () => {
     ]);
   });
   it("provides unique valid edges and traceable component evidence for every face", () => {
+    expect(new Set(SECTORS.map((sector) => sector.id)).size).toBe(SECTORS.length);
     for (const sector of SECTORS) {
       expect(new Set(sector.wormholes).size).toBe(sector.wormholes.length);
       expect(
         sector.wormholes.every((e) => Number.isInteger(e) && e >= 0 && e <= 5),
       ).toBe(true);
-      expect(sector.source).toContain("steamusercontent.com/ugc/");
+      if (expansionHomeIds.includes(sector.id)) {
+        expect(sector.source).toMatch(/^\.second-dawn\/faction-research\/originals\/.+\.jpg$/i);
+        expect(sector.homeArrow).toBe(1);
+      } else {
+        expect(sector.source).toContain("steamusercontent.com/ugc/");
+      }
       expect(sector.ancients === 0 || sector.discovery).toBe(true);
     }
   });

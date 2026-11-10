@@ -2,6 +2,7 @@ import {cleanup,fireEvent,render,screen,within} from '@testing-library/react';
 import {afterEach,expect,it,vi} from 'vitest';
 import {createGame} from '../../shared/eclipse/setup';
 import {getPlayerView,getSpectatorView} from '../../shared/eclipse/protocol';
+import {legalCommands} from '../../shared/eclipse/legal';
 import type {GameCommand} from '../../shared/eclipse/types';
 import GalaxyBoard from '../second-dawn-game/GalaxyBoard';
 import SecondDawnBoard from '../second-dawn-game/SecondDawnBoard';
@@ -30,10 +31,15 @@ it('shows staged population on its exact planet and keeps it private from specta
  expect(screen.queryByRole('img',{name:/Planned influence disc/})).not.toBeInTheDocument();
 });
 it('restores influence and colony map ghosts from their own saved activities',()=>{
- const {view,own,other}=fixture();const command:GameCommand={type:'influence',removeSectorIds:[own.id],addSectorIds:[other.id]};
+ const {state,own,other}=fixture();
+ own.population=own.population.filter(cube=>cube.squareId!=='p0');
+ const view=getPlayerView(state,'a')!;
+ const command:GameCommand={type:'influence',removeSectorIds:[own.id],addSectorIds:[other.id]};
+ const colonize=legalCommands(view).find(candidate=>candidate.command.type==='colonize'&&candidate.command.placements.some(placement=>placement.sectorId===own.id&&placement.squareId==='p0'&&placement.resource==='money'));
+ expect(colonize).toBeDefined();
  let drafts=emptyActionDrafts({matchId:'ghosts',viewerSeatId:'a'});
  drafts=setDraftValue(drafts,'action','influence',view.revision);drafts=setDraftValue(drafts,'influenceDraft',{command,label:'Transfer',description:''},view.revision);drafts=setDraftValue(drafts,'colonization',{[`${own.id}:p0`]:'money'},view.revision);writeActionDrafts(localStorage,drafts);
- render(<SecondDawnBoard matchId="ghosts" view={view} candidates={[{command,label:'Transfer',description:''}]} connected busy={false} status="" onSubmit={vi.fn()} onMenu={vi.fn()}/>);
+ render(<SecondDawnBoard matchId="ghosts" view={view} candidates={[{command,label:'Transfer',description:''},colonize!]} connected busy={false} status="" onSubmit={vi.fn()} onMenu={vi.fn()}/>);
  expect(screen.getByRole('img',{name:`Planned influence disc in sector ${other.tileId}`})).toBeInTheDocument();
  fireEvent.click(screen.getByRole('button',{name:'Resume colonize draft'}));
  expect(screen.getByRole('img',{name:`Planned money population on p0 in sector ${own.tileId}`})).toBeInTheDocument();
@@ -101,12 +107,13 @@ it('keeps a removed faction object visible as an invalid draft',()=>{
 });
 it('resumes a faction draft without exposing a saved exploration commit',()=>{
  const {view,own}=fixture();view.seats[0].faction='bobiverse';const ship=view.ships.find(s=>s.owner==='a')!;
- const explore={command:{type:'explore' as const,position:{q:5,r:0}},label:'Explore',description:''};
- let drafts=emptyActionDrafts({matchId:'faction-resume',viewerSeatId:'a'});drafts=setDraftValue(drafts,'exploreDraft',explore,view.revision);drafts=setDraftValue(drafts,'factionDraft',{type:'load-factory',shipId:ship.id},view.revision);writeActionDrafts(localStorage,drafts);
- render(<SecondDawnBoard matchId="faction-resume" initialSectorId={own.id} view={view} candidates={[explore,{command:{type:'load-factory',shipId:ship.id},label:'Load',description:''}]} connected busy={false} status="" onSubmit={vi.fn()} onMenu={vi.fn()}/>);
+ const explore=legalCommands(view).find(candidate=>candidate.command.type==='explore');
+ expect(explore).toBeDefined();
+ let drafts=emptyActionDrafts({matchId:'faction-resume',viewerSeatId:'a'});drafts=setDraftValue(drafts,'exploreDraft',explore!,view.revision);drafts=setDraftValue(drafts,'factionDraft',{type:'load-factory',shipId:ship.id},view.revision);writeActionDrafts(localStorage,drafts);
+ render(<SecondDawnBoard matchId="faction-resume" initialSectorId={own.id} view={view} candidates={[explore!,{command:{type:'load-factory',shipId:ship.id},label:'Load',description:''}]} connected busy={false} status="" onSubmit={vi.fn()} onMenu={vi.fn()}/>);
  fireEvent.click(screen.getByRole('button',{name:'Resume faction draft'}));
  expect(screen.getByRole('button',{name:'Load selected factory'})).toBeEnabled();
- expect(screen.queryByRole('button',{name:'Explore · 1 influence disc'})).not.toBeInTheDocument();
+ expect(screen.queryByRole('button',{name:'Draw sector'})).not.toBeInTheDocument();
  fireEvent.click(screen.getByRole('button',{name:'Resume explore draft'}));
- expect(screen.getByRole('button',{name:'Explore · 1 influence disc'})).toBeEnabled();
+ expect(screen.getByRole('button',{name:'Draw sector'})).toBeEnabled();
 });

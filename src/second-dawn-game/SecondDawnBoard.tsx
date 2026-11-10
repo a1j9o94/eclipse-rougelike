@@ -716,7 +716,9 @@ function SecondDawnBoardContent({
             {pendingDecisionPanel}
           </ChoiceWorkspace>}
           <div className="dg-board-surface" hidden={encounterVisible&&spatialDecision} inert={screen==='Decision'&&!spatialDecision&&!retreatMapActive} aria-hidden={screen==='Decision'&&!spatialDecision&&!retreatMapActive?true:undefined}>
-          {screen==='Galaxy'&&!encounterId&&combatAftermath}
+          {screen==='Galaxy'&&!encounterId&&(combatReputationVisible
+            ? <div className="dg-combat-aftermath"><ReputationSummary view={view} onDismiss={dismissCombatReputation}/></div>
+            : combatAftermath)}
           {encounterId&&(screen==='Galaxy'||screen==='Decision')&&!empireMapSeat&&!spatialDecision&&!retreatMapActive?null:compact&&screen==='Activity' ? <div className="sd-workspace dg-mobile-activity"><h1>Activity</h1>{activityRecap}<HistoryPanel rollback={historyRollback} feed={history??{entries:[],loading:false,hasOlder:false,loadingOlder:false,error:null,loadOlder:()=>{}}}/></div>
           : needsUpkeep(view)&&!view.pendingDecision&&screen==='Galaxy'&&!browsingUpkeep&&action!=='colonize' ? <div className="sd-workspace dg-upkeep-workspace"><UpkeepSettlement view={view} disabled={blocked||!candidates.some(candidate=>candidate.command.type==='finish-upkeep')} onCollect={()=>finishUpkeep({type:'finish-upkeep'})} onColonize={canColonizeAtUpkeep?openUpkeepColonization:undefined}/><button onClick={browseGalaxy}>View galaxy</button></div> : compact&&screen==='Empire' ? <div className="sd-workspace dg-mobile-empire">{draftGuard.draftKeys.length>0&&!view.pendingDecision&&<button className="dg-mobile-resume-draft" onClick={resumeSavedAction}>Resume saved action</button>}{empireOverview(own.id)}</div>
           : screen === "Recruitment" ? (<div className="sd-workspace"><MinorSpeciesMarket view={planningView} disabled={blocked} onSubmit={onSubmit}/></div>) : screen === "Trade" ? (

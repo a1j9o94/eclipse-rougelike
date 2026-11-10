@@ -29,7 +29,7 @@ The first-round two-outer allowance applies to the catalogued Planta and Legion 
 - [x] Magellan’s public reservation clears at fourth-technology redemption and is reconstructed in fair AI worlds for every viewer.
 - [x] Stale queued public-discovery snapshots are discarded when the public supply is empty.
 - [x] Exploration tests cover two/three-tile draws, one-use deterministic Joker redraws, first-round Planta/Midas allowances, per-player caps, and the printed global outer cap.
-- [x] Trade tests cover 3:2 odd quantities and 2:1 fallbacks/amendments. The supported faction roster has no printed rare starting technology, so the source's additional rare-start supply removal rule is presently inert.
+- [x] Trade tests cover 3:2 odd quantities and 2:1 fallbacks/amendments. When the variant technology inventory is active, each printed rare starting technology removes one physical copy from the supply. The Exiles retain their printed Cloaking Device, and the market excludes the copy. Hypothetical AI worlds use the public supply count so older saves can still draw a physical copy they started with. Standard retains its usual supply.
 
 ## Follow-ups
 

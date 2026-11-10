@@ -22,6 +22,7 @@ describe('expanded faction choice',()=>{
   expect(screen.getByRole('button',{name:/Legion of Midas.*Chosen by Ada/})).toBeDisabled();
   expect(screen.getByRole('button',{name:/Blue pieces.*Taken by Ben/})).toBeDisabled();
   fireEvent.click(screen.getByRole('button',{name:'Green pieces'}));expect(change).toHaveBeenCalledWith('green');
+  fireEvent.click(screen.getByText(/Wardens of Magellan · abilities and starting setup/));
   expect(screen.getByText(/unused colony ships/i)).toBeVisible();
  });
  it('does not show expanded factions when choosing a legacy base board',()=>{

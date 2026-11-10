@@ -7,9 +7,9 @@ vi.mock('convex/react', async importOriginal => {
   return { ...actual, useConvex: () => undefined };
 });
 
-it('offers the shared playable preview when the game server is unconfigured', () => {
+it('explains how to reconnect when the game server is unconfigured', () => {
   render(<SecondDawnGame />);
-  expect(screen.getByRole('heading', { name: 'Second Dawn needs a server connection.' })).toBeInTheDocument();
-  expect(screen.getByRole('link', { name: 'Explore the playable preview' })).toHaveAttribute('href', '#second-dawn-preview');
-  expect(screen.queryByRole('link', { name: /legacy|roguelike/i })).not.toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'Second Dawn needs a server connection.' })).toBeVisible();
+  expect(screen.getByText(/connect the application to its game server/i)).toBeVisible();
+  expect(screen.queryByRole('link', { name: /playable preview|legacy|roguelike/i })).not.toBeInTheDocument();
 });

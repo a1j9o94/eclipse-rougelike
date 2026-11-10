@@ -1011,3 +1011,17 @@ the crowded panels. Random faction rolls immediately in the picker. Fixed fit
 is opt-in and leaves the existing default camera behavior available. Changes
 use existing match commands and require no data migration. Revert this change
 set and rebuild to roll back.
+
+## Restore the full regression suite
+
+**Outcome** — Players can rely on regression coverage for the current tabletop,
+game rules, and lobby before a release.
+
+**Acceptance criteria** — All six game-test shards and standalone tooling tests
+pass, with lint and build green. Tests use current controls while retaining
+checks for legal commands, explicit confirmation, saved drafts, and navigation.
+
+**Risk and rollback** — A stale selector can hide a broken interaction. Follow
+the supported UI path and retain state and command assertions when replacing
+selectors. Use the existing bounded runner for CI and the Node runner for
+tooling tests. Revert this change set to roll back.

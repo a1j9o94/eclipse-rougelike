@@ -57,7 +57,10 @@ it('uses the same research card purchase while off-turn and retains its draft be
  const view={...fixture(),technologyMarket:['fusion-drive']},onQueue=vi.fn(),onSubmit=vi.fn();
  render(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="Saved" onQueue={onQueue} onSubmit={onSubmit} onMenu={vi.fn()}/>);
  fireEvent.click(screen.getByRole('button',{name:'Research',exact:true}));fireEvent.click(screen.getByRole('button',{name:/Fusion Drive ×/}));
- const commit=within(screen.getByRole('region',{name:'Research Fusion Drive'})).getByRole('button',{name:'Queue for my turn · Research · 4 science'});expect(commit).toBeEnabled();fireEvent.click(commit);
+ const commit=within(screen.getByRole('region',{name:'Research workspace'})).getByRole('button',{name:'Queue for my turn · Research · 4 science'});
+ expect(commit).toBeEnabled();
+ expect(onQueue).not.toHaveBeenCalled();
+ fireEvent.click(commit);
  expect(onSubmit).not.toHaveBeenCalled();
  expect(onQueue).toHaveBeenCalledExactlyOnceWith({type:'research',tileId:'fusion-drive',track:'nano'});expect(screen.queryByText('Acquired · Fusion Drive')).toBeNull();
 });

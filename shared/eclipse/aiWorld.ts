@@ -2,7 +2,7 @@ import { researchedTechnologyIds } from './technologies';
 import {gameRules} from './gameRules';
 import {BASE_COMPONENTS,getFaction} from './catalog';
 import {createDiscoverySupply,createLessRandomDiscoverySupply} from './discoveries';
-import {createTechnologyBag,createReputationSupply} from './supplies';
+import {createTechnologyBag,createReputationSupply,printedRareTechnologyIds} from './supplies';
 import {SHIP_PARTS} from './parts';
 import {randomSeed,shuffle} from './random';
 import type {GameState,PlayerView} from './types';
@@ -25,6 +25,14 @@ export function sampleAiWorld(view:PlayerView,seed:number):GameState {
  const technology=createTechnologyBag(random,warpPortals,riftCannons,rules.technologyVariant).tiles.map(t=>t.technology as string);
  remove(technology,view.technologyMarket);
  for(const seat of view.seats){const acquired=researchedTechnologyIds(seat);remove(acquired,getFaction(seat.faction).startingTechnologies);remove(technology,acquired);}
+ // Legacy variant saves may still have the physical copy. Respect the public
+ // supply count when deciding how many printed rare tiles setup excluded.
+ if(rules.technologyVariant&&view.supplyCounts) {
+  for(const id of printedRareTechnologyIds(view.seats.map(seat=>seat.faction))) {
+   if(technology.length<=view.supplyCounts.technology)break;
+   remove(technology,[id]);
+  }
+ }
  const discoveries:string[]=rules.discoveryVariant?createLessRandomDiscoverySupply():createDiscoverySupply(warpPortals,riftCannons);remove(discoveries,view.private.discoveriesKept);
  const visibleParts=view.seats.flatMap(s=>[...(s.storedParts??[]),...s.blueprints.flatMap(b=>[...b.parts,...(b.outsideParts??[])])]).filter((id):id is string=>id!==null&&SHIP_PARTS.some(p=>p.id===id&&p.access.kind==='ancient'));
  remove(discoveries,visibleParts);

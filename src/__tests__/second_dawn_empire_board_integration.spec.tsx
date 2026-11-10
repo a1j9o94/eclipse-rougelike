@@ -13,9 +13,9 @@ it('opens settings without leaving the game and saves the dice preference withou
 });
 it('inspects an empire location without spending or editing an unfinished build order',()=>{
  const {onSubmit}=renderBoard();fireEvent.click(screen.getAllByRole('button',{name:'Build',exact:true})[0]);fireEvent.click(screen.getByRole('button',{name:'Add cruiser'}));
- fireEvent.click(screen.getByRole('button',{name:'Table & activity'}));fireEvent.click(within(screen.getByRole('region',{name:'Civilization roster'})).getByRole('button',{name:/Terran Directorate/}));
+ fireEvent.click(within(screen.getByRole('navigation',{name:'Turn order'})).getByRole('button',{name:/Terran Directorate/}));
  expect(screen.getByRole('heading',{name:'Faction abilities'})).toBeVisible();
  fireEvent.click(screen.getByText('Empty planets'));const planet=screen.getAllByRole('button',{name:/Inspect sector .*planet/})[0];fireEvent.click(planet);
  expect(screen.getByRole('heading',{name:'Planets & population'})).toBeVisible();expect(screen.queryByRole('heading',{name:'Assemble your build order'})).toBeNull();
- fireEvent.click(screen.getByRole('button',{name:'Table & activity'}));fireEvent.click(screen.getByRole('button',{name:'Back to empire'}));fireEvent.click(screen.getAllByRole('button',{name:'Build',exact:true})[0]);expect(screen.getByRole('button',{name:'Remove cruiser from order'})).toBeInTheDocument();expect(onSubmit).not.toHaveBeenCalled();
+ fireEvent.click(screen.getByRole('button',{name:'Table & activity'}));fireEvent.click(screen.getByRole('button',{name:'Back to empire'}));fireEvent.click(screen.getAllByRole('button',{name:'Build',exact:true})[0]);expect(screen.getByRole('button',{name:'1. Cruiser Needs a sector'})).toBeVisible();expect(onSubmit).not.toHaveBeenCalled();
 });

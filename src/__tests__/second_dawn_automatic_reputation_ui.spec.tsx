@@ -17,6 +17,7 @@ it('automatically settles a saved reputation decision once, waiting for connecti
 it.each(['dismiss','expire'])('shows a private result without confirmation and supports %s',mode=>{
  vi.useFakeTimers();const view=fixture();view.pendingDecision=null;view.private.reputationSummary={id:'result-1',round:1,battleId:null,sectorId:null,drawn:[1,4,2],selected:4,kept:[4],returned:[1,2]};
  render(<Board view={view} candidates={[]} connected busy={false} status="" onSubmit={vi.fn()} onMenu={vi.fn()}/>);
+ fireEvent.click(screen.getByRole('button',{name:'Table & activity'}));
  expect(screen.getByRole('region',{name:'Your reputation result'})).toBeVisible();
  expect(screen.queryByRole('button',{name:'Confirm reputation'})).toBeNull();
  if(mode==='dismiss')fireEvent.click(screen.getByRole('button',{name:'Dismiss reputation result'}));else act(()=>vi.advanceTimersByTime(10001));

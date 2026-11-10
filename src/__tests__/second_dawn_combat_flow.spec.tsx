@@ -20,11 +20,11 @@ it('keeps other sectors and engagements out of the active battle playback',()=>{
  const view=fixture();view.revision=9;
  expect(latestCombatPlayback(view,[entry(7,view.round)])).toBeNull();
 });
-it('opens combat controls ahead of the fleet details without an extra entry click',()=>{
+it('opens combat controls alongside the fleet details without an extra entry click',()=>{
  const view=fixture();view.pendingDecision={id:'fire',owner:view.viewerSeatId,kind:'combat-turn',battleId:'b',shipType:'interceptor',destinationIds:[]};
  render(<SecondDawnBoard view={view} candidates={[]} connected busy={false} status="" onSubmit={vi.fn()} onMenu={vi.fn()}/>);
  const controls=screen.getByRole('region',{name:'Combat controls'}),fleet=screen.getByRole('region',{name:'Active battle overview'});
- expect(controls.compareDocumentPosition(fleet)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+ expect(fleet).toContainElement(controls);
  expect(screen.getByRole('button',{name:'Roll dice'})).toBeVisible();
 });
 it('does not reopen old destruction notices after play advances to a follow-up decision',()=>{
@@ -39,28 +39,51 @@ it('preserves the final casualty when automatic cleanup advances to the next rou
  expect(latestCombatPlayback(view,[lastBattle])?.revision).toBe(7);
 });
 it('keeps the private reputation result as the last step in combat results',()=>{
- const view=fixture();view.battle=null;view.pendingDecision=null;view.revision=9;
- view.private.reputationSummary={id:'combat-reputation',round:view.round,battleId:'b',sectorId:'s',drawn:[1,4,2],selected:4,kept:[4],returned:[1,2]};
- const history={entries:[entry(7,view.round)],loading:false,hasOlder:false,loadingOlder:false,error:null,loadOlder:vi.fn()};
- render(<SecondDawnBoard view={view} candidates={[]} history={history} connected busy={false} status="" onSubmit={vi.fn()} onMenu={vi.fn()}/>);
- const dialog=screen.getByRole('dialog',{name:'Combat results'});
- const playback=within(dialog).getByRole('region',{name:'Recent combat impacts'}),reputation=within(dialog).getByRole('region',{name:'Your reputation result'});
+ const view=fixture(),battle=view.battle!;
+ const controls={candidates:[],connected:true,busy:false,status:'',onSubmit:vi.fn(),onMenu:vi.fn()};
+ const ui=render(<SecondDawnBoard {...controls} view={view}/>);
+ const finished={...view,battle:null,pendingDecision:null,revision:view.revision+1,private:{...view.private,reputationSummary:{id:'combat-reputation',round:view.round,battleId:battle.id!,sectorId:battle.sectorId,drawn:[1,4,2],selected:4,kept:[4],returned:[1,2]}}};
+ const volley=entry(finished.revision,view.round);
+ const history={entries:[{...volley,combatVolleys:[{...volley.combatVolleys![0],battleId:battle.id!,sectorId:battle.sectorId,attacker:battle.attacker}]}],loading:false,hasOlder:false,loadingOlder:false,error:null,loadOlder:vi.fn()};
+ ui.rerender(<SecondDawnBoard {...controls} view={finished} history={history}/>);
+ const workspace=screen.getByRole('region',{name:'Battle workspace'});
+ const playback=within(workspace).getByLabelText('Last volley'),reputation=within(workspace).getByRole('region',{name:'Your reputation result'});
  expect(playback.compareDocumentPosition(reputation)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
- expect(screen.queryByRole('region',{name:'Your reputation result',hidden:true})?.closest('.dg-reputation-notice')).toBeNull();
- fireEvent.click(within(dialog).getByRole('button',{name:'Dismiss reputation result'}));
- expect(screen.queryByRole('dialog',{name:'Combat results'})).toBeNull();
+ expect(reputation).toHaveTextContent('Kept 4 VP');
+ fireEvent.click(within(workspace).getByRole('button',{name:'Return to galaxy'}));
+ expect(screen.queryByRole('region',{name:'Battle workspace'})).toBeNull();
+ expect(controls.onSubmit).not.toHaveBeenCalled();
 });
-it('puts an explicit public-reputation choice after the battle overview in its choice dialog',()=>{
+it('shows persisted private combat reputation on a cold reload without an active battle',()=>{
+ const view=fixture(),battle=view.battle!;
+ view.phase='upkeep';
+ view.upkeepDone=[];
+ view.activeSeatId=view.viewerSeatId;
+ view.battle=null;
+ view.pendingDecision=null;
+ view.private.reputationSummary={id:'saved-combat-reputation',round:view.round,battleId:battle.id!,sectorId:battle.sectorId,drawn:[1,4],selected:4,kept:[4],returned:[1]};
+ const submit=vi.fn();
+ render(<SecondDawnBoard view={view} candidates={[]} connected busy={false} status="" onSubmit={submit} onMenu={vi.fn()}/>);
+ expect(screen.queryByRole('region',{name:'Battle workspace'})).toBeNull();
+ expect(screen.getByRole('region',{name:'Upkeep settlement'})).toBeVisible();
+ const reputation=screen.getByRole('region',{name:'Your reputation result'});
+ expect(reputation).toHaveTextContent('Kept 4 VP');
+ fireEvent.click(within(reputation).getByRole('button',{name:'Dismiss reputation result'}));
+ expect(reputation).not.toBeInTheDocument();
+ expect(submit).not.toHaveBeenCalled();
+});
+it('puts an explicit public-reputation choice within the battle workspace alongside the fleet',()=>{
  const view=fixture();view.pendingDecision={id:'public-reputation',owner:view.viewerSeatId,kind:'less-random-reputation',draws:2,capacity:4};
  render(<SecondDawnBoard view={view} candidates={[]} connected busy={false} status="" onSubmit={vi.fn()} onMenu={vi.fn()}/>);
- const dialog=screen.getByRole('dialog',{name:'Reputation upgrades choice'}),overview=within(dialog).getByRole('region',{name:'Active battle overview'}),choice=within(dialog).getByRole('heading',{name:'Build your reputation'});
- expect(overview.compareDocumentPosition(choice)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+ const workspace=screen.getByRole('region',{name:'Battle workspace'});
+ const overview=within(workspace).getByRole('region',{name:'Active battle overview'});
+ expect(within(overview).getByRole('heading',{name:'Build your reputation'})).toBeVisible();
 });
 it('keeps the battle on screen while an opponent resolves their firing decision',()=>{
  const view=fixture();view.pendingDecision=null;view.waitingFor={kind:'combat-turn',owner:view.battle!.defender};
  render(<SecondDawnBoard view={view} candidates={[]} connected busy={false} status="" onSubmit={vi.fn()} onMenu={vi.fn()}/>);
  expect(screen.getByRole('region',{name:'Active battle overview'})).toBeVisible();
- expect(screen.getByText(/Waiting for.*combat decision/)).toBeVisible();
+ expect(within(screen.getByRole('region',{name:'Battle workspace'})).getByText(/^Waiting for /)).toBeVisible();
  expect(screen.queryByRole('button',{name:'Roll dice'})).toBeNull();
 });
 it('uses OS reduced motion as the default but honors an explicit in-game animation preference',()=>{

@@ -85,7 +85,10 @@ export function createGame(config: GameSetup): GameState {
     warpPortals,
     rules.explorationRules,
   );
-  const bag = createTechnologyBag(stacks.random, warpPortals, config.riftCannons, rules.technologyVariant);
+  const bag = createTechnologyBag(
+    stacks.random, warpPortals, config.riftCannons, rules.technologyVariant,
+    config.seats.map(seat => seat.faction),
+  );
   const tech = rules.openTechnology ? { drawn: bag.tiles, remaining: [], regularDrawn: bag.tiles.length } : drawTechnologies(bag.tiles, SETUP_BY_PLAYER_COUNT[count].initialRegularTechs);
   const discoveries = shuffle(
     bag.random,

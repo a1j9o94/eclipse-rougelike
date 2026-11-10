@@ -36,12 +36,15 @@ it('never offers build shortcuts for an inspected opponent',()=>{
 it('adds the selected ship to the existing uncommitted order and requires placement and confirmation',()=>{
  const {state,view}=fixture(),submit=vi.fn();
  render(<Board view={view} candidates={legalCommands(view)} connected busy={false} status="" onSubmit={submit} onMenu={vi.fn()}/>);
- const openEmpire=()=>fireEvent.click(within(screen.getByRole('region',{name:'Civilization roster'})).getByRole('button',{name:/Terran Directorate/}));
+ const openEmpire=()=>fireEvent.click(within(screen.getByRole('navigation',{name:'Turn order'})).getByRole('button',{name:/Terran Directorate/}));
  openEmpire();fireEvent.click(screen.getByRole('button',{name:'Build interceptor · 3 materials'}));
- expect(screen.getByRole('heading',{name:'Assemble your build order'})).toBeVisible();expect(screen.getByText(/0 placed · 1 unplaced/)).toBeVisible();expect(submit).not.toHaveBeenCalled();
+ expect(screen.getByRole('heading',{name:'Assemble your build order'})).toBeVisible();expect(screen.getByRole('button',{name:'1. Interceptor Needs a sector'})).toBeVisible();expect(submit).not.toHaveBeenCalled();
  openEmpire();fireEvent.click(screen.getByRole('button',{name:'Build cruiser · 5 materials'}));
- expect(screen.getByText(/0 placed · 2 unplaced/)).toBeVisible();expect(submit).not.toHaveBeenCalled();
+ expect(screen.getByRole('button',{name:'1. Interceptor Needs a sector'})).toBeVisible();
+ expect(screen.getByRole('button',{name:'2. Cruiser Needs a sector'})).toBeVisible();
+ expect(screen.getByRole('button',{name:'Build 2 ships · 8 materials'})).toBeDisabled();expect(submit).not.toHaveBeenCalled();
  const tile=view.sectors.find(sector=>sector.owner==='a')!.tileId;
+ fireEvent.click(screen.getByText('Choose from sector list'));
  fireEvent.click(screen.getByRole('button',{name:`Place cruiser in sector ${tile}`}));
  fireEvent.click(screen.getByRole('button',{name:`Place interceptor in sector ${tile}`}));
  fireEvent.click(screen.getByRole('button',{name:'Build 2 ships · 8 materials'}));

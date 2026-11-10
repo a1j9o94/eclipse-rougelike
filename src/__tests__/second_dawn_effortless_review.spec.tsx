@@ -22,7 +22,9 @@ it('keeps the galaxy available for spatial occupation after the firing encounter
  const result=render(<SecondDawnBoard {...board} view={view}/>);
  const after={...view,battle:null,pendingDecision:{id:'occupy-review',owner:view.viewerSeatId,kind:'control' as const,sectorId:view.battle!.sectorId}};
  result.rerender(<SecondDawnBoard {...board} view={after}/>);
- expect(screen.queryByRole('group',{name:'Galaxy map'})).not.toBeNull();
+ fireEvent.click(screen.getByRole('button',{name:'Continue to sector control'}));
+ expect(screen.getByRole('group',{name:'Galaxy map'})).toBeVisible();
+ expect(screen.getByRole('region',{name:'sector control controls'})).toBeVisible();
 });
 function movementFixture(count:number){
  const state=createGame({seed:4,warpPortals:true,seats:[{id:'a',faction:'terran-directorate',controller:'human'},{id:'b',faction:'hydran',controller:'ai'}]});state.activeSeatId='a';

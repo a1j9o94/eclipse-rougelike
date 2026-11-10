@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config'
+import { configDefaults, defineConfig } from 'vitest/config'
 import os from 'node:os'
 import react from '@vitejs/plugin-react'
 import { assertEnv } from './tools/envCheck'
@@ -24,6 +24,9 @@ export default defineConfig(({ mode }) => {
       setupFiles: ['./src/test/setup.ts'],
       css: true,
       globals: true,
+      exclude: [...configDefaults.exclude, 'tools/*.test.mjs'],
+      // Full-board interaction tests can exceed five seconds under concurrent shards.
+      testTimeout: 15_000,
       // OOM mitigation defaults — prefer process forks for isolation
       pool: 'forks',
       // Keep concurrency modest by default; override with --maxWorkers in CI if desired.

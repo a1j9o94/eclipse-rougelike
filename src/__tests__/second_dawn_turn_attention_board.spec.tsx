@@ -33,7 +33,7 @@ it('preserves inspection when the next turn arrives', () => {
   const view = getPlayerView(state, 'a')!;
   const waitingView = { ...view, activeSeatId: 'b' };
   const ui = render(<SecondDawnBoard view={waitingView} candidates={legalCommands(waitingView)} connected busy={false} status="Saved" onSubmit={vi.fn()} onMenu={() => {}}/>);
-  fireEvent.click(within(screen.getByRole('region', { name: 'Civilization roster' })).getByRole('button', { name: /Eridani Empire/ }));
+  fireEvent.click(within(screen.getByRole('navigation', { name: 'Turn order' })).getByRole('button', { name: /Eridani Empire/ }));
   expect(screen.queryByRole('dialog', { name: 'Your turn' })).not.toBeInTheDocument();
   ui.rerender(<SecondDawnBoard view={view} candidates={legalCommands(view)} connected busy={false} status="Saved" onSubmit={vi.fn()} onMenu={() => {}}/>);
   expect(screen.getByRole('heading', {name:'Eridani Empire'})).toBeVisible();

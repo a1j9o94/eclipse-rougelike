@@ -72,7 +72,7 @@ describe("Terran bans across lobby mode switches",()=>{
    const created=await t.mutation(api.eclipseMatches.createMatch,{...host,aiCount:5,factionProfile:"expanded-v1",rulesMode:"less-random-v1",warpPortals:false,faction:"terran-directorate",pieceColor:"red",bannedFaction:"hydran"});
    const row=await t.run(ctx=>ctx.db.get(created.matchId)),state=JSON.parse(row!.snapshotJson) as GameState;
    expect(state.seats.map(seat=>seat.faction)).not.toContain("hydran");
-   expect(state.seats[0]).toMatchObject({faction:"terran-directorate",bannedFaction:"hydran"});
+   expect(state.seats.find(seat=>seat.id===created.seatId)).toMatchObject({controller:"human",faction:"terran-directorate",bannedFaction:"hydran"});
    const selected=new Set(state.seats.map(seat=>seat.faction));
    for(const seat of state.seats.filter(seat=>seat.controller==="ai"&&getFaction(seat.faction).species==="terran")){
     expect(seat.bannedFaction).toBeDefined();

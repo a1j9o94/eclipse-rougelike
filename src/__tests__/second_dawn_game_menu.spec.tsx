@@ -5,7 +5,7 @@ import GameMenuPanel from '../second-dawn-game/GameMenuPanel';
 afterEach(cleanup);
 it('leaving for home preserves the run and never resigns',()=>{
  const home=vi.fn(),resign=vi.fn();render(<GameMenuPanel outcome="abandoned" disabled={false} onHome={home} onClose={vi.fn()} onResign={resign}/>);
- fireEvent.click(screen.getByRole('button',{name:'Save & return home'}));expect(home).toHaveBeenCalledOnce();expect(resign).not.toHaveBeenCalled();
+ fireEvent.click(screen.getByRole('button',{name:'Return home'}));expect(home).toHaveBeenCalledOnce();expect(resign).not.toHaveBeenCalled();
 });
 it('requires an explicit solo quit confirmation and lets the player cancel',()=>{
  const resign=vi.fn();render(<GameMenuPanel outcome="abandoned" disabled={false} onHome={vi.fn()} onClose={vi.fn()} onResign={resign}/>);

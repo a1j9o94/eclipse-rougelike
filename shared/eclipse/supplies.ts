@@ -1,6 +1,8 @@
 import {
   BASE_COMPONENTS,
   SETUP_BY_PLAYER_COUNT,
+  getFaction,
+  type FactionId,
   type PlayerCount,
 } from './catalog';
 import { shuffle, type RandomState } from './random';
@@ -22,12 +24,19 @@ export interface TechnologyBag {
   random: RandomState;
 }
 
-/** Starting technologies are printed on boards and do not consume these physical tiles (p10). */
+export function printedRareTechnologyIds(factions: readonly FactionId[]): TechnologyId[] {
+  return factions.flatMap(faction => getFaction(faction).startingTechnologies.filter(
+    (id): id is TechnologyId => getTechnology(id as TechnologyId).track === 'rare',
+  ));
+}
+
+/** Standard printed technologies do not consume tiles (p10). The variant removes one copy per printed rare. */
 export function createTechnologyBag(
   random: RandomState,
   warpPortals = true,
   riftCannons = false,
   lessRandom = false,
+  startingFactions: readonly FactionId[] = [],
 ): TechnologyBag {
   const tiles: TechnologyTile[] = [];
   for (const technology of TECHNOLOGIES) {
@@ -60,6 +69,12 @@ export function createTechnologyBag(
     ? tiles
     : tiles.filter((tile) => tile.technology !== 'warp-portal');
   const shuffled = shuffle(random, allowed);
+  if (lessRandom) {
+    for (const technology of printedRareTechnologyIds(startingFactions)) {
+      const index = shuffled.items.findIndex(tile => tile.technology === technology);
+      if (index >= 0) excluded.push(...shuffled.items.splice(index, 1));
+    }
+  }
   return { tiles: shuffled.items, excluded, random: shuffled.state };
 }
 

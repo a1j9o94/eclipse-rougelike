@@ -17,7 +17,7 @@ fireEvent.click(within(classes).getByRole('button',{name:'Interceptor'}));
 fireEvent.click(screen.getByRole('button',{name:'Slot 4: Empty slot'}));
 fireEvent.click(screen.getByRole('button',{name:'Install Hull in slot 4'}));
 fireEvent.click(within(classes).getByRole('button',{name:'Cruiser'}));
-expect(screen.getByRole('heading',{name:'Edit cruiser'})).toBeTruthy();
+expect(within(screen.getByRole('region',{name:'Selected ship and hardpoint'})).getByText('cruiser',{exact:true})).toBeVisible();
 fireEvent.click(within(classes).getByRole('button',{name:'Interceptor'}));
 fireEvent.click(screen.getByRole('button',{name:'Slot 4: Hull'}));
 expect(screen.getByRole('button',{name:'Install Hull in slot 4'})).toHaveAttribute('aria-pressed','true');
@@ -31,6 +31,6 @@ it('calls the Exiles blueprint Orbital throughout the shipyard',()=>{
  const classes=screen.getByRole('navigation',{name:'Ship classes'});
  expect(within(classes).getByRole('button',{name:'Orbital'})).toBeVisible();
  fireEvent.click(within(classes).getByRole('button',{name:'Orbital'}));
- expect(screen.getByRole('heading',{name:'Edit Orbital'})).toBeVisible();
- expect(screen.queryByRole('heading',{name:/Starbase loadout/i})).toBeNull();
+ expect(within(screen.getByRole('region',{name:'Selected ship and hardpoint'})).getByText('Orbital',{exact:true})).toBeVisible();
+ expect(within(classes).queryByRole('button',{name:'Starbase'})).toBeNull();
 });

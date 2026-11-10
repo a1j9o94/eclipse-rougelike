@@ -99,14 +99,14 @@ it('reopens the latest private reputation result only on the viewer’s own empi
  const ui=render(<EmpireOverview view={view} seatId="a" {...callbacks}/>);
  expect(screen.queryByRole('region',{name:'Your reputation result'})).toBeNull();
  fireEvent.click(screen.getByRole('button',{name:'Latest reputation draw'}));
- expect(screen.getByRole('status')).toHaveTextContent('Selected 4 VP');
+ expect(screen.getByRole('status')).toHaveTextContent('Kept 4 VP');
  fireEvent.click(screen.getByRole('button',{name:'Dismiss reputation result'}));
  expect(screen.queryByRole('region',{name:'Your reputation result'})).toBeNull();
  fireEvent.click(screen.getByRole('button',{name:'Latest reputation draw'}));
  ui.rerender(<EmpireOverview view={view} seatId="b" {...callbacks}/>);
  expect(screen.queryByRole('button',{name:'Latest reputation draw'})).toBeNull();
  expect(screen.queryByRole('region',{name:'Your reputation result'})).toBeNull();
- expect(screen.queryByText('Selected 4 VP')).toBeNull();
+ expect(screen.queryByText('Kept 4 VP')).toBeNull();
  view.private.seatId='b';ui.rerender(<EmpireOverview view={view} seatId="a" {...callbacks}/>);
  expect(screen.queryByRole('button',{name:'Latest reputation draw'})).toBeNull();
 });

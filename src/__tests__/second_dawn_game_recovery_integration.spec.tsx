@@ -42,11 +42,11 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
-it('save and return home performs no mutation; solo quit waits for its authoritative success', async () => {
+it('returning home performs no mutation and solo quit waits for server acceptance', async () => {
   const home = vi.fn();
   render(<Harness onHome={home}/>);
   fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
-  fireEvent.click(screen.getByRole('button', { name: 'Save & return home' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Return home' }));
   expect(home).toHaveBeenCalledOnce();
   expect(mocks.resign).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole('button', { name: 'Menu' }));

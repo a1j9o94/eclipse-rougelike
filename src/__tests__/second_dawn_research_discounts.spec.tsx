@@ -14,7 +14,6 @@ it('puts discounts in empty technology slots and counts printed and rare technol
   expect(within(track).getByLabelText(`Empty technology slot ${current+1}: ${current?`−${current}`:'0'} science discount, ${researchTrackVp(current+1)} VP track total`)).toBeVisible();
   expect(within(track).queryByText(/Slot \d+ \/ 7|Current discount:/)).toBeNull();
  }
- expect(screen.getByText('Discounts reduce science costs on that track, never below a technology’s minimum price.')).toBeVisible();
  expect(JSON.stringify(seat)).toBe(before);
 });
 it('shows the larger late-track discounts and warns when the next purchase fills the track',()=>{

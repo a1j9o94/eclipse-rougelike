@@ -88,7 +88,7 @@ describe('independent game rules engine',()=>{
   for(let mask=0;mask<256;mask++){
    const options:GameRuleOptions={roundLimit:10};flags.forEach((flag,index)=>{options[flag]=Boolean(mask&(1<<index));});
    const state=createGame({...base,riftCannons:false,ruleOptions:options});
-   expect(gameRules(state),`resolved options ${mask}`).toEqual(options);
+   expect(gameRules(state),`resolved options ${mask}`).toEqual({...options,passOrderTurnOrder:false});
    expect(state.supplies.technology.length===0,`technology visibility ${mask}`).toBe(options.openTechnology);
    expect([...state.technologyMarket,...state.supplies.technology].includes('flux-missile'),`technology inventory ${mask}`).toBe(!options.technologyVariant);
    expect(state.seats[0].superJokers===5,`combat Jokers ${mask}`).toBe(options.combatJokers);

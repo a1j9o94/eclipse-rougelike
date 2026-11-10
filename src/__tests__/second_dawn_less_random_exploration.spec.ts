@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { FACTION_REGISTRY, SETUP_BY_PLAYER_COUNT } from '../../shared/eclipse/catalog';
+import { SETUP_BY_PLAYER_COUNT } from '../../shared/eclipse/catalog';
 import { tradeResources } from '../../shared/eclipse/economy';
 import { processGameCommand } from '../../shared/eclipse/engine';
 import { legalCommands } from '../../shared/eclipse/legal';
 import { getPlayerView } from '../../shared/eclipse/protocol';
 import { createGame } from '../../shared/eclipse/setup';
 import type { GameState, PendingDecision } from '../../shared/eclipse/types';
-import { getTechnology } from '../../shared/eclipse/technologies';
+import { sampleAiWorld } from '../../shared/eclipse/aiWorld';
 
 const lr = 'less-random-v1' as const;
 
@@ -115,15 +115,57 @@ describe('Less Random trade rates and banned research', () => {
     expect(tradeResources(resources, 'mechanema', 'materials', 'money', 3, lr)).toMatchObject({ ok: true, resources: { materials: 4, money: 13 } });
   });
 
-  it('never offers banned rare technologies, including any printed rare starting technology', () => {
+  it('excludes each banned rare technology from the market, bag, and starting tracks', () => {
     const state = game();
-    expect(state.technologyMarket).not.toEqual(expect.arrayContaining(['warp-portal', 'flux-missile', 'neutron-absorber']));
-    for (const seat of state.seats) for (const ids of Object.values(seat.technologies)) {
-      expect(ids).not.toEqual(expect.arrayContaining(['warp-portal', 'flux-missile', 'neutron-absorber']));
+    for (const id of ['warp-portal', 'flux-missile', 'neutron-absorber']) {
+      expect(state.technologyMarket).not.toContain(id);
+      expect(state.supplies.technology).not.toContain(id);
+      for (const seat of state.seats) expect(Object.values(seat.technologies).flat()).not.toContain(id);
     }
-    // The currently supported roster has no printed rare starting technology.
-    // This makes the source's additional rare-start removal rule inert today.
-    for (const faction of FACTION_REGISTRY)
-      expect(faction.startingTechnologies.filter(id => getTechnology(id as Parameters<typeof getTechnology>[0]).track === 'rare')).toEqual([]);
+  });
+
+  it.each([false, true])('keeps printed rare technology and adjusts variant stock only (variant=%s)', technologyVariant => {
+    const create = (exiles: boolean) => createGame({
+      seed: 71,
+      warpPortals: false,
+      factionProfile: 'expanded-v2',
+      ruleOptions: { openTechnology: true, technologyVariant },
+      seats: [
+        { id: 'a', faction: exiles ? 'exiles' : 'mechanema', controller: 'human' },
+        { id: 'b', faction: 'orion', controller: 'human' },
+      ],
+    });
+    const state = create(true);
+    expect(state.seats[0].technologies.nano).toContain('cloaking-device');
+    const unclaimed = create(false).technologyMarket;
+    expect(unclaimed).toContain('cloaking-device');
+    expect(state.technologyMarket.includes('cloaking-device')).toBe(!technologyVariant);
+    expect(state.technologyMarket).toHaveLength(unclaimed.length - Number(technologyVariant));
+  });
+
+  it('keeps printed rare technologies out of the variant bag and AI sampled inventories', () => {
+    const state = createGame({
+      seed: 71,
+      warpPortals: false,
+      factionProfile: 'expanded-v2',
+      ruleOptions: { technologyVariant: true },
+      seats: [
+        { id: 'a', faction: 'exiles', controller: 'human' },
+        { id: 'b', faction: 'orion', controller: 'human' },
+      ],
+    });
+    expect([...state.technologyMarket, ...state.supplies.technology]).not.toContain('cloaking-device');
+    const view = getPlayerView(state, 'b')!;
+    for (let seed = 0; seed < 10; seed++) {
+      const inventory = sampleAiWorld(view, seed).supplies.technology;
+      expect(inventory).toHaveLength(state.supplies.technology.length);
+      expect(inventory).not.toContain('cloaking-device');
+    }
+
+    // Older closed-market Exiles saves can still hold their physical copy.
+    state.supplies.technology.push('cloaking-device');
+    const legacy = sampleAiWorld(getPlayerView(state, 'b')!, 0).supplies.technology;
+    expect(legacy).toHaveLength(state.supplies.technology.length);
+    expect(legacy).toContain('cloaking-device');
   });
 });
