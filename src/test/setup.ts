@@ -2,6 +2,27 @@ import '@testing-library/jest-dom/vitest'
 import { afterEach, beforeEach, vi } from 'vitest'
 import { cleanup } from '@testing-library/react'
 
+// jsdom has the element but not the dialog lifecycle. This shim models only
+// open/close and focus restoration; browser tests must verify inertness and Tab/Escape.
+if (typeof HTMLDialogElement !== 'undefined' && !HTMLDialogElement.prototype.showModal) {
+  const invokers = new WeakMap<HTMLDialogElement, HTMLElement>();
+  HTMLDialogElement.prototype.showModal = function () {
+    if (this.open) return;
+    if (!this.isConnected) throw new DOMException('Dialog is disconnected', 'InvalidStateError');
+    if (document.activeElement instanceof HTMLElement) invokers.set(this, document.activeElement);
+    this.open = true;
+    this.focus();
+  };
+  HTMLDialogElement.prototype.close = function (returnValue?: string) {
+    if (!this.open) return;
+    this.open = false;
+    if (returnValue !== undefined) this.returnValue = returnValue;
+    const invoker = invokers.get(this);
+    if (invoker?.isConnected) invoker.focus();
+    queueMicrotask(() => this.dispatchEvent(new Event('close')));
+  };
+}
+
 // Always silence <audio> at runtime in tests
 class SilentAudio {
   currentTime = 0;

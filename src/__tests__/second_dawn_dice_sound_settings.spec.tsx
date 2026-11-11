@@ -24,8 +24,11 @@ it('bounds volume and safely defaults corrupt saved values',()=>{
 it('keeps sound preferences in session when browser storage is blocked',()=>{
  vi.spyOn(Storage.prototype,'getItem').mockImplementation(()=>{throw new Error('blocked');});vi.spyOn(Storage.prototype,'setItem').mockImplementation(()=>{throw new Error('blocked');});const mounted=render(<Consumer/>);fireEvent.click(screen.getByText('Quiet'));expect(screen.getByText('sound off 0.35')).toBeInTheDocument();mounted.unmount();render(<Consumer/>);expect(screen.getByText('sound off 0.35')).toBeInTheDocument();
 });
-it('keeps muted volume out of the settings keyboard focus loop',()=>{
- render(panel());fireEvent.click(screen.getByRole('checkbox',{name:/Dice sounds/}));const dialog=screen.getByRole('dialog',{name:'Preferences'});const controls=Array.from(dialog.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled)'));const last=controls.at(-1)!;last.focus();fireEvent.keyDown(last,{key:'Tab'});expect(controls[0]).toHaveFocus();fireEvent.keyDown(controls[0],{key:'Tab',shiftKey:true});expect(last).toHaveFocus();
+it('disables muted volume and leaves native keyboard navigation unhandled',()=>{
+ render(panel());fireEvent.click(screen.getByRole('checkbox',{name:/Dice sounds/}));
+ expect(screen.getByRole('slider',{name:'Dice volume'})).toBeDisabled();
+ const dialog=screen.getByRole('dialog',{name:'Preferences'});expect(dialog).toBeInstanceOf(HTMLDialogElement);expect(dialog).toHaveAttribute('open');
+ expect(fireEvent.keyDown(dialog,{key:'Tab'})).toBe(true);expect(fireEvent.keyDown(dialog,{key:'Tab',shiftKey:true})).toBe(true);
 });
 it('keeps sound available with animation disabled and includes follow and autopass preferences',()=>{
  const follow=vi.fn(),autoPass=vi.fn();render(<GameSettingsPanel motionEnabled={false} onMotionChange={vi.fn()} onClose={vi.fn()} followAi onFollowAiChange={follow} autoPass={{enabled:false,paused:false,disabled:false,onChange:autoPass}}/>);expect(screen.getByRole('checkbox',{name:/Dice sounds/})).toBeEnabled();expect(screen.getByRole('slider',{name:'Dice volume'})).toBeEnabled();fireEvent.click(screen.getByRole('checkbox',{name:/Follow AI/}));expect(follow).toHaveBeenCalledWith(false);fireEvent.click(screen.getByRole('checkbox',{name:/Auto-pass unless attacked/}));expect(autoPass).toHaveBeenCalledWith(true);

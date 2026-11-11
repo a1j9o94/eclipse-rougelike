@@ -9,8 +9,8 @@ function props(){return {ready:true,noticeKey:'plan-a',title:'Ready to confirm',
 it('preserves explicit confirmation, keyboard focus, and escape dismissal',()=>{
  const p=props();render(<ActionConfirmationNotice {...p}/>);
  const primary=screen.getByRole('button',{name:'Apply plan'});expect(primary).toHaveFocus();
- fireEvent.click(screen.getByRole('dialog').parentElement!);expect(screen.getByRole('dialog')).toBeInTheDocument();
- fireEvent.keyDown(primary,{key:'Escape'});expect(screen.queryByRole('dialog')).not.toBeInTheDocument();expect(p.onConfirm).not.toHaveBeenCalled();
+ fireEvent.pointerDown(screen.getByRole('dialog'));fireEvent.pointerUp(screen.getByRole('dialog'));fireEvent.click(screen.getByRole('dialog'));expect(screen.getByRole('dialog')).toBeInTheDocument();
+ fireEvent(screen.getByRole('dialog'),new Event('cancel',{cancelable:true}));expect(screen.queryByRole('dialog')).not.toBeInTheDocument();expect(p.onConfirm).not.toHaveBeenCalled();
 });
 it('waits behind overlays and when hidden, and drops invalidated plans immediately',()=>{
  const p=props(),scope={acknowledged:new Set<string>(),suppressed:true};

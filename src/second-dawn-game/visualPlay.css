@@ -126,8 +126,6 @@
  .dg-visual-play .dg-mobile-sheet-header { padding:2px 6px; }
  .dg-visual-play .dg-mobile-sheet-body { padding:10px; }
  .dg-visual-play .dg-mobile-sheet { background:#14212b!important; }
- .dg-visual-play .dg-mobile-sheet[data-sheet-state=expanded] { max-height:calc(100dvh - var(--mobile-sheet-top,67px) - var(--mobile-footer-height,62px)); }
- .dg-visual-play .dg-mobile-sheet[data-sheet-state=expanded] .dg-mobile-sheet-body { max-height:calc(100dvh - var(--mobile-sheet-top,67px) - var(--mobile-footer-height,62px) - 55px); }
  .dg-visual-play .dg-encounter-workspace>.dg-choice-header { padding:5px 8px;min-height:44px;flex-wrap:nowrap;font-size:12px; }
  .dg-visual-play .dg-encounter-workspace>.dg-choice-header>div { gap:2px; }
  .dg-visual-play .dg-choice-header>div>button { font-size:11px;padding:4px; }
@@ -174,7 +172,6 @@
 .dg-visual-play .dg-choice-inspect { position:relative;margin-left:auto; }
 .dg-visual-play .dg-choice-inspect>div { position:absolute;right:0;top:100%;display:grid;gap:6px;min-width:180px;padding:8px;border:1px solid #6c8493;background:#14232f;z-index:20; }
 @media(max-width:760px) {
- .dg-visual-play.dg-spatial-action { --spatial-panel-height:calc(100dvh - var(--mobile-sheet-top,67px) + 4px - var(--mobile-footer-height) - 300px); }
  .dg-visual-play.dg-spatial-action:has(.dg-mobile-sheet[data-sheet-state=expanded]) .dg-galaxy { height:300px;padding:0;min-height:300px; }
  .dg-visual-play.dg-spatial-action .dg-mobile-sheet[data-sheet-state=expanded] { height:var(--spatial-panel-height);max-height:var(--spatial-panel-height);border-radius:0; }
  .dg-visual-play.dg-spatial-action .dg-mobile-sheet[data-sheet-state=expanded]>.dg-mobile-sheet-header { display:none; }
@@ -191,7 +188,6 @@
 .dg-visual-play .dg-choice-body>.dg-decision { flex:1 1 0;min-height:0;max-height:100%; }
 @media(max-width:760px) {
  .dg-visual-play .dg-choice-workspace { height:calc(100% - 12px);max-height:calc(100% - 12px); }
- .dg-visual-play.dg-spatial-decision { --spatial-panel-height:calc(100dvh - var(--mobile-sheet-top,67px) + 4px - var(--mobile-footer-height) - 300px); }
  .dg-visual-play.dg-spatial-decision:has(.dg-mobile-sheet[data-sheet-state=expanded]) .dg-galaxy { height:300px;padding:0;min-height:300px; }
  .dg-visual-play.dg-spatial-decision .dg-mobile-sheet[data-sheet-state=expanded] { height:var(--spatial-panel-height);max-height:var(--spatial-panel-height);border-radius:0; }
  .dg-visual-play.dg-spatial-decision .dg-mobile-sheet[data-sheet-state=expanded]>.dg-mobile-sheet-header { display:none; }

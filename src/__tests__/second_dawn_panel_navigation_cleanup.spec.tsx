@@ -23,5 +23,5 @@ it('has one settings exit in its header while toggles continue saving immediatel
 });
 it('retains Escape and focus restoration when settings close',()=>{
  const close=vi.fn();const trigger=document.createElement('button');document.body.appendChild(trigger);trigger.focus();const rendered=render(<GameSettingsPanel motionEnabled onMotionChange={vi.fn()} onClose={close}/>);
- const dialog=screen.getByRole('dialog',{name:'Preferences'});expect(dialog).toHaveFocus();fireEvent.keyDown(dialog,{key:'Escape'});expect(close).toHaveBeenCalledTimes(1);rendered.unmount();expect(trigger).toHaveFocus();trigger.remove();
+ const dialog=screen.getByRole('dialog',{name:'Preferences'});expect(dialog).toHaveFocus();fireEvent(dialog,new Event('cancel',{cancelable:true}));expect(close).toHaveBeenCalledTimes(1);rendered.unmount();expect(trigger).toHaveFocus();trigger.remove();
 });

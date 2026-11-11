@@ -31,8 +31,8 @@
 
 @media (max-width: 760px) {
   .dg-app.dg-visual-play.dg-spatial-decision:has(.dg-mobile-sheet[data-sheet-state=expanded] .dg-upkeep-trade) {
-    --upkeep-map-height: clamp(0px, calc(100dvh - var(--mobile-sheet-top) - var(--mobile-footer-height) - 425px), 180px);
-    --spatial-panel-height: calc(100dvh - var(--mobile-sheet-top) + 4px - var(--mobile-footer-height) - var(--upkeep-map-height));
+    --upkeep-map-height: clamp(0px, calc(100cqh - 429px), 180px);
+    --spatial-panel-height: calc(100cqh - var(--upkeep-map-height));
   }
   .dg-app.dg-visual-play.dg-spatial-decision:has(.dg-mobile-sheet[data-sheet-state=expanded] .dg-upkeep-trade) .dg-galaxy {
     height: var(--upkeep-map-height);

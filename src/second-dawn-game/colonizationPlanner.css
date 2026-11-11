@@ -18,8 +18,8 @@
   /* Keep room to scroll the planets even when the confirmation is visible. */
   .dg-mobile-sheet .dg-colonization-planner { width:100%; }
   .dg-app.dg-visual-play:is(.dg-spatial-action,.dg-spatial-decision):has(.dg-mobile-sheet[data-sheet-state=expanded] .dg-colonization-planner) {
-    --colonization-map-height:clamp(0px,calc(100dvh - var(--mobile-sheet-top,67px) - var(--mobile-footer-height,62px) - 245px),300px);
-    --spatial-panel-height:calc(100dvh - var(--mobile-sheet-top,67px) + 4px - var(--mobile-footer-height,62px) - var(--colonization-map-height));
+    --colonization-map-height:clamp(0px,calc(100cqh - 249px),300px);
+    --spatial-panel-height:calc(100cqh - var(--colonization-map-height));
   }
   .dg-app.dg-visual-play:is(.dg-spatial-action,.dg-spatial-decision):has(.dg-mobile-sheet[data-sheet-state=expanded] .dg-colonization-planner) .dg-galaxy {
     height:var(--colonization-map-height);

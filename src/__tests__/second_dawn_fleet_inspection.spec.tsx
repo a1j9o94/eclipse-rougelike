@@ -53,11 +53,12 @@ it('includes outside-grid parts and keeps slot replacement overlays distinct fro
  expect(screen.getByText('Empty slot')).toBeInTheDocument();
  expect(screen.getByText('Built into blueprint')).toBeInTheDocument();
 });
-it('traps keyboard focus and returns to the action without submitting a command',()=>{
+it('delegates keyboard focus to the native modal and returns to the action without submitting a command',()=>{
  const view=fixture(),enemy=view.ships.find(s=>s.owner==='b')!,close=vi.fn();
  render(<FleetInspection view={view} sectorId={enemy.sectorId} selectedShipIds={[]} onClose={close}/>);
  const dialog=screen.getByRole('dialog');expect(dialog).toHaveFocus();
- fireEvent.keyDown(dialog,{key:'Tab',shiftKey:true});expect(screen.getByText('Public technologies')).toHaveFocus();
- fireEvent.keyDown(dialog,{key:'Tab'});expect(screen.getByRole('button',{name:'Return to plan'})).toHaveFocus();
- fireEvent.keyDown(dialog,{key:'Escape'});expect(close).toHaveBeenCalledOnce();
+ expect(dialog).toBeInstanceOf(HTMLDialogElement);expect(dialog).toHaveAttribute('open');
+ expect(fireEvent.keyDown(dialog,{key:'Tab',shiftKey:true})).toBe(true);
+ expect(fireEvent.keyDown(dialog,{key:'Tab'})).toBe(true);
+ fireEvent(dialog,new Event('cancel',{cancelable:true}));expect(close).toHaveBeenCalledOnce();
 });

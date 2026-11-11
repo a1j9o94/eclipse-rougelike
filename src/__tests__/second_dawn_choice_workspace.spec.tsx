@@ -82,7 +82,7 @@ it('closing a fleet inspection does not minimize or clear the underlying discove
  fireEvent.click(screen.getByText('Inspect',{selector:'summary'}));
  const home=view.sectors.find(sector=>sector.owner===view.viewerSeatId)!;
  fireEvent.click(screen.getByRole('button',{name:`Sector ${home.tileId}`}));
- fireEvent.keyDown(screen.getByRole('dialog',{name:/Fleet inspection/}),{key:'Escape'});
+ fireEvent(screen.getByRole('dialog',{name:/Fleet inspection/}),new Event('cancel',{cancelable:true}));
  expect(screen.getByRole('dialog',{name:'Discovery choice'})).toBeVisible();
  expect(screen.getByRole('radio',{name:'Keep for 2 VP'})).toBeChecked();
 });
