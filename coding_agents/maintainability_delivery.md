@@ -33,4 +33,4 @@ See the three adversarial review documents for methods, observations and limits.
 - Physical iOS/Android, real browser zoom, soft keyboards/safe areas, full-game multiplayer/reconnect, and all motion/audio combinations have not been validated. No claims of complete UX equivalence across every device are made.
 - Remaining baseline issue: downstream Build/Research workspaces and initially hidden map controls can still be cramped in very short landscape. This change fixes the action chooser specifically.
 
-This is a test-branch review candidate, not production acceptance. Production deployment and a merge to main are outside this task. The preview uses the project's existing preview Convex URL; no backend publication is performed.
+This is a test-branch review candidate, not production acceptance. Production deployment and a merge to main are outside this task. Hosted verification found that the old preview Convex URL returned 404. A branch-specific Vercel override now points this frontend preview to the existing live backend. No backend publication was performed. See `hosted_preview_review.md` for the successful hosted smoke test and remaining limits.
