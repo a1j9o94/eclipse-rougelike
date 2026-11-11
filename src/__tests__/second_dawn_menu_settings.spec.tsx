@@ -16,7 +16,7 @@ it('autosaves music and display choices, syncs game consumers and restores focus
  fireEvent.change(screen.getByRole('slider',{name:'Ambient music volume'}),{target:{value:'30'}});fireEvent.click(screen.getByRole('checkbox',{name:/Ambient music/}));
  fireEvent.click(screen.getByRole('checkbox',{name:/Animations/}));fireEvent.click(screen.getByRole('checkbox',{name:/Follow AI/}));expect(screen.getByText('motion:false/follow:false')).toBeInTheDocument();
  expect(localStorage.getItem('eclipse.second-dawn.ambient-volume.v1')).toBe('0.3');expect(localStorage.getItem('eclipse.second-dawn.ambient.v1')).toBe('off');
- fireEvent.keyDown(screen.getByRole('dialog',{name:'Settings'}),{key:'Escape'});expect(gear).toHaveFocus();expect(screen.queryByRole('dialog')).toBeNull();
+ fireEvent(screen.getByRole('dialog',{name:'Settings'}),new Event('cancel',{cancelable:true}));expect(gear).toHaveFocus();expect(screen.queryByRole('dialog')).toBeNull();
  ui.unmount();render(<MenuSettingsButton/>);fireEvent.click(screen.getByRole('button',{name:'Settings'}));expect(screen.getByRole('checkbox',{name:/Ambient music/})).not.toBeChecked();expect(screen.getByRole('slider',{name:'Ambient music volume'})).toHaveValue('30');expect(screen.getByRole('checkbox',{name:/Animations/})).not.toBeChecked();
 });
 it('defaults motion off for reduced-motion users and syncs choices from other tabs',()=>{
