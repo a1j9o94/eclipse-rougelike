@@ -2,6 +2,7 @@ import {cleanup,fireEvent,render,screen,within} from '@testing-library/react';
 import {afterEach,expect,it,vi} from 'vitest';
 import {createGame} from '../../shared/eclipse/setup';
 import {getPlayerView} from '../../shared/eclipse/protocol';
+import {legalCommands} from '../../shared/eclipse/legal';
 import {scoreSeat} from '../../shared/eclipse/rounds';
 import Board from '../second-dawn-game/SecondDawnBoard';
 function fixture(final=false){
@@ -28,6 +29,17 @@ it('uses visual faction cards with inspectable score sources and hides all reput
  for(const card of cards){expect(within(card).getByRole('img',{name:/emblem/})).toBeVisible();expect(within(card).getByRole('button',{name:'Reputation: Hidden until game end'})).toBeVisible();}
  fireEvent.click(within(cards[0]).getByRole('button',{name:/^Sectors:/}));expect(screen.getByRole('dialog',{name:'Public score inspection'})).toBeVisible();
  expect(screen.queryByRole('button',{name:'Play again'})).toBeNull();
+});
+it.each(['desktop','mobile'])('returns from the live VP view to the board on %s',layout=>{
+ if(layout==='mobile')vi.stubGlobal('matchMedia',vi.fn((query:string)=>({matches:query.includes('max-width'),media:query,addEventListener:vi.fn(),removeEventListener:vi.fn()})));
+ const view=fixture(),submit=vi.fn(),menu=vi.fn();
+ render(<Board view={view} candidates={legalCommands(view)} connected busy={false} status="" onSubmit={submit} onMenu={menu}/>);
+ fireEvent.click(screen.getByRole('button',{name:/Your public (VP|score)/}));
+ expect(screen.getByRole('heading',{name:'Public victory points'})).toBeVisible();
+ fireEvent.click(screen.getByRole('button',{name:'Back to board'}));
+ expect(screen.getByRole('group',{name:'Galaxy map'})).toBeVisible();
+ expect(screen.queryByRole('heading',{name:'Public victory points'})).toBeNull();
+ expect(submit).not.toHaveBeenCalled();expect(menu).not.toHaveBeenCalled();
 });
 it('renders authoritative final totals and joint winners for exact VP and resource ties',()=>{
  const view=fixture(true);const score=view.scores![0];view.scores=[{...score,total:32,resourceTotal:10},{...score,playerId:'b',total:32,resourceTotal:10}];

@@ -740,7 +740,7 @@ function SecondDawnBoardContent({
           : screen === "Recruitment" ? (<div className="sd-workspace"><MinorSpeciesMarket view={planningView} disabled={blocked} onSubmit={onSubmit}/></div>) : screen === "Trade" ? (
             <div className="sd-workspace"><TradePanel exchangeMode={auxiliaryActivity==='guild-trade'?'guild':'bank'} onExchangeModeChange={mode=>setAuxiliaryActivity(mode==='guild'?'guild-trade':null)} view={planningView} candidates={candidates} disabled={blocked} onSubmit={onSubmit}/></div>
           ) : screen === "Scoring" ? (
-            <ScoreWorkspace view={view} scores={liveScores} playerNames={playerNames} onInspect={(seatId,category)=>publicInspection?.request({kind:'score',seatId,category})} onHome={onHome??onMenu} onPlayAgain={onPlayAgain??onMenu} onGalaxy={()=>{setScreen('Galaxy');setMobileSheet('closed');setMobileActionMode(false);}}/>
+            <ScoreWorkspace view={view} scores={liveScores} playerNames={playerNames} onInspect={(seatId,category)=>publicInspection?.request({kind:'score',seatId,category})} onHome={onHome??onMenu} onPlayAgain={onPlayAgain??onMenu} onGalaxy={browseGalaxy}/>
           ) : screen === "Diplomacy" ? (
             <div className="sd-workspace"><DiplomacyPanel view={planningView} candidates={candidates} disabled={blocked} onSubmit={onSubmit}/></div>
           ) : screen === "Players" ? (

@@ -40,7 +40,8 @@ export default function ScoreWorkspace({view,scores,playerNames,onInspect,onHome
    <div><p className="sd-eyebrow">{final?`THE FINAL DAWN · ROUND ${view.round}`:'YOUR EMPIRE’S PROGRESS'}</p><h1>{final?'Final standings':'Public victory points'}</h1>
     {!final&&<small>{publicReputation?'Reputation included':'Reputation hidden until game end'}</small>}
    </div>
-   {final&&<div className="dg-endgame-actions">{onPlayAgain&&<button className="sd-primary" onClick={onPlayAgain}>Play again</button>}<button onClick={onHome}>Return home</button><button onClick={onGalaxy}>View final galaxy</button></div>}
+   {final?<div className="dg-endgame-actions">{onPlayAgain&&<button className="sd-primary" onClick={onPlayAgain}>Play again</button>}<button onClick={onHome}>Return home</button><button onClick={onGalaxy}>View final galaxy</button></div>
+    :<button type="button" className="dg-score-back" onClick={onGalaxy}><span aria-hidden="true">←</span> Back to board</button>}
   </header>
   {final&&winners.length>0&&<div className="dg-victory-banner">
    <div className="dg-victory-emblems">{winners.map(id=><FactionSymbol key={id} faction={view.seats.find(seat=>seat.id===id)!.faction}/>)}</div>

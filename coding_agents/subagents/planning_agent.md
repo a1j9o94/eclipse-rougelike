@@ -1067,3 +1067,9 @@ two lower-value sectors and keeping the home sector and monolith. Tests also
 exercise payable deficits, six- and eight-round setups, and actual Rift research
 and installation. Older history without a checkpoint retains its available
 ship-class summary.
+
+## VP view navigation
+
+The VP breakdown offers **Back to board** beside its heading on desktop and
+mobile. The control uses the galaxy navigation path and submits no game action.
+The scoring tests exercise both layouts and the final standings exits.
