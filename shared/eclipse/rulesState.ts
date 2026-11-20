@@ -163,7 +163,7 @@ export function connected(from: Sector, to: Sector, seat?: Seat): boolean {
   );
 }
 export function hasEnemy(
-  state: GameState,
+  state: Pick<GameState, 'ships'>,
   seat: Seat,
   sectorId: string,
 ): boolean {

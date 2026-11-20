@@ -36,6 +36,26 @@ function cashSector(): Sector {
 
 const { id: cashId } = cashSector();
 
+function lyraInfluencePosition(target: '302' | '318') {
+  const state = createGame({ seed: 390, factionProfile: 'official-v1', ruleOptions: { roundLimit: 10, passOrderTurnOrder: true }, seats: [
+    { id: 'a', faction: 'lyra', controller: 'ai' },
+    { id: 'b', faction: 'eridani', controller: 'human' },
+    { id: 'c', faction: 'exiles', controller: 'ai' },
+  ] });
+  state.round = 10;
+  state.activeSeatId = 'a';
+  state.firstPasser = 'c';
+  state.seats[0].colonyShipsAvailable = 0;
+  state.seats[1].passed = true;
+  state.seats[2].passed = true;
+  state.sectors = state.sectors.filter(sector => sector.owner !== null);
+  state.sectors.push({ id: target, tileId: target, position: { q: 1, r: -3 }, rotation: 1,
+    owner: null, population: [], orbital: false, monolith: false, discovery: false });
+  state.ships = state.ships.filter(ship => ship.owner !== 'gcds');
+  state.ships.find(ship => ship.owner === 'a')!.sectorId = target;
+  return state;
+}
+
 function safeMovementPosition(state: GameState) {
   const [startTile, nextTile] = SECTORS.filter(tile => tile.victoryPoints === 2 &&
     tile.wormholes.includes(0) && tile.wormholes.includes(3) && !tile.warpPortal);
@@ -52,6 +72,60 @@ function safeMovementPosition(state: GameState) {
 }
 
 describe('final-round AI playtest regressions', () => {
+  it('ends Influence before reclaiming Lyra’s shrine sector if its upkeep cannot be covered', () => {
+    const state = lyraInfluencePosition('302');
+    const seat = state.seats[0];
+    seat.resources = { money: 0, science: 0, materials: 0 };
+    seat.populationTracks.money = 0;
+    seat.influenceOnTrack = 9;
+    seat.actionDiscs.influence = 3;
+    seat.shrines = [
+      { column: 0, planetIndex: 2, row: 'materials', sectorId: '302' },
+      { column: 1, planetIndex: 0, row: 'money', sectorId: '302' },
+    ];
+    state.engine!.action = { owner: 'a', action: 'influence', remaining: 1, coloniesRefreshed: true };
+    const claim: GameCommand = { type: 'influence', removeSectorIds: [], addSectorIds: ['302'] };
+    expect(apply(state, 'a', claim).sectors.find(sector => sector.id === '302')?.owner).toBe('a');
+    const choice = chooseAiCommand(getPlayerView(state, 'a'), 390);
+    expect(choice?.command).toEqual({ type: 'end-action' });
+  });
+
+  it('weighs both Influence discs and the gray colony when Expert considers sector 318', () => {
+    const state = lyraInfluencePosition('318');
+    const seat = state.seats[0];
+    seat.resources = { money: 1, science: 0, materials: 0 };
+    seat.populationTracks.money = 3;
+    seat.influenceOnTrack = 6;
+    seat.actionDiscs.influence = 5;
+    state.sectors.push({ id: '302', tileId: '302', position: { q: 0, r: -3 }, rotation: 1,
+      owner: 'a', population: [], orbital: false, monolith: false, discovery: false });
+    const claim: GameCommand = { type: 'influence', removeSectorIds: [], addSectorIds: ['318'] };
+    const colonize: GameCommand = { type: 'colonize', placements: [{ sectorId: '318', squareId: 'p1', resource: 'money' }] };
+    expect(apply(apply(state, 'a', claim), 'a', colonize).seats[0].populationTracks.money).toBe(4);
+    expect(evaluateAiCommand(getPlayerView(state, 'a'), claim)).toBe(-Infinity);
+    const choice = chooseStrategicAiCommand(getPlayerView(state, 'a'), 390, { difficulty: 'expert', maxNodes: 12, now: () => 0 })!;
+    expect(choice.command).not.toEqual(claim);
+    expect(apply(state, 'a', choice.command).sectors.find(sector => sector.id === '302')?.owner).toBe('a');
+
+    seat.resources.money = 5;
+    expect(evaluateAiCommand(getPlayerView(state, 'a'), claim)).toBeGreaterThan(0);
+  });
+
+  it('keeps the funded gray colony when a transfer to Lyra’s shrine sector would increase debt', () => {
+    const state = lyraInfluencePosition('302');
+    const seat = state.seats[0];
+    seat.resources = { money: 2, science: 0, materials: 0 };
+    seat.populationTracks = { money: 3, science: -1, materials: -1 };
+    seat.influenceOnTrack = 6;
+    seat.actionDiscs.influence = 5;
+    seat.shrines = [{ column: 0, planetIndex: 2, row: 'materials', sectorId: '302' }];
+    state.sectors.push({ id: '318', tileId: '318', position: { q: 0, r: -3 }, rotation: 0,
+      owner: 'a', population: [{ squareId: 'p1', resource: 'money' }], orbital: false, monolith: false, discovery: false });
+    const transfer: GameCommand = { type: 'influence', removeSectorIds: ['318'], addSectorIds: ['302'] };
+    expect(apply(state, 'a', transfer).seats[0].populationTracks.money).toBe(2);
+    expect(evaluateAiCommand(getPlayerView(state, 'a'), transfer)).toBe(-Infinity);
+  });
+
   it.each(['hard', 'expert'] as const)('keeps a scoring sector on %s when withdrawal cannot improve upkeep', difficulty => {
     const state = game(55);
     state.round = 9;

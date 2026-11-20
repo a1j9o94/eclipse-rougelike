@@ -1073,3 +1073,14 @@ ship-class summary.
 The VP breakdown offers **Back to board** beside its heading on desktop and
 mobile. The control uses the galaxy navigation path and submits no game action.
 The scoring tests exercise both layouts and the final standings exits.
+
+## Lyra final-round Influence loop
+
+Public room history showed eight Influence actions in round 10, including
+repeated claims and withdrawals around sectors 302 and 318. The match had
+advanced to combat by the time of inspection. Regression positions use the
+same sector types and cover the Expert shortlist, an open Influence action,
+and a transfer away from a Money colony. The AI projects both disc costs,
+eligible Money colonies, and current resource conversion before choosing new
+territory. A repeatable claim that worsens unpaid upkeep is excluded from
+planning. A colony that covers the cost preserves the claim as an option.

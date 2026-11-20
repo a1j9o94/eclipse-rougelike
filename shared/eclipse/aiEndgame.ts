@@ -1,7 +1,7 @@
 import { factionHasCapability, getFaction, tradeQuote } from './catalog';
 import { factionRulesMode } from './gameRules';
 import { firstPassMoney } from './passing';
-import { upkeepBalance } from './rulesState';
+import { hasEnemy, hasTech, upkeepBalance } from './rulesState';
 import { sectorDefinition } from './sectors';
 import { incomeForPopulationAway } from './tracks';
 import type { GameCommand, PlayerView, Resource, Seat, Sector } from './types';
@@ -73,22 +73,52 @@ function afterWithdrawals(seat: Seat, sectors: readonly Sector[], discCost: numb
   return projected;
 }
 
+function afterMoneyColonies(view: PlayerView, seat: Seat, sectors: readonly Sector[]): Seat {
+  const limit = Math.min(seat.colonyShipsAvailable, 11 - seat.populationTracks.money);
+  if (limit <= 0) return seat;
+  const advanced = hasTech(seat, 'advanced-economy') || hasTech(seat, 'metasynthesis');
+  let squares = 0;
+  for (const sector of sectors) {
+    if (hasEnemy(view, seat, sector.id)) continue;
+    const planets = sectorDefinition(Number(sector.tileId))?.population ?? [];
+    squares += planets.filter((planet, index) =>
+      (planet.resource === 'money' || planet.resource === 'gray') &&
+      (!planet.advanced || advanced) && !sector.population.some(cube => cube.squareId === `p${index}`),
+    ).length;
+    if (sector.orbital && !sector.population.some(cube => cube.squareId === 'orbital')) squares++;
+    if (squares >= limit) break;
+  }
+  const colonies = Math.min(limit, squares);
+  return { ...seat, colonyShipsAvailable: seat.colonyShipsAvailable - colonies,
+    populationTracks: { ...seat.populationTracks, money: seat.populationTracks.money + colonies } };
+}
+
 export function finalInfluenceValue(view: PlayerView, seat: Seat, command: Extract<GameCommand, { type: 'influence' }>): number {
+  const controlled = view.sectors.filter(sector => sector.owner === seat.id);
   const removed = view.sectors.filter(sector => command.removeSectorIds.includes(sector.id));
   const added = view.sectors.filter(sector => command.addSectorIds.includes(sector.id));
   const startsAction = view.phase === 'action' && !view.actionProgress;
   const passMoney = startsAction ? firstPassMoney(view) : 0;
   const baseline = passMoney ? { ...seat, resources: { ...seat.resources, money: seat.resources.money + passMoney } } : seat;
   if (removed.length && !added.length &&
-      view.sectors.every(sector => sector.owner !== seat.id || command.removeSectorIds.includes(sector.id)) &&
+      controlled.every(sector => command.removeSectorIds.includes(sector.id)) &&
       view.ships.every(ship => ship.owner !== seat.id || ship.orbitalShip && command.removeSectorIds.includes(ship.sectorId)))
     return -Infinity;
   const projected = afterWithdrawals(seat, removed, Number(startsAction));
   projected.influenceOnTrack -= added.length;
+  if (view.phase === 'action' && !view.actionProgress?.coloniesRefreshed) {
+    const colonyCapacity = getFaction(seat.faction).colonyShips + Number(hasTech(seat, 'advanced-colony-ships'));
+    projected.colonyShipsAvailable = Math.min(colonyCapacity, seat.colonyShipsAvailable + 2);
+  }
+  const retained = controlled.filter(sector => !command.removeSectorIds.includes(sector.id));
+  const beforeFunding = afterMoneyColonies(view, baseline, controlled);
+  const afterFunding = afterMoneyColonies(view, projected, [...retained, ...added]);
+  const relief = remainingUpkeepShortfall(view, beforeFunding) - remainingUpkeepShortfall(view, afterFunding);
+  // Routine claims must be sustainable. Discoveries can pay off immediately even without lasting control.
+  if (added.length && relief < 0 && !added.some(sector => sector.discovery)) return -Infinity;
   const gained = added.reduce((sum, sector) => sum + controlPoints(seat, sector) + (sector.discovery ? 1 : 0), 0);
   const lost = removed.reduce((sum, sector) => sum + controlPoints(seat, sector), 0);
-  const relief = remainingUpkeepShortfall(view, baseline) - remainingUpkeepShortfall(view, projected);
-  const moneyChange = upkeepBalance(projected) - upkeepBalance(baseline);
+  const moneyChange = upkeepBalance(afterFunding) - upkeepBalance(beforeFunding);
   // Keep existing points when withdrawal offers no advantage over holding and settling upkeep.
   if (removed.length && relief <= 0 && (gained < lost || gained === lost && moneyChange <= 0)) return -Infinity;
   return (gained - lost) * 5 + relief * 8 + moneyChange * .25;
