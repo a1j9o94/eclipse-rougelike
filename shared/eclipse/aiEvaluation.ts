@@ -6,23 +6,59 @@ import {factionHasCapability,getFaction} from './catalog';
 import {deriveBlueprintStats} from './blueprints';
 import {publicBlueprint} from './legal';
 import {sectorDefinition} from './sectors';
-import {calculateScore} from './scoring';
+import {calculateScore, type ScoreBreakdown} from './scoring';
 import {incomeForPopulationAway,upkeepForEmptyInfluenceSlots} from './tracks';
 import {adjacentPosition} from './geometry';
 import {estimatePublicBattle} from './aiSimulation';
 import {remainingUpkeepShortfall} from './aiEndgame';
 import type {PlayerView,Seat} from './types';
 
-function empireValue(view:PlayerView,seat:Seat):number {
- if(seat.eliminated)return -30;
- const sectors=view.sectors.filter(s=>s.owner===seat.id);
- const own=seat.id===view.viewerSeatId;
- const rules=gameRules(view);
- const reputation=own?view.private.reputation:rules.publicReputation?view.lessRandom?.reputationBySeat[seat.id]??[]:[];
- const hidden=view.hiddenTileCounts.find(s=>s.seatId===seat.id);
-const score=calculateScore({playerId:seat.id,faction:seat.faction,reputation:reputation,ambassadors:seat.ambassadors.length,minorSpecies:seat.minorSpecies,reputationTileCount:own?view.private.reputation.length:hidden?.reputation??0,sectors:sectors.map(s=>({id:s.id,printedVp:sectorDefinition(Number(s.tileId))?.victoryPoints??0,monoliths:Number(s.monolith),portalVp:s.portalVp??0,orbitalPopulated:s.orbital&&s.population.some(c=>c.squareId==='orbital'),shrines:(seat.shrines??[]).filter(shrine=>shrine.sectorId===s.id).length})),discoveriesKeptForVp:own?view.private.discoveriesKept.length:hidden?.discoveriesKept??0,traitor:seat.traitor,researchTracks:[seat.technologies.military.length,seat.technologies.grid.length,seat.technologies.nano.length],ancientsOnBoard:view.ships.filter(s=>s.type==='ancient').length,ancientPartsUsed:seat.ancientPartsUsed,variantVp:(rules.explorationRules&&view.lessRandom?.explorationJokers[seat.id]?2:0)+(seat.developments?.some(d=>d.id==='quantum-labs'&&d.technologyId)?1:0)+(seat.discoveryBonuses??[]).reduce((sum,b)=>sum+(b==='artifacts'?sectors.reduce((n,s)=>n+(sectorDefinition(Number(s.tileId))?.artifacts??0),0):Math.floor(reputation.reduce((a,b)=>a+b,0)/3)),0),resources:seat.resources});
- // Hidden reputation is an expectation based on count, never sampled opponent values.
- let value=score.total+(own||rules.publicReputation?0:(hidden?.reputation??0)*2.5)+minorSpeciesFutureValue(view,seat);
+/** Each estimate is in final victory points, from the requesting player's information. */
+export interface AiScoreForecast {
+ seatId: string;
+ expectedVp: number;
+}
+
+function expectedSeatVp(view: PlayerView, seat: Seat): number {
+ const sectors = view.sectors.filter(sector => sector.owner === seat.id);
+ const own = seat.id === view.viewerSeatId;
+ const rules = gameRules(view);
+ const counts = view.hiddenTileCounts.find(s => s.seatId === seat.id);
+ const reputation = own ? view.private.reputation : view.lessRandom?.reputationBySeat[seat.id] ?? [];
+ const knownReputation = own || rules.publicReputation;
+ const hiddenReputation = knownReputation ? 0 : (counts?.reputation ?? 0) * 2.5;
+ const reputationBonuses = seat.discoveryBonuses?.filter(bonus => bonus === 'reputation').length ?? 0;
+ const hiddenBonus = reputationBonuses * Math.floor(hiddenReputation / 3);
+ const sheet = view.scores?.find(score => score.playerId === seat.id);
+ if (sheet && (seat.eliminated || view.phase === 'finished')) {
+  return view.phase === 'finished' ? sheet.total : sheet.total + hiddenReputation + hiddenBonus;
+ }
+ const scoringReputation = knownReputation ? reputation : [];
+ const researchTracks: [number, number, number] = [
+  seat.technologies.military.length, seat.technologies.grid.length, seat.technologies.nano.length,
+ ];
+ const artifacts = sectors.reduce((total, sector) => total + (sectorDefinition(Number(sector.tileId))?.artifacts ?? 0), 0);
+ const score = calculateScore({
+  playerId: seat.id, faction: seat.faction, reputation: scoringReputation,
+  ambassadors: seat.ambassadors.length, minorSpecies: seat.minorSpecies,
+  reputationTileCount: own ? view.private.reputation.length : counts?.reputation ?? 0,
+  sectors: sectors.map(sector => ({
+   id: sector.id, printedVp: sectorDefinition(Number(sector.tileId))?.victoryPoints ?? 0,
+   monoliths: Number(sector.monolith), portalVp: sector.portalVp ?? 0,
+   orbitalPopulated: sector.orbital && sector.population.some(cube => cube.squareId === 'orbital'),
+   shrines: (seat.shrines ?? []).filter(shrine => shrine.sectorId === sector.id).length,
+  })),
+  discoveriesKeptForVp: own ? view.private.discoveriesKept.length : counts?.discoveriesKept ?? 0,
+  traitor: seat.traitor, researchTracks, ancientsOnBoard: view.ships.filter(s => s.type === 'ancient').length,
+  ancientPartsUsed: seat.ancientPartsUsed, resources: seat.resources,
+  variantVp: (rules.explorationRules && view.lessRandom?.explorationJokers[seat.id] ? 2 : 0)
+   + Number(seat.developments?.some(d => d.id === 'quantum-labs' && d.technologyId) ?? false)
+   + (seat.discoveryBonuses ?? []).filter(bonus => bonus === 'artifacts').length * artifacts
+   + reputationBonuses * Math.floor(scoringReputation.reduce((total, vp) => total + vp, 0) / 3),
+ });
+ const currentVp = score.total + hiddenReputation + hiddenBonus;
+ if (seat.eliminated) return currentVp;
+ let value = minorSpeciesFutureValue(view, seat);
  const remaining=Math.max(0,gameRoundLimit(view)-view.round),income={money:incomeForPopulationAway(seat.populationTracks.money),science:incomeForPopulationAway(seat.populationTracks.science),materials:incomeForPopulationAway(seat.populationTracks.materials)};
  const upkeep=upkeepForEmptyInfluenceSlots(Math.max(0,13-seat.influenceOnTrack));
  const balance=seat.resources.money+income.money-upkeep;
@@ -83,24 +119,43 @@ const score=calculateScore({playerId:seat.id,faction:seat.faction,reputation:rep
   const enemyNear=view.sectors.filter(s=>neighbors.some(p=>p.q===s.position.q&&p.r===s.position.r)).some(s=>view.ships.some(ship=>ship.sectorId===s.id&&ship.owner!==seat.id&&view.seats.some(p=>p.id===ship.owner&&!seat.ambassadors.includes(p.id))));
   if(enemyNear&&force<2)value-=1.1;
  }
- return value;
+ // Least-squares fit to the VP still to be earned in 36 seeded complete games.
+ // Separate accrued points from the future value of production, fleets and frontier sectors.
+ const spent = Math.min(3, returnedActions);
+ return currentVp + 0.66 + 1.43 * remaining + 0.17 * value - 0.31 * spent;
+}
+
+export function forecastFinalScores(view: PlayerView): AiScoreForecast[] {
+ return view.seats.map(seat => ({ seatId: seat.id, expectedVp: expectedSeatVp(view, seat) }));
+}
+
+/** Both planners use the same opponent and resource tiebreak on a completed score sheet. */
+export function finalScoreComparison(scores: readonly ScoreBreakdown[], seatId: string) {
+ const own = scores.find(score => score.playerId === seatId);
+ let leader: ScoreBreakdown | undefined;
+ for (const score of scores) {
+  if (score.playerId === seatId) continue;
+  if (!leader || score.total > leader.total || (score.total === leader.total && score.resourceTotal > leader.resourceTotal))
+   leader = score;
+ }
+ if (!own || !leader) return null;
+ const margin = own.total - leader.total;
+ const resources = own.resourceTotal - leader.resourceTotal;
+ const tiebreak = resources / (1 + Math.abs(resources)) * .01;
+ return { expectedVp: own.total, expectedLeaderVp: leader.total, margin: margin + tiebreak, outcome: Math.sign(margin || resources) };
 }
 
 /** Comparable estimated final points, with leader pressure and actual terminal outcomes. */
 export function evaluateStrategicPosition(view:PlayerView,seatId:string):number {
  if(view.phase==='finished'&&view.scores?.length){
-  const own=view.scores.find(s=>s.playerId===seatId)!;
-  const opponents=view.scores.filter(s=>s.playerId!==seatId);
-  const leader=Math.max(...opponents.map(s=>s.total));
-  const resourceLeader=Math.max(...opponents.filter(s=>s.total===leader).map(s=>s.resourceTotal));
-  const win=own.total>leader||own.total===leader&&own.resourceTotal>resourceLeader;
-  const loss=own.total<leader||own.total===leader&&own.resourceTotal<resourceLeader;
-  // Preserve resources as a secondary preference between equal projected VP outcomes.
-  const resourceMargin=own.resourceTotal-resourceLeader;
-  const tiebreak=resourceMargin/(1+Math.abs(resourceMargin))*.01;
-  return (win?100:loss?-100:0)+own.total-leader+tiebreak;
+  const comparison = finalScoreComparison(view.scores, seatId);
+  return comparison ? comparison.outcome * 100 + comparison.margin : -1000;
  }
- const seat=view.seats.find(s=>s.id===seatId);if(!seat)return -1000;
- const own=empireValue(view,seat),others=view.seats.filter(s=>s.id!==seatId).map(s=>empireValue(view,s));
- return own-Math.max(...others)*.6;
+ const forecasts = forecastFinalScores(view);
+ const own = forecasts.find(s => s.seatId === seatId);
+ if (!own) return -1000;
+ // A command that advances the round changes both players' scoring horizons.
+ // Compare margins so that the shared time left cannot favor delaying that command.
+ const leader = Math.max(...forecasts.filter(s => s.seatId !== seatId).map(s => s.expectedVp));
+ return own.expectedVp - leader;
 }

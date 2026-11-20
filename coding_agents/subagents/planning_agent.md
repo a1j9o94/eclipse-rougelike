@@ -1115,3 +1115,39 @@ seed 1649 at 0 VP. The new policy scored 18 and 14. Passing on the first turn
 scored 16 and 12 with the same boards and opponents. These are targeted Lyra
 endgames. The next strength comparison should rotate factions and seats on
 held-out midgame positions before extending this search to earlier rounds.
+
+## Midgame plans and expected final VP
+
+Hard and Expert should spend early and middle turns on plans that increase
+their expected scoring margin at the end of the configured game. Search
+several own decisions with opponent responses and evaluate finalists using
+paired hypothetical games continued to real scoring. When time only permits
+a shorter search, use a forecast in VP calibrated on completed games. Keep
+diagnostics explicit about which estimate was used. Normal retains its fast policy.
+
+First reproduce a round-three Research and Build opportunity and verify its
+rules-scored payoff. Check the forecast against withheld score sheets, privacy,
+legal choices, deterministic work limits, clock cutoff, and existing last-round
+regressions. Compare with the released planner on the same midgame positions
+and opponents. The main risks are latency and overvaluing a fortunate rollout.
+Use matched samples and the existing worker budgets. Rollback is one commit.
+
+The search compares expected final VP against the strongest opponent in each
+sample. It gives each shortlisted opening a follow-up when the budget allows,
+keeps Pass alongside the leading plan for terminal comparisons, and uses only
+alternatives that finished on every assigned sample. A deadline can leave a
+forecast as the best completed comparison. The terminal games use the same
+fast policy for every seat. The planner executes one command and searches again.
+
+The score estimate was fit on 36 complete games. On 435 observations from 12
+separate games it averaged 3.91 VP absolute error, versus 8.83 for the current
+score. Run `node tools/second-dawn-ai-score-forecast.mjs` to repeat the check.
+With `AI_BENCHMARK_MODE=midgame`, the endgame benchmark compares two decisions
+per focal seat against release `d38ac0c`. Across eight matched positions at 32
+nodes, the new planner earned 150 VP and five wins versus 133 VP and three
+wins. Five individual scores improved, two tied, and Lyra fell from 17 to 14.
+A separate four-round opening replay with both focal seats at 16 nodes held
+the win and loss fixed. Draco gained two VP and Exiles lost three. These small
+samples do not establish a general win rate. On a timed three-player board,
+Hard used about 3 seconds and Expert took 10–11 seconds. Broader full-game
+strength comparisons should rotate additional factions and budgets.
