@@ -108,6 +108,13 @@ describe('final-round AI playtest regressions', () => {
     expect(apply(state, 'a', choice.command).sectors.find(sector => sector.id === '302')?.owner).toBe('a');
 
     seat.resources.money = 5;
+    // The fleet can now pay for its free aftermath claim. Move it to the
+    // connected neighbor to make Influence the only way to claim 318.
+    expect(evaluateAiCommand(getPlayerView(state, 'a'), claim)).toBe(-Infinity);
+    state.ships.find(ship => ship.owner === 'a')!.sectorId = '302';
+    state.sectors.find(sector => sector.id === '302')!.rotation = 5;
+    state.sectors.find(sector => sector.id === '318')!.rotation = 5;
+    expect(apply(state, 'a', claim).sectors.find(s => s.id === '318')?.owner).toBe('a');
     expect(evaluateAiCommand(getPlayerView(state, 'a'), claim)).toBeGreaterThan(0);
   });
 

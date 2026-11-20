@@ -1084,3 +1084,34 @@ and a transfer away from a Money colony. The AI projects both disc costs,
 eligible Money colonies, and current resource conversion before choosing new
 territory. A repeatable claim that worsens unpaid upkeep is excluded from
 planning. A colony that covers the cost preserves the claim as an option.
+
+## Compare final-round decisions with passing
+
+The AI should spend its last discs on plans that improve its projected finish. Compare
+Influence with holding territory, the first-pass reward, free post-combat claims,
+colonization and settlement. Generate connected claims that share an action disc.
+Hard and Expert should compare complete actions using the same sampled games and
+final scoring, including the option to pass. Preserve a legal choice at the deadline.
+
+First reproduce the occupied shrine, empty refresh, bridge to a monolith, and
+inconsistent search horizons. Validate positive and negative plays with the
+rules engine and compare final VP and sectors across paired seeded positions.
+The main risks are premature passing and slower decisions. The rollback is a
+single policy commit. The saved-game protocol and AI version stay compatible.
+
+The published rules permit a fleet to take an uncontested sector after combat
+without spending an action disc. Both projections include that option. Normal
+uses a fast estimate of the holdings it can keep and the resources left after
+upkeep. Hard and Expert play shortlisted final-round plans to completion with
+the rules engine in two or three sampled worlds. Once a plan reaches its last
+planned step, its player passes future turns. Opponents use the existing fast
+policy. The search keeps the highest fully settled result seen before cutoff.
+
+Validation covered 109 tests, including eight-round games at every seat count
+from two through six. For a repeatable policy comparison, give
+`tools/second-dawn-ai-endgame-benchmark.mjs` a checkout of release `79d6147`.
+With the 600-node Expert limit, the released AI finished seed 837 at 5 VP and
+seed 1649 at 0 VP. The new policy scored 18 and 14. Passing on the first turn
+scored 16 and 12 with the same boards and opponents. These are targeted Lyra
+endgames. The next strength comparison should rotate factions and seats on
+held-out midgame positions before extending this search to earlier rounds.

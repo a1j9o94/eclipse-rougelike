@@ -1,3 +1,4 @@
+import { gameRoundLimit } from './gameRules';
 import { researchedTechnologyIds } from './technologies';
 import { shipPartResearched } from './parts';
 import { aiWeaponValue } from "./aiWeaponValue";
@@ -16,7 +17,7 @@ import {
   type LegalCommandCandidate,
 } from "./legal";
 import { SHIP_PARTS } from "./parts";
-import { capacity, mapSector, movementAbilities } from "./rulesState";
+import { capacity, connected, hasEnemy, mapSector, movementAbilities } from "./rulesState";
 import { planBlueprintUpgrade } from "./upgradePlan";
 import { guildMovementTolls } from "./scifiActions";
 import type { AncientShipPartId } from "./discoveries";
@@ -182,6 +183,25 @@ export function generateAiCandidates(
         ))
           purchase({ type: "build", builds: [first, second] });
       }
+  }
+  // The first claim can open a connection to the second. The rules engine
+  // processes these in order and charges a single Influence action disc.
+  if (view.round >= gameRoundLimit(view) && limit('influence') >= 2 &&
+      seat.influenceOnTrack >= (view.actionProgress ? 2 : 3)) {
+    const fleet = new Set(view.ships.filter(ship => ship.owner === seat.id).map(ship => ship.sectorId));
+    const sources = view.sectors.filter(s => s.owner === seat.id || fleet.has(s.id));
+    const open = view.sectors.filter(s => !s.owner && !hasEnemy(view, seat, s.id) &&
+      !view.actionProgress?.influenceSectorIds?.includes(s.id));
+    const reachable = open.filter(s => fleet.has(s.id) || sources.some(source => connected(source, s, seat)));
+    for (const first of reachable) {
+      for (const second of open) {
+        if (first === second || reachable.includes(second) && first.id > second.id) continue;
+        if (reachable.includes(second) || connected(first, second, seat)) {
+          add({ type: 'influence', addSectorIds: [first.id, second.id], removeSectorIds: [] },
+            `Claim sectors ${first.tileId} and ${second.tileId}`);
+        }
+      }
+    }
   }
   if (limit("move")) {
     const sectors = view.sectors.map(mapSector),
@@ -422,7 +442,9 @@ export function generateAiCandidates(
   }
   return [...families.values()].flatMap((group) => {
     const compound = group.filter((c) =>
-      c.command.type === "move"
+      c.command.type === "influence"
+        ? c.command.addSectorIds.length > 1
+        : c.command.type === "move"
         ? c.command.moves.length > 1
         : c.command.type === "build"
           ? c.command.builds.length > 1

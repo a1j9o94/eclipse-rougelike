@@ -95,7 +95,10 @@ export function evaluateStrategicPosition(view:PlayerView,seatId:string):number 
   const resourceLeader=Math.max(...opponents.filter(s=>s.total===leader).map(s=>s.resourceTotal));
   const win=own.total>leader||own.total===leader&&own.resourceTotal>resourceLeader;
   const loss=own.total<leader||own.total===leader&&own.resourceTotal<resourceLeader;
-  return (win?100:loss?-100:0)+own.total-leader;
+  // Preserve resources as a secondary preference between equal projected VP outcomes.
+  const resourceMargin=own.resourceTotal-resourceLeader;
+  const tiebreak=resourceMargin/(1+Math.abs(resourceMargin))*.01;
+  return (win?100:loss?-100:0)+own.total-leader+tiebreak;
  }
  const seat=view.seats.find(s=>s.id===seatId);if(!seat)return -1000;
  const own=empireValue(view,seat),others=view.seats.filter(s=>s.id!==seatId).map(s=>empireValue(view,s));

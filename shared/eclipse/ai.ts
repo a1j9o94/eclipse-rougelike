@@ -5,7 +5,7 @@ import { getDiscovery, type DiscoveryId } from './discoveries';
 import {evaluateMinorSpeciesPurchase} from './aiMinorSpecies';
 import { aiWeaponValue } from "./aiWeaponValue";
 import { aiUpgradeBlueprintValue, riftFittingPlans } from './aiRefits';
-import { controlPoints, finalBankruptcyValue, finalInfluenceValue, finalPopulationReturnValue, remainingUpkeepShortfall } from './aiEndgame';
+import { controlPoints, createFinalInfluenceEvaluator, finalBankruptcyValue, finalColonyValue, finalPopulationReturnValue, remainingUpkeepShortfall } from './aiEndgame';
 import { generateAiCandidates } from "./aiCandidates";
 import { factionHasCapability, getFaction, tradeQuote } from "./catalog";
 import { connectionBetween } from "./geometry";
@@ -13,7 +13,7 @@ import { capacity, mapSector, movementAbilities, paidActivationCost } from "./ru
 import { fundingOptions } from "./funding";
 import { reputationCapacity } from "./battleEngine";
 import { estimatePublicBattle } from "./aiSimulation";
-import { publicBlueprint, type LegalCommandCandidate } from "./legal";
+import { legalCommands, publicBlueprint, type LegalCommandCandidate } from "./legal";
 import { deriveBlueprintStats, neutralBlueprint } from "./blueprints";
 import {
   incomeForPopulationAway,
@@ -280,9 +280,22 @@ function finalMoveValue(view: PlayerView, seat: Seat, command: Extract<GameComma
   return gain > 0 ? gain : -Infinity;
 }
 
-export function evaluateAiCommand(
-  view: PlayerView,
-  command: GameCommand,
+export function createAiCommandEvaluator(view: PlayerView): (command: GameCommand) => number {
+  let influence: ReturnType<typeof createFinalInfluenceEvaluator> | undefined;
+  const scoreInfluence = (command: Extract<GameCommand, { type: 'influence' }>) => {
+    influence ??= createFinalInfluenceEvaluator(view, view.seats.find(s => s.id === view.viewerSeatId)!);
+    return influence(command);
+  };
+  return command => scoreCommand(view, command, scoreInfluence);
+}
+
+export function evaluateAiCommand(view: PlayerView, command: GameCommand): number {
+  return createAiCommandEvaluator(view)(command);
+}
+
+function scoreCommand(
+  view: PlayerView, command: GameCommand,
+  scoreInfluence: ReturnType<typeof createFinalInfluenceEvaluator>,
 ): number {
   const seat = view.seats.find((s) => s.id === view.viewerSeatId)!;
   const factionPolicy = getFaction(seat.faction).capabilities.ai;
@@ -393,15 +406,31 @@ export function evaluateAiCommand(
           : -20;
     }
     case "convert-colony-ship":
+      if (finalRound && view.phase === 'upkeep') {
+        if (balance < 0 && command.resource !== 'money') return -Infinity;
+        // Unused Magellan colony ships can also count toward the final resource tiebreak.
+        return 35;
+      }
       if (bankruptcy && command.resource !== 'money') return -Infinity;
       return utility(command.resource) * 3 - 2;
     case "buy-activation": {
       const cost = paidActivationCost(seat, command.action);
       if (cost === null) return -Infinity;
+      if (finalRound && command.action === 'influence' && view.actionProgress) {
+        // Exhaust included activations before purchasing one. Compare the funded
+        // continuation with ending now, including the price in its settlement.
+        if (view.actionProgress.remaining > 0 || seat.resources.money < cost) return -Infinity;
+        const extended = { ...view, actionProgress: { ...view.actionProgress, remaining: 1, paidBonusUsed: true } };
+        const score = createFinalInfluenceEvaluator(extended, seat, cost);
+        const gains = legalCommands(extended, { perFamilyLimit: 64 })
+          .flatMap(c => c.command.type === 'influence' ? [score(c.command)] : []);
+        return scoreCommand(view, { type: 'end-action' }, scoreInfluence) + Math.max(-Infinity, ...gains);
+      }
       if (finalRound && balance < cost) return -Infinity;
       return 18 - cost * utility("money");
     }
     case "colonize":
+      if (finalRound) return 40 + finalColonyValue(view, seat, command.placements);
       return (
         35 +
         command.placements.reduce((sum, p) => sum + utility(p.resource) * 3, 0)
@@ -473,8 +502,8 @@ export function evaluateAiCommand(
     }
     case "influence":
       if (finalRound) {
-        if (!command.addSectorIds.length && !command.removeSectorIds.length) return 2 - discPenalty;
-        return finalInfluenceValue(view, seat, command);
+        const stop = view.actionProgress ? { type: 'end-action' } as const : { type: 'pass' } as const;
+        return scoreCommand(view, stop, scoreInfluence) + scoreInfluence(command);
       }
       return command.addSectorIds.length
         ? command.addSectorIds.reduce(
@@ -603,8 +632,8 @@ export function evaluateAiCommand(
         case "ancient-part":
           return c.blueprint ? 15 : 3;
         case "control":
-          if (finalRound && c.accept && view.pendingDecision?.kind === 'control')
-            return finalInfluenceValue(view, seat, { type: 'influence', addSectorIds: [view.pendingDecision.sectorId], removeSectorIds: [] });
+          if (finalRound && view.pendingDecision?.kind === 'control')
+            return c.accept ? scoreInfluence({ type: 'influence', addSectorIds: [view.pendingDecision.sectorId], removeSectorIds: [] }) : 0;
           return c.accept && view.pendingDecision?.kind === "control"
             ? sectorControlValue(view, view.pendingDecision.sectorId)
             : 1;
@@ -696,6 +725,7 @@ export function chooseAiCommand(
   if (!candidates.length) return null;
   let random = randomSeed(simulationSeed >>> 0);
   let best: AiChoice | null = null;
+  const scoreCandidate = createAiCommandEvaluator(view);
   const combatCache = new Map<string, number>();
   const estimate = (attackerIds: string[], defenderIds: string[]): number => {
     const key =
@@ -718,7 +748,7 @@ export function chooseAiCommand(
     const next = randomInt(random, 1000);
     random = next.state;
     let evaluation =
-      evaluateAiCommand(view, candidate.command) + next.value / 10000;
+      scoreCandidate(candidate.command) + next.value / 10000;
     if (!Number.isFinite(evaluation)) continue;
     const command = candidate.command;
     if (command.type === "move") {
