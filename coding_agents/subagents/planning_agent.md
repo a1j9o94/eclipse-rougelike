@@ -1025,3 +1025,45 @@ checks for legal commands, explicit confirmation, saved drafts, and navigation.
 the supported UI path and retain state and command assertions when replacing
 selectors. Use the existing bounded runner for CI and the Node runner for
 tooling tests. Revert this change set to roll back.
+
+## November 2026 final-round playtest follow-up
+
+**Outcome** — AI opponents keep competing through final scoring, mixed actions
+work in either legal order, and players can follow what changed and choose the
+content they want before starting a match.
+
+**Acceptance criteria** — Reproduce endgame AI withdrawals and reversible
+moves in deterministic positions. Preserve legal economy recovery and verify
+Rift acquisition and fitting as a complete AI decision sequence. Let the
+Heralds spend both printed activation counts in a legal order on one disc.
+Group public history by turn, retain exact upgrade changes and retreat
+destinations, and keep undo and earlier history accessible. Offer an official
+faction collection and surface Rift options in both setup flows. Retest upkeep
+return, surplus damage, faction randomization, and cruiser fitting with a
+reachable Apply control and an expanded parts tray.
+
+**Verification** — Focused regressions fail first for new behavior. An
+independent agent checks browser flows and reviews the integrated changes.
+Run relevant engine, persistence and UI suites, lint, type checking and build
+before the existing main-branch Vercel release.
+
+**Risks and rollback** — Keep existing lobby and save settings readable.
+Verify replay compatibility for any new command or catalog profile. Keep
+public recaps within the existing visibility boundary. A rollback must retain
+readers for any new profile or commands that have already been persisted.
+
+**Independent validation** — Chromium exercised 32 scenarios, including
+engine-backed Build → Move → Move from zero ships after reload, grouped history
+and undo through pagination, live retreat announcements, and desktop resizing.
+The local Convex checks exercised solo saves and a multi-client room with the
+Official roster and Rift Cannons off. The four previously released fixes were
+retested on desktop and mobile.
+
+**AI regression evidence** — Deterministic positions reproduce final-round
+withdrawals and reversals without the original playtest saves. Independent
+validation also reproduced a four-seat bankruptcy where spending scarce Money
+lost all five sectors. The updated policy settles that position by giving up
+two lower-value sectors and keeping the home sector and monolith. Tests also
+exercise payable deficits, six- and eight-round setups, and actual Rift research
+and installation. Older history without a checkpoint retains its available
+ship-class summary.

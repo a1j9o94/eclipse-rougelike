@@ -1,5 +1,5 @@
 import {useId} from 'react';
-import {allowsRiftCannons,gameRules,MIN_GAME_ROUNDS,MAX_GAME_ROUNDS,type GameRuleOptions,type RuleConfiguration} from '../../shared/eclipse/gameRules';
+import {allowsRiftCannons,riftCannonsEnabled,gameRules,MIN_GAME_ROUNDS,MAX_GAME_ROUNDS,type GameRuleOptions,type RuleConfiguration} from '../../shared/eclipse/gameRules';
 import RulesModePicker from './RulesModePicker';
 import './gameRuleSettings.css';
 export interface GameRuleSettingsValue extends RuleConfiguration {warpPortals:boolean;riftCannons?:boolean;minorSpecies?:boolean;showCombatOdds?:boolean}
@@ -15,6 +15,24 @@ const options:readonly {key:Exclude<keyof GameRuleOptions,'roundLimit'>;label:st
  {key:'factionVariant',label:'Less Random faction rules',description:'Use variant trade rates and require each Terran player to ban an unchosen alien faction.'},
  {key:'passOrderTurnOrder',label:'Next round follows pass order',description:'Players take turns next round in the order they first passed this round. The first player to pass still gains 2 money.'},
 ];
+
+export function RiftCannonSetting({value,disabled,onChange}:{
+ value:RuleConfiguration & {riftCannons?:boolean};
+ disabled:boolean;
+ onChange:(enabled:boolean)=>void;
+}){
+ const id=`rift-cannons-${useId().replace(/[^a-zA-Z0-9_-]/g,'')}`;
+ const allowed=allowsRiftCannons(value);
+ return <div className="dg-rift-setting dg-rule-toggles">
+  <label>
+   <input type="checkbox" checked={riftCannonsEnabled(value)} disabled={disabled||!allowed} aria-labelledby={`${id}-label`} aria-describedby={`${id}-help`} onChange={event=>onChange(event.target.checked)}/>
+   <span><strong id={`${id}-label`}>Rift Cannons</strong><small id={`${id}-help`}>
+    {allowed?'Adds the Rift Cannon technology and Rift Conductor discovery.':'Turn off Combat Jokers and Less Random technology tiles in Advanced rules to enable.'}
+   </small></span>
+  </label>
+ </div>;
+}
+
 export default function GameRuleSettings({value,disabled,onChange,standardOnly=false}:Props){
  const id=`custom-rules-${useId().replace(/[^a-zA-Z0-9_-]/g,'')}`,rules=gameRules(value),defaults=gameRules({rulesMode:value.rulesMode});
  const standard=value.rulesMode!=='less-random-v1';
@@ -26,7 +44,6 @@ export default function GameRuleSettings({value,disabled,onChange,standardOnly=f
   <div className="dg-round-setting"><label>Rounds<select aria-label="Rounds" disabled={disabled||standardOnly} value={rules.roundLimit} onChange={event=>update({roundLimit:Number(event.target.value)})}>{Array.from({length:MAX_GAME_ROUNDS-MIN_GAME_ROUNDS+1},(_,index)=>index+MIN_GAME_ROUNDS).map(round=><option key={round} value={round}>{round} {round===1?'round':'rounds'}</option>)}</select></label><p>{customized?'Custom rules':'Preset rules'}<small>Choose any game length and mix the options below.</small></p></div>
   <fieldset disabled={disabled||standardOnly}><legend>Individual rule options</legend><div className="dg-rule-toggles">{options.map(option=><label key={option.key}><input type="checkbox" checked={rules[option.key]} aria-labelledby={`${id}-${option.key}-label`} aria-describedby={`${id}-${option.key}-description`} onChange={event=>update({[option.key]:event.target.checked})}/><span><strong id={`${id}-${option.key}-label`}>{option.label}</strong><small id={`${id}-${option.key}-description`}>{option.description}</small></span></label>)}
   <label><input type="checkbox" checked={value.warpPortals} onChange={event=>onChange({...value,warpPortals:event.target.checked})}/><span>Base-game warp portals</span></label>
-  <label><input type="checkbox" checked={allowsRiftCannons(value)&&(value.riftCannons??standard)} disabled={!allowsRiftCannons(value)} onChange={event=>onChange({...value,riftCannons:event.target.checked})}/><span>Rift Cannons{!allowsRiftCannons(value)&&<small>Turn off Combat Jokers and Less Random technology tiles to enable.</small>}</span></label>
   <label><input type="checkbox" checked={value.minorSpecies??false} aria-labelledby={`${id}-minor-label`} aria-describedby={`${id}-minor-description`} onChange={event=>onChange({...value,minorSpecies:event.target.checked})}/><span><strong id={`${id}-minor-label`}>Include Minor Species</strong><small id={`${id}-minor-description`}>Purchase allies with money for lasting benefits. Each uses an ambassador space.</small></span></label>
   <label><input type="checkbox" checked={value.showCombatOdds??false} aria-labelledby={`${id}-odds-label`} aria-describedby={`${id}-odds-description`} onChange={event=>onChange({...value,showCombatOdds:event.target.checked})}/><span><strong id={`${id}-odds-label`}>Show estimated combat odds in movement and fleet inspection</strong><small id={`${id}-odds-description`}>Public-fleet estimates for everyone. Dice and player decisions can change the result.</small></span></label>
   </div></fieldset>

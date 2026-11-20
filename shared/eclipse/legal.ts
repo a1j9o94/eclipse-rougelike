@@ -1,6 +1,7 @@
 import {SHRINE_COSTS} from './shrines';
 import { availableTechnologyMarket, remoteExplorationSources, guildMovementTolls, scifiOptionalCommands } from './scifiActions';
 import { factionRulesMode } from './gameRules';
+import { fundingOptions } from './funding';
 import { researchedTechnologyIds } from './technologies';
 import { DEVELOPMENTS, developmentAvailable, quantumResearchCost } from './developments';
 import { outerPlacementLimit } from './lessRandom';
@@ -30,7 +31,7 @@ import {
   type HexEdge,
   type MovementShip,
 } from "./geometry";
-import { mapSector, movementAbilities, paidActivationCost } from "./rulesState";
+import { mapSector, mixedActionBudgets, movementAbilities, paidActivationCost } from "./rulesState";
 import { reputationCapacity } from "./battleEngine";
 import { sectorDefinition } from "./sectors";
 import type {
@@ -708,6 +709,8 @@ export function legalCommands(
       }
     }
   }
+  const mayStartMixed = !progress && !seat.passed && seat.influenceOnTrack > 0 && !!faction.special?.mixedAction;
+  let mixedBuildReady = false;
   if (can("build"))
     for (const sector of controlled) {
       for (const component of [
@@ -737,12 +740,17 @@ export function legalCommands(
         )
           continue;
         const cost = constructionCostForSeat(seat, component);
-        if (seat.resources.materials >= cost)
+        const command: Extract<GameCommand, { type: 'build' }> = { type: 'build', builds: [{ sectorId: sector.id, component }] };
+        if (seat.resources.materials >= cost) {
+          mixedBuildReady = true;
           add(
-            { type: "build", builds: [{ sectorId: sector.id, component }] },
+            command,
             `Build ${component} at ${sector.tileId}`,
             `${cost} materials; one Build activation.`,
           );
+        } else if (mayStartMixed && !mixedBuildReady) {
+          mixedBuildReady = fundingOptions(view, command).length > 0;
+        }
       }
     }
   if (can("move"))
@@ -800,6 +808,16 @@ export function legalCommands(
         }
       }
     }
+  if (mayStartMixed && (mixedBuildReady || familyCounts.has('move'))) {
+    for (const action of ['build', 'move'] as const) {
+      const budgets = mixedActionBudgets(seat, action);
+      if (!budgets) continue;
+      const label = action === 'build'
+        ? `${budgets.build} Build + ${budgets.move} Move`
+        : `${budgets.move} Move + ${budgets.build} Build`;
+      add({ type: 'start-mixed-action', action }, `Start ${label}`, 'Spend one influence disc. Use activations in any order.');
+    }
+  }
   if (can("influence")) {
     if (
       !progress?.coloniesRefreshed &&

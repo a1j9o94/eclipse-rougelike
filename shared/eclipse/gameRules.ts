@@ -32,6 +32,10 @@ export function validRuleOptions(options:GameRuleOptions|undefined):boolean {
 /** Joker tables and the variant technology inventory exclude the Rift Cannon module. */
 export function allowsRiftCannons(config:RuleConfiguration):boolean {const rules=gameRules(config);return !rules.combatJokers&&!rules.technologyVariant;}
 
+export function riftCannonsEnabled(config:RuleConfiguration & {riftCannons?:boolean}):boolean {
+ return allowsRiftCannons(config)&&(config.riftCannons??config.rulesMode!=='less-random-v1');
+}
+
 /** Experimental factions are tuned against the Standard inventories and rules. */
 export function isScifiCompatible(config:RuleConfiguration & {factionProfile?:FactionProfile}):boolean {
  if(config.factionProfile!=='scifi-v1')return true;

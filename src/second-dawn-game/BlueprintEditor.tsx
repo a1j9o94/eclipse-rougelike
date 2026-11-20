@@ -7,7 +7,7 @@ import {OutsideGridModule} from './BlueprintLoadout';
 import "./itemDetails.css";
 import { previewCommand } from "../../shared/eclipse/commandPreview";
 import type { PlayerView } from "../../shared/eclipse/types";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useId, useState } from "react";
 import UpgradePartPicker from "./UpgradePartPicker";
 import { ActionDraftContext, useActionDraftGuard, useActionDraftState } from './actionDraftContext';
 import {
@@ -56,6 +56,8 @@ export default function BlueprintEditor({
     structuredClone(initialDraft ?? blueprint),
   );
   const [selectedSlot, setSelectedSlot] = useActionDraftState(`blueprintSlot-${blueprint.shipType}`,0);
+  const blueprintId = `fitting-hardpoints-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  const [partsExpanded, setPartsExpanded] = useState(false);
   const [previousDraft,setPreviousDraft]=useState<ShipBlueprint|null>(null);
   const editDraft=(update:(current:ShipBlueprint)=>ShipBlueprint)=>{setPreviousDraft(structuredClone(draft));setDraft(update);};
   const draftContext=useContext(ActionDraftContext);
@@ -100,8 +102,8 @@ export default function BlueprintEditor({
     <section className="dg-blueprint-editor">
       <div className="dg-fitting-body">
         <FittingSummary faction={faction} blueprint={blueprint} draft={draft} selectedSlot={selectedSlot} allowance={{used:installations,limit:capacity}} onRestore={()=>editDraft(current=>({...current,parts:current.parts.map((part,index)=>index===selectedSlot?blueprint.parts[index]:part)}))}/>
-        <div className="dg-fitting-workspace">
-        <section className="dg-blueprint-canvas" aria-label="Blueprint hardpoints">
+        <div className="dg-fitting-workspace" data-parts-expanded={partsExpanded}>
+        <section id={blueprintId} className="dg-blueprint-canvas" aria-label="Blueprint hardpoints" hidden={partsExpanded}>
           <div className="dg-blueprint-canvas-heading">
             <div><h3>Blueprint hardpoints</h3></div>
             <span>{draft.parts.length} slots</span>
@@ -117,7 +119,7 @@ export default function BlueprintEditor({
             </OutsideGridModule>)}
           </div>}
         </section>
-        <UpgradePartPicker key={selectedSlot} blueprint={blueprint} draft={draft} slot={selectedSlot} printed={selectedPrinted} inventory={inventory} disabled={disabled} onSelect={installPart}/>
+        <UpgradePartPicker key={selectedSlot} blueprint={blueprint} draft={draft} slot={selectedSlot} printed={selectedPrinted} inventory={inventory} disabled={disabled} onSelect={installPart} blueprintId={blueprintId} expanded={partsExpanded} onToggleExpand={()=>setPartsExpanded(expanded=>!expanded)}/>
         </div>
       </div>
       {order.blueprints.length>1&&<ul className="dg-upgrade-classes" aria-label="Changed ship classes">{order.blueprints.map(item=><li key={item.shipType}><strong>{item.shipType}</strong> · {item.parts.filter((part,index)=>part!==originals.find(original=>original.shipType===item.shipType)?.parts[index]).length+item.outsideParts.filter(part=>!originals.find(original=>original.shipType===item.shipType)?.outsideParts.includes(part)).length} changes</li>)}</ul>}

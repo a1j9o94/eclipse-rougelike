@@ -8,5 +8,15 @@ export default function FactionProfilePicker({value,onChange,disabled=false,rule
  const detail=legacy
   ?`This existing room uses the earlier expanded roster (${value==='expanded-v1'?16:18} civilizations). Select to include all ${expanded==='scifi-v1'?25:18}.`
   :expanded==='scifi-v1'?'All 25 civilizations, including the seven book-inspired factions':'18 civilizations compatible with these rules, including Exiles and Lyra';
- return <fieldset className="dg-faction-profile"><legend>Faction collection</legend><div>{([{id:expanded,name:'Expanded',detail},{id:'base',name:'Base',detail:'Original paired civilization boards'}] as const).map(profile=><button type="button" key={profile.id} aria-pressed={profile.id==='base'?value==='base':value!=='base'} disabled={disabled} onClick={()=>onChange(profile.id)}><strong>{profile.name}</strong><small>{profile.detail}</small></button>)}</div><p>The seven book-inspired factions are included with Standard rules.</p></fieldset>;
+ const options=[
+  {id:'base',name:'Base',detail:'Original paired civilization boards',selected:value==='base'},
+  {id:'official-v1',name:'Official factions',detail:'Base game, Seekers and Outcasts',selected:value==='official-v1'},
+  {id:expanded,name:'Expanded',detail,selected:value!=='base'&&value!=='official-v1'},
+ ] as const;
+ return <fieldset className="dg-faction-profile">
+  <legend>Faction collection</legend>
+  <div>{options.map(profile=><button type="button" key={profile.id} aria-pressed={profile.selected} disabled={disabled} onClick={()=>onChange(profile.id)}>
+   <strong>{profile.name}</strong><small>{profile.detail}</small>
+  </button>)}</div>
+ </fieldset>;
 }

@@ -74,6 +74,7 @@ it('inspects history on the existing galaxy surface and returns to the same time
  const {container}=render(<SpectatorBoard view={view} history={feed([entry])} connected {...callbacks}/>);
  fireEvent.click(screen.getByRole('button',{name:'History'}));
  const timeline=screen.getByRole('log',{name:'Match actions'});timeline.scrollTop=123;
+ fireEvent.click(screen.getByText('Built a fleet'));
  fireEvent.click(screen.getByRole('button',{name:'Inspect public reference'}));
  expect(container.querySelector('.sp-galaxy-layout .dg-galaxy')).not.toBeNull();
  expect(container.querySelectorAll('.dg-galaxy')).toHaveLength(1);

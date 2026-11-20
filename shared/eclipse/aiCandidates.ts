@@ -1,6 +1,7 @@
 import { researchedTechnologyIds } from './technologies';
 import { shipPartResearched } from './parts';
 import { aiWeaponValue } from "./aiWeaponValue";
+import { riftFittingPlans } from './aiRefits';
 import { BASE_COMPONENTS, getFaction } from "./catalog";
 import { deriveBlueprintStats, effectiveBlueprintParts } from "./blueprints";
 import { fundingActionCost, fundingOptions } from "./funding";
@@ -29,6 +30,7 @@ export function generateAiCandidates(
   const seat = view.seats.find((s) => s.id === view.viewerSeatId);
   const basic = legalCommands(view, { perFamilyLimit: 64 }).filter(
     (candidate) => {
+      if (candidate.command.type === 'start-mixed-action') return false;
       if (candidate.command.type === "offer-diplomacy" &&
           view.diplomacyDeclinedSeatIds?.includes(candidate.command.to))
         return false;
@@ -109,6 +111,8 @@ export function generateAiCandidates(
     }
     return installations <= limit("upgrade");
   };
+  for (const { blueprint } of riftFittingPlans(seat, view.ships, techs, limit('upgrade')))
+    add({ type: 'upgrade', blueprints: [blueprint] }, `Refit deployed ${blueprint.shipType} with Rift Cannon`);
   for (const candidate of basic)
     if (candidate.command.type !== "upgrade" || upgradeLegal(candidate.command))
       add(candidate.command, candidate.label);

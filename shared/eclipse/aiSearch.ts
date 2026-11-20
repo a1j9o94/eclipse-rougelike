@@ -77,7 +77,7 @@ export function chooseStrategicAiCommand(view:PlayerView,simulationSeed:number,o
   return null;
  }
  function shortlist(visible:PlayerView,depth:number):AiChoice[]{
-  const ranked=generateAiCandidates(visible).filter(c=>isStrategic(c.command)).map(c=>({...c,evaluation:evaluateAiCommand(visible,c.command)})).sort((a,b)=>b.evaluation-a.evaluation);
+  const ranked=generateAiCandidates(visible).filter(c=>isStrategic(c.command)).map(c=>({...c,evaluation:evaluateAiCommand(visible,c.command)})).filter(c=>Number.isFinite(c.evaluation)).sort((a,b)=>b.evaluation-a.evaluation);
   const chosen:AiChoice[]=[],families=new Set<string>(),keys=new Set<string>();
   const add=(candidate:AiChoice)=>{const key=JSON.stringify(candidate.command);if(!keys.has(key)){keys.add(key);chosen.push(candidate);}};
   // Include the combat-aware fast policy even when cheap ranking disagrees.

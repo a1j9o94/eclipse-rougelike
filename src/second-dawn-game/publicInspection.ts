@@ -10,7 +10,12 @@ import { runningScore } from './runningScore';
 export type PublicScoreCategory=Exclude<keyof ReturnType<typeof runningScore>['breakdown'],'playerId'|'total'|'resourceTotal'>;
 export type PublicInspectionRequest={kind:'history';entry:PublicHistoryEntry}|{kind:'score';seatId:string;category:PublicScoreCategory};
 export interface PublicInspectionDetail { title:string; value:number; sectorIds:string[]; explanation:string; contributors:string[] }
-export function historySectorIds(entry:PublicHistoryEntry):string[]{const presentation=entry.presentation;return presentation&&'sectorIds' in presentation?presentation.sectorIds:[];}
+export function historySectorIds(entry:PublicHistoryEntry):string[]{
+ const presentation=entry.presentation;
+ const actionSectors=presentation&&'sectorIds' in presentation?presentation.sectorIds:[];
+ const retreatSectors=entry.combatRetreats?.flatMap(retreat=>[retreat.sectorId,retreat.destinationId])??[];
+ return [...new Set([...actionSectors,...retreatSectors])];
+}
 export function historyPresentationLines(entry:PublicHistoryEntry):string[]{const presentation=entry.presentation;if(!presentation)return [];switch(presentation.kind){case 'minor-species':return [getMinorSpecies(presentation.minorSpeciesId).name];case 'research':return [TECHNOLOGIES.find(technology=>technology.id===presentation.technologyId)?.name??presentation.technologyId];case 'upgrade':return presentation.shipTypes.map(type=>`${type[0].toUpperCase()+type.slice(1)} blueprint updated`);case 'build':return presentation.components.map(component=>`${component.count} ${component.type}${component.count===1?'':'s'} built`);case 'move':return presentation.shipIds.length?[`${presentation.shipIds.length} public ship${presentation.shipIds.length===1?'':'s'} moved`]:[];case 'influence':return ['Public influence changed'];case 'colonize':return ['Public colonies placed'];case 'explore':return ['A public sector was explored'];}}
 export function scoreInspection(view:PlayerView|SpectatorView,seatId:string,category:PublicScoreCategory):PublicInspectionDetail {
  const score=runningScore(view,seatId).breakdown, sectors=view.sectors.filter(sector=>sector.owner===seatId);

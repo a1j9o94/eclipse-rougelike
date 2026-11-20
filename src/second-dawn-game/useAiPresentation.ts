@@ -13,16 +13,27 @@ export function galaxyChanges(before:PlayerView,after:PlayerView):GalaxyActivity
  for(const ship of oldShips.values())affected.add(ship.sectorId);
  return {affectedSectorIds:[...affected],moves};
 }
-export interface AiPresentation {actor:Seat|null;recent:PublicHistoryEntry|null;action:PublicHistoryEntry|null;activity:GalaxyActivity|undefined}
+export interface AiPresentation {
+ actor:Seat|null;
+ recent:PublicHistoryEntry|null;
+ action:PublicHistoryEntry|null;
+ upgrade:PublicHistoryEntry|null;
+ dismissUpgrade:()=>void;
+ activity:GalaxyActivity|undefined;
+}
 export function useAiPresentation(view:PlayerView,entries:readonly PublicHistoryEntry[],motionEnabled:boolean):AiPresentation{
  const previous=useRef(view),mountedRevision=useRef(view.revision),announcedRevision=useRef(view.revision);
  const [activity,setActivity]=useState<GalaxyActivity>();
  const [action,setAction]=useState<PublicHistoryEntry|null>(null);
  const [recent,setRecent]=useState<PublicHistoryEntry|null>(null);
+ const [dismissedUpgrade,setDismissedUpgrade]=useState<number|null>(null);
  const owner=view.waitingFor?.owner??view.pendingDecision?.owner??view.activeSeatId;
  const actor=view.phase==='finished'?null:view.seats.find(s=>s.id===owner&&s.id!==view.viewerSeatId&&s.controller==='ai')??null;
- const newest=entries.find(entry=>entry.revision>mountedRevision.current&&entry.revision<=view.revision&&(view.seats.some(s=>s.id===entry.actorSeatId&&s.controller==='ai')||entry.summary.startsWith('AI takeover · ')));
- const newestAction=entries.find(entry=>entry.presentation&&entry.revision>mountedRevision.current&&entry.revision<=view.revision&&(view.seats.some(s=>s.id===entry.actorSeatId&&s.controller==='ai')||entry.summary.startsWith('AI takeover · ')));
+ const isNewAiEntry=(entry:PublicHistoryEntry)=>entry.revision>mountedRevision.current&&entry.revision<=view.revision&&(view.seats.some(s=>s.id===entry.actorSeatId&&s.controller==='ai')||entry.summary.startsWith('AI takeover · '));
+ const newest=entries.find(isNewAiEntry);
+ const newestAction=entries.find(entry=>entry.presentation&&isNewAiEntry(entry));
+ const latestUpgrade=entries.find(entry=>entry.presentation?.kind==='upgrade'&&isNewAiEntry(entry));
+ const upgrade=latestUpgrade&&latestUpgrade.revision>(dismissedUpgrade??-1)?latestUpgrade:null;
  useEffect(()=>{if(newestAction)setAction(current=>current&&current.revision>=newestAction.revision?current:newestAction);},[newestAction]);
  useEffect(()=>{
   if(!newest||newest.revision<=announcedRevision.current)return;
@@ -49,5 +60,5 @@ export function useAiPresentation(view:PlayerView,entries:readonly PublicHistory
   const timer=window.setTimeout(()=>setActivity(undefined),1050);
   return()=>window.clearTimeout(timer);
  },[activity]);
- return {actor,recent,action,activity};
+ return {actor,recent,action,activity,upgrade,dismissUpgrade:()=>setDismissedUpgrade(upgrade?.revision??null)};
 }

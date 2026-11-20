@@ -6,13 +6,13 @@ const context = {
   sectors: [{ id: 'public-a', tileId: '101' }, { id: 'public-b', tileId: '222' }],
   ships: [{ id: 'public-ship', type: 'interceptor' as const }],
 };
-function projected(command: GameCommand, withContext = true) {
+function projected(command: GameCommand, withContext = true, previous?: Parameters<typeof projectHistoryEntry>[4]) {
   const entry: JournalEntry = {
     actor: 'seat-2', request: { commandId: 'private-command-key', expectedRevision: 8, command },
     receipt: { commandId: 'private-command-key', revision: 9, eventCount: 1 },
     events: [{ type: 'action', seatId: 'seat-2', visibility: 'public', message: 'Accepted action.' }],
   };
-  return projectHistoryEntry(entry, [{ id: 'seat-2', faction: 'hydran' }], 2, withContext ? context : undefined);
+  return projectHistoryEntry(entry, [{ id: 'seat-2', faction: 'hydran' }], 2, withContext ? context : undefined, previous);
 }
 
 describe('public AI action presentation metadata', () => {
@@ -28,6 +28,16 @@ describe('public AI action presentation metadata', () => {
     const result = projected({ type: 'upgrade', blueprints: [{ shipType: 'interceptor', parts: ['ion-cannon', null, null, null], outsideParts: [] }, { shipType: 'cruiser', parts: [], outsideParts: [] }] });
     expect(result.presentation).toEqual({ kind: 'upgrade', shipTypes: ['interceptor', 'cruiser'] });
     expect(JSON.stringify(result.presentation)).not.toContain('parts');
+  });
+
+  it('records the installed slot delta and authoritative turn from the prior position', () => {
+    const before = { shipType: 'interceptor' as const, parts: [null, null, null, null], outsideParts: [] };
+    const result = projected({ type: 'upgrade', blueprints: [{ ...before, parts: ['hull', null, null, null] }] }, true, {
+      phase: 'action', actionTurnSerial: 8, seats: [{ id: 'seat-2', blueprints: [before] }],
+    });
+    expect(result).toMatchObject({ phase: 'action', actionTurnSerial: 8, actorFaction: 'hydran', presentation: {
+      kind: 'upgrade', changes: [{ shipType: 'interceptor', slot: 0, before: 'ion-cannon', after: 'hull' }],
+    } });
   });
 
   it('groups built components and returns only sector references already on the public board', () => {

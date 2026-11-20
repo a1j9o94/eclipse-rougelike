@@ -310,6 +310,7 @@ export interface FundingTrade {
   amount: number;
 }
 export type GameCommand =
+  | { type: 'start-mixed-action'; action: 'build' | 'move' }
   | { type: 'load-factory'; shipId: string }
   | { type: 'place-guild-portal'; sectorId: string }
   | { type: 'guild-offer'; give: Resource; receive: Resource; amount: number }
@@ -459,6 +460,16 @@ export interface EngineContinuation {
   combatInitialized?: boolean;
 }
 
+export interface CombatRetreat {
+  battleId: string;
+  owner: SeatId;
+  shipType: Ship["type"];
+  sectorId: string;
+  destinationId: string;
+  destinationTileId: string;
+  count: number;
+}
+
 /** Event details are typed and carry explicit visibility; raw commands never enter a public log. */
 export interface GameEvent {
   type:
@@ -472,6 +483,8 @@ export interface GameEvent {
   seatId: SeatId | null;
   visibility: "public" | { seatId: SeatId };
   message: string;
+  /** Recorded when ships reach the destination, after the retreat is declared. */
+  combatRetreat?: CombatRetreat;
   /** Public, read-only combat playback data. Older journal entries omit it. */
   combatVolley?: {
     battleId: string;

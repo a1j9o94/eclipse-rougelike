@@ -9,20 +9,31 @@
 .dg-mobile-board .sd-workspace.dg-mobile-activity { display:flex; flex-direction:column; height:100%; min-height:0; overflow:hidden; box-sizing:border-box; }
 .dg-mobile-board .dg-mobile-activity > .dg-history-panel { flex:1 1 0; min-height:0; }
 .dg-history-scroll ol { list-style:none; padding:0; margin:0; }
-.dg-history-scroll li { padding:12px 0; border-bottom:1px solid #484d4d; }
-.dg-history-byline { display:flex; flex-direction:column; gap:3px; }
-.dg-history-byline strong { font-size:12px; color:#e3cda5; }
-.dg-history-byline small { font-size:10px; color:#aabdc5; }
-.dg-app .dg-history-scroll li > p { margin-top:6px; font-size:13px; color:#e4e6dc; }
-.dg-history-scroll details { margin:8px 0 0; font-size:11px; }
-.dg-app .dg-history-scroll details p { margin-top:6px; font-size:11px; line-height:1.5; }
+.dg-history-turn { margin:8px 0; border:1px solid #4b5457; border-radius:5px; background:#17242d; overflow:hidden; }
+.dg-history-turn h4 { display:flex; align-items:center; gap:7px; margin:0; padding:7px 9px; border-bottom:1px solid #47545b; background:#213039; font-size:12px; color:#e3cda5; }
+.dg-history-turn h4 .dg-faction-symbol { width:16px; height:16px; flex:none; }
+.dg-history-action { border-bottom:1px solid #3a454c; }
+.dg-history-action:last-child { border-bottom:0; }
+.dg-app .dg-history-action-details { margin:0; }
+.dg-history-action-top,.dg-app .dg-history-action-details>summary { display:flex; align-items:center; justify-content:space-between; gap:8px; box-sizing:border-box; min-height:38px; padding:7px 9px; font-size:13px; line-height:1.4; color:#e4e6dc; }
+.dg-app .dg-history-action-details>summary { position:relative; padding-right:28px; border:0; border-radius:0; background:transparent; cursor:pointer; }
+.dg-app .dg-history-action-details>summary:hover,.dg-app .dg-history-action-details[open]>summary { background:#253540; }
+.dg-app .dg-history-action-details>summary::after { content:''; position:absolute; right:10px; top:calc(50% - 5px); width:6px; height:6px; border-right:2px solid currentColor; border-bottom:2px solid currentColor; color:#bacbd1; transform:rotate(45deg); pointer-events:none; }
+.dg-app .dg-history-action-details[open]>summary::after { top:calc(50% - 1px); transform:rotate(225deg); }
+.dg-app.dg-mobile-board .dg-history-action-details>summary { min-height:44px; }
+.dg-history-action-count { flex:none; color:#bcd0d7; font-size:10px; white-space:nowrap; }
+.dg-history-action-top small { font-size:10px; color:#aabdc5; }
+.dg-history-revision { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+.dg-history-action-body { padding:0 9px 6px; }
+.dg-history-action .dg-history-undo { padding:0 9px 6px; }
+.dg-app .dg-history-action-body p { margin:5px 0 0; font-size:11px; line-height:1.5; }
 .dg-history-scroll > button { margin:12px 0; width:100%; }
 .dg-inspector-history { overflow:hidden !important; }
 .dg-history-toggle { white-space:nowrap; }
 .dg-history-scroll { overflow-anchor: none; }
 .dg-history-inspect{margin:.35rem 0;padding:.28rem .45rem;color:#e7cf99;border:1px solid #776644;background:#172632;border-radius:4px;font-size:.75rem}.dg-public-inspection{position:fixed;z-index:30;inset:12vh max(16px,25vw) auto;max-height:72vh;overflow:auto;padding:18px;border:1px solid #b99961;background:#101d28;color:#e2e8ec;box-shadow:0 14px 45px #000b}.dg-public-inspection header{display:flex;justify-content:space-between;gap:12px}.dg-public-inspection h2{margin:0;color:#f0d9a4}.dg-public-inspection li{margin:.35rem 0}.dg-recap-summary{padding:.45rem .6rem;border-left:3px solid #7eb4c6;background:#183242;color:#d0e4e6}
 .dg-public-inspection-map{height:260px;margin:.7rem 0;border:1px solid #536b76}.dg-public-inspection-map .sd-map{height:100%}
-.dg-history-presentation{color:#dfc88e;font-size:.8rem}
+.dg-app .dg-history-presentation{color:#dfc88e;font-size:11px;margin:3px 0 0}
 
 /* Score/history dialogs sit above mobile chrome and retain a usable reading width. */
 .dg-public-inspection-backdrop{position:fixed;inset:0;z-index:100;background:#020914b8;}
@@ -34,3 +45,26 @@
 .dg-public-inspection > header{position:sticky;top:-18px;z-index:20;margin:-18px -18px 0;padding:18px;background:#101d28;border-bottom:1px solid #4d5b60}
 @media(max-width:600px){.dg-public-inspection > header{top:-14px;margin:-14px -14px 0;padding:14px}}
 .dg-history-panel header{display:flex;align-items:center;flex-wrap:wrap;gap:8px}.dg-history-panel header h2{margin-right:auto}.dg-history-panel header button,.dg-history-inspect{min-height:44px}.dg-history-round{font-size:14px;color:#eed7a7;padding:8px 0;border-bottom:1px solid #685b42}.dg-history-panel header button[aria-pressed=true]{border-color:#e6bc72;color:#e6bc72}
+
+.dg-upgrade-changes { display:grid; gap:6px; margin:6px 0; }
+.dg-upgrade-change { display:grid; gap:3px; padding:6px 8px; border:1px solid #52616b; border-radius:4px; background:#14212b; color:#dce5e5; font-size:12px; }
+.dg-upgrade-change > small { color:#b4c6ce; font-size:11px; }
+.dg-upgrade-change strong { color:#f0d39c; }
+.dg-upgrade-change .dg-part-stats { margin-top:3px; }
+.dg-upgrade-change .dg-stat-badge { min-width:0; grid-template-columns:18px auto; grid-template-rows:20px 13px; }
+.dg-upgrade-change .dg-stat-badge strong { font-size:17px; }
+.dg-upgrade-change .dg-stat-icon { width:18px; height:18px; }
+.dg-upgrade-change .dg-stat-badge small { font-size:9px; }
+.dg-ai-upgrade-recap,.dg-app > .dg-battle-retreats { flex:none; display:flex; align-items:flex-start; justify-content:space-between; gap:8px; padding:0 12px; background:#1c3039; border-block-end:1px solid #62777e; color:#def0f1; }
+.dg-app .dg-ai-upgrade-recap > details { flex:1; min-width:0; max-height:min(22dvh, 190px); margin:0; overflow:auto; }
+.dg-ai-upgrade-recap summary { display:flex; align-items:center; flex-wrap:wrap; gap:4px 9px; padding:5px 0; min-height:36px; cursor:pointer; font-size:12px; }
+.dg-ai-upgrade-recap summary > span { color:#bdd2d8; text-decoration:underline; text-underline-offset:2px; }
+.dg-ai-upgrade-recap > button,.dg-app > .dg-battle-retreats > button { flex:none; align-self:flex-start; min-height:36px; padding:4px 9px; font-size:11px; }
+.dg-battle-retreats { border-inline-start:2px solid #93bbc7; padding:5px 8px; background:#1c3039; color:#def0f1; font-size:12px; }
+.dg-app .dg-battle-retreats p { margin:0; font-size:12px; line-height:1.4; }
+.dg-app > .dg-battle-retreats { padding-block:4px; align-items:center; }
+.dg-history-action .dg-battle-retreats { margin:0 9px 6px; }
+.dg-battlefield-controls .dg-battle-retreats { max-height:88px; overflow:auto; }
+.dg-mobile-board .dg-ai-upgrade-recap summary,
+.dg-mobile-board .dg-ai-upgrade-recap > button,
+.dg-mobile-board > .dg-battle-retreats > button { min-height:44px; }

@@ -252,16 +252,18 @@ function Battlefield({view,volleys,knownShips,fast,soundEligible,children}:{view
      // Ships remain public when they retreat. Removal is authoritative even if
      // the separate history query has not delivered this volley yet.
      const gone=!live,retreated=!!live&&live.sectorId!==battle.sectorId,destroyed=gone;
+     const retreatTile=retreated?view.sectors.find(sector=>sector.id===live.sectorId)?.tileId:undefined;
+     const retreatLabel=retreatTile?`Retreated to sector ${retreatTile}`:'Retreated';
      const hp=gone?latestImpact?.hpAfter??0:Math.max(0,maximum-live.damage),target=allocation&&allocation.decisionId===view.pendingDecision?.id?allocation.targets.find(target=>target.id===ship.id):undefined;
      const title=ship.orbitalShip?'Orbital':names[ship.type],planned=target?.damage??0;
      const firing=view.pendingDecision?.owner===owner&&(view.pendingDecision.kind==='combat-turn'?view.pendingDecision.shipType===ship.type:view.pendingDecision.kind==='combat-allocation'?view.pendingDecision.dice.some(die=>die.sourceShipId===ship.id||!die.sourceShipId&&die.sourceShipType===ship.type):false);
      return <article className={`dg-battlefield-ship${target?' is-target':''}${target?.assigned?' is-planned':''}${destroyed?' is-destroyed':''}${retreated?' has-retreated':''}${firing?' is-firing':''}`} key={ship.id} data-ship-id={ship.id}>
-      <button type="button" className="dg-battlefield-piece" aria-label={target?`Target ${target.label}${target.hit===undefined?'':target.hit?' · hit':' · miss'}`:`Inspect ${title} ${index+1}${destroyed?', destroyed':retreated?', retreated':''}`} aria-pressed={target?target.assigned:inspected===ship.id} onClick={()=>target?allocation?.onTarget(ship.id):setInspected(current=>current===ship.id?null:ship.id)}>
+      <button type="button" className="dg-battlefield-piece" aria-label={target?`Target ${target.label}${target.hit===undefined?'':target.hit?' · hit':' · miss'}`:`Inspect ${title} ${index+1}${destroyed?', destroyed':retreated?`, ${retreatLabel.toLowerCase()}`:''}`} aria-pressed={target?target.assigned:inspected===ship.id} onClick={()=>target?allocation?.onTarget(ship.id):setInspected(current=>current===ship.id?null:ship.id)}>
        <span className="dg-battlefield-art">{ship.type==='ancient'||ship.type==='guardian'||ship.type==='gcds'?<NeutralShipSilhouette type={ship.type}/>:<ShipSilhouette type={ship.type} faction={seat?.faction} orbital={ship.orbitalShip}/>}<b aria-hidden="true">{destroyed?'×':target?.assigned?'✓':''}</b></span>
        <strong>{title}{index>0?` ${index+1}`:''}</strong>
        {firing&&<small className="dg-firing-mark">Firing</small>}
        <span className="dg-hull-pips" aria-label={`${hp} of ${maximum} HP`}>{Array.from({length:Math.min(maximum,12)},(_,i)=><i key={i} data-state={i>=hp?'lost':i>=hp-planned?'planned':'intact'}/>)}</span>
-       <span className="dg-battlefield-health">{destroyed?'Destroyed':retreated?'Retreated':target?.uncertainDamage?`${hp} HP → unknown`:planned?`${hp} → ${Math.max(0,hp-planned)} HP`:`${hp} / ${maximum} HP`}</span>
+       <span className="dg-battlefield-health">{destroyed?'Destroyed':retreated?retreatLabel:target?.uncertainDamage?`${hp} HP → unknown`:planned?`${hp} → ${Math.max(0,hp-planned)} HP`:`${hp} / ${maximum} HP`}</span>
        {backfire>0&&<small className="dg-rift-backfire">Rift backfire · {backfire} damage</small>}
        {target?.destroyed&&<strong className="dg-destruction-preview">Will destroy</strong>}
        {target?.hit===false&&<small>Selected die misses</small>}

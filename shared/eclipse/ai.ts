@@ -4,10 +4,12 @@ import { gameRules, gameRoundLimit, factionRulesMode } from './gameRules';
 import { getDiscovery, type DiscoveryId } from './discoveries';
 import {evaluateMinorSpeciesPurchase} from './aiMinorSpecies';
 import { aiWeaponValue } from "./aiWeaponValue";
+import { aiUpgradeBlueprintValue, riftFittingPlans } from './aiRefits';
+import { controlPoints, finalBankruptcyValue, finalInfluenceValue, finalPopulationReturnValue, remainingUpkeepShortfall } from './aiEndgame';
 import { generateAiCandidates } from "./aiCandidates";
 import { factionHasCapability, getFaction, tradeQuote } from "./catalog";
 import { connectionBetween } from "./geometry";
-import { mapSector, movementAbilities } from "./rulesState";
+import { capacity, mapSector, movementAbilities, paidActivationCost } from "./rulesState";
 import { fundingOptions } from "./funding";
 import { reputationCapacity } from "./battleEngine";
 import { estimatePublicBattle } from "./aiSimulation";
@@ -19,7 +21,9 @@ import {
 } from "./tracks";
 import { sectorDefinition } from "./sectors";
 import { randomInt, randomSeed } from "./random";
-import type { GameCommand, PlayerView, Resource } from "./types";
+import { firstPassMoney } from './passing';
+import { researchTrackVp } from './scoring';
+import type { GameCommand, PlayerView, Resource, Seat } from "./types";
 export interface AiChoice extends LegalCommandCandidate {
   evaluation: number;
 }
@@ -112,6 +116,25 @@ export function sectorControlValue(view: PlayerView, id: string): number {
 function technologyValue(view: PlayerView, id: string): number {
   const seat = view.seats.find((s) => s.id === view.viewerSeatId)!;
   const own = view.ships.filter((s) => s.owner === seat.id);
+  if (id === 'rift-cannon') {
+    if (view.round >= gameRoundLimit(view)) {
+      const refitDiscs = view.actionProgress ? 1 : 2;
+      if (view.phase !== 'action' || seat.influenceOnTrack < refitDiscs) return 0;
+      const opponents = view.ships.filter(ship => ship.owner !== seat.id && !seat.ambassadors.includes(ship.owner) &&
+        !(ship.type === 'ancient' && factionHasCapability(seat.faction, 'ancient-coexistence')));
+      const fighting = own.some(ship => opponents.some(enemy => enemy.sectorId === ship.sectorId));
+      const wormholeGenerator = movementAbilities(seat).wormholeGenerator;
+      const enemySectors = view.sectors.filter(sector => opponents.some(enemy => enemy.sectorId === sector.id));
+      const canAttack = seat.influenceOnTrack > refitDiscs && view.sectors.some(from =>
+        own.some(ship => ship.sectorId === from.id && ship.type !== 'starbase') &&
+        enemySectors.some(to => connectionBetween(mapSector(from), mapSector(to), wormholeGenerator) !== 'none'),
+      );
+      if (!fighting && !canAttack) return 0;
+    }
+    const refits = riftFittingPlans(seat, own, [...researchedTechnologyIds(seat), 'rift-cannon'], capacity(seat, 'upgrade'));
+    const gain = Math.max(0, ...refits.map(refit => refit.fleetGain));
+    return 6 + Math.min(26, gain * 5);
+  }
   const threatened = view.sectors.some(
     (target) =>
       target.owner &&
@@ -212,12 +235,59 @@ function shipBuildValue(
     (view.round >= gameRoundLimit(view) - 1 ? -6 : 0)
   );
 }
+
+function finalMoveValue(view: PlayerView, seat: Seat, command: Extract<GameCommand, { type: 'move' }>): number {
+  const destinations = new Map(command.moves.flatMap(move =>
+    [move.shipId, ...(move.escorts ?? [])].map(id => [id, move.path.at(-1)!] as const),
+  ));
+  const changed = view.ships.filter(ship => destinations.has(ship.id) && destinations.get(ship.id) !== ship.sectorId);
+  if (!changed.length) return -Infinity;
+  const affected = new Set(changed.flatMap(ship => [ship.sectorId, destinations.get(ship.id)!]));
+  const projected = { ...view, ships: view.ships.map(ship => ({ ...ship, sectorId: destinations.get(ship.id) ?? ship.sectorId })) };
+  const canClaim = seat.influenceOnTrack > (view.actionProgress ? 0 : 1);
+  const wormholeGenerator = movementAbilities(seat).wormholeGenerator;
+  const neutronBombs = researchedTechnologyIds(seat).includes('neutron-bombs');
+  const hostile = view.ships.filter(ship => ship.owner !== seat.id &&
+    !seat.ambassadors.includes(ship.owner) &&
+    !(ship.type === 'ancient' && factionHasCapability(seat.faction, 'ancient-coexistence')));
+  let gain = 0;
+
+  for (const sector of view.sectors.filter(sector => affected.has(sector.id))) {
+    const defenders = new Set(hostile.filter(ship => ship.sectorId === sector.id).map(ship => ship.owner));
+    const defense = [...defenders].reduce((sum, owner) => sum + fleetStrength(view, owner, sector.id), 0);
+    const vp = controlPoints(seat, sector);
+    const forcesNearby = sector.owner === seat.id && view.sectors.some(neighbor =>
+      neighbor.id !== sector.id && hostile.some(ship => ship.sectorId === neighbor.id && ship.type !== 'starbase' &&
+        view.seats.some(player => player.id === ship.owner)) &&
+      connectionBetween(mapSector(sector), mapSector(neighbor), wormholeGenerator) !== 'none',
+    );
+    const positionValue = (strength: number, canTakeControl: boolean): number => {
+      if (!strength) return 0;
+      if (sector.owner && seat.ambassadors.includes(sector.owner)) return -18;
+      if (sector.owner === seat.id)
+        return defense || forcesNearby ? Math.min(strength, Math.max(3, defense)) * 2 : 0;
+      if (defense && strength < defense * .8) return -25;
+      if (!sector.owner && !canTakeControl) return sector.discovery ? 3 : 0;
+      const invasion = sector.owner ? 2 : 0;
+      const conquest = vp * (sector.population.length && !neutronBombs ? 2 : 3);
+      return conquest + invasion + (sector.discovery ? 3 : 0) + (defense ? 5 : 0);
+    };
+    gain += positionValue(fleetStrength(projected, seat.id, sector.id), canClaim)
+      - positionValue(fleetStrength(view, seat.id, sector.id), seat.influenceOnTrack > 0);
+  }
+  // A neutral shuffle and its reversal cannot both create value. End the activation
+  // chain if the new fleet configuration advances no scoring or defensive objective.
+  return gain > 0 ? gain : -Infinity;
+}
+
 export function evaluateAiCommand(
   view: PlayerView,
   command: GameCommand,
 ): number {
   const seat = view.seats.find((s) => s.id === view.viewerSeatId)!;
   const factionPolicy = getFaction(seat.faction).capabilities.ai;
+  const finalRound = view.round >= gameRoundLimit(view);
+  const bankruptcy = view.pendingDecision?.kind === 'bankruptcy';
   const income = incomeForPopulationAway(seat.populationTracks.money);
   const balance =
     seat.resources.money +
@@ -292,8 +362,9 @@ export function evaluateAiCommand(
         Math.max(0, -reserve) * 8
       );
     }
+    case "start-mixed-action":
     case "set-auto-pass":
-      return -Infinity; // A human preference is never an AI gameplay candidate.
+      return -Infinity; // These commands are only for human play.
     case "pass":
       return balance < 0 ? 30 : balance < 3 ? 10 : 0;
     case "end-action":
@@ -302,7 +373,17 @@ export function evaluateAiCommand(
       return 10;
     case "discard-reputation":
       return -20;
-    case "trade":
+    case "trade": {
+      // A standalone conversion must not spend the upkeep reserve late. Funded
+      // research and builds still use their own atomic, costed candidates.
+      if ((finalRound || bankruptcy) && command.to !== 'money') return -Infinity;
+      if (finalRound && command.to === 'money' && balance < 0) {
+        if (view.phase === 'action' && !view.actionProgress && balance + firstPassMoney(view) >= 0) return -20;
+        if (bankruptcy && sectors.length > 1 && remainingUpkeepShortfall(view, seat)) return -Infinity;
+        const cost = tradeQuote(seat.faction, command.from, command.to, command.amount, factionRulesMode(view))?.input ?? 0;
+        const useful = Math.min(command.amount, -balance);
+        return 40 + useful * 3 - (command.amount - useful) * 8 - cost * .1;
+      }
       return command.to === "money" && balance < 0
         ? 40
         : command.from === "money" &&
@@ -310,10 +391,16 @@ export function evaluateAiCommand(
             seat.resources[command.to] < 3
           ? 5
           : -20;
+    }
     case "convert-colony-ship":
+      if (bankruptcy && command.resource !== 'money') return -Infinity;
       return utility(command.resource) * 3 - 2;
-    case "buy-activation":
-      return 18 - (getFaction(seat.faction).special?.paidAdditionalActivation?.[command.action] ?? 9) * utility("money");
+    case "buy-activation": {
+      const cost = paidActivationCost(seat, command.action);
+      if (cost === null) return -Infinity;
+      if (finalRound && balance < cost) return -Infinity;
+      return 18 - cost * utility("money");
+    }
     case "colonize":
       return (
         35 +
@@ -337,6 +424,8 @@ export function evaluateAiCommand(
     case "research":
       return (
         technologyValue(view, command.tileId) +
+        (finalRound && command.tileId === 'rift-cannon' && seat.technologies[command.track].length < 7
+          ? 5 * (researchTrackVp(seat.technologies[command.track].length + 1) - researchTrackVp(seat.technologies[command.track].length)) : 0) +
         factionPolicy.researchBias +
         (command.tileId === "advanced-economy" && balance < 5 ? 5 : 0) +
         (command.tileId === "nanorobots"
@@ -371,21 +460,8 @@ export function evaluateAiCommand(
         const prev = seat.blueprints.find((b) => b.shipType === next.shipType)!;
         const a = deriveBlueprintStats(seat.faction, publicBlueprint(prev)),
           b = deriveBlueprintStats(seat.faction, publicBlueprint(next));
-        const value = (s: typeof a) =>
-          (s.weapons.length ? 0 : -12) +
-          s.hull * 0.9 +
-          s.shield * 1.1 +
-          s.movement * 1.1 +
-          s.weapons.reduce(
-            (n, w) =>
-              n +
-              aiWeaponValue(w, 1 + Math.min(4, s.computer) * 0.45) *
-                (w.kind === "missile" ? 0.9 : 1.5),
-            0,
-          ) +
-          Math.max(0, s.energyProduction - s.energyConsumption) * 0.03;
         improvement +=
-          (value(b) - value(a)) *
+          (aiUpgradeBlueprintValue(b) - aiUpgradeBlueprintValue(a)) *
           (0.4 + ownShips.filter((s) => s.type === next.shipType).length * 0.7);
       }
       return (
@@ -396,6 +472,10 @@ export function evaluateAiCommand(
       );
     }
     case "influence":
+      if (finalRound) {
+        if (!command.addSectorIds.length && !command.removeSectorIds.length) return 2 - discPenalty;
+        return finalInfluenceValue(view, seat, command);
+      }
       return command.addSectorIds.length
         ? command.addSectorIds.reduce(
             (sum, id) => sum + sectorControlValue(view, id),
@@ -414,6 +494,7 @@ export function evaluateAiCommand(
     case "offer-diplomacy":
       return factionPolicy.diplomacyValue;
     case "move": {
+      if (finalRound) return finalMoveValue(view, seat, command) - discPenalty;
       const final = new Map(
         command.moves.flatMap((m) => [m.shipId,...(m.escorts??[])].map(id=>[id,m.path.at(-1)!] as const)),
       );
@@ -522,6 +603,8 @@ export function evaluateAiCommand(
         case "ancient-part":
           return c.blueprint ? 15 : 3;
         case "control":
+          if (finalRound && c.accept && view.pendingDecision?.kind === 'control')
+            return finalInfluenceValue(view, seat, { type: 'influence', addSectorIds: [view.pendingDecision.sectorId], removeSectorIds: [] });
           return c.accept && view.pendingDecision?.kind === "control"
             ? sectorControlValue(view, view.pendingDecision.sectorId)
             : 1;
@@ -562,9 +645,12 @@ export function evaluateAiCommand(
         case "resource-reward":
           return c.resources.reduce((n, r) => n + utility(r), 0);
         case "population-return":
+          if (finalRound && view.pendingDecision?.kind === 'population-return' && view.pendingDecision.destination !== 'graveyard')
+            return finalPopulationReturnValue(seat, c.resources);
           return -c.resources.reduce((n, r) => n + utility(r), 0);
         case "bankruptcy": {
           const s = view.sectors.find((s) => s.id === c.abandonSectorId)!;
+          if (finalRound) return finalBankruptcyValue(view, seat, s);
           return (
             -sectorDefinition(Number(s.tileId))!.victoryPoints * 3 -
             s.population.length * 2 -
@@ -633,6 +719,7 @@ export function chooseAiCommand(
     random = next.state;
     let evaluation =
       evaluateAiCommand(view, candidate.command) + next.value / 10000;
+    if (!Number.isFinite(evaluation)) continue;
     const command = candidate.command;
     if (command.type === "move") {
       const destination = command.moves.at(-1)!.path.at(-1)!;

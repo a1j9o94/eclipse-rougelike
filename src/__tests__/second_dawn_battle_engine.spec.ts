@@ -572,8 +572,10 @@ describe("persisted complete battles", () => {
     ];
     s.ships = s.ships.filter((x) => x.owner === "a");
     s.pendingDecision = null;
-    advanceCombat(s, []);
+    const events: GameEvent[] = [];
+    advanceCombat(s, events);
     expect(s.ships[0].sectorId).toBe("s");
+    expect(events.some(event => !!event.combatRetreat)).toBe(false);
   });
   it("completes an earlier retreat when the battle ends before its activation", () => {
     const s = fixture();
@@ -590,8 +592,13 @@ describe("persisted complete battles", () => {
     ];
     s.ships = s.ships.filter((x) => x.owner === "a");
     s.pendingDecision = null;
-    advanceCombat(s, []);
+    const events: GameEvent[] = [];
+    advanceCombat(s, events);
     expect(s.ships[0].sectorId).toBe("home");
+    const retreat = {battleId:b.id, owner:"a", shipType:"interceptor", sectorId:"s", destinationId:"home", destinationTileId:"001", count:1};
+    expect(events).toContainEqual(expect.objectContaining({visibility:"public",combatRetreat:retreat}));
+    const result = projectHistoryEntry({actor:"b",request:{commandId:"advance",expectedRevision:0,command:{type:"pass"}},receipt:{commandId:"advance",revision:1,eventCount:events.length},events},s.seats);
+    expect(result.combatRetreats).toMatchObject([{...retreat,ownerName:"Terran Directorate"}]);
   });
   it("fires missiles only before the first engagement round", () => {
     const s = fixture();

@@ -20,6 +20,7 @@ import { advanceCombat, resolveCombatChoice } from "./battleEngine";
 import { advanceRound, finishUpkeep, resolveAftermathChoice } from "./rounds";
 import {
   continuation,
+  beginAction,
   emit,
   player,
   presentNextDecision,
@@ -348,6 +349,16 @@ function processCommand(
       }
       else if (command.type === "colonize")
         colonize(state, seat, command.placements);
+      else if (command.type === 'start-mixed-action') {
+        const view = getPlayerView(state, actor)!;
+        requireRule(
+          legalCommands(view, { perFamilyLimit: 2 }).some(candidate =>
+            candidate.command.type === 'start-mixed-action' && candidate.command.action === command.action),
+          'A mixed action needs an unused action disc and a legal Build or Move activation.',
+        );
+        beginAction(state, seat, command.action);
+        emit(events, actor, `Started a ${command.action === 'build' ? 'Build' : 'Move'} action with mixed activations.`);
+      }
       else if (command.type === "buy-activation") {
         const progress = e.action;
         requireRule(

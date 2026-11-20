@@ -7,21 +7,32 @@ import {RoomSettingsEditor} from '../second-dawn-game/RoomLobby';
 
 afterEach(cleanup);
 
-it('offers only Base and Expanded, with all 25 civilizations in Standard Expanded',()=>{
+it('offers Base, Official, and Expanded, with all 25 civilizations in Standard Expanded',()=>{
  const change=vi.fn();
  render(<FactionProfilePicker value="scifi-v1" onChange={change}/>);
  const group=screen.getByRole('group',{name:'Faction collection'});
- expect(within(group).getAllByRole('button')).toHaveLength(2);
+ expect(within(group).getAllByRole('button')).toHaveLength(3);
  expect(within(group).getByRole('button',{name:/Expanded.*25 civilizations/i})).toHaveAttribute('aria-pressed','true');
  expect(screen.queryByRole('button',{name:/Science fiction/i})).toBeNull();
- fireEvent.click(within(group).getByRole('button',{name:/Base/i}));
+ fireEvent.click(within(group).getByRole('button',{name:/^Base/i}));
  expect(change).toHaveBeenCalledWith('base');
+ fireEvent.click(within(group).getByRole('button',{name:/Official factions/i}));
+ expect(change).toHaveBeenLastCalledWith('official-v1');
  fireEvent.click(within(group).getByRole('button',{name:/Expanded/i}));
  expect(change).toHaveBeenLastCalledWith('scifi-v1');
  cleanup();
  render(<FactionPicker selected="hydran" onSelect={change} profile="scifi-v1"/>);
  expect(within(screen.getByRole('group',{name:'Expanded civilizations'})).getAllByRole('button')).toHaveLength(25);
  for(const id of ['exfor','bobiverse','trisolarans','portiids','spacing-guild','formics','belters','exiles','lyra'] as FactionId[])expect(screen.getByRole('button',{name:getFaction(id).name,exact:true})).toBeVisible();
+});
+
+it('offers publisher expansion factions while excluding community and book-inspired factions',()=>{
+ const change=vi.fn();
+ render(<FactionPicker selected="exiles" onSelect={change} profile="official-v1"/>);
+ const collection=screen.getByRole('group',{name:'Official factions'});
+ expect(within(collection).getAllByRole('button')).toHaveLength(16);
+ for(const id of ['rho-indi','magellan','exiles','lyra'] as const)expect(within(collection).getByRole('button',{name:getFaction(id).name,exact:true})).toBeVisible();
+ for(const id of ['midas','ragnarok','spacing-guild'] as const)expect(within(collection).queryByRole('button',{name:getFaction(id).name,exact:true})).toBeNull();
 });
 
 it.each(['expanded-v1','expanded-v2'] as const)('preserves the pinned %s room until Expanded is explicitly selected',value=>{

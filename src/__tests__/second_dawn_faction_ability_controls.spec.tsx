@@ -3,6 +3,7 @@ import {fireEvent,render,screen} from '@testing-library/react';
 import {expect,it,vi} from 'vitest';
 import {createGame} from '../../shared/eclipse/setup';
 import {getPlayerView} from '../../shared/eclipse/protocol';
+import {legalCommands} from '../../shared/eclipse/legal';
 import FactionAbilityControls from '../second-dawn-game/FactionAbilityControls';
 function view(){return getPlayerView(createGame({seed:9,seats:[{id:'a',faction:'hydran',controller:'human'},{id:'b',faction:'eridani',controller:'ai'}]}),'a')!;}
 it('makes colony conversion outcome explicit without spending until clicked',()=>{
@@ -49,4 +50,18 @@ it('restores the active mixed workflow and explains remaining budgets without ch
  render(<Board view={v} candidates={[]} connected busy={false} status="" onSubmit={vi.fn()} onMenu={vi.fn()}/>);
  expect(screen.getByRole('button',{name:'Build',exact:true})).toHaveAttribute('aria-pressed','true');
  expect(screen.getByRole('button',{name:'Move',exact:true})).toBeEnabled();
+});
+it('puts both Ragnarok budget choices on the board before any ship is built or moved',async()=>{
+ const {default:Board}=await import('../second-dawn-game/SecondDawnBoard');
+ const state=createGame({seed:9,factionProfile:'expanded-v2',seats:[{id:'a',faction:'ragnarok',controller:'human'},{id:'b',faction:'eridani',controller:'ai',pieceColor:'yellow'}]});
+ state.activeSeatId='a';state.seats[0].resources.materials=4;
+ state.ships=state.ships.filter(ship=>ship.owner!=='a');
+ const v=getPlayerView(state,'a')!,submit=vi.fn();
+ render(<Board view={v} candidates={legalCommands(v)} connected busy={false} status="" onSubmit={submit} onMenu={vi.fn()}/>);
+ expect(screen.getByRole('button',{name:'Start 2 Build + 1 Move'})).toBeVisible();
+ const movement=screen.getByRole('button',{name:'Start 2 Move + 1 Build'});
+ expect(movement).toBeVisible();
+ expect(submit).not.toHaveBeenCalled();
+ fireEvent.click(movement);
+ expect(submit).toHaveBeenCalledWith({type:'start-mixed-action',action:'move'});
 });

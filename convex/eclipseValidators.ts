@@ -7,7 +7,7 @@ import type { DecisionChoice, GameCommand } from "../shared/eclipse/types";
 export const factionValidator: Validator<FactionId> = v.union(
   ...FACTION_IDS.map(id => v.literal(id)),
 );
-export const factionProfileValidator = v.union(v.literal('base'), v.literal('expanded-v1'), v.literal('expanded-v2'), v.literal('scifi-v1'));
+export const factionProfileValidator = v.union(v.literal('base'), v.literal('official-v1'), v.literal('expanded-v1'), v.literal('expanded-v2'), v.literal('scifi-v1'));
 export const rulesModeValidator = v.union(v.literal('standard'), v.literal('less-random-v1'));
 export const gameRuleOptionsValidator = v.object({
   roundLimit: v.optional(v.number()),
@@ -121,6 +121,7 @@ const choice: Validator<DecisionChoice, "required", string> = v.union(
 /** Exact structural validation; numeric ranges and catalog membership remain engine-owned. */
 export const gameCommandValidator: Validator<GameCommand, "required", string> =
   v.union(
+    v.object({type:v.literal('start-mixed-action'),action:v.union(v.literal('build'),v.literal('move'))}),
     v.object({type:v.literal('load-factory'),shipId:v.string()}),
     v.object({type:v.literal('place-guild-portal'),sectorId:v.string()}),
     v.object({type:v.literal('guild-offer'),give:resource,receive:resource,amount:v.number()}),

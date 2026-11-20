@@ -48,3 +48,16 @@ it('keeps the last meaningful public action visible through bookkeeping until th
  const before=fixture();before.activeSeatId='b';const research:PublicHistoryEntry={revision:1,actorSeatId:'b',actorName:'Hydran Progress',round:1,summary:'Researched Improved Hull',details:[],presentation:{kind:'research',technologyId:'improved-hull'}};const ended:PublicHistoryEntry={revision:2,actorSeatId:'b',actorName:'Hydran Progress',round:1,summary:'Ended the action',details:[]};
  const {result,rerender}=renderHook(({view,entries})=>useAiPresentation(view,entries,true),{initialProps:{view:before,entries:[] as PublicHistoryEntry[]}});expect(result.current.action).toBeNull();rerender({view:{...before,revision:1},entries:[research]});expect(result.current.action?.presentation?.kind).toBe('research');rerender({view:{...before,revision:2},entries:[ended,research]});expect(result.current.recent?.summary).toBe('Ended the action');expect(result.current.action?.presentation?.kind).toBe('research');
 });
+
+it('retains an AI upgrade after another player takes over, expires ordinary notices, and allows dismissal',()=>{
+ vi.useFakeTimers();const before=fixture();before.activeSeatId='b';
+ const upgrade:PublicHistoryEntry={revision:1,actorSeatId:'b',actorName:'Hydran Progress',round:1,summary:'Upgraded ship blueprints',details:[],presentation:{kind:'upgrade',shipTypes:['interceptor']}};
+ const {result,rerender}=renderHook(({view,entries})=>useAiPresentation(view,entries,false),{initialProps:{view:before,entries:[] as PublicHistoryEntry[]}});
+ rerender({view:{...before,revision:2,activeSeatId:'a'},entries:[upgrade]});
+ act(()=>vi.advanceTimersByTime(10000));
+ expect(result.current.recent).toBeNull();
+ expect(result.current.upgrade?.revision).toBe(1);
+ act(()=>result.current.dismissUpgrade());
+ rerender({view:{...before,revision:3,activeSeatId:'a'},entries:[{...upgrade}]});
+ expect(result.current.upgrade).toBeNull();
+});

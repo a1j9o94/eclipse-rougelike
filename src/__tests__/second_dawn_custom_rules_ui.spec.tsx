@@ -1,15 +1,21 @@
 import {useState} from 'react';
 import {cleanup,fireEvent,render,screen,within} from '@testing-library/react';
 import {afterEach,expect,it,vi} from 'vitest';
-import GameRuleSettings,{type GameRuleSettingsValue} from '../second-dawn-game/GameRuleSettings';
+import GameRuleSettings,{RiftCannonSetting,type GameRuleSettingsValue} from '../second-dawn-game/GameRuleSettings';
 import {RoomSettingsEditor} from '../second-dawn-game/RoomLobby';
 import {gameRules} from '../../shared/eclipse/gameRules';
 afterEach(cleanup);
-function Harness(){const [value,setValue]=useState<GameRuleSettingsValue>({rulesMode:'standard',warpPortals:true,riftCannons:true,minorSpecies:true,showCombatOdds:true});return <><GameRuleSettings value={value} disabled={false} onChange={setValue}/><output data-testid="rules">{JSON.stringify({...gameRules(value),warpPortals:value.warpPortals,riftCannons:value.riftCannons,minorSpecies:value.minorSpecies,showCombatOdds:value.showCombatOdds})}</output></>;}
-it('keeps all four setup choices together under individual rules',()=>{
+function Harness(){const [value,setValue]=useState<GameRuleSettingsValue>({rulesMode:'standard',warpPortals:true,riftCannons:true,minorSpecies:true,showCombatOdds:true});return <><RiftCannonSetting value={value} disabled={false} onChange={riftCannons=>setValue(current=>({...current,riftCannons}))}/><GameRuleSettings value={value} disabled={false} onChange={setValue}/><output data-testid="rules">{JSON.stringify({...gameRules(value),warpPortals:value.warpPortals,riftCannons:value.riftCannons,minorSpecies:value.minorSpecies,showCombatOdds:value.showCombatOdds})}</output></>;}
+it('puts Rift Cannons before the other component settings',()=>{
  render(<Harness/>);
  const fieldset=screen.getByRole('group',{name:'Individual rule options'});
- for(const name of ['Base-game warp portals','Rift Cannons','Include Minor Species','Show estimated combat odds in movement and fleet inspection'])expect(within(fieldset).getByRole('checkbox',{name})).toBeVisible();
+ for(const name of ['Base-game warp portals','Include Minor Species','Show estimated combat odds in movement and fleet inspection'])expect(within(fieldset).getByRole('checkbox',{name})).toBeVisible();
+ const rift=screen.getByRole('checkbox',{name:'Rift Cannons'});
+ expect(rift).toBeVisible();
+ expect(fieldset.contains(rift)).toBe(false);
+ fireEvent.click(screen.getByRole('checkbox',{name:'Combat Jokers'}));
+ expect(rift).not.toBeChecked();
+ expect(rift).toBeDisabled();
  expect(screen.queryByRole('group',{name:'Optional components'})).toBeNull();
 });
 it('uses preset defaults for Minor Species and combat estimates while allowing overrides',()=>{

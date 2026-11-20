@@ -6,7 +6,7 @@ import schema from '../../convex/schema';
 import { api, internal } from '../../convex/_generated/api';
 import { finishDispatchedAi } from './aiWorkerTestSupport';
 import type { GameState } from '../../shared/eclipse/types';
-import { profileVersions } from '../../shared/eclipse/catalog';
+import { getFaction, profileVersions } from '../../shared/eclipse/catalog';
 
 const modules = import.meta.glob('../../convex/**/*.{ts,js}');
 const settings = { humanSeatCount: 2, aiCount: 0, timerMs: 30_000, warpPortals: true, factionProfile: 'expanded-v1' as const };
@@ -41,6 +41,30 @@ it('keeps omitted profiles base and clears incompatible choices before readying 
   expect(changed.seats[0]).toMatchObject({ faction: null, ready: false });
   await expect(t.mutation(api.eclipseRooms.setRoomReady, { ...host, roomToken: room.roomToken, ready: true })).rejects.toThrow('faction');
   await expect(t.mutation(api.eclipseRooms.startRoom, { ...host, roomToken: room.roomToken })).rejects.toThrow('ready');
+});
+
+it('enforces Official factions and Rift-free supplies for both humans and AI in a shared room', async () => {
+  const t = convexTest(schema, modules);
+  const host = await t.action(api.eclipseGuests.createGuestSession, {});
+  const guest = await t.action(api.eclipseGuests.createGuestSession, {});
+  const official = { ...settings, factionProfile: 'official-v1' as const, riftCannons: false, aiCount: 4 };
+  await expect(t.mutation(api.eclipseRooms.createRoom, { ...host, settings: official, faction: 'midas' })).rejects.toThrow('profile');
+  const {roomToken} = await t.mutation(api.eclipseRooms.createRoom, { ...host, settings: official, faction: 'exiles', pieceColor: 'blue' });
+  await expect(t.mutation(api.eclipseRooms.joinRoom, { ...guest, roomToken, faction: 'ragnarok', pieceColor: 'white' })).rejects.toThrow('profile');
+  await t.mutation(api.eclipseRooms.joinRoom, { ...guest, roomToken, faction: 'lyra', pieceColor: 'white' });
+  await t.mutation(api.eclipseRooms.setRoomReady, { ...host, roomToken, ready: true });
+  await t.mutation(api.eclipseRooms.setRoomReady, { ...guest, roomToken, ready: true });
+  const {matchId, lobby} = await t.mutation(api.eclipseRooms.startRoom, { ...host, roomToken });
+  expect(lobby.settings).toMatchObject({factionProfile:'official-v1',riftCannons:false});
+  const view = await t.query(api.eclipseMatches.getMatchView, { ...host, matchId });
+  expect(view).toMatchObject({ factionProfile:'official-v1', ...profileVersions('official-v1') });
+  expect(view?.seats.filter(seat=>seat.controller==='ai')).toHaveLength(4);
+  expect(view?.seats.every(seat=>getFaction(seat.faction).content.kind==='official')).toBe(true);
+  expect(new Set(view?.seats.map(seat=>seat.pieceColor)).size).toBe(6);
+  expect(view?.riftCannons).toBe(false);
+  const state=await t.run(async ctx=>JSON.parse((await ctx.db.get(matchId))!.snapshotJson) as GameState);
+  expect([...state.technologyMarket,...state.supplies.technology]).not.toContain('rift-cannon');
+  expect(state.supplies.discovery.some(id=>id.startsWith('rift-conductor'))).toBe(false);
 });
 
 it('creates every supported solo size with unique colors and preserves the expanded profile through commands', async () => {

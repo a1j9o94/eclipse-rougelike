@@ -190,6 +190,11 @@ export function capacity(seat: Seat, action: Action): number {
   }, 0);
   return getFaction(seat.faction).activations[action] + bonus;
 }
+export function mixedActionBudgets(seat: Seat, action: Action): { build: number; move: number } | null {
+  if (seat.passed || (action !== 'build' && action !== 'move')) return null;
+  const included = getFaction(seat.faction).special?.mixedAction?.[action];
+  return included ? { ...included, [action]: capacity(seat, action) } : null;
+}
 export function beginAction(
   state: GameState,
   seat: Seat,
@@ -219,17 +224,14 @@ export function beginAction(
     seat.influenceOnTrack > 0,
     "No influence discs remain for another action.",
   );
-  const mixed = !seat.passed ? getFaction(seat.faction).special?.mixedAction?.[action as 'move' | 'build'] : undefined;
-  const n = capacity(seat, action);
+  const mixedBudgets = mixedActionBudgets(seat, action);
+  const n = mixedBudgets?.[action as 'move' | 'build'] ?? capacity(seat, action);
   seat.influenceOnTrack--;
   seat.actionDiscs[action]++;
-  const mixedBudgets = mixed
-    ? { move: action === 'move' ? n : mixed.move, build: action === 'build' ? n : mixed.build }
-    : null;
   e.action = mixedBudgets
     ? { owner: seat.id, action, remaining: mixedBudgets.move + mixedBudgets.build, budgets: mixedBudgets }
     : { owner: seat.id, action, remaining: n };
-  return mixedBudgets ? mixedBudgets[action === 'move' ? 'move' : 'build'] : n;
+  return n;
 }
 export function consumeActivations(state: GameState, count: number, kind?: Action): void {
   const action = continuation(state).action;

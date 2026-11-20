@@ -1,4 +1,4 @@
-import { allowsRiftCannons, factionRulesMode } from '../shared/eclipse/gameRules';
+import { factionRulesMode, riftCannonsEnabled } from '../shared/eclipse/gameRules';
 import {syncLeaderboardResult} from './eclipseLeaderboardStore';
 import {synchronizeUpkeepTimer,roomTimerTarget} from './eclipseUpkeepTimer';
 import { v } from "convex/values";
@@ -387,7 +387,7 @@ export const startRoom = mutation({
     const opponents = roomAiSelections(humans, room.aiCount, factionProfile, Math.random,factionRulesMode(room));
     const seats = [...humans, ...opponents.map((opponent, index) => ({ id: `seat-${room.humanSeatCount + index + 1}`, ...opponent, controller: 'ai' as const }))];
     const rulesMode=room.rulesMode;
-    const state = createGame({ seed: Math.floor(Math.random() * 0x100000000), seats, factionProfile, ...(rulesMode?{rulesMode}:{}), ...(room.ruleOptions?{ruleOptions:room.ruleOptions}:{}), warpPortals: room.warpPortals, riftCannons: room.riftCannons ?? (rulesMode !== 'less-random-v1' && allowsRiftCannons(room)), minorSpecies:room.minorSpecies??false, randomizeStartingPlayer: true, randomizeStartingPositions: true });
+    const state = createGame({ seed: Math.floor(Math.random() * 0x100000000), seats, factionProfile, ...(rulesMode?{rulesMode}:{}), ...(room.ruleOptions?{ruleOptions:room.ruleOptions}:{}), warpPortals: room.warpPortals, riftCannons: riftCannonsEnabled(room), minorSpecies:room.minorSpecies??false, randomizeStartingPlayer: true, randomizeStartingPositions: true });
     const now = Date.now();
     const matchId = await ctx.db.insert("eclipseMatchesV1", { snapshotJson: JSON.stringify(state), rulesVersion: state.rulesVersion, catalogVersion: state.catalogVersion, revision: state.revision, round: state.round, phase: state.phase, ...(rulesMode?{rulesMode}:{}), ...(room.ruleOptions?{ruleOptions:room.ruleOptions}:{}), roomToken: room.roomToken, showCombatOdds:room.showCombatOdds??false, aiDifficulty: room.aiDifficulty ?? "normal", aiVersion: AI_VERSION, createdAt: now, updatedAt: now });
     await Promise.all(humanSeats.map((seat) => ctx.db.insert("eclipseOwnershipV1", { matchId, guestId: seat.guestId, seatId: `seat-${seat.slot}` })));

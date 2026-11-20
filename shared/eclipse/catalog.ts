@@ -12,16 +12,22 @@ export const EXPANDED_V2_RULES_VERSION = 'second-dawn-expanded-v2-2026-09-25' as
 export const EXPANDED_V2_CATALOG_VERSION = 'second-dawn-catalog-expanded-v2' as const;
 export const SCIFI_RULES_VERSION = 'second-dawn-scifi-v1-2026-10-09' as const;
 export const SCIFI_CATALOG_VERSION = 'second-dawn-catalog-scifi-v1' as const;
-export type FactionProfile = 'base' | 'expanded-v1' | 'expanded-v2' | 'scifi-v1';
 export interface ProfileVersions { readonly rulesVersion: string; readonly catalogVersion: string }
+const FACTION_PROFILE_VERSIONS = {
+  base: { rulesVersion: RULES_VERSION, catalogVersion: CATALOG_VERSION },
+  'official-v1': { rulesVersion: 'second-dawn-official-v1', catalogVersion: 'second-dawn-catalog-official-v1' },
+  'expanded-v1': { rulesVersion: EXPANDED_RULES_VERSION, catalogVersion: EXPANDED_CATALOG_VERSION },
+  'expanded-v2': { rulesVersion: EXPANDED_V2_RULES_VERSION, catalogVersion: EXPANDED_V2_CATALOG_VERSION },
+  'scifi-v1': { rulesVersion: SCIFI_RULES_VERSION, catalogVersion: SCIFI_CATALOG_VERSION },
+} satisfies Record<string, ProfileVersions>;
+export type FactionProfile = keyof typeof FACTION_PROFILE_VERSIONS;
+
+export function isFactionProfile(profile: string): profile is FactionProfile {
+  return Object.prototype.hasOwnProperty.call(FACTION_PROFILE_VERSIONS, profile);
+}
+
 export function profileVersions(profile: FactionProfile, riftCannons = false, minorSpecies = false): ProfileVersions {
-  const base = profile === 'base'
-    ? { rulesVersion: RULES_VERSION, catalogVersion: CATALOG_VERSION }
-    : profile === 'expanded-v1'
-      ? { rulesVersion: EXPANDED_RULES_VERSION, catalogVersion: EXPANDED_CATALOG_VERSION }
-      : profile === 'scifi-v1'
-        ? { rulesVersion: SCIFI_RULES_VERSION, catalogVersion: SCIFI_CATALOG_VERSION }
-        : { rulesVersion: EXPANDED_V2_RULES_VERSION, catalogVersion: EXPANDED_V2_CATALOG_VERSION };
+  const base = FACTION_PROFILE_VERSIONS[profile];
   const rift = riftCannons
     ? { rulesVersion: `${base.rulesVersion}+rift-cannon-v1`, catalogVersion: `${base.catalogVersion}+rift-cannon-v1` }
     : base;
@@ -625,6 +631,10 @@ export const FACTION_REGISTRY: readonly FactionDefinition[] = [
 ];
 /** Compatibility catalog view. Base selection order and membership stay stable. */
 export const BASE_FACTIONS: readonly BaseFaction[] = FACTION_REGISTRY.slice(0, 12);
+const OFFICIAL_V1_FACTIONS = FACTION_REGISTRY.filter(faction =>
+  faction.content.kind === 'official' &&
+  [CONTENT.packId, OUTCASTS_CONTENT.packId, SEEKERS_CONTENT.packId].includes(faction.content.packId),
+);
 const EXPANDED_V1_FACTION_IDS: ReadonlySet<FactionId> = new Set([
   'eridani', 'hydran', 'planta', 'draco', 'mechanema', 'orion',
   'terran-directorate', 'terran-federation', 'terran-union',
@@ -637,16 +647,20 @@ export function getFaction(id: FactionId): BaseFaction {
   return faction;
 }
 export function listFactions(profileOrContentPack?: FactionProfile | string): readonly FactionDefinition[] {
-  if (profileOrContentPack === 'base' || profileOrContentPack === 'expanded-v1' || profileOrContentPack === 'expanded-v2' || profileOrContentPack === 'scifi-v1')
+  if (profileOrContentPack && isFactionProfile(profileOrContentPack))
     return listFactionsForProfile(profileOrContentPack);
   return profileOrContentPack
     ? FACTION_REGISTRY.filter(faction => faction.content.packId === profileOrContentPack)
     : FACTION_REGISTRY;
 }
 export function listFactionsForProfile(profile: FactionProfile): readonly FactionDefinition[] {
-  return profile === 'base' ? BASE_FACTIONS : profile === 'expanded-v1'
-    ? FACTION_REGISTRY.filter(faction => EXPANDED_V1_FACTION_IDS.has(faction.id))
-    : profile === 'scifi-v1' ? FACTION_REGISTRY : FACTION_REGISTRY.filter(faction => faction.content.packId !== 'scifi-v1');
+  switch (profile) {
+    case 'base': return BASE_FACTIONS;
+    case 'official-v1': return OFFICIAL_V1_FACTIONS;
+    case 'expanded-v1': return FACTION_REGISTRY.filter(faction => EXPANDED_V1_FACTION_IDS.has(faction.id));
+    case 'expanded-v2': return FACTION_REGISTRY.filter(faction => faction.content.packId !== 'scifi-v1');
+    case 'scifi-v1': return FACTION_REGISTRY;
+  }
 }
 export function factionAvailableInProfile(id: FactionId, profile: FactionProfile): boolean {
   return listFactionsForProfile(profile).some(faction => faction.id === id);

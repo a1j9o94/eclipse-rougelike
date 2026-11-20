@@ -71,6 +71,33 @@ it('lets an expanded room change piece color without changing species',()=>{
 it('lets the host agree to optional combat odds before the game starts',()=>{
  const save=vi.fn();render(<RoomSettingsEditor settings={lobby.settings} disabled={false} onSave={save}/>);fireEvent.click(screen.getByText('Advanced rules'));const toggle=within(screen.getByRole('group',{name:'Individual rule options'})).getByRole('checkbox',{name:/Show estimated combat odds/});expect(toggle).not.toBeChecked();expect(screen.getByText('Preset rules')).toBeVisible();fireEvent.click(toggle);fireEvent.click(screen.getByRole('button',{name:'Save room settings'}));expect(save).toHaveBeenCalledWith({...lobby.settings,showCombatOdds:true});
 });
+it('shows Official factions and the Rift Cannons toggle before opening advanced rules',()=>{
+ const save=vi.fn();
+ render(<RoomSettingsEditor settings={lobby.settings} disabled={false} onSave={save}/>);
+ const official=screen.getByRole('button',{name:/Official factions/i});
+ const rift=screen.getByRole('checkbox',{name:'Rift Cannons'});
+ expect(official).toBeVisible();
+ expect(rift).toBeVisible();
+ expect(rift).toBeChecked();
+ fireEvent.click(official);
+ fireEvent.click(rift);
+ fireEvent.click(screen.getByRole('button',{name:'Save room settings'}));
+ expect(save).toHaveBeenCalledWith({...lobby.settings,factionProfile:'official-v1',riftCannons:false});
+ cleanup();
+ render(<RoomLobby lobby={{...lobby,settings:{...lobby.settings,factionProfile:'official-v1',riftCannons:false}}} disabled={false} {...callbacks()}/>);
+ const agreement=screen.getByText(/Agreed rules ·/);
+ expect(agreement).toHaveTextContent('Official factions');
+ expect(agreement).toHaveTextContent('Rift Cannons off');
+});
+
+it('keeps the roster pinned when an existing host only switches Rift Cannons off',()=>{
+ const save=vi.fn();
+ const settings={...lobby.settings,factionProfile:'expanded-v2' as const};
+ render(<RoomSettingsEditor settings={settings} disabled={false} onSave={save}/>);
+ fireEvent.click(screen.getByRole('checkbox',{name:'Rift Cannons'}));
+ fireEvent.click(screen.getByRole('button',{name:'Save room settings'}));
+ expect(save).toHaveBeenCalledWith({...settings,riftCannons:false});
+});
 it('offers Minor Species as an optional default-off room agreement',()=>{
  const save=vi.fn();render(<RoomSettingsEditor settings={lobby.settings} disabled={false} onSave={save}/>);
  fireEvent.click(screen.getByText('Advanced rules'));

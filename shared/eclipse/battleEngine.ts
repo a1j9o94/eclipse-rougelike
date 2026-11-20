@@ -212,16 +212,43 @@ function updatePenalty(state: GameState, b: BattleState, owner: string): void {
     if (!b.retreated.includes(owner)) b.retreated.push(owner);
   }
 }
-function settleRetreats(state: GameState, b: BattleState): void {
+function completeRetreat(
+  state: GameState,
+  b: BattleState,
+  retreat: BattleState["retreats"][number],
+  ships: readonly Ship[],
+  events: GameEvent[],
+): void {
+  if (!ships.length) return;
+  const destination = state.sectors.find(sector => sector.id === retreat.destination);
+  for (const ship of ships) {
+    ship.sectorId = retreat.destination;
+    ship.arrival = continuation(state).nextId++;
+  }
+  const sector = destination?.tileId ?? retreat.destination;
+  events.push({
+    type: "combat",
+    visibility: "public",
+    seatId: retreat.owner,
+    message: `${ships.length} ${retreat.shipType}${ships.length === 1 ? "" : "s"} retreated to sector ${sector}.`,
+    combatRetreat: {
+      battleId: b.id,
+      owner: retreat.owner,
+      shipType: retreat.shipType,
+      sectorId: b.sectorId,
+      destinationId: retreat.destination,
+      destinationTileId: sector,
+      count: ships.length,
+    },
+  });
+}
+function settleRetreats(state: GameState, b: BattleState, events: GameEvent[]): void {
   for (const owner of [b.attacker, b.defender]) updatePenalty(state, b, owner);
   for (const retreat of b.retreats)
     if (retreat.engagement < b.engagement)
-      for (const ship of ships(state, b, retreat.owner).filter(
+      completeRetreat(state, b, retreat, ships(state, b, retreat.owner).filter(
         (s) => s.type === retreat.shipType,
-      )) {
-        ship.sectorId = retreat.destination;
-        ship.arrival = continuation(state).nextId++;
-      }
+      ), events);
   b.retreats = [];
 }
 /** Publisher pp.26–29: ambassador-only spaces never hold reputation tiles. */
@@ -613,7 +640,7 @@ export function advanceCombat(state: GameState, events: GameEvent[]): boolean {
       !ships(state, b, b.attacker).length ||
       !ships(state, b, b.defender).length
     ) {
-      settleRetreats(state, b);
+      settleRetreats(state, b, events);
       const pair = nextPair(state, b.sectorId);
       if (pair) {
         startPair(state, b, pair, events);
@@ -696,10 +723,7 @@ export function advanceCombat(state: GameState, events: GameEvent[]): boolean {
         (r) => r.owner === group.owner && r.shipType === group.shipType,
       );
       if (retreat && retreat.engagement < b.engagement) {
-        for (const s of present) {
-          s.sectorId = retreat.destination;
-          s.arrival = e.nextId++;
-        }
+        completeRetreat(state, b, retreat, present, events);
         b.retreats = b.retreats.filter((r) => r !== retreat);
         b.groupIndex++;
         continue;

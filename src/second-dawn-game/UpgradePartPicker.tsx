@@ -9,8 +9,9 @@ interface Props {
  blueprint:ShipBlueprint;draft:ShipBlueprint;slot:number;printed:ShipPartId|null;
  inventory:FittingInventory;disabled:boolean;
  onSelect:(part:ShipPartId|null)=>void;
+ blueprintId:string;expanded:boolean;onToggleExpand:()=>void;
 }
-export default function UpgradePartPicker({blueprint,draft,slot,printed,inventory,disabled,onSelect}:Props){
+export default function UpgradePartPicker({blueprint,draft,slot,printed,inventory,disabled,onSelect,blueprintId,expanded,onToggleExpand}:Props){
  const [group,setGroup]=useState<FittingGroup|'All parts'>('All parts');
  const selected=draft.parts[slot],effective=selected??printed,original=blueprint.parts[slot];
  const ancientOriginal=original&&getShipPart(original).access.kind==='ancient'?original:null;
@@ -24,7 +25,10 @@ export default function UpgradePartPicker({blueprint,draft,slot,printed,inventor
  return <section className="dg-part-picker dg-part-picker-inline" aria-label={`${className} · slot ${slot+1}`}>
  <header className="dg-part-picker-heading"><div><span className="dg-yard-eyebrow">{className} · slot {slot+1}</span><h2>Choose a replacement</h2></div></header>
  <section className="dg-part-picker-current" aria-label="Current slot component"><div><small>In your draft</small><strong>{effective?getShipPart(effective).name:'Empty slot'}</strong></div>{effective&&<ShipPartStats partId={effective}/>}</section>
- <nav className="dg-part-picker-filters" aria-label="Component functions">{(['All parts',...available.map(g=>g.name)] as const).map(name=><button key={name} type="button" aria-pressed={group===name} onClick={()=>setGroup(name)}>{name}</button>)}</nav>
+ <div className="dg-part-picker-tools">
+  <nav className="dg-part-picker-filters" aria-label="Component functions">{(['All parts',...available.map(g=>g.name)] as const).map(name=><button key={name} type="button" aria-pressed={group===name} onClick={()=>setGroup(name)}>{name}</button>)}</nav>
+  <button className="dg-part-picker-expand" type="button" aria-controls={blueprintId} aria-expanded={!expanded} onClick={onToggleExpand}>{expanded?'Show blueprint':'Expand parts'}</button>
+ </div>
  <div className="dg-part-picker-scroll" role="region" tabIndex={0} aria-label="Replacement components">
  {ancientOriginal&&<p className="dg-part-picker-warning">Applying this replacement permanently discards {getShipPart(ancientOriginal).name}.</p>}
  {inventory.storedAncients.length>0&&<p className="dg-ancient-stock">Stored Ancient copies: {inventory.storedAncients.map(part=>`${getShipPart(part.id).name} ×${part.count}`).join(' · ')}.</p>}

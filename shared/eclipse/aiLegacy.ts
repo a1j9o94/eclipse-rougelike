@@ -98,7 +98,8 @@ export function evaluateLegacyAiCommand(
       return (seat.scifi?.reverseEngineeringProject?.kind === "technology" ? 17 : 12) - discPenalty;
     case "trade-and-act": return -100; // The normal AI generates ordinary trades, not funded wrappers.
     case "set-auto-pass":
-      return -Infinity; // A human preference is never an AI gameplay candidate.
+    case 'start-mixed-action':
+      return -Infinity; // The benchmark chooses from the original action commands.
     case "pass":
       return balance < 0 ? 30 : balance < 3 ? 10 : 0;
     case "end-action":
@@ -351,8 +352,9 @@ export function chooseLegacyAiCommand(
   simulationSeed: number,
 ): AiChoice | null {
   const candidates = legalCommands(view).filter(candidate =>
-    candidate.command.type !== "offer-diplomacy" ||
-    !view.diplomacyDeclinedSeatIds?.includes(candidate.command.to));
+    candidate.command.type !== 'start-mixed-action' &&
+    (candidate.command.type !== "offer-diplomacy" ||
+    !view.diplomacyDeclinedSeatIds?.includes(candidate.command.to)));
   if (!candidates.length) return null;
   let random = randomSeed(simulationSeed >>> 0);
   let best: AiChoice | null = null;

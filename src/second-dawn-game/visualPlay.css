@@ -11,6 +11,9 @@
 /* Bound the inspector once. Ordinary details scroll here; choices keep their
    commit outside the one scrolling decision body. */
 .dg-visual-play:not(.dg-mobile-board,.dg-in-battle,.dg-empire-mode,.dg-placement-mode) .sd-inspector { display:flex;flex-direction:column;min-height:0;overflow:hidden; }
+.dg-inspector-resize {position:absolute;inset:0 auto 0 0;z-index:5;width:9px;cursor:col-resize;touch-action:none;}
+.dg-inspector-resize::after {content:'';position:absolute;top:50%;left:2px;width:3px;height:40px;transform:translateY(-50%);border-radius:2px;background:#75878d;}
+.dg-inspector-resize:is(:hover,:focus-visible) {background:#ac905a38;outline:2px solid #eacf95;outline-offset:-2px;}
 .dg-visual-play .dg-inspector-body { flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain; }
 .dg-visual-play .dg-inspector-body:has(>.dg-map-choice-controls:not([hidden])),
 .dg-visual-play .dg-inspector-body:has(>.dg-inspector-content:not([hidden])>:is(.dg-build-planner,.dg-movement-planner,.dg-influence-planner,.dg-colonization-planner)) { display:flex;flex-direction:column;overflow:hidden; }

@@ -54,3 +54,18 @@ it('puts drives first when replacing a cruiser drive while retaining the full in
  expect(within(replacements).getByRole('button',{name:/Install Fusion Drive/})).toBeVisible();
  expect(within(replacements).getByRole('region',{name:'Weapons'})).toBeVisible();
 });
+
+it('expands the replacement tray while preserving the selected slot and draft',()=>{
+ const blueprint=initialBlueprints('terran-directorate').find(bp=>bp.shipType==='cruiser')!;
+ const submit=vi.fn();
+ render(<BlueprintEditor faction="terran-directorate" blueprint={blueprint} technologies={['fusion-drive']} storedParts={[]} capacity={2} disabled={false} onSubmit={submit}/>);
+ fireEvent.click(screen.getByRole('button',{name:/^Slot \d+: Nuclear Drive$/}));
+ const replacements=screen.getByRole('region',{name:/Cruiser · slot/});
+ fireEvent.click(within(replacements).getByRole('button',{name:'Expand parts'}));
+ expect(screen.queryByRole('region',{name:'Blueprint hardpoints'})).toBeNull();
+ fireEvent.click(within(replacements).getByRole('button',{name:/Install Fusion Drive/}));
+ expect(submit).not.toHaveBeenCalled();
+ fireEvent.click(within(replacements).getByRole('button',{name:'Show blueprint'}));
+ expect(screen.getByRole('button',{name:/^Slot \d+: Fusion Drive$/})).toHaveAttribute('aria-pressed','true');
+ expect(screen.getByRole('button',{name:'Apply 1 upgrade'})).toBeEnabled();
+});

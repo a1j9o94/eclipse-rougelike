@@ -16,6 +16,8 @@
 .dg-fitting-selected-slot>button{margin-left:auto;min-height:44px;font-size:12px}
 .dg-fitting-effect{font-size:12px;color:#bdccd5}
 .dg-fitting-workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,1fr);gap:12px;min-height:0;flex:1 1 auto;align-items:stretch}
+.dg-fitting-workspace[data-parts-expanded=true]{grid-template-columns:minmax(0,1fr)}
+.dg-fitting-workspace[data-parts-expanded=true] .dg-part-picker .dg-parts-tray-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,165px),1fr))}
 .dg-fitting-workspace .dg-blueprint-canvas{min-height:0;overflow:auto;margin:0;padding:10px}
 .dg-fitting-hardpoint{min-width:0}
 .dg-fitting-hardpoint>.dg-blueprint-slot{width:100%;height:100%}
@@ -35,8 +37,10 @@
 @media(max-height:720px){
  .dg-app .dg-blueprint-editor .dg-part-picker-current{display:none}
 }
-.dg-part-picker-filters{display:flex;gap:5px;overflow-x:auto;flex:0 0 auto;padding:0 10px 7px;scrollbar-width:thin}
+.dg-part-picker-tools{display:flex;align-items:flex-start;gap:5px;flex:0 0 auto;padding:0 10px 7px}
+.dg-part-picker-filters{display:flex;min-width:0;gap:5px;overflow-x:auto;flex:1 1 auto;scrollbar-width:thin}
 .dg-part-picker-filters button{flex:0 0 auto;font-size:12px;min-height:44px;padding:6px 10px}
+.dg-part-picker-tools>.dg-part-picker-expand{flex:0 0 auto;min-height:44px;font-size:12px;padding:6px 8px}
 .dg-part-picker-filters button[aria-pressed=true]{border-bottom:3px solid #e7cd8b}
 .dg-part-picker-scroll{min-height:0;flex:1 1 auto;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:0 10px 10px}
 .dg-part-picker .dg-part-group{margin:0 0 12px}
@@ -80,7 +84,7 @@
 .dg-app.dg-mobile-board .dg-blueprint-slot .dg-slot-title{font-size:9px}
 .dg-app.dg-mobile-board .dg-part-picker-inline{flex:1 1 0;max-height:none}
 .dg-app.dg-mobile-board .dg-part-picker-heading,.dg-app.dg-mobile-board .dg-part-picker-current{display:none}
-.dg-app.dg-mobile-board .dg-part-picker-filters{padding:4px 6px}
+.dg-app.dg-mobile-board .dg-part-picker-tools{padding:4px 6px}
 .dg-app.dg-mobile-board .dg-part-picker .dg-part-choice{min-height:102px}
 .dg-app.dg-mobile-board .dg-upgrade-confirm.dg-commit-bar{padding:6px 8px}
 .dg-fitting-summary .dg-fitting-summary-top>.dg-ship-silhouette{width:26px;height:26px;flex:0 0 26px}

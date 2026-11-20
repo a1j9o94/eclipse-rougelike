@@ -10,6 +10,7 @@ import {calculateScore} from './scoring';
 import {incomeForPopulationAway,upkeepForEmptyInfluenceSlots} from './tracks';
 import {adjacentPosition} from './geometry';
 import {estimatePublicBattle} from './aiSimulation';
+import {remainingUpkeepShortfall} from './aiEndgame';
 import type {PlayerView,Seat} from './types';
 
 function empireValue(view:PlayerView,seat:Seat):number {
@@ -25,7 +26,7 @@ const score=calculateScore({playerId:seat.id,faction:seat.faction,reputation:rep
  const remaining=Math.max(0,gameRoundLimit(view)-view.round),income={money:incomeForPopulationAway(seat.populationTracks.money),science:incomeForPopulationAway(seat.populationTracks.science),materials:incomeForPopulationAway(seat.populationTracks.materials)};
  const upkeep=upkeepForEmptyInfluenceSlots(Math.max(0,13-seat.influenceOnTrack));
  const balance=seat.resources.money+income.money-upkeep;
- value-=Math.max(0,-balance)*1.3;
+  value-=remaining ? Math.max(0,-balance)*1.3 : remainingUpkeepShortfall(view,seat)*4;
  // Discount long-range production; finite useful spending stops resource hoarding dominating VP.
  const horizon=Math.min(3,remaining);
  const technologies=researchedTechnologyIds(seat);

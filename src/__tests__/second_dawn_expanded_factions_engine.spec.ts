@@ -247,6 +247,68 @@ describe('expanded-v1 faction engine', () => {
     expect(moved.state.engine?.action).toMatchObject({ remaining: 1, budgets: { build: 1, move: 0 } });
   });
 
+  it('opens a Ragnarok Move action, builds the first ship, then moves twice using one disc', () => {
+    let state = expanded();
+    state.activeSeatId = 'ragnarok';
+    const seat = state.seats.find(seat => seat.id === 'ragnarok')!;
+    seat.resources.materials = 4;
+    seat.technologies.nano.push('wormhole-generator');
+    const home = state.sectors.find(sector => sector.owner === seat.id)!;
+    const neighbor = state.sectors.find(sector => sector.tileId === '001')!;
+    neighbor.position = adjacentPosition(home.position, 0);
+    state.ships = state.ships.filter(ship => ship.owner !== seat.id && ship.sectorId !== neighbor.id);
+    const opening = { type: 'start-mixed-action', action: 'move' } as const;
+    const candidates = legalCommands(getPlayerView(state, seat.id)!);
+    expect(candidates.map(candidate => candidate.command)).toContainEqual(opening);
+    expect(candidates.map(candidate => candidate.command)).toContainEqual({ type: 'start-mixed-action', action: 'build' });
+    expect(candidates.some(candidate => candidate.command.type === 'move')).toBe(false);
+
+    const started = processGameCommand(state, seat.id, opening);
+    expect(started.ok).toBe(true);
+    if (!started.ok) return;
+    expect(started.state.engine?.action).toMatchObject({ action: 'move', budgets: { move: 2, build: 1 } });
+    expect(processGameCommand(started.state, seat.id, opening)).toMatchObject({ ok: false });
+    state = JSON.parse(JSON.stringify(started.state)) as typeof state;
+    const built = processGameCommand(state, seat.id, { type: 'build', builds: [{ sectorId: home.id, component: 'interceptor' }] });
+    expect(built.ok).toBe(true);
+    if (!built.ok) return;
+    expect(built.state.engine?.action?.budgets).toEqual({ move: 2, build: 0 });
+    const ship = built.state.ships.find(ship => ship.owner === seat.id)!;
+
+    const first = processGameCommand(built.state, seat.id, { type: 'move', moves: [{ shipId: ship.id, path: [neighbor.id] }] });
+    expect(first.ok).toBe(true);
+    if (!first.ok) return;
+    expect(first.state.engine?.action?.budgets).toEqual({ move: 1, build: 0 });
+    const second = processGameCommand(first.state, seat.id, { type: 'move', moves: [{ shipId: ship.id, path: [home.id] }] });
+    expect(second.ok).toBe(true);
+    if (!second.ok) return;
+    expect(second.state.engine?.action).toBeNull();
+    expect(second.state.seats.find(candidate => candidate.id === seat.id)).toMatchObject({
+      influenceOnTrack: seat.influenceOnTrack - 1,
+      actionDiscs: { move: 1, build: 0 },
+    });
+  });
+
+  it('keeps Ragnarok reactions single and rejects explicit mixed actions with no usable activation', () => {
+    const state = expanded();
+    const seat = state.seats.find(seat => seat.id === 'ragnarok')!;
+    state.activeSeatId = seat.id;
+    const opening = { type: 'start-mixed-action', action: 'build' } as const;
+    seat.resources = { money: 0, science: 0, materials: 0 };
+    state.ships = state.ships.filter(ship => ship.owner !== seat.id);
+    expect(legalCommands(getPlayerView(state, seat.id)!).map(candidate => candidate.command)).not.toContainEqual(opening);
+    expect(processGameCommand(state, seat.id, opening)).toMatchObject({ ok: false });
+
+    seat.resources.materials = 4;
+    seat.passed = true;
+    expect(legalCommands(getPlayerView(state, seat.id)!).map(candidate => candidate.command)).not.toContainEqual(opening);
+    expect(processGameCommand(state, seat.id, opening)).toMatchObject({ ok: false });
+    const home = state.sectors.find(sector => sector.owner === seat.id)!;
+    const reaction = processGameCommand(state, seat.id, { type: 'build', builds: [{ sectorId: home.id, component: 'interceptor' }] });
+    expect(reaction.ok).toBe(true);
+    if (reaction.ok) expect(reaction.state.engine?.action).toBeNull();
+  });
+
   it('adds primary-action activation technologies to the matching Ragnarok budget only', () => {
     const state = expanded();
     state.activeSeatId = 'ragnarok';

@@ -11,10 +11,6 @@ npm run second-dawn:local
 
 The local launcher starts an isolated Convex backend and Vite. To use an already configured backend, set `VITE_CONVEX_URL` in an ignored environment file and run `npm run dev`. Saved solo and multiplayer games require Convex.
 
-## Experimental science-fiction factions
-
-Choose **Science fiction** in the new-game or room faction collection to include ExFor, Bobiverse, Trisolarans, Portiids, the Spacing Guild, Formics and Belters alongside the 18 existing civilizations. These first versions use Standard Eclipse rules. The normal Expanded collection remains the default. Abilities, starting values and playtest tuning are documented in [the implementation plan](coding_agents/second_dawn_scifi_implementation.md).
-
 ## Code map
 
 - `shared/eclipse/`: typed rules, catalog, deterministic command processor, public views and AI planning.
@@ -40,11 +36,11 @@ Tests run with one worker. `npm run test:batched` provides smaller sequential ba
 
 [Vercel](https://eclipse-rougelike.vercel.app/) deploys pushes to `main` through Git integration. Feature branches do not deploy. The live site intentionally uses the existing Convex development deployment. See [DEPLOYMENT.md](DEPLOYMENT.md) for the configured release process.
 
-## Faction rosters
+## Factions and Rift Cannons
 
-New games default to **Expanded civilizations**: the base roster plus Rho Indi Syndicate, Wardens of Magellan, Legion of Midas, and Heralds of Ragnarok. Choose **Base only** to use the original roster. Expanded games let each player choose a unique piece color independently of their faction. Existing saves and rooms retain their original roster and rules version.
+Choose a **Faction collection** in solo or room setup. **Base** uses the original paired civilization boards. **Official factions** adds Rho Indi Syndicate, Wardens of Magellan, The Exiles, and Enlightened of Lyra from Seekers and Outcasts. **Expanded** also includes Legion of Midas, Heralds of Ragnarok, and seven [experimental science-fiction factions](coding_agents/second_dawn_scifi_implementation.md) with compatible rules. The collection applies to human and AI seats. Rules and piece colors are chosen separately where the collection supports it.
 
-The four additions follow the faction sheets and explicit trade amendments in the source Drive. Standard games retain eight rounds, private reputation, the existing technology market and random exploration/discovery. Base factions retain their original trade rates in Standard.
+Turn off **Rift Cannons** in setup to leave out the technology and Rift Conductor discovery. Combat Jokers and the Less Random technology inventory also exclude the module. Existing saves and rooms retain their selected rules and roster.
 
 ## Régis’s Less Random
 
@@ -78,7 +74,7 @@ The expanded roster is drawn from **Régis Étienne’s (@retienne) 24-faction c
 
 The [research index](coding_agents/faction_research/README.md) includes faction abilities and implementation difficulty, AI strategy notes, a file inventory, and [full credits](coding_agents/faction_research/credits.md). The [complete original-file snapshot](https://github.com/a1j9o94/eclipse-rougelike/releases/tag/faction-sources-2026-09-19) is preserved as a GitHub release archive, keeping large artwork and editable templates out of the game bundle.
 
-The underlying Eclipse game is by **Touko Tahkokallio / Lautapelit.fi**. Community sources retain their original credits and notices. Only the four additions listed above are playable; the remaining archived factions remain research material.
+The underlying Eclipse game is by **Touko Tahkokallio / Lautapelit.fi**. Community sources retain their original credits and notices.
 
 ## Minor Species
 

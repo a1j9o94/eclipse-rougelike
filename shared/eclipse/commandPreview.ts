@@ -56,7 +56,7 @@ export function previewCommand(
     "move",
     "influence",
   ];
-  if ((actions.some((a) => a === command.type) || command.type === 'research-development' || command.type === 'quantum-research' || command.type === 'reverse-engineer' || command.type === 'place-shrine') && !view.actionProgress)
+  if ((actions.some((a) => a === command.type) || command.type === 'start-mixed-action' || command.type === 'research-development' || command.type === 'quantum-research' || command.type === 'reverse-engineer' || command.type === 'place-shrine') && !view.actionProgress)
     influence--;
   if(command.type==='place-shrine'){
     resources[command.row]-=SHRINE_COSTS[command.row][command.column];

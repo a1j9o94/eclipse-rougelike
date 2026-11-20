@@ -51,7 +51,7 @@ const presentations: Record<FactionId, Omit<FactionPresentation, "startingShip" 
   },
   ragnarok: {
     overview: 'Build and move in the same action to deploy your fleet exactly when it is needed.',
-    benefits: [{icon:'drive',value:'+1',label:'Move during Build',detail:'A Build action includes one Move activation.'},{icon:'structure',value:'+1',label:'Build during Move',detail:'A Move action includes one Build activation. Use the separate counters to choose the sequence.'},{icon:'cannon',label:'Neutron Bombs at setup',detail:'Start with a Cruiser and Neutron Bombs for capturing populated sectors.'}],
+    benefits: [{icon:'drive',value:'+1',label:'Move during Build',detail:'A Build action includes one Move activation.'},{icon:'structure',value:'+1',label:'Build during Move',detail:'A Move action includes one Build activation. Choose the action on the board, then use both counters in any order.'},{icon:'cannon',label:'Neutron Bombs at setup',detail:'Start with a Cruiser and Neutron Bombs for capturing populated sectors.'}],
     constraints: ['Mixed activations apply to normal actions, not reactions.','Trade 2 resources for 1. Ship costs, slots and initiative differ from the base boards.'],
   },
   eridani: {

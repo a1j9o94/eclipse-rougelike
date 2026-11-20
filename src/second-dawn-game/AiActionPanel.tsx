@@ -16,6 +16,7 @@ import {describeTechnology} from './itemDescriptions';
 import SectorFleet from './SectorFleet';
 import SectorPlanets from './SectorPlanets';
 import {MinorSpeciesCard} from './MinorSpeciesMarket';
+import {UpgradeChanges} from './PublicActionResults';
 import './aiActionPanel.css';
 export interface AiActionPanelProps {
  view:PlayerView|SpectatorView;
@@ -38,6 +39,8 @@ export default function AiActionPanel({view,entry,onInspectSector}:AiActionPanel
  }else if(presentation?.kind==='research'){
   const technology=TECHNOLOGIES.find(item=>item.id===presentation.technologyId);
   if(technology)content=<article className="dg-ai-tech-card"><small>Technology researched</small><h3>{technology.name}</h3><TechnologyStats technology={technology}/><p>{describeTechnology(technology)}</p></article>;
+ }else if(presentation?.kind==='upgrade'&&presentation.changes){
+  content=<UpgradeChanges changes={presentation.changes} faction={actor?.faction??entry.actorFaction} showStats/>;
  }else if(presentation?.kind==='upgrade'&&actor){
   content=<div className="dg-ai-loadouts"><p className="dg-ai-changed-classes">Changed classes: {[...new Set(presentation.shipTypes)].map(name).join(' · ')}</p>{[...new Set(presentation.shipTypes)].flatMap(type=>{
    const source=actor.blueprints.find(blueprint=>blueprint.shipType===type);

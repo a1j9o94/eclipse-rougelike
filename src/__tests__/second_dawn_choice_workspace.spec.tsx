@@ -65,6 +65,21 @@ it('starts with the desktop inspector collapsed and lets players expand and clos
  fireEvent.click(screen.getByRole('button',{name:'Hide sector details'}));
  expect(screen.queryByRole('complementary',{name:'Selection and action details'})).toBeNull();
 });
+it('resizes the open desktop inspector with the keyboard without submitting a command',()=>{
+ const p=props(fixture(false));
+ render(<SecondDawnBoard {...p}/>);
+ fireEvent.click(screen.getByRole('button',{name:'Table & activity'}));
+ fireEvent.click(screen.getByRole('button',{name:'Show sector details'}));
+ const separator=screen.getByRole('separator',{name:'Resize details panel'});
+ separator.focus();
+ fireEvent.keyDown(separator,{key:'End'});
+ expect(separator).toHaveAttribute('aria-valuenow',separator.getAttribute('aria-valuemax'));
+ fireEvent.keyDown(separator,{key:'Home'});
+ expect(separator).toHaveAttribute('aria-valuenow',separator.getAttribute('aria-valuemin'));
+ expect(separator).toHaveFocus();
+ expect(screen.getByRole('group',{name:'Galaxy map'})).toBeVisible();
+ expect(p.onSubmit).not.toHaveBeenCalled();
+});
 it('opens the inspector for a spatial action so collapsing never hides required inputs',()=>{
  render(<SecondDawnBoard {...props(fixture(false))}/>);
  fireEvent.click(screen.getByRole('button',{name:'Move',exact:true}));

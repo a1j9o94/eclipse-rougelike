@@ -1,11 +1,41 @@
 import {getFaction} from '../shared/eclipse/catalog';
-import {projectHistoryEntry, type PublicHistoryEntry, type PublicHistoryPage} from '../shared/eclipse/history';
+import {projectHistoryEntry, type HistoryPriorPosition, type PublicHistoryEntry, type PublicHistoryPage} from '../shared/eclipse/history';
 import type {GameState, JournalEntry} from '../shared/eclipse/types';
 import type {QueryCtx} from './_generated/server';
 import type {Doc, Id} from './_generated/dataModel';
 import {retainedHistoryRanges, supersededRevision} from './eclipseRollback';
 
 interface HistoryOptions {beforeRevision?:number; fromStart?:boolean; limit?:number; spectator?:boolean}
+
+function priorPosition(snapshotJson: string | undefined): HistoryPriorPosition | undefined {
+  if (!snapshotJson) return undefined;
+  try {
+    const snapshot = JSON.parse(snapshotJson) as GameState;
+    if (snapshot?.phase && Array.isArray(snapshot.seats)) return snapshot;
+  } catch {
+    // A damaged legacy checkpoint should not prevent reading its public action.
+  }
+}
+
+function spectatorEntry(entry: PublicHistoryEntry): PublicHistoryEntry {
+  return {
+    revision: entry.revision,
+    actorSeatId: entry.actorSeatId,
+    actorName: entry.actorName,
+    ...(entry.actorFaction ? { actorFaction: entry.actorFaction } : {}),
+    ...(entry.actorColor ? { actorColor: entry.actorColor } : {}),
+    round: entry.round,
+    ...(entry.phase ? { phase: entry.phase } : {}),
+    ...(entry.actionTurnSerial !== undefined ? { actionTurnSerial: entry.actionTurnSerial } : {}),
+    summary: entry.summary,
+    details: entry.details,
+    ...(entry.presentation ? { presentation: entry.presentation } : {}),
+    ...(entry.combatVolley ? { combatVolley: entry.combatVolley } : {}),
+    ...(entry.combatVolleys ? { combatVolleys: entry.combatVolleys } : {}),
+    ...(entry.combatRetreats ? { combatRetreats: entry.combatRetreats } : {}),
+  };
+}
+
 /** Shared bounded public-history read. Callers enforce access before resolving the match. */
 export async function readPublicMatchHistory(ctx: Pick<QueryCtx,'db'>, matchId: Id<'eclipseMatchesV1'>, {beforeRevision,fromStart,limit,spectator=false}: HistoryOptions): Promise<PublicHistoryPage | null> {
     if (beforeRevision !== undefined && (!Number.isSafeInteger(beforeRevision) || beforeRevision < 1)) throw new Error('Invalid history cursor.');
@@ -54,10 +84,16 @@ export async function readPublicMatchHistory(ctx: Pick<QueryCtx,'db'>, matchId: 
     }
     const commands: PublicHistoryEntry[] = rows.map(row => {
       const reason = !row.preSnapshotJson ? 'This older action has no saved checkpoint.' : latestLifecycle && row.revision <= latestLifecycle.revision ? 'Undo cannot cross a player resignation.' : match.lifecycle === 'abandoned' ? 'This game has ended by resignation.' : undefined;
-      return { ...projectHistoryEntry({ actor:row.actor, receipt:row.receipt, request:JSON.parse(row.requestJson) as JournalEntry['request'], events:JSON.parse(row.eventsJson) as JournalEntry['events'] },seats,row.round,historyState), rollbackAvailable: !reason, rollbackRecoverable:!row.preSnapshotJson&&(!latestLifecycle||row.revision>latestLifecycle.revision)&&match.lifecycle!=='abandoned', ...(reason ? { rollbackUnavailableReason: reason } : {}) };
+      const entry = {
+        actor: row.actor,
+        receipt: row.receipt,
+        request: JSON.parse(row.requestJson) as JournalEntry['request'],
+        events: JSON.parse(row.eventsJson) as JournalEntry['events'],
+      };
+      return { ...projectHistoryEntry(entry, seats, row.round, historyState, priorPosition(row.preSnapshotJson)), rollbackAvailable: !reason, rollbackRecoverable:!row.preSnapshotJson&&(!latestLifecycle||row.revision>latestLifecycle.revision)&&match.lifecycle!=='abandoned', ...(reason ? { rollbackUnavailableReason: reason } : {}) };
     });
     const candidates = [...commands, ...controls].sort(compare);
     const entries = candidates.slice(0, count).sort((a,b)=>b.revision-a.revision);
-    const publicEntries = spectator ? entries.map(entry => ({revision:entry.revision, actorSeatId:entry.actorSeatId, actorName:entry.actorName, round:entry.round, summary:entry.summary, details:entry.details, ...(entry.presentation ? {presentation:entry.presentation} : {}), ...(entry.combatVolley ? {combatVolley:entry.combatVolley} : {}), ...(entry.combatVolleys ? {combatVolleys:entry.combatVolleys} : {})})) : entries;
+    const publicEntries = spectator ? entries.map(spectatorEntry) : entries;
     return { entries:publicEntries, nextBeforeRevision: !fromStart && candidates.length > count ? entries[entries.length - 1].revision : null };
 }
