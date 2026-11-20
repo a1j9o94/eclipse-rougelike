@@ -1,0 +1,21 @@
+.dg-app .dg-map-return-bar {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  padding: 6px 12px;
+  background: #101e2c;
+  border-bottom: 1px solid #665b46;
+}
+.dg-app .dg-map-return {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 6px 14px;
+  border: 1px solid #9b8255;
+  border-radius: 5px;
+  background: #243440;
+  color: #f0d9ad;
+  font-weight: 650;
+}
+.dg-app .dg-map-return:hover { background: #304658; }

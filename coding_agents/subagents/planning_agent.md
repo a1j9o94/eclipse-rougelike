@@ -1151,3 +1151,12 @@ the win and loss fixed. Draco gained two VP and Exiles lost three. These small
 samples do not establish a general win rate. On a timed three-player board,
 Hard used about 3 seconds and Expert took 10–11 seconds. Broader full-game
 strength comparisons should rotate additional factions and budgets.
+
+## Map return and public sector technology cards
+
+Expose one Back to map control in the same place across off-map workspaces.
+Use the existing map navigation so pending choices and action drafts survive.
+Keep the final standings exit grouped with final-game controls. Reuse the
+owned technology card with visible effects in fleet inspection, including
+research held in Quantum Labs. Check the live VP, rival board and blueprint
+return flows plus the public sector cards at desktop and phone widths.

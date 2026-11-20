@@ -36,6 +36,7 @@ import {DiceRollScopeContext,useMotionEnabled,useFollowAiEnabled,useFixedFitEnab
 import {PublicInspectionProvider,usePublicInspection} from './PublicInspectionContext';
 import PublicInspectionModal from './PublicInspectionModal';
 import ScoreWorkspace from './ScoreWorkspace';
+import MapReturnButton from './MapReturnButton';
 import MovementBattlePreview from './MovementBattlePreview';
 import FleetInspection from './FleetInspection';
 import {addBuildItem,emptyBuildOrder} from './buildPlanning';
@@ -732,6 +733,7 @@ function SecondDawnBoardContent({
             {pendingDecisionPanel}
           </ChoiceWorkspace>}
           <div className="dg-board-surface" hidden={encounterVisible&&spatialDecision} inert={screen==='Decision'&&!spatialDecision&&!retreatMapActive} aria-hidden={screen==='Decision'&&!spatialDecision&&!retreatMapActive?true:undefined}>
+          {screen!=='Galaxy'&&screen!=='Decision'&&!(screen==='Scoring'&&view.phase==='finished')&&<div className="dg-map-return-bar"><MapReturnButton onClick={browseGalaxy}/></div>}
           {screen==='Galaxy'&&!encounterId&&(combatReputationVisible
             ? <div className="dg-combat-aftermath"><ReputationSummary view={view} onDismiss={dismissCombatReputation}/></div>
             : combatAftermath)}
@@ -931,7 +933,7 @@ function SecondDawnBoardContent({
           <p className="sd-eyebrow">
             {view.phase === "finished" ? "FINAL RESULTS" : screen === "Research" ? "TECHNOLOGY" : screen === "Blueprints" ? "SHIPYARD" : screen === "Trade" ? "RESOURCE EXCHANGE" : "SECTOR INSPECTOR"}
           </p>
-          {screen === 'Scoring' ? <><h2>Where points come from</h2><p>Select a symbol on any faction card to inspect its contribution and relevant sectors.</p><p>{view.phase==='finished'?'Reputation is now revealed. Equal VP totals are ranked by remaining resources; an exact tie shares the rank.':'Reputation stays face down and is excluded from every public total until the game ends.'}</p><button onClick={()=>{setScreen('Galaxy');setMobileSheet('closed');}}>Back to galaxy</button></> : view.pendingDecision && screen === "Decision" ? (
+          {screen === 'Scoring' ? <><h2>Where points come from</h2><p>Select a symbol on any faction card to inspect its contribution and relevant sectors.</p><p>{view.phase==='finished'?'Reputation is now revealed. Equal VP totals are ranked by remaining resources; an exact tie shares the rank.':'Reputation stays face down and is excluded from every public total until the game ends.'}</p></> : view.pendingDecision && screen === "Decision" ? (
             <><h2>{humanize(view.pendingDecision.kind)}</h2><p>Resolve the choice in the main panel. You can inspect technologies, ships, diplomacy, and public scores before returning to Decision.</p>{view.battle && ['combat-allocation','combat-split-damage','combat-turn','retreat','initiative-order','bombardment'].includes(view.pendingDecision.kind) && <p>Battle in sector {view.battle.sectorId}. Damage and dice are saved; your allocations and retreat remain under your control.</p>}{view.pendingDecision.kind==='reputation'&&<p>Only you can see these reputation values. Choose which tiles to keep before combat aftermath continues.</p>}</>
           ) : screen === "Research" ? (
             <><h2>Research in place</h2><p>Select, compare, fund, and acquire technology in the research workspace.</p></>

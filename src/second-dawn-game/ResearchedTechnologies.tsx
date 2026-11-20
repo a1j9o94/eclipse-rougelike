@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { RESEARCH_TRACK_CAPACITY, TECHNOLOGIES, type TechnologyId, type TechnologyTrack } from '../../shared/eclipse/technologies';
 import type { PlayerView, Seat } from '../../shared/eclipse/types';
-import TechnologyStats from './TechnologyStats';
+import OwnedTechnologyCard from './OwnedTechnologyCard';
 import AdvancedPopulationPreview from './AdvancedPopulationPreview';
 import {ResearchDiscountSlot,ResearchSlotMarkers} from './ResearchDiscountTrack';
 import {researchSlotDiscount} from './researchSlotDiscount';
@@ -32,7 +32,7 @@ export default function ResearchedTechnologies({seat,view,onInspect,selectedId,d
           {researched===0&&<small>No technologies yet</small>}
           <div className="dg-owned-tiles" role="group" aria-label={`${name} technology slots`}>{seat.technologies[track].map((id,index)=>{
             const technology=TECHNOLOGIES.find(candidate=>candidate.id===id);
-            return technology ? <button className="dg-owned-tile" key={id} aria-label={`Inspect researched ${technology.name}`} aria-pressed={selected===id} onClick={()=>{setSelected(technology.id);onInspect?.(technology.id);}}><strong>{technology.name}</strong><TechnologyStats technology={technology}/>{view&&view.viewerSeatId===seat.id&&<AdvancedPopulationPreview view={view} technology={technology}/>}<ResearchSlotMarkers index={index} minorSpecies={seat.minorSpecies}/></button> : <p key={id}>Catalog entry unavailable: {id}</p>;
+            return technology ? <OwnedTechnologyCard key={id} technology={technology} inspection={{label:`Inspect researched ${technology.name}`,selected:selected===id,onClick:()=>{setSelected(technology.id);onInspect?.(technology.id);}}}>{view&&view.viewerSeatId===seat.id&&<AdvancedPopulationPreview view={view} technology={technology}/>}<ResearchSlotMarkers index={index} minorSpecies={seat.minorSpecies}/></OwnedTechnologyCard> : <p key={id}>Catalog entry unavailable: {id}</p>;
           })}{Array.from({length:Math.max(0,RESEARCH_TRACK_CAPACITY-researched)},(_,index)=><ResearchDiscountSlot className="dg-owned-slot" key={`empty-${index}`} index={researched+index} minorSpecies={seat.minorSpecies}/>)}</div>
         </section>;
       })}</div>

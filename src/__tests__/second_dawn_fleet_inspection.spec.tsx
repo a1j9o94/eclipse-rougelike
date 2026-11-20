@@ -61,3 +61,13 @@ it('traps keyboard focus and returns to the action without submitting a command'
  fireEvent.keyDown(dialog,{key:'Tab'});expect(screen.getByRole('button',{name:'Return to plan'})).toHaveFocus();
  fireEvent.keyDown(dialog,{key:'Escape'});expect(close).toHaveBeenCalledOnce();
 });
+
+it('shows public research cards with stats and rules, including the Quantum Labs technology',()=>{
+ const view=fixture(),enemy=view.ships.find(s=>s.owner==='b')!,rival=view.seats.find(s=>s.id==='b')!;
+ rival.technologies.military=['plasma-cannon'];
+ rival.developments=[{id:'quantum-labs',technologyId:'neutron-bombs'}];
+ render(<FleetInspection view={view} sectorId={enemy.sectorId} selectedShipIds={[]} onClose={()=>{}}/>);
+ fireEvent.click(screen.getByText('Public technologies'));
+ expect(screen.getByRole('article',{name:'Plasma Cannon'})).toHaveTextContent(/2 damage/i);
+ expect(screen.getByRole('article',{name:'Neutron Bombs'})).toHaveTextContent(/population/i);
+});

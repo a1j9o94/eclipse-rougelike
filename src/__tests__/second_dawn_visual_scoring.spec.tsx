@@ -36,7 +36,7 @@ it.each(['desktop','mobile'])('returns from the live VP view to the board on %s'
  render(<Board view={view} candidates={legalCommands(view)} connected busy={false} status="" onSubmit={submit} onMenu={menu}/>);
  fireEvent.click(screen.getByRole('button',{name:/Your public (VP|score)/}));
  expect(screen.getByRole('heading',{name:'Public victory points'})).toBeVisible();
- fireEvent.click(screen.getByRole('button',{name:'Back to board'}));
+ fireEvent.click(screen.getByRole('button',{name:'Back to map'}));
  expect(screen.getByRole('group',{name:'Galaxy map'})).toBeVisible();
  expect(screen.queryByRole('heading',{name:'Public victory points'})).toBeNull();
  expect(submit).not.toHaveBeenCalled();expect(menu).not.toHaveBeenCalled();
@@ -54,4 +54,19 @@ it('opens final standings on mobile even with an unread recap, and keeps reveale
  expect(screen.getByRole('heading',{name:'Final standings'})).toBeVisible();expect(screen.getByRole('button',{name:'Return home'})).toBeVisible();
  fireEvent.click(screen.getAllByRole('button',{name:/^Reputation: [0-9]+ VP/})[0]);
  expect(screen.getByRole('dialog',{name:'Public score inspection'})).toHaveTextContent('Reputation is revealed and included in the final score.');
+});
+
+it.each(['desktop','mobile'])('provides an explicit map return from a rival board and its blueprints on %s',layout=>{
+ if(layout==='mobile')vi.stubGlobal('matchMedia',vi.fn((query:string)=>({matches:query.includes('max-width'),media:query,addEventListener:vi.fn(),removeEventListener:vi.fn()})));
+ const view=fixture(),submit=vi.fn();
+ render(<Board view={view} candidates={legalCommands(view)} connected busy={false} status="" onSubmit={submit} onMenu={vi.fn()}/>);
+ const inspectRival=()=>fireEvent.click(within(screen.getByRole('navigation',{name:'Turn order'})).getByRole('button',{name:/Hydran/}));
+ inspectRival();
+ fireEvent.click(screen.getByRole('button',{name:'Back to map'}));
+ expect(screen.getByRole('group',{name:'Galaxy map'})).toBeVisible();
+ inspectRival();
+ fireEvent.click(screen.getByRole('button',{name:/Inspect interceptor blueprint/i}));
+ fireEvent.click(screen.getByRole('button',{name:'Back to map'}));
+ expect(screen.getByRole('group',{name:'Galaxy map'})).toBeVisible();
+ expect(submit).not.toHaveBeenCalled();
 });

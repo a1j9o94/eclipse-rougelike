@@ -547,3 +547,12 @@ Release and live check: feature commit `fc7ee93` and repair commit `cd062a1` rea
 ### October 25 — Effortless choices and continuous play
 
 Implemented the superseding attached plan across ordinary actions, shared draft/navigation/economy controls, continuous combat and authenticated background Auto fight, rewards/faction exceptions, and surrounding screens. Selection replacement, retained quantities/payment, collection editing, local Undo, direct commits, and server revalidation preserve strategic choices and existing rules. See [the delivery ledger](effortless_ux_delivery.md) for scope, fail-first evidence, bounded gates, browser checks, release status, and remaining human newcomer/expert playtests.
+
+### Map and fleet inspection navigation
+
+Live standings, rival boards, blueprints, research, trade, diplomacy, recruitment,
+and the mobile Activity page share a sticky map return control. Spectator
+workspaces use the same control. Sector fleet inspection uses the owned research
+card design with readable rule text, including technologies held in Quantum Labs.
+Browser checks at 1366 and 390 pixels exercised the VP, rival board, and blueprint
+returns after scrolling and checked the public Plasma Cannon card.

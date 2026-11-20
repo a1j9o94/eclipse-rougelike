@@ -71,3 +71,11 @@
 
 .dg-fleet-inspection { scroll-padding-top: 150px; }
 .dg-fleet-inspection.dg-inspection-single { width: min(850px,100%); }
+
+.dg-public-tech-cards {
+ display: grid;
+ grid-template-columns: repeat(auto-fit, minmax(min(175px, 100%), 1fr));
+ gap: 8px;
+ margin-top: 8px;
+}
+.dg-public-tech-cards .dg-owned-tile p { margin: .5rem 0 0; }
