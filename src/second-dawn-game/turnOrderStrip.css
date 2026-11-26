@@ -21,6 +21,14 @@
 .dg-app .dg-turn-order-strip button[aria-current=step] { border-color: #c0a369; background: #342f23; color: #f3d99c; }
 .dg-turn-order-active { font-size: 10px; font-weight: 700; color: #f2d184; }
 .dg-turn-order-active::before { content: '●'; margin-right: 4px; font-size: 8px; }
+@media (prefers-reduced-motion: no-preference) {
+  .dg-app[data-motion=on] [data-opponent-turn] .dg-turn-order-active::before {
+    animation: dg-turn-dot-blink 1.2s ease-in-out infinite;
+  }
+}
+@keyframes dg-turn-dot-blink {
+  50% { opacity: .2; }
+}
 .dg-app .dg-turn-order-strip button[data-eliminated=true] { opacity: .65; }
 .dg-app .dg-turn-order-strip button:hover { border-color: #91b5c2; background: #20323f; }
 .dg-app .dg-turn-order-strip button:focus-visible { outline: 2px solid #a2edf0; outline-offset: -3px; }

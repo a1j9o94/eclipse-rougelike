@@ -1160,3 +1160,12 @@ Keep the final standings exit grouped with final-game controls. Reuse the
 owned technology card with visible effects in fleet inspection, including
 research held in Quantum Labs. Check the live VP, rival board and blueprint
 return flows plus the public sector cards at desktop and phone widths.
+
+## Opponent turn indicator
+
+Blink the dot beside Turn during computer and human opponent action turns.
+Keep it steady during the viewer's turn, when animations are disabled, or
+when the device requests reduced motion. Limit the animation to the dot.
+The turn-order regression assertions failed before the change and passed
+afterward alongside the AI follow tests. Reverting this change restores the
+steady dot for every seat.

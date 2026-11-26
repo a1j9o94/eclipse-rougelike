@@ -22,6 +22,7 @@ it('shows turn order before opening table details and allows faction inspection'
   render(<SecondDawnBoard {...controls} view={getPlayerView(state, 'a')!}/>);
   expect(names()).toEqual(['Planta', 'Orion Hegemony', 'Hydran Progress', 'Eridani Empire']);
   expect(strip().getByRole('button', {name: /Planta/})).toHaveAttribute('aria-current', 'step');
+  expect(strip().getByRole('button', {name: /Planta/})).toHaveAttribute('data-opponent-turn', 'true');
   expect(screen.queryByRole('region', {name: 'Civilization roster'})).toBeNull();
   fireEvent.click(strip().getByRole('button', {name: /Hydran Progress/}));
   expect(screen.getByRole('heading', {name: 'Hydran Progress', exact: true})).toBeVisible();
@@ -44,6 +45,7 @@ it('updates active turns without changing faction colors and retains passed reac
   ui.rerender(<SecondDawnBoard {...controls} view={getPlayerView(state, 'a')!}/>);
   const reacting = strip().getByRole('button', {name: /Hydran Progress/});
   expect(reacting).toHaveAttribute('aria-current', 'step');
+  expect(list.querySelector('[data-opponent-turn]')).toBeNull();
   expect(reacting).toHaveTextContent('Passed');
   expect(reacting.style.getPropertyValue('--owner')).toBe(color);
   expect(names()[0]).toBe('Hydran Progress');
@@ -81,4 +83,12 @@ it('keeps the same turn strip visible on phones without opening the tools menu',
   expect(screen.getByRole('navigation', {name: 'Turn order'})).toBeVisible();
   expect(strip().getAllByRole('button')).toHaveLength(4);
   expect(strip().getByRole('button', {name: /Hydran Progress/})).toHaveAttribute('aria-current', 'step');
+});
+
+it('marks a human opponent’s turn for the same animation as a computer turn', () => {
+  const state = fixture();
+  state.seats[1].controller = 'human';
+  state.activeSeatId = 'b';
+  render(<SecondDawnBoard {...controls} view={getPlayerView(state, 'a')!}/>);
+  expect(strip().getByRole('button', {name: /Eridani Empire/})).toHaveAttribute('data-opponent-turn', 'true');
 });

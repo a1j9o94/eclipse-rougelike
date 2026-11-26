@@ -30,7 +30,7 @@ export default function TurnOrderStrip({view, onInspect}: Props) {
         const active = actionPhase && !seat.eliminated && seat.id === view.activeSeatId;
         const status = seat.eliminated ? 'Out' : view.phase === 'upkeep' ? needsUpkeep(view, seat.id) ? 'Upkeep' : 'Ready' : view.phase !== 'finished' && seat.passed ? 'Passed' : null;
         return <li key={seat.id}>
-          <button type="button" style={{'--owner': seatColor(seat)} as CSSProperties} aria-current={active ? 'step' : undefined} data-eliminated={seat.eliminated || undefined} onClick={() => onInspect(seat.id)}>
+          <button type="button" style={{'--owner': seatColor(seat)} as CSSProperties} aria-current={active ? 'step' : undefined} data-opponent-turn={active && seat.id !== view.viewerSeatId || undefined} data-eliminated={seat.eliminated || undefined} onClick={() => onInspect(seat.id)}>
             <span className="dg-turn-order-emblem" aria-hidden="true"><FactionSymbol faction={seat.faction}/></span>
             <strong>{getFaction(seat.faction).name}</strong>
             {seat.id === view.viewerSeatId && <small>You</small>}
