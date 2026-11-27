@@ -82,10 +82,13 @@ it('resumes automatic AI following after an acknowledged human end-action withou
  const oldSheet=rendered.container.querySelector<HTMLElement>('.dg-mobile-sheet-body')!;oldSheet.scrollTop=160;
  rendered.rerender(<Board {...controls} view={{...initial,activeSeatId:'b',revision:2}} history={history} lastAcceptedCommand={{revision:1,type:'end-action'}}/>);
  expect(rendered.container.querySelector('.dg-mobile-board')).toHaveAttribute('data-mobile-screen','Galaxy');
- expect(rendered.container.querySelector('.dg-mobile-sheet')).toHaveAttribute('data-sheet-state','peek');
- fireEvent.click(screen.getByRole('button',{name:'Expand AI action details'}));
+ expect(rendered.container.querySelector('.dg-mobile-sheet')).toHaveAttribute('data-sheet-state','expanded');
+ expect(screen.getByRole('region',{name:'Technology market'})).toBeVisible();
  expect(oldSheet.scrollTop).toBe(0);
  expect(screen.getByRole('region',{name:'AI action details'})).toBeInTheDocument();
+ rendered.rerender(<Board {...controls} view={{...initial,activeSeatId:'a',revision:3}} history={history} lastAcceptedCommand={{revision:1,type:'end-action'}}/>);
+ expect(rendered.container.querySelector('.dg-mobile-sheet')).toHaveAttribute('data-sheet-state','closed');
+ expect(screen.queryByRole('region',{name:'AI action details'})).toBeNull();
 });
 
 it('opens Upgrade directly on the player blueprint and keeps the details sheet closed',()=>{

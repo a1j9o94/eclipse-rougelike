@@ -1169,3 +1169,12 @@ when the device requests reduced motion. Limit the animation to the dot.
 The turn-order regression assertions failed before the change and passed
 afterward alongside the AI follow tests. Reverting this change restores the
 steady dot for every seat.
+
+## Follow AI action menus
+
+Open a read-only action menu when Follow AI receives a supported public
+action. Show the confirmed selection, then the outcome. Expand the phone
+sheet while following and return to the board when the AI hands off control.
+Use accepted public history for playback and preserve manual inspection and
+pending decisions. The new menu and mobile auto-open assertions failed
+before implementation. Reverting restores the previous action summary panel.

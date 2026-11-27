@@ -44,6 +44,13 @@ function TechnologyContents({technology,view,price,children}:{technology:Technol
  return <>{children}<TechnologyStats technology={technology}/><span className="dg-tech-benefit">{technologyBenefit(technology)}</span>{price}{view&&<AdvancedPopulationPreview view={view} technology={technology}/>}</>;
 }
 
+export function ResearchReplaySelection({technology}:{technology:Technology}){
+ return <div className="sd-tech-grid"><article className="dg-research-card is-selected" aria-label={technology.name}>
+  <div className="sd-tech"><strong>{technology.name}</strong><TechnologyContents technology={technology}/></div>
+  <p>{describeTechnology(technology)}</p>
+ </article></div>;
+}
+
 function RewardResearchWorkspace({decisionId,technologyIds,view,candidates,disabled,onSubmit}:RewardResearchProps){
  const [selected,setSelected]=useState<string|null>(null);
  const [track,setTrack]=useState<Track|null>(null);

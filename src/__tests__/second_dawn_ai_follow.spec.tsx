@@ -76,3 +76,20 @@ it('changing Follow AI during your turn does not open an empty inspector',()=>{
  fireEvent.click(screen.getByRole('button',{name:'Follow AI',exact:true}));
  expect(screen.getByRole('button',{name:'Show sector details'})).toHaveAttribute('aria-expanded','false');
 });
+
+it('opens the matching read-only action menu with the AI selection highlighted',()=>{
+ const initial=fixture(),rendered=render(<SecondDawnBoard {...controls} view={initial} history={feed([])}/>);
+ const research:PublicHistoryEntry={revision:1,actorSeatId:'b',actorName:'Hydran Progress',round:1,summary:'Researched Improved Hull',details:[],presentation:{kind:'research',technologyId:'improved-hull'}};
+ rendered.rerender(<SecondDawnBoard {...controls} view={{...initial,activeSeatId:'b',revision:1}} history={feed([research])}/>);
+ const market=screen.getByRole('region',{name:'Technology market'});
+ expect(within(market).getByRole('group',{name:'AI selection'})).toHaveTextContent('Improved Hull');
+ expect(within(market).queryByRole('button')).toBeNull();
+
+ const sector=initial.sectors[0];
+ const build:PublicHistoryEntry={...research,revision:2,summary:'Built 2 components',details:[],presentation:{kind:'build',sectorIds:[sector.id],components:[{type:'interceptor',count:2}]}};
+ rendered.rerender(<SecondDawnBoard {...controls} view={{...initial,activeSeatId:'b',revision:2}} history={feed([build,research])}/>);
+ const shipyard=screen.getByRole('region',{name:'Build'});
+ expect(within(shipyard).getByRole('group',{name:'AI selection'})).toHaveTextContent('Interceptor');
+ expect(within(shipyard).getByRole('button',{name:`Inspect sector ${sector.tileId}`})).toBeVisible();
+ expect(controls.onSubmit).not.toHaveBeenCalled();
+});

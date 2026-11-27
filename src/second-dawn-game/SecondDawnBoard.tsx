@@ -333,7 +333,17 @@ function SecondDawnBoardContent({
   useEffect(() => { if(shownPendingId.current===activityIdentity)return;shownPendingId.current=activityIdentity;if(publicInspection?.active||inspectSector||!['Galaxy','Decision'].includes(screen)&&lastAcceptedCommand?.revision!==view.revision)return;if (pendingId) {setScreen("Decision");setSelected(view.pendingDecision&&'sectorId' in view.pendingDecision?view.pendingDecision.sectorId??null:null);setInspectorOpen(spatialDecision);setMobileSheet(spatialDecision?'expanded':'closed');setMobileActionsOpen(false);setMobileActionMode(false);setHistoryOpen(false);} }, [activityIdentity,pendingId,setScreen,setSelected,setHistoryOpen,spatialDecision,view.pendingDecision,publicInspection?.active,inspectSector,screen,lastAcceptedCommand?.revision,view.revision]);
   const previousRecapOpen=useRef(false);
   useEffect(()=>{if(view.phase==='finished'){previousRecapOpen.current=recapOpen;return;}if(recapOpen&&!previousRecapOpen.current&&!pendingId){setScreen('Activity');setMobileSheet('closed');setMobileActionMode(false);}else if(!recapOpen&&previousRecapOpen.current){setScreen(pendingId?'Decision':'Galaxy');setMobileSheet('closed');}previousRecapOpen.current=recapOpen;},[recapOpen,pendingId,setScreen,view.phase]);
-  useEffect(()=>{if(compact&&showAiPanel&&screen==='Galaxy'){setMobileSheet('peek');setMobileActionsOpen(false);}},[compact,showAiPanel,screen,aiPresentation.action?.revision]);
+  const openedMobileForAi=useRef(false);
+  useEffect(()=>{
+    if(compact&&showAiPanel&&screen==='Galaxy'&&!historyOpen&&!settingsOpen&&!empireMapSeat&&!inspectSector&&!publicInspection?.active){
+      openedMobileForAi.current=true;
+      setMobileSheet('expanded');
+      setMobileActionsOpen(false);
+    }else if(openedMobileForAi.current){
+      openedMobileForAi.current=false;
+      if(!aiDismissed&&!pendingId&&screen==='Galaxy'&&!historyOpen&&!empireMapSeat&&!inspectSector&&!publicInspection?.active)setMobileSheet('closed');
+    }
+  },[compact,showAiPanel,screen,aiPresentation.action?.revision,aiDismissed,pendingId,historyOpen,settingsOpen,empireMapSeat,inspectSector,publicInspection?.active]);
   const presentedAiAction=useRef<number|null>(null);
   const openedForAi=useRef(false);
   useEffect(()=>{
@@ -416,11 +426,11 @@ function SecondDawnBoardContent({
   const mobileSheetBodyRef=useRef<HTMLDivElement>(null);
   useLayoutEffect(()=>{if(spatialDecisionOpen&&!historyOpen)inspectorRef.current?.focus({preventScroll:true});},[spatialDecisionOpen,pendingId,historyOpen]);
   useLayoutEffect(()=>{
-    if(compact&&showAiPanel){
+    if(showAiPanel&&screen==='Galaxy'&&!historyOpen&&!empireMapSeat&&!inspectSector&&!publicInspection?.active){
       if(inspectorRef.current)inspectorRef.current.scrollTop=0;
       if(mobileSheetBodyRef.current)mobileSheetBodyRef.current.scrollTop=0;
     }
-  },[compact,showAiPanel,aiPresentation.action?.revision,mobileSheet]);
+  },[showAiPanel,screen,historyOpen,empireMapSeat,inspectSector,publicInspection?.active,aiPresentation.action?.revision,mobileSheet]);
   useLayoutEffect(()=>{if(!compact||!workspaceRef.current)return;const element=workspaceRef.current;const measure=()=>{const rect=element.getBoundingClientRect();if(rect.height>0){setMobileWorkspaceTop(Math.ceil(rect.top)+4);setMobileBottomInset(Math.ceil(window.innerHeight-rect.bottom));}};measure();const observer=typeof ResizeObserver==='undefined'?null:new ResizeObserver(measure);observer?.observe(element);window.addEventListener('resize',measure);return()=>{observer?.disconnect();window.removeEventListener('resize',measure);};},[compact]);
   const actionPanelRef = useRef<HTMLDivElement>(null);
   const [actionFocus,setActionFocus]=useState(0);
@@ -925,7 +935,7 @@ function SecondDawnBoardContent({
           </section>}
           <div className="dg-inspector-content" hidden={spatialDecisionOpen&&!historyOpen||compact&&mobileActionsOpen}>
 
-          {historyOpen ? <HistoryPanel rollback={historyRollback} feed={history ?? {entries:[],loading:false,hasOlder:false,loadingOlder:false,error:null,loadOlder:()=>{}}}/> : showAiPanel && aiPresentation.action ? <><AiActionPanel view={view} entry={aiPresentation.action} onInspectSector={id=>{setSelected(id);setScreen('Galaxy');setAiDismissed(true);setReviewAi(false);if(compact)setMobileSheet('peek');}}/></> : buildOpen && !inspectingGalaxy && screen === "Galaxy" && !compact ? buildPlanner : moveOpen && !inspectingGalaxy && screen === "Galaxy" ? <>
+          {historyOpen ? <HistoryPanel rollback={historyRollback} feed={history ?? {entries:[],loading:false,hasOlder:false,loadingOlder:false,error:null,loadOlder:()=>{}}}/> : showAiPanel && aiPresentation.action ? <AiActionPanel replay={!reviewAi} view={view} entry={aiPresentation.action} onInspectSector={id=>{setSelected(id);setScreen('Galaxy');setAiDismissed(true);setReviewAi(false);if(compact)setMobileSheet('peek');}}/> : buildOpen && !inspectingGalaxy && screen === "Galaxy" && !compact ? buildPlanner : moveOpen && !inspectingGalaxy && screen === "Galaxy" ? <>
             <MovementPlanner embedded showCombatOdds={showCombatOdds} onChangeSource={()=>{setMoveSource(null);setMoveTarget(null);setMoveTargets([]);}} onRoutePreview={setMoveRoutePreviews} onSelectionChange={onMoveSelection} key={moveSource} view={planningView} sourceSectorId={moveSource} selectedTargetId={moveTarget} disabled={blocked||!!lastAcceptedCommand&&lastAcceptedCommand.revision>view.revision} result={movementResult} onDone={!mixedActionOpen&&candidates.some(candidate=>candidate.command.type==='end-action')?()=>{const command:GameCommand={type:'end-action'};if(previewCommand(view,command).betrayedPartners.length)activate('end-action');else onSubmit(command);}:undefined} onTargetsChange={setMoveTargets} onClose={()=>{setMoveOpen(false);setMoveTargets([]);}} onSubmit={command=>{if(!queueMode)pendingMove.current={receipt:lastAcceptedCommand,ships:command.type==='move'?new Set(command.moves.map(move=>move.shipId)).size:0};setMovementResult('');onSubmit(command);}}/>
           </> : screen === 'Galaxy' && action === 'influence' && !inspectingGalaxy ? <InfluencePlanner onSectorFocus={setSelected} key={view.revision} view={planningView} candidates={candidates} selectedSectorId={selected} onLegalTargetIdsChange={setInfluenceTargets} disabled={blocked} onSubmit={onSubmit}/>
           : screen === 'Galaxy' && action === 'colonize' && !inspectingGalaxy ? <><ColonizationPlanner onColonizableSectorIdsChange={setColonyTargets} onSectorFocus={setSelected} view={planningView} candidates={candidates} selectedSectorId={selected} disabled={blocked} onSubmit={onSubmit}/></>
